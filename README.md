@@ -1,2 +1,2 @@
 # adsys
-Active Directory bridging tool suite
+Active Directory bridging toolset
