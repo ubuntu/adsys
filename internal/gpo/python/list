@@ -1,0 +1,206 @@
+#!/usr/bin/python3
+# Copyright Canonical 2020
+#
+# Based on python implementation of samba-tool gpo by
+# Andrew Tridgell 2010 and Amitay Isaacs 2011-2012.
+# which is based on C implementation
+# by Guenther Deschner and Wilco Baan Hofman
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+import argparse
+import sys
+
+from samba import dsdb, param
+from samba.auth import (system_session, user_session,
+    AUTH_SESSION_INFO_DEFAULT_GROUPS, AUTH_SESSION_INFO_AUTHENTICATED, AUTH_SESSION_INFO_SIMPLE_PRIVILEGES)
+from samba.credentials import MUST_USE_KERBEROS, Credentials
+from samba.dcerpc import security
+from samba.ndr import ndr_unpack
+import samba.security
+from samba.samdb import SamDB
+import ldb
+
+
+class ObjectClass:
+    user = 'user'
+    computer = 'computer'
+
+
+class ReturnCode:
+    NOT_FOUND = 1
+    CONNECTION_FAILED = 2
+    GPO_FAILED = 3
+
+
+def parse_gplink(gplink):
+    ''' Parse a gPLink into an array of dn and options '''
+    ret = []
+
+    if gplink.strip() == '':
+        return ret
+
+    a = gplink.split(']')
+    for g in a:
+        if not g:
+            continue
+        d = g.split(';')
+        if len(d) != 2 or not d[0].startswith("[LDAP://"):
+            raise RuntimeError("Badly formed gPLink '%s'" % g)
+        ret.append({'dn': d[0][8:], 'options': int(d[1])})
+    return ret
+
+
+def attr_default(msg, attrname, default):
+    ''' Get an attribute from a ldap msg with a default '''
+    if attrname in msg:
+        return msg[attrname][0]
+    return default
+
+
+def connectLDAP(url):
+    ''' Connect to the directory using Kerberos '''
+    c = Credentials()
+    c.set_kerberos_state(MUST_USE_KERBEROS)
+
+    lp = param.LoadParm()
+    c.guess(lp)
+
+    return SamDB(url=url,
+                 session_info=system_session(),
+                 credentials=c, lp=lp)
+
+def get_entity(samdb, accountname, objectClass):
+    ''' Returns the entity for a given accountname and objectclass '''
+
+    msg = samdb.search(expression='(&(|(samAccountName=%s)(samAccountName=%s$))(objectClass=%s))' %
+                           (ldb.binary_encode(accountname), ldb.binary_encode(accountname), ldb.binary_encode(objectClass)),
+                       attrs=['objectClass'])
+    if len(msg) == 0:
+        raise Exception("Failed to find account %s" % accountname)
+    current = msg[0]
+
+    # Check that the object is really a computer or user if requested as such
+    if objectClass == ObjectClass.computer and b'computer' not in current['objectClass']:
+            raise Exception("Failed to find computer account %s" % accountname)
+    elif objectClass == ObjectClass.user and b'computer' in current['objectClass']:
+            raise Exception("Failed to find user account %s" % accountname)
+
+    return current.dn
+
+def get_token(samdb, dn):
+    ''' Returns the security token for given samba and dn'''
+    session_info_flags = (AUTH_SESSION_INFO_DEFAULT_GROUPS
+                          | AUTH_SESSION_INFO_AUTHENTICATED
+                          | AUTH_SESSION_INFO_SIMPLE_PRIVILEGES)
+    session = user_session(samdb, lp_ctx=samdb.lp, dn=dn,
+                           session_info_flags=session_info_flags)
+    return session.security_token
+
+def get_gpos_for_dn(samdb, dn, token, is_computer):
+    ''' List gpos for given dn, considering inheritance and enforced GPOs '''
+    gpos = []
+    inherit = True
+    dn = ldb.Dn(samdb, str(dn)).parent()
+
+    while True:
+        msg = samdb.search(base=dn, scope=ldb.SCOPE_BASE, attrs=['gPLink', 'gPOptions'])[0]
+        if 'gPLink' in msg:
+            glist = parse_gplink(str(msg['gPLink'][0]))
+            for g in glist:
+                if not inherit and not (g['options'] & dsdb.GPLINK_OPT_ENFORCE):
+                    continue
+                if g['options'] & dsdb.GPLINK_OPT_DISABLE:
+                    continue
+
+                try:
+                    sd_flags = (security.SECINFO_OWNER
+                                | security.SECINFO_GROUP
+                                | security.SECINFO_DACL)
+                    gmsg = samdb.search(base=g['dn'], scope=ldb.SCOPE_BASE,
+                                        attrs=['name', 'displayName', 'flags',
+                                               'nTSecurityDescriptor', 'gPCFileSysPath'],
+                                        controls=['sd_flags:1:%d' % sd_flags])
+                    secdesc_ndr = gmsg[0]['nTSecurityDescriptor'][0]
+                    secdesc = ndr_unpack(security.descriptor, secdesc_ndr)
+                except Exception:
+                    raise Exception("Failed to fetch gpo object with nTSecurityDescriptor %s\n" %
+                          g['dn'])
+
+                try:
+                    samba.security.access_check(secdesc, token,
+                                                security.SEC_STD_READ_CONTROL
+                                                | security.SEC_ADS_LIST
+                                                | security.SEC_ADS_READ_PROP)
+                except RuntimeError:
+                    raise Exception("Failed access check on %s\n" % msg.dn)
+
+                # check the flags on the GPO
+                flags = int(attr_default(gmsg[0], 'flags', 0))
+                if is_computer and (flags & dsdb.GPO_FLAG_MACHINE_DISABLE):
+                    continue
+                if not is_computer and (flags & dsdb.GPO_FLAG_USER_DISABLE):
+                    continue
+                gpos.append((gmsg[0]['displayName'][0], gmsg[0]['gPCFileSysPath'][0]))
+
+        # check if this blocks inheritance
+        gpoptions = int(attr_default(msg, 'gPOptions', 0))
+        if gpoptions & dsdb.GPO_BLOCK_INHERITANCE:
+            inherit = False
+
+        if dn == samdb.get_default_basedn():
+            break
+        dn = dn.parent()
+    return gpos
+
+def main():
+    parser = argparse.ArgumentParser(description='List GPOs for a user or computer.')
+    parser.add_argument('url', metavar='URL', type=str,
+                        help='URL of the domain controller.')
+    parser.add_argument('accountname', help='Name of the object to search for.')
+    parser.add_argument('--objectclass', type=str,
+                        choices=(ObjectClass.user, ObjectClass.computer), default=ObjectClass.user,
+                        help='Class of the object to search for.')
+
+    args = parser.parse_args()
+
+    accountname = args.accountname
+
+    try:
+        samdb = connectLDAP(args.url)
+    except Exception as exc:
+        print("Failed to open session: %s" % exc, file=sys.stderr)
+        return ReturnCode.CONNECTION_FAILED
+
+    try:
+        dn = get_entity(samdb, accountname, args.objectclass)
+    except Exception as exc:
+        print("Searching for account failed with: %s" % exc, file=sys.stderr)
+        return ReturnCode.NOT_FOUND
+
+    token = get_token(samdb, dn)
+
+    try:
+        gpos = get_gpos_for_dn(samdb, dn, token, args.objectclass == ObjectClass.computer)
+    except Exception as exc:
+        print("Couldn't get GPOs: %s" %  exc, file=sys.stderr)
+        return ReturnCode.GPO_FAILED
+
+    for g in gpos:
+        print("%s\t%s" % (g[0], g[1]))
+
+
+if __name__ == "__main__":
+    exit(main())
