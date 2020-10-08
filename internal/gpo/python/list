@@ -25,7 +25,7 @@ import sys
 
 from samba import dsdb, param
 from samba.auth import (system_session, user_session,
-    AUTH_SESSION_INFO_DEFAULT_GROUPS, AUTH_SESSION_INFO_AUTHENTICATED, AUTH_SESSION_INFO_SIMPLE_PRIVILEGES)
+                        AUTH_SESSION_INFO_DEFAULT_GROUPS, AUTH_SESSION_INFO_AUTHENTICATED, AUTH_SESSION_INFO_SIMPLE_PRIVILEGES)
 from samba.credentials import MUST_USE_KERBEROS, Credentials
 from samba.dcerpc import security
 from samba.ndr import ndr_unpack
@@ -82,23 +82,63 @@ def connectLDAP(url):
                  session_info=system_session(),
                  credentials=c, lp=lp)
 
+
 def get_entity(samdb, accountname, objectClass):
     ''' Returns the entity for a given accountname and objectclass '''
 
     msg = samdb.search(expression='(&(|(samAccountName=%s)(samAccountName=%s$))(objectClass=%s))' %
-                           (ldb.binary_encode(accountname), ldb.binary_encode(accountname), ldb.binary_encode(objectClass)),
-                       attrs=['objectClass'])
+                       (ldb.binary_encode(accountname), ldb.binary_encode(accountname), ldb.binary_encode(objectClass)),
+                       attrs=['objectClass', 'objectSid'])
     if len(msg) == 0:
         raise Exception("Failed to find account %s" % accountname)
     current = msg[0]
 
     # Check that the object is really a computer or user if requested as such
     if objectClass == ObjectClass.computer and b'computer' not in current['objectClass']:
-            raise Exception("Failed to find computer account %s" % accountname)
+        raise Exception("Failed to find computer account %s" % accountname)
     elif objectClass == ObjectClass.user and b'computer' in current['objectClass']:
-            raise Exception("Failed to find user account %s" % accountname)
+        raise Exception("Failed to find user account %s" % accountname)
 
-    return current.dn
+    return current.dn, str(ndr_unpack(security.dom_sid, current["objectSid"][0]))
+
+
+def get_all_groups(samdb, dn):
+    msg = samdb.search(expression='(&(objectClass=group)(member=%s))"' % ldb.binary_encode(str(dn)), attrs=['objectSid'])
+
+    sids = []
+
+    for m in msg:
+        sids.append(str(ndr_unpack(security.dom_sid, m["objectSid"][0])))
+    sids.append('AU')
+
+    return sids
+
+
+GPO_APPLY_GUID = "edacfd8f-ffb3-11d1-b41d-00a0c968f939"
+
+
+def check_apply_gpo_right(secdesc, sids):
+    ''' checks ntSecurityDescriptor if a GPO applies for a list of sIds '''
+    # We need at least one allowed access to be applied
+    applied = False
+    for t in secdesc.as_sddl().split('(')[1:]:
+        t = t.rstrip(')')
+        access, _, _, access_right_guid, _, owner_sid = t.split(';')
+        if access_right_guid != GPO_APPLY_GUID:
+            continue
+        for id in sids:
+            if id != owner_sid:
+                continue
+
+            if access == "OA":
+                applied = True
+
+            # One denial is enough for denying the whole policy
+            if access == "OD":
+                return False
+
+    return applied
+
 
 def get_token(samdb, dn):
     ''' Returns the security token for given samba and dn'''
@@ -109,7 +149,8 @@ def get_token(samdb, dn):
                            session_info_flags=session_info_flags)
     return session.security_token
 
-def get_gpos_for_dn(samdb, dn, token, is_computer):
+
+def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
     ''' List gpos for given dn, considering inheritance and enforced GPOs '''
     gpos = []
     inherit = True
@@ -136,8 +177,9 @@ def get_gpos_for_dn(samdb, dn, token, is_computer):
                     secdesc_ndr = gmsg[0]['nTSecurityDescriptor'][0]
                     secdesc = ndr_unpack(security.descriptor, secdesc_ndr)
                 except Exception:
-                    raise Exception("Failed to fetch gpo object with nTSecurityDescriptor %s\n" %
-                          g['dn'])
+                    print("Failed to fetch gpo object with nTSecurityDescriptor %s\n" % g['dn'], file=sys.stderr)
+                    # GPOs that are unreadable are just skipped by AD
+                    continue
 
                 try:
                     samba.security.access_check(secdesc, token,
@@ -146,6 +188,9 @@ def get_gpos_for_dn(samdb, dn, token, is_computer):
                                                 | security.SEC_ADS_READ_PROP)
                 except RuntimeError:
                     raise Exception("Failed access check on %s\n" % msg.dn)
+
+                if not check_apply_gpo_right(secdesc, sids):
+                    continue
 
                 # check the flags on the GPO
                 flags = int(attr_default(gmsg[0], 'flags', 0))
@@ -164,6 +209,7 @@ def get_gpos_for_dn(samdb, dn, token, is_computer):
             break
         dn = dn.parent()
     return gpos
+
 
 def main():
     parser = argparse.ArgumentParser(description='List GPOs for a user or computer.')
@@ -185,17 +231,20 @@ def main():
         return ReturnCode.CONNECTION_FAILED
 
     try:
-        dn = get_entity(samdb, accountname, args.objectclass)
+        dn, object_sid = get_entity(samdb, accountname, args.objectclass)
     except Exception as exc:
         print("Searching for account failed with: %s" % exc, file=sys.stderr)
         return ReturnCode.NOT_FOUND
 
+    sids = get_all_groups(samdb, dn)
+    sids.append(object_sid)
+
     token = get_token(samdb, dn)
 
     try:
-        gpos = get_gpos_for_dn(samdb, dn, token, args.objectclass == ObjectClass.computer)
+        gpos = get_gpos_for_dn(samdb, dn, token, sids, args.objectclass == ObjectClass.computer)
     except Exception as exc:
-        print("Couldn't get GPOs: %s" %  exc, file=sys.stderr)
+        print("Couldn't get GPOs: %s" % exc, file=sys.stderr)
         return ReturnCode.GPO_FAILED
 
     for g in gpos:
