@@ -12,7 +12,7 @@ import (
 func TestReadPolicy(t *testing.T) {
 	t.Parallel()
 
-	defaultKey := "Software\\Canonical\\Ubuntu\\ValueName"
+	defaultKey := `Software\Canonical\Ubuntu\ValueName`
 	defaultData := []byte("B\x00A\x00\x00\x00")
 	tests := map[string]struct {
 		want    []policyRawEntry
@@ -42,27 +42,29 @@ func TestReadPolicy(t *testing.T) {
 					data:  []byte("\x01\x00\x00\x00"),
 				},
 				{
-					key:   "Software\\Policies\\Canonical\\Ubuntu\\Directory UI\\QueryLimit",
+					key:   `Software\Policies\Canonical\Ubuntu\Directory UI\QueryLimit`,
 					dType: dataType(4),
 					data:  []byte("\x39\x30\x00\x00"),
 				},
 			}},
 
-		"semicolon in data": {want: []policyRawEntry{
-			{
-				key:   defaultKey,
-				dType: dataType(1),
-				data:  []byte("B\x00;\x00A\x00\x00\x00"),
-			},
-		}},
+		"semicolon in data": {
+			want: []policyRawEntry{
+				{
+					key:   defaultKey,
+					dType: dataType(1),
+					data:  []byte("B\x00;\x00A\x00\x00\x00"),
+				},
+			}},
 
-		"section separators in data": {want: []policyRawEntry{
-			{
-				key:   defaultKey,
-				dType: dataType(1),
-				data:  []byte("B\x00A\x00]\x00[\x00C\x00]\x00\x00\x00"),
-			},
-		}},
+		"section separators in data": {
+			want: []policyRawEntry{
+				{
+					key:   defaultKey,
+					dType: dataType(1),
+					data:  []byte("B\x00A\x00]\x00[\x00C\x00]\x00\x00\x00"),
+				},
+			}},
 
 		"exotic return type": {
 			want: []policyRawEntry{
@@ -93,10 +95,9 @@ func TestReadPolicy(t *testing.T) {
 			name := name
 			t.Parallel()
 
-			n := filepath.Join("testdata", strings.ReplaceAll(strings.ReplaceAll(name, ",", "_"), " ", "_")+".pol")
-			f, err := os.Open(n)
+			f, err := os.Open(policyFilePath(name))
 			if err != nil {
-				t.Fatalf("Can't open registry file: %s", n)
+				t.Fatalf("Can't open registry file: %s", policyFilePath(name))
 			}
 			defer f.Close()
 
@@ -111,4 +112,8 @@ func TestReadPolicy(t *testing.T) {
 		})
 	}
 
+}
+
+func policyFilePath(name string) string {
+	return filepath.Join("testdata", strings.ReplaceAll(strings.ReplaceAll(name, ",", "_"), " ", "_")+".pol")
 }
