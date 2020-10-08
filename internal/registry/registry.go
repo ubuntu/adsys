@@ -38,7 +38,7 @@ type PolicyEntry struct {
 func DecodePolicy(r io.Reader) (entries []PolicyEntry, err error) {
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf("Couldn't decode policy: %v", err)
+			err = fmt.Errorf("couldn't decode policy: %v", err)
 		}
 	}()
 
@@ -52,7 +52,10 @@ func DecodePolicy(r io.Reader) (entries []PolicyEntry, err error) {
 		var res string
 		switch t := e.dType; t {
 		case regSz:
-			res = string(e.data)
+			res, err = decodeUtf16(e.data)
+			if err != nil {
+				return nil, err
+			}
 		case regDword:
 			var resInt uint32
 			buf := bytes.NewReader(e.data)
@@ -126,7 +129,6 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		}
 
 		// If we're at EOF, we have a final, non-empty, non-terminated word. Return an error.
-		fmt.Println(atEOF && len(data) > start)
 		if atEOF && len(data) > start {
 			return 0, nil, fmt.Errorf("item does not end with ']'")
 		}
@@ -180,6 +182,10 @@ func decodeUtf16(b []byte) (string, error) {
 	ints := make([]uint16, len(b)/2)
 	if err := binary.Read(bytes.NewReader(b), binary.LittleEndian, &ints); err != nil {
 		return "", err
+	}
+	// remove trailing \0
+	if len(ints) >= 1 && ints[len(ints)-1] == 0 {
+		ints = ints[:len(ints)-1]
 	}
 	return string(utf16.Decode(ints)), nil
 }
