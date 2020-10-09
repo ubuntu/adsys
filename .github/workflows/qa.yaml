@@ -1,0 +1,52 @@
+name: QA
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+
+jobs:
+  quality:
+    name: Code quality and mod files up to date
+    runs-on: ubuntu-latest
+    container: ubuntu:devel
+    strategy:
+      matrix:
+        go: [ '1.15' ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Code formatting
+        run: |
+          FMT=`go fmt ./...`
+          echo "$FMT"
+          [ -z "$FMT" ]
+      - name: Go vet
+        run: go vet ./...
+        if: ${{ always() }}
+      - name: Module files are up to date
+        run: ./.github/ci/check-modules
+        if: ${{ always() }}
+      - name: Building
+        run: go build ./...
+        if: ${{ always() }}
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    container: ubuntu:devel
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Run tests
+        run: |
+          go test -coverprofile=coverage.txt -covermode=atomic ./...
+      - name: Run tests (with race detector)
+        run: |
+          go test -race ./...
