@@ -50,8 +50,7 @@ msgstr "translated singular"
 func TestTranslations(t *testing.T) {
 	t.Parallel()
 
-	defaultLocaleDir, cleanup := tempLocaleDir(t)
-	defer cleanup()
+	defaultLocaleDir := filepath.Join(t.TempDir(), "locale")
 	compileMoFiles(t, defaultLocaleDir)
 
 	tests := map[string]struct {
@@ -148,20 +147,6 @@ func TestTranslations(t *testing.T) {
 				t.Fatalf("unexpected case: %v", tc.text)
 			}
 		})
-	}
-}
-
-func tempLocaleDir(t *testing.T) (string, func()) {
-	t.Helper()
-
-	dir, err := ioutil.TempDir("", "zsystest-")
-	if err != nil {
-		t.Fatal("can't create temporary directory", err)
-	}
-	return filepath.Join(dir, "locale"), func() {
-		if err = os.RemoveAll(dir); err != nil {
-			t.Error("can't clean temporary directory", err)
-		}
 	}
 }
 
