@@ -55,7 +55,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext
       - name: Run tests
         run: go test -coverprofile=coverage.txt -covermode=count ./...
       - name: Run tests (with race detector)
