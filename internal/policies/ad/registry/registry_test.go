@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/registry"
+	"github.com/ubuntu/adsys/internal/policies/ad/registry"
 )
 
 func TestDecodePolicy(t *testing.T) {
