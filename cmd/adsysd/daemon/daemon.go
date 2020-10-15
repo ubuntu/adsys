@@ -20,7 +20,7 @@ type App struct {
 }
 
 // New registers commands and return a new App.
-func New() App {
+func New() *App {
 	a := App{}
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
@@ -41,7 +41,7 @@ func New() App {
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
 	a.installVersion()
 
-	return a
+	return &a
 }
 
 // Run executes the command and associated process. It returns an error on syntax/usage error.
