@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ubuntu/adzsys/internal/registry"
+	"github.com/ubuntu/adsys/internal/registry"
 )
 
 func main() {
