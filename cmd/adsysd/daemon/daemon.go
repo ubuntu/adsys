@@ -14,9 +14,18 @@ const CmdName = "adsysd"
 
 // App encapsulate commands and options of the daemon, which can be controlled by env variables and config files.
 type App struct {
-	rootCmd   cobra.Command
-	err       error
-	verbosity int
+	rootCmd cobra.Command
+	err     error
+
+	config daemonConfig
+}
+
+type daemonConfig struct {
+	Verbose int
+}
+
+func (c daemonConfig) Verbosity() int {
+	return c.Verbose
 }
 
 // New registers commands and return a new App.
@@ -26,16 +35,19 @@ func New() *App {
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
 		Short: i18n.G("AD integration daemon"),
 		Long:  i18n.G(`Active Directory integration bridging toolset daemon.`),
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			config.SetVerboseMode(a.verbosity)
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return config.Configure("adsys", a.rootCmd, func() error {
+				return config.DefaultLoadConfig(&a.config)
+			})
 		},
+
 		Args: cmdhandler.SubcommandsRequiredWithSuggestions,
 		Run:  cmdhandler.NoCmd,
 		// We display usage error ourselves
 		SilenceErrors: true,
 	}
 
-	cmdhandler.InstallVerboseFlag(&a.rootCmd, &a.verbosity)
+	cmdhandler.InstallVerboseFlag(&a.rootCmd)
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
