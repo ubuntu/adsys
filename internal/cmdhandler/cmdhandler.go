@@ -45,3 +45,8 @@ To configure your bash shell to load completions for each session add to your ~/
 	}
 	rootCmd.AddCommand(completionCmd)
 }
+
+// InstallVerboseFlag adds the -v and -vv options and will store it to destVerbose.
+func InstallVerboseFlag(cmd *cobra.Command, destVerbose *int) {
+	cmd.PersistentFlags().CountVarP(destVerbose, "verbose", "v", i18n.G("issue INFO (-v) and DEBUG (-vv) output"))
+}
