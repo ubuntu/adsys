@@ -15,15 +15,12 @@ const TEXTDOMAIN = "adsys"
 
 // SetVerboseMode change ErrorFormat and logs between very, middly and non verbose
 func SetVerboseMode(level int) {
-	if level > 2 {
-		level = 2
-	}
 	switch level {
-	default:
+	case 0:
 		log.SetLevel(defaultLevel)
 	case 1:
 		log.SetLevel(log.InfoLevel)
-	case 2:
+	default:
 		log.SetLevel(log.DebugLevel)
 	}
 }
@@ -40,7 +37,6 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func() error) (
 
 	// Get cmdline flag for verbosity to configure logger until we have everything parsed.
 	v, err := rootCmd.PersistentFlags().GetCount("verbose")
-	fmt.Println(err)
 	if err != nil {
 		return fmt.Errorf("internal error: no persistent verbose flag installed on rootCmd: %v", err)
 	}
@@ -54,7 +50,7 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func() error) (
 	if err := viper.ReadInConfig(); err != nil {
 		var e viper.ConfigFileNotFoundError
 		if errors.As(err, &e) {
-			log.Infof("No configuration file: %v.\nWe will use the default.", e)
+			log.Infof("No configuration file: %v.\nWe will use the defaults, env variables or flags.", e)
 		} else {
 			return fmt.Errorf("invalid configuration file: %v", err)
 		}
