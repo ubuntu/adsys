@@ -15,7 +15,6 @@ const CmdName = "adsysd"
 // App encapsulate commands and options of the daemon, which can be controlled by env variables and config files.
 type App struct {
 	rootCmd cobra.Command
-	err     error
 
 	config daemonConfig
 }
@@ -36,6 +35,8 @@ func New() *App {
 		Short: i18n.G("AD integration daemon"),
 		Long:  i18n.G(`Active Directory integration bridging toolset daemon.`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// command parsing has been successfull. Returns runtime (or configuration) error now and so, don’t print usage.
+			a.rootCmd.SilenceUsage = true
 			return config.Configure("adsys", a.rootCmd, func() error {
 				return config.DefaultLoadConfig(&a.config)
 			})
@@ -57,13 +58,13 @@ func New() *App {
 }
 
 // Run executes the command and associated process. It returns an error on syntax/usage error.
-func (a App) Run() error {
+func (a *App) Run() error {
 	return a.rootCmd.Execute()
 }
 
-// Err returns the potential error returned by the command.
-func (a App) Err() error {
-	return a.err
+// UsageError returns if the error is a command parsing or runtime one.
+func (a App) UsageError() bool {
+	return !a.rootCmd.SilenceUsage
 }
 
 // Hup reloads configuration file on disk and return false to signal you shouldn't quit.

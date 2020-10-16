@@ -13,7 +13,7 @@ func (a *App) installVersion() {
 		Use:   "version",
 		Short: i18n.G("Returns version of service and exits"),
 		Args:  cobra.NoArgs,
-		Run:   func(cmd *cobra.Command, args []string) { a.err = getVersion() },
+		RunE:  func(cmd *cobra.Command, args []string) error { return getVersion() },
 	}
 	a.rootCmd.AddCommand(cmd)
 }
