@@ -66,7 +66,7 @@ msgid "Returns version of service and exits"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:12
-msgid "Service management"
+msgid "Service madnagement"
 msgstr ""
 
 #: cmd/adsysd/main.go:61
