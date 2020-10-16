@@ -76,3 +76,8 @@ func (a App) Hup() (shouldQuit bool) {
 // Quit exits and send an cancellation request to the service.
 func (a App) Quit() {
 }
+
+// RootCmd returns a copy of the root command for the app. Shouldn’t be in general necessary apart when running generators.
+func (a App) RootCmd() cobra.Command {
+	return a.rootCmd
+}
