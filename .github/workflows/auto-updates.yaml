@@ -1,8 +1,8 @@
-name: Update translation and readme in main branch automatically
+name: Update translation and readme in modernize-autoupdate branch automatically
 on:
   push:
     branches:
-      - main
+      - modernize-autoupdate
     paths-ignore:
       - po/*
       - README.md
@@ -15,7 +15,7 @@ jobs:
       # Checkout code
       - uses: actions/checkout@v2
         with:
-          ref: main
+          ref: modernize-autoupdate
       # Install go
       - uses: actions/setup-go@v2
       - name: Install required dependencies
@@ -31,21 +31,22 @@ jobs:
           if [ -n "$MODIFIED" ]; then
             hasModif="true"
           fi
-          echo "::set-output name=modified::${hasModif}"
+          echo "modified=${hasModif}" >> $GITHUB_ENV
       - name: Create Pull Request
-        if: steps.checkpo.outputs.modified == 'true'
-        uses: peter-evans/create-pull-request@v2
+        if: ${{ env.modified == 'true' }}
+        uses: peter-evans/create-pull-request@v3
         with:
           commit-message: Auto update po files
           title: Auto update po files
           labels: po, automated pr
-          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+main+automatically%22) by GitHub Action"
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+modernize-autoupdate+automatically%22) by GitHub Action"
           branch: auto-update-po
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch
-        if: steps.checkpo.outputs.modified == 'true'
+        if: ${{ env.modified == 'true' }}
         run: |
-          git push origin auto-update-po:main
+          git push origin auto-update-po:modernize-autoupdate
+          git push origin --delete auto-update-po
 
   update-readme:
     name: Update readme file
@@ -56,7 +57,7 @@ jobs:
       # Checkout code
       - uses: actions/checkout@v2
         with:
-          ref: main
+          ref: modernize-autoupdate
       # Install go
       - uses: actions/setup-go@v2
       # Try updating README
@@ -70,18 +71,19 @@ jobs:
           if [ -n "$MODIFIED" ]; then
             hasModif="true"
           fi
-          echo "::set-output name=modified::${hasModif}"
+          echo "modified=${hasModif}" >> $GITHUB_ENV
       - name: Create Pull Request
-        if: steps.checkreadme.outputs.modified == 'true'
-        uses: peter-evans/create-pull-request@v2
+        if: ${{ env.modified == 'true' }}
+        uses: peter-evans/create-pull-request@v3
         with:
           commit-message: Auto update readme files
           title: Auto update readme files
           labels: readme, automated pr
-          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+main+automatically%22) by GitHub Action"
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+modernize-autoupdate+automatically%22) by GitHub Action"
           branch: auto-update-readme
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch
-        if: steps.checkreadme.outputs.modified == 'true'
+        if: ${{ env.modified == 'true' }}
         run: |
-          git push origin auto-update-readme:main
+          git push origin auto-update-readme:modernize-autoupdate
+          git push origin --delete auto-update-readme
