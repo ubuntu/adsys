@@ -9,7 +9,7 @@ import (
 func (a *App) installService() {
 	cmd := &cobra.Command{
 		Use:   "service COMMAND",
-		Short: i18n.G("Service management"),
+		Short: i18n.G("Service madnagement"),
 		Args:  cmdhandler.SubcommandsRequiredWithSuggestions,
 		Run:   cmdhandler.NoCmd,
 	}
