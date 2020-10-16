@@ -51,13 +51,6 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func() error) (
 	viper.AddConfigPath("./")
 	viper.AddConfigPath("$HOME/")
 	viper.AddConfigPath("/etc/")
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		log.Infof("Config file %s changed. Reloading.", e.Name)
-		if err := refreshConfig(); err != nil {
-			log.Warningf("Error while refreshing configuration: %v", err)
-		}
-	})
 	if err := viper.ReadInConfig(); err != nil {
 		var e viper.ConfigFileNotFoundError
 		if errors.As(err, &e) {
@@ -65,6 +58,14 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func() error) (
 		} else {
 			return fmt.Errorf("invalid configuration file: %v", err)
 		}
+	} else {
+		viper.WatchConfig()
+		viper.OnConfigChange(func(e fsnotify.Event) {
+			log.Infof("Config file %s changed. Reloading.", e.Name)
+			if err := refreshConfig(); err != nil {
+				log.Warningf("Error while refreshing configuration: %v", err)
+			}
+		})
 	}
 
 	viper.SetEnvPrefix(name)
