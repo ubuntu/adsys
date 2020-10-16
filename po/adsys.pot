@@ -1,0 +1,78 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the adsys package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: adsys\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-10-16 11:41+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: internal/cmdhandler/suggest.go:53
+msgid "\t%v\n"
+msgstr ""
+
+#: cmd/adsysd/client/version.go:23 cmd/adsysd/daemon/version.go:23
+#, c-format
+msgid "%s\t%s"
+msgstr ""
+
+#: internal/cmdhandler/suggest.go:14
+#, c-format
+msgid "%s requires a valid subcommand"
+msgstr ""
+
+#: internal/cmdhandler/suggest.go:58
+#, c-format
+msgid "%s. %s"
+msgstr ""
+
+#: cmd/adsysd/client/client.go:35
+msgid "AD integration client"
+msgstr ""
+
+#: cmd/adsysd/daemon/daemon.go:35
+msgid "AD integration daemon"
+msgstr ""
+
+#: internal/cmdhandler/cmdhandler.go:20
+#, c-format
+msgid "Alias of %s"
+msgstr ""
+
+#: internal/cmdhandler/suggest.go:51
+msgid "Did you mean this?\n"
+msgstr ""
+
+#: internal/cmdhandler/cmdhandler.go:33
+msgid "Generates bash completion scripts"
+msgstr ""
+
+#: cmd/adsysd/client/version.go:14
+msgid "Returns version of client and service"
+msgstr ""
+
+#: cmd/adsysd/daemon/version.go:14
+msgid "Returns version of service and exits"
+msgstr ""
+
+#: cmd/adsysd/client/service.go:12
+msgid "Service management"
+msgstr ""
+
+#: cmd/adsysd/main.go:61
+msgid "Service took too long to respond. Disconnecting client."
+msgstr ""
+
+#: internal/cmdhandler/cmdhandler.go:52
+msgid "issue INFO (-v) and DEBUG (-vv) output"
+msgstr ""
