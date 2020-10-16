@@ -21,7 +21,7 @@ func main() {
 
 type app interface {
 	Run() error
-	Err() error
+	UsageError() bool
 	Hup() bool
 	Quit()
 }
@@ -33,25 +33,26 @@ func run(args []string) int {
 	switch filepath.Base(args[0]) {
 	case daemon.CmdName:
 		a = daemon.New()
-	case client.CmdName:
+	default:
 		a = client.New()
 	}
+	//a = daemon.New()
 
 	installSignalHandler(a)
 
 	if err := a.Run(); err != nil {
 		// This is a usage Error (we don't prefix E commands other than usage)
-		// Usage error should be the same format than other errors
-		log.SetFormatter(&log.TextFormatter{
-			DisableLevelTruncation: true,
-			DisableTimestamp:       true,
-		})
-		log.Error(err)
-		return 2
-	}
+		// Usage error should be the same format than other errors and we didn’t setup the logger yet.
+		if a.UsageError() {
+			log.SetFormatter(&log.TextFormatter{
+				DisableLevelTruncation: true,
+				DisableTimestamp:       true,
+			})
+			log.Error(err)
+			return 2
+		}
 
-	err := a.Err()
-	if err != nil {
+		// User or runtime error.
 		if errors.Is(err, context.Canceled) {
 			err = errors.New(i18n.G("Service took too long to respond. Disconnecting client."))
 		}
