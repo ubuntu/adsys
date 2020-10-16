@@ -57,11 +57,11 @@ adsysctl completion [flags]
 
 #### adsysctl service
 
-Service management
+Service madnagement
 
 ##### Synopsis
 
-Service management
+Service madnagement
 
 ```
 adsysctl service COMMAND [flags]
