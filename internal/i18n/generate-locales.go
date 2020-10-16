@@ -22,7 +22,7 @@ const usage = `Usage of %s:
    update-po POT DIRECTORY
      Create/Update a pot file and refresh any existing po files in DIRECTORY.
    generate-mo DOMAIN PODIR DIRECTORY
-     Create .mo files for any .po in POTDIR in an structured hierarchy in DIRECTORY.
+     Create .mo files for any .po in PODIR in an structured hierarchy in DIRECTORY.
 `
 
 func main() {
@@ -43,7 +43,7 @@ func main() {
 		}
 
 	case "update-po":
-		if len(os.Args) != 3 {
+		if len(os.Args) != 4 {
 			log.Fatalf(usage, os.Args[0])
 		}
 		if generators.InstallOnlyMode() {
