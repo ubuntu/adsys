@@ -68,3 +68,21 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           file: ./coverage.txt
+
+  generators:
+    name: Generated files are up to date
+    runs-on: ubuntu-latest
+    container: ubuntu:latest
+    steps:
+      # Add dependencies
+      - name: Install dependencies
+        run: |
+          apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc protobuf-compiler golang-goprotobuf-dev gettext git
+      - uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.15'
+      - name: Check generated files
+        run: ./.github/ci/check-generate
