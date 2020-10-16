@@ -14,9 +14,17 @@ const CmdName = "adsysctl"
 
 // App encapsulate commands and options of the CLI, which can be controlled by env variables.
 type App struct {
-	rootCmd   cobra.Command
-	verbosity int
-	err       error
+	rootCmd cobra.Command
+
+	config daemonConfig
+}
+
+type daemonConfig struct {
+	Verbose int
+}
+
+func (c daemonConfig) Verbosity() int {
+	return c.Verbose
 }
 
 // New registers commands and return a new App.
@@ -26,8 +34,12 @@ func New() *App {
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
 		Short: i18n.G("AD integration client"),
 		Long:  i18n.G(`Active Directory integration bridging toolset command line tool.`),
-		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			config.SetVerboseMode(a.verbosity)
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// command parsing has been successfull. Returns runtime (or configuration) error now and so, don’t print usage.
+			a.rootCmd.SilenceUsage = true
+			return config.Configure("adsys", a.rootCmd, func() error {
+				return config.DefaultLoadConfig(&a.config)
+			})
 		},
 		Args: cmdhandler.SubcommandsRequiredWithSuggestions,
 		Run:  cmdhandler.NoCmd,
@@ -35,7 +47,7 @@ func New() *App {
 		SilenceErrors: true,
 	}
 
-	cmdhandler.InstallVerboseFlag(&a.rootCmd, &a.verbosity)
+	cmdhandler.InstallVerboseFlag(&a.rootCmd)
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
@@ -46,13 +58,13 @@ func New() *App {
 }
 
 // Run executes the command and associated process. It returns an error on syntax/usage error.
-func (a App) Run() error {
+func (a *App) Run() error {
 	return a.rootCmd.Execute()
 }
 
-// Err returns the potential error returned by the command.
-func (a App) Err() error {
-	return a.err
+// UsageError returns if the error is a command parsing or runtime one.
+func (a App) UsageError() bool {
+	return !a.rootCmd.SilenceUsage
 }
 
 // Hup call Quit() and return true to signal quitting.
