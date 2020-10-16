@@ -15,6 +15,10 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
+//go:generate go run ../generate_compl_man_readme.go completion ../../generated
+//go:generate go run ../generate_compl_man_readme.go man ../../generated
+//go:generate go run ../generate_compl_man_readme.go update-readme
+
 func main() {
 	os.Exit(run(os.Args))
 }
