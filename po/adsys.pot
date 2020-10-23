@@ -26,6 +26,10 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
+#: internal/grpc/logstreamer/server.go:110
+msgid "%s isn't a boolean: %v"
+msgstr ""
+
 #: internal/cmdhandler/suggest.go:14
 #, c-format
 msgid "%s requires a valid subcommand"
@@ -49,12 +53,28 @@ msgstr ""
 msgid "Alias of %s"
 msgstr ""
 
+#: internal/grpc/logstreamer/server.go:47
+#, c-format
+msgid "Connecting as [[%s]]"
+msgstr ""
+
 #: internal/cmdhandler/suggest.go:51
 msgid "Did you mean this?\n"
 msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:33
 msgid "Generates bash completion scripts"
+msgstr ""
+
+#: internal/grpc/logstreamer/server.go:91
+msgid ""
+"Invalid metdata from client: %v\n"
+". Please use the StreamClientInterceptor."
+msgstr ""
+
+#: internal/grpc/logstreamer/server.go:50
+#, c-format
+msgid "New connection from client [[%s]]"
 msgstr ""
 
 #: cmd/adsysd/client/version.go:14
@@ -73,6 +93,31 @@ msgstr ""
 msgid "Service took too long to respond. Disconnecting client."
 msgstr ""
 
+#: internal/grpc/logstreamer/server.go:48
+msgid "couldn't send initial connection log to client"
+msgstr ""
+
+#: internal/grpc/logstreamer/log.go:146
+msgid "couldn't send logs to client"
+msgstr ""
+
+#: internal/grpc/logstreamer/log.go:153
+msgid "couldn't send logs to client: %v"
+msgstr ""
+
+#: internal/grpc/logstreamer/server.go:122
+msgid "invalid metadata %s for incoming request: %q"
+msgstr ""
+
 #: internal/cmdhandler/cmdhandler.go:52
 msgid "issue INFO (-v) and DEBUG (-vv) output"
+msgstr ""
+
+#: internal/grpc/logstreamer/server.go:98
+msgid "missing client metadata"
+msgstr ""
+
+#: internal/grpc/logstreamer/server.go:119
+#, c-format
+msgid "missing metadata %s for incoming request"
 msgstr ""
