@@ -26,7 +26,7 @@ func StreamClientInterceptor(logger *logrus.Logger) grpc.StreamClientInterceptor
 			clientIDKey, clientID,
 			clientWantCallerKey, reportCallerMsg)
 		clientStream, err := streamer(ctx, desc, cc, method, opts...)
-		return logClientStream{
+		return &logClientStream{
 			ClientStream: clientStream,
 			logger:       logger,
 			callerMu:     sync.Mutex{},
@@ -41,7 +41,7 @@ type logClientStream struct {
 }
 
 // RecvMsg is used to intercept log messages from server before hitting the client
-func (ss logClientStream) RecvMsg(m interface{}) error {
+func (ss *logClientStream) RecvMsg(m interface{}) error {
 	for {
 		if err := ss.ClientStream.RecvMsg(m); err != nil {
 			return err
