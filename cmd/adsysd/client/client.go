@@ -39,7 +39,11 @@ func New() *App {
 			// command parsing has been successfull. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
 			return config.Configure("adsys", a.rootCmd, func() error {
-				return config.DefaultLoadConfig(&a.config)
+				if err := config.DefaultLoadConfig(&a.config); err != nil {
+					return err
+				}
+				config.SetVerboseMode(a.config.Verbose)
+				return nil
 			})
 		},
 		Args: cmdhandler.SubcommandsRequiredWithSuggestions,
