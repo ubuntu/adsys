@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 
 	proto "github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
@@ -15,12 +16,11 @@ import (
 
 // StreamClientInterceptor allows to tag the client with an unique ID and request the server
 // to stream back to the client logs corresponding to that request to the given logger.
-// Log levels and other options are directly set on the logger.
-// reportCaller allows to report the real remote caller name. This function will call SetReportCaller(false) on the logger then.
-func StreamClientInterceptor(logger *logrus.Logger, reportCaller bool) grpc.StreamClientInterceptor {
+// It will use ReportCaller value from logger to decide if we print the callstack (first frame outside
+// of that package)
+func StreamClientInterceptor(logger *logrus.Logger) grpc.StreamClientInterceptor {
 	clientID := strconv.Itoa(os.Getpid())
-	logger.SetReportCaller(false)
-	reportCallerMsg := strconv.FormatBool(reportCaller)
+	reportCallerMsg := strconv.FormatBool(logger.ReportCaller)
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		ctx = metadata.AppendToOutgoingContext(ctx,
 			clientIDKey, clientID,
@@ -29,13 +29,15 @@ func StreamClientInterceptor(logger *logrus.Logger, reportCaller bool) grpc.Stre
 		return logClientStream{
 			ClientStream: clientStream,
 			logger:       logger,
+			callerMu:     sync.Mutex{},
 		}, err
 	}
 }
 
 type logClientStream struct {
 	grpc.ClientStream
-	logger *logrus.Logger
+	logger   *logrus.Logger
+	callerMu sync.Mutex
 }
 
 // RecvMsg is used to intercept log messages from server before hitting the client
@@ -65,7 +67,16 @@ func (ss logClientStream) RecvMsg(m interface{}) error {
 			if err != nil {
 				return fmt.Errorf("client received an invalid debug log level: %s", logMsg.Level)
 			}
+
+			reportCaller := ss.logger.ReportCaller
+			ss.logger.SetReportCaller(false)
+			// We are controlling and unwrapping the caller ourself outside of this package.
+			// As logrus doesn't allow to specify which package to exclude manually, do it there.
+			// https://github.com/sirupsen/logrus/issues/867
 			ss.logger.Log(level, logMsg.Msg)
+			// Restore if we use direct calls
+			ss.logger.SetReportCaller(reportCaller)
+
 			// this message doesn’t concern the client, treat next one
 			continue
 

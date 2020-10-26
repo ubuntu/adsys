@@ -3,6 +3,7 @@ package logstreamer
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -10,7 +11,7 @@ import (
 
 const (
 	localLogFormatWithID = "[[%s]] %s"
-	logFormatWithCaller  = "[%s] %s"
+	logFormatWithCaller  = "%s %s"
 )
 
 // Debug logs at the DEBUG level.
@@ -109,7 +110,7 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	msg := fmt.Sprint(args...)
 	localMsg, remoteMsg := msg, msg
 
-	var callerForLocal, callerForRemote bool
+	var callerForRemote bool
 	var sendStream sendStreamFn
 	var idRequest string
 	localLogger := logrus.StandardLogger()
@@ -118,13 +119,15 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	if withRemote {
 		sendStream = logCtx.sendStream
 
-		callerForLocal = logCtx.withCallerForLocal
 		callerForRemote = logCtx.withCallerForRemote
 		localLogger = logCtx.localLogger
 		idRequest = logCtx.idRequest
-	} else {
-		callerForLocal = logrus.StandardLogger().ReportCaller
 	}
+
+	// We are controlling and unwrapping the caller ourself outside of this package.
+	// As logrus doesn't allow to specify which package to exclude manually, do it there.
+	// https://github.com/sirupsen/logrus/issues/867
+	callerForLocal := localLogger.ReportCaller
 
 	// Handle call stack collect
 	if callerForLocal || callerForRemote {
@@ -147,6 +150,10 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	}
 }
 
+var (
+	callerMu = sync.Mutex{}
+)
+
 func logLocallyMaybeRemote(level logrus.Level, sendStream sendStreamFn, remoteMsg string, localLogger *logrus.Logger, localMsg string) (err error) {
 	defer func() {
 		if err != nil {
@@ -154,7 +161,14 @@ func logLocallyMaybeRemote(level logrus.Level, sendStream sendStreamFn, remoteMs
 		}
 	}()
 
+	callerMu.Lock()
+	callerForLocal := localLogger.ReportCaller
+	localLogger.SetReportCaller(false)
 	localLogger.Log(level, localMsg)
+	// Reset value for next call
+	localLogger.SetReportCaller(callerForLocal)
+	callerMu.Unlock()
+
 	if sendStream != nil {
 		if err = sendStream(level.String(), remoteMsg); err != nil {
 			return err

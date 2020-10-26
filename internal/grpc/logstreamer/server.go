@@ -22,16 +22,13 @@ type logContext struct {
 	sendStream          sendStreamFn
 	withCallerForRemote bool
 	localLogger         *logrus.Logger
-	withCallerForLocal  bool
 }
 
-// StreamServerInterceptor wrap the server stream to create a new dedicated logger to stream back the logs.
+// StreamServerInterceptor wraps the server stream to create a new dedicated logger to stream back the logs.
 // It will use serverLogger to log locally the same messages, prefixing by the request ID.
-// reportCaller allows to report the real caller name. This function will call SetReportCaller(false) on the logger then.
-func StreamServerInterceptor(localLogger *logrus.Logger, reportCaller bool) func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	// We are controlling and unwrapping the caller ourself outside of this package. As logrus doesn't allow to specify
-	// which package to exclude manually, do it there.
-	localLogger.SetReportCaller(false)
+// It will use ReportCaller value from localLogger to decide if we print the callstack (first frame outside
+// of that package)
+func StreamServerInterceptor(localLogger *logrus.Logger) func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		clientID, withCaller, err := extractMetaFromContext(ss.Context())
 		if err != nil {
@@ -45,9 +42,9 @@ func StreamServerInterceptor(localLogger *logrus.Logger, reportCaller bool) func
 		// create and log request ID
 		idRequest := fmt.Sprintf("%s:%s", clientID, createID())
 		if err := ssLogs.sendLogs(logrus.DebugLevel.String(), fmt.Sprintf(i18n.G("Connecting as [[%s]]"), idRequest)); err != nil {
-			localLogger.Warningf(localLogFormatWithID, i18n.G("couldn't send initial connection log to client"))
+			localLogger.Warningf(localLogFormatWithID, i18n.G("Couldn't send initial connection log to client"))
 		}
-		localLogger.Infof(i18n.G("New connection from client [[%s]]"), idRequest)
+		Infof(context.Background(), i18n.G("New connection from client [[%s]]"), idRequest)
 
 		// attach stream logger options to context so that we can log locally and remotely from context
 		ssLogs.ctx = context.WithValue(ss.Context(), logContextKey, logContext{
@@ -55,7 +52,6 @@ func StreamServerInterceptor(localLogger *logrus.Logger, reportCaller bool) func
 			sendStream:          ssLogs.sendLogs,
 			withCallerForRemote: withCaller,
 			localLogger:         localLogger,
-			withCallerForLocal:  reportCaller,
 		})
 
 		return handler(srv, ssLogs)
