@@ -9,4 +9,7 @@ const (
 var (
 	// Version is the version of the executable
 	Version = "dev"
+
+	// DefaultSocket is the default socket path
+	DefaultSocket = "/tmp/socket.default"
 )
