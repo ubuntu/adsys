@@ -74,17 +74,10 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func() error) (
 	return nil
 }
 
-type verboser interface {
-	Verbosity() int
-}
-
-// DefaultLoadConfig takes c and unmarshall the config to it. It also switch verbositty is c has a Verbosity() method
+// DefaultLoadConfig takes c and unmarshall the config to it.
 func DefaultLoadConfig(c interface{}) error {
 	if err := viper.Unmarshal(&c); err != nil {
 		return fmt.Errorf("unable to decode configuration into struct: %v", err)
-	}
-	if c, ok := c.(verboser); ok {
-		SetVerboseMode(c.Verbosity())
 	}
 	return nil
 }
