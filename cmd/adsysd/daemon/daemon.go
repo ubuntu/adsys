@@ -21,6 +21,7 @@ type App struct {
 
 type daemonConfig struct {
 	Verbose int
+	Socket  string
 }
 
 func (c daemonConfig) Verbosity() int {
@@ -49,6 +50,7 @@ func New() *App {
 	}
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd)
+	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
