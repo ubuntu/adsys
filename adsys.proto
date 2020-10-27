@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "github.com/ubuntu/adsys";
+
+service service {
+  rpc Version(ClientRequest) returns (stream VersionResponse);
+  rpc Foo(ClientRequest) returns (Empty);
+}
+
+message Empty {}
+
+message VersionResponse {
+  int32 bla = 1;
+  string version = 2;
+}
+
+message ClientRequest {
+  string foo = 1;
+}
+
