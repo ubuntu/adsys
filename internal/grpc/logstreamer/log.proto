@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/ubuntu/adsys/internal/grpc/logstreamer";
+option go_package = "github.com/ubuntu/adsys/internal/grpc/log";
 
 message Log {
   // use logHeader instead of header as the result will be polymorphic and we want
