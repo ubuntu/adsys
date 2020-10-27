@@ -8,7 +8,10 @@ import (
 
 	"github.com/coreos/go-systemd/activation"
 	"github.com/coreos/go-systemd/daemon"
+	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
+	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
+	"github.com/ubuntu/adsys/internal/grpc/interceptorschainer"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"google.golang.org/grpc"
@@ -133,7 +136,10 @@ func (s *Server) Listen() error {
 		}
 
 		// Load a new server
-		srv := grpc.NewServer()
+		srv := grpc.NewServer(grpc.StreamInterceptor(
+			interceptorschainer.ChainStreamServerInterceptors(
+				connectionnotify.StreamServerInterceptor,
+				log.StreamServerInterceptor(logrus.StandardLogger()))))
 		adsys.RegisterServiceServer(srv, s)
 		s.grpcserver = srv
 
