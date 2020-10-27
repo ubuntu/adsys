@@ -54,11 +54,15 @@ func New() *App {
 				}
 
 				oldVerbose := a.config.Verbose
+				oldSocket := a.config.Socket
 				a.config = newConfig
 
 				// Reload necessary parts
 				if oldVerbose != a.config.Verbose {
 					config.SetVerboseMode(a.config.Verbose)
+				}
+				if oldSocket != a.config.Socket {
+					a.changeServerSocket(a.config.Socket)
 				}
 				return nil
 			})
@@ -84,6 +88,15 @@ func New() *App {
 	a.installVersion()
 
 	return &a
+}
+
+// changeServerSocket change the socket on server.
+func (a *App) changeServerSocket(socket string) error {
+	if a.attachedServer == nil {
+		return nil
+	}
+	fmt.Println(socket)
+	return a.attachedServer.UseSocket(socket)
 }
 
 // Run executes the command and associated process. It returns an error on syntax/usage error.
