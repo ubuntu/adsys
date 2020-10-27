@@ -9,6 +9,7 @@ import (
 	"github.com/ubuntu/adsys/internal/config"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/service"
 )
 
 // CmdName is the binary name for the daemon.
@@ -18,7 +19,8 @@ const CmdName = "adsysd"
 type App struct {
 	rootCmd cobra.Command
 
-	config daemonConfig
+	config         daemonConfig
+	attachedServer *service.Server
 }
 
 type daemonConfig struct {
@@ -62,8 +64,14 @@ func New() *App {
 			})
 		},
 
-		Args: cmdhandler.SubcommandsRequiredWithSuggestions,
-		Run:  cmdhandler.NoCmd,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+			a.attachedServer, err = service.New(a.config.Socket)
+			if err != nil {
+				return err
+			}
+			return a.attachedServer.Listen()
+		},
 		// We display usage error ourselves
 		SilenceErrors: true,
 	}
@@ -95,6 +103,7 @@ func (a App) Hup() (shouldQuit bool) {
 
 // Quit gracefully shutdown the service.
 func (a App) Quit() {
+	a.attachedServer.Quit()
 }
 
 // RootCmd returns a copy of the root command for the app. Shouldn’t be in general necessary apart when running generators.
