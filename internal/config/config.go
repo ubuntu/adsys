@@ -27,8 +27,9 @@ func SetVerboseMode(level int) {
 
 // Configure sets verbosity level and add config env variables and file support based on name prefix.
 // It call the refreshConfig function so that you can deserialized the configuration and returns any error.
-// It automatically watches any configuration changes and will call refreshConfig.
-func Configure(name string, rootCmd cobra.Command, refreshConfig func() error) (err error) {
+// It automatically watches any configuration changes and will call refreshConfig with the config file that changed
+// passed as an argument. No config path is the inital loading.
+func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath string) error) (err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("couldn't load configuration: %v", err)
@@ -57,8 +58,10 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func() error) (
 	} else {
 		viper.WatchConfig()
 		viper.OnConfigChange(func(e fsnotify.Event) {
-			log.Infof("Config file %s changed. Reloading.", e.Name)
-			if err := refreshConfig(); err != nil {
+			if e.Op != fsnotify.Write {
+				return
+			}
+			if err := refreshConfig(e.Name); err != nil {
 				log.Warningf("Error while refreshing configuration: %v", err)
 			}
 		})
@@ -67,7 +70,7 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func() error) (
 	viper.SetEnvPrefix(name)
 	viper.AutomaticEnv()
 
-	if err := refreshConfig(); err != nil {
+	if err := refreshConfig(""); err != nil {
 		return fmt.Errorf("error while refreshing configuration: %v", err)
 	}
 

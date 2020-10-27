@@ -1,11 +1,13 @@
 package daemon
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
@@ -24,7 +26,6 @@ type daemonConfig struct {
 	Socket  string
 }
 
-
 // New registers commands and return a new App.
 func New() *App {
 	a := App{}
@@ -35,11 +36,28 @@ func New() *App {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// command parsing has been successfull. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
-			return config.Configure("adsys", a.rootCmd, func() error {
-				if err := config.DefaultLoadConfig(&a.config); err != nil {
+			return config.Configure("adsys", a.rootCmd, func(configPath string) error {
+				var newConfig daemonConfig
+				if err := config.DefaultLoadConfig(&newConfig); err != nil {
 					return err
 				}
-				config.SetVerboseMode(a.config.Verbose)
+
+				// config reload
+				if configPath != "" {
+					// No change in config file: skip.
+					if a.config == newConfig {
+						return nil
+					}
+					log.Infof(context.Background(), "Config file %q changed. Reloading.", configPath)
+				}
+
+				oldVerbose := a.config.Verbose
+				a.config = newConfig
+
+				// Reload necessary parts
+				if oldVerbose != a.config.Verbose {
+					config.SetVerboseMode(a.config.Verbose)
+				}
 				return nil
 			})
 		},
