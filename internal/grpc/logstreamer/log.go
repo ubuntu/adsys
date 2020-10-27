@@ -1,4 +1,4 @@
-package logstreamer
+package log
 
 import (
 	"context"
