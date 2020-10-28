@@ -83,6 +83,8 @@ func New(socket string, opts ...option) (s *Server, err error) {
 		return nil, fmt.Errorf(i18n.G("unexpected number of systemd socket activation (%d != 1)"), len(listeners))
 	}
 
+	registerGRPCServer(s)
+
 	return s, nil
 }
 
@@ -135,25 +137,29 @@ func (s *Server) Listen() error {
 			break
 		}
 
-		// Load a new server
-		srv := grpc.NewServer(grpc.StreamInterceptor(
-			interceptorschainer.ChainStreamServerInterceptors(
-				connectionnotify.StreamServerInterceptor,
-				log.StreamServerInterceptor(logrus.StandardLogger()))))
-		adsys.RegisterServiceServer(srv, s)
-		s.grpcserver = srv
-
 		log.Infof(context.Background(), i18n.G("Serving on %s"), lis.Addr().String())
 		if err := (s.grpcserver.Serve(lis)); err != nil {
 			return fmt.Errorf("unable to start GRPC server: %s", err)
 		}
+		registerGRPCServer(s)
 	}
 	log.Debug(context.Background(), i18n.G("Quitting"))
 
 	return nil
 }
 
-// Quit gracefully quit and stops the grpc server
+// registerGRPCServer register our server with the new interceptor chains
+func registerGRPCServer(s *Server) *grpc.Server {
+	srv := grpc.NewServer(grpc.StreamInterceptor(
+		interceptorschainer.ChainStreamServerInterceptors(
+			connectionnotify.StreamServerInterceptor,
+			log.StreamServerInterceptor(logrus.StandardLogger()))))
+	adsys.RegisterServiceServer(srv, s)
+	s.grpcserver = srv
+	return srv
+}
+
+// Quit gracefully quits listening loop and stops the grpc server
 func (s *Server) Quit() {
 	close(s.lis)
 	s.stop()
