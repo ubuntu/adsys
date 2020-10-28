@@ -15,8 +15,8 @@ func TestNoNotification(t *testing.T) {
 
 	callOrder := 1
 
-	// the server doesn’t have any method and so, shouldn’t get a panic trying to call the notify methods
-	s := struct{}{}
+	// the pingued object doesn’t have any method and so, shouldn’t get a panic trying to call the notify methods
+	pingued, s := struct{}{}, struct{}{}
 
 	var handlerCalled int
 	handler := func(srv interface{}, stream grpc.ServerStream) error {
@@ -25,18 +25,18 @@ func TestNoNotification(t *testing.T) {
 		return nil
 	}
 
-	err := connectionnotify.StreamServerInterceptor(s, nil, nil, handler)
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
 	require.NoError(t, err, "StreamServerInterceptor returned an error when expecting none")
 
 	assert.Equal(t, 1, handlerCalled, "handler was expected to be called at pos 1")
 }
 
-type newConnectionServer struct {
+type newConnectionPingued struct {
 	globalCallOrder          *int
 	newConnectionCalledCount int
 }
 
-func (n *newConnectionServer) OnNewConnection(info *grpc.StreamServerInfo) {
+func (n *newConnectionPingued) OnNewConnection(info *grpc.StreamServerInfo) {
 	// store current count and increment the global one
 	n.newConnectionCalledCount = *n.globalCallOrder
 	*n.globalCallOrder++
@@ -45,9 +45,9 @@ func (n *newConnectionServer) OnNewConnection(info *grpc.StreamServerInfo) {
 func TestNewConnectionNotification(t *testing.T) {
 	t.Parallel()
 
-	// the server doesn’t have any method and so, shouldn’t get a panic trying to call the notify methods
 	callOrder := 1
-	s := &newConnectionServer{globalCallOrder: &callOrder}
+	pingued := &newConnectionPingued{globalCallOrder: &callOrder}
+	s := struct{}{}
 
 	var handlerCalled int
 	handler := func(srv interface{}, stream grpc.ServerStream) error {
@@ -57,19 +57,19 @@ func TestNewConnectionNotification(t *testing.T) {
 		return nil
 	}
 
-	err := connectionnotify.StreamServerInterceptor(s, nil, nil, handler)
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
 	require.NoError(t, err, "StreamServerInterceptor returned an error when expecting none")
 
-	assert.Equal(t, 1, s.newConnectionCalledCount, "onNewConnection was called first at pos 1")
+	assert.Equal(t, 1, pingued.newConnectionCalledCount, "onNewConnection was called first at pos 1")
 	assert.Equal(t, 2, handlerCalled, "handler was then called at pos 2")
 }
 
-type doneConnectionServer struct {
+type doneConnectionPingued struct {
 	globalCallOrder           *int
 	doneConnectionCalledCount int
 }
 
-func (n *doneConnectionServer) OnDoneConnection(info *grpc.StreamServerInfo) {
+func (n *doneConnectionPingued) OnDoneConnection(info *grpc.StreamServerInfo) {
 	// store current count and increment the global one
 	n.doneConnectionCalledCount = *n.globalCallOrder
 	*n.globalCallOrder++
@@ -78,9 +78,9 @@ func (n *doneConnectionServer) OnDoneConnection(info *grpc.StreamServerInfo) {
 func TestDoneConnectionNotification(t *testing.T) {
 	t.Parallel()
 
-	// the server doesn’t have any method and so, shouldn’t get a panic trying to call the notify methods
 	callOrder := 1
-	s := &doneConnectionServer{globalCallOrder: &callOrder}
+	pingued := &doneConnectionPingued{globalCallOrder: &callOrder}
+	s := struct{}{}
 
 	var handlerCalled int
 	handler := func(srv interface{}, stream grpc.ServerStream) error {
@@ -90,23 +90,23 @@ func TestDoneConnectionNotification(t *testing.T) {
 		return nil
 	}
 
-	err := connectionnotify.StreamServerInterceptor(s, nil, nil, handler)
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
 	require.NoError(t, err, "StreamServerInterceptor returned an error when expecting none")
 
 	assert.Equal(t, 1, handlerCalled, "handler was called first at pos 1")
-	assert.Equal(t, 2, s.doneConnectionCalledCount, "onDoneConnection was called after the handler at pos 2")
+	assert.Equal(t, 2, pingued.doneConnectionCalledCount, "onDoneConnection was called after the handler at pos 2")
 
 }
 
 func TestErrorFromHandlerReturned(t *testing.T) {
 	t.Parallel()
 
-	s := struct{}{}
+	pingued, s := struct{}{}, struct{}{}
 
 	handler := func(srv interface{}, stream grpc.ServerStream) error {
 		return errors.New("Any error")
 	}
 
-	err := connectionnotify.StreamServerInterceptor(s, nil, nil, handler)
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
 	require.NotNil(t, err, "StreamServerInterceptor should return the handler error")
 }
