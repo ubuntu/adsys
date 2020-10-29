@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func TestServerStartStop(t *testing.T) {
+func TestStartStop(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -40,7 +40,7 @@ func TestServerStartStop(t *testing.T) {
 	require.Equal(t, s, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
 }
 
-func TestServerStopBeforeServe(t *testing.T) {
+func TestStopBeforeServe(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -55,7 +55,7 @@ func TestServerStopBeforeServe(t *testing.T) {
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called during creation")
 }
 
-func TestServerChangeSocket(t *testing.T) {
+func TestChangeSocket(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -90,7 +90,7 @@ func TestServerChangeSocket(t *testing.T) {
 	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
 }
 
-func TestServerSocketActivation(t *testing.T) {
+func TestSocketActivation(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -190,7 +190,7 @@ func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
 	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
 }
 
-func TestServerSdNotifier(t *testing.T) {
+func TestSdNotifier(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -243,7 +243,7 @@ func TestServerSdNotifier(t *testing.T) {
 	}
 }
 
-func TestServerFailingOption(t *testing.T) {
+func TestFailingOption(t *testing.T) {
 	t.Parallel()
 
 	grpcRegister := &grpcServiceRegister{}
@@ -252,7 +252,7 @@ func TestServerFailingOption(t *testing.T) {
 	require.NotNil(t, err, "Expected New to fail as an option failed")
 }
 
-func TestServerCannotCreateSocket(t *testing.T) {
+func TestCannotCreateSocket(t *testing.T) {
 	t.Parallel()
 
 	grpcRegister := &grpcServiceRegister{}
