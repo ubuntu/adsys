@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/daemon"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/service"
 )
 
 // CmdName is the binary name for the daemon.
@@ -19,8 +20,8 @@ const CmdName = "adsysd"
 type App struct {
 	rootCmd cobra.Command
 
-	config         daemonConfig
-	attachedServer *service.Server
+	config daemonConfig
+	daemon *daemon.Daemon
 }
 
 type daemonConfig struct {
@@ -69,12 +70,13 @@ func New() *App {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-			a.attachedServer, err = service.New(a.config.Socket)
+			adsys := adsysservice.Service{}
+			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket)
 			if err != nil {
 				return err
 			}
-			return a.attachedServer.Listen()
+			a.daemon = d
+			return a.daemon.Listen()
 		},
 		// We display usage error ourselves
 		SilenceErrors: true,
@@ -92,11 +94,11 @@ func New() *App {
 
 // changeServerSocket change the socket on server.
 func (a *App) changeServerSocket(socket string) error {
-	if a.attachedServer == nil {
+	if a.daemon == nil {
 		return nil
 	}
 	fmt.Println(socket)
-	return a.attachedServer.UseSocket(socket)
+	return a.daemon.UseSocket(socket)
 }
 
 // Run executes the command and associated process. It returns an error on syntax/usage error.
@@ -116,7 +118,7 @@ func (a App) Hup() (shouldQuit bool) {
 
 // Quit gracefully shutdown the service.
 func (a App) Quit() {
-	a.attachedServer.Quit()
+	a.daemon.Quit()
 }
 
 // RootCmd returns a copy of the root command for the app. Shouldn’t be in general necessary apart when running generators.

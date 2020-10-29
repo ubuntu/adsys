@@ -1,26 +1,31 @@
-package service
+package daemon
 
 import (
 	"context"
 	"fmt"
 	"net"
 	"os"
+	"time"
 
 	"github.com/coreos/go-systemd/activation"
 	"github.com/coreos/go-systemd/daemon"
-	"github.com/sirupsen/logrus"
-	"github.com/ubuntu/adsys"
-	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
-	"github.com/ubuntu/adsys/internal/grpc/interceptorschainer"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"google.golang.org/grpc"
 )
 
-// Server is used to implement adsys.ServiceServer.
-type Server struct {
-	grpcserver *grpc.Server
-	adsys.UnimplementedServiceServer
+const (
+	defaultTimeout = 2 * time.Minute
+)
+
+type grpcRegisterer interface {
+}
+
+// Daemon is a grpc daemon with systemd activation, configuration changes like dynamic
+// socket listening, idling timeout functionality…
+type Daemon struct {
+	grpcserver         *grpc.Server
+	registerGRPCServer GRPCServerRegisterer
 
 	lis chan net.Listener
 
@@ -29,7 +34,8 @@ type Server struct {
 }
 
 type options struct {
-	socket string
+	socket        string
+	idlingTimeout time.Duration
 
 	// private member that we export for tests.
 	systemdActivationListener func() ([]net.Listener, error)
@@ -38,9 +44,12 @@ type options struct {
 
 type option func(*options) error
 
+// GRPCServerRegisterer is a function that the daemon will call everytime we want to build a new GRPC object
+type GRPCServerRegisterer func(srv *Daemon) *grpc.Server
+
 // New returns an new, initialized daemon server, which handles systemd activation.
 // If systemd activation is used, it will override any socket passed here.
-func New(socket string, opts ...option) (s *Server, err error) {
+func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option) (s *Daemon, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("couldn't create server: %v"), err)
@@ -49,6 +58,8 @@ func New(socket string, opts ...option) (s *Server, err error) {
 
 	// defaults
 	args := options{
+		idlingTimeout: defaultTimeout,
+
 		systemdActivationListener: activation.Listeners,
 		systemdSdNotifier:         daemon.SdNotify,
 	}
@@ -59,9 +70,10 @@ func New(socket string, opts ...option) (s *Server, err error) {
 		}
 	}
 
-	s = &Server{
-		lis:               make(chan net.Listener, 1),
-		systemdSdNotifier: args.systemdSdNotifier,
+	s = &Daemon{
+		registerGRPCServer: registerGRPCServer,
+		lis:                make(chan net.Listener, 1),
+		systemdSdNotifier:  args.systemdSdNotifier,
 	}
 
 	// systemd socket activation or local creation
@@ -83,14 +95,14 @@ func New(socket string, opts ...option) (s *Server, err error) {
 		return nil, fmt.Errorf(i18n.G("unexpected number of systemd socket activation (%d != 1)"), len(listeners))
 	}
 
-	registerGRPCServer(s)
+	s.grpcserver = s.registerGRPCServer(s)
 
 	return s, nil
 }
 
 // UseSocket listens on new given socket. If we were listening on another socket first, the connection will be teared down.
 // Note that this has no effect if we were using socket activation.
-func (s *Server) UseSocket(socket string) (err error) {
+func (s *Daemon) UseSocket(socket string) (err error) {
 	if s.useSocketActivation {
 		return nil
 	}
@@ -123,50 +135,45 @@ func (s *Server) UseSocket(socket string) (err error) {
 // It handles systemd activation notification.
 // When the server stop listening, the socket is removed automatically.
 // Configuration can be reloaded and we will then listen on the new socket
-func (s *Server) Listen() error {
+func (s *Daemon) Listen() error {
 	if sent, err := s.systemdSdNotifier(false, "READY=1"); err != nil {
-		return fmt.Errorf(i18n.G("couldn't send ready notification to systemd while supported: %v"), err)
+		return fmt.Errorf(i18n.G("couldn't send ready notification to systemd: %v"), err)
 	} else if sent {
 		log.Debug(context.Background(), i18n.G("Ready state sent to systemd"))
 	}
 
+	lis, ok := <-s.lis
+	if !ok {
+		return nil
+	}
+
 	// handle socket configuration reloading
 	for {
-		lis, ok := <-s.lis
-		if !ok {
-			break
-		}
-
 		log.Infof(context.Background(), i18n.G("Serving on %s"), lis.Addr().String())
 		if err := (s.grpcserver.Serve(lis)); err != nil {
 			return fmt.Errorf("unable to start GRPC server: %s", err)
 		}
-		registerGRPCServer(s)
+
+		// check if we need to reconnect using a new socket
+		lis, ok = <-s.lis
+		if !ok {
+			break
+		}
+		s.grpcserver = s.registerGRPCServer(s)
 	}
 	log.Debug(context.Background(), i18n.G("Quitting"))
 
 	return nil
 }
 
-// registerGRPCServer register our server with the new interceptor chains
-func registerGRPCServer(s *Server) *grpc.Server {
-	srv := grpc.NewServer(grpc.StreamInterceptor(
-		interceptorschainer.ChainStreamServerInterceptors(
-			connectionnotify.StreamServerInterceptor,
-			log.StreamServerInterceptor(logrus.StandardLogger()))))
-	adsys.RegisterServiceServer(srv, s)
-	s.grpcserver = srv
-	return srv
-}
-
 // Quit gracefully quits listening loop and stops the grpc server
-func (s *Server) Quit() {
+func (s *Daemon) Quit() {
 	close(s.lis)
 	s.stop()
 }
 
 // stop gracefully stops the grpc server
-func (s *Server) stop() {
+func (s *Daemon) stop() {
 	log.Debug(context.Background(), i18n.G("Stopping daemon requested. Wait for active requests to close"))
 	s.grpcserver.GracefulStop()
 	log.Debug(context.Background(), i18n.G("All connections are now closed"))
