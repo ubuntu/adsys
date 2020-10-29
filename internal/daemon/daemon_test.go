@@ -2,12 +2,15 @@ package daemon_test
 
 import (
 	"errors"
+	"flag"
 	"net"
+	"os"
 	"path/filepath"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/daemon"
 	"google.golang.org/grpc"
@@ -227,4 +230,14 @@ type grpcServiceRegister struct {
 func (r *grpcServiceRegister) registerGRPCServer(d *daemon.Daemon) *grpc.Server {
 	r.daemonsCalled = append(r.daemonsCalled, d)
 	return grpc.NewServer()
+}
+
+func TestMain(m *testing.M) {
+	debug := flag.Bool("verbose", false, "Print debug log level information within the test")
+	flag.Parse()
+	if *debug {
+		logrus.StandardLogger().SetLevel(logrus.DebugLevel)
+	}
+
+	os.Exit(m.Run())
 }
