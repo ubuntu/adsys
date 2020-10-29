@@ -143,10 +143,7 @@ func (s *Daemon) Listen() error {
 		log.Debug(context.Background(), i18n.G("Ready state sent to systemd"))
 	}
 
-	lis, ok := <-s.lis
-	if !ok {
-		return nil
-	}
+	lis := <-s.lis
 
 	// handle socket configuration reloading
 	for {
@@ -156,6 +153,7 @@ func (s *Daemon) Listen() error {
 		}
 
 		// check if we need to reconnect using a new socket
+		var ok bool
 		lis, ok = <-s.lis
 		if !ok {
 			break
