@@ -1,14 +1,16 @@
-package service_test
+package daemon_test
 
 import (
 	"errors"
 	"net"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/service"
+	"github.com/ubuntu/adsys/internal/daemon"
+	"google.golang.org/grpc"
 )
 
 func TestServerStartStop(t *testing.T) {
@@ -16,8 +18,11 @@ func TestServerStartStop(t *testing.T) {
 
 	dir := t.TempDir()
 
-	s, err := service.New(filepath.Join(dir, "test.sock"))
-	require.NoError(t, err, "New should return the service handler")
+	// Count the number of grpc call
+	grpcRegister := &grpcServiceRegister{}
+
+	s, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
+	require.NoError(t, err, "New should return the daemon handler")
 
 	go func() {
 		// make sure Serve() is called. Even std golang grpc has this timeout in tests
@@ -27,6 +32,9 @@ func TestServerStartStop(t *testing.T) {
 
 	err = s.Listen()
 	require.NoError(t, err, "Listen should return no error when stopped normally")
+
+	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
+	require.Equal(t, s, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
 }
 
 func TestServerStopBeforeServe(t *testing.T) {
@@ -34,10 +42,14 @@ func TestServerStopBeforeServe(t *testing.T) {
 
 	dir := t.TempDir()
 
-	s, err := service.New(filepath.Join(dir, "test.sock"))
-	require.NoError(t, err, "New should return the service handler")
+	grpcRegister := &grpcServiceRegister{}
+
+	s, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
+	require.NoError(t, err, "New should return the daemon handler")
 
 	s.Quit()
+
+	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called during creation")
 }
 
 func TestServerChangeSocket(t *testing.T) {
@@ -45,18 +57,33 @@ func TestServerChangeSocket(t *testing.T) {
 
 	dir := t.TempDir()
 
-	s, err := service.New(filepath.Join(dir, "test.sock"))
-	require.NoError(t, err, "New should return the service handler")
+	grpcRegister := &grpcServiceRegister{}
 
+	s, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
+	require.NoError(t, err, "New should return the daemon handler")
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
-		// make sure Serve() is called. Even std golang grpc has this timeout in tests
-		time.Sleep(time.Millisecond * 10)
-		s.UseSocket(filepath.Join(dir, "test2.sock"))
-		time.Sleep(time.Millisecond * 10)
-		s.Quit()
+		err = s.Listen()
+		wg.Done()
 	}()
 
-	err = s.Listen()
+	// make sure Serve() is called. Even std golang grpc has this timeout in tests
+	time.Sleep(time.Millisecond * 10)
+
+	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
+	require.Equal(t, s, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
+
+	s.UseSocket(filepath.Join(dir, "test2.sock"))
+	time.Sleep(time.Millisecond * 10)
+
+	require.Equal(t, 2, len(grpcRegister.daemonsCalled), "a new GRPC registerer has been requested")
+	require.Equal(t, s, grpcRegister.daemonsCalled[1], "GRPC registerer has the built in daemon as argument")
+
+	s.Quit()
+
+	wg.Wait()
 	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
 }
 
@@ -81,6 +108,7 @@ func TestServerSocketActivation(t *testing.T) {
 			t.Parallel()
 
 			dir := t.TempDir()
+			grpcRegister := &grpcServiceRegister{}
 
 			var listeners []net.Listener
 			for _, socket := range tc.sockets {
@@ -101,7 +129,7 @@ func TestServerSocketActivation(t *testing.T) {
 				}
 			}
 
-			s, err := service.New("/tmp/this/is/ignored", service.WithSystemdActivationListener(f))
+			s, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored", daemon.WithSystemdActivationListener(f))
 			if tc.wantErr {
 				require.NotNil(t, err, "New should return an error")
 				return
@@ -115,6 +143,8 @@ func TestServerSocketActivation(t *testing.T) {
 			}()
 			err = s.Listen()
 			require.NoError(t, err, "Listen should return no error")
+			require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called during creation")
+
 		})
 	}
 }
@@ -140,14 +170,15 @@ func TestServerSdNotifier(t *testing.T) {
 			t.Parallel()
 
 			dir := t.TempDir()
+			grpcRegister := &grpcServiceRegister{}
 
 			l, err := net.Listen("unix", filepath.Join(dir, "socket"))
 			require.NoErrorf(t, err, "setup failed: couldn't create unix socket: %v", err)
 			defer l.Close()
 
-			s, err := service.New("/tmp/this/is/ignored",
-				service.WithSystemdActivationListener(func() ([]net.Listener, error) { return []net.Listener{l}, nil }),
-				service.WithSystemdSdNotifier(func(unsetEnvironment bool, state string) (bool, error) {
+			s, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored",
+				daemon.WithSystemdActivationListener(func() ([]net.Listener, error) { return []net.Listener{l}, nil }),
+				daemon.WithSystemdSdNotifier(func(unsetEnvironment bool, state string) (bool, error) {
 					if tc.notifierFail {
 						return false, errors.New("systemd notifier error")
 					}
@@ -174,13 +205,26 @@ func TestServerSdNotifier(t *testing.T) {
 func TestServerFailingOption(t *testing.T) {
 	t.Parallel()
 
-	_, err := service.New("foo", service.FailingOption())
+	grpcRegister := &grpcServiceRegister{}
+
+	_, err := daemon.New(grpcRegister.registerGRPCServer, "foo", daemon.FailingOption())
 	require.NotNil(t, err, "Expected New to fail as an option failed")
 }
 
 func TestServerCannotCreateSocket(t *testing.T) {
 	t.Parallel()
 
-	_, err := service.New("/path/does/not/exist/daemon_test.sock")
+	grpcRegister := &grpcServiceRegister{}
+
+	_, err := daemon.New(grpcRegister.registerGRPCServer, "/path/does/not/exist/daemon_test.sock")
 	require.NotNil(t, err, "Expected New to fail as can't create socket")
+}
+
+type grpcServiceRegister struct {
+	daemonsCalled []*daemon.Daemon
+}
+
+func (r *grpcServiceRegister) registerGRPCServer(d *daemon.Daemon) *grpc.Server {
+	r.daemonsCalled = append(r.daemonsCalled, d)
+	return grpc.NewServer()
 }
