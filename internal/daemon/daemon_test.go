@@ -152,6 +152,44 @@ func TestServerSocketActivation(t *testing.T) {
 	}
 }
 
+func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	grpcRegister := &grpcServiceRegister{}
+
+	l, err := net.Listen("unix", filepath.Join(dir, "socket"))
+	require.NoErrorf(t, err, "setup failed: couldn't create unix socket: %v", err)
+	defer l.Close()
+
+	f := func() ([]net.Listener, error) {
+		return []net.Listener{l}, nil
+	}
+
+	s, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored", daemon.WithSystemdActivationListener(f))
+	require.NoError(t, err, "New should return no error")
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		err = s.Listen()
+		wg.Done()
+	}()
+
+	// make sure Serve() is called. Even std golang grpc has this timeout in tests
+	time.Sleep(time.Millisecond * 10)
+
+	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
+	s.UseSocket("/tmp/this/is/also/ignored")
+	time.Sleep(time.Millisecond * 10)
+	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "we are still using the previous GRPC registerer with the socket activated socket")
+
+	s.Quit()
+
+	wg.Wait()
+	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
+}
+
 func TestServerSdNotifier(t *testing.T) {
 	t.Parallel()
 
