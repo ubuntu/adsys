@@ -104,6 +104,7 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 // Note that this has no effect if we were using socket activation.
 func (s *Daemon) UseSocket(socket string) (err error) {
 	if s.useSocketActivation {
+		log.Debugf(context.Background(), "Call to UseSocket %q ignored: using systemd socket activation", socket)
 		return nil
 	}
 
