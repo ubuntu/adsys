@@ -14,10 +14,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	defaultTimeout = 2 * time.Minute
-)
-
 type grpcRegisterer interface {
 }
 
@@ -26,6 +22,8 @@ type grpcRegisterer interface {
 type Daemon struct {
 	grpcserver         *grpc.Server
 	registerGRPCServer GRPCServerRegisterer
+
+	idler
 
 	lis chan net.Listener
 
@@ -47,6 +45,14 @@ type option func(*options) error
 // GRPCServerRegisterer is a function that the daemon will call everytime we want to build a new GRPC object
 type GRPCServerRegisterer func(srv *Daemon) *grpc.Server
 
+// WithTimeout adds a timeout to the daemon. A 0 duration means no timeout.
+func WithTimeout(timeout time.Duration) func(o *options) error {
+	return func(o *options) error {
+		o.idlingTimeout = timeout
+		return nil
+	}
+}
+
 // New returns an new, initialized daemon server, which handles systemd activation.
 // If systemd activation is used, it will override any socket passed here.
 func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option) (d *Daemon, err error) {
@@ -58,8 +64,6 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 
 	// defaults
 	args := options{
-		idlingTimeout: defaultTimeout,
-
 		systemdActivationListener: activation.Listeners,
 		systemdSdNotifier:         daemon.SdNotify,
 	}
@@ -72,8 +76,11 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 
 	d = &Daemon{
 		registerGRPCServer: registerGRPCServer,
-		lis:                make(chan net.Listener, 1),
-		systemdSdNotifier:  args.systemdSdNotifier,
+
+		idler: newIdler(args.idlingTimeout),
+
+		lis:               make(chan net.Listener, 1),
+		systemdSdNotifier: args.systemdSdNotifier,
 	}
 
 	// systemd socket activation or local creation
