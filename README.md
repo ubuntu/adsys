@@ -21,6 +21,7 @@ adsysctl COMMAND [flags]
 
 ```
   -h, --help            help for adsysctl
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
 ```
 
@@ -52,6 +53,7 @@ adsysctl completion [flags]
 ##### Options inherited from parent commands
 
 ```
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
 ```
 
@@ -76,6 +78,7 @@ adsysctl service COMMAND [flags]
 ##### Options inherited from parent commands
 
 ```
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
 ```
 
@@ -100,6 +103,7 @@ adsysctl version [flags]
 ##### Options inherited from parent commands
 
 ```
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
 ```
 
@@ -119,6 +123,7 @@ adsysd COMMAND [flags]
 
 ```
   -h, --help            help for adsysd
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
 ```
 
@@ -150,6 +155,7 @@ adsysd completion [flags]
 ##### Options inherited from parent commands
 
 ```
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
 ```
 
@@ -174,6 +180,7 @@ adsysd version [flags]
 ##### Options inherited from parent commands
 
 ```
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
 ```
 
