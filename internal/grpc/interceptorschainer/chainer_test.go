@@ -9,6 +9,7 @@ import (
 	"github.com/ubuntu/adsys/internal/grpc/interceptorschainer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -58,6 +59,49 @@ func TestChainStreamServerInterceptors(t *testing.T) {
 	err := chain(someService, fakeStream, parentStreamInfo, handler)
 	require.Equal(t, outputError, err, "chain must return handler's error")
 	require.Equal(t, sentMessage, fakeStream.sentMessage, "handler's sent message must propagate to stream")
+}
+
+func TestChainStreamClientInterceptors(t *testing.T) {
+	t.Parallel()
+
+	someServiceName := "MyService"
+	parentContext := context.WithValue(context.TODO(), "parent", 42)
+
+	ignoredMd := metadata.Pairs("foo", "bar")
+	parentOpts := []grpc.CallOption{grpc.Header(&ignoredMd)}
+	clientStream := &fakeClientStream{}
+	fakeStreamDesc := &grpc.StreamDesc{ClientStreams: true, ServerStreams: true, StreamName: someServiceName}
+
+	first := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		requireContextValue(t, 42, ctx, "parent", "first must know the parent context value")
+		require.Equal(t, someServiceName, method, "first must know someService")
+		require.Len(t, opts, 1, "first should see parent CallOptions")
+		wrappedCtx := context.WithValue(ctx, "first", 43)
+		return streamer(wrappedCtx, desc, cc, method, opts...)
+	}
+	second := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		requireContextValue(t, 42, ctx, "parent", "second must know the parent context value")
+		requireContextValue(t, 43, ctx, "first", "second must know the first context value")
+		require.Equal(t, someServiceName, method, "second must know someService")
+		require.Len(t, opts, 1, "second should see parent CallOptions")
+		wrappedOpts := append(opts, grpc.WaitForReady(false))
+		wrappedCtx := context.WithValue(ctx, "second", 44)
+		return streamer(wrappedCtx, desc, cc, method, wrappedOpts...)
+	}
+	streamer := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		require.Equal(t, someServiceName, method, "streamer must know someService")
+		require.Equal(t, fakeStreamDesc, desc, "streamer must see the right StreamDesc")
+
+		requireContextValue(t, 42, ctx, "parent", "streamer must know the parent context value")
+		requireContextValue(t, 43, ctx, "first", "streamer must know the first context value")
+		requireContextValue(t, 44, ctx, "second", "streamer must know the second context value")
+		require.Len(t, opts, 2, "streamer should see both CallOpts from second and parent")
+		return clientStream, nil
+	}
+	chain := interceptorschainer.ChainStreamClientInterceptors(first, second)
+	someStream, err := chain(parentContext, fakeStreamDesc, nil, someServiceName, streamer, parentOpts...)
+	require.NoError(t, err, "chain must not return an error")
+	require.Equal(t, clientStream, someStream, "chain must return invokers's clientstream")
 }
 
 func requireContextValue(t *testing.T, expected interface{}, ctx context.Context, key string, msg ...interface{}) {
@@ -110,4 +154,8 @@ func (f *fakeServerStream) RecvMsg(m interface{}) error {
 		return status.Errorf(codes.NotFound, "fakeServerStream has no message, sorry")
 	}
 	return nil
+}
+
+type fakeClientStream struct {
+	grpc.ClientStream
 }
