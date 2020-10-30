@@ -42,7 +42,7 @@ func StreamServerInterceptor(localLogger *logrus.Logger) func(srv interface{}, s
 		// create and log request ID
 		idRequest := fmt.Sprintf("%s:%s", clientID, createID())
 		if err := ssLogs.sendLogs(logrus.DebugLevel.String(), fmt.Sprintf(i18n.G("Connecting as [[%s]]"), idRequest)); err != nil {
-			localLogger.Warningf(localLogFormatWithID, i18n.G("Couldn't send initial connection log to client"))
+			localLogger.Warningf(localLogFormatWithID, idRequest, i18n.G("Couldn't send initial connection log to client"))
 		}
 		Infof(context.Background(), i18n.G("New connection from client [[%s]]"), idRequest)
 
