@@ -1,4 +1,4 @@
-package interceptorschainer_test
+package interceptorschain_test
 
 import (
 	"context"
@@ -6,14 +6,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/grpc/interceptorschainer"
+	"github.com/ubuntu/adsys/internal/grpc/interceptorschain"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
-func TestChainStreamServerInterceptors(t *testing.T) {
+func TestStreamServer(t *testing.T) {
 	t.Parallel()
 
 	someService := &struct{}{}
@@ -55,13 +55,13 @@ func TestChainStreamServerInterceptors(t *testing.T) {
 		return outputError
 	}
 	fakeStream := &fakeServerStream{ctx: parentContext, recvMessage: recvMessage}
-	chain := interceptorschainer.ChainStreamServerInterceptors(first, second)
+	chain := interceptorschain.StreamServer(first, second)
 	err := chain(someService, fakeStream, parentStreamInfo, handler)
 	require.Equal(t, outputError, err, "chain must return handler's error")
 	require.Equal(t, sentMessage, fakeStream.sentMessage, "handler's sent message must propagate to stream")
 }
 
-func TestChainStreamClientInterceptors(t *testing.T) {
+func TestStreamClient(t *testing.T) {
 	t.Parallel()
 
 	someServiceName := "MyService"
@@ -98,7 +98,7 @@ func TestChainStreamClientInterceptors(t *testing.T) {
 		require.Len(t, opts, 2, "streamer should see both CallOpts from second and parent")
 		return clientStream, nil
 	}
-	chain := interceptorschainer.ChainStreamClientInterceptors(first, second)
+	chain := interceptorschain.StreamClient(first, second)
 	someStream, err := chain(parentContext, fakeStreamDesc, nil, someServiceName, streamer, parentOpts...)
 	require.NoError(t, err, "chain must not return an error")
 	require.Equal(t, clientStream, someStream, "chain must return invokers's clientstream")

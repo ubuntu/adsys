@@ -5,7 +5,7 @@ import (
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/daemon"
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
-	"github.com/ubuntu/adsys/internal/grpc/interceptorschainer"
+	"github.com/ubuntu/adsys/internal/grpc/interceptorschain"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"google.golang.org/grpc"
 )
@@ -19,7 +19,7 @@ type Service struct {
 // It will notify the daemon of any new connection
 func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 	srv := grpc.NewServer(grpc.StreamInterceptor(
-		interceptorschainer.ChainStreamServerInterceptors(
+		interceptorschain.StreamServer(
 			connectionnotify.StreamServerInterceptor(d),
 			log.StreamServerInterceptor(logrus.StandardLogger()))))
 	adsys.RegisterServiceServer(srv, s)
