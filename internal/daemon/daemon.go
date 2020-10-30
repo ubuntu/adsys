@@ -49,7 +49,7 @@ type GRPCServerRegisterer func(srv *Daemon) *grpc.Server
 
 // New returns an new, initialized daemon server, which handles systemd activation.
 // If systemd activation is used, it will override any socket passed here.
-func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option) (s *Daemon, err error) {
+func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option) (d *Daemon, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("couldn't create server: %v"), err)
@@ -70,7 +70,7 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 		}
 	}
 
-	s = &Daemon{
+	d = &Daemon{
 		registerGRPCServer: registerGRPCServer,
 		lis:                make(chan net.Listener, 1),
 		systemdSdNotifier:  args.systemdSdNotifier,
@@ -84,26 +84,28 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 
 	switch len(listeners) {
 	case 0:
-		if err = s.UseSocket(socket); err != nil {
+		if err = d.UseSocket(socket); err != nil {
 			return nil, err
 		}
 
 	case 1:
-		s.useSocketActivation = true
-		s.lis <- listeners[0]
+		d.useSocketActivation = true
+		d.lis <- listeners[0]
 	default:
 		return nil, fmt.Errorf(i18n.G("unexpected number of systemd socket activation (%d != 1)"), len(listeners))
 	}
 
-	s.grpcserver = s.registerGRPCServer(s)
+	d.grpcserver = d.registerGRPCServer(d)
 
-	return s, nil
+	go d.idler.checkTimeout(d)
+
+	return d, nil
 }
 
 // UseSocket listens on new given socket. If we were listening on another socket first, the connection will be teared down.
 // Note that this has no effect if we were using socket activation.
-func (s *Daemon) UseSocket(socket string) (err error) {
-	if s.useSocketActivation {
+func (d *Daemon) UseSocket(socket string) (err error) {
+	if d.useSocketActivation {
 		log.Debugf(context.Background(), "Call to UseSocket %q ignored: using systemd socket activation", socket)
 		return nil
 	}
@@ -123,10 +125,10 @@ func (s *Daemon) UseSocket(socket string) (err error) {
 		return err
 	}
 
-	s.lis <- lis
+	d.lis <- lis
 	// Listen on new socket by stopping previous service
-	if s.grpcserver != nil {
-		s.stop()
+	if d.grpcserver != nil {
+		d.stop()
 	}
 
 	return nil
@@ -136,29 +138,29 @@ func (s *Daemon) UseSocket(socket string) (err error) {
 // It handles systemd activation notification.
 // When the server stop listening, the socket is removed automatically.
 // Configuration can be reloaded and we will then listen on the new socket
-func (s *Daemon) Listen() error {
-	if sent, err := s.systemdSdNotifier(false, "READY=1"); err != nil {
+func (d *Daemon) Listen() error {
+	if sent, err := d.systemdSdNotifier(false, "READY=1"); err != nil {
 		return fmt.Errorf(i18n.G("couldn't send ready notification to systemd: %v"), err)
 	} else if sent {
 		log.Debug(context.Background(), i18n.G("Ready state sent to systemd"))
 	}
 
-	lis := <-s.lis
+	lis := <-d.lis
 
 	// handle socket configuration reloading
 	for {
 		log.Infof(context.Background(), i18n.G("Serving on %s"), lis.Addr().String())
-		if err := (s.grpcserver.Serve(lis)); err != nil {
+		if err := (d.grpcserver.Serve(lis)); err != nil {
 			return fmt.Errorf("unable to start GRPC server: %s", err)
 		}
 
 		// check if we need to reconnect using a new socket
 		var ok bool
-		lis, ok = <-s.lis
+		lis, ok = <-d.lis
 		if !ok {
 			break
 		}
-		s.grpcserver = s.registerGRPCServer(s)
+		d.grpcserver = d.registerGRPCServer(d)
 	}
 	log.Debug(context.Background(), i18n.G("Quitting"))
 
@@ -166,14 +168,14 @@ func (s *Daemon) Listen() error {
 }
 
 // Quit gracefully quits listening loop and stops the grpc server
-func (s *Daemon) Quit() {
-	close(s.lis)
-	s.stop()
+func (d *Daemon) Quit() {
+	close(d.lis)
+	d.stop()
 }
 
 // stop gracefully stops the grpc server
-func (s *Daemon) stop() {
+func (d *Daemon) stop() {
 	log.Debug(context.Background(), i18n.G("Stopping daemon requested. Wait for active requests to close"))
-	s.grpcserver.GracefulStop()
+	d.grpcserver.GracefulStop()
 	log.Debug(context.Background(), i18n.G("All connections are now closed"))
 }

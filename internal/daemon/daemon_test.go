@@ -24,20 +24,20 @@ func TestStartStop(t *testing.T) {
 	// Count the number of grpc call
 	grpcRegister := &grpcServiceRegister{}
 
-	s, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
 	require.NoError(t, err, "New should return the daemon handler")
 
 	go func() {
 		// make sure Serve() is called. Even std golang grpc has this timeout in tests
 		time.Sleep(time.Millisecond * 10)
-		s.Quit()
+		d.Quit()
 	}()
 
-	err = s.Listen()
+	err = d.Listen()
 	require.NoError(t, err, "Listen should return no error when stopped normally")
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
-	require.Equal(t, s, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
+	require.Equal(t, d, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
 }
 
 func TestStopBeforeServe(t *testing.T) {
@@ -47,10 +47,10 @@ func TestStopBeforeServe(t *testing.T) {
 
 	grpcRegister := &grpcServiceRegister{}
 
-	s, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
 	require.NoError(t, err, "New should return the daemon handler")
 
-	s.Quit()
+	d.Quit()
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called during creation")
 }
@@ -62,13 +62,13 @@ func TestChangeSocket(t *testing.T) {
 
 	grpcRegister := &grpcServiceRegister{}
 
-	s, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
 	require.NoError(t, err, "New should return the daemon handler")
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
-		err = s.Listen()
+		err = d.Listen()
 		wg.Done()
 	}()
 
@@ -76,15 +76,15 @@ func TestChangeSocket(t *testing.T) {
 	time.Sleep(time.Millisecond * 10)
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
-	require.Equal(t, s, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
+	require.Equal(t, d, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
 
-	s.UseSocket(filepath.Join(dir, "test2.sock"))
+	d.UseSocket(filepath.Join(dir, "test2.sock"))
 	time.Sleep(time.Millisecond * 10)
 
 	require.Equal(t, 2, len(grpcRegister.daemonsCalled), "a new GRPC registerer has been requested")
-	require.Equal(t, s, grpcRegister.daemonsCalled[1], "GRPC registerer has the built in daemon as argument")
+	require.Equal(t, d, grpcRegister.daemonsCalled[1], "GRPC registerer has the built in daemon as argument")
 
-	s.Quit()
+	d.Quit()
 
 	wg.Wait()
 	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
@@ -132,7 +132,7 @@ func TestSocketActivation(t *testing.T) {
 				}
 			}
 
-			s, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored", daemon.WithSystemdActivationListener(f))
+			d, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored", daemon.WithSystemdActivationListener(f))
 			if tc.wantErr {
 				require.NotNil(t, err, "New should return an error")
 				return
@@ -142,9 +142,9 @@ func TestSocketActivation(t *testing.T) {
 
 			go func() {
 				time.Sleep(10 * time.Millisecond)
-				s.Quit()
+				d.Quit()
 			}()
-			err = s.Listen()
+			err = d.Listen()
 			require.NoError(t, err, "Listen should return no error")
 			require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called during creation")
 
@@ -166,13 +166,13 @@ func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
 		return []net.Listener{l}, nil
 	}
 
-	s, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored", daemon.WithSystemdActivationListener(f))
+	d, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored", daemon.WithSystemdActivationListener(f))
 	require.NoError(t, err, "New should return no error")
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
-		err = s.Listen()
+		err = d.Listen()
 		wg.Done()
 	}()
 
@@ -180,11 +180,11 @@ func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
 	time.Sleep(time.Millisecond * 10)
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
-	s.UseSocket("/tmp/this/is/also/ignored")
+	d.UseSocket("/tmp/this/is/also/ignored")
 	time.Sleep(time.Millisecond * 10)
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "we are still using the previous GRPC registerer with the socket activated socket")
 
-	s.Quit()
+	d.Quit()
 
 	wg.Wait()
 	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
@@ -217,7 +217,7 @@ func TestSdNotifier(t *testing.T) {
 			require.NoErrorf(t, err, "setup failed: couldn't create unix socket: %v", err)
 			defer l.Close()
 
-			s, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored",
+			d, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored",
 				daemon.WithSystemdActivationListener(func() ([]net.Listener, error) { return []net.Listener{l}, nil }),
 				daemon.WithSystemdSdNotifier(func(unsetEnvironment bool, state string) (bool, error) {
 					if tc.notifierFail {
@@ -229,10 +229,10 @@ func TestSdNotifier(t *testing.T) {
 
 			go func() {
 				time.Sleep(10 * time.Millisecond)
-				s.Quit()
+				d.Quit()
 			}()
 
-			err = s.Listen()
+			err = d.Listen()
 			if tc.wantErr {
 				require.NotNil(t, err, "Listen should return an error")
 				return
