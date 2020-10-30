@@ -81,10 +81,10 @@ func TestChangeSocket(t *testing.T) {
 	d.UseSocket(filepath.Join(dir, "test2.sock"))
 	time.Sleep(time.Millisecond * 10)
 
+	d.Quit()
+
 	require.Equal(t, 2, len(grpcRegister.daemonsCalled), "a new GRPC registerer has been requested")
 	require.Equal(t, d, grpcRegister.daemonsCalled[1], "GRPC registerer has the built in daemon as argument")
-
-	d.Quit()
 
 	wg.Wait()
 	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
@@ -182,9 +182,10 @@ func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
 	d.UseSocket("/tmp/this/is/also/ignored")
 	time.Sleep(time.Millisecond * 10)
-	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "we are still using the previous GRPC registerer with the socket activated socket")
 
 	d.Quit()
+
+	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "we are still using the previous GRPC registerer with the socket activated socket")
 
 	wg.Wait()
 	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
