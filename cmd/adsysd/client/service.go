@@ -11,7 +11,7 @@ func (a *App) installService() {
 		Use:   "service COMMAND",
 		Short: i18n.G("Service management"),
 		Args:  cmdhandler.SubcommandsRequiredWithSuggestions,
-		Run:   cmdhandler.NoCmd,
+		RunE:  cmdhandler.NoCmd,
 	}
 
 	a.rootCmd.AddCommand(cmd)
