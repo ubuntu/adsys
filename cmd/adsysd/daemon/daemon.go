@@ -97,7 +97,6 @@ func (a *App) changeServerSocket(socket string) error {
 	if a.daemon == nil {
 		return nil
 	}
-	fmt.Println(socket)
 	return a.daemon.UseSocket(socket)
 }
 

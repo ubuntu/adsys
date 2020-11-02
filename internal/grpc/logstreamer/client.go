@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"sync"
 
 	proto "github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
@@ -29,15 +28,13 @@ func StreamClientInterceptor(logger *logrus.Logger) grpc.StreamClientInterceptor
 		return &logClientStream{
 			ClientStream: clientStream,
 			logger:       logger,
-			callerMu:     sync.Mutex{},
 		}, err
 	}
 }
 
 type logClientStream struct {
 	grpc.ClientStream
-	logger   *logrus.Logger
-	callerMu sync.Mutex
+	logger *logrus.Logger
 }
 
 // RecvMsg is used to intercept log messages from server before hitting the client
@@ -79,7 +76,6 @@ func (ss *logClientStream) RecvMsg(m interface{}) error {
 
 			// this message doesn’t concern the client, treat next one
 			continue
-
 		}
 
 		// this returns the message to the client stream
