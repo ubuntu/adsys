@@ -14,9 +14,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type grpcRegisterer interface {
-}
-
 // Daemon is a grpc daemon with systemd activation, configuration changes like dynamic
 // socket listening, idling timeout functionality…
 type Daemon struct {

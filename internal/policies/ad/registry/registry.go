@@ -100,7 +100,6 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		}
 		return nil, err
 	}
-	// TODO: check EOF for small file, empty object…
 
 	if header != validPolicyFileHeader {
 		return nil, fmt.Errorf("invalid policy file header: %x%x", header.Signature, header.Version)

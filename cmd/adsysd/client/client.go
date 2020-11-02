@@ -26,10 +26,6 @@ type daemonConfig struct {
 	Socket  string
 }
 
-func (c daemonConfig) Verbosity() int {
-	return c.Verbose
-}
-
 // New registers commands and return a new App.
 func New() *App {
 	a := App{}
