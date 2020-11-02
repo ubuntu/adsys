@@ -98,7 +98,7 @@ type UnsafeServiceServer interface {
 	mustEmbedUnimplementedServiceServer()
 }
 
-func RegisterServiceServer(s *grpc.Server, srv ServiceServer) {
+func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) {
 	s.RegisterService(&_Service_serviceDesc, srv)
 }
 
