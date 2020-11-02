@@ -3,6 +3,7 @@ package log
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -138,7 +139,10 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	// Handle call stack collect
 	if callerForLocal || callerForRemote {
 		f := getCaller()
-		caller := fmt.Sprintf("%s:%d %s()", f.File, f.Line, f.Function)
+		fqfn := strings.Split(f.Function, "/")
+		fqfn = strings.Split(fqfn[len(fqfn)-1], ".")
+		funcName := strings.Join(fqfn[1:len(fqfn)], ".")
+		caller := fmt.Sprintf("%s:%d %s()", f.File, f.Line, funcName)
 		if callerForLocal {
 			localMsg = fmt.Sprintf(logFormatWithCaller, caller, localMsg)
 		}
