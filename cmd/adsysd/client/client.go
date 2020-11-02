@@ -62,7 +62,7 @@ func New() *App {
 			})
 		},
 		Args: cmdhandler.SubcommandsRequiredWithSuggestions,
-		Run:  cmdhandler.NoCmd,
+		RunE: cmdhandler.NoCmd,
 		// We display usage error ourselves
 		SilenceErrors: true,
 	}

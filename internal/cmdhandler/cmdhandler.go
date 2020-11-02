@@ -10,7 +10,8 @@ import (
 )
 
 // NoCmd is a no-op command to just make it valid
-func NoCmd(cmd *cobra.Command, args []string) {
+func NoCmd(cmd *cobra.Command, args []string) error {
+	return nil
 }
 
 // RegisterAlias allows to decorelate the alias from the main command when alias have different command level (different parents)
