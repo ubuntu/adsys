@@ -3,6 +3,7 @@ package daemon
 import (
 	"context"
 	"fmt"
+	"runtime"
 
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys/internal/adsysservice"
@@ -110,8 +111,11 @@ func (a App) UsageError() bool {
 	return !a.rootCmd.SilenceUsage
 }
 
-// Hup reloads configuration file on disk and return false to signal you shouldn't quit.
+// Hup prints all goroutine stack traces and return false to signal you shouldn't quit.
 func (a App) Hup() (shouldQuit bool) {
+	buf := make([]byte, 1<<16)
+	runtime.Stack(buf, true)
+	fmt.Printf("%s", buf)
 	return false
 }
 
