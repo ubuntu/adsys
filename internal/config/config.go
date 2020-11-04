@@ -20,6 +20,9 @@ func SetVerboseMode(level int) {
 		log.SetLevel(defaultLevel)
 	case 1:
 		log.SetLevel(log.InfoLevel)
+	case 3:
+		log.SetReportCaller(true)
+		fallthrough
 	default:
 		log.SetLevel(log.DebugLevel)
 	}

@@ -50,7 +50,7 @@ To configure your bash shell to load completions for each session add to your ~/
 
 // InstallVerboseFlag adds the -v and -vv options and returns the reference to it.
 func InstallVerboseFlag(cmd *cobra.Command) *int {
-	r := cmd.PersistentFlags().CountP("verbose", "v", i18n.G("issue INFO (-v) and DEBUG (-vv) output"))
+	r := cmd.PersistentFlags().CountP("verbose", "v", i18n.G("issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"))
 	viper.BindPFlag("verbose", cmd.PersistentFlags().Lookup("verbose"))
 	return r
 }
