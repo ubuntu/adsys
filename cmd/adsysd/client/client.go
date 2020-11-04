@@ -18,6 +18,9 @@ const CmdName = "adsysctl"
 type App struct {
 	rootCmd cobra.Command
 
+	ctx    context.Context
+	cancel context.CancelFunc
+
 	config daemonConfig
 }
 
@@ -34,6 +37,7 @@ func New() *App {
 		Short: i18n.G("AD integration client"),
 		Long:  i18n.G(`Active Directory integration bridging toolset command line tool.`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			a.ctx, a.cancel = context.WithCancel(context.Background())
 			// command parsing has been successfull. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
 			return config.Configure("adsys", a.rootCmd, func(configPath string) error {
@@ -89,13 +93,14 @@ func (a App) UsageError() bool {
 }
 
 // Hup call Quit() and return true to signal quitting.
-func (a App) Hup() (shouldQuit bool) {
+func (a *App) Hup() (shouldQuit bool) {
 	a.Quit()
 	return true
 }
 
 // Quit exits and send an cancellation request to the service.
-func (a App) Quit() {
+func (a *App) Quit() {
+	a.cancel()
 }
 
 // RootCmd returns a copy of the root command for the app. Shouldn’t be in general necessary apart when running generators.
