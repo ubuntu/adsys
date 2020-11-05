@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/grpc/grpcerror"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
@@ -84,7 +85,8 @@ func New() *App {
 
 // Run executes the command and associated process. It returns an error on syntax/usage error.
 func (a *App) Run() error {
-	return a.rootCmd.Execute()
+	err := a.rootCmd.Execute()
+	return grpcerror.Format(err, "adsys")
 }
 
 // UsageError returns if the error is a command parsing or runtime one.
