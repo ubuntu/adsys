@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"unicode/utf16"
 )
 
@@ -66,9 +68,10 @@ func DecodePolicy(r io.Reader) (entries []PolicyEntry, err error) {
 		default:
 			return nil, fmt.Errorf("%d type is not supported set for key %s", t, e.key)
 		}
+		e.path = strings.ReplaceAll(e.path, `\`, `/`)
 		entries = append(entries, PolicyEntry{
-			Key:   e.key,
-			Value: res,
+			Key:      filepath.Join(e.path, e.key),
+			Value:    res,
 		})
 	}
 
@@ -76,7 +79,8 @@ func DecodePolicy(r io.Reader) (entries []PolicyEntry, err error) {
 }
 
 type policyRawEntry struct {
-	key   string // Absolute path to setting. Ex: Sofware/Ubuntu/User/dconf/wallpaper
+	path  string
+	key   string
 	dType dataType
 	data  []byte
 }
@@ -161,7 +165,8 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		}
 
 		entries = append(entries, policyRawEntry{
-			key:   fmt.Sprintf("%s\\%s", keyPrefix, keySuffix),
+			path:  keyPrefix,
+			key:   keySuffix,
 			dType: dataType(elems[2][0]),
 			data:  elems[4], // TODO: if admx support binary data, then also return size
 		})
