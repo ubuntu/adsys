@@ -3,8 +3,10 @@ package client
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/grpc/grpcerror"
@@ -28,6 +30,7 @@ type App struct {
 type daemonConfig struct {
 	Verbose int
 	Socket  string
+	Timeout int
 }
 
 // New registers commands and return a new App.
@@ -63,6 +66,7 @@ func New() *App {
 				if oldVerbose != a.config.Verbose {
 					config.SetVerboseMode(a.config.Verbose)
 				}
+				// Timeout reload is ignored
 				return nil
 			})
 		},
@@ -74,6 +78,9 @@ func New() *App {
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
+
+	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
+	viper.BindPFlag("timeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
@@ -108,4 +115,8 @@ func (a *App) Quit() {
 // RootCmd returns a copy of the root command for the app. Shouldn’t be in general necessary apart when running generators.
 func (a App) RootCmd() cobra.Command {
 	return a.rootCmd
+}
+
+func (a App) getTimeout() time.Duration {
+	return time.Duration(a.config.Timeout * int(time.Second))
 }
