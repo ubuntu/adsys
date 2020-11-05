@@ -13,7 +13,7 @@ import (
 func TestDecodePolicy(t *testing.T) {
 	t.Parallel()
 
-	defaultKey := `Software\Canonical\Ubuntu\ValueName`
+	defaultKey := `Software/Canonical/Ubuntu/ValueName`
 	defaultData := "BA"
 	tests := map[string]struct {
 		want    []registry.PolicyEntry
@@ -40,7 +40,7 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "1",
 				},
 				{
-					Key:   `Software\Policies\Canonical\Ubuntu\Directory UI\QueryLimit`,
+					Key:   `Software/Policies/Canonical/Ubuntu/Directory UI/QueryLimit`,
 					Value: "12345",
 				},
 			}},

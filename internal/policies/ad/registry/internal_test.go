@@ -12,7 +12,8 @@ import (
 func TestReadPolicy(t *testing.T) {
 	t.Parallel()
 
-	defaultKey := `Software\Canonical\Ubuntu\ValueName`
+	defaultPath := `Software\Canonical\Ubuntu`
+	defaultKey := `ValueName`
 	defaultData := []byte("B\x00A\x00\x00\x00")
 	tests := map[string]struct {
 		want    []policyRawEntry
@@ -21,6 +22,7 @@ func TestReadPolicy(t *testing.T) {
 		"one element, string value": {
 			want: []policyRawEntry{
 				{
+					path:  defaultPath,
 					key:   defaultKey,
 					dType: dataType(1),
 					data:  defaultData,
@@ -29,6 +31,7 @@ func TestReadPolicy(t *testing.T) {
 		"one element, decimal value": {
 			want: []policyRawEntry{
 				{
+					path:  defaultPath,
 					key:   defaultKey,
 					dType: dataType(4),
 					data:  []byte("\xd2\x04\x00\x00"),
@@ -37,12 +40,14 @@ func TestReadPolicy(t *testing.T) {
 		"two elements": {
 			want: []policyRawEntry{
 				{
+					path:  defaultPath,
 					key:   defaultKey,
 					dType: dataType(4),
 					data:  []byte("\x01\x00\x00\x00"),
 				},
 				{
-					key:   `Software\Policies\Canonical\Ubuntu\Directory UI\QueryLimit`,
+					path:  `Software\Policies\Canonical\Ubuntu\Directory UI`,
+					key:   "QueryLimit",
 					dType: dataType(4),
 					data:  []byte("\x39\x30\x00\x00"),
 				},
@@ -51,6 +56,7 @@ func TestReadPolicy(t *testing.T) {
 		"semicolon in data": {
 			want: []policyRawEntry{
 				{
+					path:  defaultPath,
 					key:   defaultKey,
 					dType: dataType(1),
 					data:  []byte("B\x00;\x00A\x00\x00\x00"),
@@ -60,6 +66,7 @@ func TestReadPolicy(t *testing.T) {
 		"section separators in data": {
 			want: []policyRawEntry{
 				{
+					path:  defaultPath,
 					key:   defaultKey,
 					dType: dataType(1),
 					data:  []byte("B\x00A\x00]\x00[\x00C\x00]\x00\x00\x00"),
@@ -69,6 +76,7 @@ func TestReadPolicy(t *testing.T) {
 		"exotic return type": {
 			want: []policyRawEntry{
 				{
+					path:  defaultPath,
 					key:   defaultKey,
 					dType: dataType(153), //<- This is really 0x99
 					data:  defaultData,
