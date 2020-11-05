@@ -22,7 +22,8 @@ adsysctl COMMAND [flags]
 ```
   -h, --help            help for adsysctl
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
-  -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysctl completion
@@ -54,7 +55,8 @@ adsysctl completion [flags]
 
 ```
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
-  -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysctl service
@@ -79,7 +81,8 @@ adsysctl service COMMAND [flags]
 
 ```
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
-  -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysctl version
@@ -104,7 +107,8 @@ adsysctl version [flags]
 
 ```
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
-  -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd
@@ -124,7 +128,7 @@ adsysd COMMAND [flags]
 ```
   -h, --help            help for adsysd
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
-  -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd completion
@@ -156,7 +160,7 @@ adsysd completion [flags]
 
 ```
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
-  -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd version
@@ -181,7 +185,7 @@ adsysd version [flags]
 
 ```
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
-  -v, --verbose count   issue INFO (-v) and DEBUG (-vv) output
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### System commands
