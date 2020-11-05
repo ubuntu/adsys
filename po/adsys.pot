@@ -40,26 +40,30 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: cmd/adsysd/client/client.go:38
+#: cmd/adsysd/client/client.go:41
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:37
+#: cmd/adsysd/daemon/daemon.go:38
 msgid "AD integration daemon"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:20
+#: internal/cmdhandler/cmdhandler.go:21
 #, c-format
 msgid "Alias of %s"
 msgstr ""
 
-#: internal/daemon/daemon.go:187
+#: internal/daemon/daemon.go:184
 msgid "All connections are now closed"
 msgstr ""
 
 #: internal/grpc/logstreamer/server.go:44
 #, c-format
 msgid "Connecting as [[%s]]"
+msgstr ""
+
+#: internal/grpc/grpcerror/grpcerror.go:28
+msgid "Couldn't connect to %s daemon: %v"
 msgstr ""
 
 #: internal/grpc/logstreamer/server.go:45
@@ -70,7 +74,15 @@ msgstr ""
 msgid "Did you mean this?\n"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:33
+#: internal/grpc/grpcerror/grpcerror.go:37
+msgid "Error %s from server: %v"
+msgstr ""
+
+#: internal/grpc/grpcerror/grpcerror.go:34
+msgid "Error from server: %v"
+msgstr ""
+
+#: internal/cmdhandler/cmdhandler.go:34
 msgid "Generates bash completion scripts"
 msgstr ""
 
@@ -85,11 +97,11 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: internal/daemon/daemon.go:172
+#: internal/daemon/daemon.go:169
 msgid "Quitting"
 msgstr ""
 
-#: internal/daemon/daemon.go:152
+#: internal/daemon/daemon.go:149
 msgid "Ready state sent to systemd"
 msgstr ""
 
@@ -105,36 +117,36 @@ msgstr ""
 msgid "Service management"
 msgstr ""
 
-#: cmd/adsysd/main.go:61
+#: internal/grpc/grpcerror/grpcerror.go:31
 msgid "Service took too long to respond. Disconnecting client."
 msgstr ""
 
-#: internal/daemon/daemon.go:159
+#: internal/daemon/daemon.go:156
 #, c-format
 msgid "Serving on %s"
 msgstr ""
 
-#: internal/daemon/daemon.go:185
+#: internal/daemon/daemon.go:182
 msgid "Stopping daemon requested. Wait for active requests to close"
 msgstr ""
 
-#: internal/daemon/daemon.go:61
+#: internal/daemon/daemon.go:58
 msgid "couldn't create server: %v"
 msgstr ""
 
-#: internal/daemon/daemon.go:122
+#: internal/daemon/daemon.go:119
 msgid "couldn't listen on new socket %q: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:155
+#: internal/grpc/logstreamer/log.go:159
 msgid "couldn't send logs to client"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:162
+#: internal/grpc/logstreamer/log.go:166
 msgid "couldn't send logs to client: %v"
 msgstr ""
 
-#: internal/daemon/daemon.go:150
+#: internal/daemon/daemon.go:147
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
@@ -142,8 +154,8 @@ msgstr ""
 msgid "invalid metadata %s for incoming request: %q"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:52
-msgid "issue INFO (-v) and DEBUG (-vv) output"
+#: internal/cmdhandler/cmdhandler.go:53
+msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
 #: internal/grpc/logstreamer/server.go:94
@@ -155,13 +167,19 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:59
+#: internal/cmdhandler/cmdhandler.go:60
 msgid ""
 "socket path to use between daemon and client. Can be overriden by systemd "
 "socket activation."
 msgstr ""
 
-#: internal/daemon/daemon.go:102
+#: cmd/adsysd/client/client.go:82
+msgid ""
+"time in seconds before cancelling the client request when the server gives "
+"no result. 0 for no timeout."
+msgstr ""
+
+#: internal/daemon/daemon.go:99
 #, c-format
 msgid "unexpected number of systemd socket activation (%d != 1)"
 msgstr ""
