@@ -44,6 +44,72 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "12345",
 				},
 			}},
+		"one element, disabled": {
+			want: []registry.PolicyEntry{
+				{
+					Key:      defaultKey,
+					Value:    "",
+					Disabled: true,
+				},
+			}},
+
+		// Container and options test cases
+		"container with default elements override empty option values": {
+			want: []registry.PolicyEntry{
+				{
+					Key:   `Software/Container/Child`,
+					Value: "containerDefaultValueForChild",
+				},
+			}},
+		"container with default elements are ignored on non empty option values": {
+			want: []registry.PolicyEntry{
+				{
+					Key:   `Software/Container/Child`,
+					Value: "MyValue",
+				},
+			}},
+		"container with missing default element for option values have empty strings": {
+			want: []registry.PolicyEntry{
+				{
+					Key:   `Software/Container/Child2`,
+					Value: "",
+				},
+			}},
+		"container with default elements are ignored on int option values (always have values)": {
+			want: []registry.PolicyEntry{
+				{
+					Key:   `Software/Container/Child`,
+					Value: "2",
+				},
+			}},
+		"disabled container disables its option values": {
+			want: []registry.PolicyEntry{
+				{
+					Key:      `Software/Container/Child`,
+					Value:    "",
+					Disabled: true,
+				},
+			}},
+		"two containers don’t mix their default values when redefined": {
+			want: []registry.PolicyEntry{
+				{
+					Key:   `Software/Container1/Child1`,
+					Value: "container1DefaultValueForChild1",
+				},
+				{
+					Key:   `Software/Container1/Child2`,
+					Value: "container1DefaultValueForChild2",
+				},
+				{
+					Key:   `Software/Container2/Child1`,
+					Value: "container2DefaultValueForChild1",
+				},
+				{
+					Key: `Software/Container2/Child2`,
+					// we didn't set default values for Child2 on Container2: keep empty (no leftover for Child1)
+					Value: "",
+				},
+			}},
 
 		"semicolon in data": {
 			want: []registry.PolicyEntry{
@@ -67,6 +133,7 @@ func TestDecodePolicy(t *testing.T) {
 		"invalid header, header doesnt match": {wantErr: true},
 		"invalid header, header too short":    {wantErr: true},
 		"invalid header, file truncated":      {wantErr: true},
+		"invalid container default values":    {wantErr: true},
 		"no header":                           {wantErr: true},
 		"empty file":                          {wantErr: true},
 		"section not closed":                  {wantErr: true},
