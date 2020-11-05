@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf16"
+
+	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 type dataType uint8
@@ -30,10 +33,15 @@ const (
 	regQwordLittleEndian dataType = 11 /* QWORD in little endian format */
 )
 
+const (
+	policyContainerName = "defaultValues"
+)
+
 // PolicyEntry represents an entry of a policy file
 type PolicyEntry struct {
-	Key   string // Absolute path to setting. Ex: Sofware/Ubuntu/User/dconf/wallpaper
-	Value string
+	Key      string // Absolute path to setting. Ex: Sofware/Ubuntu/User/dconf/wallpaper
+	Value    string
+	Disabled bool
 }
 
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
@@ -49,29 +57,62 @@ func DecodePolicy(r io.Reader) (entries []PolicyEntry, err error) {
 		return nil, err
 	}
 
+	var defaultValues map[string]string
+
 	// translate to strings based on type
 	for _, e := range ent {
 		var res string
-		switch t := e.dType; t {
-		case regSz:
-			res, err = decodeUtf16(e.data)
+		var disabled bool
+
+		disabled = strings.HasPrefix(e.key, "**del")
+		if disabled {
+			e.key = strings.TrimPrefix(e.key, "**del")
+		}
+		if e.key == policyContainerName {
+			// disabled container policy will set all options as disabled with same prefix
+			if disabled {
+				continue
+			}
+			// load defaults for options
+			defaultValues = make(map[string]string)
+			v, err := decodeUtf16(e.data)
 			if err != nil {
 				return nil, err
 			}
-		case regDword:
-			var resInt uint32
-			buf := bytes.NewReader(e.data)
-			if err := binary.Read(buf, binary.LittleEndian, &resInt); err != nil {
-				return nil, err
+			if err := json.Unmarshal([]byte(v), &defaultValues); err != nil {
+				return nil, fmt.Errorf(i18n.G("invalid default value for %s\\%s container: %v"), e.path, e.key, err)
 			}
-			res = strconv.FormatUint(uint64(resInt), 10)
-		default:
-			return nil, fmt.Errorf("%d type is not supported set for key %s", t, e.key)
+			continue
 		}
 		e.path = strings.ReplaceAll(e.path, `\`, `/`)
+
+		// if the key is enabled, load value (or replace with defaultValues for empty results)
+		if !disabled {
+			switch t := e.dType; t {
+			case regSz:
+				res, err = decodeUtf16(e.data)
+				if err != nil {
+					return nil, err
+				}
+				if res == "" {
+					res = defaultValues[e.key]
+				}
+			case regDword:
+				var resInt uint32
+				buf := bytes.NewReader(e.data)
+				if err := binary.Read(buf, binary.LittleEndian, &resInt); err != nil {
+					return nil, err
+				}
+				res = strconv.FormatUint(uint64(resInt), 10)
+			default:
+				return nil, fmt.Errorf("%d type is not supported set for key %s", t, e.key)
+			}
+		}
+
 		entries = append(entries, PolicyEntry{
 			Key:      filepath.Join(e.path, e.key),
 			Value:    res,
+			Disabled: disabled,
 		})
 	}
 
