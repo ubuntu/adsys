@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -44,23 +42,17 @@ func run(args []string) int {
 
 	installSignalHandler(a)
 
+	log.SetFormatter(&log.TextFormatter{
+		DisableLevelTruncation: true,
+		DisableTimestamp:       true,
+	})
+
 	if err := a.Run(); err != nil {
-		// This is a usage Error (we don't prefix E commands other than usage)
-		// Usage error should be the same format than other errors and we didn’t setup the logger yet.
+		log.Error(err)
+
 		if a.UsageError() {
-			log.SetFormatter(&log.TextFormatter{
-				DisableLevelTruncation: true,
-				DisableTimestamp:       true,
-			})
-			log.Error(err)
 			return 2
 		}
-
-		// User or runtime error.
-		if errors.Is(err, context.Canceled) {
-			err = errors.New(i18n.G("Service took too long to respond. Disconnecting client."))
-		}
-		log.Error(err)
 		return 1
 	}
 
