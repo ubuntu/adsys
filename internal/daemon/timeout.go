@@ -39,7 +39,7 @@ func (i *idler) checkTimeout(d *Daemon) {
 	d.Quit()
 }
 
-func (i *idler) OnNewConnection(info *grpc.StreamServerInfo) {
+func (i *idler) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.currentRequests++
@@ -52,7 +52,7 @@ func (i *idler) OnNewConnection(info *grpc.StreamServerInfo) {
 	}
 }
 
-func (i *idler) OnDoneConnection(info *grpc.StreamServerInfo) {
+func (i *idler) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.currentRequests--

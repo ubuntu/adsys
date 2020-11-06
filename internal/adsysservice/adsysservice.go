@@ -20,8 +20,9 @@ type Service struct {
 func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 	srv := grpc.NewServer(grpc.StreamInterceptor(
 		interceptorschain.StreamServer(
+			log.StreamServerInterceptor(logrus.StandardLogger()),
 			connectionnotify.StreamServerInterceptor(d),
-			log.StreamServerInterceptor(logrus.StandardLogger()))))
+		)))
 	adsys.RegisterServiceServer(srv, s)
 	return srv
 }
