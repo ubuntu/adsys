@@ -141,7 +141,7 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 		f := getCaller()
 		fqfn := strings.Split(f.Function, "/")
 		fqfn = strings.Split(fqfn[len(fqfn)-1], ".")
-		funcName := strings.Join(fqfn[1:len(fqfn)], ".")
+		funcName := strings.Join(fqfn[1:], ".")
 		caller := fmt.Sprintf("%s:%d %s()", f.File, f.Line, funcName)
 		if callerForLocal {
 			localMsg = fmt.Sprintf(logFormatWithCaller, caller, localMsg)
