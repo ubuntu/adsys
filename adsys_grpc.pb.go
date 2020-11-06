@@ -17,8 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
-	Version(ctx context.Context, in *ClientRequest, opts ...grpc.CallOption) (Service_VersionClient, error)
-	Foo(ctx context.Context, in *ClientRequest, opts ...grpc.CallOption) (*Empty, error)
+	Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error)
 }
 
 type serviceClient struct {
@@ -29,7 +28,7 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 	return &serviceClient{cc}
 }
 
-func (c *serviceClient) Version(ctx context.Context, in *ClientRequest, opts ...grpc.CallOption) (Service_VersionClient, error) {
+func (c *serviceClient) Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error) {
 	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[0], "/service/Version", opts...)
 	if err != nil {
 		return nil, err
@@ -61,21 +60,11 @@ func (x *serviceVersionClient) Recv() (*VersionResponse, error) {
 	return m, nil
 }
 
-func (c *serviceClient) Foo(ctx context.Context, in *ClientRequest, opts ...grpc.CallOption) (*Empty, error) {
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/service/Foo", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
-	Version(*ClientRequest, Service_VersionServer) error
-	Foo(context.Context, *ClientRequest) (*Empty, error)
+	Version(*Empty, Service_VersionServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -83,11 +72,8 @@ type ServiceServer interface {
 type UnimplementedServiceServer struct {
 }
 
-func (UnimplementedServiceServer) Version(*ClientRequest, Service_VersionServer) error {
+func (UnimplementedServiceServer) Version(*Empty, Service_VersionServer) error {
 	return status.Errorf(codes.Unimplemented, "method Version not implemented")
-}
-func (UnimplementedServiceServer) Foo(context.Context, *ClientRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Foo not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -103,7 +89,7 @@ func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) {
 }
 
 func _Service_Version_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ClientRequest)
+	m := new(Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -123,33 +109,10 @@ func (x *serviceVersionServer) Send(m *VersionResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Service_Foo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ClientRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ServiceServer).Foo(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/service/Foo",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ServiceServer).Foo(ctx, req.(*ClientRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _Service_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "service",
 	HandlerType: (*ServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Foo",
-			Handler:    _Service_Foo_Handler,
-		},
-	},
+	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "Version",
