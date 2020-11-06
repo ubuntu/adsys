@@ -3,15 +3,15 @@ syntax = "proto3";
 option go_package = "github.com/ubuntu/adsys";
 
 service service {
-  rpc Version(ClientRequest) returns (stream VersionResponse);
+  rpc Cat(Empty) returns (stream Empty);
+  rpc Version(Empty) returns (stream VersionResponse);
   rpc Foo(ClientRequest) returns (Empty);
 }
 
 message Empty {}
 
 message VersionResponse {
-  int32 bla = 1;
-  string version = 2;
+  string version = 1;
 }
 
 message ClientRequest {
