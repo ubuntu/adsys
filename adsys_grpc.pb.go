@@ -17,6 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
+	Cat(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CatClient, error)
 	Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error)
 }
 
@@ -28,8 +29,40 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 	return &serviceClient{cc}
 }
 
+func (c *serviceClient) Cat(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CatClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[0], "/service/Cat", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceCatClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_CatClient interface {
+	Recv() (*Empty, error)
+	grpc.ClientStream
+}
+
+type serviceCatClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceCatClient) Recv() (*Empty, error) {
+	m := new(Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *serviceClient) Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[0], "/service/Version", opts...)
+	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[1], "/service/Version", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +97,7 @@ func (x *serviceVersionClient) Recv() (*VersionResponse, error) {
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
+	Cat(*Empty, Service_CatServer) error
 	Version(*Empty, Service_VersionServer) error
 	mustEmbedUnimplementedServiceServer()
 }
@@ -72,6 +106,9 @@ type ServiceServer interface {
 type UnimplementedServiceServer struct {
 }
 
+func (UnimplementedServiceServer) Cat(*Empty, Service_CatServer) error {
+	return status.Errorf(codes.Unimplemented, "method Cat not implemented")
+}
 func (UnimplementedServiceServer) Version(*Empty, Service_VersionServer) error {
 	return status.Errorf(codes.Unimplemented, "method Version not implemented")
 }
@@ -86,6 +123,27 @@ type UnsafeServiceServer interface {
 
 func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) {
 	s.RegisterService(&_Service_serviceDesc, srv)
+}
+
+func _Service_Cat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).Cat(m, &serviceCatServer{stream})
+}
+
+type Service_CatServer interface {
+	Send(*Empty) error
+	grpc.ServerStream
+}
+
+type serviceCatServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceCatServer) Send(m *Empty) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _Service_Version_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -114,6 +172,11 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*ServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Cat",
+			Handler:       _Service_Cat_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "Version",
 			Handler:       _Service_Version_Handler,
