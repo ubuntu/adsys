@@ -1,6 +1,7 @@
 package connectionnotify_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -9,6 +10,14 @@ import (
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
 	"google.golang.org/grpc"
 )
+
+type myStream struct {
+	grpc.ServerStream
+}
+
+func (myStream) Context() context.Context {
+	return context.Background()
+}
 
 func TestNoNotification(t *testing.T) {
 	t.Parallel()
@@ -25,7 +34,7 @@ func TestNoNotification(t *testing.T) {
 		return nil
 	}
 
-	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, myStream{}, nil, handler)
 	require.NoError(t, err, "StreamServerInterceptor returned an error when expecting none")
 
 	assert.Equal(t, 1, handlerCalled, "handler was expected to be called at pos 1")
@@ -36,7 +45,7 @@ type newConnectionPingued struct {
 	newConnectionCalledCount int
 }
 
-func (n *newConnectionPingued) OnNewConnection(info *grpc.StreamServerInfo) {
+func (n *newConnectionPingued) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) {
 	// store current count and increment the global one
 	n.newConnectionCalledCount = *n.globalCallOrder
 	*n.globalCallOrder++
@@ -57,7 +66,7 @@ func TestNewConnectionNotification(t *testing.T) {
 		return nil
 	}
 
-	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, myStream{}, nil, handler)
 	require.NoError(t, err, "StreamServerInterceptor returned an error when expecting none")
 
 	assert.Equal(t, 1, pingued.newConnectionCalledCount, "onNewConnection was called first at pos 1")
@@ -69,7 +78,7 @@ type doneConnectionPingued struct {
 	doneConnectionCalledCount int
 }
 
-func (n *doneConnectionPingued) OnDoneConnection(info *grpc.StreamServerInfo) {
+func (n *doneConnectionPingued) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo) {
 	// store current count and increment the global one
 	n.doneConnectionCalledCount = *n.globalCallOrder
 	*n.globalCallOrder++
@@ -90,7 +99,7 @@ func TestDoneConnectionNotification(t *testing.T) {
 		return nil
 	}
 
-	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, myStream{}, nil, handler)
 	require.NoError(t, err, "StreamServerInterceptor returned an error when expecting none")
 
 	assert.Equal(t, 1, handlerCalled, "handler was called first at pos 1")
@@ -107,6 +116,19 @@ func TestErrorFromHandlerReturned(t *testing.T) {
 		return errors.New("Any error")
 	}
 
-	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, myStream{}, nil, handler)
 	require.NotNil(t, err, "StreamServerInterceptor should return the handler error")
+}
+
+func TestErrorOnNilStream(t *testing.T) {
+	t.Parallel()
+
+	pingued, s := struct{}{}, struct{}{}
+
+	handler := func(srv interface{}, stream grpc.ServerStream) error {
+		return nil
+	}
+
+	err := connectionnotify.StreamServerInterceptor(pingued)(s, nil, nil, handler)
+	require.NotNil(t, err, "StreamServerInterceptor should return an error due to nil stream")
 }

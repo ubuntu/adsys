@@ -1,6 +1,7 @@
 package daemon_test
 
 import (
+	"context"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/daemon"
+	"google.golang.org/grpc"
 )
 
 func TestServerStartListenTimeout(t *testing.T) {
@@ -60,8 +62,9 @@ func TestServerDontTimeoutWithActiveRequest(t *testing.T) {
 		wg.Done()
 	}()
 
+	info := &grpc.StreamServerInfo{FullMethod: "MyGRPCCall"}
 	// simulate a new connection
-	d.OnNewConnection(nil)
+	d.OnNewConnection(context.Background(), info)
 
 	select {
 	case <-time.After(100 * time.Millisecond):
@@ -70,7 +73,7 @@ func TestServerDontTimeoutWithActiveRequest(t *testing.T) {
 	}
 
 	// connection ends
-	d.OnDoneConnection(nil)
+	d.OnDoneConnection(context.Background(), info)
 
 	select {
 	case <-time.After(time.Second):
@@ -103,9 +106,10 @@ func TestServerDontTimeoutWithMultipleActiveRequests(t *testing.T) {
 	}()
 
 	// simulate 2 connections end stop one
-	d.OnNewConnection(nil)
-	d.OnNewConnection(nil)
-	d.OnDoneConnection(nil)
+	info := &grpc.StreamServerInfo{FullMethod: "MyGRPCCall"}
+	d.OnNewConnection(context.Background(), info)
+	d.OnNewConnection(context.Background(), info)
+	d.OnDoneConnection(context.Background(), info)
 
 	select {
 	case <-time.After(100 * time.Millisecond):
@@ -114,7 +118,7 @@ func TestServerDontTimeoutWithMultipleActiveRequests(t *testing.T) {
 	}
 
 	// ending second connection
-	d.OnDoneConnection(nil)
+	d.OnDoneConnection(context.Background(), info)
 
 	select {
 	case <-time.After(time.Second):
