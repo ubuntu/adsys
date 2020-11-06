@@ -5,7 +5,6 @@ option go_package = "github.com/ubuntu/adsys";
 service service {
   rpc Cat(Empty) returns (stream Empty);
   rpc Version(Empty) returns (stream VersionResponse);
-  rpc Foo(ClientRequest) returns (Empty);
 }
 
 message Empty {}
@@ -13,8 +12,3 @@ message Empty {}
 message VersionResponse {
   string version = 1;
 }
-
-message ClientRequest {
-  string foo = 1;
-}
-
