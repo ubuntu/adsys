@@ -21,7 +21,12 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
-#: cmd/adsysd/client/version.go:23 cmd/adsysd/daemon/version.go:23
+#: cmd/adsysd/client/version.go:47
+#, c-format
+msgid "%s\t\t%s"
+msgstr ""
+
+#: cmd/adsysd/client/version.go:26 cmd/adsysd/daemon/version.go:23
 #, c-format
 msgid "%s\t%s"
 msgstr ""
@@ -105,7 +110,7 @@ msgstr ""
 msgid "Ready state sent to systemd"
 msgstr ""
 
-#: cmd/adsysd/client/version.go:14
+#: cmd/adsysd/client/version.go:17
 msgid "Returns version of client and service"
 msgstr ""
 
@@ -148,6 +153,10 @@ msgstr ""
 
 #: internal/daemon/daemon.go:147
 msgid "couldn't send ready notification to systemd: %v"
+msgstr ""
+
+#: internal/policies/ad/registry/registry.go:83
+msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
 #: internal/grpc/logstreamer/server.go:118
