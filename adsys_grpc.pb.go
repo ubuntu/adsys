@@ -45,7 +45,7 @@ func (c *serviceClient) Cat(ctx context.Context, in *Empty, opts ...grpc.CallOpt
 }
 
 type Service_CatClient interface {
-	Recv() (*Empty, error)
+	Recv() (*StringResponse, error)
 	grpc.ClientStream
 }
 
@@ -53,8 +53,8 @@ type serviceCatClient struct {
 	grpc.ClientStream
 }
 
-func (x *serviceCatClient) Recv() (*Empty, error) {
-	m := new(Empty)
+func (x *serviceCatClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func _Service_Cat_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Service_CatServer interface {
-	Send(*Empty) error
+	Send(*StringResponse) error
 	grpc.ServerStream
 }
 
@@ -142,7 +142,7 @@ type serviceCatServer struct {
 	grpc.ServerStream
 }
 
-func (x *serviceCatServer) Send(m *Empty) error {
+func (x *serviceCatServer) Send(m *StringResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
