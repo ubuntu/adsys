@@ -102,6 +102,10 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
+#: cmd/adsysd/client/service.go:25
+msgid "Print service logs"
+msgstr ""
+
 #: internal/daemon/daemon.go:169
 msgid "Quitting"
 msgstr ""
@@ -118,7 +122,7 @@ msgstr ""
 msgid "Returns version of service and exits"
 msgstr ""
 
-#: cmd/adsysd/client/service.go:12
+#: cmd/adsysd/client/service.go:17
 msgid "Service management"
 msgstr ""
 
