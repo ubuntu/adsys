@@ -13,14 +13,16 @@ import (
 // Service is used to implement adsys.ServiceServer.
 type Service struct {
 	adsys.UnimplementedServiceServer
+	logger *logrus.Logger
 }
 
 // RegisterGRPCServer registers our service with the new interceptor chains.
 // It will notify the daemon of any new connection
 func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
+	s.logger = logrus.StandardLogger()
 	srv := grpc.NewServer(grpc.StreamInterceptor(
 		interceptorschain.StreamServer(
-			log.StreamServerInterceptor(logrus.StandardLogger()),
+			log.StreamServerInterceptor(s.logger),
 			connectionnotify.StreamServerInterceptor(d),
 		)))
 	adsys.RegisterServiceServer(srv, s)

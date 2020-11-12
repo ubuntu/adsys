@@ -18,7 +18,9 @@ func (d *Daemon) OnNewConnection(ctx context.Context, info *grpc.StreamServerInf
 // OnDoneConnection resets the idler for timeout and log request ending information
 func (d *Daemon) OnDoneConnection(ctx context.Context, info *grpc.StreamServerInfo) {
 	if info != nil {
-		log.Debugf(ctx, "Request %s done", info.FullMethod)
+		// we don’t forward to the client as it’s uneeded and if the client stopped already
+		// (for instance, Ctrl+C), we don’t have any stream to send it to.
+		log.Debugf(context.Background(), "Request %s done", info.FullMethod)
 	}
 	d.idler.OnDoneConnection(ctx, info)
 }
