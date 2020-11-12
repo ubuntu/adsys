@@ -136,8 +136,11 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	callerForLocal := localLogger.ReportCaller
 	callerMu.RUnlock()
 
+	forwardMsg := localMsg
+	var forwardMsgWithCaller string
+
 	// Handle call stack collect
-	if callerForLocal || callerForRemote {
+	if callerForLocal || callerForRemote || streamsForwarders.wantsCaller() {
 		f := getCaller()
 		fqfn := strings.Split(f.Function, "/")
 		fqfn = strings.Split(fqfn[len(fqfn)-1], ".")
@@ -146,6 +149,7 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 		if callerForLocal {
 			localMsg = fmt.Sprintf(logFormatWithCaller, caller, localMsg)
 		}
+		forwardMsgWithCaller = fmt.Sprintf(logFormatWithCaller, caller, localMsg)
 		if callerForRemote {
 			remoteMsg = fmt.Sprintf(logFormatWithCaller, caller, remoteMsg)
 		}
@@ -153,14 +157,16 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 
 	if withRemote {
 		localMsg = fmt.Sprintf(localLogFormatWithID, idRequest, localMsg)
+		forwardMsg = fmt.Sprintf(localLogFormatWithID, idRequest, forwardMsg)
+		forwardMsgWithCaller = fmt.Sprintf(localLogFormatWithID, idRequest, forwardMsgWithCaller)
 	}
 
-	if err := logLocallyMaybeRemote(level, sendStream, remoteMsg, localLogger, localMsg); err != nil {
+	if err := logLocallyMaybeRemote(level, sendStream, remoteMsg, localLogger, localMsg, forwardMsg, forwardMsgWithCaller); err != nil {
 		localLogger.Warningf(localLogFormatWithID, idRequest, i18n.G("couldn't send logs to client"))
 	}
 }
 
-func logLocallyMaybeRemote(level logrus.Level, sendStream sendStreamFn, remoteMsg string, localLogger *logrus.Logger, localMsg string) (err error) {
+func logLocallyMaybeRemote(level logrus.Level, sendStream sendStreamFn, remoteMsg string, localLogger *logrus.Logger, localMsg, forwardMsg, forwardMsgWithCaller string) (err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("couldn't send logs to client: %v"), err)
@@ -182,15 +188,21 @@ func logLocallyMaybeRemote(level logrus.Level, sendStream sendStreamFn, remoteMs
 	}
 
 	// Send remotely local message to global listeners
+	streamsForwarders.mu.RLock()
 	for stream := range streamsForwarders.fw {
+		msg := forwardMsg
+		if stream.wantsCaller {
+			msg = forwardMsgWithCaller
+		}
 		if err := stream.SendMsg(&Log{
 			LogHeader: logIdentifier,
 			Level:     level.String(),
-			Msg:       localMsg,
+			Msg:       msg,
 		}); err != nil {
 			Warningf(context.Background(), "Couldn't send log to one or more listener: %v", err)
 		}
 	}
+	streamsForwarders.mu.RUnlock()
 
 	return nil
 }
