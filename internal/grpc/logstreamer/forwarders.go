@@ -11,27 +11,26 @@ var (
 )
 
 type streamsForwarder struct {
-	fw map[string]grpc.Stream
+	fw map[grpc.Stream]bool
 	mu sync.RWMutex
 
 	once sync.Once
 }
 
-// AddStreamToForward adds stream identified by ID to forward all logs to it.
-func AddStreamToForward(id string, ss grpc.Stream) {
+// AddStreamToForward adds stream identified to forward all logs to it.
+func AddStreamToForward(stream grpc.Stream) func() {
 	// Initialize our forwarder
 	streamsForwarders.once.Do(func() {
-		streamsForwarders.fw = make(map[string]grpc.Stream)
+		streamsForwarders.fw = make(map[grpc.Stream]bool)
 	})
 
 	streamsForwarders.mu.Lock()
 	defer streamsForwarders.mu.Unlock()
-	streamsForwarders.fw[id] = ss
-}
+	streamsForwarders.fw[stream] = true
 
-// RemoveStreamToForward remove stream identified by ID which was forwarding all logs to it.
-func RemoveStreamToForward(id string) {
-	streamsForwarders.mu.Lock()
-	defer streamsForwarders.mu.Unlock()
-	delete(streamsForwarders.fw, id)
+	return func() {
+		streamsForwarders.mu.Lock()
+		defer streamsForwarders.mu.Unlock()
+		delete(streamsForwarders.fw, stream)
+	}
 }
