@@ -41,7 +41,7 @@ func StreamServerInterceptor(localLogger *logrus.Logger) func(srv interface{}, s
 
 		// create and log request ID
 		idRequest := fmt.Sprintf("%s:%s", clientID, createID())
-		if err := ssLogs.sendLogs(logrus.DebugLevel.String(), fmt.Sprintf(i18n.G("Connecting as [[%s]]"), idRequest)); err != nil {
+		if err := ssLogs.sendLogs(logrus.DebugLevel.String(), "", fmt.Sprintf(i18n.G("Connecting as [[%s]]"), idRequest)); err != nil {
 			localLogger.Warningf(localLogFormatWithID, idRequest, i18n.G("Couldn't send initial connection log to client"))
 		}
 		Infof(context.Background(), i18n.G("New connection from client [[%s]]"), idRequest)
@@ -71,15 +71,16 @@ func (ss serverStreamWithLogs) Context() context.Context {
 // This will be intercepted by the StreamClientInterceptor for every Log message matching
 // its structure, preventing to hit the client.
 // A harcoded header is set to double check and ensure we have Log message.
-func (ss serverStreamWithLogs) sendLogs(logLevel, msg string) error {
+func (ss serverStreamWithLogs) sendLogs(logLevel, caller, msg string) error {
 	return ss.SendMsg(&Log{
 		LogHeader: logIdentifier,
 		Level:     logLevel,
+		Caller:    caller,
 		Msg:       msg,
 	})
 }
 
-type sendStreamFn func(logLevel, msg string) error
+type sendStreamFn func(logLevel, caller, msg string) error
 
 func extractMetaFromContext(ctx context.Context) (clientID string, withCaller bool, err error) {
 	defer func() {

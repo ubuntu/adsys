@@ -8,5 +8,6 @@ message Log {
   // this will contain an unique identifier string.
   string logHeader = 1;
   string level = 2;
-  string msg = 3;
+  string caller = 3;
+  string msg = 4;
 }

@@ -70,7 +70,12 @@ func (ss *logClientStream) RecvMsg(m interface{}) error {
 			// We are controlling and unwrapping the caller ourself outside of this package.
 			// As logrus doesn't allow to specify which package to exclude manually, do it there.
 			// https://github.com/sirupsen/logrus/issues/867
-			ss.logger.Log(level, logMsg.Msg)
+			msg := logMsg.GetMsg()
+			caller := logMsg.GetCaller()
+			if reportCaller && caller != "" {
+				msg = fmt.Sprintf(logFormatWithCaller, caller, msg)
+			}
+			ss.logger.Log(level, msg)
 			// Restore if we use direct calls
 			ss.logger.SetReportCaller(reportCaller)
 
