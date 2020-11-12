@@ -85,6 +85,32 @@ adsysctl service COMMAND [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
+#### adsysctl service cat
+
+Print service logs
+
+##### Synopsis
+
+Print service logs
+
+```
+adsysctl service cat [flags]
+```
+
+##### Options
+
+```
+  -h, --help   help for cat
+```
+
+##### Options inherited from parent commands
+
+```
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
 #### adsysctl version
 
 Returns version of client and service
