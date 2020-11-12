@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"net"
-	"os"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -278,5 +277,5 @@ func TestMain(m *testing.M) {
 		logrus.StandardLogger().SetLevel(logrus.DebugLevel)
 	}
 
-	os.Exit(m.Run())
+	m.Run()
 }

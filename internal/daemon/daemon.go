@@ -179,7 +179,7 @@ func (d *Daemon) Quit() {
 
 // stop gracefully stops the grpc server
 func (d *Daemon) stop() {
-	log.Debug(context.Background(), i18n.G("Stopping daemon requested. Wait for active requests to close"))
+	log.Info(context.Background(), i18n.G("Stopping daemon requested. Wait for active requests to close"))
 	d.grpcserver.GracefulStop()
 	log.Debug(context.Background(), i18n.G("All connections are now closed"))
 }

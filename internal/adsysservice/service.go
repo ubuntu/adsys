@@ -1,8 +1,6 @@
 package adsysservice
 
 import (
-	"fmt"
-
 	"github.com/ubuntu/adsys"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/stdforward"
