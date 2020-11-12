@@ -15,18 +15,20 @@ import (
 func (s *Service) Cat(r *adsys.Empty, stream adsys.Service_CatServer) error {
 
 	// Redirect stdout and stderr
-
 	f := streamWriter{stream}
-	// take object as ID
-	id := fmt.Sprint(&f)
-	stdforward.AddStdoutWriter(id, f)
-	defer stdforward.RemoveStdoutWriter(id)
-	stdforward.AddStderrWriter(id, f)
-	defer stdforward.RemoveStderrWriter(id)
+	remove, err := stdforward.AddStdoutWriter(f)
+	if err != nil {
+		return err
+	}
+	defer remove()
+	remove, err = stdforward.AddStderrWriter(f)
+	if err != nil {
+		return err
+	}
+	defer remove()
 
 	// Redirect all logs
-	log.AddStreamToForward(id, stream)
-	defer log.RemoveStreamToForward(id)
+	defer log.AddStreamToForward(stream)()
 
 	<-stream.Context().Done()
 	return nil

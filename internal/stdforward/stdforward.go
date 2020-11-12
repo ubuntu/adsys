@@ -18,7 +18,7 @@ var (
 
 type forwarder struct {
 	out     *os.File
-	writers map[string]io.Writer
+	writers map[io.Writer]bool
 	mu      sync.RWMutex
 
 	once sync.Once
@@ -34,7 +34,7 @@ func (f *forwarder) Write(p []byte) (int, error) {
 	// Now, forward to any registered writers
 	f.mu.RLock()
 	defer f.mu.RUnlock()
-	for _, w := range f.writers {
+	for w := range f.writers {
 		if _, err := w.Write(p); err != nil {
 			log.Warningf("Failed to forward logs: %v", err)
 		}
@@ -47,38 +47,26 @@ func (f *forwarder) Write(p []byte) (int, error) {
 // First call switch Stdout to intercept any calls and forward it. Anything that
 // referenced beforehand os.Stdout directly and captured it will thus
 // not be forwarded.
-func AddStdoutWriter(id string, w io.Writer) (fnErr error) {
-	return addWriter(&stdoutForwarder, os.Stdout, id, w)
-}
-
-// RemoveStdoutWriter remove current id from stdout redirections.
-func RemoveStdoutWriter(id string) {
-	stdoutForwarder.mu.Lock()
-	defer stdoutForwarder.mu.Unlock()
-	delete(stdoutForwarder.writers, id)
+// It returns a function to unsubcribe the writer.
+func AddStdoutWriter(w io.Writer) (remove func(), err error) {
+	return addWriter(&stdoutForwarder, os.Stdout, w)
 }
 
 // AddStderrWriter will forward stderr to writer (and all previous writers).
 // First call switch Stderr to intercept any calls and forward it. Anything that
 // referenced beforehand os.Stderr directly and captured it will thus
 // not be forwarded.
-func AddStderrWriter(id string, w io.Writer) (fnErr error) {
-	return addWriter(&stderrForwarder, os.Stderr, id, w)
+// It returns a function to unsubcribe the writer.
+func AddStderrWriter(w io.Writer) (remove func(), err error) {
+	return addWriter(&stderrForwarder, os.Stderr, w)
 }
 
-// RemoveStderrWriter remove current id from stderr redirections.
-func RemoveStderrWriter(id string) {
-	stderrForwarder.mu.Lock()
-	defer stderrForwarder.mu.Unlock()
-	delete(stderrForwarder.writers, id)
-}
-
-func addWriter(dest *forwarder, std *os.File, id string, w io.Writer) error {
+func addWriter(dest *forwarder, std *os.File, w io.Writer) (func(), error) {
 	// Initialize our forwarder
 	var onceErr error
 	dest.once.Do(func() {
 		dest.out = std
-		dest.writers = make(map[string]io.Writer)
+		dest.writers = make(map[io.Writer]bool)
 
 		rOut, wOut, err := os.Pipe()
 		if err != nil {
@@ -95,12 +83,16 @@ func addWriter(dest *forwarder, std *os.File, id string, w io.Writer) error {
 		os.Stdout = wOut
 	})
 	if onceErr != nil {
-		return onceErr
+		return nil, onceErr
 	}
 
 	dest.mu.Lock()
 	defer dest.mu.Unlock()
-	dest.writers[id] = w
+	dest.writers[w] = true
 
-	return nil
+	return func() {
+		dest.mu.Lock()
+		defer dest.mu.Unlock()
+		delete(dest.writers, w)
+	}, nil
 }
