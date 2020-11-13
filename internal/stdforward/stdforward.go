@@ -49,7 +49,7 @@ func (f *forwarder) Write(p []byte) (int, error) {
 // not be forwarded.
 // It returns a function to unsubcribe the writer.
 func AddStdoutWriter(w io.Writer) (remove func(), err error) {
-	return addWriter(&stdoutForwarder, os.Stdout, w)
+	return addWriter(&stdoutForwarder, &os.Stdout, w)
 }
 
 // AddStderrWriter will forward stderr to writer (and all previous writers).
@@ -58,14 +58,14 @@ func AddStdoutWriter(w io.Writer) (remove func(), err error) {
 // not be forwarded.
 // It returns a function to unsubcribe the writer.
 func AddStderrWriter(w io.Writer) (remove func(), err error) {
-	return addWriter(&stderrForwarder, os.Stderr, w)
+	return addWriter(&stderrForwarder, &os.Stderr, w)
 }
 
-func addWriter(dest *forwarder, std *os.File, w io.Writer) (func(), error) {
+func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
 	// Initialize our forwarder
 	var onceErr error
 	dest.once.Do(func() {
-		dest.out = std
+		dest.out = *std
 		dest.writers = make(map[io.Writer]bool)
 
 		rOut, wOut, err := os.Pipe()
@@ -80,7 +80,7 @@ func addWriter(dest *forwarder, std *os.File, w io.Writer) (func(), error) {
 			}
 		}()
 
-		os.Stdout = wOut
+		*std = wOut
 	})
 	if onceErr != nil {
 		return nil, onceErr
