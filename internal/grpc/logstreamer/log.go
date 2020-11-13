@@ -135,13 +135,9 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	callerForLocal := localLogger.ReportCaller
 	callerMu.RUnlock()
 
-	streamsForwarders.mu.RLock()
-	callerForForwarders := streamsForwarders.showCaller()
-	streamsForwarders.mu.RUnlock()
-
 	// Handle call stack collect
 	var caller string
-	if callerForLocal || callerForRemote || callerForForwarders {
+	if callerForLocal || callerForRemote || streamsForwarders.showCaller {
 		f := getCaller()
 		fqfn := strings.Split(f.Function, "/")
 		fqfn = strings.Split(fqfn[len(fqfn)-1], ".")
