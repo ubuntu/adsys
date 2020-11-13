@@ -64,6 +64,10 @@ func AddStderrWriter(w io.Writer) (remove func(), err error) {
 func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
 	// Initialize our forwarder
 	var onceErr error
+
+	// we can change the number of children, but also reinitialize the forwarder
+	dest.mu.Lock()
+	defer dest.mu.Unlock()
 	dest.once.Do(func() {
 		dest.out = *std
 		dest.writers = make(map[io.Writer]bool)
@@ -86,13 +90,23 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
 		return nil, onceErr
 	}
 
-	dest.mu.Lock()
-	defer dest.mu.Unlock()
 	dest.writers[w] = true
 
 	return func() {
 		dest.mu.Lock()
 		defer dest.mu.Unlock()
+
 		delete(dest.writers, w)
+
+		// restore std and unblock goroutine
+		if len(dest.writers) == 0 {
+			w := *std
+			*std = dest.out
+			w.Close()
+
+			// reset std forwarder to be ready for reinitialization
+			*&dest.once = sync.Once{}
+		}
+
 	}, nil
 }
