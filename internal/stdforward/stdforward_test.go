@@ -18,7 +18,33 @@ const durationForFlushingIoCopy = 500 * time.Microsecond
 
 func TestAddStdoutForwarder(t *testing.T) {
 	// We don’t use a goroutine to streamline the tests. We control what we send and won’t overload the pipe buffer.
-	stdErrText := "content on stderr"
+	commonText := "content on stdout and writer"
+
+	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
+	defer restoreStdout()
+
+	// 1. Hook up the writer
+	var myWriter strings.Builder
+	restore, err := stdforward.AddStdoutWriter(&myWriter)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter")
+
+	// 2. Write common text twice
+	fmt.Print(commonText)
+	fmt.Print(commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+
+	// 3. Disconnect the writer
+	restore()
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStdout()
+
+	// Check content
+	assert.Equal(t, commonText+commonText, stringFromOpenedReader(t, stdoutReader), "Both messages are on stdout")
+	assert.Equal(t, commonText+commonText, myWriter.String(), "Both messages are on the custom writer")
+}
+
+func TestAddStdoutForwarderAndDisconnect(t *testing.T) {
 	commonText := "content on stdout and writer"
 	stdoutOnlyText := "|content only on stdout"
 
