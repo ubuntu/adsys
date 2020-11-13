@@ -14,6 +14,8 @@ import (
 	"github.com/ubuntu/adsys/internal/stdforward"
 )
 
+const durationForFlushingIoCopy = 500 * time.Microsecond
+
 func TestAddStdoutForwarder(t *testing.T) {
 	// We don’t use a goroutine to streamline the tests. We control what we send and won’t overload the pipe buffer.
 	stdErrText := "content on stderr"
@@ -22,8 +24,6 @@ func TestAddStdoutForwarder(t *testing.T) {
 
 	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
 	defer restoreStdout()
-	stderrReader, restoreStderr := fileToReader(t, &os.Stderr)
-	defer restoreStderr()
 
 	// 1. Hook up the writer
 	var myWriter strings.Builder
@@ -32,24 +32,21 @@ func TestAddStdoutForwarder(t *testing.T) {
 
 	// 2. Write common text
 	fmt.Print(commonText)
-	fmt.Fprint(os.Stderr, stdErrText)
-	time.Sleep(time.Millisecond) // Let the copy in io.Copy goroutine to proceed
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
 
 	// 3. Disconnect the writer
 	restore()
 
 	// 4. Write now again, only stdout should capture it
 	fmt.Print(stdoutOnlyText)
-	time.Sleep(time.Millisecond)
+	time.Sleep(durationForFlushingIoCopy)
 
 	// Restore stdout (and disconnect our Writer) for other tests
 	restoreStdout()
-	restoreStderr()
 
 	// Check content
 	assert.Equal(t, commonText+stdoutOnlyText, stringFromOpenedReader(t, stdoutReader), "Both messages are on stdout")
 	assert.Equal(t, commonText, myWriter.String(), "Only message before remove() is in our custom writer")
-	assert.Equal(t, stdErrText, stringFromOpenedReader(t, stderrReader), "Nothing was sent on stderr")
 }
 
 // TODO: test close before restore myWriter.Close()
