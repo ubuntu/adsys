@@ -3,6 +3,7 @@ package stdforward_test
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
@@ -14,7 +15,8 @@ import (
 	"github.com/ubuntu/adsys/internal/stdforward"
 )
 
-const durationForFlushingIoCopy = 500 * time.Microsecond
+// TODO: can we do better?
+const durationForFlushingIoCopy = 2 * time.Millisecond
 
 func TestAddStdoutForwarder(t *testing.T) {
 	// We don’t use a goroutine to streamline the tests. We control what we send and won’t overload the pipe buffer.
@@ -40,7 +42,7 @@ func TestAddStdoutForwarder(t *testing.T) {
 	restoreStdout()
 
 	// Check content
-	assert.Equal(t, commonText+commonText, stringFromOpenedReader(t, stdoutReader), "Both messages are on stdout")
+	assert.Equal(t, commonText+commonText, stringFromReader(t, stdoutReader), "Both messages are on stdout")
 	assert.Equal(t, commonText+commonText, myWriter.String(), "Both messages are on the custom writer")
 }
 
@@ -71,7 +73,7 @@ func TestAddStdoutForwarderAndDisconnect(t *testing.T) {
 	restoreStdout()
 
 	// Check content
-	assert.Equal(t, commonText+stdoutOnlyText, stringFromOpenedReader(t, stdoutReader), "Both messages are on stdout")
+	assert.Equal(t, commonText+stdoutOnlyText, stringFromReader(t, stdoutReader), "Both messages are on stdout")
 	assert.Equal(t, commonText, myWriter.String(), "Only message before remove() is in our custom writer")
 }
 
@@ -110,11 +112,10 @@ func fileToReader(t *testing.T, f **os.File) (io.Reader, func()) {
 	}
 }
 
-func stringFromOpenedReader(t *testing.T, r io.Reader) string {
+func stringFromReader(t *testing.T, r io.Reader) string {
 	t.Helper()
 
-	data := make([]byte, 1024)
-	n, err := r.Read(data)
+	data, err := ioutil.ReadAll(r)
 	require.NoError(t, err, "No error while reading stdout content")
-	return string(data[:n])
+	return string(data)
 }
