@@ -11,15 +11,16 @@ var (
 )
 
 type streamsForwarder struct {
-	fw map[streamWithCaller]bool
-	mu sync.RWMutex
+	fw         map[streamWithCaller]bool
+	mu         sync.RWMutex
+	showCaller bool
 
 	once sync.Once
 }
 
 type streamWithCaller struct {
 	grpc.Stream
-	wantsCaller bool
+	showCaller bool
 }
 
 // AddStreamToForward adds stream identified to forward all logs to it.
@@ -29,33 +30,32 @@ func AddStreamToForward(stream grpc.Stream) func() {
 		streamsForwarders.fw = make(map[streamWithCaller]bool)
 	})
 
-	var wantsCaller bool
+	var showCaller bool
 	if logCtx, withLogCtx := stream.Context().Value(logContextKey).(logContext); withLogCtx {
-		wantsCaller = logCtx.withCallerForRemote
+		showCaller = logCtx.withCallerForRemote
 	}
 
 	streamsForwarders.mu.Lock()
 	defer streamsForwarders.mu.Unlock()
 	streamWcaller := streamWithCaller{
-		Stream:      stream,
-		wantsCaller: wantsCaller,
+		Stream:     stream,
+		showCaller: showCaller,
 	}
 	streamsForwarders.fw[streamWcaller] = true
+	streamsForwarders.showCaller = showCaller || streamsForwarders.showCaller
 
 	return func() {
 		streamsForwarders.mu.Lock()
 		defer streamsForwarders.mu.Unlock()
 		delete(streamsForwarders.fw, streamWcaller)
-	}
-}
-
-func (sf *streamsForwarder) wantsCaller() bool {
-	sf.mu.RLock()
-	defer sf.mu.RUnlock()
-	for stream := range sf.fw {
-		if stream.wantsCaller {
-			return true
+		// reupdate global showCaller based on remaining streamForwards
+		var showCaller bool
+		for stream := range streamsForwarders.fw {
+			if stream.showCaller {
+				showCaller = true
+				break
+			}
 		}
+		streamsForwarders.showCaller = showCaller
 	}
-	return false
 }
