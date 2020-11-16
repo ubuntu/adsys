@@ -26,8 +26,8 @@ type forwarder struct {
 
 func (f *forwarder) Write(p []byte) (int, error) {
 	// Write to regular output first
-	n, err := f.out.Write(p)
-	if err != nil {
+
+	if _, err := f.out.Write(p); err != nil {
 		log.Warningf("Failed to write to regular output: %v", err)
 	}
 
@@ -36,11 +36,11 @@ func (f *forwarder) Write(p []byte) (int, error) {
 	defer f.mu.RUnlock()
 	for w := range f.writers {
 		if _, err := w.Write(p); err != nil {
-			log.Warningf("Failed to forward logs: %v", err)
+			log.Warningf("Failed to forward log: %v", err)
 		}
 	}
 
-	return n, nil
+	return len(p), nil
 }
 
 // AddStdoutWriter will forward stdout to writer (and all previous writers).
@@ -80,7 +80,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
 
 		go func() {
 			if _, err = io.Copy(dest, rOut); err != nil {
-				log.Warningf("Forwarding some messages failed: %v", err)
+				log.Warningf("We couldn’t forward all messages: %v", err)
 			}
 		}()
 
