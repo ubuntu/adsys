@@ -1,6 +1,7 @@
 package stdforward_test
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -247,14 +248,106 @@ func TestAddForwarderSameWriterStdoutStderr(t *testing.T) {
 	assert.Equal(t, stdOutText+stdErrText, myWriter.String(), "Both messages are on the custom writer")
 }
 
-// TODO: one writer with capacity full (or closed): other writers should still forward
-// with another writer, should still forward
+func TestAddStdoutForwarderWithBlockedStdout(t *testing.T) {
+	commonText := "content on stdout and writer"
 
-// stdout fail or stuck
-// -> writer still get the message
+	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
+	defer restoreStdout()
 
-// one writer fail or stuck
-// -> other writers and stdout still get the message
+	// close our fake stdout
+	os.Stdout.Close()
+
+	// 1. Hook up the writer
+	var myWriter strings.Builder
+	restore, err := stdforward.AddStdoutWriter(&myWriter)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter")
+
+	// 2. Write text multiple times to ensure not blocked by stdout
+	fmt.Print(commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+	fmt.Print(commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+	fmt.Print(commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+
+	// 3. Disconnect the writer
+	restore()
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStdout()
+
+	// Check content is still forwarded to writer
+	assert.Equal(t, commonText+commonText+commonText, myWriter.String(), "Messages weren’t blocked on the custom writer")
+	// We should have only warnings, not on stdout
+	assert.Empty(t, stringFromReader(t, stdoutReader), "Nothing on stdout")
+}
+
+func TestAddStderrForwarderWithBlockedStderr(t *testing.T) {
+	commonText := "content on stderr and writer"
+
+	stderrReader, restoreStderr := fileToReader(t, &os.Stderr)
+	defer restoreStderr()
+
+	// close our fake stderr
+	os.Stderr.Close()
+
+	// 1. Hook up the writer
+	var myWriter strings.Builder
+	restore, err := stdforward.AddStderrWriter(&myWriter)
+	require.NoError(t, err, "AddStderrWriter should add myWriter")
+
+	// 2. Write common text twice
+	fmt.Fprint(os.Stderr, commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+	fmt.Fprint(os.Stderr, commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+	fmt.Fprint(os.Stderr, commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+
+	// 3. Disconnect the writer
+	restore()
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStderr()
+
+	// Check content is still forwarded to writer
+	assert.Equal(t, commonText+commonText+commonText, myWriter.String(), "Messages weren’t blocked on the custom writer")
+	// We should have only warnings, not on stderr
+	assert.Empty(t, stringFromReader(t, stderrReader), "Nothing on stderr")
+}
+
+func TestAddStdoutForwarderOneWithFailingForwarder(t *testing.T) {
+	commonText := "content on stdout and writer"
+
+	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
+	defer restoreStdout()
+
+	// 1. Hook up the writer and failed writer
+	restorefailed, err := stdforward.AddStdoutWriter(failedWriter{})
+	require.NoError(t, err, "AddStdoutWriter should add the failed writer")
+	var myWriter strings.Builder
+	restore, err := stdforward.AddStdoutWriter(&myWriter)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter")
+
+	// 2. Write common text multiple times
+	fmt.Print(commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+	fmt.Print(commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+	fmt.Print(commonText)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+
+	// 3. Disconnect the writers
+	restore()
+	restorefailed()
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStdout()
+
+	// Check content is still forwarded to other writers
+	assert.Equal(t, commonText+commonText+commonText, stringFromReader(t, stdoutReader), "Both messages are on stdout")
+	assert.Equal(t, commonText+commonText+commonText, myWriter.String(), "Both messages are on the custom writer")
+}
 
 func fileToReader(t *testing.T, f **os.File) (io.Reader, func()) {
 	t.Helper()
@@ -283,4 +376,10 @@ func stringFromReader(t *testing.T, r io.Reader) string {
 	data, err := ioutil.ReadAll(r)
 	require.NoError(t, err, "No error while reading stdout content")
 	return string(data)
+}
+
+type failedWriter struct{}
+
+func (failedWriter) Write(p []byte) (int, error) {
+	return 0, errors.New("Error from failedWriter")
 }
