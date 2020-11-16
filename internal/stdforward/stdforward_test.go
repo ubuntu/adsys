@@ -212,6 +212,17 @@ func TestAddForwarderDifferentWriterStdoutStderr(t *testing.T) {
 	assert.Equal(t, stdErrText, myWriterStderr.String(), "Writer for stderr has only stderr content")
 }
 
+type concurrentStringsBuilder struct {
+	strings.Builder
+	mu sync.Mutex
+}
+
+func (sb *concurrentStringsBuilder) Write(p []byte) (int, error) {
+	sb.mu.Lock()
+	defer sb.mu.Unlock()
+	return sb.Builder.Write(p)
+}
+
 func TestAddForwarderSameWriterStdoutStderr(t *testing.T) {
 	stdOutText := "content on stdout"
 	stdErrText := "content on stderr"
@@ -222,7 +233,7 @@ func TestAddForwarderSameWriterStdoutStderr(t *testing.T) {
 	defer restoreStderr()
 
 	// 1. Hook up the writer
-	var myWriter strings.Builder
+	myWriter := concurrentStringsBuilder{}
 	restoreWriterStdout, err := stdforward.AddStdoutWriter(&myWriter)
 	require.NoError(t, err, "AddStdoutWriter should add myWriter")
 	restoreWriterStderr, err := stdforward.AddStderrWriter(&myWriter)
