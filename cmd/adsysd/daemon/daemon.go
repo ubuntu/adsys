@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"runtime"
+	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
@@ -28,6 +30,7 @@ type App struct {
 type daemonConfig struct {
 	Verbose int
 	Socket  string
+	Timeout int
 }
 
 // New registers commands and return a new App.
@@ -57,6 +60,7 @@ func New() *App {
 
 				oldVerbose := a.config.Verbose
 				oldSocket := a.config.Socket
+				oldTimeout := a.config.Timeout
 				a.config = newConfig
 
 				// Reload necessary parts
@@ -66,13 +70,17 @@ func New() *App {
 				if oldSocket != a.config.Socket {
 					a.changeServerSocket(a.config.Socket)
 				}
+				if oldTimeout != a.config.Timeout {
+					a.changeServiceTimeout(time.Duration(a.config.Timeout) * time.Second)
+				}
 				return nil
 			})
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			timeout := time.Duration(a.config.Timeout) * time.Second
 			adsys := adsysservice.Service{}
-			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket)
+			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket, daemon.WithTimeout(timeout))
 			if err != nil {
 				return err
 			}
@@ -85,6 +93,9 @@ func New() *App {
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
+
+	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
+	viper.BindPFlag("timeout", a.rootCmd.PersistentFlags().Lookup("service-timeout"))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
@@ -99,6 +110,14 @@ func (a *App) changeServerSocket(socket string) error {
 		return nil
 	}
 	return a.daemon.UseSocket(socket)
+}
+
+// changeServiceTimeout change the timeout used on server.
+func (a *App) changeServiceTimeout(timeout time.Duration) {
+	if a.daemon == nil {
+		return
+	}
+	a.daemon.ChangeTimeout(timeout)
 }
 
 // Run executes the command and associated process. It returns an error on syntax/usage error.

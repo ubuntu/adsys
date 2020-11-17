@@ -80,7 +80,7 @@ func New() *App {
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
-	viper.BindPFlag("timeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
+	viper.BindPFlag("timeout", a.rootCmd.PersistentFlags().Lookup("client-timeout"))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
