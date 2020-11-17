@@ -92,6 +92,7 @@ func New() *App {
 	}
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd)
+	cmdhandler.InstallConfigFlag(&a.rootCmd)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))

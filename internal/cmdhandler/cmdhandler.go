@@ -61,3 +61,8 @@ func InstallSocketFlag(cmd *cobra.Command, defaultPath string) *string {
 	viper.BindPFlag("socket", cmd.PersistentFlags().Lookup("socket"))
 	return s
 }
+
+// InstallConfigFlag adds the -c and --config option to select a configuration file and returns the reference to it.
+func InstallConfigFlag(cmd *cobra.Command) *string {
+	return cmd.PersistentFlags().StringP("config", "c", "", i18n.G("use a specific configuration file"))
+}

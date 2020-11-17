@@ -47,10 +47,15 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath
 
 	SetVerboseMode(v)
 
-	viper.SetConfigName(name)
-	viper.AddConfigPath("./")
-	viper.AddConfigPath("$HOME/")
-	viper.AddConfigPath("/etc/")
+	if v, err := rootCmd.PersistentFlags().GetString("config"); err == nil && v != "" {
+		viper.SetConfigFile(v)
+	} else {
+		viper.SetConfigName(name)
+		viper.AddConfigPath("./")
+		viper.AddConfigPath("$HOME/")
+		viper.AddConfigPath("/etc/")
+	}
+
 	if err := viper.ReadInConfig(); err != nil {
 		var e viper.ConfigFileNotFoundError
 		if errors.As(err, &e) {
@@ -59,6 +64,7 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath
 			return fmt.Errorf("invalid configuration file: %v", err)
 		}
 	} else {
+		log.Infof("Using configuration file: %v", viper.ConfigFileUsed())
 		viper.WatchConfig()
 		viper.OnConfigChange(func(e fsnotify.Event) {
 			if e.Op != fsnotify.Write {
