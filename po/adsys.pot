@@ -31,7 +31,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:106
+#: internal/grpc/logstreamer/server.go:107
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
@@ -49,7 +49,7 @@ msgstr ""
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:38
+#: cmd/adsysd/daemon/daemon.go:41
 msgid "AD integration daemon"
 msgstr ""
 
@@ -91,7 +91,7 @@ msgstr ""
 msgid "Generates bash completion scripts"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:87
+#: internal/grpc/logstreamer/server.go:88
 msgid ""
 "Invalid metdata from client: %v\n"
 ". Please use the StreamClientInterceptor."
@@ -147,11 +147,11 @@ msgstr ""
 msgid "couldn't listen on new socket %q: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:159
+#: internal/grpc/logstreamer/log.go:149
 msgid "couldn't send logs to client"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:166
+#: internal/grpc/logstreamer/log.go:156
 msgid "couldn't send logs to client: %v"
 msgstr ""
 
@@ -163,7 +163,7 @@ msgstr ""
 msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:118
+#: internal/grpc/logstreamer/server.go:119
 msgid "invalid metadata %s for incoming request: %q"
 msgstr ""
 
@@ -171,11 +171,11 @@ msgstr ""
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:94
+#: internal/grpc/logstreamer/server.go:95
 msgid "missing client metadata"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:115
+#: internal/grpc/logstreamer/server.go:116
 #, c-format
 msgid "missing metadata %s for incoming request"
 msgstr ""
@@ -186,13 +186,22 @@ msgid ""
 "socket activation."
 msgstr ""
 
-#: cmd/adsysd/client/client.go:82
+#: cmd/adsysd/client/client.go:83
 msgid ""
 "time in seconds before cancelling the client request when the server gives "
 "no result. 0 for no timeout."
 msgstr ""
 
+#: cmd/adsysd/daemon/daemon.go:100
+msgid ""
+"time in seconds without activity before the service exists. 0 for no timeout."
+msgstr ""
+
 #: internal/daemon/daemon.go:99
 #, c-format
 msgid "unexpected number of systemd socket activation (%d != 1)"
+msgstr ""
+
+#: internal/cmdhandler/cmdhandler.go:67
+msgid "use a specific configuration file"
 msgstr ""
