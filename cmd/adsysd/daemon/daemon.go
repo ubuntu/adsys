@@ -28,9 +28,9 @@ type App struct {
 }
 
 type daemonConfig struct {
-	Verbose int
-	Socket  string
-	Timeout int
+	Verbose        int
+	Socket         string
+	ServiceTimeout int
 }
 
 // New registers commands and return a new App.
@@ -60,7 +60,7 @@ func New() *App {
 
 				oldVerbose := a.config.Verbose
 				oldSocket := a.config.Socket
-				oldTimeout := a.config.Timeout
+				oldTimeout := a.config.ServiceTimeout
 				a.config = newConfig
 
 				// Reload necessary parts
@@ -72,15 +72,15 @@ func New() *App {
 						log.Error(context.Background(), err)
 					}
 				}
-				if oldTimeout != a.config.Timeout {
-					a.changeServiceTimeout(time.Duration(a.config.Timeout) * time.Second)
+				if oldTimeout != a.config.ServiceTimeout {
+					a.changeServiceTimeout(time.Duration(a.config.ServiceTimeout) * time.Second)
 				}
 				return nil
 			})
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			timeout := time.Duration(a.config.Timeout) * time.Second
+			timeout := time.Duration(a.config.ServiceTimeout) * time.Second
 			adsys := adsysservice.Service{}
 			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket, daemon.WithTimeout(timeout))
 			if err != nil {
@@ -98,7 +98,7 @@ func New() *App {
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
-	viper.BindPFlag("timeout", a.rootCmd.PersistentFlags().Lookup("service-timeout"))
+	viper.BindPFlag("servicetimeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)

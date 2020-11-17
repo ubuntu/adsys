@@ -28,9 +28,9 @@ type App struct {
 }
 
 type daemonConfig struct {
-	Verbose int
-	Socket  string
-	Timeout int
+	Verbose       int
+	Socket        string
+	ClientTimeout int
 }
 
 // New registers commands and return a new App.
@@ -81,7 +81,7 @@ func New() *App {
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
-	viper.BindPFlag("timeout", a.rootCmd.PersistentFlags().Lookup("client-timeout"))
+	viper.BindPFlag("clienttimeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
@@ -119,5 +119,5 @@ func (a App) RootCmd() cobra.Command {
 }
 
 func (a App) getTimeout() time.Duration {
-	return time.Duration(a.config.Timeout * int(time.Second))
+	return time.Duration(a.config.ClientTimeout * int(time.Second))
 }
