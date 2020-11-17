@@ -84,3 +84,14 @@ func (i *idler) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo)
 
 	i.operations <- start
 }
+
+// ChangeTimeout changes and reset idling timeout time.
+func (i *idler) ChangeTimeout(d time.Duration) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
+	i.timeout = d
+	// the mutex ensures you nothing is calling in between the 2 channel send
+	i.operations <- stop
+	i.operations <- start
+}
