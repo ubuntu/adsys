@@ -68,7 +68,9 @@ func New() *App {
 					config.SetVerboseMode(a.config.Verbose)
 				}
 				if oldSocket != a.config.Socket {
-					a.changeServerSocket(a.config.Socket)
+					if err := a.changeServerSocket(a.config.Socket); err != nil {
+						log.Error(context.Background(), err)
+					}
 				}
 				if oldTimeout != a.config.Timeout {
 					a.changeServiceTimeout(time.Duration(a.config.Timeout) * time.Second)
