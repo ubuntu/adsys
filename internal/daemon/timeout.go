@@ -13,11 +13,19 @@ const (
 	maxDuration = time.Duration(1<<63 - 1)
 )
 
+type operation int
+
+const (
+	stop operation = iota
+	start
+)
+
 type idler struct {
 	timeout time.Duration
 
 	timer *time.Timer
 
+	operations      chan operation
 	currentRequests int
 	mu              sync.Mutex
 }
@@ -27,29 +35,43 @@ func newIdler(timeout time.Duration) idler {
 		timeout = maxDuration
 	}
 	return idler{
-		timeout: timeout,
-		timer:   time.NewTimer(timeout),
+		timeout:    timeout,
+		timer:      time.NewTimer(timeout),
+		operations: make(chan operation),
 	}
 
 }
 
 func (i *idler) checkTimeout(d *Daemon) {
-	<-i.timer.C
-	log.Debug(context.Background(), "idling timeout expired")
-	d.Quit()
+	// we need to proceed any timer event in the same goroutine to avoid races.
+	for {
+		select {
+		case <-i.timer.C:
+			log.Debug(context.Background(), "idling timeout expired")
+			d.Quit()
+			return
+		case o := <-i.operations:
+			switch o {
+			case stop:
+				if !i.timer.Stop() {
+					<-i.timer.C
+				}
+			case start:
+				i.timer.Reset(i.timeout)
+			}
+		}
+	}
 }
 
 func (i *idler) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.currentRequests++
-
-	// Stop can return false if the timeout has fired OR if it's already stopped.
-	// Base on currentRequests number to decide if we need to drain the timer channel
-	// if the timeout has already fired.
-	if i.currentRequests == 1 && !i.timer.Stop() {
-		<-i.timer.C
+	if i.currentRequests != 1 {
+		return
 	}
+
+	i.operations <- stop
 }
 
 func (i *idler) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo) {
@@ -60,5 +82,5 @@ func (i *idler) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo)
 		return
 	}
 
-	i.timer.Reset(i.timeout)
+	i.operations <- start
 }
