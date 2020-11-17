@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/daemon"
 	"google.golang.org/grpc"
@@ -127,5 +128,44 @@ func TestServerDontTimeoutWithMultipleActiveRequests(t *testing.T) {
 	case err := <-errs:
 		require.NoError(t, err, "No error from listen")
 	}
+	wg.Wait()
+}
+
+func TestServerChangeTimeout(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	grpcRegister := &grpcServiceRegister{}
+
+	// initial timeout is 10 millisecond
+	start := time.Now()
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(time.Duration(10*time.Millisecond)))
+	require.NoError(t, err, "New should return the daemon handler")
+
+	// change it to 50 Millisecond which should be the minimum time of wait
+	d.ChangeTimeout(50 * time.Millisecond)
+
+	errs := make(chan error)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		if err := d.Listen(); err != nil {
+			errs <- err
+		}
+		close(errs)
+		wg.Done()
+	}()
+
+	// check initial timeout of 50 milliseconds min
+	select {
+	case <-time.After(time.Second):
+		d.Quit()
+		t.Fatalf("Server should have timed out, but it didn't")
+	case err := <-errs:
+		require.NoError(t, err, "No error from listen")
+	}
+
+	assert.True(t, time.Now().After(start.Add(50*time.Millisecond)), "Wait more than intial timeout and changed timeout")
+
 	wg.Wait()
 }
