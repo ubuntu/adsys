@@ -13,6 +13,9 @@ var (
 	// DefaultSocket is the default socket path
 	DefaultSocket = "/tmp/socket.default"
 
-	// DefaultClientTimeout is the default client time between 2 server activity before the client returns.
+	// DefaultClientTimeout is the default time in seconds  between 2 server activity before the client returns.
 	DefaultClientTimeout = 30
+
+	// DefaultServiceTimeout is the default time in seconds without any active request before the service exits.
+	DefaultServiceTimeout = 120
 )
