@@ -20,6 +20,7 @@ adsysctl COMMAND [flags]
 ##### Options
 
 ```
+  -c, --config string   use a specific configuration file
   -h, --help            help for adsysctl
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
@@ -54,6 +55,7 @@ adsysctl completion [flags]
 ##### Options inherited from parent commands
 
 ```
+  -c, --config string   use a specific configuration file
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
@@ -80,6 +82,7 @@ adsysctl service COMMAND [flags]
 ##### Options inherited from parent commands
 
 ```
+  -c, --config string   use a specific configuration file
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
@@ -106,6 +109,7 @@ adsysctl service cat [flags]
 ##### Options inherited from parent commands
 
 ```
+  -c, --config string   use a specific configuration file
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
@@ -132,6 +136,7 @@ adsysctl version [flags]
 ##### Options inherited from parent commands
 
 ```
+  -c, --config string   use a specific configuration file
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
@@ -152,8 +157,10 @@ adsysd COMMAND [flags]
 ##### Options
 
 ```
+  -c, --config string   use a specific configuration file
   -h, --help            help for adsysd
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
+  -t, --timeout int     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -185,7 +192,9 @@ adsysd completion [flags]
 ##### Options inherited from parent commands
 
 ```
+  -c, --config string   use a specific configuration file
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
+  -t, --timeout int     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -210,7 +219,9 @@ adsysd version [flags]
 ##### Options inherited from parent commands
 
 ```
+  -c, --config string   use a specific configuration file
   -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
+  -t, --timeout int     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
