@@ -77,6 +77,7 @@ func New() *App {
 	}
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd)
+	cmdhandler.InstallConfigFlag(&a.rootCmd)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
