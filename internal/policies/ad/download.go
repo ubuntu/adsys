@@ -1,0 +1,230 @@
+package ad
+
+/*
+System
+
+On startup (after sssd) or refresh:
+Create a ticket from keytab:
+$ kinit 'AD-DESKTOP-1$@WARTHOGS.BIZ' -k -c /run/adsys/krb5cc/<FQDN>
+<download call for host>
+
+User
+
+* On login pam_sss sets KRB5CCNAME
+Client passes KRB5CCNAME to daemon
+Daemon verifies that it matches the uid of the caller
+Creates a symlink in /run/adsys/krb5cc/UID -> /tmp/krb5cc_…
+<download call for user>:
+
+* On refresh:
+systemd system unit timer
+List all /run/adsys/krb5cc/
+Check the symlink is not dangling
+Check the user is still logged in (loginctl?)
+For each logged in user (sequentially):
+- <download call for user>
+
+<download call>
+  mutex for download
+  set KRB5CCNAME
+  download all GPO concurrently
+  unset KRB5CCNAME
+  release mutex
+
+*/
+import (
+	"bufio"
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"sync"
+
+	"github.com/mvo5/libsmbclient-go"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	"golang.org/x/sync/errgroup"
+)
+
+type gpoHandler struct {
+	gpos map[string]*sync.RWMutex
+	sync.Mutex
+}
+
+// newGPOHandler returns a new per GPO read/write mutex object
+func newGPOHandler() *gpoHandler {
+	return &gpoHandler{
+		gpos: make(map[string]*sync.RWMutex),
+	}
+}
+
+/*
+Fetch downloads a list of gpos from a url for a given kerberosTicket and stores the downloaded files in dest.
+url must be of the form: smb://<server>/SYSVOL/<AD domain>/.
+*/
+func (gpoHandler *gpoHandler) Fetch(ctx context.Context, url, krb5Ticket, dest string, gpos []string) error {
+	if _, err := os.Stat(dest); err != nil {
+		return fmt.Errorf("%q does not exist", dest)
+	}
+
+	// protect env variable
+	gpoHandler.Lock()
+	defer gpoHandler.Unlock()
+	// Set kerberos ticket.
+	const krb5DefaultTicket = "KRB5CCNAME"
+	oldKrb5Ticket := os.Getenv(krb5DefaultTicket)
+	if err := os.Setenv(krb5DefaultTicket, krb5Ticket); err != nil {
+		return err
+	}
+	defer func() {
+		if err := os.Setenv(oldKrb5Ticket, krb5Ticket); err != nil {
+			log.Errorf(ctx, "Couln't restore initial value for %s", krb5Ticket)
+		}
+	}()
+
+	g := new(errgroup.Group)
+	for _, gpo := range gpos {
+		gpo := gpo
+
+		gpoMu, ok := gpoHandler.gpos[gpo]
+		if !ok {
+			gpoHandler.gpos[gpo] = &sync.RWMutex{}
+		}
+
+		g.Go(func() error {
+			dest := filepath.Join(dest, gpo)
+			client := libsmbclient.New()
+			client.SetUseKerberos()
+
+			// don’t use filepath.Join() to avoid stripping smb://
+			gpoRoot := fmt.Sprintf("%s/Policies/%s", url, gpo)
+
+			// Look at GPO version and compare with the one on AD to decide if we redownload or not
+			shouldDownload, err := gpoNeedsDownload(ctx, gpoMu, client, gpoRoot, dest)
+			if err != nil {
+				return err
+			}
+			if !shouldDownload {
+				return nil
+			}
+
+			log.Infof(ctx, "Downloading GPO %v", gpo)
+			gpoMu.Lock()
+			defer gpoMu.Unlock()
+			// Remove target directory prior to redownloading a new GPO in order to delete files
+			// that have been removed from the GPO (scripts, binaries, ...)
+			if err := os.RemoveAll(dest); err != nil {
+				return err
+			}
+			return downloadRecursive(client, gpoRoot, dest)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return fmt.Errorf("one or more error while fetching GPOs: %v", err)
+	}
+
+	return nil
+}
+
+func gpoNeedsDownload(ctx context.Context, mu *sync.RWMutex, client *libsmbclient.Client, remotePath, localPath string) (bool, error) {
+	mu.RLock()
+	defer mu.RUnlock()
+
+	var localVersion, remoteVersion int
+	if f, err := os.Open(filepath.Join(localPath, "GPT.INI")); err == nil {
+		defer f.Close()
+		if localVersion, err = getGPOVersion(f); err != nil {
+			log.Warningf(ctx, "Invalid local GPT.INI: %v\nDownloading GPO…", err)
+		}
+	}
+	if localVersion > 0 {
+		f, err := client.Open(fmt.Sprintf("%s/GPT.INI", remotePath), 0, 0)
+		if err != nil {
+			return false, err
+		}
+		defer f.Close()
+		// Read() is on *libsmbclient.File, not libsmbclient.File
+		pf := &f
+		if remoteVersion, err = getGPOVersion(pf); err != nil {
+			return false, fmt.Errorf("invalid remote GPT.INI: %v", err)
+		}
+	}
+	if localVersion >= remoteVersion {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func getGPOVersion(r io.Reader) (version int, err error) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		t := scanner.Text()
+		if strings.HasPrefix(t, "Version=") {
+			version, err := strconv.Atoi(strings.TrimPrefix(t, "Version="))
+			if err != nil {
+				return 0, fmt.Errorf("version is not an int: %v", err)
+			}
+			return version, nil
+		}
+	}
+
+	return 0, errors.New("version not found")
+}
+
+func downloadRecursive(client *libsmbclient.Client, url string, dest string) error {
+	d, err := client.Opendir(url)
+	if err != nil {
+		return err
+	}
+	defer d.Closedir()
+
+	if err := os.MkdirAll(dest, 0700); err != nil {
+		return fmt.Errorf("can't create %q", dest)
+	}
+
+	for {
+		dirent, err := d.Readdir()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		if dirent.Name == "." || dirent.Name == ".." {
+			continue
+		}
+
+		entityURL := url + "/" + dirent.Name
+		entityDest := filepath.Join(dest, dirent.Name)
+
+		if dirent.Type == libsmbclient.SmbcFile {
+			f, err := client.Open(entityURL, 0, 0)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			// Read() is on *libsmbclient.File, not libsmbclient.File
+			pf := &f
+			data, err := ioutil.ReadAll(pf)
+
+			if err := ioutil.WriteFile(entityDest, data, 0700); err != nil {
+				return err
+			}
+		} else if dirent.Type == libsmbclient.SmbcDir {
+			err := downloadRecursive(client, entityURL, entityDest)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("unsupported type %q for entry %s", dirent.Type, dirent.Name)
+		}
+	}
+	return nil
+}
