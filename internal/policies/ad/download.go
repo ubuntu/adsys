@@ -53,6 +53,7 @@ import (
 /*
 fetch downloads a list of gpos from a url for a given kerberosTicket and stores the downloaded files in dest.
 Each gpo entry must be a gpo, with a name, url of the form: smb://<server>/SYSVOL/<AD domain>/<GPO_ID> and mutex.
+If krb5Ticket is empty, no authentication is done on samba.
 */
 func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]string) error {
 	dest := ad.gpoCacheDir
@@ -91,7 +92,12 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 
 			dest := filepath.Join(dest, filepath.Base(g.url))
 			client := libsmbclient.New()
-			client.SetUseKerberos()
+
+			// When testing we cannot use kerberos without a real kerberos server
+			// So we don't use kerberos in this case
+			if krb5Ticket != "" {
+				client.SetUseKerberos()
+			}
 
 			// Look at GPO version and compare with the one on AD to decide if we redownload or not
 			shouldDownload, err := gpoNeedsDownload(ctx, client, g, dest)
