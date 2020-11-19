@@ -50,61 +50,51 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type gpoHandler struct {
-	gpos map[string]*sync.RWMutex
-	sync.Mutex
-}
-
-// newGPOHandler returns a new per GPO read/write mutex object
-func newGPOHandler() *gpoHandler {
-	return &gpoHandler{
-		gpos: make(map[string]*sync.RWMutex),
-	}
-}
-
 /*
-Fetch downloads a list of gpos from a url for a given kerberosTicket and stores the downloaded files in dest.
-url must be of the form: smb://<server>/SYSVOL/<AD domain>/.
+fetch downloads a list of gpos from a url for a given kerberosTicket and stores the downloaded files in dest.
+Each gpo entry must be a gpo, with a name, url of the form: smb://<server>/SYSVOL/<AD domain>/<GPO_ID> and mutex.
 */
-func (gpoHandler *gpoHandler) Fetch(ctx context.Context, url, krb5Ticket, dest string, gpos []string) error {
+func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]string) error {
+	dest := ad.gpoCacheDir
 	if _, err := os.Stat(dest); err != nil {
 		return fmt.Errorf("%q does not exist", dest)
 	}
 
-	// protect env variable
-	gpoHandler.Lock()
-	defer gpoHandler.Unlock()
+	// protect env variable and map creation
+	ad.Lock()
+	defer ad.Unlock()
 	// Set kerberos ticket.
-	const krb5DefaultTicket = "KRB5CCNAME"
-	oldKrb5Ticket := os.Getenv(krb5DefaultTicket)
-	if err := os.Setenv(krb5DefaultTicket, krb5Ticket); err != nil {
+	const krb5TicketEnv = "KRB5CCNAME"
+	oldKrb5Ticket := os.Getenv(krb5TicketEnv)
+	if err := os.Setenv(krb5TicketEnv, krb5Ticket); err != nil {
 		return err
 	}
 	defer func() {
-		if err := os.Setenv(oldKrb5Ticket, krb5Ticket); err != nil {
-			log.Errorf(ctx, "Couln't restore initial value for %s", krb5Ticket)
+		if err := os.Setenv(krb5TicketEnv, oldKrb5Ticket); err != nil {
+			log.Errorf(ctx, "Couln't restore initial value for %s: %v", krb5Ticket, err)
 		}
 	}()
 
-	g := new(errgroup.Group)
-	for _, gpo := range gpos {
-		gpo := gpo
-
-		gpoMu, ok := gpoHandler.gpos[gpo]
+	errg := new(errgroup.Group)
+	for name, url := range gpos {
+		g, ok := ad.gpos[name]
 		if !ok {
-			gpoHandler.gpos[gpo] = &sync.RWMutex{}
+			ad.gpos[name] = gpo{
+				name: name,
+				url:  url,
+				mu:   &sync.RWMutex{},
+			}
+			g = ad.gpos[name]
 		}
+		errg.Go(func() error {
+			log.Debugf(ctx, "Analyzing GPO %q", g.name)
 
-		g.Go(func() error {
-			dest := filepath.Join(dest, gpo)
+			dest := filepath.Join(dest, filepath.Base(g.url))
 			client := libsmbclient.New()
 			client.SetUseKerberos()
 
-			// don’t use filepath.Join() to avoid stripping smb://
-			gpoRoot := fmt.Sprintf("%s/Policies/%s", url, gpo)
-
 			// Look at GPO version and compare with the one on AD to decide if we redownload or not
-			shouldDownload, err := gpoNeedsDownload(ctx, gpoMu, client, gpoRoot, dest)
+			shouldDownload, err := gpoNeedsDownload(ctx, client, g, dest)
 			if err != nil {
 				return err
 			}
@@ -112,48 +102,49 @@ func (gpoHandler *gpoHandler) Fetch(ctx context.Context, url, krb5Ticket, dest s
 				return nil
 			}
 
-			log.Infof(ctx, "Downloading GPO %v", gpo)
-			gpoMu.Lock()
-			defer gpoMu.Unlock()
+			log.Infof(ctx, "Downloading GPO %q", g.name)
+			g.mu.Lock()
+			defer g.mu.Unlock()
 			// Remove target directory prior to redownloading a new GPO in order to delete files
 			// that have been removed from the GPO (scripts, binaries, ...)
 			if err := os.RemoveAll(dest); err != nil {
 				return err
 			}
-			return downloadRecursive(client, gpoRoot, dest)
+			return downloadRecursive(client, g.url, dest)
 		})
 	}
 
-	if err := g.Wait(); err != nil {
+	if err := errg.Wait(); err != nil {
 		return fmt.Errorf("one or more error while fetching GPOs: %v", err)
 	}
 
 	return nil
 }
 
-func gpoNeedsDownload(ctx context.Context, mu *sync.RWMutex, client *libsmbclient.Client, remotePath, localPath string) (bool, error) {
-	mu.RLock()
-	defer mu.RUnlock()
+func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g gpo, localPath string) (bool, error) {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
 
 	var localVersion, remoteVersion int
 	if f, err := os.Open(filepath.Join(localPath, "GPT.INI")); err == nil {
 		defer f.Close()
+
 		if localVersion, err = getGPOVersion(f); err != nil {
-			log.Warningf(ctx, "Invalid local GPT.INI: %v\nDownloading GPO…", err)
+			log.Warningf(ctx, "Invalid local GPT.INI for %s: %v\nDownloading GPO…", g.name, err)
 		}
 	}
-	if localVersion > 0 {
-		f, err := client.Open(fmt.Sprintf("%s/GPT.INI", remotePath), 0, 0)
-		if err != nil {
-			return false, err
-		}
-		defer f.Close()
-		// Read() is on *libsmbclient.File, not libsmbclient.File
-		pf := &f
-		if remoteVersion, err = getGPOVersion(pf); err != nil {
-			return false, fmt.Errorf("invalid remote GPT.INI: %v", err)
-		}
+
+	f, err := client.Open(fmt.Sprintf("%s/GPT.INI", g.url), 0, 0)
+	if err != nil {
+		return false, err
 	}
+	defer f.Close()
+	// Read() is on *libsmbclient.File, not libsmbclient.File
+	pf := &f
+	if remoteVersion, err = getGPOVersion(pf); err != nil {
+		return false, fmt.Errorf("invalid remote GPT.INI for %s: %v", g.name, err)
+	}
+
 	if localVersion >= remoteVersion {
 		return false, nil
 	}
