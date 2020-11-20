@@ -16,8 +16,10 @@ const (
 type operation int
 
 const (
-	stop operation = iota
-	start
+	stopTimeout operation = iota
+	startTimeout
+	quitGracefully
+	quitNow
 )
 
 type idler struct {
@@ -42,25 +44,35 @@ func newIdler(timeout time.Duration) idler {
 
 }
 
-func (i *idler) checkTimeout(d *Daemon) {
+func (i *idler) keepAlive(d *Daemon) {
 	// we need to proceed any timer event in the same goroutine to avoid races.
+out:
 	for {
 		select {
 		case <-i.timer.C:
 			log.Debug(context.Background(), "idling timeout expired")
-			d.Quit()
-			return
+			// as the receiver of the signal sent is this loop, we need to run that in a separate goroutine.
+			go d.Quit(true)
 		case o := <-i.operations:
 			switch o {
-			case stop:
+			case stopTimeout:
 				if !i.timer.Stop() {
 					<-i.timer.C
 				}
-			case start:
+			case startTimeout:
 				i.timer.Reset(i.timeout)
+			case quitGracefully:
+				d.stop(false)
+				break out
+			case quitNow:
+				d.stop(true)
+				break out
 			}
 		}
 	}
+	c := i.operations
+	i.operations = nil
+	close(c)
 }
 
 func (i *idler) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) {
@@ -71,7 +83,7 @@ func (i *idler) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) 
 		return
 	}
 
-	i.operations <- stop
+	i.sendOrTimeout(stopTimeout)
 }
 
 func (i *idler) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo) {
@@ -82,7 +94,7 @@ func (i *idler) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo)
 		return
 	}
 
-	i.operations <- start
+	i.sendOrTimeout(startTimeout)
 }
 
 // ChangeTimeout changes and reset idling timeout time.
@@ -92,6 +104,13 @@ func (i *idler) ChangeTimeout(d time.Duration) {
 
 	i.timeout = d
 	// the mutex ensures you nothing is calling in between the 2 channel send
-	i.operations <- stop
-	i.operations <- start
+	i.sendOrTimeout(stopTimeout)
+	i.sendOrTimeout(startTimeout)
+}
+
+func (i *idler) sendOrTimeout(op operation) {
+	select {
+	case i.operations <- op:
+	case <-time.After(1 * time.Second):
+	}
 }

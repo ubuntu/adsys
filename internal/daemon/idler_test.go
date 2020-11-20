@@ -35,7 +35,7 @@ func TestServerStartListenTimeout(t *testing.T) {
 
 	select {
 	case <-time.After(time.Second):
-		d.Quit()
+		d.Quit(false)
 		t.Fatalf("Server should have timed out, but it didn't")
 	case err := <-errs:
 		require.NoError(t, err, "No error from listen")
@@ -78,7 +78,7 @@ func TestServerDontTimeoutWithActiveRequest(t *testing.T) {
 
 	select {
 	case <-time.After(time.Second):
-		d.Quit()
+		d.Quit(false)
 		t.Fatalf("Server should have timed out, but it didn't")
 	case err := <-errs:
 		require.NoError(t, err, "No error from listen")
@@ -123,7 +123,7 @@ func TestServerDontTimeoutWithMultipleActiveRequests(t *testing.T) {
 
 	select {
 	case <-time.After(time.Second):
-		d.Quit()
+		d.Quit(false)
 		t.Fatalf("Server should have timed out, but it didn't")
 	case err := <-errs:
 		require.NoError(t, err, "No error from listen")
@@ -159,7 +159,7 @@ func TestServerChangeTimeout(t *testing.T) {
 	// check initial timeout of 50 milliseconds min
 	select {
 	case <-time.After(time.Second):
-		d.Quit()
+		d.Quit(false)
 		t.Fatalf("Server should have timed out, but it didn't")
 	case err := <-errs:
 		require.NoError(t, err, "No error from listen")

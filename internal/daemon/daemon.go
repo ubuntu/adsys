@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/coreos/go-systemd/activation"
@@ -21,6 +22,7 @@ type Daemon struct {
 	registerGRPCServer GRPCServerRegisterer
 
 	idler
+	shutdown sync.Once
 
 	lis chan net.Listener
 
@@ -101,7 +103,7 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 
 	d.grpcserver = d.registerGRPCServer(d)
 
-	go d.idler.checkTimeout(d)
+	go d.idler.keepAlive(d)
 
 	return d, nil
 }
@@ -132,7 +134,7 @@ func (d *Daemon) UseSocket(socket string) (err error) {
 	d.lis <- lis
 	// Listen on new socket by stopping previous service
 	if d.grpcserver != nil {
-		d.stop()
+		d.stop(false)
 	}
 
 	return nil
@@ -171,15 +173,29 @@ func (d *Daemon) Listen() error {
 	return nil
 }
 
-// Quit gracefully quits listening loop and stops the grpc server
-func (d *Daemon) Quit() {
-	close(d.lis)
-	d.stop()
+// Quit gracefully quits listening loop and stops the grpc server.
+// It can drops any existing connexion is force is true.
+func (d *Daemon) Quit(force bool) {
+	d.shutdown.Do(func() {
+		close(d.lis)
+
+		if force {
+			d.idler.sendOrTimeout(quitNow)
+			return
+		}
+		d.idler.sendOrTimeout(quitGracefully)
+	})
 }
 
-// stop gracefully stops the grpc server
-func (d *Daemon) stop() {
-	log.Info(context.Background(), i18n.G("Stopping daemon requested. Wait for active requests to close"))
+// stop gracefully stops the grpc server unless force is true.
+func (d *Daemon) stop(force bool) {
+	log.Info(context.Background(), i18n.G("Stopping daemon requested."))
+	if force {
+		d.grpcserver.Stop()
+		return
+	}
+
+	log.Info(context.Background(), i18n.G("Wait for active requests to close."))
 	d.grpcserver.GracefulStop()
-	log.Debug(context.Background(), i18n.G("All connections are now closed"))
+	log.Debug(context.Background(), i18n.G("All connections have now ended."))
 }

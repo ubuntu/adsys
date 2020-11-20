@@ -29,7 +29,7 @@ func TestStartStop(t *testing.T) {
 	go func() {
 		// make sure Serve() is called. Even std golang grpc has this timeout in tests
 		time.Sleep(time.Millisecond * 10)
-		d.Quit()
+		d.Quit(false)
 	}()
 
 	err = d.Listen()
@@ -49,7 +49,7 @@ func TestStopBeforeServe(t *testing.T) {
 	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
 	require.NoError(t, err, "New should return the daemon handler")
 
-	d.Quit()
+	d.Quit(false)
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called during creation")
 }
@@ -80,13 +80,12 @@ func TestChangeSocket(t *testing.T) {
 	d.UseSocket(filepath.Join(dir, "test2.sock"))
 	time.Sleep(time.Millisecond * 10)
 
-	d.Quit()
+	d.Quit(false)
+	wg.Wait()
 
+	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
 	require.Equal(t, 2, len(grpcRegister.daemonsCalled), "a new GRPC registerer has been requested")
 	require.Equal(t, d, grpcRegister.daemonsCalled[1], "GRPC registerer has the built in daemon as argument")
-
-	wg.Wait()
-	require.NoError(t, err, "Listen should return no error when stopped after changing socket")
 }
 
 func TestSocketActivation(t *testing.T) {
@@ -141,7 +140,7 @@ func TestSocketActivation(t *testing.T) {
 
 			go func() {
 				time.Sleep(10 * time.Millisecond)
-				d.Quit()
+				d.Quit(false)
 			}()
 			err = d.Listen()
 			require.NoError(t, err, "Listen should return no error")
@@ -182,7 +181,7 @@ func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
 	d.UseSocket("/tmp/this/is/also/ignored")
 	time.Sleep(time.Millisecond * 10)
 
-	d.Quit()
+	d.Quit(false)
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "we are still using the previous GRPC registerer with the socket activated socket")
 
@@ -229,7 +228,7 @@ func TestSdNotifier(t *testing.T) {
 
 			go func() {
 				time.Sleep(10 * time.Millisecond)
-				d.Quit()
+				d.Quit(false)
 			}()
 
 			err = d.Listen()
