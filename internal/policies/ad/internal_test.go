@@ -185,6 +185,10 @@ func TestFetchGPO(t *testing.T) {
 			gpos: []string{"gpt_ini_version_NaN"}, want: nil, wantErr: true},
 		"Error remote version entry missing": {
 			gpos: []string{"gpt_ini_version_missing"}, want: nil, wantErr: true},
+		"Error keeps downloading other GPOS": {
+			gpos:    []string{"missing_gpt_ini", "gpo2"},
+			want:    map[string]string{"gpo2": "gpo2"},
+			wantErr: true},
 	}
 
 	for name, tc := range tests {
