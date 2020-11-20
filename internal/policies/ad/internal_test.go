@@ -17,46 +17,177 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/termie/go-shutil"
 )
 
 /*
 testdata
 	/AD/SYSVOL/domain/policies/{....}
 	/golden
+
+TODO : func TestNew // api public
+with kinit failed
 */
 
+// TODO: TestMultipleFetch in concurrent
+// TODO: multiple concurrent fetches() for same gpo
+// TODO: unreadable
+
 func TestFetchGPO(t *testing.T) {
-	t.Parallel()
+	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
 	const policyPath = "SYSVOL/localdomain/Policies"
 	tests := map[string]struct {
-		gpos []string
+		gpos         []string
+		existingGpos map[string]string
 
 		want    map[string]string
 		wantErr bool
 	}{
 		"one new gpo": {
 			gpos: []string{"gpo1"},
-			want: map[string]string{"gpo1": filepath.Join("AD", policyPath, "gpo1")},
+			want: map[string]string{"gpo1": "gpo1"},
+		},
+		"two new gpos": {
+			gpos: []string{"gpo1", "gpo2"},
+			want: map[string]string{
+				"gpo1": "gpo1",
+				"gpo2": "gpo2",
+			},
+		},
+
+		"gpo already up to date": {
+			gpos:         []string{"gpo1"},
+			existingGpos: map[string]string{"gpo1": "gpo1"},
+			want:         map[string]string{"gpo1": "gpo1"},
+		},
+		"two gpos, one already up to date, one new": {
+			gpos:         []string{"gpo1", "gpo2"},
+			existingGpos: map[string]string{"gpo1": "gpo1"},
+			want: map[string]string{
+				"gpo1": "gpo1",
+				"gpo2": "gpo2",
+			},
+		},
+
+		"gpo is refreshed": {
+			gpos:         []string{"gpo1"},
+			existingGpos: map[string]string{"gpo1": "old_version"},
+			want:         map[string]string{"gpo1": "gpo1"},
+		},
+		"two gpos, one already up to date, one should be refreshed": {
+			gpos: []string{"gpo1", "gpo2"},
+			existingGpos: map[string]string{
+				"gpo2": "gpo2",
+				"gpo1": "old_version",
+			},
+			want: map[string]string{
+				"gpo1": "gpo1",
+				"gpo2": "gpo2",
+			},
+		},
+		"two gpos, one should be refreshed, one new": {
+			gpos:         []string{"gpo1", "gpo2"},
+			existingGpos: map[string]string{"gpo1": "old_version"},
+			want: map[string]string{
+				"gpo1": "gpo1",
+				"gpo2": "gpo2",
+			},
+		},
+
+		"local gpo is more recent than AD one": {
+			gpos:         []string{"gpo2"},
+			existingGpos: map[string]string{"gpo2": "new_version"},
+			want:         map[string]string{"gpo2": "new_version"},
+		},
+		"two gpos, one more recent, one up to date": {
+			gpos: []string{"gpo2", "gpo1"},
+			existingGpos: map[string]string{
+				"gpo2": "new_version",
+				"gpo1": "gpo1",
+			},
+			want: map[string]string{
+				"gpo2": "new_version",
+				"gpo1": "gpo1",
+			},
+		},
+		"two gpos, one more recent, one should be refreshed": {
+			gpos: []string{"gpo2", "gpo1"},
+			existingGpos: map[string]string{
+				"gpo2": "new_version",
+				"gpo1": "old_version",
+			},
+			want: map[string]string{
+				"gpo2": "new_version",
+				"gpo1": "gpo1",
+			},
+		},
+		"two gpos, one more recent, one new": {
+			gpos:         []string{"gpo2", "gpo1"},
+			existingGpos: map[string]string{"gpo2": "new_version"},
+			want: map[string]string{
+				"gpo2": "new_version",
+				"gpo1": "gpo1",
+			},
+		},
+
+		"keep existing gpos intact": {
+			gpos: []string{"gpo1"},
+			existingGpos: map[string]string{
+				"gpo1": "gpo1",
+				"gpo2": "gpo2",
+			},
+			want: map[string]string{
+				"gpo1": "gpo1",
+				"gpo2": "gpo2",
+			},
+		},
+
+		"Local gpo redownloaded on missing GPT.INI": {
+			gpos:         []string{"gpo1"},
+			existingGpos: map[string]string{"gpo1": "missing_gpt_ini"},
+			want:         map[string]string{"gpo1": "gpo1"},
+		},
+		"Local gpo redownloaded on NaN version in GPT.INI": {
+			gpos:         []string{"gpo1"},
+			existingGpos: map[string]string{"gpo1": "gpt_ini_version_NaN"},
+			want:         map[string]string{"gpo1": "gpo1"},
+		},
+		"Local gpo redownloaded on version entry missing in GPT.INI": {
+			gpos:         []string{"gpo1"},
+			existingGpos: map[string]string{"gpo1": "gpt_ini_version_missing"},
+			want:         map[string]string{"gpo1": "gpo1"},
 		},
 
 		// Errors
+		"Error unexistant remote gpo": {
+			gpos: []string{"gpo_does_not_exists"}, want: nil, wantErr: true},
 		"Error missing remote GPT.INI": {
-			gpos:    []string{"missing_gpt_ini"},
-			want:    nil,
-			wantErr: true,
-		},
+			gpos: []string{"missing_gpt_ini"}, want: nil, wantErr: true},
+		"Error remote version NaN": {
+			gpos: []string{"gpt_ini_version_NaN"}, want: nil, wantErr: true},
+		"Error remote version entry missing": {
+			gpos: []string{"gpt_ini_version_missing"}, want: nil, wantErr: true},
 	}
 
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//name := name
-			t.Parallel()
+			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 			dest := t.TempDir()
 
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withRunDir(dest))
 			require.NoError(t, err, "Setup: cannot create ad object")
+
+			// prepare by copying GPOs if any
+			for n, src := range tc.existingGpos {
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "AD", policyPath, src),
+						filepath.Join(adc.gpoCacheDir, n),
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: can't copy initial gpo directory")
+			}
 
 			gpos := make(map[string]string)
 			for _, n := range tc.gpos {
@@ -73,7 +204,6 @@ func TestFetchGPO(t *testing.T) {
 			// Ensure that only wanted GPOs are cached
 			files, err := ioutil.ReadDir(adc.gpoCacheDir)
 			require.NoError(t, err, "coudn't read destination directory")
-
 			for _, f := range files {
 				_, ok := tc.want[f.Name()]
 				assert.Truef(t, ok, "fetched file %s which is not in want list", f.Name())
@@ -82,7 +212,7 @@ func TestFetchGPO(t *testing.T) {
 
 			// Diff on each gpo dir content
 			for _, f := range files {
-				goldPath := filepath.Join("testdata", tc.want[f.Name()])
+				goldPath := filepath.Join("testdata", "AD", policyPath, tc.want[f.Name()])
 				gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, f.Name()))
 				goldTree := md5Tree(t, goldPath)
 				assert.Equalf(t, goldTree, gpoTree, "expected and downloaded GPO %q does not match", f.Name())
@@ -173,13 +303,10 @@ func TestMain(m *testing.M) {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
 		}
 
-		// XXX: wait will segfault because libsmbclient overrides sigchld
-		cmd.Process.Release()
-		waitForPortDone(smbPort)
-		/*_, err = cmd.Process.Wait()
+		_, err := cmd.Process.Wait()
 		if err != nil {
 			log.Fatalf("Setup: failed to wait for smbd: %v", err)
-		}*/
+		}
 	}()
 
 	m.Run()
@@ -201,6 +328,7 @@ func waitForPortReady(port int) {
 			continue
 		}
 		conn.Close()
+		time.Sleep(10 * time.Millisecond)
 		return
 	}
 }
@@ -227,7 +355,7 @@ func waitForPortDone(port int) {
 
 // md5Tree build a recursive file list of dir and with their md5sum
 func md5Tree(t *testing.T, dir string) map[string]string {
-	t.Helper()
+	//t.Helper()
 
 	r := make(map[string]string)
 
