@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"text/template"
 	"time"
@@ -29,17 +30,16 @@ TODO : func TestNew // api public
 with kinit failed
 */
 
-// TODO: TestMultipleFetch in concurrent
-// TODO: multiple concurrent fetches() for same gpo
-// TODO: unreadable
+// TODO: unreadable file
 
 func TestFetchGPO(t *testing.T) {
 	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
 	const policyPath = "SYSVOL/localdomain/Policies"
 	tests := map[string]struct {
-		gpos         []string
-		existingGpos map[string]string
+		gpos                   []string
+		concurrentGposDownload []string
+		existingGpos           map[string]string
 
 		want    map[string]string
 		wantErr bool
@@ -159,6 +159,23 @@ func TestFetchGPO(t *testing.T) {
 			want:         map[string]string{"gpo1": "gpo1"},
 		},
 
+		// Concurrent downloads
+		"concurrent different gpos": {
+			gpos:                   []string{"gpo1"},
+			concurrentGposDownload: []string{"gpo2"},
+			want: map[string]string{
+				"gpo1": "gpo1",
+				"gpo2": "gpo2",
+			},
+		},
+		"concurrent same gpos": {
+			gpos:                   []string{"gpo1"},
+			concurrentGposDownload: []string{"gpo1"},
+			want: map[string]string{
+				"gpo1": "gpo1",
+			},
+		},
+
 		// Errors
 		"Error unexistant remote gpo": {
 			gpos: []string{"gpo_does_not_exists"}, want: nil, wantErr: true},
@@ -194,11 +211,40 @@ func TestFetchGPO(t *testing.T) {
 				gpos[n] = fmt.Sprintf("smb://localhost:%d/%s/%s", smbPort, policyPath, n)
 			}
 
-			err = adc.fetch(context.Background(), "", gpos)
-			if tc.wantErr {
-				require.NotNil(t, err, "fetch should return an error but didn't")
+			if tc.concurrentGposDownload == nil {
+				err = adc.fetch(context.Background(), "", gpos)
+				if tc.wantErr {
+					require.NotNil(t, err, "fetch should return an error but didn't")
+				} else {
+					require.NoError(t, err, "fetch returned an error but shouldn't")
+				}
 			} else {
-				require.NoError(t, err, "fetch returned an error but shouldn't")
+				concurrentGpos := make(map[string]string)
+				for _, n := range tc.concurrentGposDownload {
+					concurrentGpos[n] = fmt.Sprintf("smb://localhost:%d/%s/%s", smbPort, policyPath, n)
+				}
+
+				wg := sync.WaitGroup{}
+				wg.Add(2)
+				go func() {
+					defer wg.Done()
+					err = adc.fetch(context.Background(), "", gpos)
+					if tc.wantErr {
+						require.NotNil(t, err, "fetch should return an error but didn't")
+					} else {
+						require.NoError(t, err, "fetch returned an error but shouldn't")
+					}
+				}()
+				go func() {
+					defer wg.Done()
+					err = adc.fetch(context.Background(), "", concurrentGpos)
+					if tc.wantErr {
+						require.NotNil(t, err, "fetch should return an error but didn't")
+					} else {
+						require.NoError(t, err, "fetch returned an error but shouldn't")
+					}
+				}()
+				wg.Wait()
 			}
 
 			// Ensure that only wanted GPOs are cached
