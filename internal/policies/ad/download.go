@@ -32,6 +32,22 @@ For each logged in user (sequentially):
   release mutex
 
 */
+
+/*
+#include <stdio.h>
+#include <signal.h>
+#include <string.h>
+
+void restoresigchild() {
+	struct sigaction action;
+	struct sigaction old_action;
+	sigaction(SIGCHLD, NULL, &action);
+	action.sa_flags = action.sa_flags | SA_ONSTACK;
+	sigaction(SIGCHLD, &action, &old_action);
+}
+*/
+import "C"
+
 import (
 	"bufio"
 	"context"
@@ -64,6 +80,13 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	// protect env variable and map creation
 	ad.Lock()
 	defer ad.Unlock()
+
+	// libsmbclient overrides sigchild without setting SA_ONSTACK
+	// It means that any cmd.Wait() would segfault when ran concurrently with this.
+	// Fortunately, we only execute subprocess in the AD package, and we have a single
+	// AD object with a mutex.
+	defer C.restoresigchild()
+
 	// Set kerberos ticket.
 	const krb5TicketEnv = "KRB5CCNAME"
 	oldKrb5Ticket := os.Getenv(krb5TicketEnv)
@@ -92,6 +115,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 
 			dest := filepath.Join(dest, filepath.Base(g.url))
 			client := libsmbclient.New()
+			defer client.Close()
 
 			// When testing we cannot use kerberos without a real kerberos server
 			// So we don't use kerberos in this case
