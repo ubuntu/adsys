@@ -63,6 +63,7 @@ import (
 
 	"github.com/mvo5/libsmbclient-go"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	"github.com/ubuntu/adsys/internal/i18n"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -110,7 +111,13 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			}
 			g = ad.gpos[name]
 		}
-		errg.Go(func() error {
+		errg.Go(func() (err error) {
+			defer func() {
+				if err != nil {
+					err = fmt.Errorf(i18n.G("Couldn’t download GPO: %v"), err)
+				}
+			}()
+
 			log.Debugf(ctx, "Analyzing GPO %q", g.name)
 
 			dest := filepath.Join(dest, filepath.Base(g.url))
@@ -135,12 +142,24 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			log.Infof(ctx, "Downloading GPO %q", g.name)
 			g.mu.Lock()
 			defer g.mu.Unlock()
-			// Remove target directory prior to redownloading a new GPO in order to delete files
-			// that have been removed from the GPO (scripts, binaries, ...)
+			// Download GPO in a temporary directory and only commit it if fully downloaded without any errors
+			tmpdest, err := ioutil.TempDir("", "adsys_gpo_*")
+			if err != nil {
+				return err
+			}
+			if err := downloadRecursive(client, g.url, tmpdest); err != nil {
+				return err
+			}
+			// Remove previous GPO
 			if err := os.RemoveAll(dest); err != nil {
 				return err
 			}
-			return downloadRecursive(client, g.url, dest)
+			// Rename temporary directory to final location
+			if err := os.Rename(tmpdest, dest); err != nil {
+				return err
+			}
+
+			return nil
 		})
 	}
 
