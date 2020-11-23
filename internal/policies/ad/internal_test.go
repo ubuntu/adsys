@@ -240,9 +240,9 @@ func TestFetchGPO(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
-			dest := t.TempDir()
+			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest))
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest), withRunDir(rundir))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			// prepare by copying GPOs if any
@@ -347,9 +347,9 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
-			dest := t.TempDir()
+			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest))
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest), withRunDir(rundir))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.withExistingGPO {
@@ -393,8 +393,8 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
-			dest := t.TempDir()
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest))
+			dest, rundir := t.TempDir(), t.TempDir()
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest), withRunDir(rundir))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.removeGPOCacheDir {
