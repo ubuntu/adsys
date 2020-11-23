@@ -34,7 +34,8 @@ type gpo struct {
 
 // AD structure to manage call concurrency
 type AD struct {
-	url string
+	hostname string
+	url      string
 
 	gpoCacheDir  string
 	krb5CacheDir string
@@ -108,6 +109,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	}
 
 	return &AD{
+		hostname:     hostname,
 		url:          url,
 		gpoCacheDir:  gpoCacheDir,
 		krb5CacheDir: krb5CacheDir,
@@ -118,7 +120,8 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 // GetPolicies returns all policy entries, stacked in order of priority.GetPolicies
 // It lists them, check state in global local cache and then redownload if any new version is available.
 // It users the given krb5 ticket reference to authenticate to AD.
-// If krb5CCName is empty, we will expect to find one in krb5CCDir under objectName.
+// If krb5CCName is empty for user object, we will expect to find one in krb5CCDir under objectName.
+// krb5CCName has no impact for computer object and is ignored.
 func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, krb5CCName string) (entries []policy.Entry, err error) {
 	defer func() {
 		if err != nil {
@@ -126,12 +129,24 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		}
 	}()
 
-	log.Debugf(ctx, "GetPolicies for %q", objectName)
+	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
+
+	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
+	if objectClass == ComputerObject && objectName != ad.hostname {
+		return nil, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
+	}
+	// Create a symlink for futur calls (on refresh for instance)
+	if objectClass == UserObject && krb5CCName != "" {
+		if err := os.Symlink(krb5CCName, krb5CCPath); err != nil {
+			return nil, fmt.Errorf(i18n.G("failed to create symlink for caching: %v"), err)
+		}
+	}
+
 	// Get the list of GPO for object
 	// ./list --objectclass=user  ldap://adc01.warthogs.biz bob
 	// TODO: Embed adsys-gpolist in binary
 	cmd := exec.CommandContext(ctx, "/usr/libexec/adsys-gpolist", "--objectclass", string(objectClass), ad.url, objectName)
-
+	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -152,7 +167,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return nil, err
 	}
 
-	if err = ad.fetch(ctx, krb5CCName, gpos); err != nil {
+	if err = ad.fetch(ctx, krb5CCPath, gpos); err != nil {
 		return nil, err
 	}
 
