@@ -129,7 +129,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	log.Debugf(ctx, "GetPolicies for %q", objectName)
 	// Get the list of GPO for object
 	// ./list --objectclass=user  ldap://adc01.warthogs.biz bob
-	cmd := exec.CommandContext(ctx, "../list", "--objectclass", string(objectClass), ad.url, objectName)
+	// TODO: Embed adsys-gpolist in binary
+	cmd := exec.CommandContext(ctx, "/usr/libexec/adsys-gpolist", "--objectclass", string(objectClass), ad.url, objectName)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
