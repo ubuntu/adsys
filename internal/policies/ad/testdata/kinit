@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if echo "$@" | grep -q "KINITFAILED"; then
-    echo "Error requested in kinit" >&2
+if [ -n "$KINITFAILED" ]; then
+    echo -n "Error requested in kinit" >&2
     exit 1
 fi
 
