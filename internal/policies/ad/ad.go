@@ -44,7 +44,8 @@ type AD struct {
 }
 
 type options struct {
-	runDir string
+	runDir   string
+	cacheDir string
 }
 
 type option func(*options) error
@@ -52,6 +53,13 @@ type option func(*options) error
 func withRunDir(runDir string) func(o *options) error {
 	return func(o *options) error {
 		o.runDir = runDir
+		return nil
+	}
+}
+
+func withCacheDir(cacheDir string) func(o *options) error {
+	return func(o *options) error {
+		o.cacheDir = cacheDir
 		return nil
 	}
 }
@@ -66,7 +74,8 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 
 	// defaults
 	args := options{
-		runDir: "/run/adsys",
+		runDir:   "/run/adsys",
+		cacheDir: "/var/cache/adsys",
 	}
 	// applied options
 	for _, o := range opts {
@@ -79,7 +88,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	if err := os.MkdirAll(krb5CacheDir, 0700); err != nil {
 		return nil, err
 	}
-	gpoCacheDir := filepath.Join(args.runDir, "gpo_cache")
+	gpoCacheDir := filepath.Join(args.cacheDir, "gpo_cache")
 	if err := os.MkdirAll(gpoCacheDir, 0700); err != nil {
 		return nil, err
 	}
@@ -95,7 +104,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 
 	output, err := exec.CommandContext(ctx, "kinit", n, "-k", "-c", filepath.Join(krb5CacheDir, hostname)).CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute create machine ticket: %v\n%s", err, output)
+		return nil, fmt.Errorf("failed to execute create machine ticket:\n%s\n%v", output, err)
 	}
 
 	return &AD{
