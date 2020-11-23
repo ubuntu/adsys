@@ -328,6 +328,40 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 	}
 }
 
+func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
+	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	tests := map[string]struct {
+		removeGPOCacheDir bool
+		roGPOCacheDir     bool
+	}{
+		"GPOCacheDir doesn't exist": {removeGPOCacheDir: true},
+		"GPOCacheDir is read only":  {roGPOCacheDir: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+
+			dest := t.TempDir()
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withRunDir(dest))
+			require.NoError(t, err, "Setup: cannot create ad object")
+
+			if tc.removeGPOCacheDir {
+				require.NoError(t, os.RemoveAll(adc.gpoCacheDir), "Setup: can’t remove gpoCacheDir")
+			}
+			if tc.roGPOCacheDir {
+				require.NoError(t, os.Chmod(adc.gpoCacheDir, 0400), "Setup: can’t set gpoCacheDir to Read only")
+			}
+
+			err = adc.fetch(context.Background(), "", map[string]string{"gpo1": fmt.Sprintf("smb://localhost:%d/%s/gpo1", smbPort, policyPath)})
+
+			require.NotNil(t, err, "fetch should return an error but didn't")
+			assert.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "gpo1"), "gpo1 shouldn't be downloaded")
+		})
+	}
+}
+
 var brokenSmbDirShare string
 
 const (
