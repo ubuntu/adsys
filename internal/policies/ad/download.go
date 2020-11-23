@@ -74,9 +74,6 @@ If krb5Ticket is empty, no authentication is done on samba.
 */
 func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]string) error {
 	dest := ad.gpoCacheDir
-	if _, err := os.Stat(dest); err != nil {
-		return fmt.Errorf("%q does not exist", dest)
-	}
 
 	// protect env variable and map creation
 	ad.Lock()
@@ -114,7 +111,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 		errg.Go(func() (err error) {
 			defer func() {
 				if err != nil {
-					err = fmt.Errorf(i18n.G("Couldn’t download GPO: %v"), err)
+					err = fmt.Errorf(i18n.G("couldn’t download GPO %q: %v"), g.name, err)
 				}
 			}()
 
