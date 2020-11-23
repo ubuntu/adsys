@@ -22,20 +22,15 @@ import (
 )
 
 /*
-testdata
-	/AD/SYSVOL/domain/policies/{....}
-	/golden
-
 TODO : func TestNew // api public
 with kinit failed
 */
 
-// TODO: unreadable file
+const policyPath = "SYSVOL/localdomain/Policies"
 
 func TestFetchGPO(t *testing.T) {
 	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
-	const policyPath = "SYSVOL/localdomain/Policies"
 	tests := map[string]struct {
 		gpos                   []string
 		concurrentGposDownload []string
@@ -265,11 +260,75 @@ func TestFetchGPO(t *testing.T) {
 				goldPath := filepath.Join("testdata", "AD", policyPath, tc.want[f.Name()])
 				gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, f.Name()))
 				goldTree := md5Tree(t, goldPath)
-				assert.Equalf(t, goldTree, gpoTree, "expected and downloaded GPO %q does not match", f.Name())
+				assert.Equalf(t, goldTree, gpoTree, "expected and after fetch GPO %q does not match", f.Name())
 			}
 		})
 	}
 }
+
+func TestFetchGPOWithUnreadableFile(t *testing.T) {
+	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+
+	// Prepare GPO with unreadable file.
+	// Defer will work after all tests are done because we don’t run it in parallel
+	gpos := map[string]string{
+		"gpo1": fmt.Sprintf("smb://localhost:%d/broken/%s/%s", smbPort, policyPath, "gpo1"),
+	}
+	require.NoError(t,
+		shutil.CopyTree(
+			filepath.Join("testdata", "AD", policyPath, "gpo1"),
+			filepath.Join(brokenSmbDirShare, policyPath, "gpo1"),
+			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+		"Setup: can't copy initial gpo directory")
+	require.NoError(t,
+		os.Chmod(filepath.Join(brokenSmbDirShare, policyPath, "gpo1/User/Gpo1File1"), 0200),
+		"Setup: can't change permission on gpo file")
+	t.Cleanup(func() { os.RemoveAll(filepath.Join(brokenSmbDirShare, policyPath, "gpo1")) })
+
+	tests := map[string]struct {
+		withExistingGPO bool
+	}{
+		"without gpo initially don’t commit new partial GPO": {},
+		"existing gpo is preserved":                          {withExistingGPO: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+
+			dest := t.TempDir()
+
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withRunDir(dest))
+			require.NoError(t, err, "Setup: cannot create ad object")
+
+			if tc.withExistingGPO {
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "AD", policyPath, "old_version"),
+						filepath.Join(adc.gpoCacheDir, "gpo1"),
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: can't copy initial gpo directory")
+			}
+
+			err = adc.fetch(context.Background(), "", gpos)
+			require.NotNil(t, err, "fetch should return an error but didn't")
+
+			if !tc.withExistingGPO {
+				require.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "gpo1"), "GPO directory shouldn’t be committed on disk")
+				return
+			}
+
+			// Diff on each gpo dir content
+			goldPath := filepath.Join("testdata", "AD", policyPath, "old_version")
+			gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, "gpo1"))
+			goldTree := md5Tree(t, goldPath)
+			assert.Equalf(t, goldTree, gpoTree, "expected and after fetch GPO %q does not match", "gpo1")
+		})
+	}
+}
+
+var brokenSmbDirShare string
 
 const (
 	smbPort         = 1445
@@ -291,19 +350,32 @@ ncalrpc dir = {{.Tempdir}}/intern
 [SYSVOL]
 path = {{.Cwd}}/testdata/AD/SYSVOL
 guest ok = yes
+
+[broken]
+path = {{.BrokenRoot}}
+guest ok = yes
 `
 )
 
 func mkSmbDir() (string, func()) {
 	dir, err := ioutil.TempDir("", "adsys_smbd_")
 	if err != nil {
-		log.Fatalf("Setup: failed to created temporary directory: %v", err)
+		log.Fatalf("Setup: failed to create temporary smb directory: %v", err)
+	}
+
+	brokenSmbDirShare, err = ioutil.TempDir("", "adsys_smbd_broken_share_")
+	if err != nil {
+		log.Fatalf("Setup: failed to create temporary broken smb share directory: %v", err)
+	}
+	if err = os.MkdirAll(filepath.Join(brokenSmbDirShare, policyPath), 0700); err != nil {
+		log.Fatalf("Setup: failed to created temporary broken smb share AD structure: %v", err)
 	}
 
 	type smbConfVars struct {
-		Tempdir string
-		Cwd     string
-		SmbPort int
+		Tempdir    string
+		Cwd        string
+		SmbPort    int
+		BrokenRoot string
 	}
 	t, err := template.New("smb-conf").Parse(smbConfTemplate)
 	if err != nil {
@@ -320,7 +392,7 @@ func mkSmbDir() (string, func()) {
 	if err != nil {
 		log.Fatalf("Setup: can’t determine current work directory: %v", err)
 	}
-	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: smbPort}); err != nil {
+	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: smbPort, BrokenRoot: brokenSmbDirShare}); err != nil {
 		log.Fatalf("Setup: failed to create smb.conf: %v", err)
 	}
 
