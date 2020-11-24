@@ -122,9 +122,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 // GetPolicies returns all policy entries, stacked in order of priority.GetPolicies
 // It lists them, check state in global local cache and then redownload if any new version is available.
 // It users the given krb5 ticket reference to authenticate to AD.
-// If krb5CCName is empty for user object, we will expect to find one in krb5CCDir under objectName.
-// krb5CCName has no impact for computer object and is ignored.
-func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, krb5CCName string) (entries []policy.Entry, err error) {
+// userKrb5CCName has no impact for computer object and is ignored. If empty, we will expect to find one cached
+// ticket <krb5CCDir>/<objectName>.
+func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (entries map[string]policy.Entry, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("error while getting policies for %q: %v"), objectName, err)
@@ -138,8 +138,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return nil, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
 	}
 	// Create a symlink for futur calls (on refresh for instance)
-	if objectClass == UserObject && krb5CCName != "" {
-		if err := os.Symlink(krb5CCName, krb5CCPath); err != nil {
+	if objectClass == UserObject && userKrb5CCName != "" {
+		if err := os.Symlink(userKrb5CCName, krb5CCPath); err != nil {
 			return nil, fmt.Errorf(i18n.G("failed to create symlink for caching: %v"), err)
 		}
 	}
