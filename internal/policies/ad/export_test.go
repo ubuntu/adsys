@@ -9,6 +9,7 @@ var (
 	WithCacheDir    = withCacheDir
 	WithoutKerberos = withoutKerberos
 	WithKinitCmd    = withKinitCmd
+	WithGPOListCmd  = withGPOListCmd
 )
 
 func (ad *AD) GpoCacheDir() string {

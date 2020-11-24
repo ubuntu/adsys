@@ -45,6 +45,7 @@ type AD struct {
 	sync.Mutex
 
 	withoutKerberos bool
+	gpoListCmd      *exec.Cmd
 }
 
 type options struct {
@@ -52,6 +53,7 @@ type options struct {
 	cacheDir        string
 	withoutKerberos bool
 	kinitCmd        combinedOutputter
+	gpoListCmd      *exec.Cmd
 }
 
 type option func(*options) error
@@ -113,6 +115,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 		gpoCacheDir:  gpoCacheDir,
 		krb5CacheDir: krb5CacheDir,
 		gpos:         make(map[string]gpo),
+		gpoListCmd:   args.gpoListCmd,
 	}, nil
 }
 
@@ -146,6 +149,10 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// TODO: Embed adsys-gpolist in binary
 	cmd := exec.CommandContext(ctx, "/usr/libexec/adsys-gpolist", "--objectclass", string(objectClass), ad.url, objectName)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
+	if ad.gpoListCmd != nil {
+		cmd = ad.gpoListCmd
+		cmd.Env = append(cmd.Env, fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
+	}
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

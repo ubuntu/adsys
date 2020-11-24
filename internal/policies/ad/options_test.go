@@ -1,5 +1,7 @@
 package ad
 
+import "os/exec"
+
 func withRunDir(runDir string) func(o *options) error {
 	return func(o *options) error {
 		o.runDir = runDir
@@ -24,6 +26,13 @@ func withoutKerberos() func(o *options) error {
 func withKinitCmd(mock combinedOutputter) func(o *options) error {
 	return func(o *options) error {
 		o.kinitCmd = mock
+		return nil
+	}
+}
+
+func withGPOListCmd(cmd *exec.Cmd) func(o *options) error {
+	return func(o *options) error {
+		o.gpoListCmd = cmd
 		return nil
 	}
 }
