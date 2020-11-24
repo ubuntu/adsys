@@ -443,7 +443,11 @@ func setupSmb() func() {
 	dir, cleanup := mkSmbDir()
 
 	cmd := exec.Command("smbd", "-FS", "-s", filepath.Join(dir, "smbd.conf"))
-	cmd.Stderr = os.Stderr
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		log.Fatalf("Setup: can’t get smb output: %v", err)
+	}
+
 	if err := cmd.Start(); err != nil {
 		cleanup()
 		log.Fatalf("Setup: can’t start smb: %v", err)
@@ -455,8 +459,15 @@ func setupSmb() func() {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
 		}
 
-		_, err := cmd.Process.Wait()
+		d, err := ioutil.ReadAll(stderr)
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "Setup: Can't show stderr from smbd command: %v", err)
+		}
+		if string(d) != "" {
+			fmt.Fprintf(os.Stderr, "Setup: samba output: %s\n", d)
+		}
+
+		if _, err = cmd.Process.Wait(); err != nil {
 			log.Fatalf("Setup: failed to wait for smbd: %v", err)
 		}
 
