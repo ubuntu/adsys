@@ -435,7 +435,10 @@ func mkSmbDir() (string, func()) {
 }
 
 func TestMain(m *testing.M) {
-	defer setupSmb()()
+	// Don’t setup samba for mock helpers
+	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
+		defer setupSmb()()
+	}
 	m.Run()
 }
 
