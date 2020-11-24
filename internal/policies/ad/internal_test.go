@@ -187,7 +187,9 @@ func TestFetchGPO(t *testing.T) {
 			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest), withRunDir(rundir), withoutKerberos())
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
+				withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withKinitCmd(MockKinit{}))
+
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			// prepare by copying GPOs if any
@@ -294,7 +296,8 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest), withRunDir(rundir), withoutKerberos())
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
+				withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withKinitCmd(MockKinit{}))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.withExistingGPO {
@@ -339,7 +342,8 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
 			dest, rundir := t.TempDir(), t.TempDir()
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", withCacheDir(dest), withRunDir(rundir), withoutKerberos())
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
+				withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withKinitCmd(MockKinit{}))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.removeGPOCacheDir {
@@ -439,14 +443,6 @@ func TestMain(m *testing.M) {
 	if err := cmd.Start(); err != nil {
 		log.Fatalf("Setup: can’t start smb: %v", err)
 	}
-
-	origPath := os.Getenv("PATH")
-	if err := os.Setenv("PATH", "./testdata:"+origPath); err != nil {
-		log.Fatalf("Setup: can’t change PATH to include mocks: %v", err)
-	}
-	defer func() {
-		os.Setenv("PATH", origPath)
-	}()
 
 	waitForPortReady(smbPort)
 	defer func() {

@@ -51,9 +51,14 @@ type options struct {
 	runDir          string
 	cacheDir        string
 	withoutKerberos bool
+	kinitCmd        combinedOutputter
 }
 
 type option func(*options) error
+
+type combinedOutputter interface {
+	CombinedOutput() ([]byte, error)
+}
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
 func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err error) {
@@ -90,10 +95,14 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	if err != nil {
 		return nil, err
 	}
-
 	n := fmt.Sprintf("%s$@%s", hostname, domain)
+	// we need previous options to be initialized as parameter for this command
+	var kinitCmd combinedOutputter = exec.CommandContext(ctx, "kinit", n, "-k", "-c", filepath.Join(krb5CacheDir, hostname))
+	if args.kinitCmd != nil {
+		kinitCmd = args.kinitCmd
+	}
 
-	output, err := exec.CommandContext(ctx, "kinit", n, "-k", "-c", filepath.Join(krb5CacheDir, hostname)).CombinedOutput()
+	output, err := kinitCmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute create machine ticket:\n%s\n%v", output, err)
 	}

@@ -20,3 +20,10 @@ func withoutKerberos() func(o *options) error {
 		return nil
 	}
 }
+
+func withKinitCmd(mock combinedOutputter) func(o *options) error {
+	return func(o *options) error {
+		o.kinitCmd = mock
+		return nil
+	}
+}

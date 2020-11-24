@@ -2,7 +2,6 @@ package ad_test
 
 import (
 	"context"
-	"log"
 	"os"
 	"testing"
 
@@ -12,7 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	t.Parallel() // we setenv for kinit
+	t.Parallel()
 
 	tests := map[string]struct {
 		cacheDirRO bool
@@ -29,7 +28,7 @@ func TestNew(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//t.Parallel() // we setenv for kinit
+			t.Parallel()
 			runDir, cacheDir := t.TempDir(), t.TempDir()
 
 			if tc.runDirRO {
@@ -39,17 +38,12 @@ func TestNew(t *testing.T) {
 			if tc.cacheDirRO {
 				require.NoError(t, os.Chmod(cacheDir, 0400), "Setup: can’t set cache directory to Read only")
 			}
-			if tc.kinitFail {
-				err := os.Setenv("KINITFAILED", "1")
-				require.NoError(t, err, "Setup: can’t set env variable for KINIT to fail")
-				defer func() {
-					if err := os.Unsetenv("KINITFAILED"); err != nil {
-						log.Printf("Couln't restore initial value for KINIT_FAILED: %v", err)
-					}
-				}()
-			}
+			kinitMock := ad.MockKinit{tc.kinitFail}
 
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "localdomain", ad.WithRunDir(runDir), ad.WithCacheDir(cacheDir))
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
+				ad.WithRunDir(runDir),
+				ad.WithCacheDir(cacheDir),
+				ad.WithKinitCmd(kinitMock))
 			if tc.wantErr {
 				require.NotNil(t, err, "AD creation should have failed")
 			} else {

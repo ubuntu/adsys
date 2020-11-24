@@ -1,8 +1,0 @@
-#!/bin/sh
-
-if [ -n "$KINITFAILED" ]; then
-    echo -n "Error requested in kinit" >&2
-    exit 1
-fi
-
-exit 0
