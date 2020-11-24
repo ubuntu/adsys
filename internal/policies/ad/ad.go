@@ -161,6 +161,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	gpos := make(map[string]string)
+	var gpoNames []string
+
 	scanner := bufio.NewScanner(&stdout)
 	for scanner.Scan() {
 		t := scanner.Text()
@@ -168,6 +170,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		gpoName, gpoURL := res[0], res[1]
 		log.Debugf(ctx, "GPO %q for %q available at %q", gpoName, objectName, gpoURL)
 		gpos[gpoName] = gpoURL
+		gpoNames = append(gpoNames, gpoName)
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
@@ -177,5 +180,48 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return nil, err
 	}
 
-	return nil, nil
+	// Parse policies
+	entries, err = ad.parseGPOs(ctx, gpoNames, objectClass)
+	if err != nil {
+		return nil, err
+	}
+
+	return entries, nil
+}
+
+func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectClass) (entries map[string]policy.Entry, err error) {
+	entries = make(map[string]policy.Entry)
+	for _, n := range gpos {
+		if err := func() error {
+			ad.gpos[n].mu.RLock()
+			defer ad.gpos[n].mu.RUnlock()
+
+			class := "User"
+			if objectClass == ComputerObject {
+				class = "Machine"
+			}
+			f, err := os.Open(filepath.Join(ad.gpoCacheDir, n, class, "Registry.pol"))
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+
+			// Decode and apply policies in gpo order. First win
+			policies, err := registry.DecodePolicy(f)
+			if err != nil {
+				return err
+			}
+			for _, pol := range policies {
+				if _, ok := entries[pol.Key]; ok {
+					continue
+				}
+				entries[pol.Key] = pol
+			}
+
+			return nil
+		}(); err != nil {
+			return nil, err
+		}
+	}
+	return entries, nil
 }
