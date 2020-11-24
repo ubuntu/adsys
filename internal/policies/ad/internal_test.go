@@ -435,17 +435,22 @@ func mkSmbDir() (string, func()) {
 }
 
 func TestMain(m *testing.M) {
+	defer setupSmb()()
+	m.Run()
+}
+
+func setupSmb() func() {
 	dir, cleanup := mkSmbDir()
-	defer cleanup()
 
 	cmd := exec.Command("smbd", "-FS", "-s", filepath.Join(dir, "smbd.conf"))
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
+		cleanup()
 		log.Fatalf("Setup: can’t start smb: %v", err)
 	}
 
 	waitForPortReady(smbPort)
-	defer func() {
+	return func() {
 		if err := cmd.Process.Kill(); err != nil {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
 		}
@@ -454,9 +459,9 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			log.Fatalf("Setup: failed to wait for smbd: %v", err)
 		}
-	}()
 
-	m.Run()
+		cleanup()
+	}
 }
 
 // waitForPortReady to be opened.
