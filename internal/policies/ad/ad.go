@@ -13,6 +13,7 @@ import (
 
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies/ad/registry"
 	"github.com/ubuntu/adsys/internal/policies/policy"
 )
 
@@ -42,28 +43,17 @@ type AD struct {
 
 	gpos map[string]gpo
 	sync.Mutex
+
+	withoutKerberos bool
 }
 
 type options struct {
-	runDir   string
-	cacheDir string
+	runDir          string
+	cacheDir        string
+	withoutKerberos bool
 }
 
 type option func(*options) error
-
-func withRunDir(runDir string) func(o *options) error {
-	return func(o *options) error {
-		o.runDir = runDir
-		return nil
-	}
-}
-
-func withCacheDir(cacheDir string) func(o *options) error {
-	return func(o *options) error {
-		o.cacheDir = cacheDir
-		return nil
-	}
-}
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
 func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err error) {

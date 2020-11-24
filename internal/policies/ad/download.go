@@ -123,7 +123,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 
 			// When testing we cannot use kerberos without a real kerberos server
 			// So we don't use kerberos in this case
-			if krb5Ticket != "" {
+			if ad.withoutKerberos {
 				client.SetUseKerberos()
 			}
 
