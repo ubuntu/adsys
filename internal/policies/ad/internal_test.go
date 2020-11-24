@@ -204,7 +204,7 @@ func TestFetchGPO(t *testing.T) {
 
 			gpos := make(map[string]string)
 			for _, n := range tc.gpos {
-				gpos[n] = fmt.Sprintf("smb://localhost:%d/%s/%s", smbPort, policyPath, n)
+				gpos[n] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
 			}
 
 			if tc.concurrentGposDownload == nil {
@@ -217,7 +217,7 @@ func TestFetchGPO(t *testing.T) {
 			} else {
 				concurrentGpos := make(map[string]string)
 				for _, n := range tc.concurrentGposDownload {
-					concurrentGpos[n] = fmt.Sprintf("smb://localhost:%d/%s/%s", smbPort, policyPath, n)
+					concurrentGpos[n] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
 				}
 
 				wg := sync.WaitGroup{}
@@ -269,7 +269,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 	// Prepare GPO with unreadable file.
 	// Defer will work after all tests are done because we don’t run it in parallel
 	gpos := map[string]string{
-		"gpo1": fmt.Sprintf("smb://localhost:%d/broken/%s/%s", smbPort, policyPath, "gpo1"),
+		"gpo1": fmt.Sprintf("smb://localhost:%d/broken/%s/%s", SmbPort, policyPath, "gpo1"),
 	}
 	require.NoError(t,
 		shutil.CopyTree(
@@ -353,7 +353,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 				require.NoError(t, os.Chmod(adc.gpoCacheDir, 0400), "Setup: can’t set gpoCacheDir to Read only")
 			}
 
-			err = adc.fetch(context.Background(), "", map[string]string{"gpo1": fmt.Sprintf("smb://localhost:%d/%s/gpo1", smbPort, policyPath)})
+			err = adc.fetch(context.Background(), "", map[string]string{"gpo1": fmt.Sprintf("smb://localhost:%d/%s/gpo1", SmbPort, policyPath)})
 
 			require.NotNil(t, err, "fetch should return an error but didn't")
 			assert.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "gpo1"), "gpo1 shouldn't be downloaded")
@@ -364,7 +364,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 var brokenSmbDirShare string
 
 const (
-	smbPort         = 1445
+	SmbPort         = 1445
 	smbConfTemplate = `[global]
 workgroup = TESTGROUP
 interfaces = lo 127.0.0.0/8
@@ -425,7 +425,7 @@ func mkSmbDir() (string, func()) {
 	if err != nil {
 		log.Fatalf("Setup: can’t determine current work directory: %v", err)
 	}
-	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: smbPort, BrokenRoot: brokenSmbDirShare}); err != nil {
+	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: SmbPort, BrokenRoot: brokenSmbDirShare}); err != nil {
 		log.Fatalf("Setup: failed to create smb.conf: %v", err)
 	}
 
@@ -453,7 +453,7 @@ func setupSmb() func() {
 		log.Fatalf("Setup: can’t start smb: %v", err)
 	}
 
-	waitForPortReady(smbPort)
+	waitForPortReady(SmbPort)
 	return func() {
 		if err := cmd.Process.Kill(); err != nil {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
