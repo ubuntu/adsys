@@ -201,8 +201,11 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 				class = "Machine"
 			}
 			f, err := os.Open(filepath.Join(ad.gpoCacheDir, n, class, "Registry.pol"))
-			if err != nil {
+			if err != nil && os.IsExist(err) {
 				return err
+			} else if err != nil && os.IsNotExist(err) {
+				log.Infof(ctx, "Policy %s doesn't have any policy for class %s", n, err)
+				return nil
 			}
 			defer f.Close()
 
