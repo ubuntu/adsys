@@ -115,6 +115,34 @@ adsysctl service cat [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
+#### adsysctl service stop
+
+Requests to stop the service once all connections are done
+
+##### Synopsis
+
+Requests to stop the service once all connections are done
+
+```
+adsysctl service stop [flags]
+```
+
+##### Options
+
+```
+  -f, --force   force will shut it down immediately and drop existing connections.
+  -h, --help    help for stop
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overriden by systemd socket activation. (default "/tmp/socket.default")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
 #### adsysctl version
 
 Returns version of client and service
