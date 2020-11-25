@@ -144,8 +144,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 	// Create a symlink for futur calls (on refresh for instance)
 	if objectClass == UserObject && userKrb5CCName != "" {
-		if err := os.Symlink(userKrb5CCName, krb5CCPath); err != nil {
-			return nil, fmt.Errorf(i18n.G("failed to create symlink for caching: %v"), err)
+		if err := ad.ensureUserKrb5CCName(userKrb5CCName, krb5CCPath); err != nil {
+			return nil, err
 		}
 	}
 
@@ -189,6 +189,37 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	return entries, nil
+}
+
+// ensureUserKrb5CCName manages user ccname symlinks.
+// It handles concurrent calls, and only recreate the symlink if we want to point to
+// a new destination.
+func (ad *AD) ensureUserKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf(i18n.G("failed to create symlink for caching: %v"), err)
+		}
+	}()
+
+	ad.Lock()
+	defer ad.Unlock()
+
+	src, err := os.Readlink(dstKrb5CCName)
+	if err == nil {
+		// All set, don’t recreate the symlink.
+		if src == srcKrb5CCName {
+			return nil
+		}
+		// Delete the symlink to create a new one.
+		if err := os.Remove(dstKrb5CCName); err != nil {
+			return fmt.Errorf(i18n.G("failed to remove existing symlink: %v"), err)
+		}
+	}
+
+	if err := os.Symlink(srcKrb5CCName, dstKrb5CCName); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectClass) (entries map[string]policy.Entry, err error) {
