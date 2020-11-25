@@ -45,7 +45,7 @@ type AD struct {
 	sync.Mutex
 
 	withoutKerberos bool
-	gpoListCmd      *exec.Cmd
+	gpoListCmd      []string
 
 	// This property is used to instrument the tests for concurrent download and parsing of GPOs
 	// Cf internal_test::TestFetchOneGPOWhileParsingItConccurently()
@@ -57,7 +57,7 @@ type options struct {
 	cacheDir        string
 	withoutKerberos bool
 	kinitCmd        combinedOutputter
-	gpoListCmd      *exec.Cmd
+	gpoListCmd      []string
 }
 
 type option func(*options) error
@@ -76,8 +76,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 
 	// defaults
 	args := options{
-		runDir:   "/run/adsys",
-		cacheDir: "/var/cache/adsys",
+		runDir:     "/run/adsys",
+		cacheDir:   "/var/cache/adsys",
+		gpoListCmd: []string{"/usr/libexec/adsys-gpolist"},
 	}
 	// applied options
 	for _, o := range opts {
@@ -151,12 +152,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// Get the list of GPO for object
 	// ./list --objectclass=user  ldap://adc01.warthogs.biz bob
 	// TODO: Embed adsys-gpolist in binary
-	cmd := exec.CommandContext(ctx, "/usr/libexec/adsys-gpolist", "--objectclass", string(objectClass), ad.url, objectName)
+	cmdArgs := append(ad.gpoListCmd, "--objectclass", string(objectClass), ad.url, objectName)
+	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
-	if ad.gpoListCmd != nil {
-		cmd = ad.gpoListCmd
-		cmd.Env = append(cmd.Env, fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
-	}
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr

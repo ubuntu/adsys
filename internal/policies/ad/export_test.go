@@ -3,7 +3,6 @@ package ad
 import (
 	"errors"
 	"os"
-	"os/exec"
 )
 
 var (
@@ -19,10 +18,6 @@ func (ad *AD) GpoCacheDir() string {
 }
 func (ad *AD) Krb5CacheDir() string {
 	return ad.krb5CacheDir
-}
-
-func (ad *AD) ResetGpoListCmdWith(cmd *exec.Cmd) {
-	ad.gpoListCmd = cmd
 }
 
 type MockKinit struct {

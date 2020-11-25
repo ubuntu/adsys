@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -394,9 +394,6 @@ func TestGetPoliciesForRefresh(t *testing.T) {
 	require.NoError(t, err, "GetPolicies should return no error")
 	require.Equal(t, want, entries, "GetPolicies returns expected policy entries with correct overrides")
 
-	// Prepare gpo list to be reexecuted
-	adc.ResetGpoListCmdWith(mockGPOListCmd(t, gpoListArgs))
-
 	// Second call withut CCName should use symlink (refresh case)
 	entries, err = adc.GetPolicies(context.Background(), objectName, objectClass, "")
 	require.NoError(t, err, "GetPolicies should return no error")
@@ -435,13 +432,10 @@ func TestMockGPOList(t *testing.T) {
 	}
 }
 
-func mockGPOListCmd(t *testing.T, args ...string) *exec.Cmd {
+func mockGPOListCmd(t *testing.T, args ...string) []string {
 	t.Helper()
 
-	cArgs := []string{"-test.run=TestMockGPOList", "--"}
+	cArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockGPOList", "--"}
 	cArgs = append(cArgs, args...)
-
-	cmd := exec.Command(os.Args[0], cArgs...)
-	cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1")
-	return cmd
+	return cArgs
 }
