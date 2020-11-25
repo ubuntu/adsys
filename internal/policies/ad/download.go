@@ -111,7 +111,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 		errg.Go(func() (err error) {
 			defer func() {
 				if err != nil {
-					err = fmt.Errorf(i18n.G("couldn’t download GPO %q: %v"), g.name, err)
+					err = fmt.Errorf(i18n.G("couldn't download GPO %q: %v"), g.name, err)
 				}
 			}()
 
