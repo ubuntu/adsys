@@ -58,8 +58,8 @@ msgstr ""
 msgid "Alias of %s"
 msgstr ""
 
-#: internal/daemon/daemon.go:184
-msgid "All connections are now closed"
+#: internal/daemon/daemon.go:200
+msgid "All connections have now ended."
 msgstr ""
 
 #: internal/grpc/logstreamer/server.go:44
@@ -106,12 +106,16 @@ msgstr ""
 msgid "Print service logs"
 msgstr ""
 
-#: internal/daemon/daemon.go:169
+#: internal/daemon/daemon.go:171
 msgid "Quitting"
 msgstr ""
 
-#: internal/daemon/daemon.go:149
+#: internal/daemon/daemon.go:151
 msgid "Ready state sent to systemd"
+msgstr ""
+
+#: cmd/adsysd/client/service.go:34
+msgid "Requests to stop the service once all connections are done"
 msgstr ""
 
 #: cmd/adsysd/client/version.go:17
@@ -130,20 +134,24 @@ msgstr ""
 msgid "Service took too long to respond. Disconnecting client."
 msgstr ""
 
-#: internal/daemon/daemon.go:156
+#: internal/daemon/daemon.go:158
 #, c-format
 msgid "Serving on %s"
 msgstr ""
 
-#: internal/daemon/daemon.go:182
-msgid "Stopping daemon requested. Wait for active requests to close"
+#: internal/daemon/daemon.go:192
+msgid "Stopping daemon requested."
 msgstr ""
 
-#: internal/daemon/daemon.go:58
+#: internal/daemon/daemon.go:198
+msgid "Wait for active requests to close."
+msgstr ""
+
+#: internal/daemon/daemon.go:60
 msgid "couldn't create server: %v"
 msgstr ""
 
-#: internal/daemon/daemon.go:119
+#: internal/daemon/daemon.go:121
 msgid "couldn't listen on new socket %q: %v"
 msgstr ""
 
@@ -155,8 +163,12 @@ msgstr ""
 msgid "couldn't send logs to client: %v"
 msgstr ""
 
-#: internal/daemon/daemon.go:147
+#: internal/daemon/daemon.go:149
 msgid "couldn't send ready notification to systemd: %v"
+msgstr ""
+
+#: cmd/adsysd/client/service.go:38
+msgid "force will shut it down immediately and drop existing connections."
 msgstr ""
 
 #: internal/policies/ad/registry/registry.go:83
@@ -197,7 +209,7 @@ msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
 
-#: internal/daemon/daemon.go:99
+#: internal/daemon/daemon.go:101
 #, c-format
 msgid "unexpected number of systemd socket activation (%d != 1)"
 msgstr ""
