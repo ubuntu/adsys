@@ -28,6 +28,15 @@ func (a *App) installService() {
 	}
 	mainCmd.AddCommand(cmd)
 
+	var stopForce *bool
+	cmd = &cobra.Command{
+		Use:   "stop",
+		Short: i18n.G("Requests to stop the service once all connections are done"),
+		Args:  cobra.NoArgs,
+		RunE:  func(cmd *cobra.Command, args []string) error { return a.serviceStop(*stopForce) },
+	}
+	stopForce = cmd.Flags().BoolP("force", "f", false, i18n.G("force will shut it down immediately and drop existing connections."))
+	mainCmd.AddCommand(cmd)
 }
 
 func (a *App) serviceCat() error {
@@ -52,6 +61,25 @@ func (a *App) serviceCat() error {
 			return err
 		}
 		fmt.Print(msg.GetMsg())
+	}
+
+	return nil
+}
+
+func (a *App) serviceStop(force bool) error {
+	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	stream, err := client.Stop(a.ctx, &adsys.StopRequest{Force: force})
+	if err != nil {
+		return err
+	}
+
+	if _, err := stream.Recv(); err != nil && err != io.EOF {
+		return err
 	}
 
 	return nil
