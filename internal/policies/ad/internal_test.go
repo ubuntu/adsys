@@ -21,6 +21,8 @@ import (
 	"github.com/termie/go-shutil"
 )
 
+// TODO: test when we parse one GPO, while another goroutine tries to fetch it
+
 const policyPath = "SYSVOL/localdomain/Policies"
 
 func TestFetchGPO(t *testing.T) {
@@ -224,7 +226,7 @@ func TestFetchGPO(t *testing.T) {
 				wg.Add(2)
 				go func() {
 					defer wg.Done()
-					err = adc.fetch(context.Background(), "", gpos)
+					err := adc.fetch(context.Background(), "", gpos)
 					if tc.wantErr {
 						require.NotNil(t, err, "fetch should return an error but didn't")
 					} else {
@@ -233,7 +235,7 @@ func TestFetchGPO(t *testing.T) {
 				}()
 				go func() {
 					defer wg.Done()
-					err = adc.fetch(context.Background(), "", concurrentGpos)
+					err := adc.fetch(context.Background(), "", concurrentGpos)
 					if tc.wantErr {
 						require.NotNil(t, err, "fetch should return an error but didn't")
 					} else {
