@@ -21,8 +21,6 @@ import (
 	"github.com/termie/go-shutil"
 )
 
-// TODO: test when we parse one GPO, while another goroutine tries to fetch it
-
 const policyPath = "SYSVOL/localdomain/Policies"
 
 func TestFetchGPO(t *testing.T) {
@@ -361,6 +359,83 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 			assert.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "gpo1"), "gpo1 shouldn't be downloaded")
 		})
 	}
+}
+
+func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
+	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+
+	const policyPath = "SYSVOL/warthogs.biz/Policies"
+	dest, rundir := t.TempDir(), t.TempDir()
+
+	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+		withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withKinitCmd(MockKinit{}))
+	require.NoError(t, err, "Setup: cannot create ad object")
+
+	// ensure the GPO is already downloaded with an older version to force redownload
+	require.NoError(t,
+		shutil.CopyTree(
+			filepath.Join("testdata", "AD", policyPath, "standard-old"),
+			filepath.Join(adc.gpoCacheDir, "standard"),
+			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+		"Setup: can't copy initial gpo directory")
+	// create the lock made by fetch which is always called before parseGPOs in the public API
+	adc.gpos["standard"] = gpo{
+		name: "standard",
+		url:  fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
+		mu:   &sync.RWMutex{},
+	}
+
+	// concurrent downloads and parsing
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		gpos := map[string]string{
+			"standard": adc.gpos["standard"].url,
+		}
+		err := adc.fetch(context.Background(), "", gpos)
+		require.NoError(t, err, "fetch returned an error but shouldn't")
+	}()
+	go func() {
+		defer wg.Done()
+		// we can’t test returned values as it’s either the old of new version of the gpo
+		gpos := []string{"standard"}
+		_, err := adc.parseGPOs(context.Background(), gpos, UserObject)
+		require.NoError(t, err, "parseGPOs returned an error but shouldn't")
+	}()
+	wg.Wait()
+}
+
+func TestParseGPOConcurrent(t *testing.T) {
+	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+
+	const policyPath = "SYSVOL/warthogs.biz/Policies"
+	dest, rundir := t.TempDir(), t.TempDir()
+
+	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+		withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withKinitCmd(MockKinit{}))
+	require.NoError(t, err, "Setup: cannot create ad object")
+
+	// Fetch the GPO to set it up
+	gpos := map[string]string{
+		"standard": fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
+	}
+	err = adc.fetch(context.Background(), "", gpos)
+	require.NoError(t, err, "Setup: couldn’t do initial GPO fetch as returned an error but shouldn't")
+
+	// concurrent parsing of GPO
+	wg := sync.WaitGroup{}
+	wg.Add(1000)
+	for i := 0; i < 1000; i++ {
+		go func() {
+			defer wg.Done()
+			// we can’t test returned values as it’s either the old of new version of the gpo
+			gpos := []string{"standard"}
+			_, err := adc.parseGPOs(context.Background(), gpos, UserObject)
+			require.NoError(t, err, "parseGPOs returned an error but shouldn't")
+		}()
+	}
+	wg.Wait()
 }
 
 var brokenSmbDirShare string
