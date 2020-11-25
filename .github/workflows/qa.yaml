@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc libsmbclient-dev
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
@@ -55,7 +55,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev
       - name: Run tests
         run: go test -coverprofile=coverage.txt -covermode=count ./...
       - name: Run tests (with race detector)
@@ -78,7 +78,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc protobuf-compiler gettext git
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc protobuf-compiler gettext git libsmbclient-dev
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
