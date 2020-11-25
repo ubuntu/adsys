@@ -24,13 +24,13 @@ func (a *App) installService() {
 		Use:   "cat",
 		Short: i18n.G("Print service logs"),
 		Args:  cobra.NoArgs,
-		RunE:  a.serviceCat,
+		RunE:  func(cmd *cobra.Command, args []string) error { return a.serviceCat() },
 	}
 	mainCmd.AddCommand(cmd)
 
 }
 
-func (a *App) serviceCat(cmd *cobra.Command, args []string) error {
+func (a *App) serviceCat() error {
 	// No timeout for cat command
 	client, err := adsysservice.NewClient(a.config.Socket, 0)
 	if err != nil {
