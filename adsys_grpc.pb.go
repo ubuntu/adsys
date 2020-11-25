@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ServiceClient interface {
 	Cat(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CatClient, error)
 	Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error)
+	Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error)
 }
 
 type serviceClient struct {
@@ -93,12 +94,45 @@ func (x *serviceVersionClient) Recv() (*VersionResponse, error) {
 	return m, nil
 }
 
+func (c *serviceClient) Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[2], "/service/Stop", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceStopClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_StopClient interface {
+	Recv() (*Empty, error)
+	grpc.ClientStream
+}
+
+type serviceStopClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceStopClient) Recv() (*Empty, error) {
+	m := new(Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
 	Cat(*Empty, Service_CatServer) error
 	Version(*Empty, Service_VersionServer) error
+	Stop(*StopRequest, Service_StopServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -111,6 +145,9 @@ func (UnimplementedServiceServer) Cat(*Empty, Service_CatServer) error {
 }
 func (UnimplementedServiceServer) Version(*Empty, Service_VersionServer) error {
 	return status.Errorf(codes.Unimplemented, "method Version not implemented")
+}
+func (UnimplementedServiceServer) Stop(*StopRequest, Service_StopServer) error {
+	return status.Errorf(codes.Unimplemented, "method Stop not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -167,6 +204,27 @@ func (x *serviceVersionServer) Send(m *VersionResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Service_Stop_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StopRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).Stop(m, &serviceStopServer{stream})
+}
+
+type Service_StopServer interface {
+	Send(*Empty) error
+	grpc.ServerStream
+}
+
+type serviceStopServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceStopServer) Send(m *Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 var _Service_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "service",
 	HandlerType: (*ServiceServer)(nil),
@@ -180,6 +238,11 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Version",
 			Handler:       _Service_Version_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Stop",
+			Handler:       _Service_Stop_Handler,
 			ServerStreams: true,
 		},
 	},

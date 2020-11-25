@@ -14,12 +14,19 @@ import (
 type Service struct {
 	adsys.UnimplementedServiceServer
 	logger *logrus.Logger
+
+	quit quitter
+}
+
+type quitter interface {
+	Quit(bool)
 }
 
 // RegisterGRPCServer registers our service with the new interceptor chains.
 // It will notify the daemon of any new connection
 func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 	s.logger = logrus.StandardLogger()
+	s.quit = d
 	srv := grpc.NewServer(grpc.StreamInterceptor(
 		interceptorschain.StreamServer(
 			log.StreamServerInterceptor(s.logger),

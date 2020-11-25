@@ -12,7 +12,6 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	google.golang.org/grpc v1.33.0
 	google.golang.org/protobuf v1.23.0
 )

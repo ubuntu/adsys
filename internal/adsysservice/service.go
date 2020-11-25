@@ -39,3 +39,10 @@ type streamWriter struct {
 func (ss streamWriter) Write(b []byte) (n int, err error) {
 	return len(b), ss.SendMsg(&adsys.StringResponse{Msg: string(b)})
 }
+
+// Stop requests to stop the service once all connections are done. Force will shut it down immediately and drop
+// existing connections.
+func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) error {
+	s.quit.Quit(r.GetForce())
+	return nil
+}
