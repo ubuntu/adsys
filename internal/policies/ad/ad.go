@@ -46,6 +46,10 @@ type AD struct {
 
 	withoutKerberos bool
 	gpoListCmd      *exec.Cmd
+
+	// This property is used to instrument the tests for concurrent download and parsing of GPOs
+	// Cf internal_test::TestFetchOneGPOWhileParsingItConccurently()
+	testConcurrentGPO bool
 }
 
 type options struct {
@@ -195,6 +199,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 		if err := func() error {
 			ad.gpos[n].mu.RLock()
 			defer ad.gpos[n].mu.RUnlock()
+			_ = ad.testConcurrentGPO
 
 			class := "User"
 			if objectClass == ComputerObject {

@@ -139,6 +139,8 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			log.Infof(ctx, "Downloading GPO %q", g.name)
 			g.mu.Lock()
 			defer g.mu.Unlock()
+			ad.testConcurrentGPO = true
+
 			// Download GPO in a temporary directory and only commit it if fully downloaded without any errors
 			tmpdest, err := ioutil.TempDir("", "adsys_gpo_*")
 			if err != nil {
