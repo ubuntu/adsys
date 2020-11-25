@@ -103,7 +103,6 @@ func New() *App {
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
 	a.installVersion()
-	a.installGPOHelpers()
 
 	return &a
 }
