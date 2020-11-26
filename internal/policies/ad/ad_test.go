@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -462,6 +463,120 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 	}
 }
 
+func TestGetPoliciesConcurrently(t *testing.T) {
+	//t.Parallel() // libsmbclient overrides SIGCHLD, keep one AD object
+
+	objectClass := ad.UserObject
+
+	tests := map[string]struct {
+		objectName1 string
+		objectName2 string
+		gpo1        string
+		gpo2        string
+
+		want1   map[string]policy.Entry
+		want2   map[string]policy.Entry
+		wantErr bool
+	}{
+		"Same user, same GPO": {
+			objectName1: "bob",
+			objectName2: "bob",
+			gpo1:        "standard",
+			gpo2:        "standard",
+			want1: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+			want2: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+		},
+		// We can’t run this test currently as the mock will always return the same value for bob (both gpos):
+		// both calls are identical.
+		/*"Same user, different GPOs": {
+			objectName1: "bob",
+			objectName2: "bob",
+			gpo1:        "standard",
+			gpo2:        "one-value",
+			want1: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+			want2: map[string]policy.Entry{
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
+			},
+		},*/
+		"Different users, same GPO": {
+			objectName1: "bob",
+			objectName2: "sponge",
+			gpo1:        "standard",
+			gpo2:        "standard",
+			want1: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+			want2: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+		},
+		"Different users, different GPO": {
+			objectName1: "bob",
+			objectName2: "sponge",
+			gpo1:        "standard",
+			gpo2:        "one-value",
+			want1: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+			want2: map[string]policy.Entry{
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			krb5CCName1, cleanup := setKrb5CC(t, tc.objectName1)
+			defer cleanup()
+			krb5CCName2, cleanup := setKrb5CC(t, tc.objectName2)
+			defer cleanup()
+
+			cachedir, rundir := t.TempDir(), t.TempDir()
+
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
+				ad.WithKinitCmd(ad.MockKinit{}),
+				ad.WithGPOListCmd(mockGPOListCmd(t, fmt.Sprintf("DEPENDS:%s@%s:%s@%s", tc.objectName1, tc.gpo1, tc.objectName2, tc.gpo2))))
+			require.NoError(t, err, "Setup: cannot create ad object")
+
+			wg := sync.WaitGroup{}
+			wg.Add(2)
+			go func() {
+				defer wg.Done()
+				got1, err := adc.GetPolicies(context.Background(), tc.objectName1, objectClass, krb5CCName1)
+				require.NoError(t, err, "GetPolicies should return no error")
+				assert.Equal(t, tc.want1, got1, "Got expected GPO policies")
+			}()
+			go func() {
+				defer wg.Done()
+				got2, err := adc.GetPolicies(context.Background(), tc.objectName2, objectClass, krb5CCName2)
+				require.NoError(t, err, "GetPolicies should return no error")
+				assert.Equal(t, tc.want2, got2, "Got expected GPO policies")
+			}()
+			wg.Wait()
+		})
+	}
+}
+
 func TestMockGPOList(t *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return
@@ -488,7 +603,24 @@ func TestMockGPOList(t *testing.T) {
 		break
 	}
 
-	gpos := strings.Split(args[0], "_")
+	var gpos []string
+
+	// Parameterized on user gpos
+	if strings.HasPrefix(args[0], "DEPENDS:") {
+		// user is the last argument of the list command
+		user := args[len(args)-1]
+		v := strings.TrimPrefix(args[0], "DEPENDS:")
+		gpoItems := strings.Split(v, ":")
+		for _, gpoItem := range gpoItems {
+			i := strings.SplitN(gpoItem, "@", 2)
+			if i[0] == user {
+				gpos = append(gpos, i[1])
+			}
+		}
+	} else {
+		gpos = strings.Split(args[0], "_")
+	}
+
 	for _, gpo := range gpos {
 		fmt.Fprintf(os.Stdout, "%s\tsmb://localhost:%d/SYSVOL/warthogs.biz/Policies/%s\n", gpo, ad.SmbPort, gpo)
 	}
