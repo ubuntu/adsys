@@ -147,8 +147,16 @@ msgstr ""
 msgid "Wait for active requests to close."
 msgstr ""
 
+#: internal/policies/ad/ad.go:74
+msgid "couldn't create Active Directory object: %v"
+msgstr ""
+
 #: internal/daemon/daemon.go:60
 msgid "couldn't create server: %v"
+msgstr ""
+
+#: internal/policies/ad/download.go:108
+msgid "couldn't download GPO %q: %v"
 msgstr ""
 
 #: internal/daemon/daemon.go:121
@@ -167,11 +175,23 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
+#: internal/policies/ad/ad.go:136
+msgid "error while getting policies for %q: %v"
+msgstr ""
+
+#: internal/policies/ad/ad.go:206
+msgid "failed to create symlink for caching: %v"
+msgstr ""
+
+#: internal/policies/ad/ad.go:221
+msgid "failed to remove existing symlink: %v"
+msgstr ""
+
 #: cmd/adsysd/client/service.go:38
 msgid "force will shut it down immediately and drop existing connections."
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:83
+#: internal/policies/ad/registry/registry.go:77
 msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
@@ -190,6 +210,10 @@ msgstr ""
 #: internal/grpc/logstreamer/server.go:116
 #, c-format
 msgid "missing metadata %s for incoming request"
+msgstr ""
+
+#: internal/policies/ad/ad.go:144
+msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:60
