@@ -358,178 +358,115 @@ func TestGetPolicies(t *testing.T) {
 	}
 }
 
-func TestGetPoliciesForRefresh(t *testing.T) {
+func TestGetPoliciesWorkflows(t *testing.T) {
 	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
 	gpoListArgs := "standard"
-	objectName := "bob"
 	objectClass := ad.UserObject
-	want := map[string]policy.Entry{
-		"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-		"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-		"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+
+	tests := map[string]struct {
+		objectName1         string
+		objectName2         string
+		userKrb5CCBaseName1 string
+		userKrb5CCBaseName2 string
+		restart             bool
+
+		want    map[string]policy.Entry
+		wantErr bool
+	}{
+		"Second call is a refresh (without Krb5CCName specified)": {
+			objectName1:         "bob",
+			objectName2:         "bob",
+			userKrb5CCBaseName1: "bob",
+			userKrb5CCBaseName2: "EMPTY",
+			want: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+		},
+		"Second call after service restarted": {
+			restart:             true,
+			objectName1:         "bob",
+			objectName2:         "bob",
+			userKrb5CCBaseName1: "bob",
+			userKrb5CCBaseName2: "", // We did’t RENEW the ticket
+			want: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+		},
+		"Second call with different user": {
+			objectName1:         "bob",
+			objectName2:         "sponge",
+			userKrb5CCBaseName1: "bob",
+			userKrb5CCBaseName2: "sponge",
+			want: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+		},
+		"Second call after a relogin": {
+			objectName1:         "bob",
+			objectName2:         "bob",
+			userKrb5CCBaseName1: "bob",
+			userKrb5CCBaseName2: "bobNew",
+			want: map[string]policy.Entry{
+				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
+				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
+				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+		},
 	}
 
-	var krb5CCcontent = []byte("KRB5 Ticket file content")
-	f, err := ioutil.TempFile("", "kbr5cc_adsys_tests_bob_*")
-	require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
-	defer f.Close()
-	krb5CCName := f.Name()
-	defer os.Remove(krb5CCName) // clean up
-	_, err = f.Write(krb5CCcontent)
-	require.NoError(t, err, "Setup: failed to write to temporary krb5 cache file")
-	require.NoError(t, f.Close(), "Setup: failed to close temporary krb5 cache file")
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
-	cachedir, rundir := t.TempDir(), t.TempDir()
+			krb5CCName, cleanup := setKrb5CC(t, tc.userKrb5CCBaseName1)
+			defer cleanup()
 
-	adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-		ad.WithKinitCmd(ad.MockKinit{}),
-		ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
-	require.NoError(t, err, "Setup: cannot create ad object")
+			cachedir, rundir := t.TempDir(), t.TempDir()
 
-	// First call create symlink
-	entries, err := adc.GetPolicies(context.Background(), objectName, objectClass, krb5CCName)
-	require.NoError(t, err, "GetPolicies should return no error")
-	require.Equal(t, want, entries, "GetPolicies returns expected policy entries with correct overrides")
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
+				ad.WithKinitCmd(ad.MockKinit{}),
+				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
+			require.NoError(t, err, "Setup: cannot create ad object")
 
-	// Second call withut CCName should use symlink (refresh case)
-	entries, err = adc.GetPolicies(context.Background(), objectName, objectClass, "")
-	require.NoError(t, err, "GetPolicies should return no error")
-	require.Equal(t, want, entries, "GetPolicies returns expected policy entries with correct overrides")
-}
+			// First call
+			entries, err := adc.GetPolicies(context.Background(), tc.objectName1, objectClass, krb5CCName)
+			require.NoError(t, err, "GetPolicies should return no error")
+			require.Equal(t, tc.want, entries, "GetPolicies returns expected policy entries with correct overrides")
 
-func TestGetPoliciesAfterServerRestart(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+			// Recreate the ticket if needed or reset it to empty for refresh
+			if tc.userKrb5CCBaseName2 != "" {
+				if tc.userKrb5CCBaseName2 == "EMPTY" {
+					krb5CCName = ""
+				} else {
+					krb5CCName, cleanup = setKrb5CC(t, tc.userKrb5CCBaseName2)
+					defer cleanup()
+				}
+			}
 
-	gpoListArgs := "standard"
-	objectName := "bob"
-	objectClass := ad.UserObject
-	want := map[string]policy.Entry{
-		"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-		"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-		"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			// Restart: recreate ad object
+			if tc.restart {
+				adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
+					ad.WithKinitCmd(ad.MockKinit{}),
+					ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
+				require.NoError(t, err, "Cannot create second ad object")
+			}
+
+			// Second call
+			entries, err = adc.GetPolicies(context.Background(), tc.objectName2, objectClass, krb5CCName)
+			require.NoError(t, err, "GetPolicies should return no error")
+			require.Equal(t, tc.want, entries, "GetPolicies returns expected policy entries with correct overrides")
+		})
 	}
-
-	var krb5CCcontent = []byte("KRB5 Ticket file content")
-	f, err := ioutil.TempFile("", "kbr5cc_adsys_tests_bob_*")
-	require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
-	defer f.Close()
-	krb5CCName := f.Name()
-	defer os.Remove(krb5CCName) // clean up
-	_, err = f.Write(krb5CCcontent)
-	require.NoError(t, err, "Setup: failed to write to temporary krb5 cache file")
-	require.NoError(t, f.Close(), "Setup: failed to close temporary krb5 cache file")
-
-	cachedir, rundir := t.TempDir(), t.TempDir()
-
-	adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-		ad.WithKinitCmd(ad.MockKinit{}),
-		ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
-	require.NoError(t, err, "Cannot create first ad object")
-
-	entries, err := adc.GetPolicies(context.Background(), objectName, objectClass, krb5CCName)
-	require.NoError(t, err, "First GetPolicies should return no error")
-	require.Equal(t, want, entries, "First GetPolicies returns expected policy entries with correct overrides")
-
-	adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-		ad.WithKinitCmd(ad.MockKinit{}),
-		ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
-	require.NoError(t, err, "Cannot create second ad object")
-
-	entries, err = adc.GetPolicies(context.Background(), objectName, objectClass, krb5CCName)
-	require.NoError(t, err, "Second GetPolicies should return no error")
-	require.Equal(t, want, entries, "Second GetPolicies returns expected policy entries with correct overrides")
-}
-
-func TestGetPoliciesWithDifferentUsers(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHLD, keep one AD object
-
-	gpoListArgs := "standard"
-	objectName1 := "bob"
-	objectName2 := "sponge"
-	objectClass := ad.UserObject
-	want := map[string]policy.Entry{
-		"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-		"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-		"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
-	}
-
-	var krb5CCcontent = []byte("KRB5 Ticket file content")
-	f, err := ioutil.TempFile("", "kbr5cc_adsys_tests_bob_*")
-	require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
-	defer f.Close()
-	krb5CCName := f.Name()
-	defer os.Remove(krb5CCName) // clean up
-	_, err = f.Write(krb5CCcontent)
-	require.NoError(t, err, "Setup: failed to write to temporary krb5 cache file")
-	require.NoError(t, f.Close(), "Setup: failed to close temporary krb5 cache file")
-
-	cachedir, rundir := t.TempDir(), t.TempDir()
-
-	adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-		ad.WithKinitCmd(ad.MockKinit{}),
-		ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
-	require.NoError(t, err, "Cannot create first ad object")
-
-	entries, err := adc.GetPolicies(context.Background(), objectName1, objectClass, krb5CCName)
-	require.NoError(t, err, "First GetPolicies should return no error")
-	require.Equal(t, want, entries, "First GetPolicies returns expected policy entries with correct overrides")
-
-	entries, err = adc.GetPolicies(context.Background(), objectName2, objectClass, krb5CCName)
-	require.NoError(t, err, "Second GetPolicies should return no error")
-	require.Equal(t, want, entries, "Second GetPolicies returns expected policy entries with correct overrides")
-}
-
-func TestGetPoliciesAfterANewLogin(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHLD, keep one AD object
-
-	gpoListArgs := "standard"
-	objectName := "bob"
-	objectClass := ad.UserObject
-	want := map[string]policy.Entry{
-		"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-		"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-		"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
-	}
-
-	var krb5CCcontent = []byte("KRB5 Ticket file content")
-	f, err := ioutil.TempFile("", "kbr5cc_adsys_tests_bob_*")
-	require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
-	defer f.Close()
-	krb5CCName := f.Name()
-	defer os.Remove(krb5CCName) // clean up
-	_, err = f.Write(krb5CCcontent)
-	require.NoError(t, err, "Setup: failed to write to temporary krb5 cache file")
-	require.NoError(t, f.Close(), "Setup: failed to close temporary krb5 cache file")
-
-	cachedir, rundir := t.TempDir(), t.TempDir()
-
-	adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-		ad.WithKinitCmd(ad.MockKinit{}),
-		ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
-	require.NoError(t, err, "Cannot create first ad object")
-
-	entries, err := adc.GetPolicies(context.Background(), objectName, objectClass, krb5CCName)
-	require.NoError(t, err, "First GetPolicies should return no error")
-	require.Equal(t, want, entries, "First GetPolicies returns expected policy entries with correct overrides")
-
-	f, err = ioutil.TempFile("", "kbr5cc_adsys_tests_bob_new_*")
-	require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
-	defer f.Close()
-	krb5CCName = f.Name()
-	defer os.Remove(krb5CCName) // clean up
-	_, err = f.Write(krb5CCcontent)
-	require.NoError(t, err, "Setup: failed to write to temporary krb5 cache file")
-	require.NoError(t, f.Close(), "Setup: failed to close temporary krb5 cache file")
-
-	entries, err = adc.GetPolicies(context.Background(), objectName, objectClass, krb5CCName)
-	require.NoError(t, err, "Second GetPolicies should return no error")
-	require.Equal(t, want, entries, "Second GetPolicies returns expected policy entries with correct overrides")
 }
 
 func TestMockGPOList(t *testing.T) {
@@ -570,4 +507,19 @@ func mockGPOListCmd(t *testing.T, args ...string) []string {
 	cArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockGPOList", "--"}
 	cArgs = append(cArgs, args...)
 	return cArgs
+}
+
+func setKrb5CC(t *testing.T, ccRootName string) (string, func()) {
+	t.Helper()
+
+	f, err := ioutil.TempFile("", fmt.Sprintf("kbr5cc_adsys_tests_%s_*", ccRootName))
+	require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
+	defer f.Close()
+	krb5CCName := f.Name()
+	_, err = f.Write([]byte("KRB5 Ticket file content"))
+	require.NoError(t, err, "Setup: failed to write to temporary krb5 cache file")
+	require.NoError(t, f.Close(), "Setup: failed to close temporary krb5 cache file")
+	return krb5CCName, func() {
+		os.Remove(krb5CCName) // clean up
+	}
 }
