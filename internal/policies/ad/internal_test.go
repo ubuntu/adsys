@@ -379,7 +379,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 		"Setup: can't copy initial gpo directory")
 	// create the lock made by fetch which is always called before parseGPOs in the public API
-	adc.gpos["standard"] = gpo{
+	adc.gpos["standard"] = &gpo{
 		name: "standard",
 		url:  fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
 		mu:   &sync.RWMutex{},

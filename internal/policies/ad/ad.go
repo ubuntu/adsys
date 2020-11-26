@@ -31,6 +31,10 @@ type gpo struct {
 	name string
 	url  string
 	mu   *sync.RWMutex
+
+	// This property is used to instrument the tests for concurrent download and parsing of GPOs
+	// Cf internal_test::TestFetchOneGPOWhileParsingItConcurrently()
+	testConcurrent bool
 }
 
 // AD structure to manage call concurrency
@@ -41,15 +45,11 @@ type AD struct {
 	gpoCacheDir  string
 	krb5CacheDir string
 
-	gpos map[string]gpo
+	gpos map[string]*gpo
 	sync.Mutex
 
 	withoutKerberos bool
 	gpoListCmd      []string
-
-	// This property is used to instrument the tests for concurrent download and parsing of GPOs
-	// Cf internal_test::TestFetchOneGPOWhileParsingItConccurently()
-	testConcurrentGPO bool
 }
 
 type options struct {
@@ -119,7 +119,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 		url:          url,
 		gpoCacheDir:  gpoCacheDir,
 		krb5CacheDir: krb5CacheDir,
-		gpos:         make(map[string]gpo),
+		gpos:         make(map[string]*gpo),
 		gpoListCmd:   args.gpoListCmd,
 	}, nil
 }
@@ -228,7 +228,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 		if err := func() error {
 			ad.gpos[n].mu.RLock()
 			defer ad.gpos[n].mu.RUnlock()
-			_ = ad.testConcurrentGPO
+			_ = ad.gpos[n].testConcurrent
 
 			class := "User"
 			if objectClass == ComputerObject {

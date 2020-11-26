@@ -101,7 +101,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	for name, url := range gpos {
 		g, ok := ad.gpos[name]
 		if !ok {
-			ad.gpos[name] = gpo{
+			ad.gpos[name] = &gpo{
 				name: name,
 				url:  url,
 				mu:   &sync.RWMutex{},
@@ -139,7 +139,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			log.Infof(ctx, "Downloading GPO %q", g.name)
 			g.mu.Lock()
 			defer g.mu.Unlock()
-			ad.testConcurrentGPO = true
+			g.testConcurrent = true
 
 			// Download GPO in a temporary directory and only commit it if fully downloaded without any errors
 			tmpdest, err := ioutil.TempDir("", "adsys_gpo_*")
@@ -169,7 +169,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	return nil
 }
 
-func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g gpo, localPath string) (bool, error) {
+func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g *gpo, localPath string) (bool, error) {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
 
