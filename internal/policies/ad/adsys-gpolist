@@ -248,7 +248,7 @@ def main():
         return ReturnCode.GPO_FAILED
 
     for g in gpos:
-        print("%s\t%s" % (g[0], g[1]))
+        print("%s\tsmb:%s" % (g[0], str(g[1]).replace("\\", "/")))
 
 
 if __name__ == "__main__":

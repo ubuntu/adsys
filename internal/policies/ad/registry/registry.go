@@ -14,6 +14,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies/policy"
 )
 
 type dataType uint8
@@ -37,15 +38,8 @@ const (
 	policyContainerName = "defaultValues"
 )
 
-// PolicyEntry represents an entry of a policy file
-type PolicyEntry struct {
-	Key      string // Absolute path to setting. Ex: Sofware/Ubuntu/User/dconf/wallpaper
-	Value    string
-	Disabled bool
-}
-
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
-func DecodePolicy(r io.Reader) (entries []PolicyEntry, err error) {
+func DecodePolicy(r io.Reader) (entries []policy.Entry, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("couldn't decode policy: %v", err)
@@ -109,7 +103,7 @@ func DecodePolicy(r io.Reader) (entries []PolicyEntry, err error) {
 			}
 		}
 
-		entries = append(entries, PolicyEntry{
+		entries = append(entries, policy.Entry{
 			Key:      filepath.Join(e.path, e.key),
 			Value:    res,
 			Disabled: disabled,

@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc libsmbclient-dev
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
@@ -52,14 +52,17 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: ${{ matrix.go }}
-      - name: Install dependencies
+      # We add a new user and execute under it for file permissions to be taken into account
+      # as root can write in RO directories.
+      - name: Install dependencies and add user
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo
+          adduser --disabled-password --gecos "" ubuntu
       - name: Run tests
-        run: go test -coverprofile=coverage.txt -covermode=count ./...
+        run: sudo -u ubuntu env "PATH=$PATH" go test -coverprofile=/tmp/coverage.txt -covermode=count ./...
       - name: Run tests (with race detector)
-        run: go test -race ./...
+        run: sudo -u ubuntu env "PATH=$PATH" go test -race ./...
       - name: Install curl for codecov
         run: |
           apt update
@@ -67,7 +70,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
-          file: ./coverage.txt
+          file: /tmp/coverage.txt
 
   generators:
     name: Generated files are up to date
@@ -78,7 +81,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc protobuf-compiler gettext git
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc protobuf-compiler gettext git libsmbclient-dev
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2

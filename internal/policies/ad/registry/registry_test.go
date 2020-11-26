@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/policies/ad/registry"
+	"github.com/ubuntu/adsys/internal/policies/policy"
 )
 
 func TestDecodePolicy(t *testing.T) {
@@ -16,25 +17,25 @@ func TestDecodePolicy(t *testing.T) {
 	defaultKey := `Software/Canonical/Ubuntu/ValueName`
 	defaultData := "BA"
 	tests := map[string]struct {
-		want    []registry.PolicyEntry
+		want    []policy.Entry
 		wantErr bool
 	}{
 		"one element, string value": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   defaultKey,
 					Value: defaultData,
 				},
 			}},
 		"one element, decimal value": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   defaultKey,
 					Value: "1234",
 				},
 			}},
 		"two elements": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   defaultKey,
 					Value: "1",
@@ -45,7 +46,7 @@ func TestDecodePolicy(t *testing.T) {
 				},
 			}},
 		"one element, disabled": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:      defaultKey,
 					Value:    "",
@@ -55,35 +56,35 @@ func TestDecodePolicy(t *testing.T) {
 
 		// Container and options test cases
 		"container with default elements override empty option values": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   `Software/Container/Child`,
 					Value: "containerDefaultValueForChild",
 				},
 			}},
 		"container with default elements are ignored on non empty option values": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   `Software/Container/Child`,
 					Value: "MyValue",
 				},
 			}},
 		"container with missing default element for option values have empty strings": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   `Software/Container/Child2`,
 					Value: "",
 				},
 			}},
 		"container with default elements are ignored on int option values (always have values)": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   `Software/Container/Child`,
 					Value: "2",
 				},
 			}},
 		"disabled container disables its option values": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:      `Software/Container/Child`,
 					Value:    "",
@@ -91,7 +92,7 @@ func TestDecodePolicy(t *testing.T) {
 				},
 			}},
 		"two containers don’t mix their default values when redefined": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   `Software/Container1/Child1`,
 					Value: "container1DefaultValueForChild1",
@@ -112,7 +113,7 @@ func TestDecodePolicy(t *testing.T) {
 			}},
 
 		"semicolon in data": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   defaultKey,
 					Value: "B;A",
@@ -120,7 +121,7 @@ func TestDecodePolicy(t *testing.T) {
 			}},
 
 		"section separators in data": {
-			want: []registry.PolicyEntry{
+			want: []policy.Entry{
 				{
 					Key:   defaultKey,
 					Value: "BA][C]",
