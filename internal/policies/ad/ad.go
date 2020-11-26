@@ -47,6 +47,7 @@ type AD struct {
 
 	gpos map[string]*gpo
 	sync.Mutex
+	smbMu sync.RWMutex
 
 	withoutKerberos bool
 	gpoListCmd      []string
@@ -158,7 +159,12 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
+
+	// Cannot execute in parallel libsmbclient with another exec because libsmbclient overrides signals.
+	ad.smbMu.Lock()
+	err = cmd.Run()
+	ad.smbMu.Unlock()
+	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve the list of GPO: %v\n%s", err, stderr.String())
 	}
 

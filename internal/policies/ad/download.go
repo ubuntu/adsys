@@ -79,12 +79,6 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	ad.Lock()
 	defer ad.Unlock()
 
-	// libsmbclient overrides sigchild without setting SA_ONSTACK
-	// It means that any cmd.Wait() would segfault when ran concurrently with this.
-	// Fortunately, we only execute subprocess in the AD package, and we have a single
-	// AD object with a mutex.
-	defer C.restoresigchild()
-
 	// Set kerberos ticket.
 	const krb5TicketEnv = "KRB5CCNAME"
 	oldKrb5Ticket := os.Getenv(krb5TicketEnv)
@@ -113,6 +107,15 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 				if err != nil {
 					err = fmt.Errorf(i18n.G("couldn't download GPO %q: %v"), g.name, err)
 				}
+			}()
+			ad.smbMu.RLock()
+			defer func() {
+				// libsmbclient overrides sigchild without setting SA_ONSTACK
+				// It means that any cmd.Wait() would segfault when ran concurrently with this.
+				// Fortunately, we only execute subprocess in the AD package, and we have a single
+				// AD object with a mutex.
+				defer C.restoresigchild()
+				ad.smbMu.RUnlock()
 			}()
 
 			log.Debugf(ctx, "Analyzing GPO %q", g.name)
