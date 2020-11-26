@@ -46,7 +46,7 @@ type AD struct {
 	krb5CacheDir string
 
 	gpos map[string]*gpo
-	sync.Mutex
+	sync.RWMutex
 	smbMu sync.RWMutex
 
 	withoutKerberos bool
@@ -171,7 +171,6 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 
 	gpos := make(map[string]string)
 	var gpoNames []string
-
 	scanner := bufio.NewScanner(&stdout)
 	for scanner.Scan() {
 		t := scanner.Text()
@@ -233,9 +232,11 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 	entries = make(map[string]policy.Entry)
 	for _, n := range gpos {
 		if err := func() error {
+			ad.RLock()
 			ad.gpos[n].mu.RLock()
 			defer ad.gpos[n].mu.RUnlock()
 			_ = ad.gpos[n].testConcurrent
+			ad.RUnlock()
 
 			class := "User"
 			if objectClass == ComputerObject {
