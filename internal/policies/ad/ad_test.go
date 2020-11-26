@@ -67,8 +67,6 @@ func TestNew(t *testing.T) {
 func TestGetPolicies(t *testing.T) {
 	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
 
-	var krb5CCcontent = []byte("KRB5 Ticket file content")
-
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
 
@@ -316,15 +314,10 @@ func TestGetPolicies(t *testing.T) {
 
 			// only create original cc file when requested
 			krb5CCName := tc.userKrb5CCBaseName
+			var cleanup func()
 			if krb5CCName != "" && !tc.dontCreateOriginalKrb5CCName {
-				f, err := ioutil.TempFile("", tc.userKrb5CCBaseName+"_*")
-				require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
-				defer f.Close()
-				krb5CCName = f.Name()
-				defer os.Remove(krb5CCName) // clean up
-				_, err = f.Write(krb5CCcontent)
-				require.NoError(t, err, "Setup: failed to write to temporary krb5 cache file")
-				require.NoError(t, f.Close(), "Setup: failed to close temporary krb5 cache file")
+				krb5CCName, cleanup = setKrb5CC(t, tc.userKrb5CCBaseName)
+				defer cleanup()
 			}
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
