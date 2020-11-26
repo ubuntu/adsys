@@ -153,7 +153,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// Get the list of GPO for object
 	// ./list --objectclass=user  ldap://adc01.warthogs.biz bob
 	// TODO: Embed adsys-gpolist in binary
-	cmdArgs := append(ad.gpoListCmd, "--objectclass", string(objectClass), ad.url, objectName)
+	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
+	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, objectName)
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
 	var stdout, stderr bytes.Buffer
