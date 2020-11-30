@@ -31,6 +31,8 @@ type daemonConfig struct {
 	Verbose        int
 	Socket         string
 	ServiceTimeout int
+	ADServer       string
+	ADDomain       string
 }
 
 // New registers commands and return a new App.
@@ -80,8 +82,12 @@ func New() *App {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain)
+			if err != nil {
+				return err
+			}
+
 			timeout := time.Duration(a.config.ServiceTimeout) * time.Second
-			adsys := adsysservice.Service{}
 			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket, daemon.WithTimeout(timeout))
 			if err != nil {
 				return err
@@ -99,6 +105,11 @@ func New() *App {
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
 	viper.BindPFlag("servicetimeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
+
+	a.rootCmd.PersistentFlags().StringP("ad-server", "S", "", i18n.G("URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."))
+	viper.BindPFlag("ad-server", a.rootCmd.PersistentFlags().Lookup("ad-server"))
+	a.rootCmd.PersistentFlags().StringP("ad-domain", "D", "", i18n.G("AD domain to use. Empty to let ADSys parsing sssd.conf."))
+	viper.BindPFlag("ad-domain", a.rootCmd.PersistentFlags().Lookup("ad-domain"))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
