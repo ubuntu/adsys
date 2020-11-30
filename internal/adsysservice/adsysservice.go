@@ -28,11 +28,27 @@ type Service struct {
 	quit quitter
 }
 
+type options struct {
+	sssdConf string
+}
+type option func(*options) error
+
 // New returns a new instance of an AD service.
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
-func New(ctx context.Context, url, domain string) (*Service, error) {
-	url, domain, err := loadServerInfo(url, domain)
+func New(ctx context.Context, url, domain string, opts ...option) (*Service, error) {
+	// defaults
+	args := options{
+		sssdConf: "/etc/sssd/sssd.conf",
+	}
+	// applied options
+	for _, o := range opts {
+		if err := o(&args); err != nil {
+			return nil, err
+		}
+	}
+
+	url, domain, err := loadServerInfo(args.sssdConf, url, domain)
 	adc, err := ad.New(ctx, url, domain)
 	if err != nil {
 		return nil, err
@@ -42,14 +58,14 @@ func New(ctx context.Context, url, domain string) (*Service, error) {
 	}, nil
 }
 
-func loadServerInfo(url, domain string) (string, string, error) {
+func loadServerInfo(sssdConf, url, domain string) (string, string, error) {
 	if url != "" && domain != "" {
 		return url, domain, nil
 	}
 
-	cfg, err := ini.Load("/etc/sssd/sssd.conf")
+	cfg, err := ini.Load(sssdConf)
 	if err != nil {
-		return "", "", fmt.Errorf(i18n.G("can't read sssd.conf and no url or domain provided"), err)
+		return "", "", fmt.Errorf(i18n.G("can't read %s and no url or domain provided: %v"), sssdConf, err)
 	}
 	if domain == "" {
 		domain = strings.Split(cfg.Section("sssd").Key("domains").String(), ",")[0]
@@ -59,15 +75,16 @@ func loadServerInfo(url, domain string) (string, string, error) {
 	}
 	// domain is either domain section provided by the user or read in sssd.conf
 	adDomain := cfg.Section(fmt.Sprintf("domain/%s", domain)).Key("ad_domain").String()
-	if adDomain != "" {
-		domain = adDomain
-	}
 
 	if url == "" {
 		url = cfg.Section(fmt.Sprintf("domain/%s", domain)).Key("ad_server").String()
 		if url == "" {
 			return "", "", errors.New(i18n.G("failed to find server address in sssd.conf and url is not provided"))
 		}
+	}
+
+	if adDomain != "" {
+		domain = adDomain
 	}
 
 	return url, domain, nil
