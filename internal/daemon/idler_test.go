@@ -169,3 +169,32 @@ func TestServerChangeTimeout(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestServerDoubleQuit(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	grpcRegister := &grpcServiceRegister{}
+
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
+	require.NoError(t, err, "New should return the daemon handler")
+
+	errs := make(chan error, 1)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		if err := d.Listen(); err != nil {
+			errs <- err
+		}
+		close(errs)
+		wg.Done()
+	}()
+
+	// No error triggered by quitting twice
+	d.Quit(false)
+	d.Quit(false)
+
+	wg.Wait()
+	err = <-errs
+	require.NoError(t, err, "No error from listen")
+}
