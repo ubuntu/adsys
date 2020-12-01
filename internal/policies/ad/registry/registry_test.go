@@ -91,6 +91,33 @@ func TestDecodePolicy(t *testing.T) {
 					Disabled: true,
 				},
 			}},
+		"container with meta elements and default without value on options": {
+			want: []policies.Entry{
+				{
+					Key:   `Software/Container/Child`,
+					Value: "containerDefaultValueForChild",
+					Meta:  "containerMetaValueForChild",
+				},
+			}},
+		"container with meta elements and value on options": {
+			want: []policies.Entry{
+				{
+					Key:   `Software/Container/Child`,
+					Value: "MyValue",
+					Meta:  "containerMetaValueForChild",
+				},
+			}},
+		"one container with 2 children don’t mix their default values": {
+			want: []policies.Entry{
+				{
+					Key:   `Software/Container1/Child1`,
+					Value: "container1DefaultValueForChild1",
+				},
+				{
+					Key:   `Software/Container1/Child2`,
+					Value: "container1DefaultValueForChild2",
+				},
+			}},
 		"two containers don’t mix their default values when redefined": {
 			want: []policies.Entry{
 				{
@@ -109,6 +136,17 @@ func TestDecodePolicy(t *testing.T) {
 					Key: `Software/Container2/Child2`,
 					// we didn't set default values for Child2 on Container2: keep empty (no leftover for Child1)
 					Value: "",
+				},
+			}},
+		"one container with 2 children don’t mix their meta values": {
+			want: []policies.Entry{
+				{
+					Key:  `Software/Container1/Child1`,
+					Meta: "container1MetaValueForChild1",
+				},
+				{
+					Key:  `Software/Container1/Child2`,
+					Meta: "container1MetaValueForChild2",
 				},
 			}},
 
