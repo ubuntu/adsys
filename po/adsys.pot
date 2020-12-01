@@ -45,11 +45,15 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
+#: cmd/adsysd/daemon/daemon.go:111
+msgid "AD domain to use. Empty to let ADSys parsing sssd.conf."
+msgstr ""
+
 #: cmd/adsysd/client/client.go:41
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:41
+#: cmd/adsysd/daemon/daemon.go:43
 msgid "AD integration daemon"
 msgstr ""
 
@@ -143,8 +147,17 @@ msgstr ""
 msgid "Stopping daemon requested."
 msgstr ""
 
+#: cmd/adsysd/daemon/daemon.go:109
+msgid ""
+"URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
+msgstr ""
+
 #: internal/daemon/daemon.go:198
 msgid "Wait for active requests to close."
+msgstr ""
+
+#: internal/adsysservice/adsysservice.go:68
+msgid "can't read %s and no url or domain provided: %v"
 msgstr ""
 
 #: internal/policies/ad/ad.go:74
@@ -181,6 +194,14 @@ msgstr ""
 
 #: internal/policies/ad/ad.go:206
 msgid "failed to create symlink for caching: %v"
+msgstr ""
+
+#: internal/adsysservice/adsysservice.go:73
+msgid "failed to find default domain in sssd.conf and domain is not provided"
+msgstr ""
+
+#: internal/adsysservice/adsysservice.go:82
+msgid "failed to find server address in sssd.conf and url is not provided"
 msgstr ""
 
 #: internal/policies/ad/ad.go:221
@@ -228,7 +249,7 @@ msgid ""
 "no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:100
+#: cmd/adsysd/daemon/daemon.go:106
 msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
