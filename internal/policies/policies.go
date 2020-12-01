@@ -12,6 +12,7 @@ type Entry struct {
 	Key      string // Absolute path to setting. Ex: Sofware/Ubuntu/User/dconf/wallpaper
 	Value    string
 	Disabled bool
+	Meta     string
 }
 
 // ApplyPolicy generates a computer or user policy based on a list of entries
