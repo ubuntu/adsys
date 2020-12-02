@@ -33,21 +33,6 @@ For each logged in user (sequentially):
 
 */
 
-/*
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
-
-void restoresigchild() {
-	struct sigaction action;
-	struct sigaction old_action;
-	sigaction(SIGCHLD, NULL, &action);
-	action.sa_flags = action.sa_flags | SA_ONSTACK;
-	sigaction(SIGCHLD, &action, &old_action);
-}
-*/
-import "C"
-
 import (
 	"bufio"
 	"context"
@@ -64,6 +49,7 @@ import (
 	"github.com/mvo5/libsmbclient-go"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/smbsafe"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -108,15 +94,8 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 					err = fmt.Errorf(i18n.G("couldn't download GPO %q: %v"), g.name, err)
 				}
 			}()
-			ad.smbMu.RLock()
-			defer func() {
-				// libsmbclient overrides sigchild without setting SA_ONSTACK
-				// It means that any cmd.Wait() would segfault when ran concurrently with this.
-				// Fortunately, we only execute subprocess in the AD package, and we have a single
-				// AD object with a mutex.
-				defer C.restoresigchild()
-				ad.smbMu.RUnlock()
-			}()
+			smbsafe.WaitSmb()
+			defer smbsafe.DoneSmb()
 
 			log.Debugf(ctx, "Analyzing GPO %q", g.name)
 

@@ -15,6 +15,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/ad/registry"
+	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
 // ObjectClass is the type of object in the directory. It can be a computer or a user
@@ -47,7 +48,6 @@ type AD struct {
 
 	gpos map[string]*gpo
 	sync.RWMutex
-	smbMu sync.RWMutex
 
 	withoutKerberos bool
 	gpoListCmd      []string
@@ -110,7 +110,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 		kinitCmd = args.kinitCmd
 	}
 
+	smbsafe.WaitExec()
 	output, err := kinitCmd.CombinedOutput()
+	smbsafe.DoneExec()
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute create machine ticket:\n%s\n%v", output, err)
 	}
@@ -161,10 +163,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	// Cannot execute in parallel libsmbclient with another exec because libsmbclient overrides signals.
-	ad.smbMu.Lock()
+	smbsafe.WaitExec()
 	err = cmd.Run()
-	ad.smbMu.Unlock()
+	smbsafe.DoneExec()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve the list of GPO: %v\n%s", err, stderr.String())
 	}
