@@ -65,16 +65,7 @@ func ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry) (
 
 	// Create profiles for users only
 	if !isComputer {
-		profilePath := filepath.Join(profilesPath, objectName)
-		data := []byte(fmt.Sprintf(`
-user-db:user
-system-db:adsys_%s
-system-db:adsys_machine
-`, objectName))
-		if err := ioutil.WriteFile(profilePath+".adsys.new", data, 0600); err != nil {
-			return err
-		}
-		if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {
+		if err := writeProfile(objectName, profilesPath); err != nil {
 			return err
 		}
 	}
@@ -118,6 +109,39 @@ system-db:adsys_machine
 		return err
 	}
 	if err := os.Rename(locksPath+".new", locksPath); err != nil {
+		return err
+	}
+	return nil
+}
+
+// writeProfile creates or updates a dconf profile file.
+func writeProfile(user, profilesPath string) error {
+	profilePath := filepath.Join(profilesPath, user)
+	endProfile := `system-db:%s
+system-db:machine
+`
+
+	// Read existing content and create file if doesn’t exists
+	content, err := ioutil.ReadFile(profilePath)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf(`user-db:user\n%s`, endProfile)), 0600)
+	}
+
+	// Is file already up to date?
+	if bytes.HasSuffix(content, []byte(endProfile)) {
+		return nil
+	}
+
+	// Otherwise, read the end, even if one of the entry is already anywhere in the file, we want them at the bottom
+	// of the stack.
+	content = append(content, []byte(endProfile)...)
+	if err := ioutil.WriteFile(profilePath+".adsys.new", content, 0600); err != nil {
+		return err
+	}
+	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {
 		return err
 	}
 	return nil
