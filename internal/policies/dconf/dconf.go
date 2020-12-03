@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
@@ -126,13 +127,20 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 	}
 
 	// Prepare file contents
+	// Order sections to have a reliable output
 	var data []string
-	for s, defs := range dataWithGroups {
-		data = append(data, s)
-		for _, def := range defs {
+	sections := make([]string, 0, len(dataWithGroups))
+	for s := range dataWithGroups {
+		sections = append(sections, s)
+	}
+	sort.Strings(sections)
+	for _, s := range sections {
+		data = append(data, fmt.Sprintf("[%s]", s))
+		for _, def := range dataWithGroups[s] {
 			data = append(data, def)
 		}
 	}
+
 	var dataLocks []string
 	for _, l := range locks {
 		dataLocks = append(dataLocks, l)
