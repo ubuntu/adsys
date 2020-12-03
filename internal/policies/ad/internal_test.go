@@ -24,7 +24,7 @@ import (
 const policyPath = "SYSVOL/localdomain/Policies"
 
 func TestFetchGPO(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	tests := map[string]struct {
 		gpos                   []string
@@ -184,7 +184,7 @@ func TestFetchGPO(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 			dest, rundir := t.TempDir(), t.TempDir()
 
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
@@ -264,7 +264,7 @@ func TestFetchGPO(t *testing.T) {
 }
 
 func TestFetchGPOWithUnreadableFile(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	// Prepare GPO with unreadable file.
 	// Defer will work after all tests are done because we don’t run it in parallel
@@ -292,7 +292,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			dest, rundir := t.TempDir(), t.TempDir()
 
@@ -327,7 +327,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 }
 
 func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 	tests := map[string]struct {
 		removeGPOCacheDir bool
 		roGPOCacheDir     bool
@@ -339,7 +339,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			dest, rundir := t.TempDir(), t.TempDir()
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
@@ -362,7 +362,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 }
 
 func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	const policyPath = "SYSVOL/warthogs.biz/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
@@ -407,7 +407,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 }
 
 func TestParseGPOConcurrent(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	const policyPath = "SYSVOL/warthogs.biz/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()

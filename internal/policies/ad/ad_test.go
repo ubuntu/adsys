@@ -66,7 +66,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestGetPolicies(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
@@ -311,7 +311,7 @@ func TestGetPolicies(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			// only create original cc file when requested
 			krb5CCName := tc.userKrb5CCBaseName
@@ -353,7 +353,7 @@ func TestGetPolicies(t *testing.T) {
 }
 
 func TestGetPoliciesWorkflows(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	gpoListArgs := "standard"
 	objectClass := ad.UserObject
@@ -418,7 +418,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			krb5CCName, cleanup := setKrb5CC(t, tc.userKrb5CCBaseName1)
 			defer cleanup()
@@ -464,7 +464,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 }
 
 func TestGetPoliciesConcurrently(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHLD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	objectClass := ad.UserObject
 
@@ -545,6 +545,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
+
 			krb5CCName1, cleanup := setKrb5CC(t, tc.objectName1)
 			defer cleanup()
 			krb5CCName2, cleanup := setKrb5CC(t, tc.objectName2)
