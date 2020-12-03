@@ -1,6 +1,7 @@
 package dconf
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/godbus/dbus"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/smbsafe"
@@ -94,14 +96,25 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 	// Generate defaults and locks content from policy
 	dataWithGroups := make(map[string][]string)
 	var locks []string
+	var errMsgs []string
 	for _, e := range entries {
 		if !e.Disabled {
 			section := filepath.Dir(e.Key)
 			// FIXME: quotes for string, default Values
+
+			if err := checkSignature(e.Meta, e.Value); err != nil {
+				errMsgs = append(errMsgs, fmt.Sprintf(i18n.G("- error on %s: %v"), e.Key, err))
+			}
+
 			l := fmt.Sprintf("%s=%s", filepath.Base(e.Key), e.Value)
 			dataWithGroups[section] = append(dataWithGroups[section], l)
 		}
 		locks = append(locks, e.Key)
+	}
+
+	// Stop on any error
+	if errMsgs != nil {
+		return errors.New(strings.Join(errMsgs, "\n"))
 	}
 
 	// Prepare file contents
@@ -165,5 +178,25 @@ system-db:machine
 	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {
 		return err
 	}
+	return nil
+}
+
+// checkSignature returns an error if the value doesn't match the expected variant signature
+func checkSignature(meta, value string) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf(i18n.G("error while checking signature: %v"), err)
+		}
+	}()
+
+	sig, err := dbus.ParseSignature(meta)
+	if err != nil {
+		return fmt.Errorf(i18n.G("%s is not a valid gsettings signature: %v"), meta, err)
+	}
+	_, err = dbus.ParseVariant(value, sig)
+	if err != nil {
+		return fmt.Errorf(i18n.G("can't parse %q as %q: %v"), value, meta, err)
+	}
+
 	return nil
 }
