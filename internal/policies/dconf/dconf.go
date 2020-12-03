@@ -62,13 +62,6 @@ func ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry) (
 			return fmt.Errorf(i18n.G("machine dconf database is required before generating a policy for an user. This one returns: %v"), err)
 		}
 	}
-	// Reset db path content
-	if err := os.RemoveAll(filepath.Join(dbsPath, objectName)); err != nil {
-		return err
-	}
-	if err := os.MkdirAll(dbPath, 0744); err != nil {
-		return err
-	}
 
 	// Create profiles for users only
 	if !isComputer {
@@ -87,24 +80,24 @@ system-db:adsys_machine
 	}
 
 	// Generate defaults and locks content from policy
-	defaults := make(map[string][]string)
+	dataWithGroups := make(map[string][]string)
 	var locks []string
 	for _, e := range entries {
 		if !e.Disabled {
 			section := filepath.Dir(e.Key)
 			// FIXME: quotes for string, default Values
 			l := fmt.Sprintf("%s=%s", filepath.Base(e.Key), e.Value)
-			defaults[section] = append(defaults[section], l)
+			dataWithGroups[section] = append(dataWithGroups[section], l)
 		}
 		locks = append(locks, e.Key)
 	}
 
 	// Prepare file contents
-	var dataDefaults []string
-	for s, defs := range defaults {
-		dataDefaults = append(dataDefaults, s)
+	var data []string
+	for s, defs := range dataWithGroups {
+		data = append(data, s)
 		for _, def := range defs {
-			dataDefaults = append(dataDefaults, def)
+			data = append(data, def)
 		}
 	}
 	var dataLocks []string
@@ -113,20 +106,19 @@ system-db:adsys_machine
 	}
 
 	// Commit on disk
-	defaultPath := filepath.Join(dbPath, "defaults")
-	if err := ioutil.WriteFile(defaultPath+".adsys.new", []byte(strings.Join(dataDefaults, "\n")), 0600); err != nil {
+	defaultPath := filepath.Join(dbPath, "adsys")
+	if err := ioutil.WriteFile(defaultPath+".new", []byte(strings.Join(data, "\n")), 0600); err != nil {
 		return err
 	}
-	if err := os.Rename(defaultPath+".adsys.new", defaultPath); err != nil {
+	if err := os.Rename(defaultPath+".new", defaultPath); err != nil {
 		return err
 	}
-	locksPath := filepath.Join(dbPath, "locks", "defaults")
-	if err := ioutil.WriteFile(defaultPath+".adsys.new", []byte(strings.Join(dataLocks, "\n")), 0600); err != nil {
+	locksPath := filepath.Join(dbPath, "locks", "adsys")
+	if err := ioutil.WriteFile(locksPath+".new", []byte(strings.Join(dataLocks, "\n")), 0600); err != nil {
 		return err
 	}
-	if err := os.Rename(locksPath+".adsys.new", locksPath); err != nil {
+	if err := os.Rename(locksPath+".new", locksPath); err != nil {
 		return err
 	}
-
 	return nil
 }
