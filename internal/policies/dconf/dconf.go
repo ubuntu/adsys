@@ -58,9 +58,8 @@ func ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry) (
 	dbPath := filepath.Join(dbsPath, objectName+".d")
 
 	if !isComputer {
-		// Ensure the machine db is created as we will reference it from users
-		if err := os.MkdirAll(filepath.Join(dbsPath, "machine.d", "locks"), 0744); err != nil {
-			return err
+		if _, err := os.Stat(filepath.Join(dbsPath, "machine.d", "locks", "adsys")); err != nil {
+			return fmt.Errorf(i18n.G("machine dconf database is required before generating a policy for an user. This one returns: %v"), err)
 		}
 	}
 	// Reset db path content
