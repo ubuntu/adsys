@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
 /*
@@ -44,13 +47,31 @@ const (
 //   - String values
 //   - Default values
 
+// Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy
+type Manager struct {
+	dconfMu sync.RWMutex
+}
+
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries
-func ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry) (err error) {
+func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry, updateDconf bool) (err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("can't apply dconf policy: %v"), err)
+		} else {
+			// request an update now that we released the read lock
+			// we will call update multiple times.
+			smbsafe.WaitExec()
+			m.dconfMu.Lock()
+			out, errExec := exec.Command("dconf", "update").CombinedOutput()
+			m.dconfMu.Unlock()
+			smbsafe.DoneExec()
+			if errExec != nil {
+				err = fmt.Errorf(i18n.G("can't refresh dconf policy via dconf update: %v"), out)
+			}
 		}
 	}()
+	m.dconfMu.RLock()
+	defer m.dconfMu.RUnlock()
 
 	if isComputer {
 		objectName = "machine"
