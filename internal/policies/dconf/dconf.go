@@ -1,12 +1,14 @@
 package dconf
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -100,10 +102,16 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 	for _, e := range entries {
 		if !e.Disabled {
 			section := filepath.Dir(e.Key)
-			// FIXME: quotes for string, default Values
 
+			// normalize common user error cases and check gsettings schema signature match.
+			e.Value, err = normalizeValue(e.Meta, e.Value)
+			if err != nil {
+				errMsgs = append(errMsgs, fmt.Sprintf(i18n.G("- error on %s: %v"), e.Key, err))
+				continue
+			}
 			if err := checkSignature(e.Meta, e.Value); err != nil {
 				errMsgs = append(errMsgs, fmt.Sprintf(i18n.G("- error on %s: %v"), e.Key, err))
+				continue
 			}
 
 			l := fmt.Sprintf("%s=%s", filepath.Base(e.Key), e.Value)
@@ -179,6 +187,100 @@ system-db:machine
 		return err
 	}
 	return nil
+}
+
+// normalizeValue simplify user entry by handling common mistakes on key types
+func normalizeValue(keyType, value string) (string, error) {
+	value = strings.TrimSpace(value)
+	switch keyType {
+	case "s":
+		return quoteValue(value, "'", "'"), nil
+	case "as":
+		return quoteASVariant(value)
+	case "ai":
+		return quoteValue(value, "[", "]"), nil
+	}
+
+	return value, nil
+}
+
+// quoteValue ensures start is the first and end the last element of s.
+// We will escape each non leading start and end character in s.
+func quoteValue(s, start, end string) string {
+	v := s
+	if !strings.HasPrefix(s, start) {
+		v = start + s
+	}
+	if !strings.HasSuffix(s, end) {
+		v += end
+	}
+	// Escape start characters
+	if len(v)-2 > 0 {
+		// Don’t escape the first and last character we just added
+		v = v[0:1] + strings.ReplaceAll(v[1:len(v)-2], start, `\`+start) + v[len(v)-1:]
+	}
+	// Escape end characters
+	if end != start && len(v)-2 > 0 {
+		v = v[0:1] + strings.ReplaceAll(v[1:len(v)-2], end, `\`+end) + v[len(v)-1:]
+	}
+	return v
+}
+
+// quoteASVariant returns an variant array of string properly quoted
+func quoteASVariant(v string) (string, error) {
+	orig := v
+	v = strings.TrimRight(strings.TrimLeft(v, " ["), " ]")
+
+	// Quoted string case
+	if strings.HasPrefix(v, "'") && strings.HasSuffix(v, "'") {
+		// Remove leading/trailing quote and split on "','" (with optional spaces)
+		v = strings.Trim(v, "'")
+		re := regexp.MustCompile(`'\s*,\s*'`)
+		t := re.Split(v, -1)
+
+		// Look for unescaped ' by:
+		// - join the whole string
+		// - remove any escaped '
+		// - check
+		if strings.Contains(strings.Replace(strings.Join(t, ""), `\'`, "", -1), "'") {
+			return "", fmt.Errorf(i18n.G("partially quoted string: %q"), orig)
+		}
+		var r []string
+		for _, e := range t {
+			r = append(r, quoteValue(e, "'", "'"))
+		}
+		return fmt.Sprintf("['%s']", strings.Join(t, "', '")), nil
+	}
+
+	// Unquoted string
+	// Must split on "," but not on "\,"
+	// Negative look behind is not supported in Go, so workaround by rejoining previous escaped element
+	// https://github.com/google/re2/wiki/Syntax
+	// Regex: `\s*(?<!\\),\s*`
+	t := strings.Split(v, ",")
+	// rebuild the slice, rejoining "\,"
+	var tokens []string
+	for i, e := range t {
+		if i == 0 {
+			tokens = append(tokens, e)
+			continue
+		}
+		// If the previous element was escaped (counting the number of \), merge it.
+		if strings.HasSuffix(t[i-1], `\`) && ((len(t[i-1])-len(strings.TrimRight(t[i-1], `\`)))%2 == 1) {
+			tokens[len(tokens)-1] += "," + e
+			continue
+		}
+		tokens = append(tokens, e)
+	}
+	var r []string
+	for _, e := range tokens {
+		r = append(r, quoteValue(strings.TrimSpace(e), "'", "'"))
+	}
+
+	if strings.Contains(strings.Replace(strings.Join(r, ","), `\'`, "", -1), "'") {
+		return "", fmt.Errorf(i18n.G("partially quoted string: %q"), orig)
+	}
+	return fmt.Sprintf("[%s]", strings.Join(r, ", ")), nil
 }
 
 // checkSignature returns an error if the value doesn't match the expected variant signature
