@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 	github.com/fsnotify/fsnotify v1.4.7
-	github.com/godbus/dbus/v5 v5.0.3 // indirect
+	github.com/godbus/dbus/v5 v5.0.3
 	github.com/golang/protobuf v1.4.3
 	github.com/mvo5/libsmbclient-go v0.0.0-20201002095607-f9fa2a5c1104
 	github.com/sirupsen/logrus v1.7.0
