@@ -215,6 +215,8 @@ func normalizeValue(keyType, value string) string {
 	switch keyType {
 	case "s":
 		return quoteValue(value)
+	case "b":
+		return normalizeBoolean(value)
 	case "as":
 		return quoteASVariant(value)
 	case "ai":
@@ -243,6 +245,22 @@ func quoteValue(s string) string {
 
 	s = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(s), "'"), "'")
 	return fmt.Sprintf("'%s'", strings.Join(splitOnNonEscaped(s, "'"), `\'`))
+}
+
+// normalizeBoolean will try to convert any value to false/true to be compatible with dconf.
+// The following is accepted, is case insensitive and spaces are trimmed:
+// y|yes|n|no
+// true|false
+// on|On|ON|off
+func normalizeBoolean(v string) string {
+	lv := strings.TrimSpace(strings.ToLower(v))
+	switch lv {
+	case "y", "yes", "true", "on":
+		return "true"
+	case "n", "no", "false", "off":
+		return "false"
+	}
+	return v
 }
 
 // quoteASVariant returns an variant array of string properly quoted
