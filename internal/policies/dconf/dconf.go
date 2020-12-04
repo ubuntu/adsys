@@ -58,11 +58,9 @@ type Manager struct {
 }
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries
-func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry, updateDconf bool) (err error) {
+func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry) (err error) {
 	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("can't apply dconf policy: %v"), err)
-		} else {
+		if err == nil {
 			// request an update now that we released the read lock
 			// we will call update multiple times.
 			smbsafe.WaitExec()
@@ -73,6 +71,9 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 			if errExec != nil {
 				err = fmt.Errorf(i18n.G("can't refresh dconf policy via dconf update: %v"), out)
 			}
+		}
+		if err != nil {
+			err = fmt.Errorf(i18n.G("can't apply dconf policy: %v"), err)
 		}
 	}()
 	m.dconfMu.RLock()
@@ -91,6 +92,9 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 
 	// Create profiles for users only
 	if !isComputer {
+		if err := os.MkdirAll(profilesPath, 0755); err != nil {
+			return err
+		}
 		if err := writeProfile(objectName, profilesPath); err != nil {
 			return err
 		}
@@ -106,10 +110,6 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 
 			// normalize common user error cases and check gsettings schema signature match.
 			e.Value = normalizeValue(e.Meta, e.Value)
-			if err != nil {
-				errMsgs = append(errMsgs, fmt.Sprintf(i18n.G("- error on %s: %v"), e.Key, err))
-				continue
-			}
 			if err := checkSignature(e.Meta, e.Value); err != nil {
 				errMsgs = append(errMsgs, fmt.Sprintf(i18n.G("- error on %s: %v"), e.Key, err))
 				continue
@@ -147,15 +147,18 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 	}
 
 	// Commit on disk
+	if err := os.MkdirAll(filepath.Join(dbPath, "locks"), 0755); err != nil {
+		return err
+	}
 	defaultPath := filepath.Join(dbPath, "adsys")
-	if err := ioutil.WriteFile(defaultPath+".new", []byte(strings.Join(data, "\n")), 0600); err != nil {
+	if err := ioutil.WriteFile(defaultPath+".new", []byte(strings.Join(data, "\n")+"\n"), 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(defaultPath+".new", defaultPath); err != nil {
 		return err
 	}
 	locksPath := filepath.Join(dbPath, "locks", "adsys")
-	if err := ioutil.WriteFile(locksPath+".new", []byte(strings.Join(dataLocks, "\n")), 0600); err != nil {
+	if err := ioutil.WriteFile(locksPath+".new", []byte(strings.Join(dataLocks, "\n")+"\n"), 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(locksPath+".new", locksPath); err != nil {
@@ -167,9 +170,7 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 // writeProfile creates or updates a dconf profile file.
 func writeProfile(user, profilesPath string) error {
 	profilePath := filepath.Join(profilesPath, user)
-	endProfile := `system-db:%s
-system-db:machine
-`
+	endProfile := fmt.Sprintf("\nsystem-db:%s\nsystem-db:machine\n", user)
 
 	// Read existing content and create file if doesn’t exists
 	content, err := ioutil.ReadFile(profilePath)
@@ -177,13 +178,15 @@ system-db:machine
 		if !os.IsNotExist(err) {
 			return err
 		}
-		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf(`user-db:user\n%s`, endProfile)), 0600)
+		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user%s", endProfile)), 0600)
 	}
 
 	// Is file already up to date?
 	if bytes.HasSuffix(content, []byte(endProfile)) {
 		return nil
 	}
+	// Normalize content before appending to not have new lines.
+	content = bytes.TrimSpace(content)
 
 	// Otherwise, read the end, even if one of the entry is already anywhere in the file, we want them at the bottom
 	// of the stack.
