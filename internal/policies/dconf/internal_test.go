@@ -47,6 +47,7 @@ func TestNormalize(t *testing.T) {
 		"as partially quoted unbalanced start can lead to unexpect result": {keyType: "as", value: "['aa,'bb',cc]", want: `['\'aa', '\'bb\'', 'cc']`},
 		"as partially quoted unbalanced end can lead to unexpect result":   {keyType: "as", value: "[aa,'bb',cc']", want: `['aa', '\'bb\'', 'cc\'']`},
 		"as wrongly quoted will consider comma as part of the string":      {keyType: "as", value: "['aa,'bb',cc']", want: `['aa,\'bb\',cc']`},
+		"as with weird composition inception will be quoted":               {keyType: "as", value: "[value1, ] value2]", want: `['value1', '] value2']`},
 
 		// ai cases
 		"simple ai":                                   {keyType: "ai", value: "[1, 2, 3]", want: "[1, 2, 3]"},
