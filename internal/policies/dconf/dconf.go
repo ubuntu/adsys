@@ -55,17 +55,24 @@ const (
 // Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy
 type Manager struct {
 	dconfMu sync.RWMutex
+
+	dconfDir string
 }
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries
 func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry) (err error) {
+	dconfDir := m.dconfDir
+	if dconfDir == "" {
+		dconfDir = "/etc/dconf"
+	}
+
 	defer func() {
 		if err == nil {
 			// request an update now that we released the read lock
 			// we will call update multiple times.
 			smbsafe.WaitExec()
 			m.dconfMu.Lock()
-			out, errExec := exec.Command("dconf", "update").CombinedOutput()
+			out, errExec := exec.Command("dconf", "update", filepath.Join(dconfDir, "db")).CombinedOutput()
 			m.dconfMu.Unlock()
 			smbsafe.DoneExec()
 			if errExec != nil {
@@ -82,6 +89,8 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 	if isComputer {
 		objectName = "machine"
 	}
+	profilesPath := filepath.Join(dconfDir, "profile")
+	dbsPath := filepath.Join(dconfDir, "db")
 	dbPath := filepath.Join(dbsPath, objectName+".d")
 
 	if !isComputer {
