@@ -15,7 +15,6 @@ func TestNormalize(t *testing.T) {
 
 		want string
 	}{
-
 		// string cases
 		"simple quoted string":   {keyType: "s", value: "'hello world'", want: "'hello world'"},
 		"simple unquoted string": {keyType: "s", value: "hello world", want: "'hello world'"},

@@ -19,39 +19,6 @@ import (
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
-/*
-	/etc/dconf/profile/<OBJECTNAME>
-		user-db:user
-		system-db:adsys_<OBJECTNAME>
-		system-db:adsys_machine
-
-
-	/etc/dconf/db/adsys_<OBJECTNAME>.d/
-	/etc/dconf/db/adsys_<OBJECTNAME>.d/defaults
-	/etc/dconf/db/adsys_<OBJECTNAME>.d/locks
-
-	/etc/dconf/db/adsys_machine.d/
-	/etc/dconf/db/adsys_machine.d/defaults
-	/etc/dconf/db/adsys_machine.d/locks
-
-
-*/
-
-const (
-	profilesPath = "/etc/dconf/profile"
-	dbsPath      = "/etc/dconf/db"
-)
-
-// TODO:
-//   - Make sure operations are as atomic as possible to prevent a policy
-//     from being partially removed or applies.
-//   - lock on users
-//   - Make code testable
-//   - dconf update (ensuring that machine has been applied before running any user)
-//   	-> dconf update: don’t run when machine is updating
-//   - String values
-//   - Default values
-
 // Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy
 type Manager struct {
 	dconfMu sync.RWMutex

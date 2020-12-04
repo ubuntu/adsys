@@ -598,7 +598,7 @@ func waitForPortDone(port int) {
 
 // md5Tree build a recursive file list of dir and with their md5sum
 func md5Tree(t *testing.T, dir string) map[string]string {
-	//t.Helper()
+	t.Helper()
 
 	r := make(map[string]string)
 
