@@ -31,6 +31,20 @@ func TestNormalize(t *testing.T) {
 		"string with multiple backslashes escaped quotes": {keyType: "s", value: `this isn\\\'t a quote`, want: `'this isn\\\'t a quote'`},
 		"string with two backslashes don’t escape quotes": {keyType: "s", value: `this isn\\'t a quote`, want: `'this isn\\\'t a quote'`},
 
+		// boolean cases
+		"simple boolean true":             {keyType: "b", value: "true", want: "true"},
+		"weird case true":                 {keyType: "b", value: "tRuE", want: "true"},
+		"with spaces":                     {keyType: "b", value: "  true  ", want: "true"},
+		"yes transformed to boolean":      {keyType: "b", value: "yes", want: "true"},
+		"y transformed to boolean":        {keyType: "b", value: "y", want: "true"},
+		"on transformed to boolean":       {keyType: "b", value: "on", want: "true"},
+		"simple boolean false":            {keyType: "b", value: "false", want: "false"},
+		"weird case false":                {keyType: "b", value: "fAlSe", want: "false"},
+		"no transformed to boolean":       {keyType: "b", value: "no", want: "false"},
+		"n transformed to boolean":        {keyType: "b", value: "n", want: "false"},
+		"off transformed to boolean":      {keyType: "b", value: "off", want: "false"},
+		"non supported is reported as is": {keyType: "b", value: "nonboolean", want: "nonboolean"},
+
 		// as cases
 		"simple unquoted as":                          {keyType: "as", value: "[aa, bb, cc]", want: "['aa', 'bb', 'cc']"},
 		"simple quoted as":                            {keyType: "as", value: "['aa', 'bb', 'cc']", want: "['aa', 'bb', 'cc']"},
