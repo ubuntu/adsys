@@ -105,7 +105,7 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []poli
 			section := filepath.Dir(e.Key)
 
 			// normalize common user error cases and check gsettings schema signature match.
-			e.Value, err = normalizeValue(e.Meta, e.Value)
+			e.Value = normalizeValue(e.Meta, e.Value)
 			if err != nil {
 				errMsgs = append(errMsgs, fmt.Sprintf(i18n.G("- error on %s: %v"), e.Key, err))
 				continue
@@ -198,45 +198,44 @@ system-db:machine
 }
 
 // normalizeValue simplify user entry by handling common mistakes on key types
-func normalizeValue(keyType, value string) (string, error) {
+func normalizeValue(keyType, value string) string {
 	value = strings.TrimSpace(value)
 	switch keyType {
 	case "s":
-		return quoteValue(value, "'", "'"), nil
+		return quoteValue(value)
 	case "as":
 		return quoteASVariant(value)
 	case "ai":
-		return quoteValue(value, "[", "]"), nil
+		value = strings.TrimSpace(value)
+		if !strings.HasPrefix(value, "[") {
+			value = "[" + value
+		}
+		if !strings.HasSuffix(value, "]") {
+			value += "]"
+		}
+		return strings.Replace(strings.Replace(value, " ", "", -1), ",", ", ", -1)
 	}
 
-	return value, nil
+	return value
 }
 
-// quoteValue ensures start is the first and end the last element of s.
-// We will escape each non leading start and end character in s.
-func quoteValue(s, start, end string) string {
-	v := s
-	if !strings.HasPrefix(s, start) {
-		v = start + s
+// quoteValue ensures the string starts and ends with ' in s.
+// We will escape each non leading character in s.
+func quoteValue(s string) string {
+	// quote automatically single quote
+	if s == "'" {
+		s = `'''`
+	} else if s == `\'` {
+		s = `'\''`
 	}
-	if !strings.HasSuffix(s, end) {
-		v += end
-	}
-	// Escape start characters
-	if len(v)-2 > 0 {
-		// Don’t escape the first and last character we just added
-		v = v[0:1] + strings.ReplaceAll(v[1:len(v)-2], start, `\`+start) + v[len(v)-1:]
-	}
-	// Escape end characters
-	if end != start && len(v)-2 > 0 {
-		v = v[0:1] + strings.ReplaceAll(v[1:len(v)-2], end, `\`+end) + v[len(v)-1:]
-	}
-	return v
+
+	s = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(s), "'"), "'")
+	return fmt.Sprintf("'%s'", strings.Join(splitOnNonEscaped(s, "'"), `\'`))
 }
 
 // quoteASVariant returns an variant array of string properly quoted
-func quoteASVariant(v string) (string, error) {
-	orig := v
+func quoteASVariant(v string) string {
+	//orig := v
 	v = strings.TrimRight(strings.TrimLeft(v, " ["), " ]")
 
 	// Quoted string case
@@ -246,18 +245,11 @@ func quoteASVariant(v string) (string, error) {
 		re := regexp.MustCompile(`'\s*,\s*'`)
 		t := re.Split(v, -1)
 
-		// Look for unescaped ' by:
-		// - join the whole string
-		// - remove any escaped '
-		// - check
-		if strings.Contains(strings.Replace(strings.Join(t, ""), `\'`, "", -1), "'") {
-			return "", fmt.Errorf(i18n.G("partially quoted string: %q"), orig)
-		}
 		var r []string
 		for _, e := range t {
-			r = append(r, quoteValue(e, "'", "'"))
+			r = append(r, quoteValue(e))
 		}
-		return fmt.Sprintf("['%s']", strings.Join(t, "', '")), nil
+		return fmt.Sprintf("[%s]", strings.Join(r, ", "))
 	}
 
 	// Unquoted string
@@ -265,7 +257,18 @@ func quoteASVariant(v string) (string, error) {
 	// Negative look behind is not supported in Go, so workaround by rejoining previous escaped element
 	// https://github.com/google/re2/wiki/Syntax
 	// Regex: `\s*(?<!\\),\s*`
-	t := strings.Split(v, ",")
+	var r []string
+	for _, e := range splitOnNonEscaped(v, ",") {
+		e = fmt.Sprintf("'%s'", strings.TrimSpace(e))
+		r = append(r, quoteValue(e))
+	}
+
+	return fmt.Sprintf("[%s]", strings.Join(r, ", "))
+}
+
+// splitOnNonEscaped splits v by sep, only if sep is not escaped.
+func splitOnNonEscaped(v, sep string) []string {
+	t := strings.Split(v, sep)
 	// rebuild the slice, rejoining "\,"
 	var tokens []string
 	for i, e := range t {
@@ -275,20 +278,12 @@ func quoteASVariant(v string) (string, error) {
 		}
 		// If the previous element was escaped (counting the number of \), merge it.
 		if strings.HasSuffix(t[i-1], `\`) && ((len(t[i-1])-len(strings.TrimRight(t[i-1], `\`)))%2 == 1) {
-			tokens[len(tokens)-1] += "," + e
+			tokens[len(tokens)-1] += sep + e
 			continue
 		}
 		tokens = append(tokens, e)
 	}
-	var r []string
-	for _, e := range tokens {
-		r = append(r, quoteValue(strings.TrimSpace(e), "'", "'"))
-	}
-
-	if strings.Contains(strings.Replace(strings.Join(r, ","), `\'`, "", -1), "'") {
-		return "", fmt.Errorf(i18n.G("partially quoted string: %q"), orig)
-	}
-	return fmt.Sprintf("[%s]", strings.Join(r, ", ")), nil
+	return tokens
 }
 
 // checkSignature returns an error if the value doesn't match the expected variant signature
