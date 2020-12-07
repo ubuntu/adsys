@@ -60,6 +60,10 @@ jobs:
           ref: main
       # Install go
       - uses: actions/setup-go@v2
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y libsmbclient-dev
       # Try updating README
       - name: Check README file
         id: checkreadme
