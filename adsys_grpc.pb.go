@@ -20,6 +20,7 @@ type ServiceClient interface {
 	Cat(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CatClient, error)
 	Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error)
 	Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error)
+	UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error)
 }
 
 type serviceClient struct {
@@ -126,6 +127,38 @@ func (x *serviceStopClient) Recv() (*Empty, error) {
 	return m, nil
 }
 
+func (c *serviceClient) UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[3], "/service/UpdatePolicy", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceUpdatePolicyClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_UpdatePolicyClient interface {
+	Recv() (*Empty, error)
+	grpc.ClientStream
+}
+
+type serviceUpdatePolicyClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceUpdatePolicyClient) Recv() (*Empty, error) {
+	m := new(Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
@@ -133,6 +166,7 @@ type ServiceServer interface {
 	Cat(*Empty, Service_CatServer) error
 	Version(*Empty, Service_VersionServer) error
 	Stop(*StopRequest, Service_StopServer) error
+	UpdatePolicy(*UpdatePolicyRequest, Service_UpdatePolicyServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -148,6 +182,9 @@ func (UnimplementedServiceServer) Version(*Empty, Service_VersionServer) error {
 }
 func (UnimplementedServiceServer) Stop(*StopRequest, Service_StopServer) error {
 	return status.Errorf(codes.Unimplemented, "method Stop not implemented")
+}
+func (UnimplementedServiceServer) UpdatePolicy(*UpdatePolicyRequest, Service_UpdatePolicyServer) error {
+	return status.Errorf(codes.Unimplemented, "method UpdatePolicy not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -225,6 +262,27 @@ func (x *serviceStopServer) Send(m *Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Service_UpdatePolicy_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(UpdatePolicyRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).UpdatePolicy(m, &serviceUpdatePolicyServer{stream})
+}
+
+type Service_UpdatePolicyServer interface {
+	Send(*Empty) error
+	grpc.ServerStream
+}
+
+type serviceUpdatePolicyServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceUpdatePolicyServer) Send(m *Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 var _Service_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "service",
 	HandlerType: (*ServiceServer)(nil),
@@ -243,6 +301,11 @@ var _Service_serviceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Stop",
 			Handler:       _Service_Stop_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "UpdatePolicy",
+			Handler:       _Service_UpdatePolicy_Handler,
 			ServerStreams: true,
 		},
 	},
