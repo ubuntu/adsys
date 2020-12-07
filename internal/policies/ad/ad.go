@@ -8,13 +8,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/ad/registry"
+	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
 // ObjectClass is the type of object in the directory. It can be a computer or a user
@@ -47,7 +49,6 @@ type AD struct {
 
 	gpos map[string]*gpo
 	sync.RWMutex
-	smbMu sync.RWMutex
 
 	withoutKerberos bool
 	gpoListCmd      []string
@@ -110,7 +111,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 		kinitCmd = args.kinitCmd
 	}
 
+	smbsafe.WaitExec()
 	output, err := kinitCmd.CombinedOutput()
+	smbsafe.DoneExec()
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute create machine ticket:\n%s\n%v", output, err)
 	}
@@ -130,7 +133,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 // It users the given krb5 ticket reference to authenticate to AD.
 // userKrb5CCName has no impact for computer object and is ignored. If empty, we will expect to find one cached
 // ticket <krb5CCDir>/<objectName>.
-func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (entries map[string]policies.Entry, err error) {
+func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (entries []entry.Entry, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("error while getting policies for %q: %v"), objectName, err)
@@ -161,10 +164,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	// Cannot execute in parallel libsmbclient with another exec because libsmbclient overrides signals.
-	ad.smbMu.Lock()
+	smbsafe.WaitExec()
 	err = cmd.Run()
-	ad.smbMu.Unlock()
+	smbsafe.DoneExec()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve the list of GPO: %v\n%s", err, stderr.String())
 	}
@@ -228,8 +230,9 @@ func (ad *AD) ensureUserKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err err
 	return nil
 }
 
-func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectClass) (entries map[string]policies.Entry, err error) {
-	entries = make(map[string]policies.Entry)
+func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectClass) ([]entry.Entry, error) {
+	entries := make(map[string]entry.Entry)
+	var keys []string
 	for _, n := range gpos {
 		if err := func() error {
 			ad.RLock()
@@ -261,6 +264,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 					continue
 				}
 				entries[pol.Key] = pol
+				keys = append(keys, pol.Key)
 			}
 
 			return nil
@@ -268,5 +272,12 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 			return nil, err
 		}
 	}
-	return entries, nil
+
+	var r []entry.Entry
+	sort.Strings(keys)
+	for _, k := range keys {
+		r = append(r, entries[k])
+	}
+
+	return r, nil
 }

@@ -6,6 +6,7 @@ service service {
   rpc Cat(Empty) returns (stream StringResponse);
   rpc Version(Empty) returns (stream VersionResponse);
   rpc Stop(StopRequest) returns (stream Empty);
+  rpc UpdatePolicy(UpdatePolicyRequest) returns (stream Empty);
 }
 
 message Empty {}
@@ -20,4 +21,10 @@ message VersionResponse {
 
 message StringResponse {
   string msg = 1;
+}
+
+message UpdatePolicyRequest {
+  bool isComputer = 1;
+  string user = 2;
+  string krb5cc = 3;
 }

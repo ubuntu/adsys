@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/ad"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
 func TestNew(t *testing.T) {
@@ -66,7 +66,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestGetPolicies(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
@@ -101,7 +101,7 @@ func TestGetPolicies(t *testing.T) {
 		dontCreateOriginalKrb5CCName bool
 		turnKrb5CCRO                 bool
 
-		want    map[string]policies.Entry
+		want    []entry.Entry
 		wantErr bool
 	}{
 		"Standard policy, user object": {
@@ -109,10 +109,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 		"Standard policy, computer object": {
@@ -120,10 +120,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "", // ignored for machine
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/D": {Key: "Software/Ubuntu/D", Value: "standardD"},
-				"Software/Ubuntu/E": {Key: "Software/Ubuntu/E", Value: "standardE"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/D", Value: "standardD"},
+				{Key: "Software/Ubuntu/E", Value: "standardE"},
 			},
 		},
 		"User only policy, user object": {
@@ -131,9 +131,9 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "userOnlyA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "userOnlyB"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "userOnlyA"},
+				{Key: "Software/Ubuntu/B", Value: "userOnlyB"},
 			},
 		},
 		"User only policy, computer object": {
@@ -141,24 +141,24 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "",
-			want:               map[string]policies.Entry{},
+			want:               nil,
 		},
 		"Computer only policy, user object": {
 			gpoListArgs:        "machine-only",
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               map[string]policies.Entry{},
+			want:               nil,
 		},
 		"Computer ignored CCBaseName": {
 			gpoListArgs:        "standard",
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "somethingtotallyarbitrary", // ignored for machine
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/D": {Key: "Software/Ubuntu/D", Value: "standardD"},
-				"Software/Ubuntu/E": {Key: "Software/Ubuntu/E", Value: "standardE"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/D", Value: "standardD"},
+				{Key: "Software/Ubuntu/E", Value: "standardE"},
 			},
 		},
 
@@ -167,10 +167,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},
 		"Two policies, with reversed overrides": {
@@ -178,10 +178,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 		"Two policies, no overrides": {
@@ -189,10 +189,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "userOnlyA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "userOnlyB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "userOnlyA"},
+				{Key: "Software/Ubuntu/B", Value: "userOnlyB"},
+				{Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},
 		"Two policies, no overrides, reversed": {
@@ -200,10 +200,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "userOnlyA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "userOnlyB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "userOnlyA"},
+				{Key: "Software/Ubuntu/B", Value: "userOnlyB"},
+				{Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},
 		"Two policies, no overrides, one is not the same object type": {
@@ -211,10 +211,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 
@@ -223,10 +223,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "", Disabled: true},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "", Disabled: true},
 			},
 		},
 		"Disabled value is overridden": {
@@ -234,10 +234,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 
@@ -246,10 +246,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "userOnlyA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "userOnlyB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "userOnlyA"},
+				{Key: "Software/Ubuntu/B", Value: "userOnlyB"},
+				{Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},
 
@@ -311,7 +311,7 @@ func TestGetPolicies(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			// only create original cc file when requested
 			krb5CCName := tc.userKrb5CCBaseName
@@ -353,7 +353,7 @@ func TestGetPolicies(t *testing.T) {
 }
 
 func TestGetPoliciesWorkflows(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	gpoListArgs := "standard"
 	objectClass := ad.UserObject
@@ -365,7 +365,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		userKrb5CCBaseName2 string
 		restart             bool
 
-		want    map[string]policies.Entry
+		want    []entry.Entry
 		wantErr bool
 	}{
 		"Second call is a refresh (without Krb5CCName specified)": {
@@ -373,10 +373,10 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "EMPTY",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 		"Second call after service restarted": {
@@ -385,10 +385,10 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "", // We did’t RENEW the ticket
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 		"Second call with different user": {
@@ -396,10 +396,10 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "sponge",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "sponge",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 		"Second call after a relogin": {
@@ -407,10 +407,10 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "bobNew",
-			want: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 	}
@@ -418,7 +418,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			//t.Parallel() // libsmbclient overrides SIGCHILD, keep one AD object
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			krb5CCName, cleanup := setKrb5CC(t, tc.userKrb5CCBaseName1)
 			defer cleanup()
@@ -464,7 +464,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 }
 
 func TestGetPoliciesConcurrently(t *testing.T) {
-	//t.Parallel() // libsmbclient overrides SIGCHLD, keep one AD object
+	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	objectClass := ad.UserObject
 
@@ -474,8 +474,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		gpo1        string
 		gpo2        string
 
-		want1   map[string]policies.Entry
-		want2   map[string]policies.Entry
+		want1   []entry.Entry
+		want2   []entry.Entry
 		wantErr bool
 	}{
 		"Same user, same GPO": {
@@ -483,15 +483,15 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "bob",
 			gpo1:        "standard",
 			gpo2:        "standard",
-			want1: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want1: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
-			want2: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want2: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 		// We can’t run this test currently as the mock will always return the same value for bob (both gpos):
@@ -501,13 +501,13 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "bob",
 			gpo1:        "standard",
 			gpo2:        "one-value",
-			want1: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want1: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
-			want2: map[string]policies.Entry{
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
+			want2: []entry.Entry{
+				{Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},*/
 		"Different users, same GPO": {
@@ -515,15 +515,15 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "sponge",
 			gpo1:        "standard",
 			gpo2:        "standard",
-			want1: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want1: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
-			want2: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want2: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
 		},
 		"Different users, different GPO": {
@@ -531,13 +531,13 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "sponge",
 			gpo1:        "standard",
 			gpo2:        "one-value",
-			want1: map[string]policies.Entry{
-				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
-				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
+			want1: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
-			want2: map[string]policies.Entry{
-				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
+			want2: []entry.Entry{
+				{Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},
 	}
@@ -545,6 +545,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
+
 			krb5CCName1, cleanup := setKrb5CC(t, tc.objectName1)
 			defer cleanup()
 			krb5CCName2, cleanup := setKrb5CC(t, tc.objectName2)

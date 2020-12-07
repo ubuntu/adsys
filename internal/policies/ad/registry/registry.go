@@ -14,7 +14,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
 type dataType uint8
@@ -35,11 +35,11 @@ const (
 )
 
 const (
-	policyContainerName = "defaultValues"
+	policyContainerName = "metaValues"
 )
 
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
-func DecodePolicy(r io.Reader) (entries []policies.Entry, err error) {
+func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf("couldn't decode policy: %v", err)
@@ -51,7 +51,11 @@ func DecodePolicy(r io.Reader) (entries []policies.Entry, err error) {
 		return nil, err
 	}
 
-	var defaultValues map[string]string
+	type meta struct {
+		Default string
+		Meta    string
+	}
+	var metaValues map[string]meta
 
 	// translate to strings based on type
 	for _, e := range ent {
@@ -67,13 +71,13 @@ func DecodePolicy(r io.Reader) (entries []policies.Entry, err error) {
 			if disabled {
 				continue
 			}
-			// load defaults for options
-			defaultValues = make(map[string]string)
+			// load meta values (including defaults) for options
+			metaValues = make(map[string]meta)
 			v, err := decodeUtf16(e.data)
 			if err != nil {
 				return nil, err
 			}
-			if err := json.Unmarshal([]byte(v), &defaultValues); err != nil {
+			if err := json.Unmarshal([]byte(v), &metaValues); err != nil {
 				return nil, fmt.Errorf(i18n.G("invalid default value for %s\\%s container: %v"), e.path, e.key, err)
 			}
 			continue
@@ -89,7 +93,7 @@ func DecodePolicy(r io.Reader) (entries []policies.Entry, err error) {
 					return nil, err
 				}
 				if res == "" {
-					res = defaultValues[e.key]
+					res = metaValues[e.key].Default
 				}
 			case regDword:
 				var resInt uint32
@@ -103,10 +107,11 @@ func DecodePolicy(r io.Reader) (entries []policies.Entry, err error) {
 			}
 		}
 
-		entries = append(entries, policies.Entry{
+		entries = append(entries, entry.Entry{
 			Key:      filepath.Join(e.path, e.key),
 			Value:    res,
 			Disabled: disabled,
+			Meta:     metaValues[e.key].Meta,
 		})
 	}
 

@@ -1,0 +1,5 @@
+[com/ubuntu/category]
+key-s='onekey-s-othervalue'
+key-as=['simple-as']
+[com/ubuntu/category2]
+key-s2='onekey-s2'

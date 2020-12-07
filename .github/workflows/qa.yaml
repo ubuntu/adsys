@@ -57,7 +57,7 @@ jobs:
       - name: Install dependencies and add user
         run: |
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli
           adduser --disabled-password --gecos "" ubuntu
       - name: Run tests
         run: sudo -u ubuntu env "PATH=$PATH" go test -coverprofile=/tmp/coverage.txt -covermode=count ./...

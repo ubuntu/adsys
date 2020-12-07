@@ -14,7 +14,17 @@ func NoCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// RegisterAlias allows to decorelate the alias from the main command when alias have different command level (different parents)
+// ZeroOrNArgs returns an error if there are not 0 or exactly N arguments for the given command.
+func ZeroOrNArgs(n int) cobra.PositionalArgs {
+	return func(cmd *cobra.Command, args []string) error {
+		if len(args) != 0 && len(args) != n {
+			return fmt.Errorf("requires either no arguments or exactly %d, only received %d", n, len(args))
+		}
+		return nil
+	}
+}
+
+// RegisterAlias will register a given alias of a command.
 // README and manpage refers to them in each subsection (parents are differents, but only one is kept if we use the same object)
 func RegisterAlias(cmd, parent *cobra.Command) {
 	alias := *cmd
