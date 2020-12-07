@@ -132,7 +132,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 // It users the given krb5 ticket reference to authenticate to AD.
 // userKrb5CCName has no impact for computer object and is ignored. If empty, we will expect to find one cached
 // ticket <krb5CCDir>/<objectName>.
-func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (entries map[string]entry.Entry, err error) {
+func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (entries []entry.Entry, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("error while getting policies for %q: %v"), objectName, err)
@@ -229,8 +229,8 @@ func (ad *AD) ensureUserKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err err
 	return nil
 }
 
-func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectClass) (entries map[string]entry.Entry, err error) {
-	entries = make(map[string]entry.Entry)
+func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectClass) ([]entry.Entry, error) {
+	entries := make(map[string]entry.Entry)
 	for _, n := range gpos {
 		if err := func() error {
 			ad.RLock()
@@ -269,5 +269,9 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 			return nil, err
 		}
 	}
-	return entries, nil
+	var r []entry.Entry
+	for _, v := range entries {
+		r = append(r, v)
+	}
+	return r, nil
 }
