@@ -31,6 +31,10 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
+#: internal/policies/dconf/dconf.go:296
+msgid "%s is not a valid gsettings signature: %v"
+msgstr ""
+
 #: internal/grpc/logstreamer/server.go:107
 msgid "%s isn't a boolean: %v"
 msgstr ""
@@ -45,6 +49,10 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
+#: internal/policies/dconf/dconf.go:90
+msgid "- error on %s: %v"
+msgstr ""
+
 #: cmd/adsysd/daemon/daemon.go:111
 msgid "AD domain to use. Empty to let ADSys parsing sssd.conf."
 msgstr ""
@@ -57,7 +65,7 @@ msgstr ""
 msgid "AD integration daemon"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:21
+#: internal/cmdhandler/cmdhandler.go:31
 #, c-format
 msgid "Alias of %s"
 msgstr ""
@@ -91,7 +99,7 @@ msgstr ""
 msgid "Error from server: %v"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:34
+#: internal/cmdhandler/cmdhandler.go:44
 msgid "Generates bash completion scripts"
 msgstr ""
 
@@ -104,6 +112,10 @@ msgstr ""
 #: internal/grpc/logstreamer/server.go:47
 #, c-format
 msgid "New connection from client [[%s]]"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:19
+msgid "Policy management"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:25
@@ -152,15 +164,33 @@ msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
 msgstr ""
 
+#: cmd/adsysd/client/policy.go:28
+msgid ""
+"Updates/Create a policy for current user or given user with its kerberos "
+"ticket"
+msgstr ""
+
 #: internal/daemon/daemon.go:198
 msgid "Wait for active requests to close."
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:68
+#: internal/policies/dconf/dconf.go:50
+msgid "can't apply dconf policy: %v"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:300
+msgid "can't parse %q as %q: %v"
+msgstr ""
+
+#: internal/adsysservice/adsysservice.go:71
 msgid "can't read %s and no url or domain provided: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:74
+#: internal/policies/dconf/dconf.go:46
+msgid "can't refresh dconf policy via dconf update: %v"
+msgstr ""
+
+#: internal/policies/ad/ad.go:75
 msgid "couldn't create Active Directory object: %v"
 msgstr ""
 
@@ -168,7 +198,7 @@ msgstr ""
 msgid "couldn't create server: %v"
 msgstr ""
 
-#: internal/policies/ad/download.go:108
+#: internal/policies/ad/download.go:94
 msgid "couldn't download GPO %q: %v"
 msgstr ""
 
@@ -188,23 +218,31 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:136
+#: internal/policies/dconf/dconf.go:290
+msgid "error while checking signature: %v"
+msgstr ""
+
+#: internal/policies/ad/ad.go:139
 msgid "error while getting policies for %q: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:206
+#: internal/adsysservice/policy.go:15
+msgid "error while updating policy: %v"
+msgstr ""
+
+#: internal/policies/ad/ad.go:208
 msgid "failed to create symlink for caching: %v"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:73
+#: internal/adsysservice/adsysservice.go:76
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:82
+#: internal/adsysservice/adsysservice.go:85
 msgid "failed to find server address in sssd.conf and url is not provided"
 msgstr ""
 
-#: internal/policies/ad/ad.go:221
+#: internal/policies/ad/ad.go:223
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -212,7 +250,7 @@ msgstr ""
 msgid "force will shut it down immediately and drop existing connections."
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:77
+#: internal/policies/ad/registry/registry.go:81
 msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
@@ -220,8 +258,18 @@ msgstr ""
 msgid "invalid metadata %s for incoming request: %q"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:53
+#: internal/cmdhandler/cmdhandler.go:63
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:65
+msgid ""
+"machine dconf database is required before generating a policy for an user. "
+"This one returns: %v"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:38
+msgid "machine updates the policy of the computer."
 msgstr ""
 
 #: internal/grpc/logstreamer/server.go:95
@@ -233,11 +281,11 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/policies/ad/ad.go:144
+#: internal/policies/ad/ad.go:147
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:60
+#: internal/cmdhandler/cmdhandler.go:70
 msgid ""
 "socket path to use between daemon and client. Can be overriden by systemd "
 "socket activation."
@@ -259,6 +307,11 @@ msgstr ""
 msgid "unexpected number of systemd socket activation (%d != 1)"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:67
+#: internal/policies/policies.go:47
+#, c-format
+msgid "unknown entry type: %s for key %s"
+msgstr ""
+
+#: internal/cmdhandler/cmdhandler.go:77
 msgid "use a specific configuration file"
 msgstr ""
