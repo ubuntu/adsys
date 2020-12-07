@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
@@ -231,6 +232,7 @@ func (ad *AD) ensureUserKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err err
 
 func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectClass) ([]entry.Entry, error) {
 	entries := make(map[string]entry.Entry)
+	var keys []string
 	for _, n := range gpos {
 		if err := func() error {
 			ad.RLock()
@@ -262,6 +264,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 					continue
 				}
 				entries[pol.Key] = pol
+				keys = append(keys, pol.Key)
 			}
 
 			return nil
@@ -269,9 +272,12 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectCl
 			return nil, err
 		}
 	}
+
 	var r []entry.Entry
-	for _, v := range entries {
-		r = append(r, v)
+	sort.Strings(keys)
+	for _, k := range keys {
+		r = append(r, entries[k])
 	}
+
 	return r, nil
 }

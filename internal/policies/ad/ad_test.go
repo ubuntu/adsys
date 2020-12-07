@@ -141,14 +141,14 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "",
-			want:               []entry.Entry{},
+			want:               nil,
 		},
 		"Computer only policy, user object": {
 			gpoListArgs:        "machine-only",
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               []entry.Entry{},
+			want:               nil,
 		},
 		"Computer ignored CCBaseName": {
 			gpoListArgs:        "standard",
