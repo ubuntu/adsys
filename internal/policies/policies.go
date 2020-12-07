@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
 // Entry represents a key/value based policy (dconf, apparmor, ...) entry
@@ -17,8 +18,8 @@ type Entry struct {
 
 // ApplyPolicy generates a computer or user policy based on a list of entries
 // retrieved from a directory service.
-func ApplyPolicy(objectName string, isComputer bool, entries []Entry) error {
-	var dconfEntries, scriptEntries, apparmorEntries []Entry
+func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entry.Entry) error {
+	var dconfEntries, scriptEntries, apparmorEntries []entry.Entry
 	for _, entry := range entries {
 		trimstr := "Software/Ubuntu/"
 		if isComputer {

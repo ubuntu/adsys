@@ -15,7 +15,7 @@ import (
 
 	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
@@ -27,7 +27,7 @@ type Manager struct {
 }
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries
-func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []policies.Entry) (err error) {
+func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entry.Entry) (err error) {
 	dconfDir := m.dconfDir
 	if dconfDir == "" {
 		dconfDir = "/etc/dconf"

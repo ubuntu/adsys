@@ -12,8 +12,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/ad"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
 func TestNew(t *testing.T) {
@@ -101,7 +101,7 @@ func TestGetPolicies(t *testing.T) {
 		dontCreateOriginalKrb5CCName bool
 		turnKrb5CCRO                 bool
 
-		want    map[string]policies.Entry
+		want    map[string]entry.Entry
 		wantErr bool
 	}{
 		"Standard policy, user object": {
@@ -109,7 +109,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -120,7 +120,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "", // ignored for machine
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/D": {Key: "Software/Ubuntu/D", Value: "standardD"},
 				"Software/Ubuntu/E": {Key: "Software/Ubuntu/E", Value: "standardE"},
@@ -131,7 +131,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "userOnlyA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "userOnlyB"},
 			},
@@ -141,21 +141,21 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "",
-			want:               map[string]policies.Entry{},
+			want:               map[string]entry.Entry{},
 		},
 		"Computer only policy, user object": {
 			gpoListArgs:        "machine-only",
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               map[string]policies.Entry{},
+			want:               map[string]entry.Entry{},
 		},
 		"Computer ignored CCBaseName": {
 			gpoListArgs:        "standard",
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "somethingtotallyarbitrary", // ignored for machine
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/D": {Key: "Software/Ubuntu/D", Value: "standardD"},
 				"Software/Ubuntu/E": {Key: "Software/Ubuntu/E", Value: "standardE"},
@@ -167,7 +167,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
@@ -178,7 +178,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -189,7 +189,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "userOnlyA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "userOnlyB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
@@ -200,7 +200,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "userOnlyA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "userOnlyB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
@@ -211,7 +211,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -223,7 +223,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "", Disabled: true},
@@ -234,7 +234,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -246,7 +246,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "userOnlyA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "userOnlyB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
@@ -365,7 +365,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		userKrb5CCBaseName2 string
 		restart             bool
 
-		want    map[string]policies.Entry
+		want    map[string]entry.Entry
 		wantErr bool
 	}{
 		"Second call is a refresh (without Krb5CCName specified)": {
@@ -373,7 +373,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "EMPTY",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -385,7 +385,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "", // We did’t RENEW the ticket
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -396,7 +396,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "sponge",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "sponge",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -407,7 +407,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "bobNew",
-			want: map[string]policies.Entry{
+			want: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -474,8 +474,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		gpo1        string
 		gpo2        string
 
-		want1   map[string]policies.Entry
-		want2   map[string]policies.Entry
+		want1   map[string]entry.Entry
+		want2   map[string]entry.Entry
 		wantErr bool
 	}{
 		"Same user, same GPO": {
@@ -483,12 +483,12 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "bob",
 			gpo1:        "standard",
 			gpo2:        "standard",
-			want1: map[string]policies.Entry{
+			want1: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
-			want2: map[string]policies.Entry{
+			want2: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -501,12 +501,12 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "bob",
 			gpo1:        "standard",
 			gpo2:        "one-value",
-			want1: map[string]policies.Entry{
+			want1: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
-			want2: map[string]policies.Entry{
+			want2: map[string]entry.Entry{
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},*/
@@ -515,12 +515,12 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "sponge",
 			gpo1:        "standard",
 			gpo2:        "standard",
-			want1: map[string]policies.Entry{
+			want1: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
-			want2: map[string]policies.Entry{
+			want2: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
@@ -531,12 +531,12 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "sponge",
 			gpo1:        "standard",
 			gpo2:        "one-value",
-			want1: map[string]policies.Entry{
+			want1: map[string]entry.Entry{
 				"Software/Ubuntu/A": {Key: "Software/Ubuntu/A", Value: "standardA"},
 				"Software/Ubuntu/B": {Key: "Software/Ubuntu/B", Value: "standardB"},
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "standardC"},
 			},
-			want2: map[string]policies.Entry{
+			want2: map[string]entry.Entry{
 				"Software/Ubuntu/C": {Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},
