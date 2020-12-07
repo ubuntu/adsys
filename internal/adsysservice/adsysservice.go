@@ -13,6 +13,7 @@ import (
 	"github.com/ubuntu/adsys/internal/grpc/interceptorschain"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/ad"
 	"google.golang.org/grpc"
 	"gopkg.in/ini.v1"
@@ -23,7 +24,8 @@ type Service struct {
 	adsys.UnimplementedServiceServer
 	logger *logrus.Logger
 
-	adc *ad.AD
+	adc           *ad.AD
+	policyManager policies.Manager
 
 	quit quitter
 }
@@ -54,7 +56,8 @@ func New(ctx context.Context, url, domain string, opts ...option) (*Service, err
 		return nil, err
 	}
 	return &Service{
-		adc: adc,
+		adc:           adc,
+		policyManager: policies.New(),
 	}, nil
 }
 

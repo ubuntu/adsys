@@ -5,15 +5,20 @@ import (
 	"strings"
 
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
-// Entry represents a key/value based policy (dconf, apparmor, ...) entry
-type Entry struct {
-	Key      string // Absolute path to setting. Ex: Sofware/Ubuntu/User/dconf/wallpaper
-	Value    string
-	Disabled bool
-	Meta     string
+// Manager handles all managers for various policy handlers.
+type Manager struct {
+	dconf dconf.Manager
+}
+
+// New returns a new manager with all default policy handlers.
+func New() Manager {
+	return Manager{
+		dconf: dconf.Manager{},
+	}
 }
 
 // ApplyPolicy generates a computer or user policy based on a list of entries
@@ -43,9 +48,13 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entr
 		}
 	}
 
+	err := m.dconf.ApplyPolicy(objectName, isComputer, dconfEntries)
+	if err != nil {
+		return err
+	}
+
 	// TODO
 	/*
-		err := dconf.ApplyPolicy(objectName, isComputer, dconfEntries)
 		err = script.ApplyPolicy(objectName, isComputer, scriptEntries)
 		err = apparmor.ApplyPolicy(objectName, isComputer, apparmorEntries)
 	*/
