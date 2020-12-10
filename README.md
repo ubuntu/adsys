@@ -97,7 +97,7 @@ Updates/Create a policy for current user or given user with its kerberos ticket
 Updates/Create a policy for current user or given user with its kerberos ticket
 
 ```
-adsysctl policy update [USER KERBEROS_TICKET_PATH] [flags]
+adsysctl policy update [USER_NAME KERBEROS_TICKET_PATH] [flags]
 ```
 
 ##### Options
