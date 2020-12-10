@@ -85,6 +85,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	var locks []string
 	var errMsgs []string
 	for _, e := range entries {
+		log.Debugf(ctx, "Analyzing entry %+v", e)
 		if !e.Disabled {
 			section := filepath.Dir(e.Key)
 
@@ -98,7 +99,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			l := fmt.Sprintf("%s=%s", filepath.Base(e.Key), e.Value)
 			dataWithGroups[section] = append(dataWithGroups[section], l)
 		}
-		locks = append(locks, e.Key)
+		locks = append(locks, "/"+e.Key)
 	}
 
 	// Stop on any error
