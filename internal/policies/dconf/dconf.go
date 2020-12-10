@@ -21,6 +21,29 @@ import (
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
+/*
+	TODO:
+	For common keys between user and machine:
+	  - machine key is set to deleted, conveying "I want the default value from the system"
+	  - user key is configured to a value.
+	With the precedence of machine over user, we want as a result the default value from the system, locked down.
+	However, dconf will collect all default values, see one for the user, none for the machine and will consider
+	the user key value to be the default. Then, it will lock it down thanks to both lock files.
+	We thus get the user key value instead of the default one from the system.
+	To prevent that, we need to set as default value on the machine to the default from the system (after retrieving it).
+
+	However, dconf/gsettings doesn't provide a facility to retrieve the default value for a given path/key,
+	so it is necessary to convey the schema associated to this path in the generated admx and registry files.
+	Then, we can do for any deleted keys:
+	   LANG=C DCONF_PROFILE=nonexistent XDG_CONFIG_HOME=nonexistent gsettings get <schema> <key>
+	   -> No such schema if doesn’t exists
+	   to get the default value that we commit in the database default values.
+
+
+	Other solutions: dconf stop at the first lock it finds.
+	Add machine thus twice to the profile: One at the very bottom, for lock files handling and one next to user-db, as it is nowdays
+*/
+
 // Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy
 type Manager struct {
 	dconfMu sync.RWMutex

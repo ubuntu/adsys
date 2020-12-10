@@ -19,6 +19,8 @@ import (
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
+// TODO: errors should logs in server (probably a grpc middleware)
+
 // ObjectClass is the type of object in the directory. It can be a computer or a user
 type ObjectClass string
 
@@ -99,12 +101,15 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	}
 
 	// Create local machine ticket
-	// kinit 'machine$@domain' -k -c <DESTINATION DIRECTORY>
+	// kinit 'MACHINE$@DOMAIN' -k -c <DESTINATION DIRECTORY>
+	// TODO: use sssd ticket
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
 	}
-	n := fmt.Sprintf("%s$@%s", hostname, domain)
+	// for malconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
+	hostname = strings.TrimSuffix(hostname, "."+domain)
+	n := fmt.Sprintf("%s$@%s", strings.ToUpper(hostname), strings.ToUpper(domain))
 	// we need previous options to be initialized as parameter for this command
 	var kinitCmd combinedOutputter = exec.CommandContext(ctx, "kinit", n, "-k", "-c", filepath.Join(krb5CacheDir, hostname))
 	if args.kinitCmd != nil {
