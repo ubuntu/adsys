@@ -234,6 +234,9 @@ func downloadRecursive(client *libsmbclient.Client, url string, dest string) err
 			// Read() is on *libsmbclient.File, not libsmbclient.File
 			pf := &f
 			data, err := ioutil.ReadAll(pf)
+			if err != nil {
+				return err
+			}
 
 			if err := ioutil.WriteFile(entityDest, data, 0700); err != nil {
 				return err
