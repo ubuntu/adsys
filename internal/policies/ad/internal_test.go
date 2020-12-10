@@ -391,6 +391,8 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	gpos := map[string]string{
 		"standard-name": adc.gpos["standard-name"].url,
 	}
+	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
+
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
@@ -402,7 +404,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		// we can’t test returned values as it’s either the old of new version of the gpo
-		_, err := adc.parseGPOs(context.Background(), gpos, UserObject)
+		_, err := adc.parseGPOs(context.Background(), orderedGPOs, UserObject)
 		require.NoError(t, err, "parseGPOs returned an error but shouldn't")
 	}()
 	wg.Wait()
@@ -422,6 +424,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 	gpos := map[string]string{
 		"standard-name": fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
 	}
+	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
 	err = adc.fetch(context.Background(), "", gpos)
 	require.NoError(t, err, "Setup: couldn’t do initial GPO fetch as returned an error but shouldn't")
 
@@ -432,7 +435,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			// we can’t test returned values as it’s either the old of new version of the gpo
-			_, err := adc.parseGPOs(context.Background(), gpos, UserObject)
+			_, err := adc.parseGPOs(context.Background(), orderedGPOs, UserObject)
 			require.NoError(t, err, "parseGPOs returned an error but shouldn't")
 		}()
 	}
