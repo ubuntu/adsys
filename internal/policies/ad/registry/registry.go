@@ -62,9 +62,9 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 		var res string
 		var disabled bool
 
-		disabled = strings.HasPrefix(e.key, "**del")
+		disabled = strings.HasPrefix(e.key, "**del.")
 		if disabled {
-			e.key = strings.TrimPrefix(e.key, "**del")
+			e.key = strings.TrimPrefix(e.key, "**del.")
 		}
 		if e.key == policyContainerName {
 			// disabled container policy will set all options as disabled with same prefix
