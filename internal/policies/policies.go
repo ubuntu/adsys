@@ -1,9 +1,11 @@
 package policies
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -23,7 +25,10 @@ func New() Manager {
 
 // ApplyPolicy generates a computer or user policy based on a list of entries
 // retrieved from a directory service.
-func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entry.Entry) error {
+func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) error {
+
+	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
+
 	var dconfEntries, scriptEntries, apparmorEntries []entry.Entry
 	for _, entry := range entries {
 		trimstr := "Software/Ubuntu/"
@@ -48,7 +53,7 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entr
 		}
 	}
 
-	err := m.dconf.ApplyPolicy(objectName, isComputer, dconfEntries)
+	err := m.dconf.ApplyPolicy(ctx, objectName, isComputer, dconfEntries)
 	if err != nil {
 		return err
 	}

@@ -252,6 +252,17 @@ func TestGetPolicies(t *testing.T) {
 				{Key: "Software/Ubuntu/C", Value: "oneValueC"},
 			},
 		},
+		"Object domain is stripped": {
+			gpoListArgs:        "standard",
+			objectName:         "bob@warthogs.biz",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.Entry{
+				{Key: "Software/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Ubuntu/B", Value: "standardB"},
+				{Key: "Software/Ubuntu/C", Value: "standardC"},
+			},
+		},
 
 		// Error cases
 		"Machine doesn’t match": {
@@ -605,6 +616,11 @@ func TestMockGPOList(t *testing.T) {
 		break
 	}
 
+	// domain shouldn’t be used on object name, as we will return nothing
+	if strings.Contains(args[len(args)-1], "@") {
+		return
+	}
+
 	var gpos []string
 
 	// Parameterized on user gpos
@@ -624,7 +640,7 @@ func TestMockGPOList(t *testing.T) {
 	}
 
 	for _, gpo := range gpos {
-		fmt.Fprintf(os.Stdout, "%s\tsmb://localhost:%d/SYSVOL/warthogs.biz/Policies/%s\n", gpo, ad.SmbPort, gpo)
+		fmt.Fprintf(os.Stdout, "%s-name\tsmb://localhost:%d/SYSVOL/warthogs.biz/Policies/%s\n", gpo, ad.SmbPort, gpo)
 	}
 }
 

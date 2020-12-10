@@ -2,6 +2,7 @@ package dconf
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +15,7 @@ import (
 	"sync"
 
 	"github.com/godbus/dbus/v5"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
@@ -27,7 +29,7 @@ type Manager struct {
 }
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries
-func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entry.Entry) (err error) {
+func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
 	dconfDir := m.dconfDir
 	if dconfDir == "" {
 		dconfDir = "/etc/dconf"
@@ -53,6 +55,8 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entr
 	m.dconfMu.RLock()
 	defer m.dconfMu.RUnlock()
 
+	log.Debugf(ctx, "ApplyPolicy dconf policy to %s", objectName)
+
 	if isComputer {
 		objectName = "machine"
 	}
@@ -71,7 +75,7 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entr
 		if err := os.MkdirAll(profilesPath, 0755); err != nil {
 			return err
 		}
-		if err := writeProfile(objectName, profilesPath); err != nil {
+		if err := writeProfile(ctx, objectName, profilesPath); err != nil {
 			return err
 		}
 	}
@@ -144,9 +148,14 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entr
 }
 
 // writeProfile creates or updates a dconf profile file.
-func writeProfile(user, profilesPath string) error {
+// The adsys systemd-db should always be the first systemd-db in the file to enforce their values
+// (upper systemd-db in the profile wins).
+func writeProfile(ctx context.Context, user, profilesPath string) error {
 	profilePath := filepath.Join(profilesPath, user)
-	endProfile := fmt.Sprintf("\nsystem-db:%s\nsystem-db:machine\n", user)
+	log.Debugf(ctx, "Update user profile %s", profilePath)
+
+	adsysMachineDB := "system-db:machine"
+	adsysUserDB := fmt.Sprintf("system-db:%s", user)
 
 	// Read existing content and create file if doesn’t exists
 	content, err := ioutil.ReadFile(profilePath)
@@ -154,20 +163,43 @@ func writeProfile(user, profilesPath string) error {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user%s", endProfile)), 0600)
+		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysMachineDB, adsysUserDB)), 0644)
 	}
+
+	// Read file to insert after first user-db group
+	var insertsDone bool
+	var out []string
+	for _, d := range bytes.Split(content, []byte("\n")) {
+		if insertsDone {
+			if string(d) == adsysMachineDB || string(d) == adsysUserDB {
+				continue
+			}
+			out = append(out, string(d))
+			continue
+		}
+		if bytes.HasPrefix(d, []byte("user-db:")) {
+			out = append(out, string(d))
+			continue
+		}
+		out = append(out, adsysMachineDB)
+		out = append(out, adsysUserDB)
+		insertsDone = true
+		// Add current line if it’s not an adsys one
+		if string(d) == adsysMachineDB || string(d) == adsysUserDB {
+			continue
+		}
+		out = append(out, string(d))
+	}
+
+	newContent := []byte(strings.Join(out, "\n"))
 
 	// Is file already up to date?
-	if bytes.HasSuffix(content, []byte(endProfile)) {
+	if string(content) == string(newContent) {
 		return nil
 	}
-	// Normalize content before appending to not have new lines.
-	content = bytes.TrimSpace(content)
 
-	// Otherwise, read the end, even if one of the entry is already anywhere in the file, we want them at the bottom
-	// of the stack.
-	content = append(content, []byte(endProfile)...)
-	if err := ioutil.WriteFile(profilePath+".adsys.new", content, 0600); err != nil {
+	// Otherwise, update the file.
+	if err := ioutil.WriteFile(profilePath+".adsys.new", newContent, 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {

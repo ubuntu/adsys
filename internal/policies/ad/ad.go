@@ -140,6 +140,11 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		}
 	}()
 
+	// Strip domain suffix if any
+	if i := strings.LastIndex(objectName, "@"); i > 0 {
+		objectName = objectName[:i]
+	}
+
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
 
 	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
@@ -172,7 +177,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	gpos := make(map[string]string)
-	var gpoNames []string
+	var orderedGPOs []gpo
 	scanner := bufio.NewScanner(&stdout)
 	for scanner.Scan() {
 		t := scanner.Text()
@@ -180,7 +185,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		gpoName, gpoURL := res[0], res[1]
 		log.Debugf(ctx, "GPO %q for %q available at %q", gpoName, objectName, gpoURL)
 		gpos[gpoName] = gpoURL
-		gpoNames = append(gpoNames, gpoName)
+		orderedGPOs = append(orderedGPOs, gpo{name: gpoName, url: gpoURL})
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
@@ -191,7 +196,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	// Parse policies
-	entries, err = ad.parseGPOs(ctx, gpoNames, objectClass)
+	entries, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
 	if err != nil {
 		return nil, err
 	}
@@ -230,26 +235,27 @@ func (ad *AD) ensureUserKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err err
 	return nil
 }
 
-func (ad *AD) parseGPOs(ctx context.Context, gpos []string, objectClass ObjectClass) ([]entry.Entry, error) {
+func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) ([]entry.Entry, error) {
 	entries := make(map[string]entry.Entry)
 	var keys []string
-	for _, n := range gpos {
+	for _, g := range gpos {
+		name, url := g.name, g.url
 		if err := func() error {
 			ad.RLock()
-			ad.gpos[n].mu.RLock()
-			defer ad.gpos[n].mu.RUnlock()
-			_ = ad.gpos[n].testConcurrent
+			ad.gpos[name].mu.RLock()
+			defer ad.gpos[name].mu.RUnlock()
+			_ = ad.gpos[name].testConcurrent
 			ad.RUnlock()
 
 			class := "User"
 			if objectClass == ComputerObject {
 				class = "Machine"
 			}
-			f, err := os.Open(filepath.Join(ad.gpoCacheDir, n, class, "Registry.pol"))
+			f, err := os.Open(filepath.Join(ad.gpoCacheDir, filepath.Base(url), class, "Registry.pol"))
 			if err != nil && os.IsExist(err) {
 				return err
 			} else if err != nil && os.IsNotExist(err) {
-				log.Infof(ctx, "Policy %s doesn't have any policy for class %q %s", n, objectClass, err)
+				log.Infof(ctx, "Policy %s doesn't have any policy for class %q %s", name, objectClass, err)
 				return nil
 			}
 			defer f.Close()

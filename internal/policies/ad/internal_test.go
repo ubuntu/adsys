@@ -204,7 +204,8 @@ func TestFetchGPO(t *testing.T) {
 
 			gpos := make(map[string]string)
 			for _, n := range tc.gpos {
-				gpos[n] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
+				// differentiate the gpo name from the url base path
+				gpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
 			}
 
 			if tc.concurrentGposDownload == nil {
@@ -217,7 +218,8 @@ func TestFetchGPO(t *testing.T) {
 			} else {
 				concurrentGpos := make(map[string]string)
 				for _, n := range tc.concurrentGposDownload {
-					concurrentGpos[n] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
+					// differentiate the gpo name from the url base path
+					concurrentGpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
 				}
 
 				wg := sync.WaitGroup{}
@@ -269,7 +271,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 	// Prepare GPO with unreadable file.
 	// Defer will work after all tests are done because we don’t run it in parallel
 	gpos := map[string]string{
-		"gpo1": fmt.Sprintf("smb://localhost:%d/broken/%s/%s", SmbPort, policyPath, "gpo1"),
+		"gpo1-name": fmt.Sprintf("smb://localhost:%d/broken/%s/%s", SmbPort, policyPath, "gpo1"),
 	}
 	require.NoError(t,
 		shutil.CopyTree(
@@ -353,7 +355,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 				require.NoError(t, os.Chmod(adc.gpoCacheDir, 0400), "Setup: can’t set gpoCacheDir to Read only")
 			}
 
-			err = adc.fetch(context.Background(), "", map[string]string{"gpo1": fmt.Sprintf("smb://localhost:%d/%s/gpo1", SmbPort, policyPath)})
+			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/%s/gpo1", SmbPort, policyPath)})
 
 			require.NotNil(t, err, "fetch should return an error but didn't")
 			assert.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "gpo1"), "gpo1 shouldn't be downloaded")
@@ -379,28 +381,30 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 		"Setup: can't copy initial gpo directory")
 	// create the lock made by fetch which is always called before parseGPOs in the public API
-	adc.gpos["standard"] = &gpo{
-		name: "standard",
+	adc.gpos["standard-name"] = &gpo{
+		name: "standard-name",
 		url:  fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
 		mu:   &sync.RWMutex{},
 	}
 
 	// concurrent downloads and parsing
+	gpos := map[string]string{
+		"standard-name": adc.gpos["standard-name"].url,
+	}
+	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
+
 	wg := sync.WaitGroup{}
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		gpos := map[string]string{
-			"standard": adc.gpos["standard"].url,
-		}
+
 		err := adc.fetch(context.Background(), "", gpos)
 		require.NoError(t, err, "fetch returned an error but shouldn't")
 	}()
 	go func() {
 		defer wg.Done()
 		// we can’t test returned values as it’s either the old of new version of the gpo
-		gpos := []string{"standard"}
-		_, err := adc.parseGPOs(context.Background(), gpos, UserObject)
+		_, err := adc.parseGPOs(context.Background(), orderedGPOs, UserObject)
 		require.NoError(t, err, "parseGPOs returned an error but shouldn't")
 	}()
 	wg.Wait()
@@ -418,8 +422,9 @@ func TestParseGPOConcurrent(t *testing.T) {
 
 	// Fetch the GPO to set it up
 	gpos := map[string]string{
-		"standard": fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
+		"standard-name": fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
 	}
+	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
 	err = adc.fetch(context.Background(), "", gpos)
 	require.NoError(t, err, "Setup: couldn’t do initial GPO fetch as returned an error but shouldn't")
 
@@ -430,8 +435,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			// we can’t test returned values as it’s either the old of new version of the gpo
-			gpos := []string{"standard"}
-			_, err := adc.parseGPOs(context.Background(), gpos, UserObject)
+			_, err := adc.parseGPOs(context.Background(), orderedGPOs, UserObject)
 			require.NoError(t, err, "parseGPOs returned an error but shouldn't")
 		}()
 	}

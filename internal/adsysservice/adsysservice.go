@@ -51,6 +51,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (*Service, err
 	}
 
 	url, domain, err := loadServerInfo(args.sssdConf, url, domain)
+	if !strings.HasPrefix(url, "ldap://") {
+		url = fmt.Sprintf("ldap://%s", url)
+	}
 	adc, err := ad.New(ctx, url, domain)
 	if err != nil {
 		return nil, err
