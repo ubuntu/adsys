@@ -140,6 +140,11 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		}
 	}()
 
+	// Strip domain suffix if any
+	if i := strings.LastIndex(objectName, "@"); i > 0 {
+		objectName = objectName[:i]
+	}
+
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
 
 	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
