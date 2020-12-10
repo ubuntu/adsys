@@ -28,5 +28,5 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 		return err
 	}
 
-	return s.policyManager.ApplyPolicy(r.User, r.IsComputer, entries)
+	return s.policyManager.ApplyPolicy(stream.Context(), r.User, r.IsComputer, entries)
 }

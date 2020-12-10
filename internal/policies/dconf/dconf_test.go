@@ -2,6 +2,7 @@ package dconf_test
 
 import (
 	"bytes"
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -173,7 +174,7 @@ func TestApplyPolicy(t *testing.T) {
 			}
 
 			m := dconf.NewWithDconfDir(dconfDir)
-			err := m.ApplyPolicy("ubuntu", tc.isComputer, tc.entries)
+			err := m.ApplyPolicy(context.Background(), "ubuntu", tc.isComputer, tc.entries)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")
 				return

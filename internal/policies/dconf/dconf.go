@@ -2,6 +2,7 @@ package dconf
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +15,7 @@ import (
 	"sync"
 
 	"github.com/godbus/dbus/v5"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
@@ -27,7 +29,7 @@ type Manager struct {
 }
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries
-func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entry.Entry) (err error) {
+func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
 	dconfDir := m.dconfDir
 	if dconfDir == "" {
 		dconfDir = "/etc/dconf"
@@ -53,6 +55,8 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entr
 	m.dconfMu.RLock()
 	defer m.dconfMu.RUnlock()
 
+	log.Debugf(ctx, "ApplyPolicy dconf policy to %s", objectName)
+
 	if isComputer {
 		objectName = "machine"
 	}
@@ -71,7 +75,7 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entr
 		if err := os.MkdirAll(profilesPath, 0755); err != nil {
 			return err
 		}
-		if err := writeProfile(objectName, profilesPath); err != nil {
+		if err := writeProfile(ctx, objectName, profilesPath); err != nil {
 			return err
 		}
 	}
@@ -146,8 +150,10 @@ func (m *Manager) ApplyPolicy(objectName string, isComputer bool, entries []entr
 // writeProfile creates or updates a dconf profile file.
 // The adsys systemd-db should always be the first systemd-db in the file to enforce their values
 // (upper systemd-db in the profile wins).
-func writeProfile(user, profilesPath string) error {
+func writeProfile(ctx context.Context, user, profilesPath string) error {
 	profilePath := filepath.Join(profilesPath, user)
+	log.Debugf(ctx, "Update user profile %s", profilePath)
+
 	adsysMachineDB := "system-db:machine"
 	adsysUserDB := fmt.Sprintf("system-db:%s", user)
 
