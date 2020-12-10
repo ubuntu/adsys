@@ -77,6 +77,14 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 		}
 	}()
 
+	client := libsmbclient.New()
+	defer client.Close()
+	// When testing we cannot use kerberos without a real kerberos server
+	// So we don't use kerberos in this case
+	if !ad.withoutKerberos {
+		client.SetUseKerberos()
+	}
+
 	errg := new(errgroup.Group)
 	for name, url := range gpos {
 		g, ok := ad.gpos[name]
@@ -100,14 +108,6 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			log.Debugf(ctx, "Analyzing GPO %q", g.name)
 
 			dest := filepath.Join(dest, filepath.Base(g.url))
-			client := libsmbclient.New()
-			defer client.Close()
-
-			// When testing we cannot use kerberos without a real kerberos server
-			// So we don't use kerberos in this case
-			if ad.withoutKerberos {
-				client.SetUseKerberos()
-			}
 
 			// Look at GPO version and compare with the one on AD to decide if we redownload or not
 			shouldDownload, err := gpoNeedsDownload(ctx, client, g, dest)
