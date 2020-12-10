@@ -105,16 +105,26 @@ func TestApplyPolicy(t *testing.T) {
 		}},
 
 		// Profiles tests
-		"update existing profile stays as it if correct ending": {entries: nil,
+		"update existing correct profile stays unchanged": {entries: nil,
 			existingDconfDir: "existing-user"},
-		"update existing profile without needed db add them at the end": {entries: nil,
+		"update existing profile without needed db insert them after user": {entries: nil,
 			existingDconfDir: "existing-user-no-adsysdb"},
-		"update existing profile without needed db but trainline new lines normalize it": {entries: nil,
+		"update existing profile without needed db, trainline lines are kept": {entries: nil,
 			existingDconfDir: "existing-user-no-adsysdb-trailing-newlines"},
-		"update existing profile without complete needed db readd them at the end": {entries: nil,
-			existingDconfDir: "existing-user-one-adsysdb-end"},
-		"update existing profile with partial needed db  readd them at the end": {entries: nil,
+		"update existing profile with partial db adds them after user without repetition": {entries: nil,
+			existingDconfDir: "existing-user-one-adsysdb-partial-afteruser"},
+		"update existing profile with wrong order put adsys db after user": {entries: nil,
 			existingDconfDir: "existing-user-one-adsysdb-middle"},
+		"update existing profile with partial and wrong order put adsys db after user": {entries: nil,
+			existingDconfDir: "existing-user-one-adsysdb-afteruser"},
+		"update existing profile eliminates adsys DB repetitions": {entries: nil,
+			existingDconfDir: "existing-user-adsysdb-repetitions"},
+		"update existing profile adds adsys DB after user-db section": {entries: nil,
+			existingDconfDir: "existing-user-multiple-userdb"},
+		"update existing profile adds adsys DB after first user-db section, even if it has multiples": {entries: nil,
+			existingDconfDir: "existing-user-multiple-userdb-sections"},
+		"update existing profile adds adsys DB at start even with no user-db": {entries: nil,
+			existingDconfDir: "existing-user-no-userdb-no-adsysdb"},
 
 		// non adsys content
 		"do not update other files from db": {entries: []entry.Entry{
