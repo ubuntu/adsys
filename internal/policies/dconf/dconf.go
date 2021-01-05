@@ -22,26 +22,24 @@ import (
 )
 
 /*
-	TODO:
+	Notes:
+	dconf applies default values and lock from bottom to top of the profile.
+	It will stop to check values at the first corresponding lock layer it encounters.
+
+	We always append to the profile the following dbs:
+	system-db:<username>
+	system-db:machine
+
 	For common keys between user and machine:
-	  - machine key is set to deleted, conveying "I want the default value from the system"
-	  - user key is configured to a value.
-	With the precedence of machine over user, we want as a result the default value from the system, locked down.
-	However, dconf will collect all default values, see one for the user, none for the machine and will consider
-	the user key value to be the default. Then, it will lock it down thanks to both lock files.
-	We thus get the user key value instead of the default one from the system.
-	To prevent that, we need to set as default value on the machine to the default from the system (after retrieving it).
+	  1. Machine is not configured (no value, no lock) -> upper layers will be taken into account, which can be the user
+	     one or user default value.
 
-	However, dconf/gsettings doesn't provide a facility to retrieve the default value for a given path/key,
-	so it is necessary to convey the schema associated to this path in the generated admx and registry files.
-	Then, we can do for any deleted keys:
-	   LANG=C DCONF_PROFILE=nonexistent XDG_CONFIG_HOME=nonexistent gsettings get <schema> <key>
-	   -> No such schema if doesn’t exists
-	   to get the default value that we commit in the database default values.
+	  2. Machine is configured (value, and lock) -> the lock will "stick" our desired value and enforce it.
 
-
-	Other solutions: dconf stop at the first lock it finds.
-	Add machine thus twice to the profile: One at the very bottom, for lock files handling and one next to user-db, as it is nowdays
+	  3. Machine configuration is set to deleted, conveying "I want the default value from the system" (no value, and lock)
+	     -> the lock will "stick" the desired value to the layer of current value of Machine. As machine doesn’t have any
+		 value and is the lowest in the stack (the first one to be processed), this will thus enforce the default system
+		 configuration for that setting.
 */
 
 // Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy
@@ -187,33 +185,19 @@ func writeProfile(ctx context.Context, user, profilesPath string) error {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysMachineDB, adsysUserDB)), 0644)
+		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0644)
 	}
 
-	// Read file to insert after first user-db group
-	var insertsDone bool
+	// Read file to insert them at the end, removing duplicates
 	var out []string
-	for _, d := range bytes.Split(content, []byte("\n")) {
-		if insertsDone {
-			if string(d) == adsysMachineDB || string(d) == adsysUserDB {
-				continue
-			}
-			out = append(out, string(d))
-			continue
-		}
-		if bytes.HasPrefix(d, []byte("user-db:")) {
-			out = append(out, string(d))
-			continue
-		}
-		out = append(out, adsysMachineDB)
-		out = append(out, adsysUserDB)
-		insertsDone = true
+	for _, d := range bytes.Split(bytes.TrimSpace(content), []byte("\n")) {
 		// Add current line if it’s not an adsys one
 		if string(d) == adsysMachineDB || string(d) == adsysUserDB {
 			continue
 		}
 		out = append(out, string(d))
 	}
+	out = append(out, adsysUserDB, adsysMachineDB)
 
 	newContent := []byte(strings.Join(out, "\n"))
 
