@@ -207,7 +207,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) error {
 	}
 
 	// Otherwise, update the file.
-	if err := ioutil.WriteFile(profilePath+".adsys.new", newContent, 0600); err != nil {
+	if err := ioutil.WriteFile(profilePath+".adsys.new", newContent, 0644); err != nil {
 		return err
 	}
 	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {
