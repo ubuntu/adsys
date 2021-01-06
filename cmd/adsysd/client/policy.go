@@ -55,8 +55,9 @@ func (a *App) policyUpdate(isComputer bool, target, krb5cc string) error {
 		}
 		// for malconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
 		if i := strings.Index(hostname, "."); i > 0 {
-			target = hostname[:i]
+			hostname = hostname[:i]
 		}
+		target = hostname
 	}
 
 	// Update for current user
