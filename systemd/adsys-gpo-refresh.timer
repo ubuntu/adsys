@@ -1,0 +1,8 @@
+[Unit]
+Description=Refresh ADSys GPO for machine and users
+
+[Timer]
+OnUnitActiveSec=30min
+
+[Install]
+WantedBy=timers.target
