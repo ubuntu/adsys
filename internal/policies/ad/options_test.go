@@ -14,16 +14,16 @@ func withCacheDir(cacheDir string) func(o *options) error {
 	}
 }
 
-func withoutKerberos() func(o *options) error {
+func withSSSCacheDir(cacheDir string) func(o *options) error {
 	return func(o *options) error {
-		o.withoutKerberos = true
+		o.sssCacheDir = cacheDir
 		return nil
 	}
 }
 
-func withKinitCmd(mock combinedOutputter) func(o *options) error {
+func withoutKerberos() func(o *options) error {
 	return func(o *options) error {
-		o.kinitCmd = mock
+		o.withoutKerberos = true
 		return nil
 	}
 }
