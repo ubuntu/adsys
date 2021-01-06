@@ -101,7 +101,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	}
 
 	// Create local machine ticket
-	// kinit 'MACHINE$@DOMAIN' -k -c <DESTINATION DIRECTORY>
+	// kinit 'machine$@DOMAIN' -k -c <DESTINATION DIRECTORY>
 	// TODO: use sssd ticket
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -109,7 +109,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	}
 	// for malconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
 	hostname = strings.TrimSuffix(hostname, "."+domain)
-	n := fmt.Sprintf("%s$@%s", strings.ToUpper(hostname), strings.ToUpper(domain))
+	n := fmt.Sprintf("%s$@%s", hostname, strings.ToUpper(domain))
 	// we need previous options to be initialized as parameter for this command
 	var kinitCmd combinedOutputter = exec.CommandContext(ctx, "kinit", n, "-k", "-c", filepath.Join(krb5CacheDir, hostname))
 	if args.kinitCmd != nil {
