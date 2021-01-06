@@ -48,6 +48,7 @@ type AD struct {
 
 	gpoCacheDir  string
 	krb5CacheDir string
+	sssCCName    string
 
 	gpos map[string]*gpo
 	sync.RWMutex
@@ -59,8 +60,8 @@ type AD struct {
 type options struct {
 	runDir          string
 	cacheDir        string
+	sssCacheDir     string
 	withoutKerberos bool
-	kinitCmd        combinedOutputter
 	gpoListCmd      []string
 }
 
@@ -80,9 +81,10 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 
 	// defaults
 	args := options{
-		runDir:     "/run/adsys",
-		cacheDir:   "/var/cache/adsys",
-		gpoListCmd: []string{"/usr/libexec/adsys-gpolist"},
+		runDir:      "/run/adsys",
+		cacheDir:    "/var/cache/adsys",
+		sssCacheDir: "/var/lib/sss/db",
+		gpoListCmd:  []string{"/usr/libexec/adsys-gpolist"},
 	}
 	// applied options
 	for _, o := range opts {
@@ -100,34 +102,20 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 		return nil, err
 	}
 
-	// Create local machine ticket
-	// kinit 'machine$@DOMAIN' -k -c <DESTINATION DIRECTORY>
-	// TODO: use sssd ticket
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
 	}
-	// for malconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
-	hostname = strings.TrimSuffix(hostname, "."+domain)
-	n := fmt.Sprintf("%s$@%s", hostname, strings.ToUpper(domain))
-	// we need previous options to be initialized as parameter for this command
-	var kinitCmd combinedOutputter = exec.CommandContext(ctx, "kinit", n, "-k", "-c", filepath.Join(krb5CacheDir, hostname))
-	if args.kinitCmd != nil {
-		kinitCmd = args.kinitCmd
-	}
 
-	smbsafe.WaitExec()
-	output, err := kinitCmd.CombinedOutput()
-	smbsafe.DoneExec()
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute create machine ticket:\n%s\n%v", output, err)
-	}
+	// local machine sssd krb5 cache
+	sssCCName := filepath.Join(args.sssCacheDir, "ccache_"+strings.ToUpper(domain))
 
 	return &AD{
 		hostname:     hostname,
 		url:          url,
 		gpoCacheDir:  gpoCacheDir,
 		krb5CacheDir: krb5CacheDir,
+		sssCCName:    sssCCName,
 		gpos:         make(map[string]*gpo),
 		gpoListCmd:   args.gpoListCmd,
 	}, nil
@@ -156,9 +144,14 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	if objectClass == ComputerObject && objectName != ad.hostname {
 		return nil, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
 	}
-	// Create a symlink for futur calls (on refresh for instance)
-	if objectClass == UserObject && userKrb5CCName != "" {
-		if err := ad.ensureUserKrb5CCName(userKrb5CCName, krb5CCPath); err != nil {
+	// Create a ccache symlink on first fetch for futur calls (on refresh for instance)
+	if userKrb5CCName != "" || objectClass == ComputerObject {
+		src := userKrb5CCName
+		// there is no env var for machine: get sss ccache
+		if objectClass == ComputerObject {
+			src = ad.sssCCName
+		}
+		if err := ad.ensureKrb5CCName(src, krb5CCPath); err != nil {
 			return nil, err
 		}
 	}
@@ -209,10 +202,10 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	return entries, nil
 }
 
-// ensureUserKrb5CCName manages user ccname symlinks.
+// ensureKrb5CCName manages user ccname symlinks.
 // It handles concurrent calls, and only recreate the symlink if we want to point to
 // a new destination.
-func (ad *AD) ensureUserKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) {
+func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("failed to create symlink for caching: %v"), err)
@@ -221,6 +214,11 @@ func (ad *AD) ensureUserKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err err
 
 	ad.Lock()
 	defer ad.Unlock()
+
+	srcKrb5CCName, err = filepath.Abs(srcKrb5CCName)
+	if err != nil {
+		return fmt.Errorf(i18n.G("can't get absolute path of ccname to symlink to: %v"), err)
+	}
 
 	src, err := os.Readlink(dstKrb5CCName)
 	if err == nil {
