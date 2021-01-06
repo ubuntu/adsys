@@ -106,6 +106,8 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	if err != nil {
 		return nil, err
 	}
+	// for misconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
+	hostname = strings.TrimSuffix(hostname, "."+domain)
 
 	// local machine sssd krb5 cache
 	sssCCName := filepath.Join(args.sssCacheDir, "ccache_"+strings.ToUpper(domain))
