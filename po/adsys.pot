@@ -74,13 +74,58 @@ msgstr ""
 msgid "All connections have now ended."
 msgstr ""
 
+#: internal/authorizer/authorizer.go:161
+msgid "Any user always authorized"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:158
+msgid "Authorized as being administrator"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:196
+msgid "Call to polkit failed: %v"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:115
+msgid "Check if grpc request peer is authorized"
+msgstr ""
+
 #: internal/grpc/logstreamer/server.go:44
 #, c-format
 msgid "Connecting as [[%s]]"
 msgstr ""
 
+#: internal/authorizer/authorizer.go:125
+msgid "Context request doesn't have grpc peer creds informations."
+msgstr ""
+
+#: internal/authorizer/authorizer.go:129
+msgid "Context request grpc peer creeds information is not a peerCredsInfo."
+msgstr ""
+
+#: internal/authorizer/servercreds.go:50
+#, c-format
+msgid "Control() error: %s"
+msgstr ""
+
 #: internal/grpc/grpcerror/grpcerror.go:28
 msgid "Couldn't connect to %s daemon: %v"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:145
+msgid "Couldn't convert %q to a valid uid for %q"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:178
+msgid "Couldn't determine start time of client process: %v"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:172
+msgid "Couldn't open stat file for process: %v"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:141
+msgid "Couldn't retrieve user for %q: %v"
 msgstr ""
 
 #: internal/grpc/logstreamer/server.go:45
@@ -103,6 +148,11 @@ msgstr ""
 msgid "Generates bash completion scripts"
 msgstr ""
 
+#: internal/authorizer/servercreds.go:47
+#, c-format
+msgid "GetsockoptUcred() error: %s"
+msgstr ""
+
 #: internal/grpc/logstreamer/server.go:88
 msgid ""
 "Invalid metdata from client: %v\n"
@@ -114,8 +164,20 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
+#: internal/authorizer/authorizer.go:119
+msgid "Permission denied: %w"
+msgstr ""
+
 #: cmd/adsysd/client/policy.go:20
 msgid "Policy management"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:199
+msgid "Polkit call result, authorized: %t"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:202
+msgid "Polkit denied access"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:25
@@ -128,6 +190,10 @@ msgstr ""
 
 #: internal/daemon/daemon.go:151
 msgid "Ready state sent to systemd"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:137
+msgid "Request to act on user action should have a user name attached"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:34
@@ -178,7 +244,7 @@ msgstr ""
 msgid "can't apply dconf policy: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:222
+#: internal/policies/ad/ad.go:220
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -186,7 +252,7 @@ msgstr ""
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:74
+#: internal/adsysservice/adsysservice.go:90
 msgid "can't read %s and no url or domain provided: %v"
 msgstr ""
 
@@ -194,8 +260,12 @@ msgstr ""
 msgid "can't refresh dconf policy via dconf update: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:78
+#: internal/policies/ad/ad.go:76
 msgid "couldn't create Active Directory object: %v"
+msgstr ""
+
+#: internal/adsysservice/adsysservice.go:73
+msgid "couldn't create new authorizer: %v"
 msgstr ""
 
 #: internal/daemon/daemon.go:60
@@ -222,31 +292,36 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
+#: internal/authorizer/servercreds.go:34
+#, c-format
+msgid "error opening raw connection: %s"
+msgstr ""
+
 #: internal/policies/dconf/dconf.go:330
 msgid "error while checking signature: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:134
+#: internal/policies/ad/ad.go:132
 msgid "error while getting policies for %q: %v"
 msgstr ""
 
-#: internal/adsysservice/policy.go:15
+#: internal/adsysservice/policy.go:23
 msgid "error while updating policy: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:213
+#: internal/policies/ad/ad.go:211
 msgid "failed to create symlink for caching: %v"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:79
+#: internal/adsysservice/adsysservice.go:95
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:88
+#: internal/adsysservice/adsysservice.go:104
 msgid "failed to find server address in sssd.conf and url is not provided"
 msgstr ""
 
-#: internal/policies/ad/ad.go:233
+#: internal/policies/ad/ad.go:231
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -285,7 +360,23 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/policies/ad/ad.go:147
+#: internal/authorizer/authorizer.go:240
+msgid "parsing error: %v"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:232
+msgid "parsing error: ) at the end"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:236
+msgid "parsing error: less fields than required"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:228
+msgid "parsing error: missing )"
+msgstr ""
+
+#: internal/policies/ad/ad.go:145
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -309,6 +400,10 @@ msgstr ""
 #: internal/daemon/daemon.go:101
 #, c-format
 msgid "unexpected number of systemd socket activation (%d != 1)"
+msgstr ""
+
+#: internal/authorizer/servercreds.go:28
+msgid "unexpected socket type"
 msgstr ""
 
 #: internal/policies/policies.go:53
