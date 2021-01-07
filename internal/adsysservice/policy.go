@@ -13,7 +13,13 @@ import (
 
 // UpdatePolicy refreshes or creates a policy for current user or user given as argument.
 func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Service_UpdatePolicyServer) (err error) {
-	if err := s.authorizer.IsAllowedFromContext(context.WithValue(stream.Context(), authorizer.OnUserKey, r.GetUser()),
+	target, targetForAuthorizer := r.GetTarget(), r.GetTarget()
+	// prevent case of username == machine name to allow updating machine
+	if r.IsComputer {
+		targetForAuthorizer = "root"
+	}
+
+	if err := s.authorizer.IsAllowedFromContext(context.WithValue(stream.Context(), authorizer.OnUserKey, targetForAuthorizer),
 		actions.ActionPolicyUpdate); err != nil {
 		return err
 	}
@@ -29,10 +35,10 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 		objectClass = ad.ComputerObject
 	}
 
-	entries, err := s.adc.GetPolicies(stream.Context(), r.GetUser(), objectClass, r.Krb5Cc)
+	entries, err := s.adc.GetPolicies(stream.Context(), target, objectClass, r.Krb5Cc)
 	if err != nil {
 		return err
 	}
 
-	return s.policyManager.ApplyPolicy(stream.Context(), r.GetUser(), r.GetIsComputer(), entries)
+	return s.policyManager.ApplyPolicy(stream.Context(), target, r.GetIsComputer(), entries)
 }

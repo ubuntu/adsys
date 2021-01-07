@@ -25,6 +25,6 @@ message StringResponse {
 
 message UpdatePolicyRequest {
   bool isComputer = 1;
-  string user = 2;
+  string target = 2;
   string krb5cc = 3;
 }

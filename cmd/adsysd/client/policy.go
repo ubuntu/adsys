@@ -70,7 +70,7 @@ func (a *App) policyUpdate(isComputer bool, target, krb5cc string) error {
 		krb5cc = strings.TrimPrefix(os.Getenv("KRB5CCNAME"), "FILE:")
 	}
 
-	stream, err := client.UpdatePolicy(a.ctx, &adsys.UpdatePolicyRequest{IsComputer: isComputer, User: target, Krb5Cc: krb5cc})
+	stream, err := client.UpdatePolicy(a.ctx, &adsys.UpdatePolicyRequest{IsComputer: isComputer, Target: target, Krb5Cc: krb5cc})
 	if err != nil {
 		return err
 	}
