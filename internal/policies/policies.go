@@ -49,8 +49,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			scriptEntries = append(scriptEntries, entry)
 		case "apparmor":
 			apparmorEntries = append(apparmorEntries, entry)
-			/*default:
-			return fmt.Errorf(i18n.G("unknown entry type: %s for key %s"), entryType, entry.Key)*/
+		default:
+			return fmt.Errorf(i18n.G("unknown entry type: %s for key %s"), entryType, entry.Key)
 		}
 	}
 
