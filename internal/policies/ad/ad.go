@@ -19,8 +19,6 @@ import (
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
-// TODO: errors should logs in server (probably a grpc middleware)
-
 // ObjectClass is the type of object in the directory. It can be a computer or a user
 type ObjectClass string
 
