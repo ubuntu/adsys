@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -199,6 +200,26 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	return entries, nil
+}
+
+// ListUsersFromCache return the list of active users on the system
+func (ad *AD) ListUsersFromCache(ctx context.Context) ([]string, error) {
+	var users []string
+	ad.Lock()
+	defer ad.Unlock()
+
+	files, err := ioutil.ReadDir(ad.krb5CacheDir)
+	if err != nil {
+		return users, fmt.Errorf(i18n.G("Failed to read cache directory: %v"), err)
+	}
+
+	for _, file := range files {
+		if !strings.Contains(file.Name(), "@") {
+			continue
+		}
+		users = append(users, file.Name())
+	}
+	return users, nil
 }
 
 // ensureKrb5CCName manages user ccname symlinks.
