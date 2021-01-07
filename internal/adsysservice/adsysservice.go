@@ -8,6 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
+	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/daemon"
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
 	"github.com/ubuntu/adsys/internal/grpc/interceptorschain"
@@ -28,11 +29,14 @@ type Service struct {
 	adc           *ad.AD
 	policyManager policies.Manager
 
+	authorizer *authorizer.Authorizer
+
 	quit quitter
 }
 
 type options struct {
-	sssdConf string
+	sssdConf   string
+	authorizer *authorizer.Authorizer
 }
 type option func(*options) error
 
@@ -59,9 +63,17 @@ func New(ctx context.Context, url, domain string, opts ...option) (*Service, err
 	if err != nil {
 		return nil, err
 	}
+
+	if args.authorizer == nil {
+		args.authorizer, err = authorizer.New()
+		if err != nil {
+			return nil, fmt.Errorf(i18n.G("couldn't create new authorizer: %v"), err)
+		}
+	}
 	return &Service{
 		adc:           adc,
 		policyManager: policies.New(),
+		authorizer:    args.authorizer,
 	}, nil
 }
 
