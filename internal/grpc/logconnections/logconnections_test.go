@@ -1,4 +1,4 @@
-package logrequests_test
+package logconnections_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/grpc/logrequests"
+	"github.com/ubuntu/adsys/internal/grpc/logconnections"
 	"google.golang.org/grpc"
 )
 
@@ -77,7 +77,7 @@ func TestChildRecvMsgAndHandlerCalled(t *testing.T) {
 			}
 
 			// test handler
-			err := logrequests.StreamServerInterceptor()(nil, ss, info, handler)
+			err := logconnections.StreamServerInterceptor()(nil, ss, info, handler)
 			if tc.wantCreationError {
 				require.Error(t, err, "New connection creation should have errored out")
 				return

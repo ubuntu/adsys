@@ -11,7 +11,7 @@ import (
 	"github.com/ubuntu/adsys/internal/daemon"
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
 	"github.com/ubuntu/adsys/internal/grpc/interceptorschain"
-	"github.com/ubuntu/adsys/internal/grpc/logrequests"
+	"github.com/ubuntu/adsys/internal/grpc/logconnections"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
@@ -110,7 +110,7 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 		interceptorschain.StreamServer(
 			log.StreamServerInterceptor(s.logger),
 			connectionnotify.StreamServerInterceptor(d),
-			logrequests.StreamServerInterceptor(),
+			logconnections.StreamServerInterceptor(),
 		)))
 	adsys.RegisterServiceServer(srv, s)
 	return srv

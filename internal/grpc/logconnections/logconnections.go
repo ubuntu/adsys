@@ -1,4 +1,4 @@
-package logrequests
+package logconnections
 
 import (
 	"context"
