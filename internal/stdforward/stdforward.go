@@ -65,6 +65,9 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
 	// Initialize our forwarder
 	var onceErr error
 
+	// Wait on teardown for io.Copy to finish
+	wgIOCopy := sync.WaitGroup{}
+
 	// we can change the number of children, but also reinitialize the forwarder
 	dest.mu.Lock()
 	defer dest.mu.Unlock()
@@ -77,8 +80,10 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
 			onceErr = fmt.Errorf("Can't redirect output: %v", err)
 			return
 		}
+		wgIOCopy.Add(1)
 
 		go func() {
+			defer wgIOCopy.Done()
 			if _, err = io.Copy(dest, rOut); err != nil {
 				log.Warningf("We couldn’t forward all messages: %v", err)
 			}
@@ -103,6 +108,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
 			w := *std
 			*std = dest.out
 			w.Close()
+			wgIOCopy.Wait()
 
 			// reset std forwarder to be ready for reinitialization
 			*&dest.once = sync.Once{}
