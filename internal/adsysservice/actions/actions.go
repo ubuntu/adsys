@@ -1,0 +1,18 @@
+/*Package actions contains all ADSys polkit actions we support
+ */
+package actions
+
+import "github.com/ubuntu/adsys/internal/authorizer"
+
+//go:generate go run ../../generators/copy.go com.ubuntu.adsys.policy polkit-1/actions ../../../generated
+var (
+	// ActionServiceManage is the action to perform read operations.
+	ActionServiceManage authorizer.Action = authorizer.Action{ID: "com.ubuntu.adsys.service.manage"}
+
+	// ActionPolicyUpdate is the action to perform any policy update. It will turn to a "self" or an "other" action
+	ActionPolicyUpdate authorizer.Action = authorizer.Action{
+		ID:      "policy-update",
+		SelfID:  "com.ubuntu.adsys.policy.update-self",
+		OtherID: "com.ubuntu.adsys.policy.update-others",
+	}
+)
