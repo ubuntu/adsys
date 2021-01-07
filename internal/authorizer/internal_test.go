@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"os"
 	"os/user"
@@ -112,15 +113,20 @@ func TestServerPeerCredsHandshake(t *testing.T) {
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
+	var goroutineErr error
 	go func() {
 		defer wg.Done()
 		unixAddr, err := net.ResolveUnixAddr("unix", socket)
 		if err != nil {
-			t.Fatalf("Couldn't resolve client socket address: %v", err)
+			goroutineErr = fmt.Errorf("Couldn't resolve client socket address: %v", err)
+			log.Print(goroutineErr)
+			return
 		}
 		conn, err := net.DialUnix("unix", nil, unixAddr)
 		if err != nil {
-			t.Fatalf("Couldn't contact unix socket: %v", err)
+			goroutineErr = fmt.Errorf("Couldn't contact unix socket: %v", err)
+			log.Print(goroutineErr)
+			return
 		}
 		defer conn.Close()
 	}()
@@ -148,6 +154,10 @@ func TestServerPeerCredsHandshake(t *testing.T) {
 
 	l.Close()
 	wg.Wait()
+
+	if goroutineErr != nil {
+		t.Fatal(goroutineErr)
+	}
 }
 func TestServerPeerCredsInvalidSocket(t *testing.T) {
 	t.Parallel()

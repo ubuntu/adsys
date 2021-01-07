@@ -29,10 +29,10 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 		objectClass = ad.ComputerObject
 	}
 
-	entries, err := s.adc.GetPolicies(stream.Context(), r.User, objectClass, r.Krb5Cc)
+	entries, err := s.adc.GetPolicies(stream.Context(), r.GetUser(), objectClass, r.Krb5Cc)
 	if err != nil {
 		return err
 	}
 
-	return s.policyManager.ApplyPolicy(stream.Context(), r.User, r.IsComputer, entries)
+	return s.policyManager.ApplyPolicy(stream.Context(), r.GetUser(), r.GetIsComputer(), entries)
 }
