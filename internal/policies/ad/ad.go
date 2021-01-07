@@ -133,11 +133,6 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		}
 	}()
 
-	// Strip domain suffix if any
-	if i := strings.LastIndex(objectName, "@"); i > 0 {
-		objectName = objectName[:i]
-	}
-
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
 
 	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
@@ -159,8 +154,12 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// Get the list of GPO for object
 	// ./list --objectclass=user  ldap://adc01.warthogs.biz bob
 	// TODO: Embed adsys-gpolist in binary
+	userForGPOList := objectName
+	if i := strings.LastIndex(userForGPOList, "@"); i > 0 {
+		userForGPOList = userForGPOList[:i]
+	}
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
-	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, objectName)
+	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, userForGPOList)
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
 	var stdout, stderr bytes.Buffer
