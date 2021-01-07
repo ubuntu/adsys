@@ -21,6 +21,27 @@ import (
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
+/*
+	Notes:
+	dconf applies default values and lock from bottom to top of the profile.
+	It will stop to check values at the first corresponding lock layer it encounters.
+
+	We always append to the profile the following dbs:
+	system-db:<username>
+	system-db:machine
+
+	For common keys between user and machine:
+	  1. Machine is not configured (no value, no lock) -> upper layers will be taken into account, which can be the user
+	     one or user default value.
+
+	  2. Machine is configured (value, and lock) -> the lock will "stick" our desired value and enforce it.
+
+	  3. Machine configuration is set to deleted, conveying "I want the default value from the system" (no value, and lock)
+	     -> the lock will "stick" the desired value to the layer of current value of Machine. As machine doesn’t have any
+		 value and is the lowest in the stack (the first one to be processed), this will thus enforce the default system
+		 configuration for that setting.
+*/
+
 // Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy
 type Manager struct {
 	dconfMu sync.RWMutex
@@ -164,33 +185,19 @@ func writeProfile(ctx context.Context, user, profilesPath string) error {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysMachineDB, adsysUserDB)), 0644)
+		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0644)
 	}
 
-	// Read file to insert after first user-db group
-	var insertsDone bool
+	// Read file to insert them at the end, removing duplicates
 	var out []string
-	for _, d := range bytes.Split(content, []byte("\n")) {
-		if insertsDone {
-			if string(d) == adsysMachineDB || string(d) == adsysUserDB {
-				continue
-			}
-			out = append(out, string(d))
-			continue
-		}
-		if bytes.HasPrefix(d, []byte("user-db:")) {
-			out = append(out, string(d))
-			continue
-		}
-		out = append(out, adsysMachineDB)
-		out = append(out, adsysUserDB)
-		insertsDone = true
+	for _, d := range bytes.Split(bytes.TrimSpace(content), []byte("\n")) {
 		// Add current line if it’s not an adsys one
 		if string(d) == adsysMachineDB || string(d) == adsysUserDB {
 			continue
 		}
 		out = append(out, string(d))
 	}
+	out = append(out, adsysUserDB, adsysMachineDB)
 
 	newContent := []byte(strings.Join(out, "\n"))
 
@@ -200,7 +207,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) error {
 	}
 
 	// Otherwise, update the file.
-	if err := ioutil.WriteFile(profilePath+".adsys.new", newContent, 0600); err != nil {
+	if err := ioutil.WriteFile(profilePath+".adsys.new", newContent, 0644); err != nil {
 		return err
 	}
 	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {

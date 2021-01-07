@@ -32,11 +32,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	var dconfEntries, scriptEntries, apparmorEntries []entry.Entry
 	for _, entry := range entries {
 		trimstr := "Software/Ubuntu/"
+		/* TODO: should not be needed as we parse computer first
 		if isComputer {
 			trimstr += "Computer/"
 		} else {
 			trimstr += "User/"
-		}
+		}*/
 		e := strings.SplitN(strings.TrimPrefix(entry.Key, trimstr), "/", 2)
 		entryType := e[0]
 		entry.Key = e[1]

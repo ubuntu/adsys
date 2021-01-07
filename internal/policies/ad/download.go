@@ -5,7 +5,7 @@ System
 
 On startup (after sssd) or refresh:
 Create a ticket from keytab:
-$ kinit 'AD-DESKTOP-1$@WARTHOGS.BIZ' -k -c /run/adsys/krb5cc/<FQDN>
+$ kinit 'ad-desktop-1$@WARTHOGS.BIZ' -k -c /run/adsys/krb5cc/<FQDN>
 <download call for host>
 
 User

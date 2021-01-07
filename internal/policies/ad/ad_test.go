@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
@@ -22,14 +21,12 @@ func TestNew(t *testing.T) {
 	tests := map[string]struct {
 		cacheDirRO bool
 		runDirRO   bool
-		kinitFail  bool
 
 		wantErr bool
 	}{
 		"create one AD object will create all necessary cache dirs": {},
 		"failed to create KRB5 cache directory":                     {runDirRO: true, wantErr: true},
 		"failed to create GPO cache directory":                      {cacheDirRO: true, wantErr: true},
-		"failed to execute kinit":                                   {kinitFail: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -44,12 +41,11 @@ func TestNew(t *testing.T) {
 			if tc.cacheDirRO {
 				require.NoError(t, os.Chmod(cacheDir, 0400), "Setup: can’t set cache directory to Read only")
 			}
-			kinitMock := ad.MockKinit{tc.kinitFail}
 
 			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
 				ad.WithRunDir(runDir),
 				ad.WithCacheDir(cacheDir),
-				ad.WithKinitCmd(kinitMock))
+				ad.WithSSSCacheDir("testdata/sss/db"))
 			if tc.wantErr {
 				require.NotNil(t, err, "AD creation should have failed")
 			} else {
@@ -74,23 +70,23 @@ func TestGetPolicies(t *testing.T) {
 	/*
 		GPOs layout:
 
-		User
-			standard	A:standardA B:standardB C:standardC
-			user-only	A:userOnlyA B:userOnlyB
-			one-value	C:oneValueC
+				User
+				standard	A:standardA B:standardB C:standardC
+				user-only	A:userOnlyA B:userOnlyB
+				one-value	C:oneValueC
 			disabled-value C
 
-		Machine
-			standard		A:standardA D:standardD E:standardE
-			machine-only	A:machOnlyA D:machOnlyD
-			one-value		E:oneValueE
-			disabled-value C
-	*/
+				Machine
+				standard		A:standardA D:standardD E:standardE
+				machine-only	A:machOnlyA D:machOnlyD
+				one-value		E:oneValueE
+				disabled-value C
+		*
 
-	/*
-		TODO:
-		- Verify if Registry.pol always exists or not. If it doesn't when no value
-		  is modified for the host, it'll defeat the strategy to set default values.
+			/*
+			TODO:
+			- Verify if Registry.pol always exists or not. If it doesn't when no value
+			  is modified for the host, it'll defeat the strategy to set default values.
 	*/
 	tests := map[string]struct {
 		gpoListArgs        string
@@ -291,7 +287,6 @@ func TestGetPolicies(t *testing.T) {
 			gpoListArgs:                  "standard",
 			objectName:                   hostname,
 			objectClass:                  ad.ComputerObject,
-			userKrb5CCBaseName:           "",
 			dontCreateOriginalKrb5CCName: true,
 			wantErr:                      true,
 		},
@@ -324,22 +319,26 @@ func TestGetPolicies(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-			// only create original cc file when requested
-			krb5CCName := tc.userKrb5CCBaseName
-			var cleanup func()
-			if krb5CCName != "" && !tc.dontCreateOriginalKrb5CCName {
-				krb5CCName, cleanup = setKrb5CC(t, tc.userKrb5CCBaseName)
-				defer cleanup()
+			var krb5CCName, sssCacheDir string
+			if tc.objectClass == ad.UserObject {
+				krb5CCName = tc.userKrb5CCBaseName
+				// only create original cc file when requested
+				if !tc.dontCreateOriginalKrb5CCName && tc.userKrb5CCBaseName != "" {
+					var cleanup func()
+					krb5CCName, cleanup = setKrb5CC(t, tc.userKrb5CCBaseName)
+					defer cleanup()
+				}
+			} else if tc.objectClass == ad.ComputerObject {
+				sssCacheDir = "testdata/sss/db"
+				if tc.dontCreateOriginalKrb5CCName {
+					sssCacheDir = "nonexisting/sss/db"
+				}
 			}
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			hostKrb5CCName := filepath.Join(rundir, "krb5cc", hostname)
-			if tc.dontCreateOriginalKrb5CCName {
-				hostKrb5CCName = ""
-			}
 			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-				ad.WithKinitCmd(ad.MockKinitWithComputer{hostKrb5CCName}),
+				ad.WithSSSCacheDir(sssCacheDir),
 				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs)))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -438,7 +437,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-				ad.WithKinitCmd(ad.MockKinit{}),
+				ad.WithSSSCacheDir("testdata/sss/db"),
 				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -461,7 +460,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			if tc.restart {
 				adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
 					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-					ad.WithKinitCmd(ad.MockKinit{}),
+					ad.WithSSSCacheDir("testdata/sss/db"),
 					ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
 				require.NoError(t, err, "Cannot create second ad object")
 			}
@@ -567,7 +566,7 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 
 			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-				ad.WithKinitCmd(ad.MockKinit{}),
+				ad.WithSSSCacheDir("testdata/sss/db"),
 				ad.WithGPOListCmd(mockGPOListCmd(t, fmt.Sprintf("DEPENDS:%s@%s:%s@%s", tc.objectName1, tc.gpo1, tc.objectName2, tc.gpo2))))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
