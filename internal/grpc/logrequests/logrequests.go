@@ -33,7 +33,12 @@ func StreamServerInterceptor() func(srv interface{}, ss grpc.ServerStream, info 
 				log.Debugf(context.Background(), "Request %s done", info.FullMethod)
 			}
 		}()
-		return handler(srv, loggedss)
+		err := handler(srv, loggedss)
+		if err != nil {
+			// Don’t forward the error by logging to the client as the client will handle it directly
+			log.Infof(context.Background(), "Error sent to client: %v", err)
+		}
+		return err
 	}
 }
 
