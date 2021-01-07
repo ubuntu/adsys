@@ -2,6 +2,7 @@ package adsysservice
 
 import (
 	"github.com/ubuntu/adsys"
+	"github.com/ubuntu/adsys/internal/adsysservice/actions"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/stdforward"
 	"google.golang.org/grpc"
@@ -11,6 +12,9 @@ import (
 // Anything logged by the server on stdout, stderr or via the standard logger.
 // Only one call at a time can be performed here.
 func (s *Service) Cat(r *adsys.Empty, stream adsys.Service_CatServer) error {
+	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
+		return err
+	}
 
 	// Redirect stdout and stderr
 	f := streamWriter{stream}
@@ -43,6 +47,10 @@ func (ss streamWriter) Write(b []byte) (n int, err error) {
 // Stop requests to stop the service once all connections are done. Force will shut it down immediately and drop
 // existing connections.
 func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) error {
+	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
+		return err
+	}
+
 	s.quit.Quit(r.GetForce())
 	return nil
 }
