@@ -31,7 +31,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:296
+#: internal/policies/dconf/dconf.go:336
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -49,7 +49,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:90
+#: internal/policies/dconf/dconf.go:116
 msgid "- error on %s: %v"
 msgstr ""
 
@@ -114,7 +114,7 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:19
+#: cmd/adsysd/client/policy.go:20
 msgid "Policy management"
 msgstr ""
 
@@ -164,7 +164,7 @@ msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:28
+#: cmd/adsysd/client/policy.go:29
 msgid ""
 "Updates/Create a policy for current user or given user with its kerberos "
 "ticket"
@@ -174,23 +174,27 @@ msgstr ""
 msgid "Wait for active requests to close."
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:50
+#: internal/policies/dconf/dconf.go:73
 msgid "can't apply dconf policy: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:300
+#: internal/policies/ad/ad.go:222
+msgid "can't get absolute path of ccname to symlink to: %v"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:340
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:71
+#: internal/adsysservice/adsysservice.go:74
 msgid "can't read %s and no url or domain provided: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:46
+#: internal/policies/dconf/dconf.go:69
 msgid "can't refresh dconf policy via dconf update: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:75
+#: internal/policies/ad/ad.go:78
 msgid "couldn't create Active Directory object: %v"
 msgstr ""
 
@@ -198,7 +202,7 @@ msgstr ""
 msgid "couldn't create server: %v"
 msgstr ""
 
-#: internal/policies/ad/download.go:94
+#: internal/policies/ad/download.go:102
 msgid "couldn't download GPO %q: %v"
 msgstr ""
 
@@ -218,11 +222,11 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:290
+#: internal/policies/dconf/dconf.go:330
 msgid "error while checking signature: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:139
+#: internal/policies/ad/ad.go:134
 msgid "error while getting policies for %q: %v"
 msgstr ""
 
@@ -230,19 +234,19 @@ msgstr ""
 msgid "error while updating policy: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:208
+#: internal/policies/ad/ad.go:213
 msgid "failed to create symlink for caching: %v"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:76
+#: internal/adsysservice/adsysservice.go:79
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:85
+#: internal/adsysservice/adsysservice.go:88
 msgid "failed to find server address in sssd.conf and url is not provided"
 msgstr ""
 
-#: internal/policies/ad/ad.go:223
+#: internal/policies/ad/ad.go:233
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -262,13 +266,13 @@ msgstr ""
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:65
+#: internal/policies/dconf/dconf.go:90
 msgid ""
 "machine dconf database is required before generating a policy for an user. "
 "This one returns: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:38
+#: cmd/adsysd/client/policy.go:39
 msgid "machine updates the policy of the computer."
 msgstr ""
 
@@ -307,7 +311,7 @@ msgstr ""
 msgid "unexpected number of systemd socket activation (%d != 1)"
 msgstr ""
 
-#: internal/policies/policies.go:47
+#: internal/policies/policies.go:53
 #, c-format
 msgid "unknown entry type: %s for key %s"
 msgstr ""
