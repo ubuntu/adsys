@@ -190,6 +190,8 @@ func TestServerDoubleQuit(t *testing.T) {
 		wg.Done()
 	}()
 
+	<-time.After(time.Millisecond)
+
 	// No error triggered by quitting twice
 	d.Quit(false)
 	d.Quit(false)
