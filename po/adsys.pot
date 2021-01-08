@@ -144,6 +144,10 @@ msgstr ""
 msgid "Error from server: %v"
 msgstr ""
 
+#: internal/policies/ad/ad.go:217
+msgid "Failed to read cache directory: %v"
+msgstr ""
+
 #: internal/cmdhandler/cmdhandler.go:44
 msgid "Generates bash completion scripts"
 msgstr ""
@@ -168,7 +172,7 @@ msgstr ""
 msgid "Permission denied: %w"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:20
+#: cmd/adsysd/client/policy.go:21
 msgid "Policy management"
 msgstr ""
 
@@ -230,21 +234,31 @@ msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:29
+#: cmd/adsysd/client/policy.go:30
 msgid ""
 "Updates/Create a policy for current user or given user with its kerberos "
 "ticket"
+msgstr ""
+
+#: internal/policies/ad/ad.go:140
+msgid "User name %q should be of the form %s@DOMAIN"
 msgstr ""
 
 #: internal/daemon/daemon.go:198
 msgid "Wait for active requests to close."
 msgstr ""
 
+#: cmd/adsysd/client/policy.go:41
+msgid ""
+"all updates the policy of the computer and all the logged in users. -m or "
+"USER_NAME/TICKET cannot be used with this option."
+msgstr ""
+
 #: internal/policies/dconf/dconf.go:73
 msgid "can't apply dconf policy: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:220
+#: internal/policies/ad/ad.go:244
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -260,7 +274,7 @@ msgstr ""
 msgid "can't refresh dconf policy via dconf update: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:76
+#: internal/policies/ad/ad.go:77
 msgid "couldn't create Active Directory object: %v"
 msgstr ""
 
@@ -301,15 +315,15 @@ msgstr ""
 msgid "error while checking signature: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:132
+#: internal/policies/ad/ad.go:133
 msgid "error while getting policies for %q: %v"
 msgstr ""
 
-#: internal/adsysservice/policy.go:23
+#: internal/adsysservice/policy.go:30
 msgid "error while updating policy: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:211
+#: internal/policies/ad/ad.go:235
 msgid "failed to create symlink for caching: %v"
 msgstr ""
 
@@ -321,7 +335,7 @@ msgstr ""
 msgid "failed to find server address in sssd.conf and url is not provided"
 msgstr ""
 
-#: internal/policies/ad/ad.go:231
+#: internal/policies/ad/ad.go:255
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -347,7 +361,11 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:39
+#: cmd/adsysd/client/policy.go:48
+msgid "machine or user arguments cannot be used with update all"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:40
 msgid "machine updates the policy of the computer."
 msgstr ""
 
