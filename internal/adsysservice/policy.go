@@ -46,6 +46,7 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 			}
 			errg := new(errgroup.Group)
 			for _, user := range users {
+				user := user
 				errg.Go(func() (err error) {
 					return s.updatePolicyFor(stream.Context(), false, user, ad.UserObject, "")
 				})
