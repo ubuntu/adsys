@@ -432,3 +432,7 @@ msgstr ""
 #: internal/cmdhandler/cmdhandler.go:77
 msgid "use a specific configuration file"
 msgstr ""
+
+#: cmd/adsysd/client/policy.go:51
+msgid "user arguments cannot be used with machine update"
+msgstr ""
