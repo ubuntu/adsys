@@ -43,7 +43,7 @@ func New() *App {
 		Short: i18n.G("AD integration daemon"),
 		Long:  i18n.G(`Active Directory integration bridging toolset daemon.`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			// command parsing has been successfull. Returns runtime (or configuration) error now and so, don’t print usage.
+			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
 			return config.Configure("adsys", a.rootCmd, func(configPath string) error {
 				var newConfig daemonConfig

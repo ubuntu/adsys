@@ -51,7 +51,7 @@ func TestNew(t *testing.T) {
 			if tc.wantErr {
 				require.NotNil(t, err, "AD creation should have failed")
 			} else {
-				require.NoError(t, err, "AD creation should be successfull failed")
+				require.NoError(t, err, "AD creation should be successful failed")
 			}
 
 			if !tc.wantErr {

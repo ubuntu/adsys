@@ -165,7 +165,7 @@ func TestServerChangeTimeout(t *testing.T) {
 		require.NoError(t, err, "No error from listen")
 	}
 
-	assert.True(t, time.Now().After(start.Add(50*time.Millisecond)), "Wait more than intial timeout and changed timeout")
+	assert.True(t, time.Now().After(start.Add(50*time.Millisecond)), "Wait more than initial timeout and changed timeout")
 
 	wg.Wait()
 }

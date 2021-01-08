@@ -42,7 +42,7 @@ func New() *App {
 		Long:  i18n.G(`Active Directory integration bridging toolset command line tool.`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			a.ctx, a.cancel = context.WithCancel(context.Background())
-			// command parsing has been successfull. Returns runtime (or configuration) error now and so, don’t print usage.
+			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
 			return config.Configure("adsys", a.rootCmd, func(configPath string) error {
 				var newConfig daemonConfig

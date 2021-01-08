@@ -67,7 +67,7 @@ func InstallVerboseFlag(cmd *cobra.Command) *int {
 
 // InstallSocketFlag adds the -s and --sockets options and returns the reference to it.
 func InstallSocketFlag(cmd *cobra.Command, defaultPath string) *string {
-	s := cmd.PersistentFlags().StringP("socket", "s", defaultPath, i18n.G("socket path to use between daemon and client. Can be overriden by systemd socket activation."))
+	s := cmd.PersistentFlags().StringP("socket", "s", defaultPath, i18n.G("socket path to use between daemon and client. Can be overridden by systemd socket activation."))
 	viper.BindPFlag("socket", cmd.PersistentFlags().Lookup("socket"))
 	return s
 }

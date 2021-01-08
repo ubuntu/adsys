@@ -31,7 +31,7 @@ func SetVerboseMode(level int) {
 // Configure sets verbosity level and add config env variables and file support based on name prefix.
 // It call the refreshConfig function so that you can deserialized the configuration and returns any error.
 // It automatically watches any configuration changes and will call refreshConfig with the config file that changed
-// passed as an argument. No config path is the inital loading.
+// passed as an argument. No config path is the initial loading.
 func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath string) error) (err error) {
 	defer func() {
 		if err != nil {
