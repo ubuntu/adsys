@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -133,12 +134,11 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		}
 	}()
 
-	// Strip domain suffix if any
-	if i := strings.LastIndex(objectName, "@"); i > 0 {
-		objectName = objectName[:i]
-	}
-
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
+
+	if objectClass == UserObject && !strings.Contains(objectName, "@") {
+		return nil, fmt.Errorf(i18n.G("User name %q should be of the form %s@DOMAIN"), objectName, objectName)
+	}
 
 	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
 	if objectClass == ComputerObject && objectName != ad.hostname {
@@ -159,8 +159,12 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// Get the list of GPO for object
 	// ./list --objectclass=user  ldap://adc01.warthogs.biz bob
 	// TODO: Embed adsys-gpolist in binary
+	userForGPOList := objectName
+	if i := strings.LastIndex(userForGPOList, "@"); i > 0 {
+		userForGPOList = userForGPOList[:i]
+	}
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
-	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, objectName)
+	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, userForGPOList)
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
 	var stdout, stderr bytes.Buffer
@@ -200,6 +204,26 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	return entries, nil
+}
+
+// ListUsersFromCache return the list of active users on the system
+func (ad *AD) ListUsersFromCache(ctx context.Context) ([]string, error) {
+	var users []string
+	ad.Lock()
+	defer ad.Unlock()
+
+	files, err := ioutil.ReadDir(ad.krb5CacheDir)
+	if err != nil {
+		return users, fmt.Errorf(i18n.G("Failed to read cache directory: %v"), err)
+	}
+
+	for _, file := range files {
+		if !strings.Contains(file.Name(), "@") {
+			continue
+		}
+		users = append(users, file.Name())
+	}
+	return users, nil
 }
 
 // ensureKrb5CCName manages user ccname symlinks.

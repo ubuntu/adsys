@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -102,7 +104,7 @@ func TestGetPolicies(t *testing.T) {
 	}{
 		"Standard policy, user object": {
 			gpoListArgs:        "standard",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -124,7 +126,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"User only policy, user object": {
 			gpoListArgs:        "user-only",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -141,7 +143,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Computer only policy, user object": {
 			gpoListArgs:        "machine-only",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want:               nil,
@@ -160,7 +162,7 @@ func TestGetPolicies(t *testing.T) {
 
 		"Two policies, with overrides": {
 			gpoListArgs:        "one-value_standard",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -171,7 +173,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Two policies, with reversed overrides": {
 			gpoListArgs:        "standard_one-value",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -182,7 +184,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Two policies, no overrides": {
 			gpoListArgs:        "one-value_user-only",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -193,7 +195,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Two policies, no overrides, reversed": {
 			gpoListArgs:        "user-only_one-value",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -204,7 +206,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Two policies, no overrides, one is not the same object type": {
 			gpoListArgs:        "machine-only_standard",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -216,7 +218,7 @@ func TestGetPolicies(t *testing.T) {
 
 		"Disabled value overrides non disabled one": {
 			gpoListArgs:        "disabled-value_standard",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -227,7 +229,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Disabled value is overridden": {
 			gpoListArgs:        "standard_disabled-value",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -239,7 +241,7 @@ func TestGetPolicies(t *testing.T) {
 
 		"More policies, with multiple overrides": {
 			gpoListArgs:        "user-only_one-value_standard",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: []entry.Entry{
@@ -270,14 +272,14 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Without previous call, needs userKrb5CCBaseName": {
 			gpoListArgs:        "standard",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "",
 			wantErr:            true,
 		},
 		"Unexisting CC original file for user": {
 			gpoListArgs:                  "standard",
-			objectName:                   "bob",
+			objectName:                   "bob@WARTHOGS.BIZ",
 			objectClass:                  ad.UserObject,
 			userKrb5CCBaseName:           "kbr5cc_adsys_tests_bob",
 			dontCreateOriginalKrb5CCName: true,
@@ -292,21 +294,21 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Corrupted policy file": {
 			gpoListArgs:        "corrupted-policy",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			wantErr:            true,
 		},
 		"Policy can’t be downloaded": {
 			gpoListArgs:        "no-gpt-ini",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			wantErr:            true,
 		},
 		"Symlinks can’t be created": {
 			gpoListArgs:        "standard",
-			objectName:         "bob",
+			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			turnKrb5CCRO:       true,
@@ -379,8 +381,8 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		wantErr bool
 	}{
 		"Second call is a refresh (without Krb5CCName specified)": {
-			objectName1:         "bob",
-			objectName2:         "bob",
+			objectName1:         "bob@WARTHOGS.BIZ",
+			objectName2:         "bob@WARTHOGS.BIZ",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "EMPTY",
 			want: []entry.Entry{
@@ -391,8 +393,8 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		},
 		"Second call after service restarted": {
 			restart:             true,
-			objectName1:         "bob",
-			objectName2:         "bob",
+			objectName1:         "bob@WARTHOGS.BIZ",
+			objectName2:         "bob@WARTHOGS.BIZ",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "", // We did’t RENEW the ticket
 			want: []entry.Entry{
@@ -402,8 +404,8 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			},
 		},
 		"Second call with different user": {
-			objectName1:         "bob",
-			objectName2:         "sponge",
+			objectName1:         "bob@WARTHOGS.BIZ",
+			objectName2:         "sponge@WARTHOGS.BIZ",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "sponge",
 			want: []entry.Entry{
@@ -413,8 +415,8 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			},
 		},
 		"Second call after a relogin": {
-			objectName1:         "bob",
-			objectName2:         "bob",
+			objectName1:         "bob@WARTHOGS.BIZ",
+			objectName2:         "bob@WARTHOGS.BIZ",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "bobNew",
 			want: []entry.Entry{
@@ -489,8 +491,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		wantErr bool
 	}{
 		"Same user, same GPO": {
-			objectName1: "bob",
-			objectName2: "bob",
+			objectName1: "bob@WARTHOGS.BIZ",
+			objectName2: "bob@WARTHOGS.BIZ",
 			gpo1:        "standard",
 			gpo2:        "standard",
 			want1: []entry.Entry{
@@ -507,8 +509,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		// We can’t run this test currently as the mock will always return the same value for bob (both gpos):
 		// both calls are identical.
 		/*"Same user, different GPOs": {
-			objectName1: "bob",
-			objectName2: "bob",
+			objectName1: "bob@WARTHOGS.BIZ",
+			objectName2: "bob@WARTHOGS.BIZ",
 			gpo1:        "standard",
 			gpo2:        "one-value",
 			want1: []entry.Entry{
@@ -521,8 +523,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			},
 		},*/
 		"Different users, same GPO": {
-			objectName1: "bob",
-			objectName2: "sponge",
+			objectName1: "bob@WARTHOGS.BIZ",
+			objectName2: "sponge@WARTHOGS.BIZ",
 			gpo1:        "standard",
 			gpo2:        "standard",
 			want1: []entry.Entry{
@@ -537,8 +539,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			},
 		},
 		"Different users, different GPO": {
-			objectName1: "bob",
-			objectName2: "sponge",
+			objectName1: "bob@WARTHOGS.BIZ",
+			objectName2: "sponge@WARTHOGS.BIZ",
 			gpo1:        "standard",
 			gpo2:        "one-value",
 			want1: []entry.Entry{
@@ -564,10 +566,19 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
 
+			mockObjectName1 := tc.objectName1
+			if i := strings.LastIndex(mockObjectName1, "@"); i > 0 {
+				mockObjectName1 = mockObjectName1[:i]
+			}
+			mockObjectName2 := tc.objectName2
+			if i := strings.LastIndex(mockObjectName2, "@"); i > 0 {
+				mockObjectName2 = mockObjectName2[:i]
+			}
+
 			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir("testdata/sss/db"),
-				ad.WithGPOListCmd(mockGPOListCmd(t, fmt.Sprintf("DEPENDS:%s@%s:%s@%s", tc.objectName1, tc.gpo1, tc.objectName2, tc.gpo2))))
+				ad.WithGPOListCmd(mockGPOListCmd(t, fmt.Sprintf("DEPENDS:%s@%s:%s@%s", mockObjectName1, tc.gpo1, mockObjectName2, tc.gpo2))))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			wg := sync.WaitGroup{}
@@ -585,6 +596,83 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 				assert.Equal(t, tc.want2, got2, "Got expected GPO policies")
 			}()
 			wg.Wait()
+		})
+	}
+}
+
+func TestListUsersFromCache(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		ccCachesToCreate []string
+		noCCacheDir      bool
+
+		want    []string
+		wantErr bool
+	}{
+		"One user": {
+			ccCachesToCreate: []string{"bob@WARTHOGS.BIZ"},
+			want:             []string{"bob@WARTHOGS.BIZ"},
+		},
+		"Two users": {
+			ccCachesToCreate: []string{"bob@WARTHOGS.BIZ", "sponge@OTHERDOMAIN.BIZ"},
+			want:             []string{"bob@WARTHOGS.BIZ", "sponge@OTHERDOMAIN.BIZ"},
+		},
+		"None": {
+			ccCachesToCreate: []string{},
+			want:             nil,
+		},
+		"Machines are ignored": {
+			ccCachesToCreate: []string{"bob@WARTHOGS.BIZ", "sponge@OTHERDOMAIN.BIZ", "myMachine"},
+			want:             []string{"bob@WARTHOGS.BIZ", "sponge@OTHERDOMAIN.BIZ"},
+		},
+		"Machine Only": {
+			ccCachesToCreate: []string{"myMachine"},
+			want:             nil,
+		},
+
+		// Error cases
+		"Error on Krb5 directory not existing": {
+			noCCacheDir: true,
+			wantErr:     true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			cachedir, rundir := t.TempDir(), t.TempDir()
+
+			// populate rundir with users and machines
+			krb5CacheDir := filepath.Join(rundir, "krb5cc")
+			if len(tc.ccCachesToCreate) > 0 {
+				require.NoError(t, os.MkdirAll(krb5CacheDir, 0700), "Setup: can’t create krb5cc cache dir")
+				for _, f := range tc.ccCachesToCreate {
+					require.NoError(t, os.Symlink("nonexistent", filepath.Join(krb5CacheDir, f)),
+						"Setup: symlink creation of krb5cc failed")
+				}
+			}
+
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir))
+			require.NoError(t, err, "Setup: New should return no error")
+
+			if tc.noCCacheDir {
+				require.NoError(t, os.RemoveAll(krb5CacheDir), "Setup: can’t remove krb5 cache directory")
+			}
+
+			got, err := adc.ListUsersFromCache(context.Background())
+			if tc.wantErr {
+				require.Error(t, err, "ListUsersFromCache should return an error and didn't")
+				return
+			}
+			require.NoError(t, err, "ListUsersFromCache should return no error")
+
+			sort.Strings(tc.want)
+			sort.Strings(got)
+			assert.Equal(t, tc.want, got, "ListUsersFromCache should return the list of expected users")
 		})
 	}
 }
