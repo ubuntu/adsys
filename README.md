@@ -103,6 +103,7 @@ adsysctl policy update [USER_NAME KERBEROS_TICKET_PATH] [flags]
 ##### Options
 
 ```
+  -a, --all       all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option.
   -h, --help      help for update
   -m, --machine   machine updates the policy of the computer.
 ```
