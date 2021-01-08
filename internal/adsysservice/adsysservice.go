@@ -126,7 +126,7 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 			log.StreamServerInterceptor(s.logger),
 			connectionnotify.StreamServerInterceptor(d),
 			logconnections.StreamServerInterceptor(),
-		)))
+		)), authorizer.WithUnixPeerCreds())
 	adsys.RegisterServiceServer(srv, s)
 	return srv
 }
