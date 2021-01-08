@@ -47,6 +47,9 @@ func (a *App) policyUpdate(isComputer, updateAll bool, target, krb5cc string) er
 	if updateAll && (isComputer || target != "" || krb5cc != "") {
 		return errors.New(i18n.G("machine or user arguments cannot be used with update all"))
 	}
+	if isComputer && (target != "" || krb5cc != "") {
+		return errors.New(i18n.G("user arguments cannot be used with machine update"))
+	}
 
 	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
 	if err != nil {
@@ -55,7 +58,7 @@ func (a *App) policyUpdate(isComputer, updateAll bool, target, krb5cc string) er
 	defer client.Close()
 
 	// override for computer
-	if isComputer && target == "" {
+	if (isComputer || updateAll) && target == "" {
 		hostname, err := os.Hostname()
 		if err != nil {
 			return err
