@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -594,6 +596,83 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 				assert.Equal(t, tc.want2, got2, "Got expected GPO policies")
 			}()
 			wg.Wait()
+		})
+	}
+}
+
+func TestListUsersFromCache(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		ccCachesToCreate []string
+		noCCacheDir      bool
+
+		want    []string
+		wantErr bool
+	}{
+		"One user": {
+			ccCachesToCreate: []string{"bob@WARTHOGS.BIZ"},
+			want:             []string{"bob@WARTHOGS.BIZ"},
+		},
+		"Two users": {
+			ccCachesToCreate: []string{"bob@WARTHOGS.BIZ", "sponge@OTHERDOMAIN.BIZ"},
+			want:             []string{"bob@WARTHOGS.BIZ", "sponge@OTHERDOMAIN.BIZ"},
+		},
+		"None": {
+			ccCachesToCreate: []string{},
+			want:             nil,
+		},
+		"Machines are ignored": {
+			ccCachesToCreate: []string{"bob@WARTHOGS.BIZ", "sponge@OTHERDOMAIN.BIZ", "myMachine"},
+			want:             []string{"bob@WARTHOGS.BIZ", "sponge@OTHERDOMAIN.BIZ"},
+		},
+		"Machine Only": {
+			ccCachesToCreate: []string{"myMachine"},
+			want:             nil,
+		},
+
+		// Error cases
+		"Error on Krb5 directory not existing": {
+			noCCacheDir: true,
+			wantErr:     true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			cachedir, rundir := t.TempDir(), t.TempDir()
+
+			// populate rundir with users and machines
+			krb5CacheDir := filepath.Join(rundir, "krb5cc")
+			if len(tc.ccCachesToCreate) > 0 {
+				require.NoError(t, os.MkdirAll(krb5CacheDir, 0700), "Setup: can’t create krb5cc cache dir")
+				for _, f := range tc.ccCachesToCreate {
+					require.NoError(t, os.Symlink("nonexistent", filepath.Join(krb5CacheDir, f)),
+						"Setup: symlink creation of krb5cc failed")
+				}
+			}
+
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir))
+			require.NoError(t, err, "Setup: New should return no error")
+
+			if tc.noCCacheDir {
+				require.NoError(t, os.RemoveAll(krb5CacheDir), "Setup: can’t remove krb5 cache directory")
+			}
+
+			got, err := adc.ListUsersFromCache(context.Background())
+			if tc.wantErr {
+				require.Error(t, err, "ListUsersFromCache should return an error and didn't")
+				return
+			}
+			require.NoError(t, err, "ListUsersFromCache should return no error")
+
+			sort.Strings(tc.want)
+			sort.Strings(got)
+			assert.Equal(t, tc.want, got, "ListUsersFromCache should return the list of expected users")
 		})
 	}
 }
