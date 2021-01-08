@@ -3,6 +3,7 @@ package ad
 import (
 	"context"
 	"crypto/md5"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,6 +17,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
@@ -516,8 +518,14 @@ func mkSmbDir() (string, func()) {
 }
 
 func TestMain(m *testing.M) {
+
 	// Don’t setup samba for mock helpers
 	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
+		debug := flag.Bool("verbose", false, "Print debug log level information within the test")
+		flag.Parse()
+		if *debug {
+			logrus.StandardLogger().SetLevel(logrus.DebugLevel)
+		}
 		defer setupSmb()()
 	}
 	m.Run()
