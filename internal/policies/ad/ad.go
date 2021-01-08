@@ -136,6 +136,10 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
 
+	if objectClass == UserObject && !strings.Contains(objectName, "@") {
+		return nil, fmt.Errorf(i18n.G("User name %q should be of the form %s@DOMAIN"), objectName, objectName)
+	}
+
 	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
 	if objectClass == ComputerObject && objectName != ad.hostname {
 		return nil, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
