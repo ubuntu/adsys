@@ -400,7 +400,7 @@ msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:70
 msgid ""
-"socket path to use between daemon and client. Can be overriden by systemd "
+"socket path to use between daemon and client. Can be overridden by systemd "
 "socket activation."
 msgstr ""
 
