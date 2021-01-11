@@ -92,7 +92,7 @@ func genManPages(cmds []cobra.Command, dir string) {
 
 	for _, cmd := range cmds {
 		if err := genManTreeFromOpts(cmd, doc.GenManHeader{
-			Title: fmt.Sprintf("ZSYS: %s", cmd.Name()),
+			Title: fmt.Sprintf("ADSys: %s", cmd.Name()),
 		}, out); err != nil {
 			log.Fatalf("Couldn't generate man pages for %s: %v", cmd.Name(), err)
 		}

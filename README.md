@@ -5,7 +5,7 @@ Active Directory bridging toolset
 [![Code coverage](https://codecov.io/gh/ubuntu/adsys/branch/master/graph/badge.svg)](https://codecov.io/gh/ubuntu/adsys)
 [![Go Reference](https://pkg.go.dev/badge/github.com/ubuntu/adsys.svg)](https://pkg.go.dev/github.com/ubuntu/adsys)
 [![Go Report Card](https://goreportcard.com/badge/ubuntu/adsys)](https://goreportcard.com/report/ubuntu/adsys)
-[![License](https://img.shields.io/badge/License-GPL3.0-blue.svg)](https://github.com/ubuntu/zsys/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-GPL3.0-blue.svg)](https://github.com/ubuntu/adsys/blob/master/LICENSE)
 
 ## Usage
 
