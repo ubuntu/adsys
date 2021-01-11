@@ -6,6 +6,7 @@ generated/
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE
+coverage/
 *.out
 
 # Dependency directories
@@ -17,3 +18,9 @@ obj-x86_64-linux-gnu/
 # Various cruft to not consider by default
 *.log
 .vscode/
+
+# Packaging artefacts
+debian/*debhelper*
+debian/adsys*
+debian/debhelper-build-stamp
+debian/files
