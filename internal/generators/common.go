@@ -6,15 +6,15 @@ import (
 	"os"
 )
 
-const installVar = "GENERATE_ONLY_INSTALL_SHARE_PREFIX"
+const installVar = "GENERATE_ONLY_INSTALL_TO_PREFIX"
 
 // CleanDirectory removes a directory and recreates it.
 func CleanDirectory(p string) error {
 	if err := os.RemoveAll(p); err != nil {
-		return fmt.Errorf("Couldn't delete %q: %v", p, err)
+		return fmt.Errorf("couldn't delete %q: %v", p, err)
 	}
 	if err := os.MkdirAll(p, 0755); err != nil {
-		return fmt.Errorf("Couldn't create %q: %v", p, err)
+		return fmt.Errorf("couldn't create %q: %v", p, err)
 	}
 	return nil
 }
