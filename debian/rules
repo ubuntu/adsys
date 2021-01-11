@@ -21,6 +21,3 @@ override_dh_auto_install:
 	ln -s adsysd debian/adsys/sbin/adsysctl
 	# run go generate to install assets, but don’t regenerate them
 	GENERATE_ONLY_INSTALL_TO_PREFIX=$(CURDIR)/debian/adsys/usr/share go generate $(GOFLAGS) ./...
-
-override_dh_auto_test:
-
