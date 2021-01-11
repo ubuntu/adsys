@@ -1,0 +1,26 @@
+#!/usr/bin/make -f
+#export DH_VERBOSE = 1
+
+export GOCACHE=$(shell mktemp -d /tmp/gocache-XXXX)
+export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/config.Version=$(shell dpkg-parsechangelog -S Version) --mod=vendor
+
+%:
+	dh $@ --buildsystem=golang --with=golang,apport
+
+override_dh_auto_clean:
+	dh_auto_clean
+	# create the vendor directory when building the source package
+	[ -d vendor/ ] || go mod vendor
+
+override_dh_auto_install:
+	dh_auto_install -- --no-source
+	# install in /sbin
+	mv debian/adsys/usr/bin/ debian/adsys/sbin
+	rmdir debian/adsys/usr/
+	# create adsysctl command
+	ln -s adsysd debian/adsys/sbin/adsysctl
+	# run go generate to install assets, but don’t regenerate them
+	GENERATE_ONLY_INSTALL_TO_PREFIX=$(CURDIR)/debian/adsys/usr/share go generate $(GOFLAGS) ./...
+
+override_dh_auto_test:
+
