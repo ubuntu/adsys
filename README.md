@@ -71,10 +71,6 @@ adsysctl completion [flags]
 
 Policy management
 
-##### Synopsis
-
-Policy management
-
 ```
 adsysctl policy COMMAND [flags]
 ```
@@ -95,10 +91,6 @@ adsysctl policy COMMAND [flags]
 ```
 
 #### adsysctl policy update
-
-Updates/Create a policy for current user or given user with its kerberos ticket
-
-##### Synopsis
 
 Updates/Create a policy for current user or given user with its kerberos ticket
 
@@ -127,10 +119,6 @@ adsysctl policy update [USER_NAME KERBEROS_TICKET_PATH] [flags]
 
 Service management
 
-##### Synopsis
-
-Service management
-
 ```
 adsysctl service COMMAND [flags]
 ```
@@ -151,10 +139,6 @@ adsysctl service COMMAND [flags]
 ```
 
 #### adsysctl service cat
-
-Print service logs
-
-##### Synopsis
 
 Print service logs
 
@@ -181,10 +165,6 @@ adsysctl service cat [flags]
 
 Requests to stop the service once all connections are done
 
-##### Synopsis
-
-Requests to stop the service once all connections are done
-
 ```
 adsysctl service stop [flags]
 ```
@@ -206,10 +186,6 @@ adsysctl service stop [flags]
 ```
 
 #### adsysctl version
-
-Returns version of client and service
-
-##### Synopsis
 
 Returns version of client and service
 
@@ -293,10 +269,6 @@ adsysd completion [flags]
 ```
 
 #### adsysd version
-
-Returns version of service and exits
-
-##### Synopsis
 
 Returns version of service and exits
 
