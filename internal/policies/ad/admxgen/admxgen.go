@@ -3,7 +3,7 @@ admxgen generates admx and adml from a category and multiple policies per releas
 
 	The process is acting on multiple steps:
 	- We generate on each release, for each type of conversion (dconf, install script, apparmor) common.ExpandedPolicy object.
-	  The common.ExpandedPolicy is independant of the type of the policy and contains all needed data and metadata for the policy
+	  The common.ExpandedPolicy is independent of the type of the policy and contains all needed data and metadata for the policy
 	  for a given release.
 	- Using the category definition, we merge all expanded policies in a finale expandedCategories set, which contains all definitions,
 	  including any supported release information for a given policy. It can also adjust the default value information if it

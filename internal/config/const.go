@@ -20,6 +20,6 @@ var (
 	// DefaultServiceTimeout is the default time in seconds without any active request before the service exits.
 	DefaultServiceTimeout = 120
 
-	// DistroID is the distro ID which can be overriden at build time
+	// DistroID is the distro ID which can be overridden at build time
 	DistroID = "Ubuntu"
 )

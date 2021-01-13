@@ -2,9 +2,11 @@
 package common
 
 const (
-	// WidgetTypeText is the text format of the widget type
-	WidgetTypeText    WidgetType = "Text"
-	WidgetTypeBool    WidgetType = "Bool"
+	// WidgetTypeText will use the text widget type
+	WidgetTypeText WidgetType = "Text"
+	// WidgetTypeBool will use a checkbox
+	WidgetTypeBool WidgetType = "Bool"
+	// WidgetTypeDecimal will use a decimal input
 	WidgetTypeDecimal WidgetType = "Decimal"
 )
 
