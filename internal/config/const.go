@@ -1,3 +1,4 @@
+// Package config defines the constants used by the project
 package config
 
 import log "github.com/sirupsen/logrus"

@@ -1,3 +1,4 @@
+// Package common defines the data structures used to generate ADMX templates from policy definition files
 package common
 
 const (
