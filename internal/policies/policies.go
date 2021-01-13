@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ubuntu/adsys/internal/config"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
@@ -31,7 +32,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	var dconfEntries, scriptEntries, apparmorEntries []entry.Entry
 	for _, entry := range entries {
-		trimstr := "Software/Ubuntu/"
+		trimstr := fmt.Sprintf("Software/%s/", config.DistroID)
 		/* TODO: should not be needed as we parse computer first
 		if isComputer {
 			trimstr += "Computer/"
