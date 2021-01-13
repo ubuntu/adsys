@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="desktop" namespace="Microsoft.Policies.WindowsDesktop" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+{{- range .Categories}}
+    <category name="{{toID "" .DisplayName}}" displayName="$(string.{{toID "Display" .DisplayName}})">
+      <parentCategory ref="{{.Parent}}" />
+    </category>
+{{- end}}
+  </categories>
+
+  <policies>
+{{- range .Policies}}
+    <policy name="{{toID "" .DisplayName}}" class="{{.Class}}" displayName="$(string.{{toID "Display" .DisplayName}})" explainText="$(string.{{toID "ExplainText" .DisplayName}})" presentation="$(presentation.{{toID "Presentation" .DisplayName}})" key="{{dir .Key}}" valueName="metaValues">
+      <parentCategory ref="{{.ParentCategory}}" />
+      <enabledValue><string>{{.Meta}}</string></enabledValue>
+      <elements>
+        <text id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}" />
+      </elements>
+    </policy>
+{{- end}}
+  </policies>
+
+</policyDefinitions>
