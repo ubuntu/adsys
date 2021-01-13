@@ -49,6 +49,11 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
+#: internal/policies/ad/admxgen/admxgen.go:120
+#, c-format
+msgid "- Supported on %s"
+msgstr ""
+
 #: internal/policies/dconf/dconf.go:116
 msgid "- error on %s: %v"
 msgstr ""
@@ -132,6 +137,16 @@ msgstr ""
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
+#: internal/policies/ad/admxgen/admxgen.go:137
+#, c-format
+msgid "Default for %s %s: %s"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:148
+#, c-format
+msgid "Default: %s"
+msgstr ""
+
 #: internal/cmdhandler/suggest.go:51
 msgid "Did you mean this?\n"
 msgstr ""
@@ -166,6 +181,10 @@ msgstr ""
 #: internal/grpc/logstreamer/server.go:47
 #, c-format
 msgid "New connection from client [[%s]]"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:150
+msgid "Not Configured"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:119
@@ -258,6 +277,19 @@ msgstr ""
 msgid "can't apply dconf policy: %v"
 msgstr ""
 
+#: internal/policies/ad/admxgen/admxgen.go:277
+#: internal/policies/ad/admxgen/admxgen.go:290
+msgid "can't create admx file: %v"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:259
+msgid "can't create destination directory for AD policies: %v"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:269
+msgid "can't determine current file"
+msgstr ""
+
 #: internal/policies/ad/ad.go:244
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
@@ -270,8 +302,20 @@ msgstr ""
 msgid "can't read %s and no url or domain provided: %v"
 msgstr ""
 
+#: internal/policies/ad/admxgen/dconf/dconf.go:220
+msgid "can't read %s: %v"
+msgstr ""
+
 #: internal/policies/dconf/dconf.go:69
 msgid "can't refresh dconf policy via dconf update: %v"
+msgstr ""
+
+#: internal/policies/ad/admxgen/dconf/dconf.go:165
+msgid "cannot open file: %w"
+msgstr ""
+
+#: internal/policies/ad/admxgen/dconf/dconf.go:171
+msgid "cannot read schema data: %w"
 msgstr ""
 
 #: internal/policies/ad/ad.go:77
@@ -288,6 +332,14 @@ msgstr ""
 
 #: internal/policies/ad/download.go:102
 msgid "couldn't download GPO %q: %v"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:296
+msgid "couldn't generate adml: %v"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:283
+msgid "couldn't generate admx: %v"
 msgstr ""
 
 #: internal/daemon/daemon.go:121
@@ -333,6 +385,14 @@ msgstr ""
 
 #: internal/adsysservice/adsysservice.go:104
 msgid "failed to find server address in sssd.conf and url is not provided"
+msgstr ""
+
+#: internal/policies/ad/admxgen/dconf/dconf.go:159
+msgid "failed to read list of schemas: %w"
+msgstr ""
+
+#: internal/policies/ad/admxgen/dconf/dconf.go:213
+msgid "failed to read overrides files: %w"
 msgstr ""
 
 #: internal/policies/ad/ad.go:255
@@ -394,6 +454,10 @@ msgstr ""
 msgid "parsing error: missing )"
 msgstr ""
 
+#: internal/policies/ad/admxgen/admxgen.go:176
+msgid "policy %s referenced in %q does not exist"
+msgstr ""
+
 #: internal/policies/ad/ad.go:145
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
@@ -402,6 +466,10 @@ msgstr ""
 msgid ""
 "socket path to use between daemon and client. Can be overridden by systemd "
 "socket activation."
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:212
+msgid "the following policies have been assigned to a category: %v"
 msgstr ""
 
 #: cmd/adsysd/client/client.go:83
@@ -424,7 +492,7 @@ msgstr ""
 msgid "unexpected socket type"
 msgstr ""
 
-#: internal/policies/policies.go:53
+#: internal/policies/policies.go:54
 #, c-format
 msgid "unknown entry type: %s for key %s"
 msgstr ""
