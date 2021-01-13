@@ -20,4 +20,5 @@ require (
 	google.golang.org/grpc v1.33.0
 	google.golang.org/protobuf v1.23.0
 	gopkg.in/ini.v1 v1.51.0
+	gopkg.in/yaml.v2 v2.2.8
 )
