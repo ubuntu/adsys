@@ -1,0 +1,8 @@
+- key: /com/ubuntu/simple-overridden/simple-text-property-overridden-ubuntu
+  displayname: simple-text-property-overridden-ubuntu summary
+  explaintext: simple-text-property-overridden-ubuntu description
+  elementtype: Text
+  meta: '"simple-text-property-overridden-ubuntu": {"meta": "s", "default": ""}'
+  class: ""
+  default: Overridden simple-text-property-overridden-ubuntu Value For Ubuntu Session
+  release: "20.04"

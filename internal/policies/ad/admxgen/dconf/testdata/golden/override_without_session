@@ -1,0 +1,8 @@
+- key: /com/ubuntu/simple-overridden/simple-text-property
+  displayname: simple-text-property summary
+  explaintext: simple-text-property description
+  elementtype: Text
+  meta: '"simple-text-property": {"meta": "s", "default": ""}'
+  class: ""
+  default: Overridden simple-text-property Value
+  release: "20.04"

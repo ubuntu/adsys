@@ -1,0 +1,16 @@
+- key: /com/ubuntu/1/relocatable/property
+  displayname: property summary
+  explaintext: property description
+  elementtype: Text
+  meta: '"property": {"meta": "s", "default": ""}'
+  class: ""
+  default: property Default Value
+  release: "20.04"
+- key: /com/ubuntu/2/relocatable/property
+  displayname: property summary
+  explaintext: property description
+  elementtype: Text
+  meta: '"property": {"meta": "s", "default": ""}'
+  class: ""
+  default: property Default Value
+  release: "20.04"
