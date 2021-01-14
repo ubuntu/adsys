@@ -2,7 +2,6 @@
 package dconf
 
 import (
-	"context"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
@@ -11,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	log "github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	"gopkg.in/ini.v1"
@@ -71,7 +70,7 @@ func inflateToExpandedPolicies(policies []Policy, release string, schemas map[st
 		}
 		s, ok := schemas[index]
 		if !ok {
-			log.Warningf(context.Background(), "dconf entry %q is not available on this machine", index)
+			log.Warningf("dconf entry %q is not available on this machine", index)
 			continue
 		}
 
