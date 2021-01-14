@@ -186,7 +186,10 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 		}
 
 		var sl schemaList
-		xml.Unmarshal(d, &sl)
+		if err := xml.Unmarshal(d, &sl); err != nil {
+			log.Warningf("%s is an invalid schema: %v", p, err)
+			continue
+		}
 
 		for _, s := range sl.Schema {
 			var relocatable bool
