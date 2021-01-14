@@ -51,7 +51,7 @@ func Generate(policies []Policy, release string, root, currentSessions string) (
 		return nil, err
 	}
 
-	expandedPolicies, err := inflateToExpandedPolicies(policies, release, s, d)
+	expandedPolicies, err := inflateToExpandedPolicies(policies, release, currentSessions, s, d)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func Generate(policies []Policy, release string, root, currentSessions string) (
 	return expandedPolicies, nil
 }
 
-func inflateToExpandedPolicies(policies []Policy, release string, schemas map[string]schemaEntry, defaultsForPath map[string]string) ([]common.ExpandedPolicy, error) {
+func inflateToExpandedPolicies(policies []Policy, release, currentSessions string, schemas map[string]schemaEntry, defaultsForPath map[string]string) ([]common.ExpandedPolicy, error) {
 	var r []common.ExpandedPolicy
 
 	for _, policy := range policies {
@@ -74,9 +74,24 @@ func inflateToExpandedPolicies(policies []Policy, release string, schemas map[st
 			continue
 		}
 
-		defaultVal, ok := defaultsForPath[filepath.Join(s.Schema, filepath.Base(policy.ObjectPath))]
+		// consider :SESSION
+		var defaultVal string
+		var found bool
+		if currentSessions != "" {
+			currentSessions += ":" // Add empty the last session override
+		}
+		for _, session := range strings.Split(currentSessions, ":") {
+			schema := s.Schema
+			if session != "" {
+				schema = fmt.Sprintf("%s:%s", schema, session)
+			}
+			defaultVal, found = defaultsForPath[filepath.Join(schema, filepath.Base(policy.ObjectPath))]
+			if found {
+				break
+			}
+		}
 		// relocatable path without override, take the default from the schema
-		if !ok {
+		if !found {
 			defaultVal = s.DefaultRelocatable
 		}
 
@@ -221,14 +236,6 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 		for _, s := range c.Sections() {
 			for _, k := range s.Keys() {
 				defaultsForPath[filepath.Join(s.Name(), k.Name())] = k.Value()
-				// TODO: we only consider for this edge case the uppermost session in override
-				currentSession := strings.Split(currentSessions, ":")[0]
-				if !strings.HasSuffix(s.Name(), ":"+currentSession) {
-					continue
-				}
-				// Strip :SESSION to set as default session if it’s a match
-				n := strings.TrimSuffix(s.Name(), ":"+currentSession)
-				defaultsForPath[filepath.Join(n, k.Name())] = k.Value()
 			}
 		}
 	}
