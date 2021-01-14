@@ -45,7 +45,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 )
@@ -67,8 +66,13 @@ type category struct {
 	Children           []category
 }
 
-func generateExpandedCategories(categories []category, policies []common.ExpandedPolicy, supportedReleases []string) ([]expandedCategory, error) {
-	supportedReleaseNum := len(supportedReleases)
+type generator struct {
+	distroID          string
+	supportedReleases []string
+}
+
+func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy) ([]expandedCategory, error) {
+	supportedReleaseNum := len(g.supportedReleases)
 
 	// 1. Create MergedPolicies, indexed by key
 
@@ -102,7 +106,7 @@ func generateExpandedCategories(categories []category, policies []common.Expande
 		}
 		var defaults []defaultVal
 
-		for _, release := range supportedReleases {
+		for _, release := range g.supportedReleases {
 			p, ok := indexedPolicies[key][release]
 			// if it doesn’t exist for this release, skip
 			if !ok {
@@ -134,7 +138,7 @@ func generateExpandedCategories(categories []category, policies []common.Expande
 		var perReleaseDefault []string
 		// defaultVal is already ordered per release as we iterated previously
 		for _, d := range defaults {
-			perReleaseDefault = append(perReleaseDefault, fmt.Sprintf(i18n.G("Default for %s %s: %s"), config.DistroID, d.release, d.value))
+			perReleaseDefault = append(perReleaseDefault, fmt.Sprintf(i18n.G("Default for %s %s: %s"), g.distroID, d.release, d.value))
 
 			if defaultString != "" && d.value != defaultString {
 				defaultString = "PERRELEASE"
@@ -155,7 +159,7 @@ func generateExpandedCategories(categories []category, policies []common.Expande
 		}
 
 		mergedPolicies[key] = common.ExpandedPolicy{
-			Key:         fmt.Sprintf(`Software\%s\%s\%s`, config.DistroID, typePol, strings.ReplaceAll(key, "/", `\`)),
+			Key:         fmt.Sprintf(`Software\%s\%s\%s`, g.distroID, typePol, strings.ReplaceAll(key, "/", `\`)),
 			DisplayName: displayName,
 			ExplainText: explainText,
 			ElementType: elementType,
@@ -208,13 +212,10 @@ func generateExpandedCategories(categories []category, policies []common.Expande
 		expandedCategories = append(expandedCategories, c)
 	}
 
+	// Check that all policies are at least attached once
 	if len(unattachedPolicies) > 0 {
 		return nil, fmt.Errorf(i18n.G("the following policies have been assigned to a category: %v"), unattachedPolicies)
 	}
-
-	// Check that all policies are at least attached once
-	/*k -> attachedPolicies
-	k -> mergedPolicies*/
 
 	return expandedCategories, nil
 }
@@ -237,15 +238,15 @@ type policyForADMX struct {
 	SupportedOn    string
 }
 
-func toID(prefix, n string) string {
-	return config.DistroID + strings.Title(prefix) + strings.ReplaceAll(strings.Title(n), " ", "")
+func (g generator) toID(prefix, n string) string {
+	return g.distroID + strings.Title(prefix) + strings.ReplaceAll(strings.Title(n), " ", "")
 }
 
-func expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) error {
+func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) error {
 	var inputCategories []categoryForADMX
 	var inputPolicies []policyForADMX
 	for _, p := range expandedCategories {
-		cat, pol := collectCategoriesPolicies(p, "")
+		cat, pol := g.collectCategoriesPolicies(p, "")
 		inputCategories = append(inputCategories, cat...)
 		inputPolicies = append(inputPolicies, pol...)
 	}
@@ -260,7 +261,7 @@ func expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string
 	}
 
 	funcMap := template.FuncMap{
-		"toID": toID,
+		"toID": g.toID,
 		"base": filepath.Base,
 		"dir":  filepath.Dir,
 	}
@@ -299,7 +300,7 @@ func expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string
 	return nil
 }
 
-func collectCategoriesPolicies(category expandedCategory, parent string) ([]categoryForADMX, []policyForADMX) {
+func (g generator) collectCategoriesPolicies(category expandedCategory, parent string) ([]categoryForADMX, []policyForADMX) {
 	if parent == "" {
 		parent = category.Parent
 	}
@@ -308,7 +309,7 @@ func collectCategoriesPolicies(category expandedCategory, parent string) ([]cate
 		Parent:      parent,
 	}
 	categories := []categoryForADMX{cat}
-	catID := toID("", cat.DisplayName)
+	catID := g.toID("", cat.DisplayName)
 
 	var policies []policyForADMX
 	// Collect now directly attached policies
@@ -326,7 +327,7 @@ func collectCategoriesPolicies(category expandedCategory, parent string) ([]cate
 
 	// Collect children categories and policies
 	for _, c := range category.Children {
-		chidren, childrenpol := collectCategoriesPolicies(c, catID)
+		chidren, childrenpol := g.collectCategoriesPolicies(c, catID)
 		categories = append(categories, chidren...)
 		policies = append(policies, childrenpol...)
 	}

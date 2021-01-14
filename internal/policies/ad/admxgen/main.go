@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/dconf"
 	"golang.org/x/sync/errgroup"
@@ -218,12 +217,15 @@ func admx(categoryDefinition, src, dst string) error {
 		return err
 	}
 
-	config.DistroID = catfs.DistroID
-	ec, err := generateExpandedCategories(catfs.Categories, policies, catfs.SupportedReleases)
+	g := generator{
+		distroID:          catfs.DistroID,
+		supportedReleases: catfs.SupportedReleases,
+	}
+	ec, err := g.generateExpandedCategories(catfs.Categories, policies)
 	if err != nil {
 		return fmt.Errorf("can't generate expanded categories: %w", err)
 	}
-	err = expandedCategoriesToADMX(ec, dst)
+	err = g.expandedCategoriesToADMX(ec, dst)
 	if err != nil {
 		return fmt.Errorf("can't generate ADMX templates: %w", err)
 	}
