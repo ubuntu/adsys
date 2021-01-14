@@ -111,7 +111,7 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 
 		m, ok := schemaTypeToMetadata[s.Type]
 		if !ok {
-			return nil, fmt.Errorf("listed type %s is not supported in schemaTypeToMetadata. Please add it", s.Type)
+			return nil, fmt.Errorf("listed type %q is not supported in schemaTypeToMetadata. Please add it", s.Type)
 		}
 		ep.ElementType = m.widgetType
 		ep.Meta = fmt.Sprintf(`"%s": {"meta": "%s", "default": "%s"}`, filepath.Base(policy.ObjectPath), s.Type, m.emptyValue)
