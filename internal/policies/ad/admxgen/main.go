@@ -183,36 +183,7 @@ type categoryFileStruct struct {
 
 func admx(categoryDefinition, src, dst string) error {
 	// Load all expanded categories
-	f, err := ioutil.ReadDir(src)
-	if err != nil {
-		return err
-	}
-	var epNames []string
-	for _, n := range f {
-		epNames = append(epNames, n.Name())
-	}
-	sort.Strings(epNames)
-
-	var policies, p []common.ExpandedPolicy
-	for _, n := range epNames {
-		d, err := ioutil.ReadFile(filepath.Join(src, n))
-		if err != nil {
-			return err
-		}
-		err = yaml.Unmarshal(d, &p)
-		if err != nil {
-			return err
-		}
-		policies = append(policies, p...)
-	}
-
-	// Load categories and meta
-	var catfs categoryFileStruct
-	catsDef, err := ioutil.ReadFile(categoryDefinition)
-	if err != nil {
-		return err
-	}
-	err = yaml.Unmarshal(catsDef, &catfs)
+	policies, catfs, err := loadDefinitions(categoryDefinition, src)
 	if err != nil {
 		return err
 	}
@@ -231,4 +202,44 @@ func admx(categoryDefinition, src, dst string) error {
 	}
 
 	return nil
+}
+
+func loadDefinitions(categoryDefinition, src string) ([]common.ExpandedPolicy, categoryFileStruct, error) {
+	var nilCategoryFileStruct categoryFileStruct
+
+	f, err := ioutil.ReadDir(src)
+	if err != nil {
+		return nil, nilCategoryFileStruct, err
+	}
+	var epNames []string
+	for _, n := range f {
+		epNames = append(epNames, n.Name())
+	}
+	sort.Strings(epNames)
+
+	var policies, p []common.ExpandedPolicy
+	for _, n := range epNames {
+		d, err := ioutil.ReadFile(filepath.Join(src, n))
+		if err != nil {
+			return nil, nilCategoryFileStruct, err
+		}
+		err = yaml.Unmarshal(d, &p)
+		if err != nil {
+			return nil, nilCategoryFileStruct, err
+		}
+		policies = append(policies, p...)
+	}
+
+	// Load categories and meta
+	var catfs categoryFileStruct
+	catsDef, err := ioutil.ReadFile(categoryDefinition)
+	if err != nil {
+		return nil, nilCategoryFileStruct, err
+	}
+	err = yaml.Unmarshal(catsDef, &catfs)
+	if err != nil {
+		return nil, nilCategoryFileStruct, err
+	}
+
+	return policies, catfs, nil
 }
