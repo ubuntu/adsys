@@ -234,7 +234,8 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 	for _, o := range overrides {
 		c, err := ini.Load(o)
 		if err != nil {
-			return nil, nil, fmt.Errorf(i18n.G("can't read %s: %v"), o, err)
+			log.Warningf("%s is an invalid override file: %v", o, err)
+			continue
 		}
 		for _, s := range c.Sections() {
 			for _, k := range s.Keys() {
