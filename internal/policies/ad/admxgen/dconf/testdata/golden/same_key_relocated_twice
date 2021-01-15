@@ -6,6 +6,7 @@
   class: ""
   default: property Default Value
   release: "20.04"
+  type: dconf
 - key: /com/ubuntu/2/relocatable/property
   displayname: property summary
   explaintext: property description
@@ -14,3 +15,4 @@
   class: ""
   default: property Default Value
   release: "20.04"
+  type: dconf

@@ -8,3 +8,4 @@
   default: This is the simple-text-property-overridden-by-multiple-files overridden
     Value
   release: "20.04"
+  type: dconf

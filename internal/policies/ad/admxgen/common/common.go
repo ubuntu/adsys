@@ -25,4 +25,5 @@ type ExpandedPolicy struct {
 	// those are unused in expandedCategories
 	Default string `yaml:",omitempty"`
 	Release string `yaml:",omitempty"`
+	Type    string `yaml:",omitempty"` // dconf, install…
 }

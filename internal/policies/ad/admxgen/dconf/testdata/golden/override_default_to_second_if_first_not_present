@@ -6,3 +6,4 @@
   class: ""
   default: Overridden simple-text-property-overridden-gnome Value For GNOME Session
   release: "20.04"
+  type: dconf

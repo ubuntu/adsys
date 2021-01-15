@@ -6,3 +6,4 @@
   class: ""
   default: Overridden simple-text-property Value
   release: "20.04"
+  type: dconf

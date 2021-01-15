@@ -107,6 +107,7 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			Class:       policy.Class,
 			Release:     release,
 			Default:     defaultVal,
+			Type:        "dconf",
 		}
 
 		m, ok := schemaTypeToMetadata[s.Type]
