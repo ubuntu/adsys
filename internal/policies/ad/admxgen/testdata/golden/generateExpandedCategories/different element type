@@ -1,0 +1,13 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-common
+    displayname: summary common
+    explaintext: |-
+      description common
+
+      Default: Default Value common
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: NotText
+    meta: '"policy-common": {"meta": "s", "default": ""}'
+    class: machine

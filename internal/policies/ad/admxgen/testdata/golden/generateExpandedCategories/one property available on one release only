@@ -1,0 +1,25 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-common
+    displayname: summary common
+    explaintext: |-
+      description common
+
+      Default: Default Value common
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: Text
+    meta: '"text-policy": {"meta": "s", "default": ""}'
+    class: machine
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-only-21.10
+    displayname: summary policy-only-21.10
+    explaintext: |-
+      description policy-only-21.10
+
+      Default: Default Value policy-only-21.10
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      - Supported on Ubuntu 21.10
+    elementtype: Text
+    meta: '"text-policy": {"meta": "s", "default": ""}'
+    class: machine

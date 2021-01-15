@@ -1,0 +1,9 @@
+- key: /org/gnome/desktop/policy-common
+  displayname: summary common
+  explaintext: description common
+  elementtype: Text
+  meta: '"policy-common": {"meta": "as", "default": "[]"}'
+  class: ""
+  default: Default Value common
+  release: "21.10"
+  type: "dconf"

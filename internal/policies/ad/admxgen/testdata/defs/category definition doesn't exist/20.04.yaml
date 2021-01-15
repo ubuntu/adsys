@@ -1,0 +1,9 @@
+- key: /org/gnome/desktop/policy-simple
+  displayname: summary
+  explaintext: description
+  elementtype: Text
+  meta: '"policy-simple": {"meta": "s", "default": ""}'
+  class: ""
+  default: Default Value
+  release: "20.04"
+  type: "dconf"

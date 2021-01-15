@@ -1,0 +1,13 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-first
+    displayname: summary first
+    explaintext: |-
+      description first
+
+      Default: Default Value first
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: Text
+    meta: '"text-policy": {"meta": "s", "default": ""}'
+    class: machine
