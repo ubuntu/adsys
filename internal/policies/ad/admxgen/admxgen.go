@@ -177,7 +177,8 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		}
 
 		mergedPolicies[key] = common.ExpandedPolicy{
-			Key:         fmt.Sprintf(`Software\%s\%s\%s`, g.distroID, typePol, strings.ReplaceAll(key, "/", `\`)),
+			// remove leading / if exists to avoid double \
+			Key:         fmt.Sprintf(`Software\%s\%s\%s`, g.distroID, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
 			DisplayName: displayName,
 			ExplainText: explainText,
 			ElementType: elementType,
