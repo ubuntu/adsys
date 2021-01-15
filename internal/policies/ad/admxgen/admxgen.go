@@ -122,12 +122,21 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			// we have one policy at least on this release
 			delete(noPoliciesOn, p.Release)
 
-			// meta is different -> error
+			// meta, type, class or elementtype is different -> error
 			if meta != "" && meta != p.Meta {
 				return nil, fmt.Errorf("%s is of different meta between releases. Got %q and %q", key, meta, p.Meta)
 			}
+			if typePol != "" && typePol != p.Type {
+				return nil, fmt.Errorf("%s is of different policy type between releases. Got %q and %q", key, typePol, p.Type)
+			}
+			if class != "" && class != p.Class {
+				return nil, fmt.Errorf("%s is of different class between releases. Got %q and %q", key, class, p.Class)
+			}
+			if elementType != "" && elementType != p.ElementType {
+				return nil, fmt.Errorf("%s is of different element type between releases. Got %q and %q", key, elementType, p.ElementType)
+			}
 
-			typePol = string(p.ElementType)
+			typePol = p.Type
 			displayName = p.DisplayName
 			if writeSupportedOn {
 				supportedOn = append(supportedOn, fmt.Sprintf(i18n.G("- Supported on %s"), release))
