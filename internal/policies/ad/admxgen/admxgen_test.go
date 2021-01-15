@@ -54,15 +54,14 @@ func TestGenerateExpandedCategories(t *testing.T) {
 	for name, tc := range tests {
 		name := name
 		categoryDefinition := name
-		src := name
 
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
 			policies, catfs, err := loadDefinitions(
-				filepath.Join("testdata/defs", categoryDefinition)+".yaml",
-				filepath.Join("testdata/defs", src))
+				filepath.Join("testdata", "generateExpandedCategories", "defs", categoryDefinition)+".yaml",
+				filepath.Join("testdata", "generateExpandedCategories", "defs", name))
 
 			if tc.wantErrLoadDefinitions {
 				require.Error(t, err, "loadDefinitions should have errored out")
@@ -81,7 +80,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 			}
 			require.NoError(t, err, "generateExpandedCategories failed but shouldn't have")
 
-			goldPath := filepath.Join("testdata", "golden", "generateExpandedCategories", name)
+			goldPath := filepath.Join("testdata", "generateExpandedCategories", "golden", name)
 			var want []expandedCategory
 			wantFromGoldenFile(t, goldPath, got, &want)
 
