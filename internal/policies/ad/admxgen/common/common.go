@@ -23,6 +23,6 @@ type ExpandedPolicy struct {
 	Class       string
 
 	// those are unused in expandedCategories
-	Default string
-	Release string
+	Default string `yaml:",omitempty"`
+	Release string `yaml:",omitempty"`
 }

@@ -55,7 +55,7 @@ type expandedCategory struct {
 	DisplayName string
 	Parent      string
 	Policies    []common.ExpandedPolicy
-	Children    []expandedCategory
+	Children    []expandedCategory `yaml:",omitempty"`
 }
 
 type category struct {
