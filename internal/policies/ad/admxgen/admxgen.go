@@ -74,6 +74,12 @@ type generator struct {
 func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy) ([]expandedCategory, error) {
 	supportedReleaseNum := len(g.supportedReleases)
 
+	// noPoliciesOn is a map to attest that each release was assigned at least one property
+	noPoliciesOn := make(map[string]struct{})
+	for _, r := range g.supportedReleases {
+		noPoliciesOn[r] = struct{}{}
+	}
+
 	// 1. Create MergedPolicies, indexed by key
 
 	// Index policies by key and release for easier lookup
@@ -112,6 +118,9 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			if !ok {
 				continue
 			}
+
+			// we have one policy at least on this release
+			delete(noPoliciesOn, p.Release)
 
 			// meta is different -> error
 			if meta != "" && meta != p.Meta {
@@ -166,6 +175,15 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			Meta:        meta,
 			Class:       class,
 		}
+	}
+
+	// Ensure that every release have at least one policy attached, or this is an user error
+	if len(noPoliciesOn) > 0 {
+		var releases []string
+		for r := range noPoliciesOn {
+			releases = append(releases, r)
+		}
+		return nil, fmt.Errorf(i18n.G("some releases have no policies attached to them while being listed in categories: %v"), releases)
 	}
 
 	// 2. Inflate policies in categories, keep policy order from category list
