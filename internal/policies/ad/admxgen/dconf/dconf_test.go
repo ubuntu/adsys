@@ -82,7 +82,7 @@ func TestGenerate(t *testing.T) {
 			if update {
 				t.Logf("updating golden file %s", goldPath)
 				data, err = yaml.Marshal(got)
-				require.NoError(t, err, "Cannot marshmall expanded policies to YAML")
+				require.NoError(t, err, "Cannot marshal expanded policies to YAML")
 				err = ioutil.WriteFile(goldPath, data, 0644)
 				require.NoError(t, err, "Cannot write golden file")
 			}

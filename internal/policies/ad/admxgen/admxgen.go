@@ -17,8 +17,8 @@ admxgen generates admx and adml from a category and multiple policies per releas
     (install script)                                            |
     install.yaml   -----|                                       |
                         |                                       |
-	(dconf)             |----|> ExpandedPolicies --|            |
-	dconf.yaml ---|     |                          |            |
+    (dconf)             |----|> ExpandedPolicies --|            |
+    dconf.yaml ---|     |                          |            |
                   |-----|                          |            |
     schema -------|                                |            |
                                                    |        |-------|
@@ -139,7 +139,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			typePol = p.Type
 			displayName = p.DisplayName
 			if writeSupportedOn {
-				supportedOn = append(supportedOn, fmt.Sprintf(i18n.G("- Supported on %s"), release))
+				supportedOn = append(supportedOn, fmt.Sprintf(i18n.G("- Supported on %s %s"), g.distroID, release))
 			}
 
 			explainText = p.ExplainText
@@ -169,7 +169,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		} else {
 			explainText = fmt.Sprintf("%s\n\n%s", explainText, fmt.Sprintf(i18n.G("Default: %s"), defaultString))
 		}
-		explainText = fmt.Sprintf(i18n.G(`%s\nNote: default system value is used for "Not Configured" and enforced if "Disabled".`), explainText)
+		explainText = fmt.Sprintf(i18n.G("%s\nNote: default system value is used for \"Not Configured\" and enforced if \"Disabled\"."), explainText)
 
 		// Display supportedOn if there is one different from others
 		if len(supportedOn) != 0 {
