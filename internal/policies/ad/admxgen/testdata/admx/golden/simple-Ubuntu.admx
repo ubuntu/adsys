@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="desktop" namespace="Microsoft.Policies.WindowsDesktop" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="windows:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuSimple-Text-PropertySummary" class="machine" displayName="$(string.UbuntuDisplaySimple-Text-PropertySummary)" explainText="$(string.UbuntuExplainTextSimple-Text-PropertySummary)" presentation="$(presentation.UbuntuPresentationSimple-Text-PropertySummary)" key="." valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <enabledValue><string>"simple-text-property": {"meta": "s", "default": ""}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemSimple-Text-PropertySummary" valueName="Software\Ubuntu\dconf\com\ubuntu\simple\simple-text-property" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

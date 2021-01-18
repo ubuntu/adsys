@@ -225,6 +225,61 @@ func TestMainExpand(t *testing.T) {
 	}
 }
 
+func TestMainADMX(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		destIsFile bool
+
+		wantErr bool
+	}{
+		"simple": {},
+
+		// Error cases
+		"invalid definition file":  {wantErr: true},
+		"category expansion fails": {wantErr: true},
+		"admx generation fails":    {destIsFile: true, wantErr: true},
+	}
+	for name, tc := range tests {
+		name := name
+
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			catDef := filepath.Join("testdata", "admx", name+".yaml")
+			src := filepath.Join("testdata", "admx", "src")
+			dst := t.TempDir()
+
+			if tc.destIsFile {
+				dst = filepath.Join(dst, "ThisIsAFile")
+				f, err := os.Create(dst)
+				f.Close()
+				require.NoError(t, err, "Setup: should create a file as destination")
+			}
+
+			err := admx(catDef, src, dst)
+			if tc.wantErr {
+				require.Error(t, err, "admx should have errored out")
+				return
+			}
+			require.NoError(t, err, "admx failed but shouldn't have")
+
+			goldPath := filepath.Join("testdata", "admx", "golden")
+			gotADMX, err := ioutil.ReadFile(filepath.Join(dst, "Ubuntu.admx"))
+			require.NoError(t, err, "should be able to read destination admx file")
+			gotADML, err := ioutil.ReadFile(filepath.Join(dst, "Ubuntu.adml"))
+			require.NoError(t, err, "should be able to read destination adml file")
+
+			wantADMX := wantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.admx", name, "Ubuntu")), gotADMX)
+			wantADML := wantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.adml", name, "Ubuntu")), gotADML)
+
+			assert.Equal(t, string(wantADMX), string(gotADMX), "expected and got admx content differs")
+			assert.Equal(t, string(wantADML), string(gotADML), "expected and got adml content differs")
+		})
+	}
+}
+
 func wantFromGoldenFileYAML(t *testing.T, goldPath string, got interface{}, want interface{}) {
 	t.Helper()
 
