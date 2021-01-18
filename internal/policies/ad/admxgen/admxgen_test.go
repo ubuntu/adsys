@@ -82,14 +82,14 @@ func TestGenerateExpandedCategories(t *testing.T) {
 
 			goldPath := filepath.Join("testdata", "generateExpandedCategories", "golden", name)
 			var want []expandedCategory
-			wantFromGoldenFile(t, goldPath, got, &want)
+			wantFromGoldenFileYAML(t, goldPath, got, &want)
 
 			assert.Equal(t, want, got, "expected and got differs")
 		})
 	}
 }
 
-func wantFromGoldenFile(t *testing.T, goldPath string, got interface{}, want interface{}) {
+func wantFromGoldenFileYAML(t *testing.T, goldPath string, got interface{}, want interface{}) {
 	t.Helper()
 
 	if update {
