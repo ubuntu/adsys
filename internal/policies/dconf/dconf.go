@@ -138,14 +138,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	sort.Strings(sections)
 	for _, s := range sections {
 		data = append(data, fmt.Sprintf("[%s]", s))
-		for _, def := range dataWithGroups[s] {
-			data = append(data, def)
-		}
-	}
-
-	var dataLocks []string
-	for _, l := range locks {
-		dataLocks = append(dataLocks, l)
+		data = append(data, dataWithGroups[s]...)
 	}
 
 	// Commit on disk
@@ -160,7 +153,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return err
 	}
 	locksPath := filepath.Join(dbPath, "locks", "adsys")
-	if err := ioutil.WriteFile(locksPath+".new", []byte(strings.Join(dataLocks, "\n")+"\n"), 0600); err != nil {
+	if err := ioutil.WriteFile(locksPath+".new", []byte(strings.Join(locks, "\n")+"\n"), 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(locksPath+".new", locksPath); err != nil {
