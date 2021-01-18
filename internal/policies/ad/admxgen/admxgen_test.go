@@ -107,6 +107,9 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"multiple categories": {},
 		"other distro":        {distroID: "Debian"},
 
+		// Types
+		"boolean": {},
+
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},
 	}

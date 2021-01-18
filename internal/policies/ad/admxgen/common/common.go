@@ -5,7 +5,7 @@ const (
 	// WidgetTypeText will use the text widget type
 	WidgetTypeText WidgetType = "text"
 	// WidgetTypeBool will use a checkbox
-	WidgetTypeBool WidgetType = "Bool"
+	WidgetTypeBool WidgetType = "boolean"
 	// WidgetTypeDecimal will use a decimal input
 	WidgetTypeDecimal WidgetType = "Decimal"
 )

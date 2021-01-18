@@ -22,10 +22,8 @@
         <textBox refId="{{toID "Elem" .DisplayName}}">
           <label>{{.DisplayName}}</label>
         </textBox>
-{{- else if eq .ElementType "XXXXXX"}}
-        <textBox refId="{{toID "Elem" .DisplayName}}">
-          <label>{{.DisplayName}}</label>
-        </textBox>
+{{- else if eq .ElementType "boolean"}}
+        <checkBox refId="{{toID "Elem" .DisplayName}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
 {{- end}}
       </presentation>
 {{- end}}
