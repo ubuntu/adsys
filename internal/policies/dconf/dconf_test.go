@@ -82,6 +82,16 @@ func TestApplyPolicy(t *testing.T) {
 			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"},
 		}},
 
+		// Normalized keys formats
+		"normalized canonical form for each supported key": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s'", Meta: "s"},
+			{Key: "com/ubuntu/category/key-i", Value: "'42'", Meta: "i"},
+			{Key: "com/ubuntu/category/key-b", Value: "true", Meta: "b"},
+			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"},
+			{Key: "com/ubuntu/category/key-ai", Value: "[42]", Meta: "ai"},
+			{Key: "com/ubuntu/category/key-returnedunmodified", Value: "[[1,2,3],[4,5,6]]", Meta: "aai"},
+		}},
+
 		// help users with quoting, normalizing… (common use cases here: more tests in internal_tests)
 		"unquoted string": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "onekey-s", Meta: "s"},
