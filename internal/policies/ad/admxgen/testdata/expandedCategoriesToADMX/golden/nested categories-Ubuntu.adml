@@ -11,7 +11,7 @@
       <string id="UbuntuDisplaySummaryFirst">summary first</string>
       <string id="UbuntuExplainTextSummaryFirst">description first
 
-Default: Default Value first
+Default: 'Default Value first'
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
       <string id="UbuntuDisplaySummarySecond">summary second</string>
       <string id="UbuntuExplainTextSummarySecond">description second

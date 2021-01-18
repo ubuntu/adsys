@@ -6,8 +6,9 @@
     explaintext: |-
       description on 21.10
 
-      Default: Default Value
+      Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-common": {"meta": "s", "default": "''''"}'
     class: machine
+    default: '''Default Value'''

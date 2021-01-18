@@ -9,6 +9,7 @@
       Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
+    default: '''Default Value'''
     meta: '"policy-multiple1": {"meta": "s", "default": "''''"}'
     class: machine
 
@@ -23,5 +24,6 @@
       Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
+    default: '''Default Value'''
     meta: '"policy-multiple2": {"meta": "s", "default": "''''"}'
     class: machine

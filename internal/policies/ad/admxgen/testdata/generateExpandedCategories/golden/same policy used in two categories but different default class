@@ -6,11 +6,12 @@
     explaintext: |-
       description
 
-      Default: Default Value
+      Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-simple": {"meta": "s", "default": "''''"}'
     class: parent category class
+    default: '''Default Value'''
   children:
   - displayname: Child Category Display Name
     parent: ""
@@ -20,8 +21,9 @@
       explaintext: |-
         description
 
-        Default: Default Value
+        Default: 'Default Value'
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
       elementtype: text
       meta: '"policy-simple": {"meta": "s", "default": "''''"}'
       class: child category class
+      default: '''Default Value'''

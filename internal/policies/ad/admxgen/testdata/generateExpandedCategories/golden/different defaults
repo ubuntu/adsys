@@ -6,9 +6,10 @@
     explaintext: |-
       description common
 
-      Default for Ubuntu 20.04: Default1 Value
-      Default for Ubuntu 21.10: Default2 Value
+      Default for Ubuntu 20.04: 'Default1 Value'
+      Default for Ubuntu 21.10: 'Default2 Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-common": {"meta": "s", "default": "''''"}'
     class: machine
+    default: '''Default2 Value'''
