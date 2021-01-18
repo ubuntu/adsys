@@ -1,7 +1,7 @@
 - key: /org/gnome/desktop/policy-first
   displayname: summary first
   explaintext: description first
-  elementtype: Text
+  elementtype: text
   meta: '"policy-first": {"meta": "s", "default": "''''"}'
   class: ""
   default: 'Default Value first'
@@ -11,7 +11,7 @@
 - key: /org/gnome/desktop/policy-second
   displayname: summary second
   explaintext: description second
-  elementtype: Text
+  elementtype: text
   meta: '"policy-second": {"meta": "s", "default": "''''"}'
   class: ""
   default: 'Default Value second'

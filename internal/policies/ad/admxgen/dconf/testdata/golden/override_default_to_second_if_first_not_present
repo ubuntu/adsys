@@ -1,7 +1,7 @@
 - key: /com/ubuntu/simple-overridden/simple-text-property-overridden-gnome
   displayname: simple-text-property-overridden-gnome summary
   explaintext: simple-text-property-overridden-gnome description
-  elementtype: Text
+  elementtype: text
   meta: '"simple-text-property-overridden-gnome": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''Overridden simple-text-property-overridden-gnome Value For GNOME Session'''

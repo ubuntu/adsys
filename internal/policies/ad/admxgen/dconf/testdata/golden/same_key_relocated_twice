@@ -1,7 +1,7 @@
 - key: /com/ubuntu/1/relocatable/property
   displayname: property summary
   explaintext: property description
-  elementtype: Text
+  elementtype: text
   meta: '"property": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''property Default Value'''
@@ -10,7 +10,7 @@
 - key: /com/ubuntu/2/relocatable/property
   displayname: property summary
   explaintext: property description
-  elementtype: Text
+  elementtype: text
   meta: '"property": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''property Default Value'''

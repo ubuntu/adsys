@@ -21,7 +21,7 @@
       <parentCategory ref="{{.ParentCategory}}" />
       <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
-        <text id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}" />
+        <{{.ElementType}} id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}" />
       </elements>
     </policy>
 {{- end}}

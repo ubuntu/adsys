@@ -1,7 +1,7 @@
 - key: /com/ubuntu/1/relocatable/property-with-override
   displayname: property-with-override summary
   explaintext: property-with-override description
-  elementtype: Text
+  elementtype: text
   meta: '"property-with-override": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''Overridden property-with-override Value'''

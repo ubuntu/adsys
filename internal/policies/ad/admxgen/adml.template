@@ -18,7 +18,7 @@
     <presentationTable>
 {{- range .Policies}}
       <presentation id="{{toID "Presentation" .DisplayName}}">
-{{- if eq .ElementType "Text"}}
+{{- if eq .ElementType "text"}}
         <textBox refId="{{toID "Elem" .DisplayName}}">
           <label>{{.DisplayName}}</label>
         </textBox>

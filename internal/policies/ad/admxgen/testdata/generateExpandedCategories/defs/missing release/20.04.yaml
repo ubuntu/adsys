@@ -1,7 +1,7 @@
 - key: /org/gnome/desktop/policy-simple
   displayname: summary
   explaintext: description
-  elementtype: Text
+  elementtype: text
   meta: '"policy-simple": {"meta": "s", "default": "''''"}'
   class: ""
   default: 'Default Value'

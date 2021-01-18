@@ -8,7 +8,7 @@
 
       Default: Default Value first
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: Text
+    elementtype: text
     meta: '"policy-first": {"meta": "s", "default": "''''"}'
     class: machine
   - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-second
@@ -18,6 +18,6 @@
 
       Default: Default Value second
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: Text
+    elementtype: text
     meta: '"policy-second": {"meta": "s", "default": "''''"}'
     class: machine

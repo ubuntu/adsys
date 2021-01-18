@@ -1,7 +1,7 @@
 - key: /com/ubuntu/simple/simple-text-property
   displayname: simple-text-property summary
   explaintext: simple-text-property description
-  elementtype: Text
+  elementtype: text
   meta: '"simple-text-property": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''simple-text-property Default Value'''

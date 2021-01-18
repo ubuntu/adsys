@@ -3,7 +3,7 @@ package common
 
 const (
 	// WidgetTypeText will use the text widget type
-	WidgetTypeText WidgetType = "Text"
+	WidgetTypeText WidgetType = "text"
 	// WidgetTypeBool will use a checkbox
 	WidgetTypeBool WidgetType = "Bool"
 	// WidgetTypeDecimal will use a decimal input

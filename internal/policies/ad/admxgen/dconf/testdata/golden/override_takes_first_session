@@ -1,7 +1,7 @@
 - key: /com/ubuntu/simple-overridden/simple-text-property-overridden-ubuntu-gnome
   displayname: simple-text-property-overridden-ubuntu-gnome summary
   explaintext: simple-text-property-overridden-ubuntu-gnome description
-  elementtype: Text
+  elementtype: text
   meta: '"simple-text-property-overridden-ubuntu-gnome": {"meta": "s", "default":
     "''''"}'
   class: ""

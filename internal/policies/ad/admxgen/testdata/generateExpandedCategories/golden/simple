@@ -8,6 +8,6 @@
 
       Default: Default Value
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: Text
+    elementtype: text
     meta: '"policy-simple": {"meta": "s", "default": "''''"}'
     class: machine

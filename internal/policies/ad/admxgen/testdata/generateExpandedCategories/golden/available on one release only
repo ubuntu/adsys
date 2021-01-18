@@ -8,7 +8,7 @@
 
       Default: Default Value common
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: Text
+    elementtype: text
     meta: '"policy-common": {"meta": "s", "default": "''''"}'
     class: machine
   - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-only-21.10
@@ -20,6 +20,6 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       - Supported on Ubuntu 21.10
-    elementtype: Text
+    elementtype: text
     meta: '"policy-only-21.10": {"meta": "s", "default": "''''"}'
     class: machine
