@@ -301,7 +301,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 
 	// Create admx
 
-	f, err := os.Create(filepath.Join(dest, "adsys.admx"))
+	f, err := os.Create(filepath.Join(dest, g.distroID+".admx"))
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
@@ -314,7 +314,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 
 	// Create adml
 
-	f, err = os.Create(filepath.Join(dest, "adsys.adml"))
+	f, err = os.Create(filepath.Join(dest, g.distroID+".adml"))
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
