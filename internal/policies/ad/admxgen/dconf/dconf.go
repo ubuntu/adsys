@@ -36,7 +36,7 @@ var (
 		widgetType common.WidgetType
 		emptyValue string
 	}{
-		"s":  {common.WidgetTypeText, ""},
+		"s":  {common.WidgetTypeText, "''"},
 		"as": {common.WidgetTypeText, "[]"},
 		"b":  {common.WidgetTypeBool, "false"},
 		"i":  {common.WidgetTypeDecimal, "0"},
@@ -233,9 +233,9 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 
 	sort.Strings(overrides)
 	for _, o := range overrides {
-		c, err := ini.Load(o)
+		c, err := ini.LoadSources(ini.LoadOptions{PreserveSurroundedQuote: true}, o)
 		if err != nil {
-			log.Warningf("%s is an invalid override file: %v", o, err)
+			log.Warningf("%s is an invalid override file: %+v", o, err)
 			continue
 		}
 		for _, s := range c.Sections() {

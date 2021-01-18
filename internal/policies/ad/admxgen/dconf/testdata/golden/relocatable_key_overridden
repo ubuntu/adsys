@@ -2,8 +2,8 @@
   displayname: property-with-override summary
   explaintext: property-with-override description
   elementtype: Text
-  meta: '"property-with-override": {"meta": "s", "default": ""}'
+  meta: '"property-with-override": {"meta": "s", "default": "''''"}'
   class: ""
-  default: Overridden property-with-override Value
+  default: '''Overridden property-with-override Value'''
   release: "20.04"
   type: dconf

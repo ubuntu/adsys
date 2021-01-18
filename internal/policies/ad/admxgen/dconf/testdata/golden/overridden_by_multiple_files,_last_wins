@@ -3,9 +3,9 @@
   explaintext: simple-text-property-overridden-by-multiple-files description
   elementtype: Text
   meta: '"simple-text-property-overridden-by-multiple-files": {"meta": "s", "default":
-    ""}'
+    "''''"}'
   class: ""
-  default: This is the simple-text-property-overridden-by-multiple-files overridden
-    Value
+  default: '''This is the simple-text-property-overridden-by-multiple-files overridden
+    Value'''
   release: "20.04"
   type: dconf

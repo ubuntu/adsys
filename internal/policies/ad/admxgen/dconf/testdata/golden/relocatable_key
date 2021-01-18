@@ -2,8 +2,8 @@
   displayname: property summary
   explaintext: property description
   elementtype: Text
-  meta: '"property": {"meta": "s", "default": ""}'
+  meta: '"property": {"meta": "s", "default": "''''"}'
   class: ""
-  default: property Default Value
+  default: '''property Default Value'''
   release: "20.04"
   type: dconf

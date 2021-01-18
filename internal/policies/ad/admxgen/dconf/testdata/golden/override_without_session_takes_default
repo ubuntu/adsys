@@ -2,8 +2,8 @@
   displayname: simple-text-property-overridden-ubuntu summary
   explaintext: simple-text-property-overridden-ubuntu description
   elementtype: Text
-  meta: '"simple-text-property-overridden-ubuntu": {"meta": "s", "default": ""}'
+  meta: '"simple-text-property-overridden-ubuntu": {"meta": "s", "default": "''''"}'
   class: ""
-  default: Overridden simple-text-property-overridden-ubuntu Value
+  default: '''Overridden simple-text-property-overridden-ubuntu Value'''
   release: "20.04"
   type: dconf

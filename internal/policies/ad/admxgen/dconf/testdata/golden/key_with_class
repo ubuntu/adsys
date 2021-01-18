@@ -2,8 +2,8 @@
   displayname: simple-text-property summary
   explaintext: simple-text-property description
   elementtype: Text
-  meta: '"simple-text-property": {"meta": "s", "default": ""}'
+  meta: '"simple-text-property": {"meta": "s", "default": "''''"}'
   class: MyClass
-  default: simple-text-property Default Value
+  default: '''simple-text-property Default Value'''
   release: "20.04"
   type: dconf

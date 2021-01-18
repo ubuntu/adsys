@@ -1,2 +1,2 @@
 [com.ubuntu.relocatable]
-property-with-override = "Overridden property-with-override Value"
+property-with-override = 'Overridden property-with-override Value'

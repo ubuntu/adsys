@@ -2,7 +2,7 @@
 <schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
     <schema path="/com/ubuntu/exotic/" id="com.ubuntu.exotic">
         <key type="myunsupportedtype" name="property">
-            <default>exotic Default Value</default>
+            <default>'exotic Default Value'</default>
             <summary>exotic summary</summary>
             <description>exotic description</description>
         </key>
