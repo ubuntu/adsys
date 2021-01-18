@@ -93,16 +93,16 @@ func TestApplyPolicy(t *testing.T) {
 			{Key: "com/ubuntu/category/key-ai", Value: "1,2", Meta: "ai"},
 		}},
 		"no surrounding brackets unquoted as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai", Value: "simple-as", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "simple-as", Meta: "as"},
 		}},
 		"no surrounding brackets unquoted multiple as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai", Value: "two-as1, two-as2", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "two-as1, two-as2", Meta: "as"},
 		}},
 		"no surrounding brackets quoted as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai", Value: "'simple-as'", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "'simple-as'", Meta: "as"},
 		}},
 		"no surrounding brackets quoted multiple as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai", Value: "'two-as1', 'two-as2'", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "'two-as1', 'two-as2'", Meta: "as"},
 		}},
 
 		// Profiles tests
