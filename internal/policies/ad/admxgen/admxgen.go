@@ -28,8 +28,8 @@ admxgen generates admx and adml from a category and multiple policies per releas
     (install script)                               |
     install.yaml   -----|                          |
                         |                          |
-	(dconf)             |----|> ExpandedPolicies --|
-	dconf.yaml ---|     |
+    (dconf)             |----|> ExpandedPolicies --|
+    dconf.yaml ---|     |
                   |-----|
     schema -------|
 
