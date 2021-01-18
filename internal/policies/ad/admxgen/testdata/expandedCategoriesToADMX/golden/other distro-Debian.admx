@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="desktop" namespace="Microsoft.Policies.WindowsDesktop" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="DebianCategory1DisplayName" displayName="$(string.DebianDisplayCategory1DisplayName)">
+      <parentCategory ref="windows:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="DebianSummary" class="machine" displayName="$(string.DebianDisplaySummary)" explainText="$(string.DebianExplainTextSummary)" presentation="$(presentation.DebianPresentationSummary)" key="." valueName="metaValues">
+      <parentCategory ref="DebianCategory1DisplayName" />
+      <enabledValue><string>"policy-simple": {"meta": "s", "default": ""}</string></enabledValue>
+      <elements>
+        <text id="DebianElemSummary" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-simple" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

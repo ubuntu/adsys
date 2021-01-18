@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="desktop" namespace="Microsoft.Policies.WindowsDesktop" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuParentCategoryDisplayName" displayName="$(string.UbuntuDisplayParentCategoryDisplayName)">
+      <parentCategory ref="windows:Desktop" />
+    </category>
+    <category name="UbuntuChildCategoryDisplayName" displayName="$(string.UbuntuDisplayChildCategoryDisplayName)">
+      <parentCategory ref="UbuntuParentCategoryDisplayName" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuSummaryFirst" class="machine" displayName="$(string.UbuntuDisplaySummaryFirst)" explainText="$(string.UbuntuExplainTextSummaryFirst)" presentation="$(presentation.UbuntuPresentationSummaryFirst)" key="." valueName="metaValues">
+      <parentCategory ref="UbuntuParentCategoryDisplayName" />
+      <enabledValue><string>"policy-first": {"meta": "s", "default": ""}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemSummaryFirst" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-first" />
+      </elements>
+    </policy>
+    <policy name="UbuntuSummarySecond" class="machine" displayName="$(string.UbuntuDisplaySummarySecond)" explainText="$(string.UbuntuExplainTextSummarySecond)" presentation="$(presentation.UbuntuPresentationSummarySecond)" key="." valueName="metaValues">
+      <parentCategory ref="UbuntuChildCategoryDisplayName" />
+      <enabledValue><string>"policy-second": {"meta": "s", "default": ""}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemSummarySecond" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-second" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

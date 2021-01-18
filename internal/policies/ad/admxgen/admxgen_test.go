@@ -2,7 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -89,6 +91,73 @@ func TestGenerateExpandedCategories(t *testing.T) {
 	}
 }
 
+func TestExpandedCategoriesToADMX(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		distroID   string
+		destIsFile bool
+
+		wantErr bool
+	}{
+		"simple":              {},
+		"nested categories":   {},
+		"multiple categories": {},
+		"other distro":        {distroID: "Debian"},
+
+		// Error Cases
+		"error on destination creation": {destIsFile: true, wantErr: true},
+	}
+	for name, tc := range tests {
+		name := name
+
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			dst := t.TempDir()
+
+			if tc.destIsFile {
+				dst = filepath.Join(dst, "ThisIsAFile")
+				f, err := os.Create(dst)
+				f.Close()
+				require.NoError(t, err, "Setup: should create a file as destination")
+			}
+
+			if tc.distroID == "" {
+				tc.distroID = "Ubuntu"
+			}
+
+			var ec []expandedCategory
+			ecF, err := ioutil.ReadFile(filepath.Join("testdata", "expandedCategoriesToADMX", "defs", name+".yaml"))
+			require.NoError(t, err, "Setup: failed to load expanded categories from file")
+			err = yaml.Unmarshal(ecF, &ec)
+			require.NoError(t, err, "Setup: failed to unmarshal expanded categories")
+
+			g := generator{
+				distroID: tc.distroID,
+			}
+			err = g.expandedCategoriesToADMX(ec, dst)
+			if tc.wantErr {
+				require.Error(t, err, "expandedCategoriesToADMX should have errored out")
+				return
+			}
+			require.NoError(t, err, "expandedCategoriesToADMX failed but shouldn't have")
+
+			goldPath := filepath.Join("testdata", "expandedCategoriesToADMX", "golden")
+			gotADMX, err := ioutil.ReadFile(filepath.Join(dst, tc.distroID+".admx"))
+			require.NoError(t, err, "should be able to read destination admx file")
+			gotADML, err := ioutil.ReadFile(filepath.Join(dst, tc.distroID+".adml"))
+			require.NoError(t, err, "should be able to read destination adml file")
+
+			wantADMX := wantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.admx", name, tc.distroID)), gotADMX)
+			wantADML := wantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.adml", name, tc.distroID)), gotADML)
+
+			assert.Equal(t, string(wantADMX), string(gotADMX), "expected and got admx content differs")
+			assert.Equal(t, string(wantADML), string(gotADML), "expected and got adml content differs")
+		})
+	}
+}
+
 func wantFromGoldenFileYAML(t *testing.T, goldPath string, got interface{}, want interface{}) {
 	t.Helper()
 
@@ -104,6 +173,21 @@ func wantFromGoldenFileYAML(t *testing.T, goldPath string, got interface{}, want
 	require.NoError(t, err, "Cannot load policy golden file")
 	err = yaml.Unmarshal(data, want)
 	require.NoError(t, err, "Cannot create expanded policy objects from golden file")
+}
+
+func wantFromGoldenFile(t *testing.T, goldPath string, got []byte) (want []byte) {
+	t.Helper()
+
+	if update {
+		t.Logf("updating golden file %s", goldPath)
+		err := ioutil.WriteFile(goldPath, got, 0644)
+		require.NoError(t, err, "Cannot write golden file")
+	}
+
+	want, err := ioutil.ReadFile(goldPath)
+	require.NoError(t, err, "Cannot load policy golden file")
+
+	return want
 }
 
 func TestMain(m *testing.M) {

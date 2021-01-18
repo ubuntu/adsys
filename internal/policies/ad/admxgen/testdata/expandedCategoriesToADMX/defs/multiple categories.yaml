@@ -1,0 +1,27 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple1
+    displayname: summary 1
+    explaintext: |-
+      description 1
+
+      Default: Default Value
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: Text
+    meta: '"policy-multiple1": {"meta": "s", "default": ""}'
+    class: machine
+
+- displayname: Category2 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple2
+    displayname: summary 2
+    explaintext: |-
+      description 2
+
+      Default: Default Value
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: Text
+    meta: '"policy-multiple2": {"meta": "s", "default": ""}'
+    class: machine

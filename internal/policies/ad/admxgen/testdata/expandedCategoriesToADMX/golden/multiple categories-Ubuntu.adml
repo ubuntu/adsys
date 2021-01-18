@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Ubuntu policy</displayName>
+  <description>This is the ubuntu policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
+      <string id="UbuntuDisplayCategory2DisplayName">Category2 Display Name</string>
+      <string id="UbuntuDisplaySummary1">summary 1</string>
+      <string id="UbuntuExplainTextSummary1">description 1
+
+Default: Default Value
+Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
+      <string id="UbuntuDisplaySummary2">summary 2</string>
+      <string id="UbuntuExplainTextSummary2">description 2
+
+Default: Default Value
+Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="UbuntuPresentationSummary1">
+        <textBox refId="UbuntuElemSummary1">
+          <label>summary 1</label>
+        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationSummary2">
+        <textBox refId="UbuntuElemSummary2">
+          <label>summary 2</label>
+        </textBox>
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>
