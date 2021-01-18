@@ -30,7 +30,8 @@ func TestGenerate(t *testing.T) {
 		"Relocatable key":          {root: "simple"},
 		"Same key relocated twice": {root: "simple"},
 
-		// TODO: Different types
+		// Different types
+		"One boolean key": {root: "simple"},
 
 		// Override cases
 		"Override without session":                                    {root: "simple", currentSessions: "-"},

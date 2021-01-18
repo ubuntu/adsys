@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
+    <schema path="/com/ubuntu/types/" id="com.ubuntu.types">
+        <key type="s" name="string-property">
+            <default>'string-property Default Value'</default>
+            <summary>string-property summary</summary>
+            <description>string-property description</description>
+        </key>
+        <key type="b" name="boolean-property">
+            <default>true</default>
+            <summary>boolean-property summary</summary>
+            <description>boolean-property description</description>
+        </key>
+    </schema>
+</schemalist>
