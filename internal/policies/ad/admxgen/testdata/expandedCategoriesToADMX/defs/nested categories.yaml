@@ -6,7 +6,7 @@
     explaintext: |-
       description first
 
-      Default: Default Value first
+      Default: 'Default Value first'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-first": {"meta": "s", "default": "''''"}'

@@ -111,6 +111,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			release string
 		}
 		var defaults []defaultVal
+		var defaultString string
 
 		for _, release := range g.supportedReleases {
 			p, ok := indexedPolicies[key][release]
@@ -146,25 +147,26 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			elementType = p.ElementType
 			meta = p.Meta
 			class = p.Class
+			defaultString = p.Default
 
 			defaults = append(defaults, defaultVal{value: p.Default, release: release})
 		}
 
 		// Display all the default per release if there is at least 1 different
 		// otherwise display only 1 defaut for all the releases
-		var defaultString string
 		var perReleaseDefault []string
+		var isPerReleaseDefault bool
 		// defaultVal is already ordered per release as we iterated previously
 		for _, d := range defaults {
 			perReleaseDefault = append(perReleaseDefault, fmt.Sprintf(i18n.G("Default for %s %s: %s"), g.distroID, d.release, d.value))
 
 			if defaultString != "" && d.value != defaultString {
-				defaultString = "PERRELEASE"
+				isPerReleaseDefault = true
 				continue
 			}
 			defaultString = d.value
 		}
-		if defaultString == "PERRELEASE" {
+		if isPerReleaseDefault {
 			explainText = fmt.Sprintf("%s\n\n%s", explainText, strings.Join(perReleaseDefault, "\n"))
 		} else {
 			explainText = fmt.Sprintf("%s\n\n%s", explainText, fmt.Sprintf(i18n.G("Default: %s"), defaultString))
@@ -184,6 +186,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			ElementType: elementType,
 			Meta:        meta,
 			Class:       class,
+			Default:     defaultString,
 		}
 	}
 

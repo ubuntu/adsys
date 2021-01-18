@@ -4,7 +4,7 @@
   elementtype: text
   meta: '"policy-common": {"meta": "s", "default": "''''"}'
   class: ""
-  default: 'Default Value common'
+  default: '''Default Value common'''
   release: "21.10"
   type: "dconf"
 
@@ -14,6 +14,6 @@
   elementtype: text
   meta: '"policy-only-21.10": {"meta": "s", "default": "''''"}'
   class: ""
-  default: 'Default Value policy-only-21.10'
+  default: '''Default Value policy-only-21.10'''
   release: "21.10"
   type: "dconf"

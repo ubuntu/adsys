@@ -4,6 +4,6 @@
   elementtype: text
   meta: '"policy-common": {"meta": "s", "default": "''''"}'
   class: ""
-  default: 'Default1 Value'
+  default: '''Default1 Value'''
   release: "20.04"
   type: "dconf"

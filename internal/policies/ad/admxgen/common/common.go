@@ -21,9 +21,9 @@ type ExpandedPolicy struct {
 	ElementType WidgetType
 	Meta        string
 	Class       string
+	Default     string
 
 	// those are unused in expandedCategories
-	Default string `yaml:",omitempty"`
 	Release string `yaml:",omitempty"`
 	Type    string `yaml:",omitempty"` // dconf, install…
 }

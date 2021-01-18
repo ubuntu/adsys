@@ -4,6 +4,6 @@
   elementtype: text
   meta: '"policy-common": {"meta": "s", "default": "''''"}'
   class: ""
-  default: 'Default2 Value'
+  default: '''Default2 Value'''
   release: "21.10"
   type: "dconf"

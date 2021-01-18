@@ -4,7 +4,7 @@
   elementtype: text
   meta: '"policy-first": {"meta": "s", "default": "''''"}'
   class: ""
-  default: 'Default Value first'
+  default: '''Default Value first'''
   release: "20.04"
   type: "dconf"
 
@@ -14,6 +14,6 @@
   elementtype: text
   meta: '"policy-second": {"meta": "s", "default": "''''"}'
   class: ""
-  default: 'Default Value second'
+  default: '''Default Value second'''
   release: "20.04"
   type: "dconf"
