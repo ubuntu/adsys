@@ -262,7 +262,7 @@ func quoteValue(s string) string {
 // true|false
 // on|On|ON|off
 func normalizeBoolean(v string) string {
-	lv := strings.TrimSpace(strings.ToLower(v))
+	lv := strings.ReplaceAll(strings.ReplaceAll(strings.TrimSpace(strings.ToLower(v)), `"`, ""), "'", "")
 	switch lv {
 	case "y", "yes", "true", "on":
 		return "true"

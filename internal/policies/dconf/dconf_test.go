@@ -99,6 +99,9 @@ func TestApplyPolicy(t *testing.T) {
 		"quoted i": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-i", Value: "'1'", Meta: "i"},
 		}},
+		"quoted b": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-b", Value: "'true'", Meta: "b"},
+		}},
 		"no surrounding brackets ai": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-ai", Value: "1", Meta: "ai"},
 		}},
