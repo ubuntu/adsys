@@ -2,12 +2,12 @@
 <schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
     <schema path="/com/ubuntu/simple/" id="com.ubuntu.simple">
         <key type="s" name="simple-text-property">
-            <default>simple-text-property Default Value</default>
+            <default>'simple-text-property Default Value'</default>
             <summary>simple-text-property summary</summary>
             <description>simple-text-property description</description>
         </key>
         <key type="s" name="simple-text-property-no-description">
-            <default>simple-text-property-no-description Default Value</default>
+            <default>'simple-text-property-no-description Default Value'</default>
             <summary>simple-text-property-no-description summary</summary>
         </key>
         <key type="s" name="simple-text-property-no-default">
@@ -15,7 +15,7 @@
             <description>simple-text-property-no-default description</description>
         </key>
         <key type="s" name="simple-text-property-no-summary">
-            <default>simple-text-property-no-summary Default Value</default>
+            <default>'simple-text-property-no-summary Default Value'</default>
             <description>simple-text-property-no-summary description</description>
         </key>
     </schema>

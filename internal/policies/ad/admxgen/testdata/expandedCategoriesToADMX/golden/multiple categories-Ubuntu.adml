@@ -11,12 +11,12 @@
       <string id="UbuntuDisplaySummary1">summary 1</string>
       <string id="UbuntuExplainTextSummary1">description 1
 
-Default: Default Value
+Default: 'Default Value'
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
       <string id="UbuntuDisplaySummary2">summary 2</string>
       <string id="UbuntuExplainTextSummary2">description 2
 
-Default: Default Value
+Default: 'Default Value'
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
     </stringTable>
 

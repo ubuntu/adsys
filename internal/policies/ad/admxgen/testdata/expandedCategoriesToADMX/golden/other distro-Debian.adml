@@ -10,7 +10,7 @@
       <string id="DebianDisplaySummary">summary</string>
       <string id="DebianExplainTextSummary">description
 
-Default: Default Value
+Default: 'Default Value'
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
     </stringTable>
 

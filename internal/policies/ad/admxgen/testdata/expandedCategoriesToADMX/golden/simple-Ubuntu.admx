@@ -16,7 +16,7 @@
   <policies>
     <policy name="UbuntuSummary" class="machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="." valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
-      <enabledValue><string>"policy-simple": {"meta": "s", "default": ""}</string></enabledValue>
+      <enabledValue><string>"policy-simple": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemSummary" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-simple" />
       </elements>

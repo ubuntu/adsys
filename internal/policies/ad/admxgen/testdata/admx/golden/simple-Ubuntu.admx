@@ -16,7 +16,7 @@
   <policies>
     <policy name="UbuntuSimple-Text-PropertySummary" class="machine" displayName="$(string.UbuntuDisplaySimple-Text-PropertySummary)" explainText="$(string.UbuntuExplainTextSimple-Text-PropertySummary)" presentation="$(presentation.UbuntuPresentationSimple-Text-PropertySummary)" key="." valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
-      <enabledValue><string>"simple-text-property": {"meta": "s", "default": ""}</string></enabledValue>
+      <enabledValue><string>"simple-text-property": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemSimple-Text-PropertySummary" valueName="Software\Ubuntu\dconf\com\ubuntu\simple\simple-text-property" />
       </elements>

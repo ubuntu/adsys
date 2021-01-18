@@ -2,8 +2,8 @@
   displayname: summary
   explaintext: description
   elementtype: Text
-  meta: '"policy-with-class": {"meta": "s", "default": ""}'
+  meta: '"policy-with-class": {"meta": "s", "default": "''''"}'
   class: "User"
-  default: Default Value
+  default: 'Default Value'
   release: "20.04"
   type: "dconf"

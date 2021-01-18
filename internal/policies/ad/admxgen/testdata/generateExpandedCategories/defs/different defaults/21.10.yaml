@@ -2,8 +2,8 @@
   displayname: summary common
   explaintext: description common
   elementtype: Text
-  meta: '"policy-common": {"meta": "s", "default": ""}'
+  meta: '"policy-common": {"meta": "s", "default": "''''"}'
   class: ""
-  default: Default2 Value
+  default: 'Default2 Value'
   release: "21.10"
   type: "dconf"

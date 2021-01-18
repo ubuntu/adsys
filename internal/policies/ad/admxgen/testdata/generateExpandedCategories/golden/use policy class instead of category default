@@ -9,5 +9,5 @@
       Default: Default Value
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: Text
-    meta: '"policy-with-class": {"meta": "s", "default": ""}'
+    meta: '"policy-with-class": {"meta": "s", "default": "''''"}'
     class: User

@@ -16,7 +16,7 @@
   <policies>
     <policy name="DebianSummary" class="machine" displayName="$(string.DebianDisplaySummary)" explainText="$(string.DebianExplainTextSummary)" presentation="$(presentation.DebianPresentationSummary)" key="." valueName="metaValues">
       <parentCategory ref="DebianCategory1DisplayName" />
-      <enabledValue><string>"policy-simple": {"meta": "s", "default": ""}</string></enabledValue>
+      <enabledValue><string>"policy-simple": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="DebianElemSummary" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-simple" />
       </elements>

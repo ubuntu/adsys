@@ -2,8 +2,8 @@
   displayname: summary on 20.04
   explaintext: description
   elementtype: Text
-  meta: '"policy-common": {"meta": "s", "default": ""}'
+  meta: '"policy-common": {"meta": "s", "default": "''''"}'
   class: ""
-  default: Default Value
+  default: 'Default Value'
   release: "20.04"
   type: "dconf"

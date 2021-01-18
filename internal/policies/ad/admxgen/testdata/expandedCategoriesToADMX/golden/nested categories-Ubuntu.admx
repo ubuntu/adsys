@@ -19,14 +19,14 @@
   <policies>
     <policy name="UbuntuSummaryFirst" class="machine" displayName="$(string.UbuntuDisplaySummaryFirst)" explainText="$(string.UbuntuExplainTextSummaryFirst)" presentation="$(presentation.UbuntuPresentationSummaryFirst)" key="." valueName="metaValues">
       <parentCategory ref="UbuntuParentCategoryDisplayName" />
-      <enabledValue><string>"policy-first": {"meta": "s", "default": ""}</string></enabledValue>
+      <enabledValue><string>"policy-first": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemSummaryFirst" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-first" />
       </elements>
     </policy>
     <policy name="UbuntuSummarySecond" class="machine" displayName="$(string.UbuntuDisplaySummarySecond)" explainText="$(string.UbuntuExplainTextSummarySecond)" presentation="$(presentation.UbuntuPresentationSummarySecond)" key="." valueName="metaValues">
       <parentCategory ref="UbuntuChildCategoryDisplayName" />
-      <enabledValue><string>"policy-second": {"meta": "s", "default": ""}</string></enabledValue>
+      <enabledValue><string>"policy-second": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemSummarySecond" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-second" />
       </elements>

@@ -6,10 +6,10 @@
     explaintext: |-
       description 1
 
-      Default: Default Value
+      Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: Text
-    meta: '"policy-multiple1": {"meta": "s", "default": ""}'
+    meta: '"policy-multiple1": {"meta": "s", "default": "''''"}'
     class: machine
 
 - displayname: Category2 Display Name
@@ -20,8 +20,8 @@
     explaintext: |-
       description 2
 
-      Default: Default Value
+      Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: Text
-    meta: '"policy-multiple2": {"meta": "s", "default": ""}'
+    meta: '"policy-multiple2": {"meta": "s", "default": "''''"}'
     class: machine
