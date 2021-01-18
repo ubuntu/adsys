@@ -224,6 +224,8 @@ func normalizeValue(keyType, value string) string {
 		return quoteValue(value)
 	case "b":
 		return normalizeBoolean(value)
+	case "i":
+		return strings.ReplaceAll(strings.ReplaceAll(value, `"`, ""), "'", "")
 	case "as":
 		return quoteASVariant(value)
 	case "ai":
@@ -234,7 +236,7 @@ func normalizeValue(keyType, value string) string {
 		if !strings.HasSuffix(value, "]") {
 			value += "]"
 		}
-		return strings.Replace(strings.Replace(value, " ", "", -1), ",", ", ", -1)
+		return strings.ReplaceAll(strings.ReplaceAll(value, " ", ""), ",", ", ")
 	}
 
 	return value
