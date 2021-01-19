@@ -11,5 +11,16 @@
             <summary>boolean-property summary</summary>
             <description>boolean-property description</description>
         </key>
+        <key type="i" name="decimal-property">
+            <default>42</default>
+            <summary>decimal-property summary</summary>
+            <description>decimal-property description</description>
+        </key>
+        <key type="i" name="decimal-property-with-range">
+            <range min="-123" max="15000" />
+            <default>42</default>
+            <summary>decimal-property summary</summary>
+            <description>decimal-property description</description>
+        </key>
     </schema>
 </schemalist>

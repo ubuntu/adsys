@@ -31,7 +31,9 @@ func TestGenerate(t *testing.T) {
 		"Same key relocated twice": {root: "simple"},
 
 		// Different types
-		"One boolean key": {root: "simple"},
+		"One boolean key":            {root: "simple"},
+		"One decimal key":            {root: "simple"},
+		"One decimal key with range": {root: "simple"},
 
 		// Override cases
 		"Override without session":                                    {root: "simple", currentSessions: "-"},

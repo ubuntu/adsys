@@ -1,0 +1,12 @@
+- key: /com/ubuntu/types/decimal-property-with-range
+  displayname: decimal-property summary
+  explaintext: decimal-property description
+  elementtype: decimal
+  meta: '"decimal-property-with-range": {"meta": "i", "default": "0"}'
+  class: ""
+  default: "42"
+  rangevalues:
+    min: "-123.000000"
+    max: "15000.000000"
+  release: "20.04"
+  type: dconf

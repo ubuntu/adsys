@@ -1,0 +1,9 @@
+- key: /com/ubuntu/types/decimal-property
+  displayname: decimal-property summary
+  explaintext: decimal-property description
+  elementtype: decimal
+  meta: '"decimal-property": {"meta": "i", "default": "0"}'
+  class: ""
+  default: "42"
+  release: "20.04"
+  type: dconf
