@@ -13,9 +13,10 @@ const (
 // WidgetType is the type of the component that is displayed in the GPO settings dialog
 type WidgetType string
 
+// DecimalRange represents the range of an integer value
 type DecimalRange struct {
-	Min string
-	Max string
+	Min string `yaml:",omitempty"`
+	Max string `yaml:",omitempty"`
 }
 
 // ExpandedPolicy is the common result of inflating a policy of a given type to a generic one, having all needed elements.

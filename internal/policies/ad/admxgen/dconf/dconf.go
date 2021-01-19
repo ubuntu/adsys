@@ -158,8 +158,8 @@ type schemaList struct {
 			Summary     string `xml:"summary"`
 			Description string `xml:"description"`
 			Range       struct {
-				Min float32 `xml:"min,attr"`
-				Max float32 `xml:"max,attr"`
+				Min *float32 `xml:"min,attr"`
+				Max *float32 `xml:"max,attr"`
 			} `xml:"range"`
 			Choices []struct {
 				Value string `xml:"value,attr"`
@@ -220,12 +220,19 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 
 				// Optional per type extensions
 				if k.Range != struct {
-					Min float32 "xml:\"min,attr\""
-					Max float32 "xml:\"max,attr\""
+					Min *float32 "xml:\"min,attr\""
+					Max *float32 "xml:\"max,attr\""
 				}{} {
+					var min, max string
+					if k.Range.Min != nil {
+						min = fmt.Sprintf("%f", *k.Range.Min)
+					}
+					if k.Range.Max != nil {
+						max = fmt.Sprintf("%f", *k.Range.Max)
+					}
 					e.RangeValues = common.DecimalRange{
-						Min: fmt.Sprintf("%f", k.Range.Min),
-						Max: fmt.Sprintf("%f", k.Range.Max),
+						Min: min,
+						Max: max,
 					}
 				}
 

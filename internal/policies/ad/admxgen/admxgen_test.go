@@ -108,9 +108,11 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"other distro":        {distroID: "Debian"},
 
 		// Types
-		"boolean":            {},
-		"decimal":            {},
-		"decimal with range": {},
+		"boolean":               {},
+		"decimal":               {},
+		"decimal with range":    {},
+		"decimal with min only": {},
+		"decimal with max only": {},
 
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},

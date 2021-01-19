@@ -21,11 +21,9 @@
       <parentCategory ref="{{.ParentCategory}}" />
       <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
-        {{if or (ne .RangeValues.Min "") (ne .RangeValues.Max "") -}}
-          <{{.ElementType}} id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}" minValue="{{.RangeValues.Min}}" maxValue="{{.RangeValues.Max}}" />
-        {{- else -}}
-          <{{.ElementType}} id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}" />
-        {{- end}}
+        <{{.ElementType}} id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}"
+          {{- if ne .RangeValues.Min ""}} minValue="{{.RangeValues.Min}}"{{end}}
+          {{- if ne .RangeValues.Max ""}} maxValue="{{.RangeValues.Max}}"{{end}} />
       </elements>
     </policy>
 {{- end}}

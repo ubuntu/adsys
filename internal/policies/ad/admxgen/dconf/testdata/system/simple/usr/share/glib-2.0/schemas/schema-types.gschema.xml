@@ -19,8 +19,20 @@
         <key type="i" name="decimal-property-with-range">
             <range min="-123" max="15000" />
             <default>42</default>
-            <summary>decimal-property summary</summary>
-            <description>decimal-property description</description>
+            <summary>decimal-property-with-range summary</summary>
+            <description>decimal-property-with-range description</description>
+        </key>
+        <key type="i" name="decimal-property-with-min-only">
+            <range min="-123" />
+            <default>42</default>
+            <summary>decimal-property-with-range summary</summary>
+            <description>decimal-property-with-range description</description>
+        </key>
+        <key type="i" name="decimal-property-with-max-only">
+            <range max="15000" />
+            <default>42</default>
+            <summary>decimal-property-with-range summary</summary>
+            <description>decimal-property-with-range description</description>
         </key>
     </schema>
 </schemalist>
