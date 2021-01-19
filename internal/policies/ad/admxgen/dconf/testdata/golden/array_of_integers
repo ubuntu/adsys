@@ -1,0 +1,9 @@
+- key: /com/ubuntu/types/array-decimal-property
+  displayname: array-decimal-property summary
+  explaintext: array-decimal-property description
+  elementtype: text
+  meta: '"array-decimal-property": {"meta": "ai", "default": "[]"}'
+  class: ""
+  default: '[1, 2]'
+  release: "20.04"
+  type: dconf

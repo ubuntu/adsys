@@ -58,5 +58,15 @@
             <summary>long-decimal-property-with-range-min-gt-zero summary</summary>
             <description>long-decimal-property-with-range-min-gt-zero description</description>
         </key>
+        <key type="as" name="array-string-property">
+            <default>['Value1', 'Value2']</default>
+            <summary>array-string-property summary</summary>
+            <description>array-string-property description</description>
+        </key>
+        <key type="ai" name="array-decimal-property">
+            <default>[1, 2]</default>
+            <summary>array-decimal-property summary</summary>
+            <description>array-decimal-property description</description>
+        </key>
     </schema>
 </schemalist>

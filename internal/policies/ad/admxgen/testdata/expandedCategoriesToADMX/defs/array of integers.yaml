@@ -1,0 +1,14 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-array-decimal
+    displayname: summary
+    explaintext: |-
+      description
+
+      Default: [1, 2]
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: text
+    default: '[1, 2]'
+    meta: '"policy-array-decimal": {"meta": "ai", "default": "[]"}'
+    class: machine

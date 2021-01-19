@@ -39,6 +39,8 @@ func TestGenerate(t *testing.T) {
 		"Long decimal key":                     {root: "simple"},
 		"Long decimal key with range min lt 0": {root: "simple"},
 		"Long decimal key with range min gt 0": {root: "simple"},
+		"Array of strings":                     {root: "simple"},
+		"Array of integers":                    {root: "simple"},
 
 		// Override cases
 		"Override without session":                                    {root: "simple", currentSessions: "-"},

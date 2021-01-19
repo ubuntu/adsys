@@ -38,10 +38,11 @@ var (
 		emptyValue string
 	}{
 		"s":  {common.WidgetTypeText, "''"},
-		"as": {common.WidgetTypeText, "[]"},
 		"b":  {common.WidgetTypeBool, "false"},
 		"i":  {common.WidgetTypeDecimal, "0"},
 		"u":  {common.WidgetTypeLongDecimal, "0"},
+		"as": {common.WidgetTypeText, "[]"},
+		"ai": {common.WidgetTypeText, "[]"},
 	}
 )
 
