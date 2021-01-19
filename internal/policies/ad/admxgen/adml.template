@@ -24,6 +24,8 @@
         </textBox>
 {{- else if eq .ElementType "boolean"}}
         <checkBox refId="{{toID "Elem" .DisplayName}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
+{{- else if eq .ElementType "decimal"}}
+        <decimalTextBox refId="{{toID "Elem" .DisplayName}}">{{.DisplayName}}</decimalTextBox>
 {{- end}}
       </presentation>
 {{- end}}

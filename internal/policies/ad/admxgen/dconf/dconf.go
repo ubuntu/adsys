@@ -108,6 +108,7 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			Release:     release,
 			Default:     defaultVal,
 			Type:        "dconf",
+			RangeValues: s.RangeValues,
 		}
 
 		m, ok := schemaTypeToMetadata[s.Type]
@@ -131,6 +132,9 @@ type schemaEntry struct {
 	Summary            string
 	Description        string
 	DefaultRelocatable string
+
+	// Per type entry
+	RangeValues common.DecimalRange
 }
 
 // schemaList represents the list of glib2.0 schemas loaded into memory.
@@ -212,6 +216,17 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 					Type:        k.Type,
 					Summary:     k.Summary,
 					Description: k.Description,
+				}
+
+				// Optional per type extensions
+				if k.Range != struct {
+					Min float32 "xml:\"min,attr\""
+					Max float32 "xml:\"max,attr\""
+				}{} {
+					e.RangeValues = common.DecimalRange{
+						Min: fmt.Sprintf("%f", k.Range.Min),
+						Max: fmt.Sprintf("%f", k.Range.Max),
+					}
 				}
 
 				if relocatable {

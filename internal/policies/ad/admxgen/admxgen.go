@@ -268,8 +268,13 @@ type policyForADMX struct {
 	Class          string
 	SupportedOn    string
 
-	// Default is used for some types like boolean (checked or unchecked)
-	// Most recent release is used.
+	// Per type Extensions
+	// Most recent release value is used
+
+	// Decimal
+	RangeValues common.DecimalRange
+
+	// Boolean (checked or unchecked)
 	Default string
 }
 
@@ -357,7 +362,9 @@ func (g generator) collectCategoriesPolicies(category expandedCategory, parent s
 			ElementType:    p.ElementType,
 			Meta:           p.Meta,
 			Class:          p.Class,
-			Default:        p.Default,
+
+			RangeValues: p.RangeValues,
+			Default:     p.Default,
 		})
 	}
 
