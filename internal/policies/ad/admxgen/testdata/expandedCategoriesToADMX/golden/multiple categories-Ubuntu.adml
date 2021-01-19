@@ -2,7 +2,7 @@
 <!--  (c) 2021 Canonical  -->
 <policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>Ubuntu policy</displayName>
-  <description>This is the ubuntu policy</description>
+  <description>This is the Ubuntu policy</description>
   <resources>
 
     <stringTable>
