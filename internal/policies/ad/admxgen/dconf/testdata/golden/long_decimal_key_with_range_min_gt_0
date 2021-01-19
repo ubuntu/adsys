@@ -1,0 +1,12 @@
+- key: /com/ubuntu/types/long-decimal-property-with-range-min-gt-zero
+  displayname: long-decimal-property-with-range-min-gt-zero summary
+  explaintext: long-decimal-property-with-range-min-gt-zero description
+  elementtype: longDecimal
+  meta: '"long-decimal-property-with-range-min-gt-zero": {"meta": "u", "default":
+    "0"}'
+  class: ""
+  default: "42"
+  rangevalues:
+    min: "5.000000"
+  release: "20.04"
+  type: dconf

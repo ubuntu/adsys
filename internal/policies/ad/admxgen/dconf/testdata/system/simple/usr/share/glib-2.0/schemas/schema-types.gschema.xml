@@ -34,5 +34,29 @@
             <summary>decimal-property-with-range summary</summary>
             <description>decimal-property-with-range description</description>
         </key>
+
+        <key type="u" name="long-decimal-property">
+            <default>42</default>
+            <summary>decimal-property summary</summary>
+            <description>decimal-property description</description>
+        </key>
+        <key type="u" name="long-decimal-property-with-range">
+            <range min="15" max="15000" />
+            <default>42</default>
+            <summary>long-decimal-property-with-range summary</summary>
+            <description>long-decimal-property-with-range description</description>
+        </key>
+        <key type="u" name="long-decimal-property-with-range-min-lt-zero">
+            <range min="-123" />
+            <default>42</default>
+            <summary>long-decimal-property-with-range-min-lt-zero summary</summary>
+            <description>long-decimal-property-with-range-min-lt-zero description</description>
+        </key>
+        <key type="u" name="long-decimal-property-with-range-min-gt-zero">
+            <range min="5" />
+            <default>42</default>
+            <summary>long-decimal-property-with-range-min-gt-zero summary</summary>
+            <description>long-decimal-property-with-range-min-gt-zero description</description>
+        </key>
     </schema>
 </schemalist>
