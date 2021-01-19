@@ -26,6 +26,8 @@
         <checkBox refId="{{toID "Elem" .DisplayName}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
 {{- else if eq .ElementType "decimal"}}
         <decimalTextBox refId="{{toID "Elem" .DisplayName}}">{{.DisplayName}}</decimalTextBox>
+{{- else if eq .ElementType "longDecimal"}}
+        <longDecimalTextBox refId="{{toID "Elem" .DisplayName}}">{{.DisplayName}}</longDecimalTextBox>
 {{- end}}
       </presentation>
 {{- end}}

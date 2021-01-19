@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -40,6 +41,7 @@ var (
 		"as": {common.WidgetTypeText, "[]"},
 		"b":  {common.WidgetTypeBool, "false"},
 		"i":  {common.WidgetTypeDecimal, "0"},
+		"u":  {common.WidgetTypeLongDecimal, "0"},
 	}
 )
 
@@ -117,6 +119,21 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 		}
 		ep.ElementType = m.widgetType
 		ep.Meta = fmt.Sprintf(`"%s": {"meta": "%s", "default": "%s"}`, filepath.Base(policy.ObjectPath), s.Type, m.emptyValue)
+
+		if m.widgetType == common.WidgetTypeLongDecimal {
+			min := ep.RangeValues.Min
+			if min == "" {
+				min = "0"
+			}
+			if s, err := strconv.ParseFloat(min, 32); err != nil {
+				log.Warning("min value for long decimal is not a valid float, forcing to 0 for long decimal")
+			} else {
+				if s < 0 {
+					min = "0"
+				}
+			}
+			ep.RangeValues.Min = min
+		}
 
 		r = append(r, ep)
 	}

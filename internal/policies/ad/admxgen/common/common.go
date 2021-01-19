@@ -8,6 +8,8 @@ const (
 	WidgetTypeBool WidgetType = "boolean"
 	// WidgetTypeDecimal will use a decimal input
 	WidgetTypeDecimal WidgetType = "decimal"
+	// WidgetTypeLongDecimal will use a unsigned int input
+	WidgetTypeLongDecimal WidgetType = "longDecimal"
 )
 
 // WidgetType is the type of the component that is displayed in the GPO settings dialog
