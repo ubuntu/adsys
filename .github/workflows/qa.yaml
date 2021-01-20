@@ -36,6 +36,7 @@ jobs:
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
         run: |
+          find /var/cache/apt
           apt update
           DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc libsmbclient-dev
           find /tmp/gocache
