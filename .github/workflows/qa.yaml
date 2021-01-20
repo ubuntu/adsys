@@ -29,11 +29,6 @@ jobs:
         with:
           path: ${{ env.GOCACHE }}
           key: gocache-${{ github.job }}-${{ hashFiles('/tmp/random-cache-key') }}
-      - name: Cache APT
-        uses: actions/cache@v2
-        with:
-          path: /var/cache/apt
-          key: apt-${{ github.job }}-${{ hashFiles('/tmp/random-cache-key') }}
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
         run: |
@@ -70,6 +65,15 @@ jobs:
       matrix:
         go: [ '1.15' ]
     steps:
+      - name: Generate random cache key to ensure the cach directories are saved after build
+        id: random-cache-key
+        run: head /dev/random -c 32 > /tmp/random-cache-key
+      - name: Cache GOCACHE
+        id: cache-gocache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.GOCACHE }}
+          key: gocache-${{ github.job }}-${{ hashFiles('/tmp/random-cache-key') }}
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
@@ -100,6 +104,15 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu:latest
     steps:
+      - name: Generate random cache key to ensure the cach directories are saved after build
+        id: random-cache-key
+        run: head /dev/random -c 32 > /tmp/random-cache-key
+      - name: Cache GOCACHE
+        id: cache-gocache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.GOCACHE }}
+          key: gocache-${{ github.job }}-${{ hashFiles('/tmp/random-cache-key') }}
       # Add dependencies
       - name: Install dependencies
         run: |
