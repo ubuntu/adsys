@@ -21,12 +21,12 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ env.GOCACHE }}
-          key: gocache-${{ github.job }}
+          key: gocache-${{ github.job }}-${{ hashFiles(${{ env.GOCACHE }}) }}
       - name: Cache APT
         uses: actions/cache@v2
         with:
           path: /var/cache/apt
-          key: apt-${{ github.job }}
+          key: apt-${{ github.job }}-${{ hashFiles('/var/cache/apt') }}
       - name: No Cache HIT?
         if: steps.cache-gocache.outputs.cache-hit != 'true'
         run: echo "CACHE MISS"
