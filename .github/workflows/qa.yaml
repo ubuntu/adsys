@@ -40,6 +40,8 @@ jobs:
           apt update
           DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc libsmbclient-dev
           find /tmp/gocache
+          echo "XXXXXXXXXXXXXXXXXXXX"
+          find /var/cache/apt
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
