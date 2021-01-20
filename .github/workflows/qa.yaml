@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           find /var/cache/apt
-          find /tmp/gocache
+          find /tmp/gocache || true
           apt update
           DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc libsmbclient-dev
           find /var/cache/apt
