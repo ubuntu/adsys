@@ -28,10 +28,10 @@ jobs:
           path: /var/cache/apt
           key: apt-${{ github.job }}
       - name: No Cache HIT?
-        if: steps.go-cache.outputs.cache-hit != 'true'
+        if: steps.cache-gocache.outputs.cache-hit != 'true'
         run: echo "CACHE MISS"
       - name: Cache HIT?
-        if: steps.go-cache.outputs.cache-hit == 'true'
+        if: steps.cache-gocache.outputs.cache-hit == 'true'
         run: echo "CACHE HIT"
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
