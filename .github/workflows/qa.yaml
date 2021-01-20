@@ -16,31 +16,31 @@ jobs:
       matrix:
         go: [ '1.15' ]
     steps:
+      # As per https://github.com/actions/cache/issues/432#issuecomment-740376179 to workaround cache not being updated
+      # with the same name. We use the fallback property that will use the most recent cache matching the pattern, which
+      # ought to be the previous run, and then, will recache this with a new checksum.
+      # This should not be necessary if https://github.com/actions/cache/pull/498 is merged.
+      - name: Generate random cache key to ensure the cach directories are saved after build
+        id: random-cache-key
+        run: head /dev/random -c 32 > /tmp/random-cache-key
       - name: Cache GOCACHE
         id: cache-gocache
         uses: actions/cache@v2
         with:
           path: ${{ env.GOCACHE }}
-          key: gocache-${{ github.job }}-${{ hashFiles(${{ env.GOCACHE }}) }}
+          key: gocache-${{ github.job }}-${{ hashFiles('/tmp/random-cache-key') }}
       - name: Cache APT
         uses: actions/cache@v2
         with:
           path: /var/cache/apt
-          key: apt-${{ github.job }}-${{ hashFiles('/var/cache/apt') }}
-      - name: No Cache HIT?
-        if: steps.cache-gocache.outputs.cache-hit != 'true'
-        run: echo "CACHE MISS"
-      - name: Cache HIT?
-        if: steps.cache-gocache.outputs.cache-hit == 'true'
-        run: echo "CACHE HIT"
+          key: apt-${{ github.job }}-${{ hashFiles('/tmp/random-cache-key') }}
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
         run: |
           find /var/cache/apt
+          find /tmp/gocache
           apt update
           DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc libsmbclient-dev
-          find /tmp/gocache
-          echo "XXXXXXXXXXXXXXXXXXXX"
           find /var/cache/apt
       - uses: actions/checkout@v2
       - name: Setup go
