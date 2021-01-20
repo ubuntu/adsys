@@ -4,6 +4,8 @@ on:
     branches:
     - main
   pull_request:
+env:
+  GOCACHE: /tmp/gocache
 
 jobs:
   quality:
@@ -14,6 +16,23 @@ jobs:
       matrix:
         go: [ '1.15' ]
     steps:
+      - name: Cache GOCACHE
+        id: cache-gocache
+        uses: actions/cache@v2
+        with:
+          path: ${{ env.GOCACHE }}
+          key: gocache-${{ github.job }}
+      - name: Cache APT
+        uses: actions/cache@v2
+        with:
+          path: /var/cache/apt
+          key: apt-${{ github.job }}
+      - name: No Cache HIT?
+        if: steps.go-cache.outputs.cache-hit != 'true'
+        run: echo "CACHE MISS"
+      - name: Cache HIT?
+        if: steps.go-cache.outputs.cache-hit == 'true'
+        run: echo "CACHE HIT"
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
         run: |
