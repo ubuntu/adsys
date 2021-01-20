@@ -11,6 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // ServiceClient is the client API for Service service.
@@ -32,7 +33,7 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 }
 
 func (c *serviceClient) Cat(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CatClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[0], "/service/Cat", opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[0], "/service/Cat", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (x *serviceCatClient) Recv() (*StringResponse, error) {
 }
 
 func (c *serviceClient) Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[1], "/service/Version", opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[1], "/service/Version", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +97,7 @@ func (x *serviceVersionClient) Recv() (*VersionResponse, error) {
 }
 
 func (c *serviceClient) Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[2], "/service/Stop", opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[2], "/service/Stop", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +129,7 @@ func (x *serviceStopClient) Recv() (*Empty, error) {
 }
 
 func (c *serviceClient) UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Service_serviceDesc.Streams[3], "/service/UpdatePolicy", opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[3], "/service/UpdatePolicy", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +197,7 @@ type UnsafeServiceServer interface {
 }
 
 func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) {
-	s.RegisterService(&_Service_serviceDesc, srv)
+	s.RegisterService(&Service_ServiceDesc, srv)
 }
 
 func _Service_Cat_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -283,7 +284,10 @@ func (x *serviceUpdatePolicyServer) Send(m *Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-var _Service_serviceDesc = grpc.ServiceDesc{
+// Service_ServiceDesc is the grpc.ServiceDesc for Service service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Service_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "service",
 	HandlerType: (*ServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
