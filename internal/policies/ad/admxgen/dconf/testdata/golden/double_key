@@ -1,0 +1,9 @@
+- key: /com/ubuntu/types/double-property
+  displayname: double-property summary
+  explaintext: double-property description
+  elementtype: text
+  meta: '"double-property": {"meta": "d", "default": "0.0"}'
+  class: ""
+  default: "42.0"
+  release: "20.04"
+  type: dconf

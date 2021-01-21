@@ -124,6 +124,8 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"array of strings":      {},
 		"array of integers":     {},
 		"choices":               {},
+		"double":                {},
+		"double with range": {},
 
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},

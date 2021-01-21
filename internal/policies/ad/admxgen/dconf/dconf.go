@@ -43,6 +43,7 @@ var (
 		"u":  {common.WidgetTypeLongDecimal, "0"},
 		"as": {common.WidgetTypeText, "[]"},
 		"ai": {common.WidgetTypeText, "[]"},
+		"d":  {common.WidgetTypeText, "0.0"},
 	}
 )
 
