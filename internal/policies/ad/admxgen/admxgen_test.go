@@ -42,6 +42,9 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"same policy used in two categories but different default class": {},
 		"multiple top categories":                                        {},
 
+		// Optional content
+		"range": {},
+
 		// Error cases
 		"one policy not used":          {wantErr: true},
 		"unexisting policy referenced": {wantErr: true},
@@ -49,6 +52,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"different element type":       {wantErr: true},
 		"different policy type":        {wantErr: true},
 		"different class":              {wantErr: true},
+		"different range":              {wantErr: true},
 		"missing release":              {wantErr: true},
 		"error on nested category":     {wantErr: true},
 

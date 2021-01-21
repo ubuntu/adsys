@@ -113,6 +113,8 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		var defaults []defaultVal
 		var defaultString string
 
+		var rangeDecimal, emptyRangeDecimal common.DecimalRange
+
 		for _, release := range g.supportedReleases {
 			p, ok := indexedPolicies[key][release]
 			// if it doesn’t exist for this release, skip
@@ -136,6 +138,9 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			if elementType != "" && elementType != p.ElementType {
 				return nil, fmt.Errorf("%s is of different element type between releases. Got %q and %q", key, elementType, p.ElementType)
 			}
+			if rangeDecimal != emptyRangeDecimal && rangeDecimal != p.RangeValues {
+				return nil, fmt.Errorf("%s has a different range type between releases. Got %q and %q", key, rangeDecimal, p.RangeValues)
+			}
 
 			typePol = p.Type
 			displayName = p.DisplayName
@@ -148,6 +153,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			meta = p.Meta
 			class = p.Class
 			defaultString = p.Default
+			rangeDecimal = p.RangeValues
 
 			defaults = append(defaults, defaultVal{value: p.Default, release: release})
 		}
@@ -187,6 +193,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			Meta:        meta,
 			Class:       class,
 			Default:     defaultString,
+			RangeValues: rangeDecimal,
 		}
 	}
 
