@@ -2,7 +2,7 @@
   displayname: double-property-with-range summary
   explaintext: double-property-with-range description
   elementtype: text
-  meta: '"double-property-with-range": {"meta": "d", "default": "0.0"}'
+  meta: '"all": {"meta": "d", "default": "0.0"}'
   class: ""
   default: "42.0"
   rangevalues:

@@ -2,7 +2,7 @@
   displayname: simple-text-property summary
   explaintext: simple-text-property description
   elementtype: text
-  meta: '"simple-text-property": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: User
   default: '''simple-text-property Default Value'''
   release: "20.04"

@@ -2,7 +2,7 @@
   displayname: summary
   explaintext: description
   elementtype: decimal
-  meta: '"policy-range": {"meta": "i", "default": "0"}'
+  meta: '"all": {"meta": "i", "default": "0"}'
   class: ""
   default: '''Default Value'''
   rangevalues:

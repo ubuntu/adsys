@@ -10,5 +10,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     default: "123.456"
-    meta: '"policy-double": {"meta": "s", "default": "0"}'
+    meta: '"all": {"meta": "s", "default": "0"}'
     class: Machine

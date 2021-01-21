@@ -14,11 +14,11 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="." valueName="metaValues">
+    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
-      <enabledValue><string>"policy-decimal": {"meta": "i", "default": "0"}</string></enabledValue>
+      <enabledValue><string>"all": {"meta": "i", "default": "0"}</string></enabledValue>
       <elements>
-        <decimal id="UbuntuElemSummary" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range" maxValue="15000.000000" />
+        <decimal id="UbuntuElemSummary" valueName="all" maxValue="15000.000000" />
       </elements>
     </policy>
   </policies>

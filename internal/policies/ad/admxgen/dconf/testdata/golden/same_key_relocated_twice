@@ -2,7 +2,7 @@
   displayname: property summary
   explaintext: property description
   elementtype: text
-  meta: '"property": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''property Default Value'''
   release: "20.04"
@@ -11,7 +11,7 @@
   displayname: property summary
   explaintext: property description
   elementtype: text
-  meta: '"property": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''property Default Value'''
   release: "20.04"

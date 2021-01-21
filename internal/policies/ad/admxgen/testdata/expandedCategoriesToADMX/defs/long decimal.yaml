@@ -10,5 +10,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: longDecimal
     default: "42"
-    meta: '"policy-long-decimal": {"meta": "i", "default": "0"}'
+    meta: '"all": {"meta": "i", "default": "0"}'
     class: Machine

@@ -17,16 +17,16 @@
 
   <policies>
 {{- range .Policies}}
-    <policy name="{{toID "" .DisplayName}}" class="{{.Class}}" displayName="$(string.{{toID "Display" .DisplayName}})" explainText="$(string.{{toID "ExplainText" .DisplayName}})" presentation="$(presentation.{{toID "Presentation" .DisplayName}})" key="{{dir .Key}}" valueName="metaValues">
+    <policy name="{{toID "" .DisplayName}}" class="{{.Class}}" displayName="$(string.{{toID "Display" .DisplayName}})" explainText="$(string.{{toID "ExplainText" .DisplayName}})" presentation="$(presentation.{{toID "Presentation" .DisplayName}})" key="{{.Key}}" valueName="metaValues">
       <parentCategory ref="{{.ParentCategory}}" />
       <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
         {{- if ne .ElementType "dropdownList"}}
-        <{{.ElementType}} id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}"
+        <{{.ElementType}} id="{{toID "Elem" .DisplayName}}" valueName="all"
           {{- if ne .RangeValues.Min ""}} minValue="{{.RangeValues.Min}}"{{end}}
           {{- if ne .RangeValues.Max ""}} maxValue="{{.RangeValues.Max}}"{{end}} />
         {{- else}}
-          <enum id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}">
+          <enum id="{{toID "Elem" .DisplayName}}" valueName="all">
           {{- $displayName := .DisplayName}}
           {{- range $i, $c := .Choices}}
               <item displayName="$(string.{{toID "Item" $displayName}}{{ $i }})">

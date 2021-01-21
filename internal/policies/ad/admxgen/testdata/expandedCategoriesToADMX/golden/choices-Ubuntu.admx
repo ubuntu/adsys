@@ -14,11 +14,11 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="." valueName="metaValues">
+    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-choices" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
-      <enabledValue><string>"policy-choices": {"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
-          <enum id="UbuntuElemSummary" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-choices">
+          <enum id="UbuntuElemSummary" valueName="all">
               <item displayName="$(string.UbuntuItemSummary0)">
                 <value>
                     <string>Choice 1</string>

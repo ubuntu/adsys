@@ -14,11 +14,11 @@
   </categories>
 
   <policies>
-    <policy name="DebianSummary" class="Machine" displayName="$(string.DebianDisplaySummary)" explainText="$(string.DebianExplainTextSummary)" presentation="$(presentation.DebianPresentationSummary)" key="." valueName="metaValues">
+    <policy name="DebianSummary" class="Machine" displayName="$(string.DebianDisplaySummary)" explainText="$(string.DebianExplainTextSummary)" presentation="$(presentation.DebianPresentationSummary)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
       <parentCategory ref="DebianCategory1DisplayName" />
-      <enabledValue><string>"policy-simple": {"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
-        <text id="DebianElemSummary" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-simple" />
+        <text id="DebianElemSummary" valueName="all" />
       </elements>
     </policy>
   </policies>

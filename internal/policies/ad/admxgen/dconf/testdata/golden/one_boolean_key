@@ -2,7 +2,7 @@
   displayname: boolean-property summary
   explaintext: boolean-property description
   elementtype: boolean
-  meta: '"boolean-property": {"meta": "b", "default": "false"}'
+  meta: '"all": {"meta": "b", "default": "false"}'
   class: ""
   default: "true"
   release: "20.04"

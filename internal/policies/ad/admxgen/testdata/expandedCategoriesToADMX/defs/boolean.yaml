@@ -10,5 +10,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: boolean
     default: 'true'
-    meta: '"policy-boolean": {"meta": "s", "default": "false"}'
+    meta: '"all": {"meta": "s", "default": "false"}'
     class: Machine

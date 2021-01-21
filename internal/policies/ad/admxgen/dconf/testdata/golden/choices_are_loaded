@@ -2,7 +2,7 @@
   displayname: choices-property summary
   explaintext: choices-property description
   elementtype: dropdownList
-  meta: '"choices-property": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''choice 2'''
   choices:

@@ -342,8 +342,6 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 
 	funcMap := template.FuncMap{
 		"toID": g.toID,
-		"base": filepath.Base,
-		"dir":  filepath.Dir,
 	}
 	_, curF, _, ok := runtime.Caller(0)
 	if !ok {

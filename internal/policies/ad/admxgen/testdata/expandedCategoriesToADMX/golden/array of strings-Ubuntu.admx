@@ -14,11 +14,11 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="." valueName="metaValues">
+    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-array-string" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
-      <enabledValue><string>"policy-array-string": {"meta": "as", "default": "[]"}</string></enabledValue>
+      <enabledValue><string>"all": {"meta": "as", "default": "[]"}</string></enabledValue>
       <elements>
-        <text id="UbuntuElemSummary" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-array-string" />
+        <text id="UbuntuElemSummary" valueName="all" />
       </elements>
     </policy>
   </policies>

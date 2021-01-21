@@ -10,7 +10,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: dropdownList
     default: '''Choice 1'''
-    meta: '"policy-choices": {"meta": "s", "default": "''''"}'
+    meta: '"all": {"meta": "s", "default": "''''"}'
     class: Machine
     choices:
        - Choice 1

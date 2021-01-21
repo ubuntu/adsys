@@ -2,8 +2,7 @@
   displayname: simple-text-property-overridden-by-multiple-files summary
   explaintext: simple-text-property-overridden-by-multiple-files description
   elementtype: text
-  meta: '"simple-text-property-overridden-by-multiple-files": {"meta": "s", "default":
-    "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''This is the simple-text-property-overridden-by-multiple-files overridden
     Value'''

@@ -12,5 +12,5 @@
     default: "42"
     rangevalues:
       max: "15000.000000"
-    meta: '"policy-decimal": {"meta": "i", "default": "0"}'
+    meta: '"all": {"meta": "i", "default": "0"}'
     class: Machine

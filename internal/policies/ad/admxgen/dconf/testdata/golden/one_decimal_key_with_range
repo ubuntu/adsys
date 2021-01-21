@@ -2,7 +2,7 @@
   displayname: decimal-property-with-range summary
   explaintext: decimal-property-with-range description
   elementtype: decimal
-  meta: '"decimal-property-with-range": {"meta": "i", "default": "0"}'
+  meta: '"all": {"meta": "i", "default": "0"}'
   class: ""
   default: "42"
   rangevalues:

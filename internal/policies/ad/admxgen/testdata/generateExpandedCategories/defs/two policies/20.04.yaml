@@ -2,7 +2,7 @@
   displayname: summary first
   explaintext: description first
   elementtype: text
-  meta: '"policy-first": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''Default Value first'''
   release: "20.04"
@@ -12,7 +12,7 @@
   displayname: summary second
   explaintext: description second
   elementtype: text
-  meta: '"policy-second": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''Default Value second'''
   release: "20.04"

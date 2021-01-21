@@ -2,7 +2,7 @@
   displayname: summary
   explaintext: description
   elementtype: dropdownList
-  meta: '"policy-choices": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''Default Value'''
   choices:

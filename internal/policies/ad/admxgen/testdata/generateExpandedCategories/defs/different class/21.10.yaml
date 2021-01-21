@@ -2,7 +2,7 @@
   displayname: summary common
   explaintext: description common
   elementtype: text
-  meta: '"policy-common": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: "class-21.10"
   default: '''Default Value common'''
   release: "21.10"

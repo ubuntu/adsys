@@ -2,7 +2,7 @@
   displayname: decimal-property summary
   explaintext: decimal-property description
   elementtype: longDecimal
-  meta: '"long-decimal-property": {"meta": "u", "default": "0"}'
+  meta: '"all": {"meta": "u", "default": "0"}'
   class: ""
   default: "42"
   rangevalues:

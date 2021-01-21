@@ -2,7 +2,7 @@
   displayname: decimal-property summary
   explaintext: decimal-property description
   elementtype: decimal
-  meta: '"decimal-property": {"meta": "i", "default": "0"}'
+  meta: '"all": {"meta": "i", "default": "0"}'
   class: ""
   default: "42"
   release: "20.04"

@@ -2,7 +2,7 @@
   displayname: property-with-override summary
   explaintext: property-with-override description
   elementtype: text
-  meta: '"property-with-override": {"meta": "s", "default": "''''"}'
+  meta: '"all": {"meta": "s", "default": "''''"}'
   class: ""
   default: '''Overridden property-with-override Value'''
   release: "20.04"

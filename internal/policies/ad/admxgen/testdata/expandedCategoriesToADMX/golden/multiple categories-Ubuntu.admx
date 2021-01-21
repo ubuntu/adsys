@@ -17,18 +17,18 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuSummary1" class="Machine" displayName="$(string.UbuntuDisplaySummary1)" explainText="$(string.UbuntuExplainTextSummary1)" presentation="$(presentation.UbuntuPresentationSummary1)" key="." valueName="metaValues">
+    <policy name="UbuntuSummary1" class="Machine" displayName="$(string.UbuntuDisplaySummary1)" explainText="$(string.UbuntuExplainTextSummary1)" presentation="$(presentation.UbuntuPresentationSummary1)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple1" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
-      <enabledValue><string>"policy-multiple1": {"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
-        <text id="UbuntuElemSummary1" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple1" />
+        <text id="UbuntuElemSummary1" valueName="all" />
       </elements>
     </policy>
-    <policy name="UbuntuSummary2" class="Machine" displayName="$(string.UbuntuDisplaySummary2)" explainText="$(string.UbuntuExplainTextSummary2)" presentation="$(presentation.UbuntuPresentationSummary2)" key="." valueName="metaValues">
+    <policy name="UbuntuSummary2" class="Machine" displayName="$(string.UbuntuDisplaySummary2)" explainText="$(string.UbuntuExplainTextSummary2)" presentation="$(presentation.UbuntuPresentationSummary2)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple2" valueName="metaValues">
       <parentCategory ref="UbuntuCategory2DisplayName" />
-      <enabledValue><string>"policy-multiple2": {"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
-        <text id="UbuntuElemSummary2" valueName="Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple2" />
+        <text id="UbuntuElemSummary2" valueName="all" />
       </elements>
     </policy>
   </policies>
