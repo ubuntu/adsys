@@ -1,0 +1,14 @@
+- key: /org/gnome/desktop/policy-choices
+  displayname: summary
+  explaintext: description
+  elementtype: dropdownList
+  meta: '"policy-choices": {"meta": "s", "default": "''''"}'
+  class: ""
+  default: '''Default Value'''
+  choices:
+    - choice 1
+    - choice 2
+    - choice 3
+    - choice 4
+  release: "20.04"
+  type: "dconf"

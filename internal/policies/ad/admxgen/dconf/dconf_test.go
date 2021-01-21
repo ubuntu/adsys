@@ -52,6 +52,11 @@ func TestGenerate(t *testing.T) {
 		"Overridden by multiple files, last wins":                     {root: "simple", currentSessions: "-"},
 		"Relocatable key overridden":                                  {root: "simple"},
 
+		// Choices and enum
+		"Choices are loaded":                            {root: "simple"},
+		"Inlined Enums are converted to choices":        {root: "simple"},
+		"Enums in other files are converted to choices": {root: "simple"},
+
 		// Edge cases
 		"No key on system":                   {root: "simple"},
 		"Empty":                              {root: "simple"},
@@ -60,6 +65,7 @@ func TestGenerate(t *testing.T) {
 
 		// Error cases
 		"Unsupported key type": {root: "exotic_type", wantErr: true},
+		"Enum does not exist":  {root: "nonexistent_enum", wantErr: true},
 	}
 	for name, tc := range tests {
 		def := strings.ToLower(strings.ReplaceAll(name, " ", "_"))

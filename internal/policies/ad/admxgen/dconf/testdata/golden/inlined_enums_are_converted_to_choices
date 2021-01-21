@@ -1,0 +1,14 @@
+- key: /com/ubuntu/choices/enum-inline-property
+  displayname: enum-inline-property summary
+  explaintext: enum-inline-property description
+  elementtype: dropdownList
+  meta: '"enum-inline-property": {"meta": "s", "default": "''''"}'
+  class: ""
+  default: '''HIGH'''
+  choices:
+  - LOW
+  - MEDIUM
+  - HIGH
+  - MAXIMUM
+  release: "20.04"
+  type: dconf

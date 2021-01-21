@@ -43,18 +43,21 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"multiple top categories":                                        {},
 
 		// Optional content
-		"range": {},
+		"range":   {},
+		"choices": {},
 
 		// Error cases
-		"one policy not used":          {wantErr: true},
-		"unexisting policy referenced": {wantErr: true},
-		"different meta":               {wantErr: true},
-		"different element type":       {wantErr: true},
-		"different policy type":        {wantErr: true},
-		"different class":              {wantErr: true},
-		"different range":              {wantErr: true},
-		"missing release":              {wantErr: true},
-		"error on nested category":     {wantErr: true},
+		"one policy not used":                {wantErr: true},
+		"unexisting policy referenced":       {wantErr: true},
+		"different meta":                     {wantErr: true},
+		"different element type":             {wantErr: true},
+		"different policy type":              {wantErr: true},
+		"different class":                    {wantErr: true},
+		"different range":                    {wantErr: true},
+		"different choices same length":      {wantErr: true},
+		"different choices different length": {wantErr: true},
+		"missing release":                    {wantErr: true},
+		"error on nested category":           {wantErr: true},
 
 		"policy directory doesn't exist":    {wantErrLoadDefinitions: true},
 		"category definition doesn't exist": {wantErrLoadDefinitions: true},
@@ -120,6 +123,7 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"long decimal":          {},
 		"array of strings":      {},
 		"array of integers":     {},
+		"choices":               {},
 
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},

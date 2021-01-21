@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Ubuntu policy</displayName>
+  <description>This is the Ubuntu policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
+      <string id="UbuntuDisplaySummary">summary</string>
+      <string id="UbuntuExplainTextSummary">description
+
+Default: 'Choice 1'
+Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
+      <string id="UbuntuItemSummary0">Choice 1</string>
+      <string id="UbuntuItemSummary1">Choice 2</string>
+      <string id="UbuntuItemSummary2">Choice 3</string>
+      <string id="UbuntuItemSummary3">Choice 4</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="UbuntuPresentationSummary">
+        <dropdownList  refId="UbuntuElemSummary" noSort="true">summary</dropdownList>
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>
