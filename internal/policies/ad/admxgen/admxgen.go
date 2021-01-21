@@ -113,8 +113,9 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		var defaults []defaultVal
 		var defaultString string
 
-		var rangeDecimal, emptyRangeDecimal common.DecimalRange
+		var rangeDecimal common.DecimalRange
 
+		isFirst := true
 		for _, release := range g.supportedReleases {
 			p, ok := indexedPolicies[key][release]
 			// if it doesn’t exist for this release, skip
@@ -126,20 +127,22 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			delete(noPoliciesOn, p.Release)
 
 			// meta, type, class or elementtype is different -> error
-			if meta != "" && meta != p.Meta {
-				return nil, fmt.Errorf("%s is of different meta between releases. Got %q and %q", key, meta, p.Meta)
-			}
-			if typePol != "" && typePol != p.Type {
-				return nil, fmt.Errorf("%s is of different policy type between releases. Got %q and %q", key, typePol, p.Type)
-			}
-			if class != "" && class != p.Class {
-				return nil, fmt.Errorf("%s is of different class between releases. Got %q and %q", key, class, p.Class)
-			}
-			if elementType != "" && elementType != p.ElementType {
-				return nil, fmt.Errorf("%s is of different element type between releases. Got %q and %q", key, elementType, p.ElementType)
-			}
-			if rangeDecimal != emptyRangeDecimal && rangeDecimal != p.RangeValues {
-				return nil, fmt.Errorf("%s has a different range type between releases. Got %q and %q", key, rangeDecimal, p.RangeValues)
+			if !isFirst {
+				if meta != p.Meta {
+					return nil, fmt.Errorf("%s is of different meta between releases. Got %q and %q", key, meta, p.Meta)
+				}
+				if typePol != p.Type {
+					return nil, fmt.Errorf("%s is of different policy type between releases. Got %q and %q", key, typePol, p.Type)
+				}
+				if class != p.Class {
+					return nil, fmt.Errorf("%s is of different class between releases. Got %q and %q", key, class, p.Class)
+				}
+				if elementType != p.ElementType {
+					return nil, fmt.Errorf("%s is of different element type between releases. Got %q and %q", key, elementType, p.ElementType)
+				}
+				if rangeDecimal != p.RangeValues {
+					return nil, fmt.Errorf("%s has a different range type between releases. Got %q and %q", key, rangeDecimal, p.RangeValues)
+				}
 			}
 
 			typePol = p.Type
@@ -156,6 +159,8 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			rangeDecimal = p.RangeValues
 
 			defaults = append(defaults, defaultVal{value: p.Default, release: release})
+
+			isFirst = false
 		}
 
 		// Display all the default per release if there is at least 1 different
