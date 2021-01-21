@@ -21,9 +21,21 @@
       <parentCategory ref="{{.ParentCategory}}" />
       <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
+        {{- if ne .ElementType "dropdownList"}}
         <{{.ElementType}} id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}"
           {{- if ne .RangeValues.Min ""}} minValue="{{.RangeValues.Min}}"{{end}}
           {{- if ne .RangeValues.Max ""}} maxValue="{{.RangeValues.Max}}"{{end}} />
+        {{- else}}
+          <enum id="{{toID "Elem" .DisplayName}}" valueName="{{base .Key}}">
+          {{- $displayName := .DisplayName}}
+          {{- range $i, $c := .Choices}}
+              <item displayName="$(string.{{toID "Item" $displayName}}{{ $i }})">
+                <value>
+                    <string>{{ $c }}</string>
+                </value>
+              </item>
+          {{- end}}
+        {{- end}}
       </elements>
     </policy>
 {{- end}}

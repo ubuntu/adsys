@@ -114,6 +114,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		var defaultString string
 
 		var rangeDecimal common.DecimalRange
+		var choices []string
 
 		isFirst := true
 		for _, release := range g.supportedReleases {
@@ -143,6 +144,21 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 				if rangeDecimal != p.RangeValues {
 					return nil, fmt.Errorf("%s has a different range type between releases. Got %q and %q", key, rangeDecimal, p.RangeValues)
 				}
+
+				sameChoices := true
+				if len(choices) != len(p.Choices) {
+					sameChoices = false
+				} else {
+					for i, c := range choices {
+						if c != p.Choices[i] {
+							sameChoices = false
+							break
+						}
+					}
+				}
+				if !sameChoices {
+					return nil, fmt.Errorf("%s has different choices between releases. Got %q and %q", key, choices, p.Choices)
+				}
 			}
 
 			typePol = p.Type
@@ -157,6 +173,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			class = p.Class
 			defaultString = p.Default
 			rangeDecimal = p.RangeValues
+			choices = p.Choices
 
 			defaults = append(defaults, defaultVal{value: p.Default, release: release})
 
@@ -199,6 +216,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			Class:       class,
 			Default:     defaultString,
 			RangeValues: rangeDecimal,
+			Choices:     choices,
 		}
 	}
 
@@ -282,6 +300,7 @@ type policyForADMX struct {
 
 	// Per type Extensions
 	// Most recent release value is used
+	Choices []string
 
 	// Decimal
 	RangeValues common.DecimalRange
@@ -377,6 +396,7 @@ func (g generator) collectCategoriesPolicies(category expandedCategory, parent s
 			Class:          p.Class,
 
 			RangeValues: p.RangeValues,
+			Choices:     p.Choices,
 			Default:     p.Default,
 		})
 	}

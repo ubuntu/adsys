@@ -10,6 +10,8 @@ const (
 	WidgetTypeDecimal WidgetType = "decimal"
 	// WidgetTypeLongDecimal will use a unsigned int input
 	WidgetTypeLongDecimal WidgetType = "longDecimal"
+	// WidgetTypeDropdownList will use the dropdown for selection between a fixed set of values
+	WidgetTypeDropdownList WidgetType = "dropdownList"
 )
 
 // WidgetType is the type of the component that is displayed in the GPO settings dialog
@@ -30,6 +32,9 @@ type ExpandedPolicy struct {
 	Meta        string
 	Class       string
 	Default     string
+
+	// optional
+	Choices []string `yaml:",omitempty"`
 
 	// optional per type elements
 	// decimal

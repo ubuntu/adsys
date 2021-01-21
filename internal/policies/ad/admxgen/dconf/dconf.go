@@ -112,13 +112,21 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			Default:     defaultVal,
 			Type:        "dconf",
 			RangeValues: s.RangeValues,
+			Choices:     s.Choices,
 		}
 
+		if len(s.Choices) > 0 {
+			s.Type = "s"
+		}
 		m, ok := schemaTypeToMetadata[s.Type]
-		if !ok {
+		// enums are converted to choices and have no type
+		if !ok && len(s.Choices) == 0 {
 			return nil, fmt.Errorf("listed type %q is not supported in schemaTypeToMetadata. Please add it", s.Type)
 		}
 		ep.ElementType = m.widgetType
+		if len(s.Choices) > 0 {
+			ep.ElementType = common.WidgetTypeDropdownList
+		}
 		ep.Meta = fmt.Sprintf(`"%s": {"meta": "%s", "default": "%s"}`, filepath.Base(policy.ObjectPath), s.Type, m.emptyValue)
 
 		if m.widgetType == common.WidgetTypeLongDecimal {
@@ -150,9 +158,13 @@ type schemaEntry struct {
 	Summary            string
 	Description        string
 	DefaultRelocatable string
+	Choices            []string // Those are inlined enums or choices. Only the nick or choice string are stored in dconf
 
 	// Per type entry
 	RangeValues common.DecimalRange
+
+	// Transient Enum ID to attach enum as choice
+	enumID string
 }
 
 // schemaList represents the list of glib2.0 schemas loaded into memory.
@@ -161,8 +173,7 @@ type schemaList struct {
 	Enum []struct {
 		ID    string `xml:"id,attr"`
 		Value []struct {
-			Nick  string  `xml:"nick,attr"`
-			Value float32 `xml:"value,attr"`
+			Nick string `xml:"nick,attr"`
 		} `xml:"value"`
 	} `xml:"enum"`
 	Schema []struct {
@@ -188,10 +199,11 @@ type schemaList struct {
 
 func loadSchemasFromDisk(path string, currentSessions string) (entries map[string]schemaEntry, defaultsForPath map[string]string, err error) {
 	entries = make(map[string]schemaEntry)
+	enums := make(map[string][]string)
 	defaultsForPath = make(map[string]string)
 
 	// load schemas
-	schemas, err := filepath.Glob(filepath.Join(path, "*.gschema.xml"))
+	schemas, err := filepath.Glob(filepath.Join(path, "*.xml"))
 	if err != nil {
 		return nil, nil, fmt.Errorf(i18n.G("failed to read list of schemas: %w"), err)
 	}
@@ -234,6 +246,11 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 					Type:        k.Type,
 					Summary:     k.Summary,
 					Description: k.Description,
+					enumID:      k.Enum,
+				}
+
+				for _, c := range k.Choices {
+					e.Choices = append(e.Choices, c.Value)
 				}
 
 				// Optional per type extensions
@@ -262,6 +279,24 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 
 				entries[index] = e
 			}
+		}
+
+		for _, k := range sl.Enum {
+			for _, v := range k.Value {
+				enums[k.ID] = append(enums[k.ID], v.Nick)
+			}
+		}
+	}
+
+	// Attach enums to entries
+	for k, e := range entries {
+		if e.enumID != "" {
+			var ok bool
+			if e.Choices, ok = enums[e.enumID]; !ok {
+				return nil, nil, fmt.Errorf(i18n.G("enum id %s referenced by %s doesn't exist in list of enums"), e.enumID, e.Schema)
+			}
+			e.enumID = ""
+			entries[k] = e
 		}
 	}
 

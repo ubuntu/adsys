@@ -12,6 +12,10 @@
 {{- range .Policies}}
       <string id="{{toID "Display" .DisplayName}}">{{.DisplayName}}</string>
       <string id="{{toID "ExplainText" .DisplayName}}">{{.ExplainText}}</string>
+{{- $displayName := .DisplayName}}
+{{- range $i, $c := .Choices}}
+      <string id="{{toID "Item" $displayName}}{{ $i }}">{{ $c }}</string>
+{{- end}}
 {{- end}}
     </stringTable>
 
@@ -28,6 +32,8 @@
         <decimalTextBox refId="{{toID "Elem" .DisplayName}}">{{.DisplayName}}</decimalTextBox>
 {{- else if eq .ElementType "longDecimal"}}
         <longDecimalTextBox refId="{{toID "Elem" .DisplayName}}">{{.DisplayName}}</longDecimalTextBox>
+{{- else if eq .ElementType "dropdownList"}}
+        <dropdownList  refId="{{toID "Elem" .DisplayName}}" noSort="true">{{.DisplayName}}</dropdownList>
 {{- end}}
       </presentation>
 {{- end}}
