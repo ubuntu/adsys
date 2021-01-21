@@ -235,13 +235,21 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 	inflatePolicies = func(cat category, mergedPolicies map[string]common.ExpandedPolicy) (expandedCategory, error) {
 		var policies []common.ExpandedPolicy
 
+		if cat.DefaultPolicyClass == "" {
+			return expandedCategory{}, fmt.Errorf(i18n.G("%s needs a default policy class"), cat.DisplayName)
+		}
+		defaultPolicyClass, err := common.ValidClass(cat.DefaultPolicyClass)
+		if err != nil {
+			return expandedCategory{}, err
+		}
+
 		for _, p := range cat.Policies {
 			pol, ok := mergedPolicies[p]
 			if !ok {
 				return expandedCategory{}, fmt.Errorf(i18n.G("policy %s referenced in %q does not exist"), p, cat.DisplayName)
 			}
 			if pol.Class == "" {
-				pol.Class = cat.DefaultPolicyClass
+				pol.Class = defaultPolicyClass
 			}
 			policies = append(policies, pol)
 			delete(unattachedPolicies, p)

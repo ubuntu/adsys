@@ -4,11 +4,11 @@ supportedreleases:
 categories:
   - displayname: "Parent Category Display Name"
     parent: "windows:Desktop"
-    defaultpolicyclass: "parent category class"
+    defaultpolicyclass: "Machine"
     policies:
       - "/org/gnome/desktop/policy-simple"
     children:
       - displayname: "Child Category Display Name"
-        defaultpolicyclass: "child category class"
+        defaultpolicyclass: "User"
         policies:
           - "/org/gnome/desktop/policy-simple"

@@ -11,4 +11,4 @@
     elementtype: longDecimal
     default: "42"
     meta: '"policy-long-decimal": {"meta": "i", "default": "0"}'
-    class: machine
+    class: Machine

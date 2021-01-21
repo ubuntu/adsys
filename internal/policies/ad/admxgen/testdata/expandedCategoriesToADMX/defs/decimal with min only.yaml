@@ -13,4 +13,4 @@
     rangevalues:
       min: "-123.000000"
     meta: '"policy-decimal": {"meta": "i", "default": "0"}'
-    class: machine
+    class: Machine

@@ -10,7 +10,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-common": {"meta": "s", "default": "''''"}'
-    class: machine
+    class: Machine
     default: '''Default Value common'''
   - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-only-21.10
     displayname: summary policy-only-21.10
@@ -23,5 +23,5 @@
       - Supported on Ubuntu 21.10
     elementtype: text
     meta: '"policy-only-21.10": {"meta": "s", "default": "''''"}'
-    class: machine
+    class: Machine
     default: '''Default Value policy-only-21.10'''

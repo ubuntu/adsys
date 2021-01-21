@@ -104,11 +104,16 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			desc = append(desc, strings.TrimSpace(d))
 		}
 
+		class, err := common.ValidClass(policy.Class)
+		if err != nil {
+			return nil, err
+		}
+
 		ep := common.ExpandedPolicy{
 			Key:         policy.ObjectPath,
 			DisplayName: s.Summary,
 			ExplainText: strings.Join(desc, " "),
-			Class:       policy.Class,
+			Class:       class,
 			Release:     release,
 			Default:     defaultVal,
 			Type:        "dconf",

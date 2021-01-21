@@ -11,4 +11,4 @@
     elementtype: text
     default: '[''Value1'', ''Value2'']'
     meta: '"policy-array-string": {"meta": "as", "default": "[]"}'
-    class: machine
+    class: Machine

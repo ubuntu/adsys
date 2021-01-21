@@ -5,7 +5,7 @@ supportedreleases:
 categories:
   - displayname: "Category1 Display Name"
     parent: "windows:Desktop"
-    defaultpolicyclass: "machine"
+    defaultpolicyclass: "Machine"
     policies:
       - "/org/gnome/desktop/policy-common"
       - "/org/gnome/desktop/policy-only-21.10"

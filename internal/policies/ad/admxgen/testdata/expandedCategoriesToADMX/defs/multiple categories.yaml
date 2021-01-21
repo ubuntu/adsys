@@ -11,7 +11,7 @@
     elementtype: text
     default: '''Default Value'''
     meta: '"policy-multiple1": {"meta": "s", "default": "''''"}'
-    class: machine
+    class: Machine
 
 - displayname: Category2 Display Name
   parent: windows:Desktop
@@ -26,4 +26,4 @@
     elementtype: text
     default: '''Default Value'''
     meta: '"policy-multiple2": {"meta": "s", "default": "''''"}'
-    class: machine
+    class: Machine

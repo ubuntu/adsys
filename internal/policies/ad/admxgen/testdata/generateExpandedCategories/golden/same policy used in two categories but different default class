@@ -10,7 +10,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-simple": {"meta": "s", "default": "''''"}'
-    class: parent category class
+    class: Machine
     default: '''Default Value'''
   children:
   - displayname: Child Category Display Name
@@ -25,5 +25,5 @@
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
       elementtype: text
       meta: '"policy-simple": {"meta": "s", "default": "''''"}'
-      class: child category class
+      class: User
       default: '''Default Value'''

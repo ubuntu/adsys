@@ -5,6 +5,6 @@ supportedreleases:
 categories:
   - displayname: "Category1 Display Name"
     parent: "windows:Desktop"
-    defaultpolicyclass: "machine"
+    defaultpolicyclass: "Machine"
     policies:
       - "/org/gnome/desktop/policy-simple"

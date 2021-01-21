@@ -14,4 +14,4 @@
       min: "123.000000"
       max: "15000.000000"
     meta: '"policy-double": {"meta": "s", "default": "0"}'
-    class: machine
+    class: Machine

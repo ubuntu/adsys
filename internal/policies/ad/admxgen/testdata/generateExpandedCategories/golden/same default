@@ -10,5 +10,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-common": {"meta": "s", "default": "''''"}'
-    class: machine
+    class: Machine
     default: '''Default Value common'''

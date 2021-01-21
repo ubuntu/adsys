@@ -14,7 +14,7 @@
   </categories>
 
   <policies>
-    <policy name="DebianSummary" class="machine" displayName="$(string.DebianDisplaySummary)" explainText="$(string.DebianExplainTextSummary)" presentation="$(presentation.DebianPresentationSummary)" key="." valueName="metaValues">
+    <policy name="DebianSummary" class="Machine" displayName="$(string.DebianDisplaySummary)" explainText="$(string.DebianExplainTextSummary)" presentation="$(presentation.DebianPresentationSummary)" key="." valueName="metaValues">
       <parentCategory ref="DebianCategory1DisplayName" />
       <enabledValue><string>"policy-simple": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>

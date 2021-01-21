@@ -10,7 +10,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: decimal
     meta: '"policy-range": {"meta": "i", "default": "0"}'
-    class: machine
+    class: Machine
     default: '''Default Value'''
     rangevalues:
       min: "-123"

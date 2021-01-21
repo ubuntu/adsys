@@ -10,7 +10,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"text-policy": {"meta": "s", "default": ""}'
-    class: machine
+    class: Machine
   - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-only-21.10
     displayname: summary policy-only-21.10
     explaintext: |-
@@ -22,4 +22,4 @@
       - Supported on Ubuntu 21.10
     elementtype: text
     meta: '"text-policy": {"meta": "s", "default": ""}'
-    class: machine
+    class: Machine

@@ -11,4 +11,4 @@
     elementtype: text
     default: "123.456"
     meta: '"policy-double": {"meta": "s", "default": "0"}'
-    class: machine
+    class: Machine

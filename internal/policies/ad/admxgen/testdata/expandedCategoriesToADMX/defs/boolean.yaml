@@ -11,4 +11,4 @@
     elementtype: boolean
     default: 'true'
     meta: '"policy-boolean": {"meta": "s", "default": "false"}'
-    class: machine
+    class: Machine

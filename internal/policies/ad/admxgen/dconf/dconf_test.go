@@ -64,10 +64,12 @@ func TestGenerate(t *testing.T) {
 		"Empty":                              {root: "simple"},
 		"Invalid schema files are skipped":   {root: "broken_schema"},
 		"Invalid override files are skipped": {root: "broken_override"},
+		"Valid class should be capitalized":  {root: "simple"},
 
 		// Error cases
 		"Unsupported key type": {root: "exotic_type", wantErr: true},
 		"Enum does not exist":  {root: "nonexistent_enum", wantErr: true},
+		"Invalid class":        {root: "simple", wantErr: true},
 	}
 	for name, tc := range tests {
 		def := strings.ToLower(strings.ReplaceAll(name, " ", "_"))

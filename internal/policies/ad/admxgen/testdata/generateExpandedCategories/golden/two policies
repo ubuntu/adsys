@@ -10,7 +10,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-first": {"meta": "s", "default": "''''"}'
-    class: machine
+    class: Machine
     default: '''Default Value first'''
   - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-second
     displayname: summary second
@@ -21,5 +21,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '"policy-second": {"meta": "s", "default": "''''"}'
-    class: machine
+    class: Machine
     default: '''Default Value second'''

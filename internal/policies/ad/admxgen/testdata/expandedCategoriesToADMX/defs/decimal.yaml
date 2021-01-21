@@ -11,4 +11,4 @@
     elementtype: decimal
     default: "42"
     meta: '"policy-decimal": {"meta": "i", "default": "0"}'
-    class: machine
+    class: Machine

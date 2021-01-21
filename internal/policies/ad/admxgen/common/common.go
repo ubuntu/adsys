@@ -1,6 +1,13 @@
 // Package common defines the data structures used to generate ADMX templates from policy definition files
 package common
 
+import (
+	"fmt"
+	"strings"
+
+	"github.com/ubuntu/adsys/internal/i18n"
+)
+
 const (
 	// WidgetTypeText will use the text widget type
 	WidgetTypeText WidgetType = "text"
@@ -43,4 +50,15 @@ type ExpandedPolicy struct {
 	// those are unused in expandedCategories
 	Release string `yaml:",omitempty"`
 	Type    string `yaml:",omitempty"` // dconf, install…
+}
+
+// ValidClass returns a valid, capitalized class. It will error out if it can’t match the input as valid class
+func ValidClass(class string) (string, error) {
+	c := strings.Title(class)
+
+	if c != "" && c != "User" && c != "Machine" {
+		return "", fmt.Errorf(i18n.G("invalid class %q"), class)
+	}
+
+	return c, nil
 }

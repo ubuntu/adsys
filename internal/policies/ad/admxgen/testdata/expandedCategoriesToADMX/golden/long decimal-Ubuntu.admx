@@ -14,7 +14,7 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuSummary" class="machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="." valueName="metaValues">
+    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="." valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <enabledValue><string>"policy-long-decimal": {"meta": "i", "default": "0"}</string></enabledValue>
       <elements>

@@ -11,7 +11,7 @@
     elementtype: text
     default: '''Default Value first'''
     meta: '"policy-first": {"meta": "s", "default": "''''"}'
-    class: machine
+    class: Machine
   children:
   - displayname: Child Category Display Name
     parent: ""
@@ -26,4 +26,4 @@
       elementtype: text
       default: '''Default Value second'''
       meta: '"policy-second": {"meta": "s", "default": "''''"}'
-      class: machine
+      class: Machine

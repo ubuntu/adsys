@@ -4,11 +4,11 @@ supportedreleases:
 categories:
   - displayname: "Category 1 Display Name"
     parent: "windows:Desktop"
-    defaultpolicyclass: "machine"
+    defaultpolicyclass: "Machine"
     policies:
       - "/org/gnome/desktop/policy-first"
   - displayname: "Category 2 Display Name"
     parent: "windows:Desktop"
-    defaultpolicyclass: "machine"
+    defaultpolicyclass: "Machine"
     policies:
       - "/org/gnome/desktop/policy-second"
