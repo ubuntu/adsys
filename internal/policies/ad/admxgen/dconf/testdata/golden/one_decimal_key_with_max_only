@@ -6,6 +6,6 @@
   class: ""
   default: "42"
   rangevalues:
-    max: "15000.000000"
+    max: "15000"
   release: "20.04"
   type: dconf

@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -141,14 +142,16 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			if min == "" {
 				min = "0"
 			}
-			if s, err := strconv.ParseFloat(min, 32); err != nil {
+			if s, err := strconv.ParseFloat(min, 64); err != nil {
 				log.Warning("min value for long decimal is not a valid float, forcing to 0 for long decimal")
 			} else {
-				if s < 0 {
-					min = "0"
-				}
+				min = fmt.Sprintf("%f", math.Max(0, s))
 			}
 			ep.RangeValues.Min = min
+		}
+		if m.widgetType == common.WidgetTypeLongDecimal || m.widgetType == common.WidgetTypeDecimal {
+			ep.RangeValues.Min = strings.Split(ep.RangeValues.Min, ".")[0]
+			ep.RangeValues.Max = strings.Split(ep.RangeValues.Max, ".")[0]
 		}
 
 		r = append(r, ep)

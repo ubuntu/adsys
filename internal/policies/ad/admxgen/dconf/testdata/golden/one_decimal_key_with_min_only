@@ -6,6 +6,6 @@
   class: ""
   default: "42"
   rangevalues:
-    min: "-123.000000"
+    min: "-123"
   release: "20.04"
   type: dconf
