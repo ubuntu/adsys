@@ -16,6 +16,7 @@
   <policies>
     <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-choices" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
           <enum id="UbuntuElemSummary" valueName="all">
@@ -39,6 +40,7 @@
                     <string>Choice 4</string>
                 </value>
               </item>
+          </enum>
       </elements>
     </policy>
   </policies>

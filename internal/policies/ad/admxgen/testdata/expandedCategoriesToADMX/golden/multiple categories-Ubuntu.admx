@@ -19,6 +19,7 @@
   <policies>
     <policy name="UbuntuSummary1" class="Machine" displayName="$(string.UbuntuDisplaySummary1)" explainText="$(string.UbuntuExplainTextSummary1)" presentation="$(presentation.UbuntuPresentationSummary1)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple1" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemSummary1" valueName="all" />
@@ -26,6 +27,7 @@
     </policy>
     <policy name="UbuntuSummary2" class="Machine" displayName="$(string.UbuntuDisplaySummary2)" explainText="$(string.UbuntuExplainTextSummary2)" presentation="$(presentation.UbuntuPresentationSummary2)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple2" valueName="metaValues">
       <parentCategory ref="UbuntuCategory2DisplayName" />
+      <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemSummary2" valueName="all" />

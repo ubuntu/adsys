@@ -16,6 +16,7 @@
   <policies>
     <policy name="UbuntuSimple-Text-PropertySummary" class="Machine" displayName="$(string.UbuntuDisplaySimple-Text-PropertySummary)" explainText="$(string.UbuntuExplainTextSimple-Text-PropertySummary)" presentation="$(presentation.UbuntuPresentationSimple-Text-PropertySummary)" key="Software\Ubuntu\dconf\com\ubuntu\simple\simple-text-property" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemSimple-Text-PropertySummary" valueName="all" />

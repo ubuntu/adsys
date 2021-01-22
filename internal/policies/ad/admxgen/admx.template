@@ -19,6 +19,7 @@
 {{- range .Policies}}
     <policy name="{{toID "" .DisplayName}}" class="{{.Class}}" displayName="$(string.{{toID "Display" .DisplayName}})" explainText="$(string.{{toID "ExplainText" .DisplayName}})" presentation="$(presentation.{{toID "Presentation" .DisplayName}})" key="{{.Key}}" valueName="metaValues">
       <parentCategory ref="{{.ParentCategory}}" />
+      <supportedOn ref="Ubuntu" />
       <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
         {{- if ne .ElementType "dropdownList"}}
@@ -35,6 +36,7 @@
                 </value>
               </item>
           {{- end}}
+          </enum>
         {{- end}}
       </elements>
     </policy>
