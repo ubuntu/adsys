@@ -142,11 +142,14 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			if min == "" {
 				min = "0"
 			}
-			if s, err := strconv.ParseFloat(min, 64); err != nil {
-				log.Warning("min value for long decimal is not a valid float, forcing to 0 for long decimal")
-			} else {
-				min = fmt.Sprintf("%f", math.Max(0, s))
+			if min == "NaN" || min == "Inf" {
+				return nil, fmt.Errorf(i18n.G("min value for long decimal is not a valid float: %s"), min)
 			}
+			s, err := strconv.ParseFloat(min, 64)
+			if err != nil {
+				return nil, fmt.Errorf(i18n.G("min value for long decimal is not a valid float: %v"), err)
+			}
+			min = fmt.Sprintf("%f", math.Max(0, s))
 			ep.RangeValues.Min = min
 		}
 		if m.widgetType == common.WidgetTypeLongDecimal || m.widgetType == common.WidgetTypeDecimal {
@@ -232,8 +235,7 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 
 		var sl schemaList
 		if err := xml.Unmarshal(d, &sl); err != nil {
-			log.Warningf("%s is an invalid schema: %v", p, err)
-			continue
+			return nil, nil, fmt.Errorf(i18n.G("%s is an invalid schema: %v"), p, err)
 		}
 
 		for _, s := range sl.Schema {

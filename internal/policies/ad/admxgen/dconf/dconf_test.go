@@ -62,7 +62,6 @@ func TestGenerate(t *testing.T) {
 		// Edge cases
 		"No key on system":                   {root: "simple"},
 		"Empty":                              {root: "simple"},
-		"Invalid schema files are skipped":   {root: "broken_schema"},
 		"Invalid override files are skipped": {root: "broken_override"},
 		"Valid class should be capitalized":  {root: "simple"},
 
@@ -70,6 +69,9 @@ func TestGenerate(t *testing.T) {
 		"Unsupported key type": {root: "exotic_type", wantErr: true},
 		"Enum does not exist":  {root: "nonexistent_enum", wantErr: true},
 		"Invalid class":        {root: "simple", wantErr: true},
+		"Invalid min":          {root: "invalid_min", wantErr: true},
+		"NaN min":              {root: "nan_min", wantErr: true},
+		"Invalid schema files": {root: "broken_schema", wantErr: true},
 	}
 	for name, tc := range tests {
 		def := strings.ToLower(strings.ReplaceAll(name, " ", "_"))
