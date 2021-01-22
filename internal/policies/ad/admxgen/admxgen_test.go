@@ -195,6 +195,8 @@ func TestMainExpand(t *testing.T) {
 	}{
 		"dconf": {root: "simple"},
 
+		"ignore categories and non yaml files": {root: "simple"},
+
 		/* Error cases */
 		"no release file":         {root: "no release file", wantErr: true},
 		"no version_id":           {root: "no version id", wantErr: true},

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/dconf"
 	"golang.org/x/sync/errgroup"
@@ -112,21 +113,25 @@ func expand(src, dst, root, currentSession string) error {
 		return fmt.Errorf("can't read VERSION_ID from %s", releaseFile)
 	}
 
-	// Expand policies for all supported yaml files
-	files, err := ioutil.ReadDir(src)
-	if err != nil {
-		return err
+	if _, err = os.Stat(src); err != nil {
+		return fmt.Errorf(i18n.G("failed to access definition files: %w"), err)
 	}
+	// Expand policies for all supported yaml files
+	files, err := filepath.Glob(filepath.Join(src, "*.yaml"))
+	if err != nil {
+		return fmt.Errorf(i18n.G("failed to read list of definition files: %w"), err)
+	}
+
 	expandedPoliciesStream := make(chan []common.ExpandedPolicy, len(files))
 	var g errgroup.Group
 	for _, f := range files {
 		f := f
 		g.Go(func() error {
-			t := strings.TrimSuffix(strings.ToLower(filepath.Base(f.Name())), ".yaml")
+			t := strings.TrimSuffix(strings.ToLower(filepath.Base(f)), ".yaml")
 			if t == "categories" {
 				return nil
 			}
-			data, err := ioutil.ReadFile(filepath.Join(src, f.Name()))
+			data, err := ioutil.ReadFile(f)
 			if err != nil {
 				return err
 			}
