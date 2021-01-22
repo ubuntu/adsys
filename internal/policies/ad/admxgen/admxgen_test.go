@@ -124,12 +124,13 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"decimal with range":    {},
 		"decimal with min only": {},
 		"decimal with max only": {},
-		"long decimal":          {},
-		"array of strings":      {},
-		"array of integers":     {},
-		"choices":               {},
-		"double":                {},
-		"double with range":     {},
+		// TODO: range with min or max < 0 -> text
+		"long decimal":      {},
+		"array of strings":  {},
+		"array of integers": {},
+		"choices":           {},
+		"double":            {},
+		"double with range": {},
 
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},

@@ -25,13 +25,14 @@ type Policy struct {
 	Class      string
 }
 
+// TODO:
+//     - if Min or Max < 0 -> text + explaintext
+// Double with range: explaintext
+
+// handle per Releases
+
 // schemasPath is the path to the directory that contains dconf schemas and overrides
 const schemasPath = "usr/share/glib-2.0/schemas/"
-
-type foo struct {
-	w common.WidgetType
-	d string
-}
 
 var (
 	schemaTypeToMetadata = map[string]struct {
