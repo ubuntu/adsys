@@ -11,7 +11,7 @@
 {{- end}}
 {{- range .Policies}}
       <string id="{{toID (print "Display" .Class) .Key}}">{{.DisplayName}}</string>
-      <string id="{{toID (print "ExplainText" .Class) .Key}}">{{.ExplainText}}</string>
+      <string id="{{toID (print "ExplainText" .Class) .Key}}">{{html .ExplainText}}</string>
 {{- $key := .Key}}
 {{- $class := .Class}}
 {{- range $i, $c := .Choices}}

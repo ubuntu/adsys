@@ -33,7 +33,7 @@
           {{- range $i, $c := .Choices}}
               <item displayName="$(string.{{toID (print "Item" $class) $key}}{{ $i }})">
                 <value>
-                    <string>{{ $c }}</string>
+                    <string>{{ html $c }}</string>
                 </value>
               </item>
           {{- end}}
