@@ -3,6 +3,7 @@
 
 export GOCACHE=$(shell mktemp -d /tmp/gocache-XXXX)
 export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/config.Version=$(shell dpkg-parsechangelog -S Version) --mod=vendor
+export DH_GOLANG_INSTALL_EXTRA := internal/policies/ad/admxgen/admx.template internal/policies/ad/admxgen/adml.template
 
 %:
 	dh $@ --buildsystem=golang --with=golang,apport
@@ -21,3 +22,5 @@ override_dh_auto_install:
 	ln -s adsysd debian/adsys/sbin/adsysctl
 	# run go generate to install assets, but don’t regenerate them
 	GENERATE_ONLY_INSTALL_TO_PREFIX=$(CURDIR)/debian/adsys/usr/share go generate $(GOFLAGS) ./...
+	# remove admxgen helper from installation
+	rm debian/adsys/sbin/admxgen
