@@ -17,20 +17,20 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuSummaryFirst" class="Machine" displayName="$(string.UbuntuDisplaySummaryFirst)" explainText="$(string.UbuntuExplainTextSummaryFirst)" presentation="$(presentation.UbuntuPresentationSummaryFirst)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-first" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyFirst" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyFirst)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyFirst)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyFirst)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-first" valueName="metaValues">
       <parentCategory ref="UbuntuParentCategoryDisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
-        <text id="UbuntuElemSummaryFirst" valueName="all" />
+        <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyFirst" valueName="all" />
       </elements>
     </policy>
-    <policy name="UbuntuSummarySecond" class="Machine" displayName="$(string.UbuntuDisplaySummarySecond)" explainText="$(string.UbuntuExplainTextSummarySecond)" presentation="$(presentation.UbuntuPresentationSummarySecond)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-second" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicySecond" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicySecond)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySecond)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySecond)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-second" valueName="metaValues">
       <parentCategory ref="UbuntuChildCategoryDisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
-        <text id="UbuntuElemSummarySecond" valueName="all" />
+        <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicySecond" valueName="all" />
       </elements>
     </policy>
   </policies>

@@ -7,16 +7,16 @@
 
     <stringTable>
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
-      <string id="UbuntuDisplaySummary">summary</string>
-      <string id="UbuntuExplainTextSummary">description
+      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyBoolean">summary</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyBoolean">description
 
 Default: true
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
     </stringTable>
 
     <presentationTable>
-      <presentation id="UbuntuPresentationSummary">
-        <checkBox refId="UbuntuElemSummary" defaultChecked="true">summary</checkBox>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyBoolean">
+        <checkBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyBoolean" defaultChecked="true">summary</checkBox>
       </presentation>
     </presentationTable>
 

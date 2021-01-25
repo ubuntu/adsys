@@ -14,12 +14,12 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-long-decimal" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyLongDecimal" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyLongDecimal)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyLongDecimal)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyLongDecimal)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-long-decimal" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "i", "default": "0"}</string></enabledValue>
       <elements>
-        <longDecimal id="UbuntuElemSummary" valueName="all" />
+        <longDecimal id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyLongDecimal" valueName="all" />
       </elements>
     </policy>
   </policies>

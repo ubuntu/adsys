@@ -7,16 +7,16 @@
 
     <stringTable>
       <string id="DebianDisplayCategory1DisplayName">Category1 Display Name</string>
-      <string id="DebianDisplaySummary">summary</string>
-      <string id="DebianExplainTextSummary">description
+      <string id="DebianDisplayMachineSoftwareUbuntuDconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="DebianExplainTextMachineSoftwareUbuntuDconfOrgGnomeDesktopPolicySimple">description
 
 Default: 'Default Value'
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
     </stringTable>
 
     <presentationTable>
-      <presentation id="DebianPresentationSummary">
-        <textBox refId="DebianElemSummary">
+      <presentation id="DebianPresentationMachineSoftwareUbuntuDconfOrgGnomeDesktopPolicySimple">
+        <textBox refId="DebianElemMachineSoftwareUbuntuDconfOrgGnomeDesktopPolicySimple">
           <label>summary</label>
         </textBox>
       </presentation>

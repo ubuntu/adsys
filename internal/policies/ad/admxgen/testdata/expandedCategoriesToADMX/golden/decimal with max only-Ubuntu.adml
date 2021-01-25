@@ -7,16 +7,16 @@
 
     <stringTable>
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
-      <string id="UbuntuDisplaySummary">summary</string>
-      <string id="UbuntuExplainTextSummary">description
+      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyDecimalWithRange">summary</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDecimalWithRange">description
 
 Default: 42
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
     </stringTable>
 
     <presentationTable>
-      <presentation id="UbuntuPresentationSummary">
-        <decimalTextBox refId="UbuntuElemSummary">summary</decimalTextBox>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDecimalWithRange">
+        <decimalTextBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyDecimalWithRange">summary</decimalTextBox>
       </presentation>
     </presentationTable>
 

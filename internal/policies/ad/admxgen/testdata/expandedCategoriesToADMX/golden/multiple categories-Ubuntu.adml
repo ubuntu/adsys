@@ -8,26 +8,26 @@
     <stringTable>
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
       <string id="UbuntuDisplayCategory2DisplayName">Category2 Display Name</string>
-      <string id="UbuntuDisplaySummary1">summary 1</string>
-      <string id="UbuntuExplainTextSummary1">description 1
+      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyMultiple1">summary 1</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple1">description 1
 
 Default: 'Default Value'
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
-      <string id="UbuntuDisplaySummary2">summary 2</string>
-      <string id="UbuntuExplainTextSummary2">description 2
+      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyMultiple2">summary 2</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple2">description 2
 
 Default: 'Default Value'
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
     </stringTable>
 
     <presentationTable>
-      <presentation id="UbuntuPresentationSummary1">
-        <textBox refId="UbuntuElemSummary1">
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple1">
+        <textBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyMultiple1">
           <label>summary 1</label>
         </textBox>
       </presentation>
-      <presentation id="UbuntuPresentationSummary2">
-        <textBox refId="UbuntuElemSummary2">
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple2">
+        <textBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyMultiple2">
           <label>summary 2</label>
         </textBox>
       </presentation>

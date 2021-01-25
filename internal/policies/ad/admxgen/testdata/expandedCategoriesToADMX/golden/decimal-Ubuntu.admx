@@ -14,12 +14,12 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuSummary" class="Machine" displayName="$(string.UbuntuDisplaySummary)" explainText="$(string.UbuntuExplainTextSummary)" presentation="$(presentation.UbuntuPresentationSummary)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-decimal" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDecimal" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyDecimal)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDecimal)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDecimal)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-decimal" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "i", "default": "0"}</string></enabledValue>
       <elements>
-        <decimal id="UbuntuElemSummary" valueName="all" />
+        <decimal id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyDecimal" valueName="all" />
       </elements>
     </policy>
   </policies>

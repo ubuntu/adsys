@@ -7,16 +7,16 @@
 
     <stringTable>
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
-      <string id="UbuntuDisplaySimple-Text-PropertySummary">simple-text-property summary</string>
-      <string id="UbuntuExplainTextSimple-Text-PropertySummary">simple-text-property description
+      <string id="UbuntuDisplayMachineDconfComUbuntuSimpleSimpleTextProperty">simple-text-property summary</string>
+      <string id="UbuntuExplainTextMachineDconfComUbuntuSimpleSimpleTextProperty">simple-text-property description
 
 Default: simple-text-property Default Value
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
     </stringTable>
 
     <presentationTable>
-      <presentation id="UbuntuPresentationSimple-Text-PropertySummary">
-        <textBox refId="UbuntuElemSimple-Text-PropertySummary">
+      <presentation id="UbuntuPresentationMachineDconfComUbuntuSimpleSimpleTextProperty">
+        <textBox refId="UbuntuElemMachineDconfComUbuntuSimpleSimpleTextProperty">
           <label>simple-text-property summary</label>
         </textBox>
       </presentation>

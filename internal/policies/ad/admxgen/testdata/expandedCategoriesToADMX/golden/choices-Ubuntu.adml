@@ -7,20 +7,20 @@
 
     <stringTable>
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
-      <string id="UbuntuDisplaySummary">summary</string>
-      <string id="UbuntuExplainTextSummary">description
+      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyChoices">summary</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices">description
 
 Default: 'Choice 1'
 Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
-      <string id="UbuntuItemSummary0">Choice 1</string>
-      <string id="UbuntuItemSummary1">Choice 2</string>
-      <string id="UbuntuItemSummary2">Choice 3</string>
-      <string id="UbuntuItemSummary3">Choice 4</string>
+      <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices0">Choice 1</string>
+      <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices1">Choice 2</string>
+      <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices2">Choice 3</string>
+      <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices3">Choice 4</string>
     </stringTable>
 
     <presentationTable>
-      <presentation id="UbuntuPresentationSummary">
-        <dropdownList  refId="UbuntuElemSummary" noSort="true">summary</dropdownList>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyChoices">
+        <dropdownList  refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyChoices" noSort="true">summary</dropdownList>
       </presentation>
     </presentationTable>
 
