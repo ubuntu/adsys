@@ -41,6 +41,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"text/template"
@@ -317,8 +318,12 @@ type policyForADMX struct {
 	Default string
 }
 
-func (g generator) toID(prefix, n string) string {
-	return g.distroID + strings.Title(prefix) + strings.ReplaceAll(strings.Title(n), " ", "")
+// Make a Regex to say we only want letters and numbers
+var re = regexp.MustCompile("[^a-zA-Z0-9]+")
+
+func (g generator) toID(prefix, s string) string {
+	s = strings.TrimPrefix(s, `Software\`+g.distroID)
+	return g.distroID + re.ReplaceAllString(strings.Title(prefix)+strings.Title(s), "")
 }
 
 func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) error {

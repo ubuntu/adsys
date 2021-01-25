@@ -10,30 +10,31 @@
       <string id="{{toID "Display" .DisplayName}}">{{.DisplayName}}</string>
 {{- end}}
 {{- range .Policies}}
-      <string id="{{toID "Display" .DisplayName}}">{{.DisplayName}}</string>
-      <string id="{{toID "ExplainText" .DisplayName}}">{{.ExplainText}}</string>
-{{- $displayName := .DisplayName}}
+      <string id="{{toID (print "Display" .Class) .Key}}">{{.DisplayName}}</string>
+      <string id="{{toID (print "ExplainText" .Class) .Key}}">{{.ExplainText}}</string>
+{{- $key := .Key}}
+{{- $class := .Class}}
 {{- range $i, $c := .Choices}}
-      <string id="{{toID "Item" $displayName}}{{ $i }}">{{ $c }}</string>
+      <string id="{{toID (print "Item" $class) $key}}{{ $i }}">{{ $c }}</string>
 {{- end}}
 {{- end}}
     </stringTable>
 
     <presentationTable>
 {{- range .Policies}}
-      <presentation id="{{toID "Presentation" .DisplayName}}">
+      <presentation id="{{toID (print "Presentation" .Class) .Key}}">
 {{- if eq .ElementType "text"}}
-        <textBox refId="{{toID "Elem" .DisplayName}}">
+        <textBox refId="{{toID (print "Elem" .Class) .Key}}">
           <label>{{.DisplayName}}</label>
         </textBox>
 {{- else if eq .ElementType "boolean"}}
-        <checkBox refId="{{toID "Elem" .DisplayName}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
+        <checkBox refId="{{toID (print "Elem" .Class) .Key}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
 {{- else if eq .ElementType "decimal"}}
-        <decimalTextBox refId="{{toID "Elem" .DisplayName}}">{{.DisplayName}}</decimalTextBox>
+        <decimalTextBox refId="{{toID (print "Elem" .Class) .Key}}">{{.DisplayName}}</decimalTextBox>
 {{- else if eq .ElementType "longDecimal"}}
-        <longDecimalTextBox refId="{{toID "Elem" .DisplayName}}">{{.DisplayName}}</longDecimalTextBox>
+        <longDecimalTextBox refId="{{toID (print "Elem" .Class) .Key}}">{{.DisplayName}}</longDecimalTextBox>
 {{- else if eq .ElementType "dropdownList"}}
-        <dropdownList  refId="{{toID "Elem" .DisplayName}}" noSort="true">{{.DisplayName}}</dropdownList>
+        <dropdownList  refId="{{toID (print "Elem" .Class) .Key}}" noSort="true">{{.DisplayName}}</dropdownList>
 {{- end}}
       </presentation>
 {{- end}}
