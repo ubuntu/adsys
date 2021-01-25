@@ -247,7 +247,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		for _, p := range cat.Policies {
 			pol, ok := mergedPolicies[p]
 			if !ok {
-				return expandedCategory{}, fmt.Errorf(i18n.G("policy %s referenced in %q does not exist"), p, cat.DisplayName)
+				return expandedCategory{}, fmt.Errorf(i18n.G("policy %s referenced in %q does not exist in any supported releases"), p, cat.DisplayName)
 			}
 			if pol.Class == "" {
 				pol.Class = defaultPolicyClass
