@@ -11,13 +11,13 @@
       <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyFirst">summary first</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyFirst">description first
 
-Default: 'Default Value first'
-Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
+Default: &#39;Default Value first&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
       <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicySecond">summary second</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySecond">description second
 
-Default: 'Default Value second'
-Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
+Default: &#39;Default Value second&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
     </stringTable>
 
     <presentationTable>

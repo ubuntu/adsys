@@ -10,8 +10,8 @@
       <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyChoices">summary</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices">description
 
-Default: 'Choice 1'
-Note: default system value is used for "Not Configured" and enforced if "Disabled".</string>
+Default: &#39;Choice 1&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
       <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices0">Choice 1</string>
       <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices1">Choice 2</string>
       <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices2">Choice 3</string>
