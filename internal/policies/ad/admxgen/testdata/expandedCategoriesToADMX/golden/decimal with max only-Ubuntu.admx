@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="desktop" namespace="Microsoft.Policies.WindowsDesktop" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="windows:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDecimalWithRange" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>"all": {"meta": "i", "default": "0"}</string></enabledValue>
+      <elements>
+        <decimal id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyDecimalWithRange" valueName="all" maxValue="15000.000000" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

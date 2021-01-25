@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
+    <schema path="/com/ubuntu/types/" id="com.ubuntu.types">
+        <key type="u" name="decimal-property-with-NaN-min">
+            <default>42</default>
+            <range min="NaN" max="15000" />
+            <summary>decimal-property-with-NaN-min summary</summary>
+            <description>decimal-property-with-NaN-min description</description>
+        </key>
+    </schema>
+</schemalist>

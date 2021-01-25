@@ -1,0 +1,3 @@
+[com.ubuntu.simple.overridden
+key with no value
+simple-text-property-overridden-by-multiple-files= 'This should not be used'

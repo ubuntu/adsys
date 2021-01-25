@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Ubuntu policy</displayName>
+  <description>This is the Ubuntu policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="UbuntuDisplayParentCategoryDisplayName">Parent Category Display Name</string>
+      <string id="UbuntuDisplayChildCategoryDisplayName">Child Category Display Name</string>
+      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyFirst">summary first</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyFirst">description first
+
+Default: &#39;Default Value first&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
+      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicySecond">summary second</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySecond">description second
+
+Default: &#39;Default Value second&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyFirst">
+        <textBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyFirst">
+          <label>summary first</label>
+        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySecond">
+        <textBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicySecond">
+          <label>summary second</label>
+        </textBox>
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>

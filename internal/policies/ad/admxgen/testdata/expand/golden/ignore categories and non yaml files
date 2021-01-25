@@ -1,0 +1,9 @@
+- key: /com/ubuntu/simple/simple-text-property
+  displayname: simple-text-property summary
+  explaintext: simple-text-property description
+  elementtype: text
+  meta: '"all": {"meta": "s", "default": "''''"}'
+  class: ""
+  default: '''simple-text-property Default Value'''
+  release: "20.04"
+  type: dconf

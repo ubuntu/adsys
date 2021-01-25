@@ -1,0 +1,2 @@
+- objectpath: "/com/ubuntu/1/relocatable/property-with-override"
+  schema: "com.ubuntu.relocatable"

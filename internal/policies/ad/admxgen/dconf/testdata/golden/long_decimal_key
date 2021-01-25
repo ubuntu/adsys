@@ -1,0 +1,11 @@
+- key: /com/ubuntu/types/long-decimal-property
+  displayname: decimal-property summary
+  explaintext: decimal-property description
+  elementtype: longDecimal
+  meta: '"all": {"meta": "u", "default": "0"}'
+  class: ""
+  default: "42"
+  rangevalues:
+    min: "0"
+  release: "20.04"
+  type: dconf

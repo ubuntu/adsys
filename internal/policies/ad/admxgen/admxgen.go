@@ -17,8 +17,8 @@ admxgen generates admx and adml from a category and multiple policies per releas
     (install script)                                            |
     install.yaml   -----|                                       |
                         |                                       |
-	(dconf)             |----|> ExpandedPolicies --|            |
-	dconf.yaml ---|     |                          |            |
+    (dconf)             |----|> ExpandedPolicies --|            |
+    dconf.yaml ---|     |                          |            |
                   |-----|                          |            |
     schema -------|                                |            |
                                                    |        |-------|
@@ -28,8 +28,8 @@ admxgen generates admx and adml from a category and multiple policies per releas
     (install script)                               |
     install.yaml   -----|                          |
                         |                          |
-	(dconf)             |----|> ExpandedPolicies --|
-	dconf.yaml ---|     |
+    (dconf)             |----|> ExpandedPolicies --|
+    dconf.yaml ---|     |
                   |-----|
     schema -------|
 
@@ -41,11 +41,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"text/template"
 
-	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 )
@@ -56,7 +56,7 @@ type expandedCategory struct {
 	DisplayName string
 	Parent      string
 	Policies    []common.ExpandedPolicy
-	Children    []expandedCategory
+	Children    []expandedCategory `yaml:",omitempty"`
 }
 
 type category struct {
@@ -67,8 +67,19 @@ type category struct {
 	Children           []category
 }
 
-func generateExpandedCategories(categories []category, policies []common.ExpandedPolicy, supportedReleases []string) ([]expandedCategory, error) {
-	supportedReleaseNum := len(supportedReleases)
+type generator struct {
+	distroID          string
+	supportedReleases []string
+}
+
+func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy) ([]expandedCategory, error) {
+	supportedReleaseNum := len(g.supportedReleases)
+
+	// noPoliciesOn is a map to attest that each release was assigned at least one property
+	noPoliciesOn := make(map[string]struct{})
+	for _, r := range g.supportedReleases {
+		noPoliciesOn[r] = struct{}{}
+	}
 
 	// 1. Create MergedPolicies, indexed by key
 
@@ -101,53 +112,95 @@ func generateExpandedCategories(categories []category, policies []common.Expande
 			release string
 		}
 		var defaults []defaultVal
+		var defaultString string
 
-		for _, release := range supportedReleases {
+		var rangeDecimal common.DecimalRange
+		var choices []string
+
+		isFirst := true
+		for _, release := range g.supportedReleases {
 			p, ok := indexedPolicies[key][release]
 			// if it doesn’t exist for this release, skip
 			if !ok {
 				continue
 			}
 
-			// meta is different -> error
-			if meta != "" && meta != p.Meta {
-				return nil, fmt.Errorf("%s is of different meta between releases. Got %q and %q", key, meta, p.Meta)
+			// we have one policy at least on this release
+			delete(noPoliciesOn, p.Release)
+
+			// meta, type, class or elementtype is different -> error
+			if !isFirst {
+				if meta != p.Meta {
+					return nil, fmt.Errorf("%s is of different meta between releases. Got %q and %q", key, meta, p.Meta)
+				}
+				if typePol != p.Type {
+					return nil, fmt.Errorf("%s is of different policy type between releases. Got %q and %q", key, typePol, p.Type)
+				}
+				if class != p.Class {
+					return nil, fmt.Errorf("%s is of different class between releases. Got %q and %q", key, class, p.Class)
+				}
+				if elementType != p.ElementType {
+					return nil, fmt.Errorf("%s is of different element type between releases. Got %q and %q", key, elementType, p.ElementType)
+				}
+				if rangeDecimal != p.RangeValues {
+					return nil, fmt.Errorf("%s has a different range type between releases. Got %q and %q", key, rangeDecimal, p.RangeValues)
+				}
+
+				sameChoices := true
+				if len(choices) != len(p.Choices) {
+					sameChoices = false
+				} else {
+					for i, c := range choices {
+						if c != p.Choices[i] {
+							sameChoices = false
+							break
+						}
+					}
+				}
+				if !sameChoices {
+					return nil, fmt.Errorf("%s has different choices between releases. Got %q and %q", key, choices, p.Choices)
+				}
 			}
 
-			typePol = string(p.ElementType)
+			typePol = p.Type
 			displayName = p.DisplayName
 			if writeSupportedOn {
-				supportedOn = append(supportedOn, fmt.Sprintf(i18n.G("- Supported on %s"), release))
+				supportedOn = append(supportedOn, fmt.Sprintf(i18n.G("- Supported on %s %s"), g.distroID, release))
 			}
 
 			explainText = p.ExplainText
 			elementType = p.ElementType
 			meta = p.Meta
 			class = p.Class
+			defaultString = p.Default
+			rangeDecimal = p.RangeValues
+			choices = p.Choices
 
 			defaults = append(defaults, defaultVal{value: p.Default, release: release})
+
+			isFirst = false
 		}
 
 		// Display all the default per release if there is at least 1 different
 		// otherwise display only 1 defaut for all the releases
-		var defaultString string
 		var perReleaseDefault []string
+		var isPerReleaseDefault bool
 		// defaultVal is already ordered per release as we iterated previously
 		for _, d := range defaults {
-			perReleaseDefault = append(perReleaseDefault, fmt.Sprintf(i18n.G("Default for %s %s: %s"), config.DistroID, d.release, d.value))
+			perReleaseDefault = append(perReleaseDefault, fmt.Sprintf(i18n.G("Default for %s %s: %s"), g.distroID, d.release, d.value))
 
 			if defaultString != "" && d.value != defaultString {
-				defaultString = "PERRELEASE"
+				isPerReleaseDefault = true
 				continue
 			}
 			defaultString = d.value
 		}
-		if defaultString == "PERRELEASE" {
+		if isPerReleaseDefault {
 			explainText = fmt.Sprintf("%s\n\n%s", explainText, strings.Join(perReleaseDefault, "\n"))
 		} else {
 			explainText = fmt.Sprintf("%s\n\n%s", explainText, fmt.Sprintf(i18n.G("Default: %s"), defaultString))
 		}
-		explainText = fmt.Sprintf(i18n.G(`%s\nNote: default system value is used for "Not Configured" and enforced if "Disabled".`), explainText)
+		explainText = fmt.Sprintf(i18n.G("%s\nNote: default system value is used for \"Not Configured\" and enforced if \"Disabled\"."), explainText)
 
 		// Display supportedOn if there is one different from others
 		if len(supportedOn) != 0 {
@@ -155,13 +208,26 @@ func generateExpandedCategories(categories []category, policies []common.Expande
 		}
 
 		mergedPolicies[key] = common.ExpandedPolicy{
-			Key:         fmt.Sprintf(`Software\%s\%s\%s`, config.DistroID, typePol, strings.ReplaceAll(key, "/", `\`)),
+			// remove leading / if exists to avoid double \
+			Key:         fmt.Sprintf(`Software\%s\%s\%s`, g.distroID, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
 			DisplayName: displayName,
 			ExplainText: explainText,
 			ElementType: elementType,
 			Meta:        meta,
 			Class:       class,
+			Default:     defaultString,
+			RangeValues: rangeDecimal,
+			Choices:     choices,
 		}
+	}
+
+	// Ensure that every release have at least one policy attached, or this is an user error
+	if len(noPoliciesOn) > 0 {
+		var releases []string
+		for r := range noPoliciesOn {
+			releases = append(releases, r)
+		}
+		return nil, fmt.Errorf(i18n.G("some releases have no policies attached to them while being listed in categories: %v"), releases)
 	}
 
 	// 2. Inflate policies in categories, keep policy order from category list
@@ -170,13 +236,21 @@ func generateExpandedCategories(categories []category, policies []common.Expande
 	inflatePolicies = func(cat category, mergedPolicies map[string]common.ExpandedPolicy) (expandedCategory, error) {
 		var policies []common.ExpandedPolicy
 
+		if cat.DefaultPolicyClass == "" {
+			return expandedCategory{}, fmt.Errorf(i18n.G("%s needs a default policy class"), cat.DisplayName)
+		}
+		defaultPolicyClass, err := common.ValidClass(cat.DefaultPolicyClass)
+		if err != nil {
+			return expandedCategory{}, err
+		}
+
 		for _, p := range cat.Policies {
 			pol, ok := mergedPolicies[p]
 			if !ok {
-				return expandedCategory{}, fmt.Errorf(i18n.G("policy %s referenced in %q does not exist"), p, cat.DisplayName)
+				return expandedCategory{}, fmt.Errorf(i18n.G("policy %s referenced in %q does not exist in any supported releases"), p, cat.DisplayName)
 			}
 			if pol.Class == "" {
-				pol.Class = cat.DefaultPolicyClass
+				pol.Class = defaultPolicyClass
 			}
 			policies = append(policies, pol)
 			delete(unattachedPolicies, p)
@@ -208,13 +282,10 @@ func generateExpandedCategories(categories []category, policies []common.Expande
 		expandedCategories = append(expandedCategories, c)
 	}
 
+	// Check that all policies are at least attached once
 	if len(unattachedPolicies) > 0 {
 		return nil, fmt.Errorf(i18n.G("the following policies have been assigned to a category: %v"), unattachedPolicies)
 	}
-
-	// Check that all policies are at least attached once
-	/*k -> attachedPolicies
-	k -> mergedPolicies*/
 
 	return expandedCategories, nil
 }
@@ -235,34 +306,47 @@ type policyForADMX struct {
 	Meta           string
 	Class          string
 	SupportedOn    string
+
+	// Per type Extensions
+	// Most recent release value is used
+	Choices []string
+
+	// Decimal
+	RangeValues common.DecimalRange
+
+	// Boolean (checked or unchecked)
+	Default string
 }
 
-func toID(prefix, n string) string {
-	return config.DistroID + strings.Title(prefix) + strings.ReplaceAll(strings.Title(n), " ", "")
+// Make a Regex to say we only want letters and numbers
+var re = regexp.MustCompile("[^a-zA-Z0-9]+")
+
+func (g generator) toID(prefix, s string) string {
+	s = strings.TrimPrefix(s, `Software\`+g.distroID)
+	return g.distroID + re.ReplaceAllString(strings.Title(prefix)+strings.Title(s), "")
 }
 
-func expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) error {
+func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) error {
 	var inputCategories []categoryForADMX
 	var inputPolicies []policyForADMX
 	for _, p := range expandedCategories {
-		cat, pol := collectCategoriesPolicies(p, "")
+		cat, pol := g.collectCategoriesPolicies(p, "")
 		inputCategories = append(inputCategories, cat...)
 		inputPolicies = append(inputPolicies, pol...)
 	}
 
 	input := struct {
+		DistroID   string
 		Categories []categoryForADMX
 		Policies   []policyForADMX
-	}{inputCategories, inputPolicies}
+	}{g.distroID, inputCategories, inputPolicies}
 
 	if err := os.MkdirAll(dest, 0755); err != nil {
 		return fmt.Errorf(i18n.G("can't create destination directory for AD policies: %v"), err)
 	}
 
 	funcMap := template.FuncMap{
-		"toID": toID,
-		"base": filepath.Base,
-		"dir":  filepath.Dir,
+		"toID": g.toID,
 	}
 	_, curF, _, ok := runtime.Caller(0)
 	if !ok {
@@ -272,7 +356,7 @@ func expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string
 
 	// Create admx
 
-	f, err := os.Create(filepath.Join(dest, "adsys.admx"))
+	f, err := os.Create(filepath.Join(dest, g.distroID+".admx"))
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
@@ -285,7 +369,7 @@ func expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string
 
 	// Create adml
 
-	f, err = os.Create(filepath.Join(dest, "adsys.adml"))
+	f, err = os.Create(filepath.Join(dest, g.distroID+".adml"))
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
@@ -299,7 +383,7 @@ func expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string
 	return nil
 }
 
-func collectCategoriesPolicies(category expandedCategory, parent string) ([]categoryForADMX, []policyForADMX) {
+func (g generator) collectCategoriesPolicies(category expandedCategory, parent string) ([]categoryForADMX, []policyForADMX) {
 	if parent == "" {
 		parent = category.Parent
 	}
@@ -308,7 +392,7 @@ func collectCategoriesPolicies(category expandedCategory, parent string) ([]cate
 		Parent:      parent,
 	}
 	categories := []categoryForADMX{cat}
-	catID := toID("", cat.DisplayName)
+	catID := g.toID("", cat.DisplayName)
 
 	var policies []policyForADMX
 	// Collect now directly attached policies
@@ -321,12 +405,16 @@ func collectCategoriesPolicies(category expandedCategory, parent string) ([]cate
 			ElementType:    p.ElementType,
 			Meta:           p.Meta,
 			Class:          p.Class,
+
+			RangeValues: p.RangeValues,
+			Choices:     p.Choices,
+			Default:     p.Default,
 		})
 	}
 
 	// Collect children categories and policies
 	for _, c := range category.Children {
-		chidren, childrenpol := collectCategoriesPolicies(c, catID)
+		chidren, childrenpol := g.collectCategoriesPolicies(c, catID)
 		categories = append(categories, chidren...)
 		policies = append(policies, childrenpol...)
 	}

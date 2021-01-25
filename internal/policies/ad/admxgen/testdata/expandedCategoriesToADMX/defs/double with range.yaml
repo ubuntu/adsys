@@ -1,0 +1,17 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-double-with-range
+    displayname: summary
+    explaintext: |-
+      description
+
+      Default: 123.456
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: text
+    default: "123.456"
+    rangevalues:
+      min: "123.000000"
+      max: "15000.000000"
+    meta: '"all": {"meta": "s", "default": "0"}'
+    class: Machine

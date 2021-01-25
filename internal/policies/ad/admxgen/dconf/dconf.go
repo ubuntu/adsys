@@ -2,16 +2,17 @@
 package dconf
 
 import (
-	"context"
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
-	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	log "github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	"gopkg.in/ini.v1"
@@ -24,23 +25,27 @@ type Policy struct {
 	Class      string
 }
 
+// TODO:
+//     - if Min or Max < 0 -> text + explaintext
+// Double with range: explaintext
+
+// handle per Releases
+
 // schemasPath is the path to the directory that contains dconf schemas and overrides
 const schemasPath = "usr/share/glib-2.0/schemas/"
-
-type foo struct {
-	w common.WidgetType
-	d string
-}
 
 var (
 	schemaTypeToMetadata = map[string]struct {
 		widgetType common.WidgetType
 		emptyValue string
 	}{
-		"s":  {common.WidgetTypeText, ""},
-		"as": {common.WidgetTypeText, "[]"},
+		"s":  {common.WidgetTypeText, "''"},
 		"b":  {common.WidgetTypeBool, "false"},
 		"i":  {common.WidgetTypeDecimal, "0"},
+		"u":  {common.WidgetTypeLongDecimal, "0"},
+		"as": {common.WidgetTypeText, "[]"},
+		"ai": {common.WidgetTypeText, "[]"},
+		"d":  {common.WidgetTypeText, "0.0"},
 	}
 )
 
@@ -52,7 +57,7 @@ func Generate(policies []Policy, release string, root, currentSessions string) (
 		return nil, err
 	}
 
-	expandedPolicies, err := inflateToExpandedPolicies(policies, release, s, d)
+	expandedPolicies, err := inflateToExpandedPolicies(policies, release, currentSessions, s, d)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +65,7 @@ func Generate(policies []Policy, release string, root, currentSessions string) (
 	return expandedPolicies, nil
 }
 
-func inflateToExpandedPolicies(policies []Policy, release string, schemas map[string]schemaEntry, defaultsForPath map[string]string) ([]common.ExpandedPolicy, error) {
+func inflateToExpandedPolicies(policies []Policy, release, currentSessions string, schemas map[string]schemaEntry, defaultsForPath map[string]string) ([]common.ExpandedPolicy, error) {
 	var r []common.ExpandedPolicy
 
 	for _, policy := range policies {
@@ -71,13 +76,28 @@ func inflateToExpandedPolicies(policies []Policy, release string, schemas map[st
 		}
 		s, ok := schemas[index]
 		if !ok {
-			log.Warningf(context.Background(), "dconf entry %q is not available on this machine", index)
+			log.Warningf("dconf entry %q is not available on this machine", index)
 			continue
 		}
 
-		defaultVal, ok := defaultsForPath[filepath.Join(s.Schema, filepath.Base(policy.ObjectPath))]
+		// consider :SESSION
+		var defaultVal string
+		var found bool
+		if currentSessions != "" {
+			currentSessions += ":" // Add empty the last session override
+		}
+		for _, session := range strings.Split(currentSessions, ":") {
+			schema := s.Schema
+			if session != "" {
+				schema = fmt.Sprintf("%s:%s", schema, session)
+			}
+			defaultVal, found = defaultsForPath[filepath.Join(schema, filepath.Base(policy.ObjectPath))]
+			if found {
+				break
+			}
+		}
 		// relocatable path without override, take the default from the schema
-		if !ok {
+		if !found {
 			defaultVal = s.DefaultRelocatable
 		}
 
@@ -86,21 +106,57 @@ func inflateToExpandedPolicies(policies []Policy, release string, schemas map[st
 			desc = append(desc, strings.TrimSpace(d))
 		}
 
+		class, err := common.ValidClass(policy.Class)
+		if err != nil {
+			return nil, err
+		}
+
 		ep := common.ExpandedPolicy{
 			Key:         policy.ObjectPath,
 			DisplayName: s.Summary,
 			ExplainText: strings.Join(desc, " "),
-			Class:       policy.Class,
+			Class:       class,
 			Release:     release,
 			Default:     defaultVal,
+			Type:        "dconf",
+			RangeValues: s.RangeValues,
+			Choices:     s.Choices,
 		}
 
+		if len(s.Choices) > 0 {
+			s.Type = "s"
+		}
 		m, ok := schemaTypeToMetadata[s.Type]
-		if !ok {
-			return nil, fmt.Errorf("listed type %s is not supported in schemaTypeToMetadata. Please add it", s.Type)
+		// enums are converted to choices and have no type
+		if !ok && len(s.Choices) == 0 {
+			return nil, fmt.Errorf("listed type %q is not supported in schemaTypeToMetadata. Please add it", s.Type)
 		}
 		ep.ElementType = m.widgetType
-		ep.Meta = fmt.Sprintf(`"%s": {"meta": "%s", "default": "%s"}`, filepath.Base(policy.ObjectPath), s.Type, m.emptyValue)
+		if len(s.Choices) > 0 {
+			ep.ElementType = common.WidgetTypeDropdownList
+		}
+		// TODO: per release
+		ep.Meta = fmt.Sprintf(`"all": {"meta": "%s", "default": "%s"}`, s.Type, m.emptyValue)
+
+		if m.widgetType == common.WidgetTypeLongDecimal {
+			min := ep.RangeValues.Min
+			if min == "" {
+				min = "0"
+			}
+			if min == "NaN" || min == "Inf" {
+				return nil, fmt.Errorf(i18n.G("min value for long decimal is not a valid float: %s"), min)
+			}
+			s, err := strconv.ParseFloat(min, 64)
+			if err != nil {
+				return nil, fmt.Errorf(i18n.G("min value for long decimal is not a valid float: %v"), err)
+			}
+			min = fmt.Sprintf("%f", math.Max(0, s))
+			ep.RangeValues.Min = min
+		}
+		if m.widgetType == common.WidgetTypeLongDecimal || m.widgetType == common.WidgetTypeDecimal {
+			ep.RangeValues.Min = strings.Split(ep.RangeValues.Min, ".")[0]
+			ep.RangeValues.Max = strings.Split(ep.RangeValues.Max, ".")[0]
+		}
 
 		r = append(r, ep)
 	}
@@ -116,6 +172,13 @@ type schemaEntry struct {
 	Summary            string
 	Description        string
 	DefaultRelocatable string
+	Choices            []string // Those are inlined enums or choices. Only the nick or choice string are stored in dconf
+
+	// Per type entry
+	RangeValues common.DecimalRange
+
+	// Transient Enum ID to attach enum as choice
+	enumID string
 }
 
 // schemaList represents the list of glib2.0 schemas loaded into memory.
@@ -124,8 +187,7 @@ type schemaList struct {
 	Enum []struct {
 		ID    string `xml:"id,attr"`
 		Value []struct {
-			Nick  string  `xml:"nick,attr"`
-			Value float32 `xml:"value,attr"`
+			Nick string `xml:"nick,attr"`
 		} `xml:"value"`
 	} `xml:"enum"`
 	Schema []struct {
@@ -139,8 +201,8 @@ type schemaList struct {
 			Summary     string `xml:"summary"`
 			Description string `xml:"description"`
 			Range       struct {
-				Min float32 `xml:"min,attr"`
-				Max float32 `xml:"max,attr"`
+				Min *float32 `xml:"min,attr"`
+				Max *float32 `xml:"max,attr"`
 			} `xml:"range"`
 			Choices []struct {
 				Value string `xml:"value,attr"`
@@ -151,10 +213,11 @@ type schemaList struct {
 
 func loadSchemasFromDisk(path string, currentSessions string) (entries map[string]schemaEntry, defaultsForPath map[string]string, err error) {
 	entries = make(map[string]schemaEntry)
+	enums := make(map[string][]string)
 	defaultsForPath = make(map[string]string)
 
 	// load schemas
-	schemas, err := filepath.Glob(filepath.Join(path, "*.gschema.xml"))
+	schemas, err := filepath.Glob(filepath.Join(path, "*.xml"))
 	if err != nil {
 		return nil, nil, fmt.Errorf(i18n.G("failed to read list of schemas: %w"), err)
 	}
@@ -172,7 +235,9 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 		}
 
 		var sl schemaList
-		xml.Unmarshal(d, &sl)
+		if err := xml.Unmarshal(d, &sl); err != nil {
+			return nil, nil, fmt.Errorf(i18n.G("%s is an invalid schema: %v"), p, err)
+		}
 
 		for _, s := range sl.Schema {
 			var relocatable bool
@@ -194,6 +259,29 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 					Type:        k.Type,
 					Summary:     k.Summary,
 					Description: k.Description,
+					enumID:      k.Enum,
+				}
+
+				for _, c := range k.Choices {
+					e.Choices = append(e.Choices, c.Value)
+				}
+
+				// Optional per type extensions
+				if k.Range != struct {
+					Min *float32 "xml:\"min,attr\""
+					Max *float32 "xml:\"max,attr\""
+				}{} {
+					var min, max string
+					if k.Range.Min != nil {
+						min = fmt.Sprintf("%f", *k.Range.Min)
+					}
+					if k.Range.Max != nil {
+						max = fmt.Sprintf("%f", *k.Range.Max)
+					}
+					e.RangeValues = common.DecimalRange{
+						Min: min,
+						Max: max,
+					}
 				}
 
 				if relocatable {
@@ -205,6 +293,24 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 				entries[index] = e
 			}
 		}
+
+		for _, k := range sl.Enum {
+			for _, v := range k.Value {
+				enums[k.ID] = append(enums[k.ID], v.Nick)
+			}
+		}
+	}
+
+	// Attach enums to entries
+	for k, e := range entries {
+		if e.enumID != "" {
+			var ok bool
+			if e.Choices, ok = enums[e.enumID]; !ok {
+				return nil, nil, fmt.Errorf(i18n.G("enum id %s referenced by %s doesn't exist in list of enums"), e.enumID, e.Schema)
+			}
+			e.enumID = ""
+			entries[k] = e
+		}
 	}
 
 	// Load override files to override defaults
@@ -215,21 +321,14 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 
 	sort.Strings(overrides)
 	for _, o := range overrides {
-		c, err := ini.Load(o)
+		c, err := ini.LoadSources(ini.LoadOptions{PreserveSurroundedQuote: true}, o)
 		if err != nil {
-			return nil, nil, fmt.Errorf(i18n.G("can't read %s: %v"), o, err)
+			log.Warningf("%s is an invalid override file: %+v", o, err)
+			continue
 		}
 		for _, s := range c.Sections() {
 			for _, k := range s.Keys() {
 				defaultsForPath[filepath.Join(s.Name(), k.Name())] = k.Value()
-				// TODO: we only consider for this edge case the uppermost session in override
-				currentSession := strings.Split(currentSessions, ":")[0]
-				if !strings.HasSuffix(s.Name(), ":"+currentSession) {
-					continue
-				}
-				// Strip :SESSION to set as default session if it’s a match
-				n := strings.TrimSuffix(s.Name(), ":"+currentSession)
-				defaultsForPath[filepath.Join(n, k.Name())] = k.Value()
 			}
 		}
 	}

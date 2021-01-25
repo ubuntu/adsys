@@ -107,6 +107,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	var errMsgs []string
 	for _, e := range entries {
 		log.Debugf(ctx, "Analyzing entry %+v", e)
+		// TODO: this will change with multi releases support
+		if filepath.Base(e.Key) != "all" {
+			continue
+		}
+		// we only take the all key right now
+		e.Key = filepath.Dir(e.Key)
+
 		if !e.Disabled {
 			section := filepath.Dir(e.Key)
 
@@ -138,14 +145,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	sort.Strings(sections)
 	for _, s := range sections {
 		data = append(data, fmt.Sprintf("[%s]", s))
-		for _, def := range dataWithGroups[s] {
-			data = append(data, def)
-		}
-	}
-
-	var dataLocks []string
-	for _, l := range locks {
-		dataLocks = append(dataLocks, l)
+		data = append(data, dataWithGroups[s]...)
 	}
 
 	// Commit on disk
@@ -160,7 +160,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return err
 	}
 	locksPath := filepath.Join(dbPath, "locks", "adsys")
-	if err := ioutil.WriteFile(locksPath+".new", []byte(strings.Join(dataLocks, "\n")+"\n"), 0600); err != nil {
+	if err := ioutil.WriteFile(locksPath+".new", []byte(strings.Join(locks, "\n")+"\n"), 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(locksPath+".new", locksPath); err != nil {
@@ -224,6 +224,8 @@ func normalizeValue(keyType, value string) string {
 		return quoteValue(value)
 	case "b":
 		return normalizeBoolean(value)
+	case "i":
+		return strings.ReplaceAll(strings.ReplaceAll(value, `"`, ""), "'", "")
 	case "as":
 		return quoteASVariant(value)
 	case "ai":
@@ -234,7 +236,7 @@ func normalizeValue(keyType, value string) string {
 		if !strings.HasSuffix(value, "]") {
 			value += "]"
 		}
-		return strings.Replace(strings.Replace(value, " ", "", -1), ",", ", ", -1)
+		return strings.ReplaceAll(strings.ReplaceAll(value, " ", ""), ",", ", ")
 	}
 
 	return value
@@ -260,7 +262,7 @@ func quoteValue(s string) string {
 // true|false
 // on|On|ON|off
 func normalizeBoolean(v string) string {
-	lv := strings.TrimSpace(strings.ToLower(v))
+	lv := strings.ReplaceAll(strings.ReplaceAll(strings.TrimSpace(strings.ToLower(v)), `"`, ""), "'", "")
 	switch lv {
 	case "y", "yes", "true", "on":
 		return "true"

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
+    <schema path="/com/ubuntu/simple/" id="com.ubuntu.simple">
+        <key type="unsupportedtype" name="unsupported-type-property">
+            <default>'unsupported-type-property Default Value'</default>
+            <summary>unsupported-type-property summary</summary>
+            <description>unsupported-type-property description</description>
+        </key>
+    </schema>
+</schemalist>

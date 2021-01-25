@@ -1,0 +1,14 @@
+- key: /com/ubuntu/choices/enum-otherfile-property
+  displayname: enum-otherfile-property summary
+  explaintext: enum-otherfile-property description
+  elementtype: dropdownList
+  meta: '"all": {"meta": "s", "default": "''''"}'
+  class: ""
+  default: '''up'''
+  choices:
+  - left
+  - right
+  - up
+  - down
+  release: "20.04"
+  type: dconf

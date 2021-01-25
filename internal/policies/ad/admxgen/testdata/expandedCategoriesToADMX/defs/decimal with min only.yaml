@@ -1,0 +1,16 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range
+    displayname: summary
+    explaintext: |-
+      description
+
+      Default: 42
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: decimal
+    default: "42"
+    rangevalues:
+      min: "-123.000000"
+    meta: '"all": {"meta": "i", "default": "0"}'
+    class: Machine

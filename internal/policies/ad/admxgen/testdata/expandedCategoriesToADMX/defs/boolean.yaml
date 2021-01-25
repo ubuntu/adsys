@@ -1,0 +1,14 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-boolean
+    displayname: summary
+    explaintext: |-
+      description
+
+      Default: true
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: boolean
+    default: 'true'
+    meta: '"all": {"meta": "s", "default": "false"}'
+    class: Machine

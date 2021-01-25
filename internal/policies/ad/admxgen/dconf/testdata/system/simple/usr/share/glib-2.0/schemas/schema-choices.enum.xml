@@ -1,0 +1,8 @@
+<schemalist>
+    <enum id="com.ubuntu.choices.enum-otherfile">
+        <value nick="left" value="0"/>
+        <value nick="right" value="1"/>
+        <value nick="up" value="2"/>
+        <value nick="down" value="3"/>
+    </enum>
+</schemalist>

@@ -1,0 +1,9 @@
+- key: /com/ubuntu/types/boolean-property
+  displayname: boolean-property summary
+  explaintext: boolean-property description
+  elementtype: boolean
+  meta: '"all": {"meta": "b", "default": "false"}'
+  class: ""
+  default: "true"
+  release: "20.04"
+  type: dconf

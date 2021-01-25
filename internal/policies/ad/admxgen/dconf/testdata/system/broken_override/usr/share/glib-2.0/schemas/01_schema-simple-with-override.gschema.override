@@ -1,0 +1,2 @@
+[com.ubuntu.simple.overridden]
+simple-text-property = 'This override still works'

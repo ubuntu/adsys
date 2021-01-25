@@ -1,0 +1,12 @@
+[com.ubuntu.simple.overridden:ubuntu]
+simple-text-property-overridden-ubuntu = 'Overridden simple-text-property-overridden-ubuntu Value For Ubuntu Session'
+simple-text-property-overridden-ubuntu-gnome = 'Overridden simple-text-property-overridden-ubuntu-gnome Value For Ubuntu Session'
+
+[com.ubuntu.simple.overridden:GNOME]
+simple-text-property-overridden-ubuntu-gnome = 'Overridden simple-text-property-overridden-ubuntu-gnome Value For GNOME Session'
+simple-text-property-overridden-gnome = 'Overridden simple-text-property-overridden-gnome Value For GNOME Session'
+
+[com.ubuntu.simple.overridden]
+simple-text-property = 'Overridden simple-text-property Value'
+simple-text-property-overridden-ubuntu =  'Overridden simple-text-property-overridden-ubuntu Value'
+simple-text-property-overridden-by-multiple-files= 'This is the simple-text-property-overridden-by-multiple-files overridden Value'

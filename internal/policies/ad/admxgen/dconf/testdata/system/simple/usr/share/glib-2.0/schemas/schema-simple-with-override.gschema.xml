@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-unity-schemas">
+    <schema path="/com/ubuntu/simple-overridden/" id="com.ubuntu.simple.overridden">
+        <key type="s" name="simple-text-property">
+            <default>'simple-text-property Default Value'</default>
+            <summary>simple-text-property summary</summary>
+            <description>simple-text-property description</description>
+        </key>
+        <key type="s" name="simple-text-property-overridden-ubuntu">
+            <default>'simple-text-property-overridden-ubuntu Default Value'</default>
+            <summary>simple-text-property-overridden-ubuntu summary</summary>
+            <description>simple-text-property-overridden-ubuntu description</description>
+        </key>
+        <key type="s" name="simple-text-property-overridden-by-multiple-files">
+            <default>'simple-text-property-overridden-by-multiple-files Default Value'</default>
+            <summary>simple-text-property-overridden-by-multiple-files summary</summary>
+            <description>simple-text-property-overridden-by-multiple-files description</description>
+        </key>
+        <key type="s" name="simple-text-property-overridden-ubuntu-gnome">
+            <default>'simple-text-property-overridden-ubuntu-gnome Default Value'</default>
+            <summary>simple-text-property-overridden-ubuntu-gnome summary</summary>
+            <description>simple-text-property-overridden-ubuntu-gnome description</description>
+        </key>
+        <key type="s" name="simple-text-property-overridden-gnome">
+            <default>'simple-text-property-overridden-gnome Default Value'</default>
+            <summary>simple-text-property-overridden-gnome summary</summary>
+            <description>simple-text-property-overridden-gnome description</description>
+        </key>
+    </schema>
+</schemalist>

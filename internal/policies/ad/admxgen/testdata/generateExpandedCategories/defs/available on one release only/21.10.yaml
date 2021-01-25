@@ -1,0 +1,19 @@
+- key: /org/gnome/desktop/policy-common
+  displayname: summary common
+  explaintext: description common
+  elementtype: text
+  meta: '"all": {"meta": "s", "default": "''''"}'
+  class: ""
+  default: '''Default Value common'''
+  release: "21.10"
+  type: "dconf"
+
+- key: /org/gnome/desktop/policy-only-21.10
+  displayname: summary policy-only-21.10
+  explaintext: description policy-only-21.10
+  elementtype: text
+  meta: '"all": {"meta": "s", "default": "''''"}'
+  class: ""
+  default: '''Default Value policy-only-21.10'''
+  release: "21.10"
+  type: "dconf"

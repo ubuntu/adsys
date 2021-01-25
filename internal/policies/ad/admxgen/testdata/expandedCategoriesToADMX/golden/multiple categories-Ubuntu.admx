@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="desktop" namespace="Microsoft.Policies.WindowsDesktop" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="windows:Desktop" />
+    </category>
+    <category name="UbuntuCategory2DisplayName" displayName="$(string.UbuntuDisplayCategory2DisplayName)">
+      <parentCategory ref="windows:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyMultiple1" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyMultiple1)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple1)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple1)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple1" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyMultiple1" valueName="all" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyMultiple2" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyMultiple2)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple2)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple2)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-multiple2" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory2DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyMultiple2" valueName="all" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

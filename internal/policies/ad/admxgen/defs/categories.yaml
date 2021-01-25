@@ -1,0 +1,81 @@
+distroid: "Ubuntu"
+supportedreleases:
+  - 18.04
+  - 20.04
+categories:
+  - displayname: "Ubuntu"
+    parent: "windows:Desktop"
+    defaultpolicyclass: "User"
+    children:
+    - displayname: "Desktop"
+      defaultpolicyclass: "User"
+      policies:
+        - "/org/gnome/system/locale/region"
+      children:
+      - displayname: "Accessibility"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/desktop/interface/toolkit-accessibility"
+          - "/org/gnome/desktop/a11y/applications/screen-keyboard-enabled"
+          - "/org/gnome/desktop/a11y/applications/screen-magnifier-enabled"
+          - "/org/gnome/desktop/a11y/applications/screen-reader-enabled"
+      - displayname: "Background"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/desktop/background/picture-uri"
+          - "/org/gnome/desktop/background/picture-options"
+      - displayname: "Shell"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/shell/favorite-apps"
+          - "/org/gnome/desktop/background/show-desktop-icons"
+          - "/org/gnome/shell/extensions/dash-to-dock/show-show-apps-button"
+        children:
+          - displayname: "Clock"
+            defaultpolicyclass: "User"
+            policies:
+              - "/org/gnome/desktop/interface/clock-format"
+              - "/org/gnome/desktop/interface/clock-show-date"
+              - "/org/gnome/desktop/interface/clock-show-weekday"
+          - displayname: "Notifications"
+            defaultpolicyclass: "User"
+            policies:
+              - "/org/gnome/desktop/notifications/show-banners"
+          - displayname: "LockDown"
+            defaultpolicyclass: "User"
+            policies:
+              - "/org/gnome/desktop/lockdown/disable-command-line"
+              - "/org/gnome/desktop/lockdown/disable-log-out"
+              - "/org/gnome/desktop/lockdown/disable-user-switching"
+              - "/org/gnome/desktop/lockdown/disable-printing"
+              - "/org/gnome/desktop/lockdown/disable-print-setup"
+              - "/org/gnome/desktop/lockdown/disable-save-to-disk"
+              - "/org/gnome/desktop/lockdown/user-administration-disabled"
+      - displayname: "Keyboard shortcuts"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/settings-daemon/plugins/media-keys/control-center"
+          - "/org/gnome/settings-daemon/plugins/media-keys/terminal"
+          - "/org/gnome/shell/keybindings/toggle-overview"
+          - "/org/gnome/shell/keybindings/toggle-application-view"
+          - "/org/gnome/desktop/wm/keybindings/panel-main-menu"
+          - "/org/gnome/mutter/overlay-key"
+      - displayname: "Screensaver"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/desktop/screensaver/picture-uri"
+          - "/org/gnome/desktop/screensaver/picture-options"
+          - "/org/gnome/desktop/notifications/show-in-lock-screen"
+          - "/org/gnome/desktop/lockdown/disable-lock-screen"
+    - displayname: "Peripherals"
+      defaultpolicyclass: "User"
+      policies:
+        - "/org/gnome/desktop/media-handling/automount"
+
+
+  #- displayname: "Ubuntu Desktop"
+  #  parent: "windows:Desktop"
+  #  defaultpolicyclass: "Machine"
+  #  #policies:
+  #  #  - "/org/gnome/desktop/policy-common"
+  #  children:

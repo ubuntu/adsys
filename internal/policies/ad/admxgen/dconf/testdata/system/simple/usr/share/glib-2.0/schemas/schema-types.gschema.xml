@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
+    <schema path="/com/ubuntu/types/" id="com.ubuntu.types">
+        <key type="s" name="string-property">
+            <default>'string-property Default Value'</default>
+            <summary>string-property summary</summary>
+            <description>string-property description</description>
+        </key>
+        <key type="b" name="boolean-property">
+            <default>true</default>
+            <summary>boolean-property summary</summary>
+            <description>boolean-property description</description>
+        </key>
+        <key type="i" name="decimal-property">
+            <default>42</default>
+            <summary>decimal-property summary</summary>
+            <description>decimal-property description</description>
+        </key>
+        <key type="i" name="decimal-property-with-range">
+            <range min="-123" max="15000" />
+            <default>42</default>
+            <summary>decimal-property-with-range summary</summary>
+            <description>decimal-property-with-range description</description>
+        </key>
+        <key type="i" name="decimal-property-with-min-only">
+            <range min="-123" />
+            <default>42</default>
+            <summary>decimal-property-with-range summary</summary>
+            <description>decimal-property-with-range description</description>
+        </key>
+        <key type="i" name="decimal-property-with-max-only">
+            <range max="15000" />
+            <default>42</default>
+            <summary>decimal-property-with-range summary</summary>
+            <description>decimal-property-with-range description</description>
+        </key>
+        <key type="d" name="double-property">
+            <default>42.0</default>
+            <summary>double-property summary</summary>
+            <description>double-property description</description>
+        </key>
+        <key type="d" name="double-property-with-range">
+            <default>42.0</default>
+            <range min="-123" max="15000" />
+            <summary>double-property-with-range summary</summary>
+            <description>double-property-with-range description</description>
+        </key>
+
+        <key type="u" name="long-decimal-property">
+            <default>42</default>
+            <summary>decimal-property summary</summary>
+            <description>decimal-property description</description>
+        </key>
+        <key type="u" name="long-decimal-property-with-range">
+            <range min="15" max="15000" />
+            <default>42</default>
+            <summary>long-decimal-property-with-range summary</summary>
+            <description>long-decimal-property-with-range description</description>
+        </key>
+        <key type="u" name="long-decimal-property-with-range-min-lt-zero">
+            <range min="-123" />
+            <default>42</default>
+            <summary>long-decimal-property-with-range-min-lt-zero summary</summary>
+            <description>long-decimal-property-with-range-min-lt-zero description</description>
+        </key>
+        <key type="u" name="long-decimal-property-with-range-min-gt-zero">
+            <range min="5" />
+            <default>42</default>
+            <summary>long-decimal-property-with-range-min-gt-zero summary</summary>
+            <description>long-decimal-property-with-range-min-gt-zero description</description>
+        </key>
+        <key type="as" name="array-string-property">
+            <default>['Value1', 'Value2']</default>
+            <summary>array-string-property summary</summary>
+            <description>array-string-property description</description>
+        </key>
+        <key type="ai" name="array-decimal-property">
+            <default>[1, 2]</default>
+            <summary>array-decimal-property summary</summary>
+            <description>array-decimal-property description</description>
+        </key>
+    </schema>
+</schemalist>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
+    <schema path="/com/ubuntu/simple/" id="com.ubuntu.simple">
+        <key type="s" name="simple-text-property">
+            <default>'simple-text-property Default Value'</default>
+            <summary>simple-text-property summary</summary>
+            <description>simple-text-property description</description>
+        </key>
+    </schema>
+</schemalist>

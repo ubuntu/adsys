@@ -1,0 +1,29 @@
+- displayname: Parent Category Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-first
+    displayname: summary first
+    explaintext: |-
+      description first
+
+      Default: 'Default Value first'
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: text
+    default: '''Default Value first'''
+    meta: '"all": {"meta": "s", "default": "''''"}'
+    class: Machine
+  children:
+  - displayname: Child Category Display Name
+    parent: ""
+    policies:
+    - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-second
+      displayname: summary second
+      explaintext: |-
+        description second
+
+        Default: 'Default Value second'
+        Note: default system value is used for "Not Configured" and enforced if "Disabled".
+      elementtype: text
+      default: '''Default Value second'''
+      meta: '"all": {"meta": "s", "default": "''''"}'
+      class: Machine
