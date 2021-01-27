@@ -39,6 +39,10 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
+#: internal/policies/ad/ad.go:293
+msgid "%s :%v"
+msgstr ""
+
 #: internal/policies/ad/admxgen/dconf/dconf.go:239
 msgid "%s is an invalid schema: %v"
 msgstr ""
