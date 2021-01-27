@@ -1,3 +1,5 @@
+pam/helpers/* usr/share/adsys
+pam/adsys usr/share/pam-configs/
 systemd/*.service lib/systemd/system/
 systemd/*.socket lib/systemd/system/
 systemd/*.timer lib/systemd/system/
