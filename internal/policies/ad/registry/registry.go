@@ -58,6 +58,7 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 	var metaValues map[string]meta
 
 	// translate to strings based on type
+	var disabledContainer bool
 	for _, e := range ent {
 		var res string
 		var disabled bool
@@ -67,8 +68,8 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 			e.key = strings.TrimPrefix(e.key, "**del.")
 		}
 		if e.key == policyContainerName {
-			// disabled container policy will set all options as disabled with same prefix
-			if disabled {
+			disabledContainer = disabled
+			if disabledContainer {
 				continue
 			}
 			// load meta values (including defaults) for options
@@ -81,6 +82,11 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 				return nil, fmt.Errorf(i18n.G("invalid default value for %s\\%s container: %v"), e.path, e.key, err)
 			}
 			continue
+		} else {
+			// propagate disabled value from container to all children elements
+			if disabledContainer {
+				disabled = true
+			}
 		}
 		e.path = strings.ReplaceAll(e.path, `\`, `/`)
 
