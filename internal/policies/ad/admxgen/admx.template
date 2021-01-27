@@ -22,11 +22,7 @@
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
-        {{- if ne .ElementType "dropdownList"}}
-        <{{.ElementType}} id="{{toID (print "Elem" .Class) .Key}}" valueName="all"
-          {{- if ne .RangeValues.Min ""}} minValue="{{.RangeValues.Min}}"{{end}}
-          {{- if ne .RangeValues.Max ""}} maxValue="{{.RangeValues.Max}}"{{end}} />
-        {{- else}}
+      {{- if eq .ElementType "dropdownList"}}
           <enum id="{{toID (print "Elem" .Class) .Key}}" valueName="all">
           {{- $key := .Key}}
           {{- $class := .Class}}
@@ -38,7 +34,16 @@
               </item>
           {{- end}}
           </enum>
-        {{- end}}
+      {{- else if eq .ElementType "boolean"}}
+        <boolean id="{{toID (print "Elem" .Class) .Key}}" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      {{- else}}
+        <{{.ElementType}} id="{{toID (print "Elem" .Class) .Key}}" valueName="all"
+          {{- if ne .RangeValues.Min ""}} minValue="{{.RangeValues.Min}}"{{end}}
+          {{- if ne .RangeValues.Max ""}} maxValue="{{.RangeValues.Max}}"{{end}} />
+      {{- end}}
       </elements>
     </policy>
 {{- end}}
