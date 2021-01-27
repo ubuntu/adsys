@@ -261,6 +261,16 @@ func TestGetPolicies(t *testing.T) {
 				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
 			},
 		},
+		"Filter non Ubuntu keys": {
+			gpoListArgs:        "filtered",
+			objectName:         "bob@WARTHOGS.BIZ",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.Entry{
+				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
+				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
+			},
+		},
 
 		// Error cases
 		"Machine doesn’t match": {
