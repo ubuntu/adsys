@@ -28,7 +28,7 @@ adsysctl COMMAND [flags]
 ```
   -c, --config string   use a specific configuration file
   -h, --help            help for adsysctl
-  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -62,7 +62,7 @@ adsysctl completion [flags]
 
 ```
   -c, --config string   use a specific configuration file
-  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -85,7 +85,7 @@ adsysctl policy COMMAND [flags]
 
 ```
   -c, --config string   use a specific configuration file
-  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -110,7 +110,7 @@ adsysctl policy update [USER_NAME KERBEROS_TICKET_PATH] [flags]
 
 ```
   -c, --config string   use a specific configuration file
-  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -133,7 +133,7 @@ adsysctl service COMMAND [flags]
 
 ```
   -c, --config string   use a specific configuration file
-  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -156,7 +156,7 @@ adsysctl service cat [flags]
 
 ```
   -c, --config string   use a specific configuration file
-  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -180,7 +180,7 @@ adsysctl service stop [flags]
 
 ```
   -c, --config string   use a specific configuration file
-  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -203,7 +203,7 @@ adsysctl version [flags]
 
 ```
   -c, --config string   use a specific configuration file
-  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -227,7 +227,7 @@ adsysd COMMAND [flags]
   -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
   -c, --config string      use a specific configuration file
   -h, --help               help for adsysd
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
   -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -263,7 +263,7 @@ adsysd completion [flags]
   -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
   -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
   -c, --config string      use a specific configuration file
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
   -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
@@ -288,7 +288,7 @@ adsysd version [flags]
   -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
   -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
   -c, --config string      use a specific configuration file
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/tmp/socket.default")
+  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
   -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
   -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
