@@ -9,7 +9,7 @@
       Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
-    meta: '"all": {"meta": "s", "default": "''''"}'
+    meta: '{"all:": {"meta": "s", "default": "''''"}}'
     class: Machine
     default: '''Default Value'''
   children:
@@ -24,6 +24,6 @@
         Default: 'Default Value'
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
       elementtype: text
-      meta: '"all": {"meta": "s", "default": "''''"}'
+      meta: '{"all:": {"meta": "s", "default": "''''"}}'
       class: Machine
       default: '''Default Value'''

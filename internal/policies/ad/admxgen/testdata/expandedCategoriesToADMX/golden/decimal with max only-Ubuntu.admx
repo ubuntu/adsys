@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDecimalWithRange" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "i", "default": "0"}</string></enabledValue>
+      <enabledValue><string>{"meta": "i", "default": "0"}</string></enabledValue>
       <elements>
         <decimal id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyDecimalWithRange" valueName="all" maxValue="15000.000000" />
       </elements>

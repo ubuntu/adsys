@@ -10,5 +10,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     default: '[1, 2]'
-    meta: '"all": {"meta": "ai", "default": "[]"}'
+    meta: '{"meta": "ai", "default": "[]"}'
     class: Machine

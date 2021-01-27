@@ -12,5 +12,5 @@
     default: "42"
     rangevalues:
       min: "-123.000000"
-    meta: '"all": {"meta": "i", "default": "0"}'
+    meta: '{"meta": "i", "default": "0"}'
     class: Machine

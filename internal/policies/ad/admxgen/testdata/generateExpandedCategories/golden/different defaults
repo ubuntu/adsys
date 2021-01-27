@@ -10,6 +10,6 @@
       Default for Ubuntu 21.10: 'Default2 Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
-    meta: '"all": {"meta": "s", "default": "''''"}'
+    meta: '{"all:": {"meta": "s", "default": "''''"}}'
     class: Machine
     default: '''Default2 Value'''

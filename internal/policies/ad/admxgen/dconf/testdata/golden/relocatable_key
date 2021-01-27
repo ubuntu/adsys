@@ -2,7 +2,7 @@
   displayname: property summary
   explaintext: property description
   elementtype: text
-  meta: '"all": {"meta": "s", "default": "''''"}'
+  meta: '{"meta": "s", "default": "''''"}'
   class: ""
   default: '''property Default Value'''
   release: "20.04"

@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyLongDecimal" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyLongDecimal)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyLongDecimal)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyLongDecimal)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-long-decimal" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "i", "default": "0"}</string></enabledValue>
+      <enabledValue><string>{"meta": "i", "default": "0"}</string></enabledValue>
       <elements>
         <longDecimal id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyLongDecimal" valueName="all" />
       </elements>

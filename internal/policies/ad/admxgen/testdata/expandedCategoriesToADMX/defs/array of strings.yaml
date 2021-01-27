@@ -10,5 +10,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     default: '[''Value1'', ''Value2'']'
-    meta: '"all": {"meta": "as", "default": "[]"}'
+    meta: '{"meta": "as", "default": "[]"}'
     class: Machine

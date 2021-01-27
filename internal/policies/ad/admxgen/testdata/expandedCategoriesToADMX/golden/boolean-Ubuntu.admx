@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyBoolean" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyBoolean)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyBoolean)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyBoolean)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-boolean" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "s", "default": "false"}</string></enabledValue>
+      <enabledValue><string>{"meta": "s", "default": "false"}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyBoolean" valueName="all" />
       </elements>

@@ -10,7 +10,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     default: '''Default Value'''
-    meta: '"all": {"meta": "s", "default": "''''"}'
+    meta: '{"meta": "s", "default": "''''"}'
     class: Machine
 
 - displayname: Category2 Display Name
@@ -25,5 +25,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     default: '''Default Value'''
-    meta: '"all": {"meta": "s", "default": "''''"}'
+    meta: '{"meta": "s", "default": "''''"}'
     class: Machine

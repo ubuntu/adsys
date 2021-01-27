@@ -13,5 +13,5 @@
     rangevalues:
       min: "123.000000"
       max: "15000.000000"
-    meta: '"all": {"meta": "s", "default": "0"}'
+    meta: '{"meta": "s", "default": "0"}'
     class: Machine

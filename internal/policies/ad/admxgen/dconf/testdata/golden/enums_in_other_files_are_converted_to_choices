@@ -2,7 +2,7 @@
   displayname: enum-otherfile-property summary
   explaintext: enum-otherfile-property description
   elementtype: dropdownList
-  meta: '"all": {"meta": "s", "default": "''''"}'
+  meta: '{"meta": "s", "default": "''''"}'
   class: ""
   default: '''up'''
   choices:

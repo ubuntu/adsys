@@ -20,7 +20,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyFirst" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyFirst)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyFirst)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyFirst)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-first" valueName="metaValues">
       <parentCategory ref="UbuntuParentCategoryDisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>{"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyFirst" valueName="all" />
       </elements>
@@ -28,7 +28,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicySecond" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicySecond)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySecond)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySecond)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second" valueName="metaValues">
       <parentCategory ref="UbuntuChildCategoryDisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>{"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicySecond" valueName="all" />
       </elements>

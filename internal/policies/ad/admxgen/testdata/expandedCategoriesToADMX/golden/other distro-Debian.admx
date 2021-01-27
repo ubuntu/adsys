@@ -17,7 +17,7 @@
     <policy name="DebianMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.DebianDisplayMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.DebianExplainTextMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.DebianPresentationMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
       <parentCategory ref="DebianCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>{"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
         <text id="DebianElemMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" valueName="all" />
       </elements>
