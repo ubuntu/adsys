@@ -282,7 +282,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			if err != nil && os.IsExist(err) {
 				return err
 			} else if err != nil && os.IsNotExist(err) {
-				log.Infof(ctx, "Policy %s doesn't have any policy for class %q %s", name, objectClass, err)
+				log.Debugf(ctx, "Policy %s doesn't have any policy for class %q %s", name, objectClass, err)
 				return nil
 			}
 			defer f.Close()
@@ -290,7 +290,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			// Decode and apply policies in gpo order. First win
 			policies, err := registry.DecodePolicy(f)
 			if err != nil {
-				return err
+				return fmt.Errorf(i18n.G("%s :%v"), f.Name(), err)
 			}
 			for _, pol := range policies {
 				if _, ok := entries[pol.Key]; ok {
