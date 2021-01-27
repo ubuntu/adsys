@@ -1,7 +1,7 @@
 - displayname: Category1 Display Name
   parent: windows:Desktop
   policies:
-  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-double
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-double
     displayname: summary
     explaintext: |-
       description
@@ -10,5 +10,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     default: "123.456"
-    meta: '"all": {"meta": "s", "default": "0"}'
+    meta: '{"meta": "s", "default": "0"}'
     class: Machine

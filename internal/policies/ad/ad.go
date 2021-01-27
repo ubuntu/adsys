@@ -13,8 +13,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/ubuntu/adsys/internal/config"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/ad/registry"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
@@ -288,11 +290,15 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			defer f.Close()
 
 			// Decode and apply policies in gpo order. First win
-			policies, err := registry.DecodePolicy(f)
+			pols, err := registry.DecodePolicy(f)
 			if err != nil {
 				return fmt.Errorf(i18n.G("%s :%v"), f.Name(), err)
 			}
-			for _, pol := range policies {
+			for _, pol := range pols {
+				// Only consider supported policies for this distro
+				if !strings.HasPrefix(pol.Key, fmt.Sprintf("%s/%s", policies.KeyPrefix, config.DistroID)) {
+					continue
+				}
 				if _, ok := entries[pol.Key]; ok {
 					continue
 				}

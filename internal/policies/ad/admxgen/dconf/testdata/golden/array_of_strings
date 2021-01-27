@@ -2,7 +2,7 @@
   displayname: array-string-property summary
   explaintext: array-string-property description
   elementtype: text
-  meta: '"all": {"meta": "as", "default": "[]"}'
+  meta: '{"meta": "as", "default": "[]"}'
   class: ""
   default: '[''Value1'', ''Value2'']'
   release: "20.04"

@@ -14,33 +14,33 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyChoices" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyChoices)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyChoices)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-choices" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyChoices" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyChoices)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyChoices)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-choices" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>{"meta": "s", "default": "''"}</string></enabledValue>
       <elements>
-          <enum id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyChoices" valueName="all">
-              <item displayName="$(string.UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices0)">
-                <value>
-                    <string>Choice 1</string>
-                </value>
-              </item>
-              <item displayName="$(string.UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices1)">
-                <value>
-                    <string>Choice 2</string>
-                </value>
-              </item>
-              <item displayName="$(string.UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices2)">
-                <value>
-                    <string>Choice 3</string>
-                </value>
-              </item>
-              <item displayName="$(string.UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices3)">
-                <value>
-                    <string>Choice 4</string>
-                </value>
-              </item>
-          </enum>
+        <enum id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyChoices" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices0)">
+            <value>
+              <string>Choice 1</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices1)">
+            <value>
+              <string>Choice 2</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices2)">
+            <value>
+              <string>Choice 3</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices3)">
+            <value>
+              <string>Choice 4</string>
+            </value>
+          </item>
+        </enum>
       </elements>
     </policy>
   </policies>

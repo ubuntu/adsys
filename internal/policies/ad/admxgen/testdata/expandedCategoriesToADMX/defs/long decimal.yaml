@@ -1,7 +1,7 @@
 - displayname: Category1 Display Name
   parent: windows:Desktop
   policies:
-  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-long-decimal
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-long-decimal
     displayname: summary
     explaintext: |-
       description
@@ -10,5 +10,5 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: longDecimal
     default: "42"
-    meta: '"all": {"meta": "i", "default": "0"}'
+    meta: '{"meta": "i", "default": "0"}'
     class: Machine

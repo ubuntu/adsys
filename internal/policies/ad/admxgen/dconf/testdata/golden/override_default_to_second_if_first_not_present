@@ -2,7 +2,7 @@
   displayname: simple-text-property-overridden-gnome summary
   explaintext: simple-text-property-overridden-gnome description
   elementtype: text
-  meta: '"all": {"meta": "s", "default": "''''"}'
+  meta: '{"meta": "s", "default": "''''"}'
   class: ""
   default: '''Overridden simple-text-property-overridden-gnome Value For GNOME Session'''
   release: "20.04"

@@ -14,10 +14,10 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyArrayDecimal" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyArrayDecimal)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayDecimal)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayDecimal)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-array-decimal" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyArrayDecimal" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyArrayDecimal)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayDecimal)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayDecimal)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-decimal" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "ai", "default": "[]"}</string></enabledValue>
+      <enabledValue><string>{"meta": "ai", "default": "[]"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyArrayDecimal" valueName="all" />
       </elements>

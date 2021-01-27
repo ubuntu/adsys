@@ -14,10 +14,10 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDoubleWithRange" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyDoubleWithRange)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDoubleWithRange)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDoubleWithRange)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-double-with-range" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDoubleWithRange" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyDoubleWithRange)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDoubleWithRange)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDoubleWithRange)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-double-with-range" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>"all": {"meta": "s", "default": "0"}</string></enabledValue>
+      <enabledValue><string>{"meta": "s", "default": "0"}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyDoubleWithRange" valueName="all" minValue="123.000000" maxValue="15000.000000" />
       </elements>

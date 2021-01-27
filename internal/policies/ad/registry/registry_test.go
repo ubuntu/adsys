@@ -83,6 +83,16 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "2",
 				},
 			}},
+		// This ignores child value because container is disabled
+		"disabled container with disabled option values": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Container/Child`,
+					Value:    "",
+					Disabled: true,
+				},
+			}},
+		// Both container and child are disabled
 		"disabled container disables its option values": {
 			want: []entry.Entry{
 				{

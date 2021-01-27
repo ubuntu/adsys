@@ -1,7 +1,7 @@
 - displayname: Category1 Display Name
   parent: windows:Desktop
   policies:
-  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-choices
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-choices
     displayname: summary
     explaintext: |-
       description
@@ -9,7 +9,7 @@
       Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: dropdownList
-    meta: '"all": {"meta": "s", "default": "''''"}'
+    meta: '{"all:": {"meta": "s", "default": "''''"}}'
     class: Machine
     default: '''Default Value'''
     choices:

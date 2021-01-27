@@ -2,7 +2,7 @@
   displayname: array-decimal-property summary
   explaintext: array-decimal-property description
   elementtype: text
-  meta: '"all": {"meta": "ai", "default": "[]"}'
+  meta: '{"meta": "ai", "default": "[]"}'
   class: ""
   default: '[1, 2]'
   release: "20.04"

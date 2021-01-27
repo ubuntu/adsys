@@ -1,7 +1,7 @@
 - displayname: Category1 Display Name
   parent: windows:Desktop
   policies:
-  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range
     displayname: summary
     explaintext: |-
       description
@@ -12,5 +12,5 @@
     default: "42"
     rangevalues:
       max: "15000.000000"
-    meta: '"all": {"meta": "i", "default": "0"}'
+    meta: '{"meta": "i", "default": "0"}'
     class: Machine

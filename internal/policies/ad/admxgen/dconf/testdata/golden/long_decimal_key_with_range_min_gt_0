@@ -2,7 +2,7 @@
   displayname: long-decimal-property-with-range-min-gt-zero summary
   explaintext: long-decimal-property-with-range-min-gt-zero description
   elementtype: longDecimal
-  meta: '"all": {"meta": "u", "default": "0"}'
+  meta: '{"meta": "u", "default": "0"}'
   class: ""
   default: "42"
   rangevalues:
