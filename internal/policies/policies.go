@@ -12,6 +12,9 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
+// KeyPrefix is the prefix for all our policies in the GPO
+const KeyPrefix = "Software/Policies"
+
 // Manager handles all managers for various policy handlers.
 type Manager struct {
 	dconf dconf.Manager
@@ -32,7 +35,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	var dconfEntries, scriptEntries, apparmorEntries []entry.Entry
 	for _, entry := range entries {
-		trimstr := fmt.Sprintf("Software/%s/", config.DistroID)
+		trimstr := fmt.Sprintf("%s/%s/", KeyPrefix, config.DistroID)
 		/* TODO: should not be needed as we parse computer first
 		if isComputer {
 			trimstr += "Computer/"
