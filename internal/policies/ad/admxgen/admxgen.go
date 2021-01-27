@@ -129,6 +129,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			// we have one policy at least on this release
 			delete(noPoliciesOn, p.Release)
 
+			// TODO: multiple releases
 			// meta, type, class or elementtype is different -> error
 			if !isFirst {
 				if meta != p.Meta {
@@ -214,7 +215,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			DisplayName: displayName,
 			ExplainText: explainText,
 			ElementType: elementType,
-			Meta:        meta,
+			Meta:        fmt.Sprintf(`{"all:": %s}`, meta),
 			Class:       class,
 			Default:     defaultString,
 			RangeValues: rangeDecimal,
