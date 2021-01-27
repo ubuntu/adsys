@@ -1,7 +1,7 @@
 - displayname: Category1 Display Name
   parent: windows:Desktop
   policies:
-  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-first
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-first
     displayname: summary first
     explaintext: |-
       description first
@@ -12,7 +12,7 @@
     meta: '"all": {"meta": "s", "default": "''''"}'
     class: Machine
     default: '''Default Value first'''
-  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-second
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second
     displayname: summary second
     explaintext: |-
       description second

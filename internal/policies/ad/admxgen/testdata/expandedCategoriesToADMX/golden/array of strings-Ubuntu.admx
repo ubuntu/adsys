@@ -14,7 +14,7 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyArrayString" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyArrayString)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayString)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayString)" key="Software\Ubuntu\dconf\org\gnome\desktop\policy-array-string" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyArrayString" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyArrayString)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayString)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayString)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-string" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>"all": {"meta": "as", "default": "[]"}</string></enabledValue>

@@ -1,7 +1,7 @@
 - displayname: Category1 Display Name
   parent: windows:Desktop
   policies:
-  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-with-class
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-with-class
     displayname: summary
     explaintext: |-
       description

@@ -1,7 +1,7 @@
 - displayname: Parent Category Display Name
   parent: windows:Desktop
   policies:
-  - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-first
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-first
     displayname: summary first
     explaintext: |-
       description first
@@ -16,7 +16,7 @@
   - displayname: Child Category Display Name
     parent: ""
     policies:
-    - key: Software\Ubuntu\dconf\org\gnome\desktop\policy-second
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second
       displayname: summary second
       explaintext: |-
         description second
