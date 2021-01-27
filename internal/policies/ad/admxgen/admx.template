@@ -23,17 +23,17 @@
       <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
       {{- if eq .ElementType "dropdownList"}}
-          <enum id="{{toID (print "Elem" .Class) .Key}}" valueName="all">
-          {{- $key := .Key}}
-          {{- $class := .Class}}
-          {{- range $i, $c := .Choices}}
-              <item displayName="$(string.{{toID (print "Item" $class) $key}}{{ $i }})">
-                <value>
-                    <string>{{ html $c }}</string>
-                </value>
-              </item>
-          {{- end}}
-          </enum>
+        <enum id="{{toID (print "Elem" .Class) .Key}}" valueName="all">
+        {{- $key := .Key}}
+        {{- $class := .Class}}
+        {{- range $i, $c := .Choices}}
+          <item displayName="$(string.{{toID (print "Item" $class) $key}}{{ $i }})">
+            <value>
+              <string>{{ html $c }}</string>
+            </value>
+          </item>
+        {{- end}}
+        </enum>
       {{- else if eq .ElementType "boolean"}}
         <boolean id="{{toID (print "Elem" .Class) .Key}}" valueName="all">
           <trueValue><string>true</string></trueValue>

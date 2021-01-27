@@ -19,7 +19,10 @@
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"meta": "s", "default": "false"}</string></enabledValue>
       <elements>
-        <boolean id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyBoolean" valueName="all" />
+        <boolean id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyBoolean" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
       </elements>
     </policy>
   </policies>
