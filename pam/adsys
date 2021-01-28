@@ -1,9 +1,0 @@
-Name: ADSys authentication
-Default: yes
-Priority: 124
-
-Session-Type: Additional
-Session-Interactive-Only: yes
-Session:
-        optional        pam_env.so conffile=/usr/share/adsys/pam_env.conf
-        required        pam_exec.so type=open_session /usr/share/adsys/session_start
