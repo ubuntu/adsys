@@ -82,6 +82,20 @@ func TestApplyPolicy(t *testing.T) {
 			{Key: "com/ubuntu/category/key-as/all", Value: "['simple-as']", Meta: "as"},
 		}},
 
+		// Update edge cases
+		"no update when no change": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			existingDconfDir: "existing-user"},
+		"missing machine compiled db for machine": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			isComputer: true, existingDconfDir: "missing-machine-compiled-db"},
+		"missing machine compiled db for user": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			isComputer: false, existingDconfDir: "missing-machine-compiled-db"},
+		"missing user compiled db for user": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			existingDconfDir: "missing-user-compiled-db"},
+
 		// Normalized keys formats
 		"normalized canonical form for each supported key": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s'", Meta: "s"},
