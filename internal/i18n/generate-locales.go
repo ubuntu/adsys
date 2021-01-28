@@ -57,7 +57,7 @@ func main() {
 		if len(os.Args) != 5 {
 			log.Fatalf(usage, os.Args[0])
 		}
-		if err := generateMo(os.Args[2], os.Args[3], generators.DestDirectory(os.Args[4])); err != nil {
+		if err := generateMo(os.Args[2], os.Args[3], filepath.Join(generators.DestDirectory(os.Args[4]), "usr", "share")); err != nil {
 			log.Fatalf("Error when generating mo files: %v", err)
 		}
 	default:
