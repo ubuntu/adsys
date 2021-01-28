@@ -162,6 +162,7 @@ func TestApplyPolicy(t *testing.T) {
 		"invalid as is too robust to produce defaulting values": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as/all", Value: `[value1, ] value2]`, Meta: "as"},
 		}},
+
 		// Error cases
 		"no machine db will fail": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"},
