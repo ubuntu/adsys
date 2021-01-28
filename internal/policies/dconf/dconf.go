@@ -57,24 +57,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	defer func() {
-		if err == nil {
-			// request an update now that we released the read lock
-			// we will call update multiple times.
-			smbsafe.WaitExec()
-			m.dconfMu.Lock()
-			out, errExec := exec.Command("dconf", "update", filepath.Join(dconfDir, "db")).CombinedOutput()
-			m.dconfMu.Unlock()
-			smbsafe.DoneExec()
-			if errExec != nil {
-				err = fmt.Errorf(i18n.G("can't refresh dconf policy via dconf update: %v"), out)
-			}
-		}
 		if err != nil {
 			err = fmt.Errorf(i18n.G("can't apply dconf policy: %v"), err)
 		}
 	}()
 	m.dconfMu.RLock()
-	defer m.dconfMu.RUnlock()
 
 	log.Debugf(ctx, "ApplyPolicy dconf policy to %s", objectName)
 
@@ -87,6 +74,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	if !isComputer {
 		if _, err := os.Stat(filepath.Join(dbsPath, "machine.d", "locks", "adsys")); err != nil {
+			m.dconfMu.RUnlock()
 			return fmt.Errorf(i18n.G("machine dconf database is required before generating a policy for an user. This one returns: %v"), err)
 		}
 	}
@@ -94,9 +82,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	// Create profiles for users only
 	if !isComputer {
 		if err := os.MkdirAll(profilesPath, 0755); err != nil {
+			m.dconfMu.RUnlock()
 			return err
 		}
 		if err := writeProfile(ctx, objectName, profilesPath); err != nil {
+			m.dconfMu.RUnlock()
 			return err
 		}
 	}
@@ -132,6 +122,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// Stop on any error
 	if errMsgs != nil {
+		m.dconfMu.RUnlock()
 		return errors.New(strings.Join(errMsgs, "\n"))
 	}
 
@@ -148,25 +139,69 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		data = append(data, dataWithGroups[s]...)
 	}
 
+	var needsRefresh bool
+
 	// Commit on disk
 	if err := os.MkdirAll(filepath.Join(dbPath, "locks"), 0755); err != nil {
+		m.dconfMu.RUnlock()
 		return err
 	}
+
 	defaultPath := filepath.Join(dbPath, "adsys")
-	if err := ioutil.WriteFile(defaultPath+".new", []byte(strings.Join(data, "\n")+"\n"), 0600); err != nil {
+	changed, err := writeIfChanged(defaultPath, strings.Join(data, "\n")+"\n")
+	if err != nil {
+		m.dconfMu.RUnlock()
 		return err
 	}
-	if err := os.Rename(defaultPath+".new", defaultPath); err != nil {
-		return err
-	}
+	needsRefresh = needsRefresh || changed
+
 	locksPath := filepath.Join(dbPath, "locks", "adsys")
-	if err := ioutil.WriteFile(locksPath+".new", []byte(strings.Join(locks, "\n")+"\n"), 0600); err != nil {
+	changed, err = writeIfChanged(locksPath, strings.Join(locks, "\n")+"\n")
+	if err != nil {
+		m.dconfMu.RUnlock()
 		return err
 	}
-	if err := os.Rename(locksPath+".new", locksPath); err != nil {
-		return err
+	needsRefresh = needsRefresh || changed
+
+	m.dconfMu.RUnlock()
+
+	// update if any profile changed, or if any compiled db is missing
+	needsRefresh = needsRefresh || dconfNeedsUpdate(filepath.Join(dbsPath, "machine"))
+	if !isComputer {
+		needsRefresh = needsRefresh || dconfNeedsUpdate(filepath.Join(dbsPath, objectName))
 	}
+	if !needsRefresh {
+		return nil
+	}
+
+	// request an update now that we released the read lock
+	// we will call update multiple times.
+	smbsafe.WaitExec()
+	m.dconfMu.Lock()
+	out, errExec := exec.Command("dconf", "update", filepath.Join(dconfDir, "db")).CombinedOutput()
+	m.dconfMu.Unlock()
+	smbsafe.DoneExec()
+	if errExec != nil {
+		err = fmt.Errorf(i18n.G("can't refresh dconf policy via dconf update: %v"), out)
+	}
+
 	return nil
+}
+
+// writeIfChanged will only write to path if content is different from current content.
+func writeIfChanged(path string, content string) (bool, error) {
+	if oldContent, err := ioutil.ReadFile(path); err == nil && string(oldContent) == content {
+		return false, nil
+	}
+
+	if err := ioutil.WriteFile(path+".new", []byte(content), 0600); err != nil {
+		return false, err
+	}
+	if err := os.Rename(path+".new", path); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // writeProfile creates or updates a dconf profile file.
@@ -214,6 +249,16 @@ func writeProfile(ctx context.Context, user, profilesPath string) error {
 		return err
 	}
 	return nil
+}
+
+// dconfNeedsUpdate will notify if we need to run dconf update for that binary database.
+// For now, it only checks its existence.
+func dconfNeedsUpdate(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return true
+	}
+
+	return false
 }
 
 // normalizeValue simplify user entry by handling common mistakes on key types
