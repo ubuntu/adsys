@@ -4,7 +4,7 @@ package actions
 
 import "github.com/ubuntu/adsys/internal/authorizer"
 
-//go:generate go run ../../generators/copy.go com.ubuntu.adsys.policy polkit-1/actions ../../../generated
+//go:generate go run ../../generators/copy.go com.ubuntu.adsys.policy usr/share/polkit-1/actions ../../../generated
 var (
 	// ActionServiceManage is the action to perform read operations.
 	ActionServiceManage authorizer.Action = authorizer.Action{ID: "com.ubuntu.adsys.service.manage"}

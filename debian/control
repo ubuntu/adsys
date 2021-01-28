@@ -11,6 +11,7 @@ Build-Depends: debhelper (>= 13),
                libdbus-1-dev,
                python3,
                python3-samba,
+               libpam0g-dev,
                samba,
                dbus,
 Standards-Version: 4.1.3

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const installVar = "GENERATE_ONLY_INSTALL_TO_PREFIX"
+const installVar = "GENERATE_ONLY_INSTALL_TO_DESTDIR"
 
 // CleanDirectory removes a directory and recreates it.
 func CleanDirectory(p string) error {
