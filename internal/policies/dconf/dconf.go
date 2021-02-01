@@ -378,6 +378,10 @@ func checkSignature(meta, value string) (err error) {
 		}
 	}()
 
+	if meta == "" {
+		return fmt.Errorf(i18n.G("empty signature for %v"), meta)
+	}
+
 	sig, err := dbus.ParseSignature(meta)
 	if err != nil {
 		return fmt.Errorf(i18n.G("%s is not a valid gsettings signature: %v"), meta, err)

@@ -176,6 +176,9 @@ func TestApplyPolicy(t *testing.T) {
 		"error on invalid type": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-something/all", Value: "value", Meta: "sometype"},
 		}, wantErr: true},
+		"error on empty meta": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-something/all", Value: "value", Meta: ""},
+		}, wantErr: true},
 	}
 
 	for name, tc := range tests {
