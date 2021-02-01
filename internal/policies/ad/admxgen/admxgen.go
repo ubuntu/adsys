@@ -215,7 +215,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			DisplayName: displayName,
 			ExplainText: explainText,
 			ElementType: elementType,
-			Meta:        fmt.Sprintf(`{"all:": %s}`, meta),
+			Meta:        fmt.Sprintf(`{"all": %s}`, meta),
 			Class:       class,
 			Default:     defaultString,
 			RangeValues: rangeDecimal,
