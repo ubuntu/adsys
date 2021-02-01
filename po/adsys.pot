@@ -31,7 +31,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:203
+#: internal/policies/ad/admxgen/admxgen.go:205
 #, c-format
 msgid ""
 "%s\n"
@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:293
+#: internal/policies/ad/ad.go:295
 msgid "%s :%v"
 msgstr ""
 
@@ -47,7 +47,7 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:338
+#: internal/policies/dconf/dconf.go:387
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -55,7 +55,7 @@ msgstr ""
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:240
+#: internal/policies/ad/admxgen/admxgen.go:242
 #, c-format
 msgid "%s needs a default policy class"
 msgstr ""
@@ -70,12 +70,12 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:168
+#: internal/policies/ad/admxgen/admxgen.go:170
 #, c-format
 msgid "- Supported on %s %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:123
+#: internal/policies/dconf/dconf.go:113
 msgid "- error on %s: %v"
 msgstr ""
 
@@ -158,12 +158,12 @@ msgstr ""
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:190
+#: internal/policies/ad/admxgen/admxgen.go:192
 #, c-format
 msgid "Default for %s %s: %s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:201
+#: internal/policies/ad/admxgen/admxgen.go:203
 #, c-format
 msgid "Default: %s"
 msgstr ""
@@ -180,7 +180,7 @@ msgstr ""
 msgid "Error from server: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:217
+#: internal/policies/ad/ad.go:219
 msgid "Failed to read cache directory: %v"
 msgstr ""
 
@@ -276,7 +276,7 @@ msgid ""
 "ticket"
 msgstr ""
 
-#: internal/policies/ad/ad.go:140
+#: internal/policies/ad/ad.go:142
 msgid "User name %q should be of the form %s@DOMAIN"
 msgstr ""
 
@@ -290,28 +290,28 @@ msgid ""
 "USER_NAME/TICKET cannot be used with this option."
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:73
+#: internal/policies/dconf/dconf.go:61
 msgid "can't apply dconf policy: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:361
-#: internal/policies/ad/admxgen/admxgen.go:374
+#: internal/policies/ad/admxgen/admxgen.go:363
+#: internal/policies/ad/admxgen/admxgen.go:376
 msgid "can't create admx file: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:345
+#: internal/policies/ad/admxgen/admxgen.go:347
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:353
+#: internal/policies/ad/admxgen/admxgen.go:355
 msgid "can't determine current file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:244
+#: internal/policies/ad/ad.go:246
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:342
+#: internal/policies/dconf/dconf.go:391
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
@@ -319,7 +319,7 @@ msgstr ""
 msgid "can't read %s and no url or domain provided: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:69
+#: internal/policies/dconf/dconf.go:185
 msgid "can't refresh dconf policy via dconf update: %v"
 msgstr ""
 
@@ -331,7 +331,7 @@ msgstr ""
 msgid "cannot read schema data: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:77
+#: internal/policies/ad/ad.go:79
 msgid "couldn't create Active Directory object: %v"
 msgstr ""
 
@@ -347,11 +347,11 @@ msgstr ""
 msgid "couldn't download GPO %q: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:380
+#: internal/policies/ad/admxgen/admxgen.go:382
 msgid "couldn't generate adml: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:367
+#: internal/policies/ad/admxgen/admxgen.go:369
 msgid "couldn't generate admx: %v"
 msgstr ""
 
@@ -371,6 +371,10 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
+#: internal/policies/dconf/dconf.go:382
+msgid "empty signature for %v"
+msgstr ""
+
 #: internal/policies/ad/admxgen/dconf/dconf.go:309
 #, c-format
 msgid "enum id %s referenced by %s doesn't exist in list of enums"
@@ -381,11 +385,11 @@ msgstr ""
 msgid "error opening raw connection: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:332
+#: internal/policies/dconf/dconf.go:377
 msgid "error while checking signature: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:133
+#: internal/policies/ad/ad.go:135
 msgid "error while getting policies for %q: %v"
 msgstr ""
 
@@ -397,7 +401,7 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:235
+#: internal/policies/ad/ad.go:237
 msgid "failed to create symlink for caching: %v"
 msgstr ""
 
@@ -421,7 +425,7 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:255
+#: internal/policies/ad/ad.go:257
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -433,7 +437,7 @@ msgstr ""
 msgid "invalid class %q"
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:81
+#: internal/policies/ad/registry/registry.go:82
 msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
@@ -445,7 +449,7 @@ msgstr ""
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:90
+#: internal/policies/dconf/dconf.go:78
 msgid ""
 "machine dconf database is required before generating a policy for an user. "
 "This one returns: %v"
@@ -493,11 +497,11 @@ msgstr ""
 msgid "parsing error: missing )"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:250
+#: internal/policies/ad/admxgen/admxgen.go:252
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
-#: internal/policies/ad/ad.go:145
+#: internal/policies/ad/ad.go:147
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -507,13 +511,13 @@ msgid ""
 "socket activation."
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:230
+#: internal/policies/ad/admxgen/admxgen.go:232
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:287
+#: internal/policies/ad/admxgen/admxgen.go:289
 msgid "the following policies have been assigned to a category: %v"
 msgstr ""
 
@@ -537,7 +541,7 @@ msgstr ""
 msgid "unexpected socket type"
 msgstr ""
 
-#: internal/policies/policies.go:54
+#: internal/policies/policies.go:57
 #, c-format
 msgid "unknown entry type: %s for key %s"
 msgstr ""
