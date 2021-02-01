@@ -68,12 +68,12 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 			e.key = strings.TrimPrefix(e.key, "**del.")
 		}
 		if e.key == policyContainerName {
+			metaValues = make(map[string]meta)
 			disabledContainer = disabled
 			if disabledContainer {
 				continue
 			}
 			// load meta values (including defaults) for options
-			metaValues = make(map[string]meta)
 			v, err := decodeUtf16(e.data)
 			if err != nil {
 				return nil, err
