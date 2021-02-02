@@ -3,4 +3,4 @@ Description=Refresh ADSys GPO for machine and users
 
 [Service]
 Type=oneshot
-ExecStart=/sbin/adsysctl policy update --all
+ExecStart=/sbin/adsysctl update --all

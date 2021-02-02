@@ -15,15 +15,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
-func (a *App) installPolicy() {
-	mainCmd := &cobra.Command{
-		Use:   "policy COMMAND",
-		Short: i18n.G("Policy management"),
-		Args:  cmdhandler.SubcommandsRequiredWithSuggestions,
-		RunE:  cmdhandler.NoCmd,
-	}
-	a.rootCmd.AddCommand(mainCmd)
-
+func (a *App) installUpdate() {
 	var updateMachine, updateAll *bool
 	cmd := &cobra.Command{
 		Use:   "update [USER_NAME KERBEROS_TICKET_PATH]",
@@ -34,15 +26,15 @@ func (a *App) installPolicy() {
 			if len(args) > 0 {
 				user, krb5cc = args[0], args[1]
 			}
-			return a.policyUpdate(*updateMachine, *updateAll, user, krb5cc)
+			return a.update(*updateMachine, *updateAll, user, krb5cc)
 		},
 	}
 	updateMachine = cmd.Flags().BoolP("machine", "m", false, i18n.G("machine updates the policy of the computer."))
 	updateAll = cmd.Flags().BoolP("all", "a", false, i18n.G("all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option."))
-	mainCmd.AddCommand(cmd)
+	a.rootCmd.AddCommand(cmd)
 }
 
-func (a *App) policyUpdate(isComputer, updateAll bool, target, krb5cc string) error {
+func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 	// incompatible options
 	if updateAll && (isComputer || target != "" || krb5cc != "") {
 		return errors.New(i18n.G("machine or user arguments cannot be used with update all"))
