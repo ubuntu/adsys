@@ -208,10 +208,6 @@ msgstr ""
 msgid "Permission denied: %w"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:21
-msgid "Policy management"
-msgstr ""
-
 #: internal/authorizer/authorizer.go:199
 msgid "Polkit call result, authorized: %t"
 msgstr ""
@@ -270,7 +266,7 @@ msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:30
+#: cmd/adsysd/client/update.go:22
 msgid ""
 "Updates/Create a policy for current user or given user with its kerberos "
 "ticket"
@@ -284,7 +280,7 @@ msgstr ""
 msgid "Wait for active requests to close."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:41
+#: cmd/adsysd/client/update.go:33
 msgid ""
 "all updates the policy of the computer and all the logged in users. -m or "
 "USER_NAME/TICKET cannot be used with this option."
@@ -455,11 +451,11 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:48
+#: cmd/adsysd/client/update.go:40
 msgid "machine or user arguments cannot be used with update all"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:40
+#: cmd/adsysd/client/update.go:32
 msgid "machine updates the policy of the computer."
 msgstr ""
 
@@ -550,6 +546,6 @@ msgstr ""
 msgid "use a specific configuration file"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:51
+#: cmd/adsysd/client/update.go:43
 msgid "user arguments cannot be used with machine update"
 msgstr ""
