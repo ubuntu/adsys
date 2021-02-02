@@ -8,7 +8,7 @@ Wants=sssd.service
 [Service]
 Type=oneshot
 # Only machine krb5 ticket is available at boot, so this will update the machine only.
-ExecStart=/sbin/adsysctl policy update --all
+ExecStart=/sbin/adsysctl update --all
 
 [Install]
 WantedBy=multi-user.target

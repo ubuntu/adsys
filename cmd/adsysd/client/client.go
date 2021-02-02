@@ -85,7 +85,7 @@ func New() *App {
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
-	a.installPolicy()
+	a.installUpdate()
 	a.installService()
 	a.installVersion()
 
