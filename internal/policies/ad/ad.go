@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 	"sync"
 
@@ -129,7 +128,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 // It users the given krb5 ticket reference to authenticate to AD.
 // userKrb5CCName has no impact for computer object and is ignored. If empty, we will expect to find one cached
 // ticket <krb5CCDir>/<objectName>.
-func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (entries []entry.Entry, err error) {
+func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (r []entry.GPO, err error) {
 	defer func() {
 		if err != nil {
 			err = fmt.Errorf(i18n.G("error while getting policies for %q: %v"), objectName, err)
@@ -200,12 +199,12 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	// Parse policies
-	entries, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
+	r, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
 	if err != nil {
 		return nil, err
 	}
 
-	return entries, nil
+	return r, nil
 }
 
 // ListUsersFromCache return the list of active users on the system
@@ -264,11 +263,18 @@ func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) 
 	return nil
 }
 
-func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) ([]entry.Entry, error) {
-	entries := make(map[string]entry.Entry)
-	var keys []string
+func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) ([]entry.GPO, error) {
+	var r []entry.GPO
+
+	keyFilterPrefix := fmt.Sprintf("%s/%s/", policies.KeyPrefix, config.DistroID)
+
 	for _, g := range gpos {
 		name, url := g.name, g.url
+		gpoRules := entry.GPO{
+			ID:    filepath.Base(url),
+			Name:  name,
+			Rules: make(map[string][]entry.Entry),
+		}
 		if err := func() error {
 			ad.RLock()
 			ad.gpos[name].mu.RLock()
@@ -296,26 +302,20 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			}
 			for _, pol := range pols {
 				// Only consider supported policies for this distro
-				if !strings.HasPrefix(pol.Key, fmt.Sprintf("%s/%s", policies.KeyPrefix, config.DistroID)) {
+				if !strings.HasPrefix(pol.Key, keyFilterPrefix) {
 					continue
 				}
-				if _, ok := entries[pol.Key]; ok {
-					continue
-				}
-				entries[pol.Key] = pol
-				keys = append(keys, pol.Key)
-			}
+				pol.Key = strings.TrimPrefix(pol.Key, keyFilterPrefix)
+				keyType := strings.Split(pol.Key, "/")[0]
+				pol.Key = strings.TrimPrefix(pol.Key, keyType+"/")
 
+				gpoRules.Rules[keyType] = append(gpoRules.Rules[keyType], pol)
+			}
+			r = append(r, gpoRules)
 			return nil
 		}(); err != nil {
 			return nil, err
 		}
-	}
-
-	var r []entry.Entry
-	sort.Strings(keys)
-	for _, k := range keys {
-		r = append(r, entries[k])
 	}
 
 	return r, nil

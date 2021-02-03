@@ -3,9 +3,7 @@ package policies
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	"github.com/ubuntu/adsys/internal/config"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
@@ -29,45 +27,25 @@ func New() Manager {
 
 // ApplyPolicy generates a computer or user policy based on a list of entries
 // retrieved from a directory service.
-func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) error {
-
+func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, gpos []entry.GPO) error {
 	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
+	var err error
 
-	var dconfEntries, scriptEntries, apparmorEntries []entry.Entry
-	for _, entry := range entries {
-		trimstr := fmt.Sprintf("%s/%s/", KeyPrefix, config.DistroID)
-		/* TODO: should not be needed as we parse computer first
-		if isComputer {
-			trimstr += "Computer/"
-		} else {
-			trimstr += "User/"
-		}*/
-		e := strings.SplitN(strings.TrimPrefix(entry.Key, trimstr), "/", 2)
-		entryType := e[0]
-		entry.Key = e[1]
-
+	for entryType, entries := range entry.GetUniqueRules(gpos) {
 		switch entryType {
 		case "dconf":
-			dconfEntries = append(dconfEntries, entry)
+			err = m.dconf.ApplyPolicy(ctx, objectName, isComputer, entries)
 		case "script":
-			scriptEntries = append(scriptEntries, entry)
+			// TODO err = script.ApplyPolicy(objectName, isComputer, entries)
 		case "apparmor":
-			apparmorEntries = append(apparmorEntries, entry)
+			// TODO err = apparmor.ApplyPolicy(objectName, isComputer, entries)
 		default:
-			return fmt.Errorf(i18n.G("unknown entry type: %s for key %s"), entryType, entry.Key)
+			return fmt.Errorf(i18n.G("unknown entry type: %s for keys %s"), entryType, entries)
+		}
+		if err != nil {
+			return err
 		}
 	}
-
-	err := m.dconf.ApplyPolicy(ctx, objectName, isComputer, dconfEntries)
-	if err != nil {
-		return err
-	}
-
-	// TODO
-	/*
-		err = script.ApplyPolicy(objectName, isComputer, scriptEntries)
-		err = apparmor.ApplyPolicy(objectName, isComputer, apparmorEntries)
-	*/
 
 	return nil
 }
