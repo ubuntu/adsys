@@ -69,6 +69,13 @@ func TestGetPolicies(t *testing.T) {
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
 
+	standardGPO := entry.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+		"dconf": {
+			{Key: "A", Value: "standardA"},
+			{Key: "B", Value: "standardB"},
+			{Key: "C", Value: "standardC"},
+		}}}
+
 	/*
 		GPOs layout:
 
@@ -99,7 +106,7 @@ func TestGetPolicies(t *testing.T) {
 		dontCreateOriginalKrb5CCName bool
 		turnKrb5CCRO                 bool
 
-		want    []entry.Entry
+		want    []entry.GPO
 		wantErr bool
 	}{
 		"Standard policy, user object": {
@@ -107,33 +114,33 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want:               []entry.GPO{standardGPO},
 		},
 		"Standard policy, computer object": {
 			gpoListArgs:        "standard",
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "", // ignored for machine
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/D", Value: "standardD"},
-				{Key: "Software/Policies/Ubuntu/E", Value: "standardE"},
-			},
-		},
+			want: []entry.GPO{
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "D", Value: "standardD"},
+						{Key: "E", Value: "standardE"},
+					}}},
+			}},
 		"User only policy, user object": {
 			gpoListArgs:        "user-only",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "userOnlyA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "userOnlyB"},
-			},
-		},
+			want: []entry.GPO{
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "userOnlyA"},
+						{Key: "B", Value: "userOnlyB"},
+					}}},
+			}},
 		"User only policy, computer object": {
 			gpoListArgs:        "user-only",
 			objectName:         hostname,
@@ -153,67 +160,84 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "somethingtotallyarbitrary", // ignored for machine
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/D", Value: "standardD"},
-				{Key: "Software/Policies/Ubuntu/E", Value: "standardE"},
-			},
-		},
+			want: []entry.GPO{
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "D", Value: "standardD"},
+						{Key: "E", Value: "standardE"},
+					}}},
+			}},
 
 		"Two policies, with overrides": {
 			gpoListArgs:        "one-value_standard",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "oneValueC"},
-			},
-		},
+			want: []entry.GPO{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "B", Value: "standardB"},
+						// this value will be overriden with the higher one
+						{Key: "C", Value: "standardC"},
+					}}},
+			}},
 		"Two policies, with reversed overrides": {
 			gpoListArgs:        "standard_one-value",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
-		},
+			want: []entry.GPO{
+				standardGPO,
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						// this value will be overriden with the higher one
+						{Key: "C", Value: "oneValueC"},
+					}}},
+			}},
 		"Two policies, no overrides": {
 			gpoListArgs:        "one-value_user-only",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "userOnlyA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "userOnlyB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "oneValueC"},
-			},
-		},
+			want: []entry.GPO{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "userOnlyA"},
+						{Key: "B", Value: "userOnlyB"},
+					}}},
+			}},
 		"Two policies, no overrides, reversed": {
 			gpoListArgs:        "user-only_one-value",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "userOnlyA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "userOnlyB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "oneValueC"},
-			},
-		},
-		"Two policies, no overrides, one is not the same object type": {
+			want: []entry.GPO{
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "userOnlyA"},
+						{Key: "B", Value: "userOnlyB"},
+					}}},
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+			}},
+		"Two policies, no overrides, one is not the same object type, machine ones are ignored when parsing user": {
 			gpoListArgs:        "machine-only_standard",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want:               []entry.GPO{standardGPO},
 		},
 
 		"Disabled value overrides non disabled one": {
@@ -221,56 +245,62 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "", Disabled: true},
-			},
-		},
+			want: []entry.GPO{
+				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "", Disabled: true},
+					}}},
+				standardGPO,
+			}},
 		"Disabled value is overridden": {
 			gpoListArgs:        "standard_disabled-value",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
-		},
+			want: []entry.GPO{
+				standardGPO,
+				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "", Disabled: true},
+					}}},
+			}},
 
 		"More policies, with multiple overrides": {
 			gpoListArgs:        "user-only_one-value_standard",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "userOnlyA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "userOnlyB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "oneValueC"},
-			},
-		},
+			want: []entry.GPO{
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "userOnlyA"},
+						{Key: "B", Value: "userOnlyB"},
+					}}},
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+				standardGPO,
+			}},
 		"Object domain is stripped": {
 			gpoListArgs:        "standard",
 			objectName:         "bob@warthogs.biz",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want:               []entry.GPO{standardGPO},
 		},
 		"Filter non Ubuntu keys": {
 			gpoListArgs:        "filtered",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
-		},
+			want: []entry.GPO{
+				{ID: "filtered", Name: "filtered-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "C", Value: "standardC"},
+					}}},
+			}},
 
 		// Error cases
 		"Machine doesn’t match": {
@@ -369,7 +399,7 @@ func TestGetPolicies(t *testing.T) {
 			} else {
 				require.NoError(t, err, "GetPolicies should return no error")
 			}
-			require.Equal(t, tc.want, entries, "GetPolicies returns expected policy entries with correct overrides")
+			require.Equal(t, tc.want, entries, "GetPolicies returns expected gpo entries in correct order")
 		})
 	}
 }
@@ -380,6 +410,13 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 	gpoListArgs := "standard"
 	objectClass := ad.UserObject
 
+	standardGPO := entry.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+		"dconf": {
+			{Key: "A", Value: "standardA"},
+			{Key: "B", Value: "standardB"},
+			{Key: "C", Value: "standardC"},
+		}}}
+
 	tests := map[string]struct {
 		objectName1         string
 		objectName2         string
@@ -387,7 +424,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		userKrb5CCBaseName2 string
 		restart             bool
 
-		want    []entry.Entry
+		want    []entry.GPO
 		wantErr bool
 	}{
 		"Second call is a refresh (without Krb5CCName specified)": {
@@ -395,11 +432,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob@WARTHOGS.BIZ",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "EMPTY",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want:                []entry.GPO{standardGPO},
 		},
 		"Second call after service restarted": {
 			restart:             true,
@@ -407,33 +440,21 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob@WARTHOGS.BIZ",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "", // We did’t RENEW the ticket
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want:                []entry.GPO{standardGPO},
 		},
 		"Second call with different user": {
 			objectName1:         "bob@WARTHOGS.BIZ",
 			objectName2:         "sponge@WARTHOGS.BIZ",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "sponge",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want:                []entry.GPO{standardGPO},
 		},
 		"Second call after a relogin": {
 			objectName1:         "bob@WARTHOGS.BIZ",
 			objectName2:         "bob@WARTHOGS.BIZ",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "bobNew",
-			want: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want:                []entry.GPO{standardGPO},
 		},
 	}
 
@@ -490,14 +511,21 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 
 	objectClass := ad.UserObject
 
+	standardGPO := entry.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+		"dconf": {
+			{Key: "A", Value: "standardA"},
+			{Key: "B", Value: "standardB"},
+			{Key: "C", Value: "standardC"},
+		}}}
+
 	tests := map[string]struct {
 		objectName1 string
 		objectName2 string
 		gpo1        string
 		gpo2        string
 
-		want1   []entry.Entry
-		want2   []entry.Entry
+		want1   []entry.GPO
+		want2   []entry.GPO
 		wantErr bool
 	}{
 		"Same user, same GPO": {
@@ -505,63 +533,41 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "bob@WARTHOGS.BIZ",
 			gpo1:        "standard",
 			gpo2:        "standard",
-			want1: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
-			want2: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want1:       []entry.GPO{standardGPO},
+			want2:       []entry.GPO{standardGPO},
 		},
 		// We can’t run this test currently as the mock will always return the same value for bob (both gpos):
 		// both calls are identical.
 		/*"Same user, different GPOs": {
-			objectName1: "bob@WARTHOGS.BIZ",
-			objectName2: "bob@WARTHOGS.BIZ",
-			gpo1:        "standard",
-			gpo2:        "one-value",
-			want1: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
-			want2: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/C", Value: "oneValueC"},
-			},
-		},*/
+		objectName1: "bob@WARTHOGS.BIZ",
+		objectName2: "bob@WARTHOGS.BIZ",
+		gpo1:        "standard",
+		gpo2:        "one-value",
+		want1: []entry.GPO{standardGPO},
+		want2: []entry.GPO{{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "C", Value: "oneValueC"},
+				}}},
+			}},*/
 		"Different users, same GPO": {
 			objectName1: "bob@WARTHOGS.BIZ",
 			objectName2: "sponge@WARTHOGS.BIZ",
 			gpo1:        "standard",
 			gpo2:        "standard",
-			want1: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
-			want2: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
+			want1:       []entry.GPO{standardGPO},
+			want2:       []entry.GPO{standardGPO},
 		},
 		"Different users, different GPO": {
 			objectName1: "bob@WARTHOGS.BIZ",
 			objectName2: "sponge@WARTHOGS.BIZ",
 			gpo1:        "standard",
 			gpo2:        "one-value",
-			want1: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/A", Value: "standardA"},
-				{Key: "Software/Policies/Ubuntu/B", Value: "standardB"},
-				{Key: "Software/Policies/Ubuntu/C", Value: "standardC"},
-			},
-			want2: []entry.Entry{
-				{Key: "Software/Policies/Ubuntu/C", Value: "oneValueC"},
-			},
-		},
+			want1:       []entry.GPO{standardGPO},
+			want2: []entry.GPO{{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "C", Value: "oneValueC"},
+				}}},
+			}},
 	}
 
 	for name, tc := range tests {
@@ -585,10 +591,14 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 				mockObjectName2 = mockObjectName2[:i]
 			}
 
+			gpoListMeta := fmt.Sprintf("DEPENDS:%s@%s:%s@%s", mockObjectName1, tc.gpo1, mockObjectName2, tc.gpo2)
+			if mockObjectName1 == mockObjectName2 {
+				gpoListMeta = fmt.Sprintf("DEPENDS:%s@%s", mockObjectName1, tc.gpo1)
+			}
 			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir("testdata/sss/db"),
-				ad.WithGPOListCmd(mockGPOListCmd(t, fmt.Sprintf("DEPENDS:%s@%s:%s@%s", mockObjectName1, tc.gpo1, mockObjectName2, tc.gpo2))))
+				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListMeta)))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			wg := sync.WaitGroup{}
