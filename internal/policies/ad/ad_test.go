@@ -169,6 +169,38 @@ func TestGetPolicies(t *testing.T) {
 					}}},
 			}},
 
+		// Multi domain cases
+		"Multiple domains, same GPO": {
+			gpoListArgs:        "multiple-domains",
+			objectName:         "bob@WARTHOGS.BIZ",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.GPO{
+				{ID: "multiple-domains", Name: "multiple-domains-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "C", Value: "standardC"},
+					},
+					"other": {
+						{Key: "B", Value: "standardB"},
+					}}},
+			}},
+		"Same key in different domains are kept separated": {
+			gpoListArgs:        "other-domain_one-value",
+			objectName:         "bob@WARTHOGS.BIZ",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.GPO{
+				{ID: "other-domain", Name: "other-domain-name", Rules: map[string][]entry.Entry{
+					"other": {
+						{Key: "C", Value: "otherC"},
+					}}},
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+			}},
+
 		"Two policies, with overrides": {
 			gpoListArgs:        "one-value_standard",
 			objectName:         "bob@WARTHOGS.BIZ",
