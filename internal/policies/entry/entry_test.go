@@ -1,6 +1,7 @@
 package entry_test
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -248,4 +249,29 @@ func TestGetUniqueRules(t *testing.T) {
 			require.Equal(t, tc.want, got, "GetUniqueRules returns expected policy entries with correct overrides")
 		})
 	}
+}
+
+func TestCacheGPOList(t *testing.T) {
+	gpos := []entry.GPO{
+		{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+			"dconf": {
+				{Key: "C", Value: "oneValueC"},
+			}}},
+		{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+			"dconf": {
+				{Key: "A", Value: "standardA", Meta: "My meta"},
+				{Key: "B", Value: "standardB", Disabled: true},
+				// this value will be overriden with the higher one
+				{Key: "C", Value: "standardC"},
+			}}},
+	}
+
+	p := filepath.Join(t.TempDir(), "gpos-list-cache")
+	err := entry.SaveGPOs(gpos, p)
+	require.NoError(t, err, "Save GPO without error")
+
+	got, err := entry.NewGPOs(p)
+	require.NoError(t, err, "Got GPOs without error")
+
+	require.Equal(t, gpos, got, "Reloaded GPOs after caching should be the same")
 }

@@ -1,6 +1,13 @@
 package entry
 
-import "sort"
+import (
+	"fmt"
+	"io/ioutil"
+	"sort"
+
+	"github.com/ubuntu/adsys/internal/i18n"
+	"gopkg.in/yaml.v2"
+)
 
 // Entry represents a key/value based policy (dconf, apparmor, ...) entry
 type Entry struct {
@@ -57,3 +64,41 @@ func GetUniqueRules(gpos []GPO) map[string][]Entry {
 }
 
 // TODO: printing policies (take machine and user for user or only machine and handle the overrides)
+
+// NewGPOs returns cached gpos list loaded from the p json file
+func NewGPOs(p string) (gpos []GPO, err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf(i18n.G("couldn't get cached GPO list from %s: %v"), p, err)
+		}
+	}()
+
+	d, err := ioutil.ReadFile(p)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := yaml.Unmarshal(d, &gpos); err != nil {
+		return nil, err
+	}
+	return gpos, nil
+}
+
+// SaveGPOs serializes in p the GPO list
+func SaveGPOs(gpos []GPO, p string) (err error) {
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf(i18n.G("couldn't save GPO list to %s: %v"), p, err)
+		}
+	}()
+
+	d, err := yaml.Marshal(gpos)
+	if err != nil {
+		return err
+	}
+	if err := ioutil.WriteFile(p, d, 0700); err != nil {
+		return err
+	}
+
+	return nil
+}
