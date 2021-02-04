@@ -17,8 +17,8 @@ func TestSocket(t *testing.T) {
 	d := t.TempDir()
 	sock := filepath.Join(d, "test.socket")
 	lis, err := net.Listen("unix", sock)
-	defer lis.Close()
 	require.NoError(t, err, "setup: creating socket failed")
+	defer lis.Close()
 
 	dial := unixsocket.ContextDialer()
 	conn, err := dial(context.Background(), sock)

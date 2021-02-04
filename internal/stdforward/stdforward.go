@@ -113,7 +113,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 			wgIOCopy.Wait()
 
 			// reset std forwarder to be ready for reinitialization
-			*&dest.once = sync.Once{}
+			dest.once = sync.Once{}
 		}
 
 	}, nil

@@ -30,8 +30,6 @@ type caller interface {
 type Authorizer struct {
 	authority  caller
 	userLookup func(string) (*user.User, error)
-	pid        uint32
-	uid        uint32
 
 	root string
 }

@@ -164,14 +164,14 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		// Skip leading sectionStart.
 		start := 0
 		for ; start+dataOffset-1 < len(data); start++ {
-			if bytes.Compare(data[start:start+dataOffset], sectionStart) == 0 {
+			if bytes.Equal(data[start:start+dataOffset], sectionStart) {
 				break
 			}
 		}
 
 		// Scan until sectionEnd, marking end of word.
 		for i := start + dataOffset; i+sectionEndWidth-1 < len(data); i++ {
-			if bytes.Compare(data[i:i+sectionEndWidth], sectionEnd) == 0 {
+			if bytes.Equal(data[i:i+sectionEndWidth], sectionEnd) {
 				return i + sectionEndWidth, data[start+dataOffset : i+2], nil
 			}
 		}

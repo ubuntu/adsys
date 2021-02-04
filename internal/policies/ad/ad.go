@@ -84,10 +84,6 @@ func WithRunDir(runDir string) func(o *options) error {
 	}
 }
 
-type combinedOutputter interface {
-	CombinedOutput() ([]byte, error)
-}
-
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
 func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))

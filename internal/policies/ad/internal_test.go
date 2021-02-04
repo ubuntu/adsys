@@ -588,26 +588,6 @@ func waitForPortReady(port int) {
 	}
 }
 
-// waitForPortDone to be closed.
-func waitForPortDone(port int) {
-	timeout := time.NewTimer(5 * time.Second)
-	for {
-		select {
-		case <-timeout.C:
-			log.Fatalf("Setup: smbd hasn’t stopped successfully")
-		default:
-		}
-
-		conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", port))
-		if err == nil {
-			conn.Close()
-			time.Sleep(10 * time.Millisecond)
-			continue
-		}
-		return
-	}
-}
-
 // md5Tree build a recursive file list of dir and with their md5sum
 func md5Tree(t *testing.T, dir string) map[string]string {
 	t.Helper()

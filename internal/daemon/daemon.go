@@ -32,7 +32,6 @@ type Daemon struct {
 }
 
 type options struct {
-	socket        string
 	idlingTimeout time.Duration
 
 	// private member that we export for tests.
