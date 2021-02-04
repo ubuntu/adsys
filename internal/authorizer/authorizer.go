@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"google.golang.org/grpc/peer"
@@ -54,7 +55,9 @@ func withRoot(root string) func(*Authorizer) {
 }
 
 // New returns a new authorizer.
-func New(options ...func(*Authorizer)) (*Authorizer, error) {
+func New(options ...func(*Authorizer)) (auth *Authorizer, err error) {
+	defer decorate.OnError(&err, i18n.G("can't create create new authorizer"))
+
 	bus, err := dbus.SystemBus()
 	if err != nil {
 		return nil, err
@@ -114,19 +117,15 @@ type authResult struct {
 func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (err error) {
 	log.Debug(ctx, i18n.G("Check if grpc request peer is authorized"))
 
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("Permission denied: %w"), err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("permission denied"))
 
 	p, ok := peer.FromContext(ctx)
 	if !ok {
-		return errors.New(i18n.G("Context request doesn't have grpc peer creds informations."))
+		return errors.New(i18n.G("context request doesn't have grpc peer creds informations."))
 	}
 	pci, ok := p.AuthInfo.(peerCredsInfo)
 	if !ok {
-		return errors.New(i18n.G("Context request grpc peer creeds information is not a peerCredsInfo."))
+		return errors.New(i18n.G("context request grpc peer creeds information is not a peerCredsInfo."))
 	}
 
 	// Is it an action needing user checking?
@@ -134,15 +133,15 @@ func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (er
 	if action.SelfID != "" {
 		userName, ok := ctx.Value(OnUserKey).(string)
 		if !ok {
-			return errors.New(i18n.G("Request to act on user action should have a user name attached"))
+			return errors.New(i18n.G("request to act on user action should have a user name attached"))
 		}
 		user, err := a.userLookup(userName)
 		if err != nil {
-			return fmt.Errorf(i18n.G("Couldn't retrieve user for %q: %v"), userName, err)
+			return fmt.Errorf(i18n.G("couldn't retrieve user for %q: %v"), userName, err)
 		}
 		uid, err := strconv.Atoi(user.Uid)
 		if err != nil {
-			return fmt.Errorf(i18n.G("Couldn't convert %q to a valid uid for %q"), user.Uid, userName)
+			return fmt.Errorf(i18n.G("couldn't convert %q to a valid uid for %q"), user.Uid, userName)
 		}
 		actionUID = uint32(uid)
 	}
@@ -169,13 +168,13 @@ func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid
 
 	f, err := os.Open(filepath.Join(a.root, fmt.Sprintf("proc/%d/stat", pid)))
 	if err != nil {
-		return fmt.Errorf(i18n.G("Couldn't open stat file for process: %v"), err)
+		return fmt.Errorf(i18n.G("couldn't open stat file for process: %v"), err)
 	}
 	defer f.Close()
 
 	startTime, err := getStartTimeFromReader(f)
 	if err != nil {
-		return fmt.Errorf(i18n.G("Couldn't determine start time of client process: %v"), err)
+		return err
 	}
 
 	subject := authSubject{
@@ -193,13 +192,13 @@ func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid
 		"org.freedesktop.PolicyKit1.Authority.CheckAuthorization", dbus.FlagAllowInteractiveAuthorization,
 		subject, action.ID, details, checkAllowInteraction, "").Store(&result)
 	if err != nil {
-		return fmt.Errorf(i18n.G("Call to polkit failed: %v"), err)
+		return fmt.Errorf(i18n.G("call to polkit failed: %v"), err)
 	}
 
 	log.Debugf(ctx, i18n.G("Polkit call result, authorized: %t"), result.IsAuthorized)
 
 	if !result.IsAuthorized {
-		return errors.New(i18n.G("Polkit denied access"))
+		return errors.New(i18n.G("polkit denied access"))
 	}
 	return nil
 }
@@ -208,7 +207,9 @@ func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid
 //
 // The implementation is intended to be compatible with polkit:
 //    https://cgit.freedesktop.org/polkit/tree/src/polkit/polkitunixprocess.c
-func getStartTimeFromReader(r io.Reader) (uint64, error) {
+func getStartTimeFromReader(r io.Reader) (t uint64, err error) {
+	defer decorate.OnError(&err, i18n.G("can't determine start time of client process"))
+
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return 0, err

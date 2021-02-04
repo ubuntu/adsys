@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/dconf"
@@ -66,7 +67,7 @@ Commands:
 			os.Exit(1)
 		}
 		if err := expand(args[1], args[2], *flagRoot, *flagCurrentSession); err != nil {
-			log.Fatal(fmt.Errorf("command expand failed with %w", err))
+			log.Error(fmt.Errorf("command expand failed with %w", err))
 			os.Exit(1)
 		}
 	case "admx":
@@ -76,7 +77,7 @@ Commands:
 			os.Exit(1)
 		}
 		if err := admx(args[1], args[2], args[3]); err != nil {
-			log.Fatal(fmt.Errorf("command admx failed with %w", err))
+			log.Error(fmt.Errorf("command admx failed with %w", err))
 			os.Exit(1)
 		}
 	default:
@@ -199,17 +200,19 @@ func admx(categoryDefinition, src, dst string) error {
 	}
 	ec, err := g.generateExpandedCategories(catfs.Categories, policies)
 	if err != nil {
-		return fmt.Errorf("can't generate expanded categories: %w", err)
+		return err
 	}
 	err = g.expandedCategoriesToADMX(ec, dst)
 	if err != nil {
-		return fmt.Errorf("can't generate ADMX templates: %w", err)
+		return err
 	}
 
 	return nil
 }
 
-func loadDefinitions(categoryDefinition, src string) ([]common.ExpandedPolicy, categoryFileStruct, error) {
+func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy, cfs categoryFileStruct, err error) {
+	defer decorate.OnError(&err, i18n.G("can't load category definition"))
+
 	var nilCategoryFileStruct categoryFileStruct
 
 	f, err := ioutil.ReadDir(src)

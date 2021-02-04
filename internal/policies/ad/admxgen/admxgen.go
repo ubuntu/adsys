@@ -46,6 +46,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	policiesPkg "github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
@@ -73,7 +74,9 @@ type generator struct {
 	supportedReleases []string
 }
 
-func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy) ([]expandedCategory, error) {
+func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy) (ep []expandedCategory, err error) {
+	defer decorate.OnError(&err, i18n.G("can't generate expanded categories"))
+
 	supportedReleaseNum := len(g.supportedReleases)
 
 	// noPoliciesOn is a map to attest that each release was assigned at least one property
@@ -328,7 +331,9 @@ func (g generator) toID(prefix, s string) string {
 	return g.distroID + re.ReplaceAllString(strings.Title(prefix)+strings.Title(s), "")
 }
 
-func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) error {
+func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't generate ADMX files"))
+
 	var inputCategories []categoryForADMX
 	var inputPolicies []policyForADMX
 	for _, p := range expandedCategories {
@@ -366,7 +371,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 	t := template.Must(template.New("admx.template").Funcs(funcMap).ParseFiles(filepath.Join(dir, "admx.template")))
 	err = t.Execute(f, input)
 	if err != nil {
-		return fmt.Errorf(i18n.G("couldn't generate admx: %v"), err)
+		return err
 	}
 
 	// Create adml
@@ -379,7 +384,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 	t = template.Must(template.New("adml.template").Funcs(funcMap).ParseFiles(filepath.Join(dir, "adml.template")))
 	err = t.Execute(f, input)
 	if err != nil {
-		return fmt.Errorf(i18n.G("couldn't generate adml: %v"), err)
+		return err
 	}
 
 	return nil

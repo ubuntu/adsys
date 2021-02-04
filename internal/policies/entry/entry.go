@@ -1,10 +1,10 @@
 package entry
 
 import (
-	"fmt"
 	"io/ioutil"
 	"sort"
 
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"gopkg.in/yaml.v2"
 )
@@ -67,11 +67,7 @@ func GetUniqueRules(gpos []GPO) map[string][]Entry {
 
 // NewGPOs returns cached gpos list loaded from the p json file
 func NewGPOs(p string) (gpos []GPO, err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("couldn't get cached GPO list from %s: %v"), p, err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't get cached GPO list from %s"), p)
 
 	d, err := ioutil.ReadFile(p)
 	if err != nil {
@@ -86,11 +82,7 @@ func NewGPOs(p string) (gpos []GPO, err error) {
 
 // SaveGPOs serializes in p the GPO list
 func SaveGPOs(gpos []GPO, p string) (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("couldn't save GPO list to %s: %v"), p, err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't save GPO list to %s"), p)
 
 	d, err := yaml.Marshal(gpos)
 	if err != nil {

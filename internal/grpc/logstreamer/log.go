@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
@@ -151,11 +152,7 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 }
 
 func logLocallyMaybeRemote(level logrus.Level, caller, msg string, localLogger *logrus.Logger, idRequest string, sendStream sendStreamFn) (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("couldn't send logs to client: %v"), err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't send logs to client"))
 
 	localMsg := msg
 	if idRequest != "" {

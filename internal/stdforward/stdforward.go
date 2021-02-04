@@ -1,12 +1,13 @@
 package stdforward
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/ubuntu/adsys/internal/decorate"
+	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 // stdforward will forward to any number of writers the messages on Stdout and StdErr.
@@ -26,7 +27,6 @@ type forwarder struct {
 
 func (f *forwarder) Write(p []byte) (int, error) {
 	// Write to regular output first
-
 	if _, err := f.out.Write(p); err != nil {
 		log.Warningf("Failed to write to regular output: %v", err)
 	}
@@ -61,7 +61,9 @@ func AddStderrWriter(w io.Writer) (remove func(), err error) {
 	return addWriter(&stderrForwarder, &os.Stderr, w)
 }
 
-func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
+func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error) {
+	defer decorate.OnError(&err, i18n.G("can't redirect output"))
+
 	// Initialize our forwarder
 	var onceErr error
 
@@ -77,7 +79,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (func(), error) {
 
 		rOut, wOut, err := os.Pipe()
 		if err != nil {
-			onceErr = fmt.Errorf("Can't redirect output: %v", err)
+			onceErr = err
 			return
 		}
 		wgIOCopy.Add(1)

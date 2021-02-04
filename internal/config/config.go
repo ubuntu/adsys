@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ubuntu/adsys/internal/decorate"
+	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 // TEXTDOMAIN is the gettext domain for l10n
@@ -33,11 +35,7 @@ func SetVerboseMode(level int) {
 // It automatically watches any configuration changes and will call refreshConfig with the config file that changed
 // passed as an argument. No config path is the initial loading.
 func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath string) error) (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("couldn't load configuration: %v", err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't load configuration"))
 
 	// Get cmdline flag for verbosity to configure logger until we have everything parsed.
 	v, err := rootCmd.PersistentFlags().GetCount("verbose")
@@ -80,7 +78,7 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath
 	viper.AutomaticEnv()
 
 	if err := refreshConfig(""); err != nil {
-		return fmt.Errorf("error while refreshing configuration: %v", err)
+		return err
 	}
 
 	return nil

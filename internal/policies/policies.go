@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
@@ -37,7 +38,9 @@ func WithCacheDir(p string) func(o *options) error {
 }
 
 // New returns a new manager with all default policy handlers.
-func New(opts ...option) (*Manager, error) {
+func New(opts ...option) (m *Manager, err error) {
+	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
+
 	// defaults
 	args := options{
 		cacheDir: config.DefaultCacheDir,
@@ -63,9 +66,10 @@ func New(opts ...option) (*Manager, error) {
 
 // ApplyPolicy generates a computer or user policy based on a list of entries
 // retrieved from a directory service.
-func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, gpos []entry.GPO) error {
+func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, gpos []entry.GPO) (err error) {
+	defer decorate.OnError(&err, i18n.G("failed to apply policy to %q"), objectName)
+
 	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
-	var err error
 
 	for entryType, entries := range entry.GetUniqueRules(gpos) {
 		switch entryType {

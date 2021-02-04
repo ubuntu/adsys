@@ -47,6 +47,7 @@ import (
 	"sync"
 
 	"github.com/mvo5/libsmbclient-go"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/smbsafe"
@@ -58,7 +59,9 @@ fetch downloads a list of gpos from a url for a given kerberosTicket and stores 
 Each gpo entry must be a gpo, with a name, url of the form: smb://<server>/SYSVOL/<AD domain>/<GPO_ID> and mutex.
 If krb5Ticket is empty, no authentication is done on samba.
 */
-func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]string) error {
+func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't download all gpos"))
+
 	dest := ad.gpoCacheDir
 
 	// protect env variable and map creation
@@ -97,11 +100,8 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			g = ad.gpos[name]
 		}
 		errg.Go(func() (err error) {
-			defer func() {
-				if err != nil {
-					err = fmt.Errorf(i18n.G("couldn't download GPO %q: %v"), g.name, err)
-				}
-			}()
+			defer decorate.OnError(&err, i18n.G("can't download GPO %q"), g.name)
+
 			smbsafe.WaitSmb()
 			defer smbsafe.DoneSmb()
 
@@ -151,7 +151,9 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	return nil
 }
 
-func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g *gpo, localPath string) (bool, error) {
+func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g *gpo, localPath string) (updateNeeded bool, err error) {
+	defer decorate.OnError(&err, i18n.G("can't check if %s needs refreshing"), g.name)
+
 	g.mu.RLock()
 	defer g.mu.RUnlock()
 
@@ -172,7 +174,7 @@ func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g *gpo, 
 	// Read() is on *libsmbclient.File, not libsmbclient.File
 	pf := &f
 	if remoteVersion, err = getGPOVersion(pf); err != nil {
-		return false, fmt.Errorf("invalid remote GPT.INI for %s: %v", g.name, err)
+		return false, err
 	}
 
 	if localVersion >= remoteVersion {
@@ -183,6 +185,8 @@ func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g *gpo, 
 }
 
 func getGPOVersion(r io.Reader) (version int, err error) {
+	defer decorate.OnError(&err, i18n.G("invalid remote GPT.INI"))
+
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		t := scanner.Text()

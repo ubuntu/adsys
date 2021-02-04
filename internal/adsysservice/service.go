@@ -3,7 +3,9 @@ package adsysservice
 import (
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice/actions"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/stdforward"
 	"google.golang.org/grpc"
 )
@@ -11,7 +13,9 @@ import (
 // Cat forwards any messages from all requests to the client.
 // Anything logged by the server on stdout, stderr or via the standard logger.
 // Only one call at a time can be performed here.
-func (s *Service) Cat(r *adsys.Empty, stream adsys.Service_CatServer) error {
+func (s *Service) Cat(r *adsys.Empty, stream adsys.Service_CatServer) (err error) {
+	defer decorate.OnError(&err, i18n.G("error while trying to display daemon output"))
+
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
 		return err
 	}
@@ -46,7 +50,9 @@ func (ss streamWriter) Write(b []byte) (n int, err error) {
 
 // Stop requests to stop the service once all connections are done. Force will shut it down immediately and drop
 // existing connections.
-func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) error {
+func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) (err error) {
+	defer decorate.OnError(&err, i18n.G("error while trying to stop daemon"))
+
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
 		return err
 	}

@@ -15,6 +15,7 @@ import (
 	"sync"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -51,16 +52,13 @@ type Manager struct {
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't apply dconf policy to %s"), objectName)
+
 	dconfDir := m.dconfDir
 	if dconfDir == "" {
 		dconfDir = "/etc/dconf"
 	}
 
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("can't apply dconf policy: %v"), err)
-		}
-	}()
 	m.dconfMu.RLock()
 
 	log.Debugf(ctx, "ApplyPolicy dconf policy to %s", objectName)
@@ -182,14 +180,16 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	m.dconfMu.Unlock()
 	smbsafe.DoneExec()
 	if errExec != nil {
-		err = fmt.Errorf(i18n.G("can't refresh dconf policy via dconf update: %v"), out)
+		err = fmt.Errorf(i18n.G("dconf update failed: %v"), out)
 	}
 
 	return nil
 }
 
 // writeIfChanged will only write to path if content is different from current content.
-func writeIfChanged(path string, content string) (bool, error) {
+func writeIfChanged(path string, content string) (done bool, err error) {
+	defer decorate.OnError(&err, i18n.G("can't save %s"), path)
+
 	if oldContent, err := ioutil.ReadFile(path); err == nil && string(oldContent) == content {
 		return false, nil
 	}
@@ -207,7 +207,9 @@ func writeIfChanged(path string, content string) (bool, error) {
 // writeProfile creates or updates a dconf profile file.
 // The adsys systemd-db should always be the first systemd-db in the file to enforce their values
 // (upper systemd-db in the profile wins).
-func writeProfile(ctx context.Context, user, profilesPath string) error {
+func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't update user profile %s"), profilesPath)
+
 	profilePath := filepath.Join(profilesPath, user)
 	log.Debugf(ctx, "Update user profile %s", profilePath)
 
@@ -372,11 +374,7 @@ func splitOnNonEscaped(v, sep string) []string {
 
 // checkSignature returns an error if the value doesn't match the expected variant signature
 func checkSignature(meta, value string) (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("error while checking signature: %v"), err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("error while checking signature"))
 
 	if meta == "" {
 		return fmt.Errorf(i18n.G("empty signature for %v"), meta)

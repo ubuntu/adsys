@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
@@ -89,11 +90,7 @@ type combinedOutputter interface {
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
 func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("couldn't create Active Directory object: %v"), err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
 	// defaults
 	args := options{
@@ -145,16 +142,12 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 // userKrb5CCName has no impact for computer object and is ignored. If empty, we will expect to find one cached
 // ticket <krb5CCDir>/<objectName>.
 func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (r []entry.GPO, err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("error while getting policies for %q: %v"), objectName, err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't get policies for %q"), objectName)
 
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
 
 	if objectClass == UserObject && !strings.Contains(objectName, "@") {
-		return nil, fmt.Errorf(i18n.G("User name %q should be of the form %s@DOMAIN"), objectName, objectName)
+		return nil, fmt.Errorf(i18n.G("user name %q should be of the form %s@DOMAIN"), objectName, objectName)
 	}
 
 	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
@@ -224,14 +217,15 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 }
 
 // ListUsersFromCache return the list of active users on the system
-func (ad *AD) ListUsersFromCache(ctx context.Context) ([]string, error) {
-	var users []string
+func (ad *AD) ListUsersFromCache(ctx context.Context) (users []string, err error) {
+	defer decorate.OnError(&err, i18n.G("can't list users from cache"))
+
 	ad.Lock()
 	defer ad.Unlock()
 
 	files, err := ioutil.ReadDir(ad.krb5CacheDir)
 	if err != nil {
-		return users, fmt.Errorf(i18n.G("Failed to read cache directory: %v"), err)
+		return users, fmt.Errorf(i18n.G("failed to read cache directory: %v"), err)
 	}
 
 	for _, file := range files {
@@ -247,11 +241,7 @@ func (ad *AD) ListUsersFromCache(ctx context.Context) ([]string, error) {
 // It handles concurrent calls, and only recreate the symlink if we want to point to
 // a new destination.
 func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("failed to create symlink for caching: %v"), err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't create symlink for caching"))
 
 	ad.Lock()
 	defer ad.Unlock()
