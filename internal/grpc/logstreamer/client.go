@@ -6,11 +6,11 @@ import (
 	"os"
 	"strconv"
 
-	proto "github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/runtime/protoiface"
+	"google.golang.org/protobuf/proto"
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 )
 
 // StreamClientInterceptor allows to tag the client with an unique ID and request the server
@@ -47,7 +47,7 @@ func (ss *logClientStream) RecvMsg(m interface{}) error {
 		// we should have returned an error above if the proto isn’t a valid message.
 
 		// Try to see if this is a log message
-		message, ok := m.(protoiface.MessageV1)
+		message, ok := m.(protoreflect.ProtoMessage)
 		if !ok {
 			// this should be a proto message but it’s not, let the client handling it
 			return nil
