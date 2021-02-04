@@ -31,8 +31,8 @@ type daemonConfig struct {
 	Verbose        int
 	Socket         string
 	ServiceTimeout int
-	ADServer       string
-	ADDomain       string
+	ADServer       string `mapstructure:"ad-server"`
+	ADDomain       string `mapstructure:"ad-domain"`
 }
 
 // New registers commands and return a new App.
