@@ -67,6 +67,22 @@ type options struct {
 
 type option func(*options) error
 
+// WithCacheDir specifies a personalized daemon cache directory
+func WithCacheDir(cacheDir string) func(o *options) error {
+	return func(o *options) error {
+		o.cacheDir = cacheDir
+		return nil
+	}
+}
+
+// WithRunDir specifies a personalized /run
+func WithRunDir(runDir string) func(o *options) error {
+	return func(o *options) error {
+		o.runDir = runDir
+		return nil
+	}
+}
+
 type combinedOutputter interface {
 	CombinedOutput() ([]byte, error)
 }
@@ -81,8 +97,8 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 
 	// defaults
 	args := options{
-		runDir:      "/run/adsys",
-		cacheDir:    "/var/cache/adsys",
+		runDir:      config.DefaultRunDir,
+		cacheDir:    config.DefaultCacheDir,
 		sssCacheDir: "/var/lib/sss/db",
 		gpoListCmd:  []string{"/usr/libexec/adsys-gpolist"},
 	}

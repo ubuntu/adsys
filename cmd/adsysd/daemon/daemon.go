@@ -28,8 +28,12 @@ type App struct {
 }
 
 type daemonConfig struct {
-	Verbose        int
-	Socket         string
+	Verbose int
+
+	Socket   string
+	CacheDir string `mapstructure:"cache-dir"`
+	RunDir   string `mapstructure:"run-dir"`
+
 	ServiceTimeout int
 	ADServer       string `mapstructure:"ad-server"`
 	ADDomain       string `mapstructure:"ad-domain"`
@@ -82,7 +86,8 @@ func New() *App {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain)
+			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain,
+				adsysservice.WithCacheDir(a.config.CacheDir), adsysservice.WithRunDir(a.config.RunDir))
 			if err != nil {
 				return err
 			}
@@ -102,6 +107,11 @@ func New() *App {
 	cmdhandler.InstallVerboseFlag(&a.rootCmd)
 	cmdhandler.InstallConfigFlag(&a.rootCmd)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
+
+	a.rootCmd.PersistentFlags().StringP("cache-dir", "", config.DefaultCacheDir, i18n.G("directory where ADsys caches GPOs downloads and policies."))
+	viper.BindPFlag("cache-dir", a.rootCmd.PersistentFlags().Lookup("cache-dir"))
+	a.rootCmd.PersistentFlags().StringP("run-dir", "", config.DefaultRunDir, i18n.G("directory where ADsys stores transient information erased on reboot."))
+	viper.BindPFlag("run-dir", a.rootCmd.PersistentFlags().Lookup("run-dir"))
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
 	viper.BindPFlag("servicetimeout", a.rootCmd.PersistentFlags().Lookup("timeout"))

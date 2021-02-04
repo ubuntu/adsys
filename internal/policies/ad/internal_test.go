@@ -190,7 +190,7 @@ func TestFetchGPO(t *testing.T) {
 			dest, rundir := t.TempDir(), t.TempDir()
 
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
-				withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
 
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -301,7 +301,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 			dest, rundir := t.TempDir(), t.TempDir()
 
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
-				withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.withExistingGPO {
@@ -347,7 +347,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 
 			dest, rundir := t.TempDir(), t.TempDir()
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
-				withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.removeGPOCacheDir {
@@ -372,7 +372,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	dest, rundir := t.TempDir(), t.TempDir()
 
 	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
 	// ensure the GPO is already downloaded with an older version to force redownload
@@ -419,7 +419,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 	dest, rundir := t.TempDir(), t.TempDir()
 
 	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		withCacheDir(dest), withRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
 	// Fetch the GPO to set it up
