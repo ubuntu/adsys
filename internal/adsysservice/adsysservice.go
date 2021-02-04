@@ -28,7 +28,7 @@ type Service struct {
 	logger *logrus.Logger
 
 	adc           *ad.AD
-	policyManager policies.Manager
+	policyManager *policies.Manager
 
 	authorizer *authorizer.Authorizer
 
@@ -94,9 +94,15 @@ func New(ctx context.Context, url, domain string, opts ...option) (*Service, err
 			return nil, fmt.Errorf(i18n.G("couldn't create new authorizer: %v"), err)
 		}
 	}
+
+	m, err := policies.New(policies.WithCacheDir(args.cacheDir))
+	if err != nil {
+		return nil, err
+	}
+
 	return &Service{
 		adc:           adc,
-		policyManager: policies.New(),
+		policyManager: m,
 		authorizer:    args.authorizer,
 	}, nil
 }
