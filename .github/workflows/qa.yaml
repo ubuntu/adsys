@@ -32,6 +32,14 @@ jobs:
       - name: Go vet
         run: go vet ./...
         if: ${{ always() }}
+      - name: Install statick checker
+        run: |
+          cd ..
+          GO111MODULE=on go get honnef.co/go/tools/cmd/staticcheck
+          cd -
+      - name: Staticcheck
+        run: staticcheck ./...
+        if: ${{ always() }}
       - name: Module files are up to date
         run: ./.github/ci/check-modules
         if: ${{ always() }}
