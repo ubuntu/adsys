@@ -1,15 +1,16 @@
-package entry
+package entry_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
 func TestGetUniqueRules(t *testing.T) {
 	t.Parallel()
 
-	standardGPO := GPO{ID: "standard", Name: "standard-name", Rules: map[string][]Entry{
+	standardGPO := entry.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 		"dconf": {
 			{Key: "A", Value: "standardA"},
 			{Key: "B", Value: "standardB"},
@@ -17,13 +18,13 @@ func TestGetUniqueRules(t *testing.T) {
 		}}}
 
 	tests := map[string]struct {
-		gpos []GPO
+		gpos []entry.GPO
 
-		want map[string][]Entry
+		want map[string][]entry.Entry
 	}{
 		"One GPO": {
-			gpos: []GPO{standardGPO},
-			want: map[string][]Entry{
+			gpos: []entry.GPO{standardGPO},
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "B", Value: "standardB"},
@@ -31,14 +32,14 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Order key ascii": {
-			gpos: []GPO{{ID: "standard", Name: "standard-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "Z", Value: "standardZ"},
 					{Key: "B", Value: "standardB"},
 					{Key: "C", Value: "standardC"},
 				}}}},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "B", Value: "standardB"},
@@ -49,8 +50,8 @@ func TestGetUniqueRules(t *testing.T) {
 
 		// Multiple domains cases
 		"Multiple domains, same GPOs": {
-			gpos: []GPO{
-				{ID: "gpomultidomain", Name: "gpomultidomain-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{
+				{ID: "gpomultidomain", Name: "gpomultidomain-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "standardA"},
 						{Key: "B", Value: "standardB"},
@@ -60,7 +61,7 @@ func TestGetUniqueRules(t *testing.T) {
 						{Key: "Key1", Value: "otherdomainKey1"},
 						{Key: "Key2", Value: "otherdomainKey2"},
 					}}}},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "B", Value: "standardB"},
@@ -72,13 +73,13 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Multiple domains, different GPOs": {
-			gpos: []GPO{standardGPO,
-				{ID: "gpo2", Name: "gpo2-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{standardGPO,
+				{ID: "gpo2", Name: "gpo2-name", Rules: map[string][]entry.Entry{
 					"otherdomain": {
 						{Key: "Key1", Value: "otherdomainKey1"},
 						{Key: "Key2", Value: "otherdomainKey2"},
 					}}}},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "B", Value: "standardB"},
@@ -90,15 +91,15 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Same key in different domains are kept separated": {
-			gpos: []GPO{
-				{ID: "gpoDomain1", Name: "gpoDomain1-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{
+				{ID: "gpoDomain1", Name: "gpoDomain1-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "Common", Value: "commonValueDconf"},
 					},
 					"otherdomain": {
 						{Key: "Common", Value: "commonValueOtherDomain"},
 					}}}},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "Common", Value: "commonValueDconf"},
 				},
@@ -110,12 +111,12 @@ func TestGetUniqueRules(t *testing.T) {
 		// Override cases
 		// This is ordered for each type by key ascii order
 		"Two policies, with overrides": {
-			gpos: []GPO{
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
 					}}},
-				{ID: "standard", Name: "standard-name", Rules: map[string][]Entry{
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "standardA"},
 						{Key: "B", Value: "standardB"},
@@ -123,7 +124,7 @@ func TestGetUniqueRules(t *testing.T) {
 						{Key: "C", Value: "standardC"},
 					}}},
 			},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "B", Value: "standardB"},
@@ -131,15 +132,15 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Two policies, with reversed overrides": {
-			gpos: []GPO{
+			gpos: []entry.GPO{
 				standardGPO,
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]Entry{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						// this value will be overriden with the higher one
 						{Key: "C", Value: "oneValueC"},
 					}}},
 			},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "B", Value: "standardB"},
@@ -147,18 +148,18 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Two policies, no overrides": {
-			gpos: []GPO{
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
 					}}},
-				{ID: "user-only", Name: "user-only-name", Rules: map[string][]Entry{
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
 						{Key: "B", Value: "userOnlyB"},
 					}}},
 			},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "userOnlyA"},
 					{Key: "B", Value: "userOnlyB"},
@@ -166,18 +167,18 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Two policies, no overrides, reversed": {
-			gpos: []GPO{
-				{ID: "user-only", Name: "user-only-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
 						{Key: "B", Value: "userOnlyB"},
 					}}},
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]Entry{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
 					}}},
 			},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "userOnlyA"},
 					{Key: "B", Value: "userOnlyB"},
@@ -186,14 +187,14 @@ func TestGetUniqueRules(t *testing.T) {
 			}},
 
 		"Disabled value overrides non disabled one": {
-			gpos: []GPO{
-				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{
+				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "", Disabled: true},
 					}}},
 				standardGPO,
 			},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "B", Value: "standardB"},
@@ -201,14 +202,14 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Disabled value is overridden": {
-			gpos: []GPO{
+			gpos: []entry.GPO{
 				standardGPO,
-				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]Entry{
+				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "", Disabled: true},
 					}}},
 			},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "B", Value: "standardB"},
@@ -217,19 +218,19 @@ func TestGetUniqueRules(t *testing.T) {
 			}},
 
 		"More policies, with multiple overrides": {
-			gpos: []GPO{
-				{ID: "user-only", Name: "user-only-name", Rules: map[string][]Entry{
+			gpos: []entry.GPO{
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
 						{Key: "B", Value: "userOnlyB"},
 					}}},
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]Entry{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
 					}}},
 				standardGPO,
 			},
-			want: map[string][]Entry{
+			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "userOnlyA"},
 					{Key: "B", Value: "userOnlyB"},
@@ -243,7 +244,7 @@ func TestGetUniqueRules(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := GetUniqueRules(tc.gpos)
+			got := entry.GetUniqueRules(tc.gpos)
 			require.Equal(t, tc.want, got, "GetUniqueRules returns expected policy entries with correct overrides")
 		})
 	}
