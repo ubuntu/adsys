@@ -10,6 +10,7 @@ import (
 
 	"github.com/coreos/go-systemd/activation"
 	"github.com/coreos/go-systemd/daemon"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"google.golang.org/grpc"
@@ -31,7 +32,6 @@ type Daemon struct {
 }
 
 type options struct {
-	socket        string
 	idlingTimeout time.Duration
 
 	// private member that we export for tests.
@@ -55,11 +55,7 @@ func WithTimeout(timeout time.Duration) func(o *options) error {
 // New returns an new, initialized daemon server, which handles systemd activation.
 // If systemd activation is used, it will override any socket passed here.
 func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option) (d *Daemon, err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("couldn't create server: %v"), err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't create daemon"))
 
 	// defaults
 	args := options{
@@ -116,11 +112,7 @@ func (d *Daemon) UseSocket(socket string) (err error) {
 		return nil
 	}
 
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("couldn't listen on new socket %q: %v"), socket, err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't listen on new socket %q"), socket)
 
 	lis, err := net.Listen("unix", socket)
 	if err != nil {
@@ -144,7 +136,9 @@ func (d *Daemon) UseSocket(socket string) (err error) {
 // It handles systemd activation notification.
 // When the server stop listening, the socket is removed automatically.
 // Configuration can be reloaded and we will then listen on the new socket
-func (d *Daemon) Listen() error {
+func (d *Daemon) Listen() (err error) {
+	defer decorate.OnError(&err, i18n.G("can't serve"))
+
 	if sent, err := d.systemdSdNotifier(false, "READY=1"); err != nil {
 		return fmt.Errorf(i18n.G("couldn't send ready notification to systemd: %v"), err)
 	} else if sent {

@@ -7,6 +7,7 @@ import (
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice/actions"
 	"github.com/ubuntu/adsys/internal/authorizer"
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad"
 	"golang.org/x/sync/errgroup"
@@ -14,6 +15,8 @@ import (
 
 // UpdatePolicy refreshes or creates a policy for current user or user given as argument.
 func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Service_UpdatePolicyServer) (err error) {
+	defer decorate.OnError(&err, i18n.G("error while updating policy"))
+
 	target, targetForAuthorizer := r.GetTarget(), r.GetTarget()
 	// prevent case of username == machine name to allow updating machine or anyone abusing the API passing an user.
 	if r.GetIsComputer() || r.GetAll() {
@@ -24,12 +27,6 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 		actions.ActionPolicyUpdate); err != nil {
 		return err
 	}
-
-	go func() {
-		if err != nil {
-			err = fmt.Errorf(i18n.G("error while updating policy: %v"), err)
-		}
-	}()
 
 	objectClass := ad.UserObject
 	if r.GetIsComputer() {
@@ -64,11 +61,11 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 
 // updatePolicyFor updates the policy for a given object
 func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target string, objectClass ad.ObjectClass, krb5cc string) error {
-	entries, err := s.adc.GetPolicies(ctx, target, objectClass, krb5cc)
+	gpos, err := s.adc.GetPolicies(ctx, target, objectClass, krb5cc)
 	if err != nil {
 		return err
 	}
 
-	return s.policyManager.ApplyPolicy(ctx, target, isComputer, entries)
+	return s.policyManager.ApplyPolicy(ctx, target, isComputer, gpos)
 
 }

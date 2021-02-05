@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	"gopkg.in/ini.v1"
@@ -49,9 +50,11 @@ var (
 	}
 )
 
-// Generate creates a set of exapanded policies from a list of policies and
+// Generate creates a set of expanded policies from a list of policies and
 // dconf schemas available on the machine
-func Generate(policies []Policy, release string, root, currentSessions string) ([]common.ExpandedPolicy, error) {
+func Generate(policies []Policy, release string, root, currentSessions string) (ep []common.ExpandedPolicy, err error) {
+	defer decorate.OnError(&err, i18n.G("can't generate dconf expanded policies"))
+
 	s, d, err := loadSchemasFromDisk(filepath.Join(root, schemasPath), currentSessions)
 	if err != nil {
 		return nil, err
@@ -212,6 +215,8 @@ type schemaList struct {
 }
 
 func loadSchemasFromDisk(path string, currentSessions string) (entries map[string]schemaEntry, defaultsForPath map[string]string, err error) {
+	defer decorate.OnError(&err, i18n.G("error while loading schemas"))
+
 	entries = make(map[string]schemaEntry)
 	enums := make(map[string][]string)
 	defaultsForPath = make(map[string]string)

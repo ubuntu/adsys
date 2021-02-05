@@ -14,6 +14,12 @@ var (
 	// DefaultSocket is the default socket path
 	DefaultSocket = "/run/adsysd.sock"
 
+	// DefaultCacheDir is the default path for adsys system cache directory
+	DefaultCacheDir = "/var/cache/adsys"
+
+	// DefaultRunDir is the default path for adsys run directory
+	DefaultRunDir = "/run/adsys"
+
 	// DefaultClientTimeout is the default time in seconds  between 2 server activity before the client returns.
 	DefaultClientTimeout = 30
 

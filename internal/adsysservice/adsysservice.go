@@ -9,7 +9,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/authorizer"
+	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/daemon"
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
 	"github.com/ubuntu/adsys/internal/grpc/interceptorschain"
 	"github.com/ubuntu/adsys/internal/grpc/logconnections"
@@ -27,7 +29,7 @@ type Service struct {
 	logger *logrus.Logger
 
 	adc           *ad.AD
-	policyManager policies.Manager
+	policyManager *policies.Manager
 
 	authorizer *authorizer.Authorizer
 
@@ -35,17 +37,39 @@ type Service struct {
 }
 
 type options struct {
+	cacheDir   string
+	runDir     string
 	sssdConf   string
 	authorizer *authorizer.Authorizer
 }
 type option func(*options) error
 
+// WithCacheDir specifies a personalized daemon cache directory
+func WithCacheDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.cacheDir = p
+		return nil
+	}
+}
+
+// WithRunDir specifies a personalized /run
+func WithRunDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.runDir = p
+		return nil
+	}
+}
+
 // New returns a new instance of an AD service.
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
-func New(ctx context.Context, url, domain string, opts ...option) (*Service, error) {
+func New(ctx context.Context, url, domain string, opts ...option) (s *Service, err error) {
+	defer decorate.OnError(&err, i18n.G("couldn't create adsys service"))
+
 	// defaults
 	args := options{
+		cacheDir: config.DefaultCacheDir,
+		runDir:   config.DefaultRunDir,
 		sssdConf: "/etc/sssd/sssd.conf",
 	}
 	// applied options
@@ -55,14 +79,14 @@ func New(ctx context.Context, url, domain string, opts ...option) (*Service, err
 		}
 	}
 
-	url, domain, err := loadServerInfo(args.sssdConf, url, domain)
+	url, domain, err = loadServerInfo(args.sssdConf, url, domain)
 	if err != nil {
 		return nil, err
 	}
 	if !strings.HasPrefix(url, "ldap://") {
 		url = fmt.Sprintf("ldap://%s", url)
 	}
-	adc, err := ad.New(ctx, url, domain)
+	adc, err := ad.New(ctx, url, domain, ad.WithCacheDir(args.cacheDir), ad.WithRunDir(args.runDir))
 	if err != nil {
 		return nil, err
 	}
@@ -70,24 +94,32 @@ func New(ctx context.Context, url, domain string, opts ...option) (*Service, err
 	if args.authorizer == nil {
 		args.authorizer, err = authorizer.New()
 		if err != nil {
-			return nil, fmt.Errorf(i18n.G("couldn't create new authorizer: %v"), err)
+			return nil, err
 		}
 	}
+
+	m, err := policies.New(policies.WithCacheDir(args.cacheDir))
+	if err != nil {
+		return nil, err
+	}
+
 	return &Service{
 		adc:           adc,
-		policyManager: policies.New(),
+		policyManager: m,
 		authorizer:    args.authorizer,
 	}, nil
 }
 
-func loadServerInfo(sssdConf, url, domain string) (string, string, error) {
+func loadServerInfo(sssdConf, url, domain string) (rurl string, rdomain string, err error) {
+	defer decorate.OnError(&err, i18n.G("can't load server info from %s"), sssdConf)
+
 	if url != "" && domain != "" {
 		return url, domain, nil
 	}
 
 	cfg, err := ini.Load(sssdConf)
 	if err != nil {
-		return "", "", fmt.Errorf(i18n.G("can't read %s and no url or domain provided: %v"), sssdConf, err)
+		return "", "", fmt.Errorf(i18n.G("can't read sssd.conf and no url or domain provided: %v"), err)
 	}
 	if domain == "" {
 		domain = strings.Split(cfg.Section("sssd").Key("domains").String(), ",")[0]

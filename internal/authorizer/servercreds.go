@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"golang.org/x/sys/unix"
 	"google.golang.org/grpc"
@@ -19,7 +20,9 @@ func WithUnixPeerCreds() grpc.ServerOption {
 // serverPeerCreds encapsulates a TransportCredentials which extracts uid and pid of caller via Unix Socket SO_PEERCRED
 type serverPeerCreds struct{}
 
-func (serverPeerCreds) ServerHandshake(conn net.Conn) (net.Conn, credentials.AuthInfo, error) {
+func (serverPeerCreds) ServerHandshake(conn net.Conn) (n net.Conn, c credentials.AuthInfo, err error) {
+	defer decorate.OnError(&err, i18n.G("server handshake failed"))
+
 	var cred *unix.Ucred
 
 	// net.Conn is an interface. Expect only *net.UnixConn types

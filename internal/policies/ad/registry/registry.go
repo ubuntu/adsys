@@ -13,6 +13,7 @@ import (
 	"strings"
 	"unicode/utf16"
 
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
@@ -40,11 +41,7 @@ const (
 
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
 func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("couldn't decode policy: %v", err)
-		}
-	}()
+	defer decorate.OnError(&err, i18n.G("can't parse policy"))
 
 	ent, err := readPolicy(r)
 	if err != nil {
@@ -137,6 +134,8 @@ type policyFileHeader struct {
 }
 
 func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
+	defer decorate.OnError(&err, i18n.G("invalid policy"))
+
 	validPolicyFileHeader := policyFileHeader{
 		Signature: 0x67655250,
 		Version:   1,
@@ -146,13 +145,13 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 	err = binary.Read(r, binary.LittleEndian, &header)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
-			return nil, errors.New("invalid policy file (empty)")
+			return nil, errors.New("empty file")
 		}
 		return nil, err
 	}
 
 	if header != validPolicyFileHeader {
-		return nil, fmt.Errorf("invalid policy file header: %x%x", header.Signature, header.Version)
+		return nil, fmt.Errorf("file header: %x%x", header.Signature, header.Version)
 	}
 
 	sectionStart := []byte{'[', 0}     // [ in UTF-16 (little endian)
@@ -165,14 +164,14 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		// Skip leading sectionStart.
 		start := 0
 		for ; start+dataOffset-1 < len(data); start++ {
-			if bytes.Compare(data[start:start+dataOffset], sectionStart) == 0 {
+			if bytes.Equal(data[start:start+dataOffset], sectionStart) {
 				break
 			}
 		}
 
 		// Scan until sectionEnd, marking end of word.
 		for i := start + dataOffset; i+sectionEndWidth-1 < len(data); i++ {
-			if bytes.Compare(data[i:i+sectionEndWidth], sectionEnd) == 0 {
+			if bytes.Equal(data[i:i+sectionEndWidth], sectionEnd) {
 				return i + sectionEndWidth, data[start+dataOffset : i+2], nil
 			}
 		}

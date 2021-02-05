@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type keyCtxType string
+
 func TestStreamServer(t *testing.T) {
 	t.Parallel()
 
@@ -22,7 +24,7 @@ func TestStreamServer(t *testing.T) {
 	sentMessage := "sent"
 	outputError := fmt.Errorf("some error")
 
-	parentContext := context.WithValue(context.TODO(), "parent", 42)
+	parentContext := context.WithValue(context.TODO(), keyCtxType("parent"), 42)
 	parentStreamInfo := &grpc.StreamServerInfo{
 		FullMethod:     someServiceName,
 		IsServerStream: true,
@@ -33,7 +35,7 @@ func TestStreamServer(t *testing.T) {
 		require.Equal(t, parentStreamInfo, info, "first interceptor must know the parentStreamInfo")
 		require.Equal(t, someService, srv, "first interceptor must know someService")
 		wrapped := wrapServerStream(stream)
-		wrapped.wrappedContext = context.WithValue(stream.Context(), "first", 43)
+		wrapped.wrappedContext = context.WithValue(stream.Context(), keyCtxType("first"), 43)
 		return handler(srv, wrapped)
 	}
 	second := func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
@@ -42,7 +44,7 @@ func TestStreamServer(t *testing.T) {
 		require.Equal(t, parentStreamInfo, info, "second interceptor must know the parentStreamInfo")
 		require.Equal(t, someService, srv, "second interceptor must know someService")
 		wrapped := wrapServerStream(stream)
-		wrapped.wrappedContext = context.WithValue(stream.Context(), "second", 44)
+		wrapped.wrappedContext = context.WithValue(stream.Context(), keyCtxType("second"), 44)
 		return handler(srv, wrapped)
 	}
 	handler := func(srv interface{}, stream grpc.ServerStream) error {
@@ -65,7 +67,7 @@ func TestStreamClient(t *testing.T) {
 	t.Parallel()
 
 	someServiceName := "MyService"
-	parentContext := context.WithValue(context.TODO(), "parent", 42)
+	parentContext := context.WithValue(context.TODO(), keyCtxType("parent"), 42)
 
 	ignoredMd := metadata.Pairs("foo", "bar")
 	parentOpts := []grpc.CallOption{grpc.Header(&ignoredMd)}
@@ -76,7 +78,7 @@ func TestStreamClient(t *testing.T) {
 		requireContextValue(t, 42, ctx, "parent", "first must know the parent context value")
 		require.Equal(t, someServiceName, method, "first must know someService")
 		require.Len(t, opts, 1, "first should see parent CallOptions")
-		wrappedCtx := context.WithValue(ctx, "first", 43)
+		wrappedCtx := context.WithValue(ctx, keyCtxType("first"), 43)
 		return streamer(wrappedCtx, desc, cc, method, opts...)
 	}
 	second := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
@@ -85,7 +87,7 @@ func TestStreamClient(t *testing.T) {
 		require.Equal(t, someServiceName, method, "second must know someService")
 		require.Len(t, opts, 1, "second should see parent CallOptions")
 		wrappedOpts := append(opts, grpc.WaitForReady(false))
-		wrappedCtx := context.WithValue(ctx, "second", 44)
+		wrappedCtx := context.WithValue(ctx, keyCtxType("second"), 44)
 		return streamer(wrappedCtx, desc, cc, method, wrappedOpts...)
 	}
 	streamer := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
@@ -105,7 +107,7 @@ func TestStreamClient(t *testing.T) {
 }
 
 func requireContextValue(t *testing.T, expected interface{}, ctx context.Context, key string, msg ...interface{}) {
-	val := ctx.Value(key)
+	val := ctx.Value(keyCtxType(key))
 	require.NotNil(t, val, msg...)
 	require.Equal(t, expected, val, msg...)
 }
