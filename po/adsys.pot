@@ -31,7 +31,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:205
+#: internal/policies/ad/admxgen/admxgen.go:208
 #, c-format
 msgid ""
 "%s\n"
@@ -39,23 +39,23 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:295
+#: internal/policies/ad/ad.go:303
 msgid "%s :%v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:239
+#: internal/policies/ad/admxgen/dconf/dconf.go:244
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:387
+#: internal/policies/dconf/dconf.go:385
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:107
+#: internal/grpc/logstreamer/server.go:104
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:242
+#: internal/policies/ad/admxgen/admxgen.go:245
 #, c-format
 msgid "%s needs a default policy class"
 msgstr ""
@@ -70,16 +70,16 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:170
+#: internal/policies/ad/admxgen/admxgen.go:173
 #, c-format
 msgid "- Supported on %s %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:113
+#: internal/policies/dconf/dconf.go:111
 msgid "- error on %s: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:111
+#: cmd/adsysd/daemon/daemon.go:121
 msgid "AD domain to use. Empty to let ADSys parsing sssd.conf."
 msgstr ""
 
@@ -87,7 +87,7 @@ msgstr ""
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:43
+#: cmd/adsysd/daemon/daemon.go:47
 msgid "AD integration daemon"
 msgstr ""
 
@@ -96,40 +96,28 @@ msgstr ""
 msgid "Alias of %s"
 msgstr ""
 
-#: internal/daemon/daemon.go:200
+#: internal/daemon/daemon.go:194
 msgid "All connections have now ended."
 msgstr ""
 
-#: internal/authorizer/authorizer.go:161
+#: internal/authorizer/authorizer.go:158
 msgid "Any user always authorized"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:158
+#: internal/authorizer/authorizer.go:155
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:196
-msgid "Call to polkit failed: %v"
-msgstr ""
-
-#: internal/authorizer/authorizer.go:115
+#: internal/authorizer/authorizer.go:116
 msgid "Check if grpc request peer is authorized"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:44
+#: internal/grpc/logstreamer/server.go:45
 #, c-format
 msgid "Connecting as [[%s]]"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:125
-msgid "Context request doesn't have grpc peer creds informations."
-msgstr ""
-
-#: internal/authorizer/authorizer.go:129
-msgid "Context request grpc peer creeds information is not a peerCredsInfo."
-msgstr ""
-
-#: internal/authorizer/servercreds.go:50
+#: internal/authorizer/servercreds.go:53
 #, c-format
 msgid "Control() error: %s"
 msgstr ""
@@ -138,32 +126,16 @@ msgstr ""
 msgid "Couldn't connect to %s daemon: %v"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:145
-msgid "Couldn't convert %q to a valid uid for %q"
-msgstr ""
-
-#: internal/authorizer/authorizer.go:178
-msgid "Couldn't determine start time of client process: %v"
-msgstr ""
-
-#: internal/authorizer/authorizer.go:172
-msgid "Couldn't open stat file for process: %v"
-msgstr ""
-
-#: internal/authorizer/authorizer.go:141
-msgid "Couldn't retrieve user for %q: %v"
-msgstr ""
-
-#: internal/grpc/logstreamer/server.go:45
+#: internal/grpc/logstreamer/server.go:46
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:192
+#: internal/policies/ad/admxgen/admxgen.go:195
 #, c-format
 msgid "Default for %s %s: %s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:203
+#: internal/policies/ad/admxgen/admxgen.go:206
 #, c-format
 msgid "Default: %s"
 msgstr ""
@@ -180,56 +152,34 @@ msgstr ""
 msgid "Error from server: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:219
-msgid "Failed to read cache directory: %v"
-msgstr ""
-
 #: internal/cmdhandler/cmdhandler.go:44
 msgid "Generates bash completion scripts"
 msgstr ""
 
-#: internal/authorizer/servercreds.go:47
+#: internal/authorizer/servercreds.go:50
 #, c-format
 msgid "GetsockoptUcred() error: %s"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:88
-msgid ""
-"Invalid metdata from client: %v\n"
-". Please use the StreamClientInterceptor."
-msgstr ""
-
-#: internal/grpc/logstreamer/server.go:47
+#: internal/grpc/logstreamer/server.go:48
 #, c-format
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:119
-msgid "Permission denied: %w"
-msgstr ""
-
-#: internal/authorizer/authorizer.go:199
+#: internal/authorizer/authorizer.go:196
 msgid "Polkit call result, authorized: %t"
-msgstr ""
-
-#: internal/authorizer/authorizer.go:202
-msgid "Polkit denied access"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:25
 msgid "Print service logs"
 msgstr ""
 
-#: internal/daemon/daemon.go:171
+#: internal/daemon/daemon.go:165
 msgid "Quitting"
 msgstr ""
 
-#: internal/daemon/daemon.go:151
+#: internal/daemon/daemon.go:145
 msgid "Ready state sent to systemd"
-msgstr ""
-
-#: internal/authorizer/authorizer.go:137
-msgid "Request to act on user action should have a user name attached"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:34
@@ -252,16 +202,16 @@ msgstr ""
 msgid "Service took too long to respond. Disconnecting client."
 msgstr ""
 
-#: internal/daemon/daemon.go:158
+#: internal/daemon/daemon.go:152
 #, c-format
 msgid "Serving on %s"
 msgstr ""
 
-#: internal/daemon/daemon.go:192
+#: internal/daemon/daemon.go:186
 msgid "Stopping daemon requested."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:109
+#: cmd/adsysd/daemon/daemon.go:119
 msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
 msgstr ""
@@ -272,11 +222,7 @@ msgid ""
 "ticket"
 msgstr ""
 
-#: internal/policies/ad/ad.go:142
-msgid "User name %q should be of the form %s@DOMAIN"
-msgstr ""
-
-#: internal/daemon/daemon.go:198
+#: internal/daemon/daemon.go:192
 msgid "Wait for active requests to close."
 msgstr ""
 
@@ -286,142 +232,282 @@ msgid ""
 "USER_NAME/TICKET cannot be used with this option."
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:61
-msgid "can't apply dconf policy: %v"
+#: internal/authorizer/authorizer.go:193
+msgid "call to polkit failed: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:363
-#: internal/policies/ad/admxgen/admxgen.go:376
+#: internal/policies/dconf/dconf.go:55
+#, c-format
+msgid "can't apply dconf policy to %s"
+msgstr ""
+
+#: internal/policies/ad/download.go:155
+#, c-format
+msgid "can't check if %s needs refreshing"
+msgstr ""
+
+#: internal/policies/ad/ad.go:89
+msgid "can't create Active Directory object"
+msgstr ""
+
+#: internal/policies/policies.go:42
+msgid "can't create a new policy handlers manager"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:368
+#: internal/policies/ad/admxgen/admxgen.go:381
 msgid "can't create admx file: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:347
+#: internal/adsysservice/client.go:25
+msgid "can't create client for service"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:57
+msgid "can't create create new authorizer"
+msgstr ""
+
+#: internal/daemon/daemon.go:58
+msgid "can't create daemon"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:352
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:355
+#: internal/policies/ad/ad.go:240
+msgid "can't create symlink for caching"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:360
 msgid "can't determine current file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:246
+#: internal/authorizer/authorizer.go:209
+msgid "can't determine start time of client process"
+msgstr ""
+
+#: internal/grpc/unixsocket/unixsocket.go:14
+#, c-format
+msgid "can't dial to %s"
+msgstr ""
+
+#: internal/policies/ad/download.go:103
+msgid "can't download GPO %q"
+msgstr ""
+
+#: internal/policies/ad/download.go:63
+msgid "can't download all gpos"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:335
+msgid "can't generate ADMX files"
+msgstr ""
+
+#: internal/policies/ad/admxgen/dconf/dconf.go:56
+msgid "can't generate dconf expanded policies"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:78
+msgid "can't generate expanded categories"
+msgstr ""
+
+#: internal/policies/ad/ad.go:247
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:391
+#: internal/policies/entry/entry.go:70
+#, c-format
+msgid "can't get cached GPO list from %s"
+msgstr ""
+
+#: internal/policies/ad/ad.go:141
+msgid "can't get policies for %q"
+msgstr ""
+
+#: internal/policies/ad/ad.go:217
+msgid "can't list users from cache"
+msgstr ""
+
+#: internal/daemon/daemon.go:115
+msgid "can't listen on new socket %q"
+msgstr ""
+
+#: internal/policies/ad/admxgen/main.go:214
+msgid "can't load category definition"
+msgstr ""
+
+#: internal/config/config.go:38
+msgid "can't load configuration"
+msgstr ""
+
+#: internal/adsysservice/adsysservice.go:114
+#, c-format
+msgid "can't load server info from %s"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:389
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:90
-msgid "can't read %s and no url or domain provided: %v"
+#: internal/policies/ad/registry/registry.go:44
+msgid "can't parse policy"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:185
-msgid "can't refresh dconf policy via dconf update: %v"
+#: internal/adsysservice/adsysservice.go:122
+msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:228
+#: internal/stdforward/stdforward.go:65
+msgid "can't redirect output"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:191
+#, c-format
+msgid "can't save %s"
+msgstr ""
+
+#: internal/policies/entry/entry.go:85
+#, c-format
+msgid "can't save GPO list to %s"
+msgstr ""
+
+#: internal/grpc/logstreamer/log.go:155
+msgid "can't send logs to client"
+msgstr ""
+
+#: internal/daemon/daemon.go:140
+msgid "can't serve"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:211
+#, c-format
+msgid "can't update user profile %s"
+msgstr ""
+
+#: internal/policies/ad/admxgen/dconf/dconf.go:233
 msgid "cannot open file: %w"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:234
+#: internal/policies/ad/admxgen/dconf/dconf.go:239
 msgid "cannot read schema data: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:79
-msgid "couldn't create Active Directory object: %v"
+#: internal/authorizer/authorizer.go:122
+msgid "context request doesn't have grpc peer creds informations."
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:73
-msgid "couldn't create new authorizer: %v"
+#: internal/authorizer/authorizer.go:126
+msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
-#: internal/daemon/daemon.go:60
-msgid "couldn't create server: %v"
+#: internal/authorizer/authorizer.go:142
+msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/policies/ad/download.go:102
-msgid "couldn't download GPO %q: %v"
+#: internal/adsysservice/adsysservice.go:67
+msgid "couldn't create adsys service"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:382
-msgid "couldn't generate adml: %v"
+#: internal/authorizer/authorizer.go:169
+msgid "couldn't open stat file for process: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:369
-msgid "couldn't generate admx: %v"
+#: internal/authorizer/authorizer.go:138
+msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
-#: internal/daemon/daemon.go:121
-msgid "couldn't listen on new socket %q: %v"
-msgstr ""
-
-#: internal/grpc/logstreamer/log.go:149
+#: internal/grpc/logstreamer/log.go:150
 msgid "couldn't send logs to client"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:156
-msgid "couldn't send logs to client: %v"
-msgstr ""
-
-#: internal/daemon/daemon.go:149
+#: internal/daemon/daemon.go:143
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:382
+#: internal/policies/dconf/dconf.go:183
+msgid "dconf update failed: %v"
+msgstr ""
+
+#: cmd/adsysd/daemon/daemon.go:111
+msgid "directory where ADsys caches GPOs downloads and policies."
+msgstr ""
+
+#: cmd/adsysd/daemon/daemon.go:113
+msgid "directory where ADsys stores transient information erased on reboot."
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:380
 msgid "empty signature for %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:309
+#: internal/policies/ad/admxgen/dconf/dconf.go:314
 #, c-format
 msgid "enum id %s referenced by %s doesn't exist in list of enums"
 msgstr ""
 
-#: internal/authorizer/servercreds.go:34
+#: internal/authorizer/servercreds.go:37
 #, c-format
 msgid "error opening raw connection: %s"
 msgstr ""
 
 #: internal/policies/dconf/dconf.go:377
-msgid "error while checking signature: %v"
+msgid "error while checking signature"
 msgstr ""
 
-#: internal/policies/ad/ad.go:135
-msgid "error while getting policies for %q: %v"
+#: internal/adsysservice/version.go:14
+msgid "error while getting daemon version"
 msgstr ""
 
-#: internal/adsysservice/policy.go:30
-msgid "error while updating policy: %v"
+#: internal/policies/ad/admxgen/dconf/dconf.go:218
+msgid "error while loading schemas"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:117
+#: internal/adsysservice/service.go:17
+msgid "error while trying to display daemon output"
+msgstr ""
+
+#: internal/adsysservice/service.go:54
+msgid "error while trying to stop daemon"
+msgstr ""
+
+#: internal/adsysservice/policy.go:18
+msgid "error while updating policy"
+msgstr ""
+
+#: internal/policies/ad/admxgen/main.go:118
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:237
-msgid "failed to create symlink for caching: %v"
+#: internal/policies/policies.go:70
+msgid "failed to apply policy to %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:95
+#: internal/adsysservice/adsysservice.go:127
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:104
+#: internal/adsysservice/adsysservice.go:136
 msgid "failed to find server address in sssd.conf and url is not provided"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:122
+#: internal/policies/ad/ad.go:224
+msgid "failed to read cache directory: %v"
+msgstr ""
+
+#: internal/policies/ad/admxgen/main.go:123
 msgid "failed to read list of definition files: %w"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:222
+#: internal/policies/ad/admxgen/dconf/dconf.go:227
 msgid "failed to read list of schemas: %w"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:319
+#: internal/policies/ad/admxgen/dconf/dconf.go:324
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:257
+#: internal/policies/ad/ad.go:258
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -433,19 +519,33 @@ msgstr ""
 msgid "invalid class %q"
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:82
+#: internal/policies/ad/registry/registry.go:79
 msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:119
+#: internal/grpc/logstreamer/server.go:116
 msgid "invalid metadata %s for incoming request: %q"
+msgstr ""
+
+#: internal/grpc/logstreamer/server.go:87
+msgid ""
+"invalid metdata from client: %v\n"
+". Please use the StreamClientInterceptor."
+msgstr ""
+
+#: internal/policies/ad/registry/registry.go:137
+msgid "invalid policy"
+msgstr ""
+
+#: internal/policies/ad/download.go:188
+msgid "invalid remote GPT.INI"
 msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:63
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:78
+#: internal/policies/dconf/dconf.go:76
 msgid ""
 "machine dconf database is required before generating a policy for an user. "
 "This one returns: %v"
@@ -459,46 +559,62 @@ msgstr ""
 msgid "machine updates the policy of the computer."
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:147
+#: internal/policies/ad/admxgen/dconf/dconf.go:150
 #, c-format
 msgid "min value for long decimal is not a valid float: %s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:151
+#: internal/policies/ad/admxgen/dconf/dconf.go:154
 msgid "min value for long decimal is not a valid float: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:95
+#: internal/grpc/logstreamer/server.go:92
 msgid "missing client metadata"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:116
+#: internal/grpc/logstreamer/server.go:113
 #, c-format
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:240
+#: internal/authorizer/authorizer.go:239
 msgid "parsing error: %v"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:232
+#: internal/authorizer/authorizer.go:231
 msgid "parsing error: ) at the end"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:236
+#: internal/authorizer/authorizer.go:235
 msgid "parsing error: less fields than required"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:228
+#: internal/authorizer/authorizer.go:227
 msgid "parsing error: missing )"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:252
+#: internal/authorizer/authorizer.go:118
+msgid "permission denied"
+msgstr ""
+
+#: internal/policies/ad/admxgen/admxgen.go:255
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
-#: internal/policies/ad/ad.go:147
+#: internal/authorizer/authorizer.go:199
+msgid "polkit denied access"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:134
+msgid "request to act on user action should have a user name attached"
+msgstr ""
+
+#: internal/policies/ad/ad.go:151
 msgid "requested a type computer of %q which isn't current host %q"
+msgstr ""
+
+#: internal/authorizer/servercreds.go:24
+msgid "server handshake failed"
 msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:70
@@ -507,13 +623,13 @@ msgid ""
 "socket activation."
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:232
+#: internal/policies/ad/admxgen/admxgen.go:235
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:289
+#: internal/policies/ad/admxgen/admxgen.go:292
 msgid "the following policies have been assigned to a category: %v"
 msgstr ""
 
@@ -523,23 +639,23 @@ msgid ""
 "no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:106
+#: cmd/adsysd/daemon/daemon.go:116
 msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
 
-#: internal/daemon/daemon.go:101
+#: internal/daemon/daemon.go:97
 #, c-format
 msgid "unexpected number of systemd socket activation (%d != 1)"
 msgstr ""
 
-#: internal/authorizer/servercreds.go:28
+#: internal/authorizer/servercreds.go:31
 msgid "unexpected socket type"
 msgstr ""
 
-#: internal/policies/policies.go:57
+#: internal/policies/policies.go:83
 #, c-format
-msgid "unknown entry type: %s for key %s"
+msgid "unknown entry type: %s for keys %s"
 msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:77
@@ -548,4 +664,8 @@ msgstr ""
 
 #: cmd/adsysd/client/update.go:43
 msgid "user arguments cannot be used with machine update"
+msgstr ""
+
+#: internal/policies/ad/ad.go:146
+msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
