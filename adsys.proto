@@ -15,10 +15,6 @@ message StopRequest {
   bool force = 1;
 }
 
-message VersionResponse {
-  string version = 1;
-}
-
 message StringResponse {
   string msg = 1;
 }
