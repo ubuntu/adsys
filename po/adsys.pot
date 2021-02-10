@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:303
+#: internal/policies/ad/ad.go:321
 msgid "%s :%v"
 msgstr ""
 
@@ -246,7 +246,7 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/ad/ad.go:89
+#: internal/policies/ad/ad.go:90
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -275,7 +275,7 @@ msgstr ""
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:240
+#: internal/policies/ad/ad.go:258
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -312,20 +312,20 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:247
+#: internal/policies/ad/ad.go:265
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/entry/entry.go:70
+#: internal/policies/entry/entry.go:75
 #, c-format
 msgid "can't get cached GPO list from %s"
 msgstr ""
 
-#: internal/policies/ad/ad.go:141
+#: internal/policies/ad/ad.go:147
 msgid "can't get policies for %q"
 msgstr ""
 
-#: internal/policies/ad/ad.go:217
+#: internal/policies/ad/ad.go:235
 msgid "can't list users from cache"
 msgstr ""
 
@@ -367,7 +367,7 @@ msgstr ""
 msgid "can't save %s"
 msgstr ""
 
-#: internal/policies/entry/entry.go:85
+#: internal/policies/entry/entry.go:90
 #, c-format
 msgid "can't save GPO list to %s"
 msgstr ""
@@ -491,7 +491,7 @@ msgstr ""
 msgid "failed to find server address in sssd.conf and url is not provided"
 msgstr ""
 
-#: internal/policies/ad/ad.go:224
+#: internal/policies/ad/ad.go:242
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -507,8 +507,14 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:258
+#: internal/policies/ad/ad.go:276
 msgid "failed to remove existing symlink: %v"
+msgstr ""
+
+#: internal/policies/ad/ad.go:191
+msgid ""
+"failed to retrieve the list of GPO: %v\n"
+"%s"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:38
@@ -549,6 +555,10 @@ msgstr ""
 msgid ""
 "machine dconf database is required before generating a policy for an user. "
 "This one returns: %v"
+msgstr ""
+
+#: internal/policies/ad/ad.go:198
+msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
 #: cmd/adsysd/client/update.go:40
@@ -609,7 +619,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/policies/ad/ad.go:151
+#: internal/policies/ad/ad.go:157
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -666,6 +676,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/policies/ad/ad.go:146
+#: internal/policies/ad/ad.go:152
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
