@@ -4,7 +4,7 @@ option go_package = "github.com/ubuntu/adsys";
 
 service service {
   rpc Cat(Empty) returns (stream StringResponse);
-  rpc Version(Empty) returns (stream VersionResponse);
+  rpc Version(Empty) returns (stream StringResponse);
   rpc Stop(StopRequest) returns (stream Empty);
   rpc UpdatePolicy(UpdatePolicyRequest) returns (stream Empty);
 }

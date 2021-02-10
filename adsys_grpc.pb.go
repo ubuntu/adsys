@@ -80,7 +80,7 @@ func (c *serviceClient) Version(ctx context.Context, in *Empty, opts ...grpc.Cal
 }
 
 type Service_VersionClient interface {
-	Recv() (*VersionResponse, error)
+	Recv() (*StringResponse, error)
 	grpc.ClientStream
 }
 
@@ -88,8 +88,8 @@ type serviceVersionClient struct {
 	grpc.ClientStream
 }
 
-func (x *serviceVersionClient) Recv() (*VersionResponse, error) {
-	m := new(VersionResponse)
+func (x *serviceVersionClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func _Service_Version_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Service_VersionServer interface {
-	Send(*VersionResponse) error
+	Send(*StringResponse) error
 	grpc.ServerStream
 }
 
@@ -238,7 +238,7 @@ type serviceVersionServer struct {
 	grpc.ServerStream
 }
 
-func (x *serviceVersionServer) Send(m *VersionResponse) error {
+func (x *serviceVersionServer) Send(m *StringResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
