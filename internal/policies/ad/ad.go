@@ -47,9 +47,10 @@ type AD struct {
 	hostname string
 	url      string
 
-	gpoCacheDir  string
-	krb5CacheDir string
-	sssCCName    string
+	gpoCacheDir      string
+	gpoRulesCacheDir string
+	krb5CacheDir     string
+	sssCCName        string
 
 	gpos map[string]*gpo
 	sync.RWMutex
@@ -110,6 +111,10 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	if err := os.MkdirAll(gpoCacheDir, 0700); err != nil {
 		return nil, err
 	}
+	gpoRulesCacheDir := filepath.Join(args.cacheDir, entry.GPORulesCacheBaseName)
+	if err := os.MkdirAll(gpoRulesCacheDir, 0700); err != nil {
+		return nil, err
+	}
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -122,13 +127,14 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	sssCCName := filepath.Join(args.sssCacheDir, "ccache_"+strings.ToUpper(domain))
 
 	return &AD{
-		hostname:     hostname,
-		url:          url,
-		gpoCacheDir:  gpoCacheDir,
-		krb5CacheDir: krb5CacheDir,
-		sssCCName:    sssCCName,
-		gpos:         make(map[string]*gpo),
-		gpoListCmd:   args.gpoListCmd,
+		hostname:         hostname,
+		url:              url,
+		gpoCacheDir:      gpoCacheDir,
+		gpoRulesCacheDir: gpoRulesCacheDir,
+		krb5CacheDir:     krb5CacheDir,
+		sssCCName:        sssCCName,
+		gpos:             make(map[string]*gpo),
+		gpoListCmd:       args.gpoListCmd,
 	}, nil
 }
 
@@ -181,7 +187,19 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	err = cmd.Run()
 	smbsafe.DoneExec()
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve the list of GPO: %v\n%s", err, stderr.String())
+		if cmd.ProcessState.ExitCode() != 2 {
+			return nil, fmt.Errorf(i18n.G("failed to retrieve the list of GPO: %v\n%s"), err, stderr.String())
+		}
+
+		// Exit status 2 is a network error (host of network unreadchable)
+		// In this case we assume an offline connection and try to load the GPOs from cache
+		// Otherwise we fail with an error.
+		if r, err = entry.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
+			return nil, fmt.Errorf(i18n.G("machine is offline and GPO rules cache is unavailable: %v"), err)
+		}
+
+		log.Infof(ctx, "Can't reach AD: machine is offline and %q policies are applied using previous online update", objectName)
+		return r, nil
 	}
 
 	gpos := make(map[string]string)

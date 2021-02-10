@@ -436,6 +436,75 @@ func TestGetPolicies(t *testing.T) {
 	}
 }
 
+func TestGetPoliciesOffline(t *testing.T) {
+	t.Parallel()
+
+	gpos := []entry.GPO{
+		{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+			"dconf": {
+				{Key: "A", Value: "userOnlyA"},
+				{Key: "B", Value: "userOnlyB"},
+			}}},
+		{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+			"dconf": {
+				{Key: "C", Value: "oneValueC"},
+			}}},
+		{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+			"dconf": {
+				{Key: "A", Value: "standardA"},
+				{Key: "B", Value: "standardB"},
+				{Key: "C", Value: "standardC"},
+			}}}}
+
+	tests := map[string]struct {
+		getFromCache bool
+
+		want    []entry.GPO
+		wantErr bool
+	}{
+		"Offline, get from cache": {
+			getFromCache: true,
+			want:         gpos,
+		},
+		"Error offline with no cache": {
+			getFromCache: false,
+			wantErr:      true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			cachedir, rundir := t.TempDir(), t.TempDir()
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
+				ad.WithGPOListCmd(mockGPOListCmd(t, "-Exit2-")))
+			require.NoError(t, err, "Setup: cannot create ad object")
+
+			objectName := "useroffline@WARTHOGS.BIZ"
+
+			krb5CCName, cleanup := setKrb5CC(t, objectName)
+			defer cleanup()
+
+			if tc.getFromCache {
+				err := entry.SaveGPOs(tc.want, filepath.Join(adc.GpoRulesCacheDir(), objectName))
+				require.NoError(t, err, "Setup: cannot create gpo cache rule file for user")
+			}
+
+			entries, err := adc.GetPolicies(context.Background(), objectName, ad.UserObject, krb5CCName)
+			if tc.wantErr {
+				require.NotNil(t, err, "GetPolicies should have errored out")
+				return
+			}
+
+			require.NoError(t, err, "GetPolicies should return no error")
+			require.Equal(t, tc.want, entries, "GetPolicies returns expected gpo entries in correct order")
+		})
+	}
+}
+
 func TestGetPoliciesWorkflows(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
@@ -753,6 +822,12 @@ func TestMockGPOList(t *testing.T) {
 		}
 		args = args[1:]
 		break
+	}
+
+	// simulating offline mode with Exit 2
+	if args[0] == "-Exit2-" {
+		fmt.Fprint(os.Stderr, "Error during gpo list requested with exit 2")
+		os.Exit(2)
 	}
 
 	// domain shouldn’t be used on object name, as we will return nothing

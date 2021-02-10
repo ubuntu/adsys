@@ -17,7 +17,12 @@ type Entry struct {
 	Meta     string
 }
 
-// GPO is the GPO definition with all its parsed rules.
+const (
+	// GPORulesCacheBaseName is the base directory where we want to cache gpo rules
+	GPORulesCacheBaseName = "gpo_rules"
+)
+
+// GPO is a representation of a GPO with rules we support
 type GPO struct {
 	ID   string
 	Name string

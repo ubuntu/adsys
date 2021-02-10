@@ -52,7 +52,7 @@ func New(opts ...option) (m *Manager, err error) {
 		}
 	}
 
-	gpoRulesCacheDir := filepath.Join(args.cacheDir, "gpo_rules")
+	gpoRulesCacheDir := filepath.Join(args.cacheDir, entry.GPORulesCacheBaseName)
 	if err := os.MkdirAll(gpoRulesCacheDir, 0700); err != nil {
 		return nil, err
 	}
