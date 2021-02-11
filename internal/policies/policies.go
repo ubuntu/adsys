@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/decorate"
@@ -93,4 +94,45 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	return nil
+}
+
+// DumpPolicies displays the currently applied policies and rules (since last update) for objectName.
+// It can in addition show the rules and overridden content.
+func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules bool, withOverridden bool) (msg string, err error) {
+	defer decorate.OnError(&err, i18n.G("failed to dump policies for %q"), objectName)
+
+	log.Infof(ctx, "Dumping policies for %s", objectName)
+
+	var out strings.Builder
+
+	// Load machine for user
+	// FIXME: fqdn in hostname?
+	hostname, err := os.Hostname()
+	if err != nil {
+		return "", err
+	}
+
+	alreadyProcessedRules := make(map[string]struct{})
+	if objectName != hostname {
+		fmt.Fprintln(&out, i18n.G("Policies from machine configuration:"))
+		gposHost, err := entry.NewGPOs(filepath.Join(m.gpoRulesCacheDir, objectName))
+		if err != nil {
+			return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), hostname, err)
+		}
+		for _, g := range gposHost {
+			alreadyProcessedRules = g.FormatGPO(&out, withRules, withOverridden, alreadyProcessedRules)
+		}
+		fmt.Fprintln(&out, i18n.G("Policies from user configuration:"))
+	}
+
+	// Load target policies
+	gposTarget, err := entry.NewGPOs(filepath.Join(m.gpoRulesCacheDir, objectName))
+	if err != nil {
+		return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), objectName, err)
+	}
+	for _, g := range gposTarget {
+		alreadyProcessedRules = g.FormatGPO(&out, withRules, withOverridden, alreadyProcessedRules)
+	}
+
+	return out.String(), nil
 }
