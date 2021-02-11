@@ -17,7 +17,7 @@
     </defaults>
   </action>
 
-  <action id="com.ubuntu.adsys.policy.update-other">
+  <action id="com.ubuntu.adsys.policy.update-others">
     <description gettext-domain="adsys">Can update machine and all logged in users</description>
     <message gettext-domain="adsys">Authorization is required to perform an update of all the policies which is not ourself</message>
     <defaults>
@@ -37,7 +37,7 @@
     </defaults>
   </action>
 
-  <action id="com.ubuntu.adsys.policy.dump-other">
+  <action id="com.ubuntu.adsys.policy.dump-others">
     <description gettext-domain="adsys">Can inspect other users applied policies</description>
     <message gettext-domain="adsys">Authorization is required to check applied policies for other users</message>
     <defaults>
