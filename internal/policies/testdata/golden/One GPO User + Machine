@@ -1,0 +1,4 @@
+Policies from machine configuration:
+* GPONameOther ({GPOIdOther})
+Policies from user configuration:
+* GPOName ({GPOId})

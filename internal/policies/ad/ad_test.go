@@ -141,19 +141,19 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "B", Value: "userOnlyB"},
 					}}},
 			}},
-		"User only policy, computer object": {
+		"User only policy, computer object, policy is empty": {
 			gpoListArgs:        "user-only",
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "",
-			want:               nil,
+			want:               []entry.GPO{{ID: "user-only", Name: "user-only-name", Rules: make(map[string][]entry.Entry)}},
 		},
-		"Computer only policy, user object": {
+		"Computer only policy, user object, policy is empty": {
 			gpoListArgs:        "machine-only",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               nil,
+			want:               []entry.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)}},
 		},
 		"Computer ignored CCBaseName": {
 			gpoListArgs:        "standard",
@@ -264,12 +264,13 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "C", Value: "oneValueC"},
 					}}},
 			}},
-		"Two policies, no overrides, one is not the same object type, machine ones are ignored when parsing user": {
+		"Two policies, no overrides, one is not the same object type, machine ones are empty when parsing user": {
 			gpoListArgs:        "machine-only_standard",
 			objectName:         "bob@WARTHOGS.BIZ",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               []entry.GPO{standardGPO},
+			want: []entry.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)},
+				standardGPO},
 		},
 
 		"Disabled value overrides non disabled one": {

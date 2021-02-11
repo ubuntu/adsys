@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys"
@@ -36,16 +35,11 @@ func (a App) getVersion() (err error) {
 		return err
 	}
 
-	for {
-		version, err := stream.Recv()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-		fmt.Printf(i18n.G("%s\t\t%s")+"\n", "adsysd", version.GetVersion())
+	version, err := singleMsg(stream)
+	if err != nil {
+		return err
 	}
+	fmt.Printf(i18n.G("%s\t\t%s")+"\n", "adsysd", version)
 
 	return nil
 }

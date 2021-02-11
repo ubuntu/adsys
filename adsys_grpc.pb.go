@@ -22,6 +22,7 @@ type ServiceClient interface {
 	Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error)
 	Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error)
 	UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error)
+	DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (Service_DumpPoliciesClient, error)
 }
 
 type serviceClient struct {
@@ -80,7 +81,7 @@ func (c *serviceClient) Version(ctx context.Context, in *Empty, opts ...grpc.Cal
 }
 
 type Service_VersionClient interface {
-	Recv() (*VersionResponse, error)
+	Recv() (*StringResponse, error)
 	grpc.ClientStream
 }
 
@@ -88,8 +89,8 @@ type serviceVersionClient struct {
 	grpc.ClientStream
 }
 
-func (x *serviceVersionClient) Recv() (*VersionResponse, error) {
-	m := new(VersionResponse)
+func (x *serviceVersionClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -160,6 +161,38 @@ func (x *serviceUpdatePolicyClient) Recv() (*Empty, error) {
 	return m, nil
 }
 
+func (c *serviceClient) DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (Service_DumpPoliciesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[4], "/service/DumpPolicies", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceDumpPoliciesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_DumpPoliciesClient interface {
+	Recv() (*StringResponse, error)
+	grpc.ClientStream
+}
+
+type serviceDumpPoliciesClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceDumpPoliciesClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
@@ -168,6 +201,7 @@ type ServiceServer interface {
 	Version(*Empty, Service_VersionServer) error
 	Stop(*StopRequest, Service_StopServer) error
 	UpdatePolicy(*UpdatePolicyRequest, Service_UpdatePolicyServer) error
+	DumpPolicies(*DumpPoliciesRequest, Service_DumpPoliciesServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -186,6 +220,9 @@ func (UnimplementedServiceServer) Stop(*StopRequest, Service_StopServer) error {
 }
 func (UnimplementedServiceServer) UpdatePolicy(*UpdatePolicyRequest, Service_UpdatePolicyServer) error {
 	return status.Errorf(codes.Unimplemented, "method UpdatePolicy not implemented")
+}
+func (UnimplementedServiceServer) DumpPolicies(*DumpPoliciesRequest, Service_DumpPoliciesServer) error {
+	return status.Errorf(codes.Unimplemented, "method DumpPolicies not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -230,7 +267,7 @@ func _Service_Version_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Service_VersionServer interface {
-	Send(*VersionResponse) error
+	Send(*StringResponse) error
 	grpc.ServerStream
 }
 
@@ -238,7 +275,7 @@ type serviceVersionServer struct {
 	grpc.ServerStream
 }
 
-func (x *serviceVersionServer) Send(m *VersionResponse) error {
+func (x *serviceVersionServer) Send(m *StringResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -284,6 +321,27 @@ func (x *serviceUpdatePolicyServer) Send(m *Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Service_DumpPolicies_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DumpPoliciesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).DumpPolicies(m, &serviceDumpPoliciesServer{stream})
+}
+
+type Service_DumpPoliciesServer interface {
+	Send(*StringResponse) error
+	grpc.ServerStream
+}
+
+type serviceDumpPoliciesServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceDumpPoliciesServer) Send(m *StringResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -310,6 +368,11 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "UpdatePolicy",
 			Handler:       _Service_UpdatePolicy_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "DumpPolicies",
+			Handler:       _Service_DumpPolicies_Handler,
 			ServerStreams: true,
 		},
 	},

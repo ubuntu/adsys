@@ -1,7 +1,10 @@
 package entry
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
+	"path/filepath"
 	"sort"
 
 	"github.com/ubuntu/adsys/internal/decorate"
@@ -68,7 +71,50 @@ func GetUniqueRules(gpos []GPO) map[string][]Entry {
 	return r
 }
 
-// TODO: printing policies (take machine and user for user or only machine and handle the overrides)
+// FormatGPO write to w a formatted GPO. overriden entries are prepended with -
+func (g GPO) FormatGPO(w io.Writer, withRules, withOverridden bool, alreadyProcessedRules map[string]struct{}) map[string]struct{} {
+	fmt.Fprintf(w, "* %s (%s)\n", g.Name, g.ID)
+
+	if !withRules {
+		return nil
+	}
+
+	if alreadyProcessedRules == nil {
+		alreadyProcessedRules = make(map[string]struct{})
+	}
+
+	var domains []string
+	for domain := range g.Rules {
+		domains = append(domains, domain)
+	}
+	sort.Strings(domains)
+
+	for _, d := range domains {
+		fmt.Fprintf(w, "** %s:\n", d)
+		for _, r := range g.Rules[d] {
+			k := filepath.Join(d, r.Key)
+			_, overr := alreadyProcessedRules[k]
+			if !withOverridden && overr {
+				continue
+			}
+			prefix := "***"
+			if overr {
+				prefix += "-"
+			}
+			v := r.Value
+			if r.Disabled {
+				prefix += "+"
+				fmt.Fprintf(w, "%s %s\n", prefix, r.Key)
+			} else {
+				fmt.Fprintf(w, "%s %s: %s\n", prefix, r.Key, v)
+			}
+
+			alreadyProcessedRules[k] = struct{}{}
+		}
+	}
+
+	return alreadyProcessedRules
+}
 
 // NewGPOs returns cached gpos list loaded from the p json file
 func NewGPOs(p string) (gpos []GPO, err error) {

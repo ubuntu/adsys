@@ -15,4 +15,11 @@ var (
 		SelfID:  "com.ubuntu.adsys.policy.update-self",
 		OtherID: "com.ubuntu.adsys.policy.update-others",
 	}
+
+	// ActionPolicyDump is the action to perform any policy inspection. It will turn to a "self" or an "other" action
+	ActionPolicyDump authorizer.Action = authorizer.Action{
+		ID:      "policy-dump",
+		SelfID:  "com.ubuntu.adsys.policy.dump-self",
+		OtherID: "com.ubuntu.adsys.policy.dump-others",
+	}
 )

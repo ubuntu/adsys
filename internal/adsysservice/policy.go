@@ -3,11 +3,13 @@ package adsysservice
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice/actions"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/decorate"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad"
 	"golang.org/x/sync/errgroup"
@@ -69,3 +71,35 @@ func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target s
 	return s.policyManager.ApplyPolicy(ctx, target, isComputer, gpos)
 
 }
+
+// DumpPolicies displays all applied policies for a given user.
+func (s *Service) DumpPolicies(r *adsys.DumpPoliciesRequest, stream adsys.Service_DumpPoliciesServer) (err error) {
+	defer decorate.OnError(&err, i18n.G("error while displaying applied policies"))
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+
+	// hostname policy display is allowed to all users
+	if r.GetTarget() != hostname {
+		if err := s.authorizer.IsAllowedFromContext(context.WithValue(stream.Context(), authorizer.OnUserKey, r.GetTarget()),
+			actions.ActionPolicyDump); err != nil {
+			return err
+		}
+	}
+
+	msg, err := s.policyManager.DumpPolicies(stream.Context(), r.GetTarget(), r.GetDetails(), r.GetAll())
+	if err != nil {
+		return err
+	}
+	if err := stream.Send(&adsys.StringResponse{
+		Msg: msg,
+	}); err != nil {
+		log.Warningf(stream.Context(), "couldn't send currently applied policies to client: %v", err)
+	}
+
+	return nil
+}
+
+// FIXME: check cache file permission

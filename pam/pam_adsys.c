@@ -59,20 +59,19 @@ static int update_policy(pam_handle_t * pamh, const char *username, int debug)
 	}
 
 	char **arggv;
-	arggv = calloc(7, sizeof(char *));
+	arggv = calloc(6, sizeof(char *));
 	if (arggv == NULL) {
 		return PAM_SYSTEM_ERR;
 	}
 
 	arggv[0] = "/sbin/adsysctl";
-	arggv[1] = "policy";
-	arggv[2] = "update";
-	arggv[3] = (char *)(username);
-	arggv[4] = (char *)(krb5ccname);
-	arggv[5] = NULL;
+	arggv[1] = "update";
+	arggv[2] = (char *)(username);
+	arggv[3] = (char *)(krb5ccname);
+	arggv[4] = NULL;
 	if (debug) {
-		arggv[5] = "-vv";
-		arggv[6] = NULL;
+		arggv[4] = "-vv";
+		arggv[5] = NULL;
 	}
 
 	pid_t pid = fork();
@@ -96,19 +95,19 @@ static int update_policy(pam_handle_t * pamh, const char *username, int debug)
 		} else if (status != 0) {
 			if (WIFEXITED(status)) {
 				pam_syslog(pamh, LOG_ERR,
-					   "adsysctl policy update %s %s failed: exit code %d",
+					   "adsysctl update %s %s failed: exit code %d",
 					   username, krb5ccname,
 					   WEXITSTATUS(status));
 			} else if (WIFSIGNALED(status)) {
 				pam_syslog(pamh, LOG_ERR,
-					   "adsysctl policy update %s %s failed: caught signal %d%s",
+					   "adsysctl update %s %s failed: caught signal %d%s",
 					   username, krb5ccname,
 					   WTERMSIG(status),
 					   WCOREDUMP(status) ? " (core dumped)"
 					   : "");
 			} else {
 				pam_syslog(pamh, LOG_ERR,
-					   "adsysctl policy update %s %s failed: unknown status 0x%x",
+					   "adsysctl update %s %s failed: unknown status 0x%x",
 					   username, krb5ccname, status);
 			}
 			free(arggv);
