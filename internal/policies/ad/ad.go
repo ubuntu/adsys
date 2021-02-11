@@ -295,6 +295,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			Name:  name,
 			Rules: make(map[string][]entry.Entry),
 		}
+		r = append(r, gpoRules)
 		if err := func() error {
 			ad.RLock()
 			ad.gpos[name].mu.RLock()
@@ -331,7 +332,6 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 
 				gpoRules.Rules[keyType] = append(gpoRules.Rules[keyType], pol)
 			}
-			r = append(r, gpoRules)
 			return nil
 		}(); err != nil {
 			return nil, err
