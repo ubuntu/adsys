@@ -71,7 +71,7 @@ func (a *App) dumpPolicies(target string, showDetails, showOverridden, nocolor b
 	if nocolor {
 		color.NoColor = true
 	}
-	policies, err = colorPolicies(policies)
+	policies, err = colorizePolicies(policies)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (a *App) dumpPolicies(target string, showDetails, showOverridden, nocolor b
 	return nil
 }
 
-func colorPolicies(policies string) (string, error) {
+func colorizePolicies(policies string) (string, error) {
 	first := true
 	var out stringsBuilderWithError
 
