@@ -67,6 +67,32 @@ adsysctl completion [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
+#### adsysctl policies
+
+Print last applied GPOs for current or given user/machine
+
+```
+adsysctl policies [USER_NAME] [flags]
+```
+
+##### Options
+
+```
+  -a, --all        show overridden rules in each GPOs.
+      --details    show applied rules in addition to GPOs.
+  -h, --help       help for policies
+      --no-color   don't display colorized version.
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
 #### adsysctl service
 
 Service management
