@@ -21,12 +21,12 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
-#: cmd/adsysd/client/version.go:47
+#: cmd/adsysd/client/version.go:42
 #, c-format
 msgid "%s\t\t%s"
 msgstr ""
 
-#: cmd/adsysd/client/version.go:26 cmd/adsysd/daemon/version.go:23
+#: cmd/adsysd/client/version.go:25 cmd/adsysd/daemon/version.go:23
 #, c-format
 msgid "%s\t%s"
 msgstr ""
@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:321
+#: internal/policies/ad/ad.go:322
 msgid "%s :%v"
 msgstr ""
 
@@ -68,6 +68,11 @@ msgstr ""
 #: internal/cmdhandler/suggest.go:58
 #, c-format
 msgid "%s. %s"
+msgstr ""
+
+#: cmd/adsysd/client/policies.go:113
+#, c-format
+msgid "%s: Locked to system default"
 msgstr ""
 
 #: internal/policies/ad/admxgen/admxgen.go:173
@@ -166,8 +171,20 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
+#: internal/policies/policies.go:117
+msgid "Policies from machine configuration:"
+msgstr ""
+
+#: internal/policies/policies.go:125
+msgid "Policies from user configuration:"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:196
 msgid "Polkit call result, authorized: %t"
+msgstr ""
+
+#: cmd/adsysd/client/policies.go:20
+msgid "Print last applied GPOs for current or given user/machine"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:25
@@ -186,7 +203,7 @@ msgstr ""
 msgid "Requests to stop the service once all connections are done"
 msgstr ""
 
-#: cmd/adsysd/client/version.go:17
+#: cmd/adsysd/client/version.go:16
 msgid "Returns version of client and service"
 msgstr ""
 
@@ -250,7 +267,7 @@ msgstr ""
 msgid "can't create Active Directory object"
 msgstr ""
 
-#: internal/policies/policies.go:42
+#: internal/policies/policies.go:43
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
@@ -316,7 +333,7 @@ msgstr ""
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/entry/entry.go:75
+#: internal/policies/entry/entry.go:121
 #, c-format
 msgid "can't get cached GPO list from %s"
 msgstr ""
@@ -367,7 +384,7 @@ msgstr ""
 msgid "can't save %s"
 msgstr ""
 
-#: internal/policies/entry/entry.go:90
+#: internal/policies/entry/entry.go:136
 #, c-format
 msgid "can't save GPO list to %s"
 msgstr ""
@@ -437,6 +454,10 @@ msgstr ""
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
+#: cmd/adsysd/client/policies.go:32
+msgid "don't display colorized version."
+msgstr ""
+
 #: internal/policies/dconf/dconf.go:380
 msgid "empty signature for %v"
 msgstr ""
@@ -455,6 +476,10 @@ msgstr ""
 msgid "error while checking signature"
 msgstr ""
 
+#: internal/adsysservice/policy.go:77
+msgid "error while displaying applied policies"
+msgstr ""
+
 #: internal/adsysservice/version.go:14
 msgid "error while getting daemon version"
 msgstr ""
@@ -471,7 +496,7 @@ msgstr ""
 msgid "error while trying to stop daemon"
 msgstr ""
 
-#: internal/adsysservice/policy.go:18
+#: internal/adsysservice/policy.go:20
 msgid "error while updating policy"
 msgstr ""
 
@@ -479,8 +504,12 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/policies.go:70
+#: internal/policies/policies.go:71
 msgid "failed to apply policy to %q"
+msgstr ""
+
+#: internal/policies/policies.go:102
+msgid "failed to dump policies for %q"
 msgstr ""
 
 #: internal/adsysservice/adsysservice.go:127
@@ -587,6 +616,10 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
+#: internal/policies/policies.go:120 internal/policies/policies.go:131
+msgid "no policy applied for %q: %v"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:239
 msgid "parsing error: %v"
 msgstr ""
@@ -627,6 +660,14 @@ msgstr ""
 msgid "server handshake failed"
 msgstr ""
 
+#: cmd/adsysd/client/policies.go:30
+msgid "show applied rules in addition to GPOs."
+msgstr ""
+
+#: cmd/adsysd/client/policies.go:31
+msgid "show overridden rules in each GPOs."
+msgstr ""
+
 #: internal/cmdhandler/cmdhandler.go:70
 msgid ""
 "socket path to use between daemon and client. Can be overridden by systemd "
@@ -663,7 +704,7 @@ msgstr ""
 msgid "unexpected socket type"
 msgstr ""
 
-#: internal/policies/policies.go:83
+#: internal/policies/policies.go:84
 #, c-format
 msgid "unknown entry type: %s for keys %s"
 msgstr ""
