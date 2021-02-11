@@ -112,7 +112,7 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 		return "", err
 	}
 
-	alreadyProcessedRules := make(map[string]struct{})
+	var alreadyProcessedRules map[string]struct{}
 	if objectName != hostname {
 		fmt.Fprintln(&out, i18n.G("Policies from machine configuration:"))
 		gposHost, err := entry.NewGPOs(filepath.Join(m.gpoRulesCacheDir, hostname))

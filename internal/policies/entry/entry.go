@@ -79,6 +79,10 @@ func (g GPO) FormatGPO(w io.Writer, withRules, withOverridden bool, alreadyProce
 		return nil
 	}
 
+	if alreadyProcessedRules == nil {
+		alreadyProcessedRules = make(map[string]struct{})
+	}
+
 	var domains []string
 	for domain := range g.Rules {
 		domains = append(domains, domain)
