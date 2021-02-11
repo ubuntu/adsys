@@ -37,4 +37,24 @@
     </defaults>
   </action>
 
+  <action id="com.ubuntu.adsys.policy.dump-other">
+    <description gettext-domain="adsys">Can inspect other users applied policies</description>
+    <message gettext-domain="adsys">Authorization is required to check applied policies for other users</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.ubuntu.adsys.policy.dump-self">
+    <description gettext-domain="adsys">Can inspect current user applied policies</description>
+    <message gettext-domain="adsys">Authorization is required to check currently applied policies</message>
+    <defaults>
+      <allow_any>yes</allow_any>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
 </policyconfig>

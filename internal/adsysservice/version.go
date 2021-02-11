@@ -17,8 +17,8 @@ func (s *Service) Version(r *adsys.Empty, stream adsys.Service_VersionServer) (e
 		return err
 	}
 
-	if err := stream.Send(&adsys.VersionResponse{
-		Version: config.Version,
+	if err := stream.Send(&adsys.StringResponse{
+		Msg: config.Version,
 	}); err != nil {
 		log.Warningf(stream.Context(), "couldn't send service version to client: %v", err)
 	}

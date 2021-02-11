@@ -7,6 +7,7 @@ service service {
   rpc Version(Empty) returns (stream StringResponse);
   rpc Stop(StopRequest) returns (stream Empty);
   rpc UpdatePolicy(UpdatePolicyRequest) returns (stream Empty);
+  rpc DumpPolicies(DumpPoliciesRequest) returns (stream StringResponse);
 }
 
 message Empty {}
@@ -24,4 +25,10 @@ message UpdatePolicyRequest {
   bool all = 2;   // Update policies of the machine and all the users
   string target = 3;
   string krb5cc = 4;
+}
+
+message DumpPoliciesRequest {
+  string target = 1;
+  bool details = 2;   // Show rules in addition to GPO
+  bool all = 3;   // Show overridden rules
 }
