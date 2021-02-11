@@ -1,12 +1,17 @@
 package entry_test
 
 import (
+	"flag"
+	"io/ioutil"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
+
+var update bool
 
 func TestGetUniqueRules(t *testing.T) {
 	t.Parallel()
@@ -274,4 +279,90 @@ func TestCacheGPOList(t *testing.T) {
 	require.NoError(t, err, "Got GPOs without error")
 
 	require.Equal(t, gpos, got, "Reloaded GPOs after caching should be the same")
+}
+
+func TestFormatGPO(t *testing.T) {
+	t.Parallel()
+
+	defaultProcessedRules := map[string]struct{}{
+		"dconf/path/to/key1":   {},
+		"dconf/path/to/key2":   {},
+		"scripts/path/to/key3": {},
+	}
+
+	tests := map[string]struct {
+		withRules             bool
+		withOverridden        bool
+		alreadyProcessedRules map[string]struct{}
+
+		wantAlreadyProcessedRules map[string]struct{}
+	}{
+		"GPO summary":    {},
+		"GPO with rules": {withRules: true, wantAlreadyProcessedRules: defaultProcessedRules},
+		"GPO with rules and overrides, no rules processed": {withRules: true, withOverridden: true, wantAlreadyProcessedRules: defaultProcessedRules},
+		"GPO with rules, appending to existing treated key": {
+			withRules:             true,
+			alreadyProcessedRules: map[string]struct{}{"dconf/non/matching/override": {}},
+			wantAlreadyProcessedRules: map[string]struct{}{
+				"dconf/path/to/key1":          {},
+				"dconf/path/to/key2":          {},
+				"scripts/path/to/key3":        {},
+				"dconf/non/matching/override": {},
+			}},
+
+		// override cases
+		"GPO with rules, override hidden": {
+			withRules:                 true,
+			alreadyProcessedRules:     map[string]struct{}{"dconf/path/to/key1": {}},
+			wantAlreadyProcessedRules: defaultProcessedRules},
+		"GPO with rules, override displayed": {
+			withRules:                 true,
+			withOverridden:            true,
+			alreadyProcessedRules:     map[string]struct{}{"dconf/path/to/key1": {}},
+			wantAlreadyProcessedRules: defaultProcessedRules},
+		"GPO with rules, override disabled key": {
+			withRules:                 true,
+			withOverridden:            true,
+			alreadyProcessedRules:     map[string]struct{}{"scripts/path/to/key3": {}},
+			wantAlreadyProcessedRules: defaultProcessedRules},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			gpos, err := entry.NewGPOs("testdata/gpos.cache")
+			require.NoError(t, err, "Got GPOs without error")
+
+			var out strings.Builder
+
+			got := gpos[0].FormatGPO(&out, tc.withRules, tc.withOverridden, tc.alreadyProcessedRules)
+
+			// check cache between FormatGPO calls
+			require.Equal(t, tc.wantAlreadyProcessedRules, got, "FormatGPO returns expected alreadyProcessedRules cache")
+
+			// check collected output between FormatGPO calls
+			goldPath := filepath.Join("testdata", "golden", name)
+			// Update golden file
+			if update {
+				t.Logf("updating golden file %s", goldPath)
+				err = ioutil.WriteFile(goldPath, []byte(out.String()), 0644)
+				require.NoError(t, err, "Cannot write golden file")
+			}
+			want, err := ioutil.ReadFile(goldPath)
+			require.NoError(t, err, "Cannot load policy golden file")
+
+			require.Equal(t, string(want), out.String(), "FormatGPO write expected output")
+
+		})
+	}
+}
+
+func TestMain(m *testing.M) {
+	flag.BoolVar(&update, "update", false, "update golden files")
+	flag.Parse()
+
+	m.Run()
 }
