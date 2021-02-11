@@ -102,7 +102,7 @@ func (g GPO) FormatGPO(w io.Writer, withRules, withOverridden bool, alreadyProce
 				v = i18n.G("Locked to system default")
 				prefix += "+"
 			}
-			fmt.Fprintf(w, "%s %s: %s", prefix, r.Key, v)
+			fmt.Fprintf(w, "%s %s: %s\n", prefix, r.Key, v)
 
 			alreadyProcessedRules[k] = struct{}{}
 		}
