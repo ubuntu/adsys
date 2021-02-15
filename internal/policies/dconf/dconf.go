@@ -276,14 +276,7 @@ func normalizeValue(keyType, value string) string {
 	case "as":
 		return quoteASVariant(value)
 	case "ai":
-		value = strings.TrimSpace(value)
-		if !strings.HasPrefix(value, "[") {
-			value = "[" + value
-		}
-		if !strings.HasSuffix(value, "]") {
-			value += "]"
-		}
-		return strings.ReplaceAll(strings.ReplaceAll(value, " ", ""), ",", ", ")
+		return normalizeAIVariant(value)
 	}
 
 	return value
@@ -319,10 +312,19 @@ func normalizeBoolean(v string) string {
 	return v
 }
 
-// quoteASVariant returns an variant array of string properly quoted
+// quoteASVariant returns a variant array of string properly quoted and separated
 func quoteASVariant(v string) string {
-	//orig := v
 	v = strings.TrimRight(strings.TrimLeft(v, " ["), " ]")
+
+	// Remove any empty \n elements
+	var elems []string
+	for _, e := range strings.Split(v, "\n") {
+		if strings.TrimSpace(e) == "" {
+			continue
+		}
+		elems = append(elems, e)
+	}
+	v = strings.Join(elems, ",")
 
 	// Quoted string case
 	if strings.HasPrefix(v, "'") && strings.HasSuffix(v, "'") {
@@ -350,6 +352,27 @@ func quoteASVariant(v string) string {
 	}
 
 	return fmt.Sprintf("[%s]", strings.Join(r, ", "))
+}
+
+// normalizeAIVariant returns a variant array of int with proper separator
+func normalizeAIVariant(v string) string {
+	v = strings.TrimRight(strings.TrimLeft(v, " ["), " ]")
+
+	// Remove any empty \n elements
+	var elems []string
+
+	for _, e := range strings.Split(v, "\n") {
+		if strings.TrimSpace(e) == "" {
+			continue
+		}
+		elems = append(elems, e)
+	}
+
+	// normalize separator spaces
+	v = strings.Join(elems, ",")
+	v = strings.ReplaceAll(strings.ReplaceAll(v, " ", ""), ",", ", ")
+
+	return fmt.Sprintf("[%s]", v)
 }
 
 // splitOnNonEscaped splits v by sep, only if sep is not escaped.

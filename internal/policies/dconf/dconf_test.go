@@ -134,6 +134,18 @@ func TestApplyPolicy(t *testing.T) {
 		"no surrounding brackets quoted multiple as": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as/all", Value: "'two-as1', 'two-as2'", Meta: "as"},
 		}},
+		"multi-lines as": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-as/all", Value: "first\nsecond\n", Meta: "as"},
+		}},
+		"multi-lines as mixed with comma": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-as/all", Value: "first,second\nthird\n", Meta: "as"},
+		}},
+		"multi-lines ai": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-ai/all", Value: "1\n2\n", Meta: "ai"},
+		}},
+		"multi-lines ai mixed with comma": {entries: []entry.Entry{
+			{Key: "com/ubuntu/category/key-ai/all", Value: "1,2\n3\n", Meta: "ai"},
+		}},
 
 		// Profiles tests
 		"update existing correct profile stays unchanged": {entries: nil,
