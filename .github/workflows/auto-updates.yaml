@@ -7,14 +7,14 @@ on:
       - po/*
       - README.md
 
+env:
+  goversion: '1.15'
+
 jobs:
   update-po:
     name: Update po files
     runs-on: ubuntu-latest
     container: ubuntu:devel
-    strategy:
-      matrix:
-        go: [ '1.15' ]
     steps:
       - name: Install dependencies, including git for checkout
         run: |
@@ -27,7 +27,7 @@ jobs:
       # Install go
       - uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{ env.goversion }}
       # Update po if needed
       - name: Check po files
         id: checkpo
@@ -62,9 +62,6 @@ jobs:
     needs: update-po
     runs-on: ubuntu-latest
     container: ubuntu:devel
-    strategy:
-      matrix:
-        go: [ '1.15' ]
     steps:
       - name: Install dependencies, including git for checkout
         run: |
@@ -77,7 +74,7 @@ jobs:
       # Install go
       - uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{ env.goversion }}
       # Try updating README
       - name: Check README file
         id: checkreadme
