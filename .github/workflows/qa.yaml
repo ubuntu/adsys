@@ -5,14 +5,14 @@ on:
     - main
   pull_request:
 
+env:
+  goversion: '1.15'
+
 jobs:
   quality:
     name: Code quality and mod files up to date
     runs-on: ubuntu-latest
     container: ubuntu:devel
-    strategy:
-      matrix:
-        go: [ '1.15' ]
     steps:
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
@@ -23,7 +23,7 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{ env.goversion }}
       - name: Code formatting
         run: |
           FMT=`go fmt ./...`
@@ -51,15 +51,12 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     container: ubuntu:devel
-    strategy:
-      matrix:
-        go: [ '1.15' ]
     steps:
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{ env.goversion }}
       # We add a new user and execute under it for file permissions to be taken into account
       # as root can write in RO directories.
       - name: Install dependencies and add user
@@ -94,7 +91,7 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v2
         with:
-          go-version: '1.15'
+          go-version: ${{ env.goversion }}
       - name: Install go grpc protoc generator
         run: |
           cd ..
