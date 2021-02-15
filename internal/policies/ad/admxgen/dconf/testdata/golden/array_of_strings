@@ -1,7 +1,7 @@
 - key: /com/ubuntu/types/array-string-property
   displayname: array-string-property summary
   explaintext: array-string-property description
-  elementtype: text
+  elementtype: multitext
   meta: '{"meta": "as", "default": "[]"}'
   class: ""
   default: '[''Value1'', ''Value2'']'
