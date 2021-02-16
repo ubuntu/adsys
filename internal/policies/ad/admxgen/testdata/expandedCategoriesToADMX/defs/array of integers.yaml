@@ -8,7 +8,7 @@
 
       Default: [1, 2]
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: text
+    elementtype: multitext
     default: '[1, 2]'
     meta: '{"meta": "ai", "default": "[]"}'
     class: Machine

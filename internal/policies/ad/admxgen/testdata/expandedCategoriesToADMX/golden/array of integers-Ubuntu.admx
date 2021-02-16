@@ -19,7 +19,7 @@
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"meta": "ai", "default": "[]"}</string></enabledValue>
       <elements>
-        <text id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyArrayDecimal" valueName="all" />
+        <multitext id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyArrayDecimal" valueName="all" />
       </elements>
     </policy>
   </policies>

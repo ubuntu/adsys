@@ -27,6 +27,9 @@
         <textBox refId="{{toID (print "Elem" .Class) .Key}}">
           <label>{{.DisplayName}}</label>
         </textBox>
+      {{- else if eq .ElementType "multitext"}}
+        <text>{{.DisplayName}}</text>
+        <multiTextBox refId="{{toID (print "Elem" .Class) .Key}}" defaultHeight="5" />
       {{- else if eq .ElementType "boolean"}}
         <checkBox refId="{{toID (print "Elem" .Class) .Key}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
       {{- else if eq .ElementType "decimal"}}
