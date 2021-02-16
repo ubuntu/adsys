@@ -16,9 +16,8 @@ Note: default system value is used for &#34;Not Configured&#34; and enforced if 
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayString">
-        <textBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyArrayString">
-          <label>summary</label>
-        </textBox>
+        <text>summary</text>
+        <multiTextBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyArrayString" defaultHeight="5" />
       </presentation>
     </presentationTable>
 

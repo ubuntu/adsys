@@ -44,8 +44,8 @@ var (
 		"b":  {common.WidgetTypeBool, "false"},
 		"i":  {common.WidgetTypeDecimal, "0"},
 		"u":  {common.WidgetTypeLongDecimal, "0"},
-		"as": {common.WidgetTypeText, "[]"},
-		"ai": {common.WidgetTypeText, "[]"},
+		"as": {common.WidgetTypeMultiText, "[]"},
+		"ai": {common.WidgetTypeMultiText, "[]"},
 		"d":  {common.WidgetTypeText, "0.0"},
 	}
 )

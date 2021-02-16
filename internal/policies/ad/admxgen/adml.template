@@ -6,38 +6,41 @@
   <resources>
 
     <stringTable>
-{{- range .Categories}}
+    {{- range .Categories}}
       <string id="{{toID "Display" .DisplayName}}">{{.DisplayName}}</string>
-{{- end}}
-{{- range .Policies}}
+    {{- end}}
+    {{- range .Policies}}
       <string id="{{toID (print "Display" .Class) .Key}}">{{.DisplayName}}</string>
       <string id="{{toID (print "ExplainText" .Class) .Key}}">{{html .ExplainText}}</string>
-{{- $key := .Key}}
-{{- $class := .Class}}
-{{- range $i, $c := .Choices}}
+     {{- $key := .Key}}
+     {{- $class := .Class}}
+     {{- range $i, $c := .Choices}}
       <string id="{{toID (print "Item" $class) $key}}{{ $i }}">{{ $c }}</string>
-{{- end}}
-{{- end}}
+     {{- end}}
+    {{- end}}
     </stringTable>
 
     <presentationTable>
-{{- range .Policies}}
+    {{- range .Policies}}
       <presentation id="{{toID (print "Presentation" .Class) .Key}}">
-{{- if eq .ElementType "text"}}
+      {{- if eq .ElementType "text"}}
         <textBox refId="{{toID (print "Elem" .Class) .Key}}">
           <label>{{.DisplayName}}</label>
         </textBox>
-{{- else if eq .ElementType "boolean"}}
+      {{- else if eq .ElementType "multitext"}}
+        <text>{{.DisplayName}}</text>
+        <multiTextBox refId="{{toID (print "Elem" .Class) .Key}}" defaultHeight="5" />
+      {{- else if eq .ElementType "boolean"}}
         <checkBox refId="{{toID (print "Elem" .Class) .Key}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
-{{- else if eq .ElementType "decimal"}}
+      {{- else if eq .ElementType "decimal"}}
         <decimalTextBox refId="{{toID (print "Elem" .Class) .Key}}">{{.DisplayName}}</decimalTextBox>
-{{- else if eq .ElementType "longDecimal"}}
+      {{- else if eq .ElementType "longDecimal"}}
         <longDecimalTextBox refId="{{toID (print "Elem" .Class) .Key}}">{{.DisplayName}}</longDecimalTextBox>
-{{- else if eq .ElementType "dropdownList"}}
+      {{- else if eq .ElementType "dropdownList"}}
         <dropdownList  refId="{{toID (print "Elem" .Class) .Key}}" noSort="true">{{.DisplayName}}</dropdownList>
-{{- end}}
+      {{- end}}
       </presentation>
-{{- end}}
+    {{- end}}
     </presentationTable>
 
   </resources>

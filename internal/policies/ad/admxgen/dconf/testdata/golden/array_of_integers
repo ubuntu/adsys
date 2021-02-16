@@ -1,7 +1,7 @@
 - key: /com/ubuntu/types/array-decimal-property
   displayname: array-decimal-property summary
   explaintext: array-decimal-property description
-  elementtype: text
+  elementtype: multitext
   meta: '{"meta": "ai", "default": "[]"}'
   class: ""
   default: '[1, 2]'

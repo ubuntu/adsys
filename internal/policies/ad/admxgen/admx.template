@@ -8,15 +8,15 @@
   <resources minRequiredRevision="1.0" />
 
   <categories>
-{{- range .Categories}}
+  {{- range .Categories}}
     <category name="{{toID "" .DisplayName}}" displayName="$(string.{{toID "Display" .DisplayName}})">
       <parentCategory ref="{{.Parent}}" />
     </category>
-{{- end}}
+  {{- end}}
   </categories>
 
   <policies>
-{{- range .Policies}}
+  {{- range .Policies}}
     <policy name="{{toID .Class .Key}}" class="{{.Class}}" displayName="$(string.{{toID (print "Display" .Class) .Key}})" explainText="$(string.{{toID (print "ExplainText" .Class) .Key}})" presentation="$(presentation.{{toID (print "Presentation" .Class) .Key}})" key="{{.Key}}" valueName="metaValues">
       <parentCategory ref="{{.ParentCategory}}" />
       <supportedOn ref="Ubuntu" />
@@ -46,7 +46,7 @@
       {{- end}}
       </elements>
     </policy>
-{{- end}}
+  {{- end}}
   </policies>
 
 </policyDefinitions>
