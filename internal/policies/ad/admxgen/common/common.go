@@ -32,7 +32,7 @@ type DecimalRange struct {
 	Max string `yaml:",omitempty"`
 }
 
-// ExpandedPolicy is the common result of inflating a policy of a given type to a generic one, having all needed elements.
+// ExpandedPolicy is the result of inflating a policy of a given type to a generic one, having all needed elements for a given release
 type ExpandedPolicy struct {
 	Key         string
 	DisplayName string
@@ -49,7 +49,6 @@ type ExpandedPolicy struct {
 	// decimal
 	RangeValues DecimalRange `yaml:",omitempty"`
 
-	// those are unused in expandedCategories
 	Release string `yaml:",omitempty"`
 	Type    string `yaml:",omitempty"` // dconf, install…
 }

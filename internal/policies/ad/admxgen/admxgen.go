@@ -303,24 +303,12 @@ type categoryForADMX struct {
 }
 
 type policyForADMX struct {
-	Key            string
-	DisplayName    string
+	common.ExpandedPolicy
 	ParentCategory string
-	ExplainText    string
-	ElementType    common.WidgetType
-	Meta           string
-	Class          string
-	SupportedOn    string
 
-	// Per type Extensions
-	// Most recent release value is used
-	Choices []string
-
-	// Decimal
-	RangeValues common.DecimalRange
-
-	// Boolean (checked or unchecked)
-	Default string
+	// override to not use the ones from ExpandedPolicy. Should be kept empty for admx
+	Release string
+	Type    string
 }
 
 // Make a Regex to say we only want letters and numbers
@@ -405,17 +393,8 @@ func (g generator) collectCategoriesPolicies(category expandedCategory, parent s
 	// Collect now directly attached policies
 	for _, p := range category.Policies {
 		policies = append(policies, policyForADMX{
-			Key:            p.Key,
-			DisplayName:    p.DisplayName,
+			ExpandedPolicy: p,
 			ParentCategory: catID,
-			ExplainText:    p.ExplainText,
-			ElementType:    p.ElementType,
-			Meta:           p.Meta,
-			Class:          p.Class,
-
-			RangeValues: p.RangeValues,
-			Choices:     p.Choices,
-			Default:     p.Default,
 		})
 	}
 
