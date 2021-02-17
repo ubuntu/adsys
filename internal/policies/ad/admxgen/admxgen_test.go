@@ -133,6 +133,13 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"double":            {},
 		"double with range": {},
 
+		// Multiple releases
+		"multiple releases for one key":                             {},
+		"multiple releases with different widgettype":               {},
+		"multiple releases with different choices":                  {},
+		"multiple releases with different ranges":                   {},
+		"multiple releases with all widgets and different defaults": {},
+
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},
 	}
