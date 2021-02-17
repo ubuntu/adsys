@@ -8,7 +8,7 @@
 
       Default: ['Value1', 'Value2']
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: multitext
+    elementtype: multiText
     default: '[''Value1'', ''Value2'']'
     meta: '{"meta": "as", "default": "[]"}'
     class: Machine

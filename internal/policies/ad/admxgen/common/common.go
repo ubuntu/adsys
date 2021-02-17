@@ -12,7 +12,7 @@ const (
 	// WidgetTypeText will use the text widget type
 	WidgetTypeText WidgetType = "text"
 	// WidgetTypeMultiText will use the multitext widget type
-	WidgetTypeMultiText WidgetType = "multitext"
+	WidgetTypeMultiText WidgetType = "multiText"
 	// WidgetTypeBool will use a checkbox
 	WidgetTypeBool WidgetType = "boolean"
 	// WidgetTypeDecimal will use a decimal input

@@ -1,7 +1,7 @@
 - key: /com/ubuntu/types/array-string-property
   displayname: array-string-property summary
   explaintext: array-string-property description
-  elementtype: multitext
+  elementtype: multiText
   meta: '{"meta": "as", "default": "[]"}'
   default: '[''Value1'', ''Value2'']'
   release: "20.04"
