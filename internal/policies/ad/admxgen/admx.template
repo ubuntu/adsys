@@ -9,7 +9,7 @@
 
   <categories>
   {{- range .Categories}}
-    <category name="{{toID "" .DisplayName}}" displayName="$(string.{{toID "Display" .DisplayName}})">
+    <category name="{{toID .DisplayName}}" displayName="$(string.{{toID .DisplayName "Display"}})">
       <parentCategory ref="{{.Parent}}" />
     </category>
   {{- end}}
@@ -17,17 +17,24 @@
 
   <policies>
   {{- range .Policies}}
-    <policy name="{{toID .Class .Key}}" class="{{.Class}}" displayName="$(string.{{toID (print "Display" .Class) .Key}})" explainText="$(string.{{toID (print "ExplainText" .Class) .Key}})" presentation="$(presentation.{{toID (print "Presentation" .Class) .Key}})" key="{{.Key}}" valueName="metaValues">
+    {{- $policy := .}}
+    <policy name="{{toID .Key .Class}}" class="{{.Class}}" displayName="$(string.{{toID .Key "Display" .Class "All"}})" explainText="$(string.{{toID .Key "ExplainText" .Class}})" presentation="$(presentation.{{toID .Key "Presentation" .Class}})" key="{{.Key}}" valueName="metaValues">
       <parentCategory ref="{{.ParentCategory}}" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
+      {{- range .GetOrderedPolicyElements}}
+      {{- if ne .Release "all"}}
+        <boolean id="{{toID $policy.Key "OverrideElem" $policy.Class .Release}}" valueName="{{ (print "Override" .Release) }}">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      {{- end}}
       {{- if eq .ElementType "dropdownList"}}
-        <enum id="{{toID (print "Elem" .Class) .Key}}" valueName="all">
-        {{- $key := .Key}}
-        {{- $class := .Class}}
+        <enum id="{{toID $policy.Key "Elem" $policy.Class .Release}}" valueName="{{ .Release }}">
+        {{- $elem := .}}
         {{- range $i, $c := .Choices}}
-          <item displayName="$(string.{{toID (print "Item" $class) $key}}{{ $i }})">
+          <item displayName="$(string.{{toID $policy.Key "Item" $policy.Class $elem.Release}}{{ $i }})">
             <value>
               <string>{{ html $c }}</string>
             </value>
@@ -35,14 +42,15 @@
         {{- end}}
         </enum>
       {{- else if eq .ElementType "boolean"}}
-        <boolean id="{{toID (print "Elem" .Class) .Key}}" valueName="all">
+        <boolean id="{{toID $policy.Key "Elem" $policy.Class .Release}}" valueName="{{ .Release }}">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
       {{- else}}
-        <{{.ElementType}} id="{{toID (print "Elem" .Class) .Key}}" valueName="all"
+        <{{.ElementType}} id="{{toID $policy.Key "Elem" $policy.Class .Release}}" valueName="{{ .Release }}"
           {{- if ne .RangeValues.Min ""}} minValue="{{.RangeValues.Min}}"{{end}}
           {{- if ne .RangeValues.Max ""}} maxValue="{{.RangeValues.Max}}"{{end}} />
+      {{- end}}
       {{- end}}
       </elements>
     </policy>

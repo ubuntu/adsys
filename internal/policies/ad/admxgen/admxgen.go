@@ -284,20 +284,49 @@ type categoryForADMX struct {
 }
 
 type policyForADMX struct {
-	common.ExpandedPolicy
+	mergedPolicy
 	ParentCategory string
+}
 
-	// override to not use the ones from ExpandedPolicy. Should be kept empty for admx
-	Release string
-	Type    string
+// GetOrderedPolicyElements returns all the policy elements order by release in decreasing order
+func (p policyForADMX) GetOrderedPolicyElements() []common.ExpandedPolicy {
+	var policies []common.ExpandedPolicy
+
+	// Order releases by decreasing order
+	var releases []string
+	for rel := range p.ReleasesElements {
+		releases = append(releases, rel)
+	}
+	sort.Sort(sort.Reverse(sort.StringSlice(releases)))
+
+	for i, rel := range releases {
+		if i == 0 {
+			allPol := p.ReleasesElements["all"]
+			allPol.Release = "all"
+			policies = append(policies, allPol)
+		}
+
+		// "all" is first
+		if rel == "all" {
+			continue
+		}
+
+		policies = append(policies, p.ReleasesElements[rel])
+	}
+	return policies
 }
 
 // Make a Regex to say we only want letters and numbers
 var re = regexp.MustCompile("[^a-zA-Z0-9]+")
 
-func (g generator) toID(prefix, s string) string {
-	s = strings.TrimPrefix(s, strings.ReplaceAll(policiesPkg.KeyPrefix, "/", `\`)+`\`+g.distroID)
-	return g.distroID + re.ReplaceAllString(strings.Title(prefix)+strings.Title(s), "")
+func (g generator) toID(key string, s ...string) string {
+	key = strings.TrimPrefix(key, strings.ReplaceAll(policiesPkg.KeyPrefix, "/", `\`)+`\`+g.distroID)
+	r := g.distroID
+
+	for _, e := range s {
+		r += re.ReplaceAllString(strings.Title(e), "")
+	}
+	return r + re.ReplaceAllString(strings.Title(key), "")
 }
 
 func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) (err error) {
@@ -368,7 +397,7 @@ func (g generator) collectCategoriesPolicies(category expandedCategory, parent s
 		Parent:      parent,
 	}
 	categories := []categoryForADMX{cat}
-	catID := g.toID("", cat.DisplayName)
+	catID := g.toID(cat.DisplayName)
 
 	var policies []policyForADMX
 	// Collect now directly attached policies

@@ -7,38 +7,48 @@
 
     <stringTable>
     {{- range .Categories}}
-      <string id="{{toID "Display" .DisplayName}}">{{.DisplayName}}</string>
+      <string id="{{toID .DisplayName "Display"}}">{{.DisplayName}}</string>
     {{- end}}
     {{- range .Policies}}
-      <string id="{{toID (print "Display" .Class) .Key}}">{{.DisplayName}}</string>
-      <string id="{{toID (print "ExplainText" .Class) .Key}}">{{html .ExplainText}}</string>
-     {{- $key := .Key}}
-     {{- $class := .Class}}
-     {{- range $i, $c := .Choices}}
-      <string id="{{toID (print "Item" $class) $key}}{{ $i }}">{{ $c }}</string>
-     {{- end}}
+      <string id="{{toID .Key "ExplainText" .Class}}">{{html .ExplainText}}</string>
+      {{- $policy := .}}
+      {{- range .GetOrderedPolicyElements}}
+      <string id="{{toID $policy.Key "Display" $policy.Class .Release}}">{{.DisplayName}}</string>
+        {{- $elem := .}}
+        {{- range $i, $c := .Choices}}
+      <string id="{{toID $policy.Key "Item" $policy.Class $elem.Release}}{{ $i }}">{{ $c }}</string>
+        {{- end}}
+      {{- end}}
     {{- end}}
     </stringTable>
 
     <presentationTable>
     {{- range .Policies}}
-      <presentation id="{{toID (print "Presentation" .Class) .Key}}">
+      {{- $policy := .}}
+      <presentation id="{{toID .Key "Presentation" .Class}}">
+     {{- range .GetOrderedPolicyElements}}
+
+      {{- if ne .Release "all"}}
+        <text/>
+        <checkBox refId="{{toID $policy.Key "OverrideElem" $policy.Class .Release}}" defaultChecked="false">Override value for {{.Release}}:</checkBox>
+      {{- end}}
       {{- if eq .ElementType "text"}}
-        <textBox refId="{{toID (print "Elem" .Class) .Key}}">
+        <textBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}">
           <label>{{.DisplayName}}</label>
         </textBox>
-      {{- else if eq .ElementType "multitext"}}
+      {{- else if eq .ElementType "multiText"}}
         <text>{{.DisplayName}}</text>
-        <multiTextBox refId="{{toID (print "Elem" .Class) .Key}}" defaultHeight="5" />
+        <multiTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultHeight="5" />
       {{- else if eq .ElementType "boolean"}}
-        <checkBox refId="{{toID (print "Elem" .Class) .Key}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
+        <checkBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
       {{- else if eq .ElementType "decimal"}}
-        <decimalTextBox refId="{{toID (print "Elem" .Class) .Key}}">{{.DisplayName}}</decimalTextBox>
+        <decimalTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}">{{.DisplayName}}</decimalTextBox>
       {{- else if eq .ElementType "longDecimal"}}
-        <longDecimalTextBox refId="{{toID (print "Elem" .Class) .Key}}">{{.DisplayName}}</longDecimalTextBox>
+        <longDecimalTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}">{{.DisplayName}}</longDecimalTextBox>
       {{- else if eq .ElementType "dropdownList"}}
-        <dropdownList  refId="{{toID (print "Elem" .Class) .Key}}" noSort="true">{{.DisplayName}}</dropdownList>
+        <dropdownList  refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" noSort="true">{{.DisplayName}}</dropdownList>
       {{- end}}
+     {{- end}}
       </presentation>
     {{- end}}
     </presentationTable>
