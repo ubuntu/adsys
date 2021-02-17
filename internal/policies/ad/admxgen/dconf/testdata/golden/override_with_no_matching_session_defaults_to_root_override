@@ -3,7 +3,6 @@
   explaintext: simple-text-property description
   elementtype: text
   meta: '{"meta": "s", "default": "''''"}'
-  class: ""
   default: '''Overridden simple-text-property Value'''
   release: "20.04"
   type: dconf

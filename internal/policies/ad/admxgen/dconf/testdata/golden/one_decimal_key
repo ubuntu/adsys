@@ -3,7 +3,6 @@
   explaintext: decimal-property description
   elementtype: decimal
   meta: '{"meta": "i", "default": "0"}'
-  class: ""
   default: "42"
   release: "20.04"
   type: dconf

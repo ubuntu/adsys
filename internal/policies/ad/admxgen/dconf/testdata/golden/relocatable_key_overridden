@@ -3,7 +3,6 @@
   explaintext: property-with-override description
   elementtype: text
   meta: '{"meta": "s", "default": "''''"}'
-  class: ""
   default: '''Overridden property-with-override Value'''
   release: "20.04"
   type: dconf

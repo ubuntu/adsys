@@ -3,7 +3,6 @@
   explaintext: array-string-property description
   elementtype: multitext
   meta: '{"meta": "as", "default": "[]"}'
-  class: ""
   default: '[''Value1'', ''Value2'']'
   release: "20.04"
   type: dconf

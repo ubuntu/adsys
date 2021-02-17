@@ -3,7 +3,6 @@
   explaintext: array-decimal-property description
   elementtype: multitext
   meta: '{"meta": "ai", "default": "[]"}'
-  class: ""
   default: '[1, 2]'
   release: "20.04"
   type: dconf

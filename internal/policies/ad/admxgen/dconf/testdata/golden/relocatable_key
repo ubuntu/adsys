@@ -3,7 +3,6 @@
   explaintext: property description
   elementtype: text
   meta: '{"meta": "s", "default": "''''"}'
-  class: ""
   default: '''property Default Value'''
   release: "20.04"
   type: dconf

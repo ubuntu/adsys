@@ -3,7 +3,6 @@
   explaintext: decimal-property-with-range description
   elementtype: decimal
   meta: '{"meta": "i", "default": "0"}'
-  class: ""
   default: "42"
   rangevalues:
     min: "-123"

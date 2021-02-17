@@ -3,7 +3,6 @@
   explaintext: simple-text-property-overridden-gnome description
   elementtype: text
   meta: '{"meta": "s", "default": "''''"}'
-  class: ""
   default: '''Overridden simple-text-property-overridden-gnome Value For GNOME Session'''
   release: "20.04"
   type: dconf

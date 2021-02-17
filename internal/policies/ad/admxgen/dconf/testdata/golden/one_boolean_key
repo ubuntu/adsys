@@ -3,7 +3,6 @@
   explaintext: boolean-property description
   elementtype: boolean
   meta: '{"meta": "b", "default": "false"}'
-  class: ""
   default: "true"
   release: "20.04"
   type: dconf
