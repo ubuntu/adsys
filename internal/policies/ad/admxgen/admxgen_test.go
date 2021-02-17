@@ -48,17 +48,18 @@ func TestGenerateExpandedCategories(t *testing.T) {
 
 		"default policy class is capitalized": {},
 
+		// Optional content and options varies
+		"different element type": {},
+		"different meta":         {},
+		"different choices":      {},
+		"different range":        {},
+
 		// Error cases
-		"one policy not used":                   {wantErr: true},
-		"unexisting policy referenced":          {wantErr: true},
-		"different meta":                        {wantErr: true},
-		"different element type":                {wantErr: true},
-		"different policy type":                 {wantErr: true},
-		"different class":                       {wantErr: true},
-		"different range":                       {wantErr: true},
-		"different choices same length":         {wantErr: true},
-		"different choices different length":    {wantErr: true},
-		"missing release":                       {wantErr: true},
+		"error on one policy not used":          {wantErr: true},
+		"error on unexisting policy referenced": {wantErr: true},
+		"error on different policy type":        {wantErr: true},
+		"error on different class":              {wantErr: true},
+		"error on missing release":              {wantErr: true},
 		"error on nested category":              {wantErr: true},
 		"error on invalid default policy class": {wantErr: true},
 		"error on empty default policy class":   {wantErr: true},

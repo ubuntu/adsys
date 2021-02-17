@@ -2,18 +2,28 @@
   parent: windows:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-choices
-    displayname: summary
     explaintext: |-
       description
 
       Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: dropdownList
-    meta: '{"all": {"meta": "s", "default": "''''"}}'
+
+      Supported on Ubuntu 20.04
+    meta: '{"20.04":"{\"meta\": \"s\", \"default\": \"''''\"}","all":"{\"meta\": \"s\",
+      \"default\": \"''''\"}"}'
     class: Machine
-    default: '''Default Value'''
-    choices:
-    - choice 1
-    - choice 2
-    - choice 3
-    - choice 4
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-choices
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: '''Default Value'''
+        choices:
+        - choice 1
+        - choice 2
+        - choice 3
+        - choice 4
+        release: "20.04"
+        type: dconf

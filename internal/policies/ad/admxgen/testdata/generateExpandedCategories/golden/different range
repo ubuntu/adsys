@@ -9,34 +9,43 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04, 21.10
-    meta: '{"20.04":"{\"meta\": \"s\", \"default\": \"''''\"}","21.10":"{\"meta\":
-      \"s\", \"default\": \"''''\"}","all":"{\"meta\": \"s\", \"default\": \"''''\"}"}'
+    meta: '{"20.04":"{\"meta\": \"i\", \"default\": \"0\"}","21.10":"{\"meta\": \"i\",
+      \"default\": \"0\"}","all":"{\"meta\": \"i\", \"default\": \"0\"}"}'
     class: Machine
     releaseselements:
       "20.04":
         key: /org/gnome/desktop/policy-common
-        displayname: summary on 20.04
+        displayname: summary
         explaintext: description
-        elementtype: text
-        meta: '{"meta": "s", "default": "''''"}'
+        elementtype: decimal
+        meta: '{"meta": "i", "default": "0"}'
         default: '''Default Value'''
+        rangevalues:
+          min: "-123"
+          max: "456"
         release: "20.04"
         type: dconf
       "21.10":
         key: /org/gnome/desktop/policy-common
-        displayname: summary on 21.10
+        displayname: summary
         explaintext: description
-        elementtype: text
-        meta: '{"meta": "s", "default": "''''"}'
+        elementtype: decimal
+        meta: '{"meta": "i", "default": "0"}'
         default: '''Default Value'''
+        rangevalues:
+          min: "234"
+          max: "456"
         release: "21.10"
         type: dconf
       all:
         key: /org/gnome/desktop/policy-common
-        displayname: summary on 21.10
+        displayname: summary
         explaintext: description
-        elementtype: text
-        meta: '{"meta": "s", "default": "''''"}'
+        elementtype: decimal
+        meta: '{"meta": "i", "default": "0"}'
         default: '''Default Value'''
+        rangevalues:
+          min: "234"
+          max: "456"
         release: "21.10"
         type: dconf
