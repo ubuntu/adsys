@@ -2,13 +2,23 @@
   parent: windows:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-double
-    displayname: summary
     explaintext: |-
       description
 
       Default: 123.456
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: text
-    default: "123.456"
-    meta: '{"meta": "s", "default": "0"}'
+
+      Supported on Ubuntu 20.04
+    meta: '{"20.04":"{\"meta\": \"u\", \"default\": \"0\"}","all":"{\"meta\": \"u\",
+      \"default\": \"0\"}"}'
     class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: text
+        meta: '{"meta": "u", "default": "0"}'
+        default: "123.456"
+        release: "20.04"
+        type: dconf

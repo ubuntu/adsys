@@ -14,12 +14,12 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyArrayString" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyArrayString)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayString)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayString)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-string" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyArrayString" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyArrayString)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayString)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayString)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-string" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"meta": "as", "default": "[]"}</string></enabledValue>
+      <enabledValue><string>{"20.04":"{\"meta\": \"as\", \"default\": \"[]\"}","all":"{\"meta\": \"as\", \"default\": \"[]\"}"}</string></enabledValue>
       <elements>
-        <multitext id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyArrayString" valueName="all" />
+        <multiText id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyArrayString" valueName="all" />
       </elements>
     </policy>
   </policies>

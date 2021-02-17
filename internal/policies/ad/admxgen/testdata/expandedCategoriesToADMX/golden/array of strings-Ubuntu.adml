@@ -7,17 +7,19 @@
 
     <stringTable>
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
-      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyArrayString">summary</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayString">description
 
 Default: [&#39;Value1&#39;, &#39;Value2&#39;]
-Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyArrayString">summary</string>
     </stringTable>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayString">
         <text>summary</text>
-        <multiTextBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyArrayString" defaultHeight="5" />
+        <multiTextBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyArrayString" defaultHeight="5" />
       </presentation>
     </presentationTable>
 

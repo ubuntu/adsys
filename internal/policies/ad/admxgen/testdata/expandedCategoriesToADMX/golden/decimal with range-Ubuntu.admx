@@ -14,12 +14,12 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDecimalWithRange" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDecimalWithRange" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyDecimalWithRange)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDecimalWithRange)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"meta": "i", "default": "0"}</string></enabledValue>
+      <enabledValue><string>{"20.04":"{\"meta\": \"i\", \"default\": \"0\"}","all":"{\"meta\": \"i\", \"default\": \"0\"}"}</string></enabledValue>
       <elements>
-        <decimal id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyDecimalWithRange" valueName="all" minValue="-123.000000" maxValue="15000.000000" />
+        <decimal id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyDecimalWithRange" valueName="all" minValue="-123.000000" maxValue="15000.000000" />
       </elements>
     </policy>
   </policies>

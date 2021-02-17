@@ -7,20 +7,22 @@
 
     <stringTable>
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
-      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyChoices">summary</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices">description
 
 Default: &#39;Choice 1&#39;
-Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
-      <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices0">Choice 1</string>
-      <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices1">Choice 2</string>
-      <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices2">Choice 3</string>
-      <string id="UbuntuItemMachineDconfOrgGnomeDesktopPolicyChoices3">Choice 4</string>
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyChoices">summary</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices0">Choice 1</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices1">Choice 2</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices2">Choice 3</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices3">Choice 4</string>
     </stringTable>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyChoices">
-        <dropdownList  refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyChoices" noSort="true">summary</dropdownList>
+        <dropdownList  refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyChoices" noSort="true">summary</dropdownList>
       </presentation>
     </presentationTable>
 

@@ -14,12 +14,12 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyBoolean" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyBoolean)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyBoolean)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyBoolean)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-boolean" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyBoolean" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyBoolean)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyBoolean)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyBoolean)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-boolean" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"meta": "s", "default": "false"}</string></enabledValue>
+      <enabledValue><string>{"20.04":"{\"meta\": \"b\", \"default\": \"false\"}","all":"{\"meta\": \"b\", \"default\": \"false\"}</string></enabledValue>
       <elements>
-        <boolean id="UbuntuElemMachineDconfOrgGnomeDesktopPolicyBoolean" valueName="all">
+        <boolean id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyBoolean" valueName="all">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
