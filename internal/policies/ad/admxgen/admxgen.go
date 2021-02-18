@@ -117,7 +117,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		var supportedOn, class, highestRelease, defaultString, typePol string
 		var defaults []string
 		var differentDefaultsBetweenReleases bool
-		metas := make(map[string]string)
+		metas := make(map[string]map[string]string)
 		releasesElements := make(map[string]common.ExpandedPolicy)
 		first := true
 		for _, release := range g.supportedReleases {
