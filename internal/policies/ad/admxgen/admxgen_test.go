@@ -126,12 +126,13 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"decimal with min only": {},
 		"decimal with max only": {},
 		// TODO: range with min or max < 0 -> text
-		"long decimal":      {},
-		"array of strings":  {},
-		"array of integers": {},
-		"choices":           {},
-		"double":            {},
-		"double with range": {},
+		"long decimal":         {},
+		"array of strings":     {},
+		"array of integers":    {},
+		"choices":              {},
+		"choices with default": {},
+		"double":               {},
+		"double with range":    {},
 
 		// Multiple releases
 		"multiple releases for one key":                             {},

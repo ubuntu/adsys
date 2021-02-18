@@ -1,0 +1,73 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-choices
+    explaintext: |-
+      description
+
+      Default for 20.04: Choice 3
+      Default for 18.04: Choice 2
+      Default for 16.04: Unmatched default
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04, 18.04
+    meta: '{"20.04":"{\"meta\": \"s\", \"default\": \"''''\"}","18.04":"{\"meta\": \"s\", \"default\": \"''''\"}","16.04":"{\"meta\": \"s\", \"default\": \"''''\"}","all":"{\"meta\": \"s\",
+      \"default\": \"''''\"}"}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: 'Choice 3'
+        release: "20.04"
+        type: dconf
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
+      "20.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: 'Choice 3'
+        release: "20.04"
+        type: dconf
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
+      "18.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: 'Choice 2'
+        release: "18.04"
+        type: dconf
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
+      "16.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: 'Unmatched default'
+        release: "16.04"
+        type: dconf
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
