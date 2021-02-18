@@ -31,7 +31,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:208
+#: internal/policies/ad/admxgen/admxgen.go:192
 #, c-format
 msgid ""
 "%s\n"
@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:322
+#: internal/policies/ad/ad.go:332
 msgid "%s :%v"
 msgstr ""
 
@@ -47,7 +47,7 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:385
+#: internal/policies/dconf/dconf.go:402
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -55,7 +55,7 @@ msgstr ""
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:245
+#: internal/policies/ad/admxgen/admxgen.go:226
 #, c-format
 msgid "%s needs a default policy class"
 msgstr ""
@@ -75,12 +75,12 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:173
+#: internal/policies/ad/admxgen/admxgen.go:159
 #, c-format
-msgid "- Supported on %s %s"
+msgid "- Default for %s: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:111
+#: internal/policies/dconf/dconf.go:105
 msgid "- error on %s: %v"
 msgstr ""
 
@@ -135,12 +135,7 @@ msgstr ""
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:195
-#, c-format
-msgid "Default for %s %s: %s"
-msgstr ""
-
-#: internal/policies/ad/admxgen/admxgen.go:206
+#: internal/policies/ad/admxgen/admxgen.go:189
 #, c-format
 msgid "Default: %s"
 msgstr ""
@@ -228,6 +223,11 @@ msgstr ""
 msgid "Stopping daemon requested."
 msgstr ""
 
+#: internal/policies/ad/admxgen/admxgen.go:147
+#, c-format
+msgid "Supported on %s %s"
+msgstr ""
+
 #: cmd/adsysd/daemon/daemon.go:119
 msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
@@ -263,7 +263,7 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/ad/ad.go:90
+#: internal/policies/ad/ad.go:93
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -271,8 +271,8 @@ msgstr ""
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:368
-#: internal/policies/ad/admxgen/admxgen.go:381
+#: internal/policies/ad/admxgen/admxgen.go:366
+#: internal/policies/ad/admxgen/admxgen.go:379
 msgid "can't create admx file: %v"
 msgstr ""
 
@@ -288,15 +288,15 @@ msgstr ""
 msgid "can't create daemon"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:352
+#: internal/policies/ad/admxgen/admxgen.go:350
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:258
+#: internal/policies/ad/ad.go:268
 msgid "can't create symlink for caching"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:360
+#: internal/policies/ad/admxgen/admxgen.go:358
 msgid "can't determine current file"
 msgstr ""
 
@@ -317,7 +317,7 @@ msgstr ""
 msgid "can't download all gpos"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:335
+#: internal/policies/ad/admxgen/admxgen.go:333
 msgid "can't generate ADMX files"
 msgstr ""
 
@@ -325,11 +325,11 @@ msgstr ""
 msgid "can't generate dconf expanded policies"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:78
+#: internal/policies/ad/admxgen/admxgen.go:92
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:265
+#: internal/policies/ad/ad.go:275
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -338,11 +338,11 @@ msgstr ""
 msgid "can't get cached GPO list from %s"
 msgstr ""
 
-#: internal/policies/ad/ad.go:147
+#: internal/policies/ad/ad.go:157
 msgid "can't get policies for %q"
 msgstr ""
 
-#: internal/policies/ad/ad.go:235
+#: internal/policies/ad/ad.go:245
 msgid "can't list users from cache"
 msgstr ""
 
@@ -350,7 +350,7 @@ msgstr ""
 msgid "can't listen on new socket %q"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:214
+#: internal/policies/ad/admxgen/main.go:193
 msgid "can't load category definition"
 msgstr ""
 
@@ -363,7 +363,7 @@ msgstr ""
 msgid "can't load server info from %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:389
+#: internal/policies/dconf/dconf.go:406
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
@@ -379,7 +379,7 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:191
+#: internal/policies/dconf/dconf.go:185
 #, c-format
 msgid "can't save %s"
 msgstr ""
@@ -397,9 +397,13 @@ msgstr ""
 msgid "can't serve"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:211
+#: internal/policies/dconf/dconf.go:205
 #, c-format
 msgid "can't update user profile %s"
+msgstr ""
+
+#: internal/policies/ad/common/common.go:17
+msgid "cannot get versionID"
 msgstr ""
 
 #: internal/policies/ad/admxgen/dconf/dconf.go:233
@@ -442,7 +446,7 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:183
+#: internal/policies/dconf/dconf.go:177
 msgid "dconf update failed: %v"
 msgstr ""
 
@@ -458,7 +462,7 @@ msgstr ""
 msgid "don't display colorized version."
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:380
+#: internal/policies/dconf/dconf.go:397
 msgid "empty signature for %v"
 msgstr ""
 
@@ -472,7 +476,7 @@ msgstr ""
 msgid "error opening raw connection: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:377
+#: internal/policies/dconf/dconf.go:394
 msgid "error while checking signature"
 msgstr ""
 
@@ -500,7 +504,7 @@ msgstr ""
 msgid "error while updating policy"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:118
+#: internal/policies/ad/admxgen/main.go:97
 msgid "failed to access definition files: %w"
 msgstr ""
 
@@ -520,11 +524,15 @@ msgstr ""
 msgid "failed to find server address in sssd.conf and url is not provided"
 msgstr ""
 
-#: internal/policies/ad/ad.go:242
+#: internal/policies/ad/admxgen/admxgen.go:198
+msgid "failed to marshal meta data"
+msgstr ""
+
+#: internal/policies/ad/ad.go:252
 msgid "failed to read cache directory: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:123
+#: internal/policies/ad/admxgen/main.go:102
 msgid "failed to read list of definition files: %w"
 msgstr ""
 
@@ -536,11 +544,11 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:276
+#: internal/policies/ad/ad.go:286
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:191
+#: internal/policies/ad/ad.go:201
 msgid ""
 "failed to retrieve the list of GPO: %v\n"
 "%s"
@@ -550,7 +558,7 @@ msgstr ""
 msgid "force will shut it down immediately and drop existing connections."
 msgstr ""
 
-#: internal/policies/ad/admxgen/common/common.go:60
+#: internal/policies/ad/admxgen/common/common.go:76
 msgid "invalid class %q"
 msgstr ""
 
@@ -568,7 +576,7 @@ msgid ""
 ". Please use the StreamClientInterceptor."
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:137
+#: internal/policies/ad/registry/registry.go:141
 msgid "invalid policy"
 msgstr ""
 
@@ -586,7 +594,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:198
+#: internal/policies/ad/ad.go:208
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
@@ -640,7 +648,7 @@ msgstr ""
 msgid "permission denied"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:255
+#: internal/policies/ad/admxgen/admxgen.go:236
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
@@ -652,7 +660,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/policies/ad/ad.go:157
+#: internal/policies/ad/ad.go:167
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -674,13 +682,13 @@ msgid ""
 "socket activation."
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:235
+#: internal/policies/ad/admxgen/admxgen.go:216
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:292
+#: internal/policies/ad/admxgen/admxgen.go:273
 msgid "the following policies have been assigned to a category: %v"
 msgstr ""
 
@@ -717,6 +725,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/policies/ad/ad.go:152
+#: internal/policies/ad/ad.go:162
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
