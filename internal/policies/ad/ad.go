@@ -17,6 +17,7 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
+	adcommon "github.com/ubuntu/adsys/internal/policies/ad/common"
 	"github.com/ubuntu/adsys/internal/policies/ad/registry"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
@@ -47,6 +48,7 @@ type AD struct {
 	hostname string
 	url      string
 
+	versionID        string
 	gpoCacheDir      string
 	gpoRulesCacheDir string
 	krb5CacheDir     string
@@ -60,6 +62,7 @@ type AD struct {
 }
 
 type options struct {
+	versionID       string
 	runDir          string
 	cacheDir        string
 	sssCacheDir     string
@@ -89,12 +92,18 @@ func WithRunDir(runDir string) func(o *options) error {
 func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
+	versionID, err := adcommon.GetVersionID("/")
+	if err != nil {
+		return nil, err
+	}
+
 	// defaults
 	args := options{
 		runDir:      config.DefaultRunDir,
 		cacheDir:    config.DefaultCacheDir,
 		sssCacheDir: "/var/lib/sss/db",
 		gpoListCmd:  []string{"/usr/libexec/adsys-gpolist"},
+		versionID:   versionID,
 	}
 	// applied options
 	for _, o := range opts {
@@ -129,6 +138,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 	return &AD{
 		hostname:         hostname,
 		url:              url,
+		versionID:        args.versionID,
 		gpoCacheDir:      gpoCacheDir,
 		gpoRulesCacheDir: gpoRulesCacheDir,
 		krb5CacheDir:     krb5CacheDir,
@@ -321,16 +331,50 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			if err != nil {
 				return fmt.Errorf(i18n.G("%s :%v"), f.Name(), err)
 			}
+
+			// filter keys to be overridden
+			var currentKey string
+			var overrideEnabled bool
 			for _, pol := range pols {
 				// Only consider supported policies for this distro
 				if !strings.HasPrefix(pol.Key, keyFilterPrefix) {
 					continue
 				}
 				pol.Key = strings.TrimPrefix(pol.Key, keyFilterPrefix)
-				keyType := strings.Split(pol.Key, "/")[0]
-				pol.Key = strings.TrimPrefix(pol.Key, keyType+"/")
 
-				gpoRules.Rules[keyType] = append(gpoRules.Rules[keyType], pol)
+				// Some keys can be overriden
+				releaseID := filepath.Base(pol.Key)
+				keyType := strings.Split(pol.Key, "/")[0]
+				pol.Key = filepath.Dir(strings.TrimPrefix(pol.Key, keyType+"/"))
+
+				if releaseID == "all" {
+					currentKey = pol.Key
+					overrideEnabled = false
+					gpoRules.Rules[keyType] = append(gpoRules.Rules[keyType], pol)
+					continue
+				}
+
+				// This is not an "all" key and the key name don’t match
+				// This shouldn’t happen with our admx, but just to stay safe…
+				if currentKey != pol.Key {
+					continue
+				}
+
+				if strings.HasPrefix(releaseID, "Override"+ad.versionID) && pol.Value == "true" {
+					overrideEnabled = true
+					continue
+				}
+				// Check we have a matching override
+				if !overrideEnabled || releaseID != ad.versionID {
+					continue
+				}
+
+				// Matching enabled override
+				// Replace value with the override content
+				iLast := len(gpoRules.Rules[keyType]) - 1
+				p := gpoRules.Rules[keyType][iLast]
+				p.Value = pol.Value
+				gpoRules.Rules[keyType][iLast] = p
 			}
 			return nil
 		}(); err != nil {

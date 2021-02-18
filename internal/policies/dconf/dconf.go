@@ -95,12 +95,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	var errMsgs []string
 	for _, e := range entries {
 		log.Debugf(ctx, "Analyzing entry %+v", e)
-		// TODO: this will change with multi releases support
-		if filepath.Base(e.Key) != "all" {
-			continue
-		}
-		// we only take the all key right now
-		e.Key = filepath.Dir(e.Key)
 
 		if !e.Disabled {
 			section := filepath.Dir(e.Key)
