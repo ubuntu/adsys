@@ -20,6 +20,7 @@ Supported on Ubuntu 20.04</string>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDouble">
         <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyDouble">
           <label>summary</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
     </presentationTable>

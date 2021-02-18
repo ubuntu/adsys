@@ -9,8 +9,8 @@
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySimple">description
 
-- Default for 20.04: &#39;Choice 11&#39;
-- Default for 18.04: &#39;Choice 22&#39;
+- Default for 20.04: Choice 11
+- Default for 18.04: Choice 22
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
@@ -34,13 +34,13 @@ Supported on Ubuntu 20.04, 18.04</string>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple">
-        <dropdownList  refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" noSort="true">summary</dropdownList>
+        <dropdownList  refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" noSort="true" defaultItem="">summary</dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for 20.04:</checkBox>
-        <dropdownList  refId="UbuntuElemMachine2004DconfOrgGnomeDesktopPolicySimple" noSort="true">summary</dropdownList>
+        <dropdownList  refId="UbuntuElemMachine2004DconfOrgGnomeDesktopPolicySimple" noSort="true" defaultItem="0">summary</dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine1804DconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for 18.04:</checkBox>
-        <dropdownList  refId="UbuntuElemMachine1804DconfOrgGnomeDesktopPolicySimple" noSort="true">summary</dropdownList>
+        <dropdownList  refId="UbuntuElemMachine1804DconfOrgGnomeDesktopPolicySimple" noSort="true" defaultItem="0">summary</dropdownList>
       </presentation>
     </presentationTable>
 

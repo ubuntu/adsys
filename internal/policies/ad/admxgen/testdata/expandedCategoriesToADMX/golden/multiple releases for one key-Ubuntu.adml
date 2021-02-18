@@ -22,16 +22,19 @@ Supported on Ubuntu 20.04, 18.04</string>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple">
         <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple">
           <label>summary</label>
+          <defaultValue></defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for 20.04:</checkBox>
         <textBox refId="UbuntuElemMachine2004DconfOrgGnomeDesktopPolicySimple">
           <label>summary</label>
+          <defaultValue>'Default Value'</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine1804DconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for 18.04:</checkBox>
         <textBox refId="UbuntuElemMachine1804DconfOrgGnomeDesktopPolicySimple">
           <label>summary</label>
+          <defaultValue>'Default Value'</defaultValue>
         </textBox>
       </presentation>
     </presentationTable>

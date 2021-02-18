@@ -20,6 +20,7 @@ Supported on Ubuntu 20.04</string>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple">
         <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple">
           <label>summary</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
     </presentationTable>

@@ -84,7 +84,7 @@
         explaintext: description
         elementtype: dropdownList
         meta: '{"meta": "s", "default": "''''"}'
-        default: "Choice 3"
+        default: 'Choice 3'
         choices:
           - Choice 1
           - Choice 2

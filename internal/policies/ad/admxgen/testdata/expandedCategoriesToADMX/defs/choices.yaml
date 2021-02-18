@@ -5,7 +5,7 @@
     explaintext: |-
       description
 
-      Default: 'Choice 1'
+      Default: Choice 1
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04
@@ -19,7 +19,7 @@
         explaintext: description
         elementtype: dropdownList
         meta: '{"meta": "s", "default": "''''"}'
-        default: '''Choice 1'''
+        default: 'Choice 1'
         release: "20.04"
         type: dconf
         choices:

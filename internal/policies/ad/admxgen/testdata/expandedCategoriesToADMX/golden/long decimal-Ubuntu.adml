@@ -18,7 +18,7 @@ Supported on Ubuntu 20.04</string>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyLongDecimal">
-        <longDecimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyLongDecimal">summary</longDecimalTextBox>
+        <longDecimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyLongDecimal" defaultValue="">summary</longDecimalTextBox>
       </presentation>
     </presentationTable>
 

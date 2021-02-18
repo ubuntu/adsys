@@ -36,11 +36,13 @@ Supported on Ubuntu textrelease, multitextrelease, longdecimalrelease, dropdownl
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple">
         <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple">
           <label>summary</label>
+          <defaultValue></defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachineTextreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for textrelease:</checkBox>
         <textBox refId="UbuntuElemMachineTextreleaseDconfOrgGnomeDesktopPolicySimple">
           <label>summary</label>
+          <defaultValue>text default</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachineMultitextreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for multitextrelease:</checkBox>
@@ -48,13 +50,13 @@ Supported on Ubuntu textrelease, multitextrelease, longdecimalrelease, dropdownl
         <multiTextBox refId="UbuntuElemMachineMultitextreleaseDconfOrgGnomeDesktopPolicySimple" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemMachineLongdecimalreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for longdecimalrelease:</checkBox>
-        <longDecimalTextBox refId="UbuntuElemMachineLongdecimalreleaseDconfOrgGnomeDesktopPolicySimple">summary</longDecimalTextBox>
+        <longDecimalTextBox refId="UbuntuElemMachineLongdecimalreleaseDconfOrgGnomeDesktopPolicySimple" defaultValue="2020">summary</longDecimalTextBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for dropdownlistrelease:</checkBox>
-        <dropdownList  refId="UbuntuElemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple" noSort="true">summary</dropdownList>
+        <dropdownList  refId="UbuntuElemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple" noSort="true" defaultItem="2">summary</dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachineDecimalreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for decimalrelease:</checkBox>
-        <decimalTextBox refId="UbuntuElemMachineDecimalreleaseDconfOrgGnomeDesktopPolicySimple">summary</decimalTextBox>
+        <decimalTextBox refId="UbuntuElemMachineDecimalreleaseDconfOrgGnomeDesktopPolicySimple" defaultValue="20">summary</decimalTextBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachineBooleanreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for booleanrelease:</checkBox>
         <checkBox refId="UbuntuElemMachineBooleanreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="true">summary</checkBox>

@@ -20,6 +20,7 @@ Supported on Ubuntu 20.04</string>
       <presentation id="UbuntuPresentationMachineDconfComUbuntuSimpleSimpleTextProperty">
         <textBox refId="UbuntuElemMachineAllDconfComUbuntuSimpleSimpleTextProperty">
           <label>simple-text-property summary</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
     </presentationTable>

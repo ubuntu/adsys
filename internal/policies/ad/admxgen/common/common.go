@@ -53,6 +53,21 @@ type ExpandedPolicy struct {
 	Type    string `yaml:",omitempty"` // dconf, install…
 }
 
+// GetDefaultForADM returns the default matching the policy elements default rules
+func (p ExpandedPolicy) GetDefaultForADM() string {
+	switch p.ElementType {
+	case WidgetTypeDropdownList:
+		for i, e := range p.Choices {
+			if e == p.Default {
+				return fmt.Sprintf("%d", i)
+			}
+		}
+		return "0"
+	default:
+		return p.Default
+	}
+}
+
 // ValidClass returns a valid, capitalized class. It will error out if it can’t match the input as valid class
 func ValidClass(class string) (string, error) {
 	c := strings.Title(class)

@@ -18,7 +18,7 @@ Supported on Ubuntu 20.04</string>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDecimal">
-        <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyDecimal">summary</decimalTextBox>
+        <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyDecimal" defaultValue="">summary</decimalTextBox>
       </presentation>
     </presentationTable>
 

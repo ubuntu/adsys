@@ -28,11 +28,13 @@ Supported on Ubuntu 20.04</string>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyFirst">
         <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyFirst">
           <label>summary first</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySecond">
         <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySecond">
           <label>summary second</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
     </presentationTable>

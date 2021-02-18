@@ -5,7 +5,8 @@
     explaintext: |-
       description
 
-      Default: 'Default Value'
+      - Default for 20.04: unmatched default
+      - Default for 21.10: choice 2
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04, 21.10
@@ -19,7 +20,7 @@
         explaintext: description
         elementtype: dropdownList
         meta: '{"meta": "s", "default": "''''"}'
-        default: '''Default Value'''
+        default: unmatched default
         choices:
         - choice 1
         - choice 2
@@ -33,7 +34,7 @@
         explaintext: description
         elementtype: dropdownList
         meta: '{"meta": "s", "default": "''''"}'
-        default: '''Default Value'''
+        default: choice 2
         choices:
         - choice 1
         - choice 2
@@ -46,7 +47,7 @@
         explaintext: description
         elementtype: dropdownList
         meta: '{"meta": "s", "default": "''''"}'
-        default: '''Default Value'''
+        default: choice 2
         choices:
         - choice 1
         - choice 2

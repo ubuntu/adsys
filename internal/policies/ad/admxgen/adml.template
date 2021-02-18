@@ -27,26 +27,28 @@
       {{- $policy := .}}
       <presentation id="{{toID .Key "Presentation" .Class}}">
      {{- range .GetOrderedPolicyElements}}
-
+      {{- $default := ""}}
       {{- if ne .Release "all"}}
         <text/>
         <checkBox refId="{{toID $policy.Key "OverrideElem" $policy.Class .Release}}" defaultChecked="false">Override value for {{.Release}}:</checkBox>
+        {{- $default = .GetDefaultForADM}}
       {{- end}}
       {{- if eq .ElementType "text"}}
         <textBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}">
           <label>{{.DisplayName}}</label>
+          <defaultValue>{{$default}}</defaultValue>
         </textBox>
       {{- else if eq .ElementType "multiText"}}
         <text>{{.DisplayName}}</text>
         <multiTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultHeight="5" />
       {{- else if eq .ElementType "boolean"}}
-        <checkBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultChecked="{{.Default}}">{{.DisplayName}}</checkBox>
+        <checkBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultChecked="{{$default}}">{{.DisplayName}}</checkBox>
       {{- else if eq .ElementType "decimal"}}
-        <decimalTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}">{{.DisplayName}}</decimalTextBox>
+        <decimalTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultValue="{{$default}}">{{.DisplayName}}</decimalTextBox>
       {{- else if eq .ElementType "longDecimal"}}
-        <longDecimalTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}">{{.DisplayName}}</longDecimalTextBox>
+        <longDecimalTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultValue="{{$default}}">{{.DisplayName}}</longDecimalTextBox>
       {{- else if eq .ElementType "dropdownList"}}
-        <dropdownList  refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" noSort="true">{{.DisplayName}}</dropdownList>
+        <dropdownList  refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" noSort="true" defaultItem="{{$default}}">{{.DisplayName}}</dropdownList>
       {{- end}}
      {{- end}}
       </presentation>

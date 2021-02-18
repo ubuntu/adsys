@@ -20,6 +20,7 @@ Supported on Debian sid</string>
       <presentation id="DebianPresentationMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple">
         <textBox refId="DebianElemMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple">
           <label>summary</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
     </presentationTable>
