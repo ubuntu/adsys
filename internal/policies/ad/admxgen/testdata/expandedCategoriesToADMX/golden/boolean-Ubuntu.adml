@@ -18,7 +18,7 @@ Supported on Ubuntu 20.04</string>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyBoolean">
-        <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyBoolean" defaultChecked="">summary</checkBox>
+        <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyBoolean" defaultChecked="false">summary</checkBox>
       </presentation>
     </presentationTable>
 
