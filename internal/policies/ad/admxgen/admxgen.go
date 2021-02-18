@@ -37,12 +37,14 @@ admxgen generates admx and adml from a category and multiple policies per releas
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -57,7 +59,7 @@ import (
 type expandedCategory struct {
 	DisplayName string
 	Parent      string
-	Policies    []common.ExpandedPolicy
+	Policies    []mergedPolicy
 	Children    []expandedCategory `yaml:",omitempty"`
 }
 
@@ -69,6 +71,18 @@ type category struct {
 	Children           []category
 }
 
+type mergedPolicy struct {
+	Key string
+	// Merge of all explainText, defaults, supportedOn
+	ExplainText string
+	// Merge of all metas
+	Meta string
+	// Single class convenience (all ExpandedPolicy should match)
+	Class string
+
+	ReleasesElements map[string]common.ExpandedPolicy
+}
+
 type generator struct {
 	distroID          string
 	supportedReleases []string
@@ -76,8 +90,6 @@ type generator struct {
 
 func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy) (ep []expandedCategory, err error) {
 	defer decorate.OnError(&err, i18n.G("can't generate expanded categories"))
-
-	supportedReleaseNum := len(g.supportedReleases)
 
 	// noPoliciesOn is a map to attest that each release was assigned at least one property
 	noPoliciesOn := make(map[string]struct{})
@@ -98,30 +110,16 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		unattachedPolicies[p.Key] = struct{}{}
 	}
 
-	mergedPolicies := make(map[string]common.ExpandedPolicy)
-	for key, policies := range indexedPolicies {
-		// cross releases, handle supported on and defaults
-		var writeSupportedOn bool
-		if len(policies) != supportedReleaseNum {
-			writeSupportedOn = true
-		}
+	mergedPolicies := make(map[string]mergedPolicy)
+	for key := range indexedPolicies {
 		// supportedReleases is ordered with latest being newest.
-		// Those are the descriptions which wins.
-		var supportedOn []string
-		var typePol, displayName, explainText, meta, class string
-		var elementType common.WidgetType
 
-		type defaultVal struct {
-			value   string
-			release string
-		}
-		var defaults []defaultVal
-		var defaultString string
-
-		var rangeDecimal common.DecimalRange
-		var choices []string
-
-		isFirst := true
+		var supportedOn, class, highestRelease, defaultString, typePol string
+		var defaults []string
+		var differentDefaultsBetweenReleases bool
+		metas := make(map[string]string)
+		releasesElements := make(map[string]common.ExpandedPolicy)
+		first := true
 		for _, release := range g.supportedReleases {
 			p, ok := indexedPolicies[key][release]
 			// if it doesn’t exist for this release, skip
@@ -132,97 +130,80 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			// we have one policy at least on this release
 			delete(noPoliciesOn, p.Release)
 
-			// TODO: multiple releases
-			// meta, type, class or elementtype is different -> error
-			if !isFirst {
-				if meta != p.Meta {
-					return nil, fmt.Errorf("%s is of different meta between releases. Got %q and %q", key, meta, p.Meta)
+			// every elements should have the same type of policy and class
+			if !first {
+				if class != p.Class {
+					return nil, fmt.Errorf("%s is of different class between releases. Got %q and %q", key, class, p.Class)
 				}
 				if typePol != p.Type {
 					return nil, fmt.Errorf("%s is of different policy type between releases. Got %q and %q", key, typePol, p.Type)
 				}
-				if class != p.Class {
-					return nil, fmt.Errorf("%s is of different class between releases. Got %q and %q", key, class, p.Class)
-				}
-				if elementType != p.ElementType {
-					return nil, fmt.Errorf("%s is of different element type between releases. Got %q and %q", key, elementType, p.ElementType)
-				}
-				if rangeDecimal != p.RangeValues {
-					return nil, fmt.Errorf("%s has a different range type between releases. Got %q and %q", key, rangeDecimal, p.RangeValues)
-				}
-
-				sameChoices := true
-				if len(choices) != len(p.Choices) {
-					sameChoices = false
-				} else {
-					for i, c := range choices {
-						if c != p.Choices[i] {
-							sameChoices = false
-							break
-						}
-					}
-				}
-				if !sameChoices {
-					return nil, fmt.Errorf("%s has different choices between releases. Got %q and %q", key, choices, p.Choices)
-				}
 			}
-
-			typePol = p.Type
-			displayName = p.DisplayName
-			if writeSupportedOn {
-				supportedOn = append(supportedOn, fmt.Sprintf(i18n.G("- Supported on %s %s"), g.distroID, release))
-			}
-
-			explainText = p.ExplainText
-			elementType = p.ElementType
-			meta = p.Meta
 			class = p.Class
+			typePol = p.Type
+
+			metas[release] = p.Meta
+			if supportedOn == "" {
+				supportedOn = fmt.Sprintf(i18n.G("Supported on %s %s"), g.distroID, release)
+			} else {
+				supportedOn = fmt.Sprintf("%s, %s", supportedOn, release)
+			}
+
+			if !first {
+				if p.Default != defaultString {
+					differentDefaultsBetweenReleases = true
+				}
+			}
 			defaultString = p.Default
-			rangeDecimal = p.RangeValues
-			choices = p.Choices
 
-			defaults = append(defaults, defaultVal{value: p.Default, release: release})
+			defaults = append(defaults, fmt.Sprintf(i18n.G("- Default for %s: %s"), release, p.Default))
 
-			isFirst = false
+			if release > highestRelease {
+				highestRelease = release
+			}
+
+			releasesElements[release] = p
+			first = false
+		}
+
+		// assign "all" elements and default to higest release description
+		var explainText string
+		if highestRelease != "" {
+			releasesElements["all"] = releasesElements[highestRelease]
+			metas["all"] = releasesElements["all"].Meta
+			explainText = releasesElements["all"].ExplainText
+		}
+
+		// Keep only all if there is one supported release on this key
+		if len(releasesElements) == 2 {
+			delete(releasesElements, highestRelease)
 		}
 
 		// Display all the default per release if there is at least 1 different
 		// otherwise display only 1 defaut for all the releases
-		var perReleaseDefault []string
-		var isPerReleaseDefault bool
-		// defaultVal is already ordered per release as we iterated previously
-		for _, d := range defaults {
-			perReleaseDefault = append(perReleaseDefault, fmt.Sprintf(i18n.G("Default for %s %s: %s"), g.distroID, d.release, d.value))
 
-			if defaultString != "" && d.value != defaultString {
-				isPerReleaseDefault = true
-				continue
-			}
-			defaultString = d.value
-		}
-		if isPerReleaseDefault {
-			explainText = fmt.Sprintf("%s\n\n%s", explainText, strings.Join(perReleaseDefault, "\n"))
+		// defaultVal is already ordered per release as we iterated previously
+		if differentDefaultsBetweenReleases {
+			explainText = fmt.Sprintf("%s\n\n%s", explainText, strings.Join(defaults, "\n"))
 		} else {
 			explainText = fmt.Sprintf("%s\n\n%s", explainText, fmt.Sprintf(i18n.G("Default: %s"), defaultString))
 		}
-		explainText = fmt.Sprintf(i18n.G("%s\nNote: default system value is used for \"Not Configured\" and enforced if \"Disabled\"."), explainText)
 
-		// Display supportedOn if there is one different from others
-		if len(supportedOn) != 0 {
-			explainText = fmt.Sprintf("%s\n\n%s", explainText, strings.Join(supportedOn, "\n"))
+		explainText = fmt.Sprintf(i18n.G("%s\nNote: default system value is used for \"Not Configured\" and enforced if \"Disabled\"."), explainText)
+		explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
+
+		// prepare meta for the whole policy
+		meta, err := json.Marshal(metas)
+		if err != nil {
+			return nil, errors.New(i18n.G("failed to marshal meta data"))
 		}
 
-		mergedPolicies[key] = common.ExpandedPolicy{
-			// remove leading / if exists to avoid double \
-			Key:         fmt.Sprintf(`%s\%s\%s\%s`, strings.ReplaceAll(policiesPkg.KeyPrefix, "/", `\`), g.distroID, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
-			DisplayName: displayName,
-			ExplainText: explainText,
-			ElementType: elementType,
-			Meta:        fmt.Sprintf(`{"all": %s}`, meta),
-			Class:       class,
-			Default:     defaultString,
-			RangeValues: rangeDecimal,
-			Choices:     choices,
+		mergedPolicies[key] = mergedPolicy{
+			Key:              fmt.Sprintf(`%s\%s\%s\%s`, strings.ReplaceAll(policiesPkg.KeyPrefix, "/", `\`), g.distroID, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
+			Class:            class,
+			Meta:             string(meta),
+			ExplainText:      explainText,
+			ReleasesElements: releasesElements,
 		}
 	}
 
@@ -237,9 +218,9 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 
 	// 2. Inflate policies in categories, keep policy order from category list
 
-	var inflatePolicies func(cat category, mergedPolicies map[string]common.ExpandedPolicy) (expandedCategory, error)
-	inflatePolicies = func(cat category, mergedPolicies map[string]common.ExpandedPolicy) (expandedCategory, error) {
-		var policies []common.ExpandedPolicy
+	var inflatePolicies func(cat category, mergedPolicies map[string]mergedPolicy) (expandedCategory, error)
+	inflatePolicies = func(cat category, mergedPolicies map[string]mergedPolicy) (expandedCategory, error) {
+		var policies []mergedPolicy
 
 		if cat.DefaultPolicyClass == "" {
 			return expandedCategory{}, fmt.Errorf(i18n.G("%s needs a default policy class"), cat.DisplayName)
@@ -303,32 +284,49 @@ type categoryForADMX struct {
 }
 
 type policyForADMX struct {
-	Key            string
-	DisplayName    string
+	mergedPolicy
 	ParentCategory string
-	ExplainText    string
-	ElementType    common.WidgetType
-	Meta           string
-	Class          string
-	SupportedOn    string
+}
 
-	// Per type Extensions
-	// Most recent release value is used
-	Choices []string
+// GetOrderedPolicyElements returns all the policy elements order by release in decreasing order
+func (p policyForADMX) GetOrderedPolicyElements() []common.ExpandedPolicy {
+	var policies []common.ExpandedPolicy
 
-	// Decimal
-	RangeValues common.DecimalRange
+	// Order releases by decreasing order
+	var releases []string
+	for rel := range p.ReleasesElements {
+		releases = append(releases, rel)
+	}
+	sort.Sort(sort.Reverse(sort.StringSlice(releases)))
 
-	// Boolean (checked or unchecked)
-	Default string
+	for i, rel := range releases {
+		if i == 0 {
+			allPol := p.ReleasesElements["all"]
+			allPol.Release = "all"
+			policies = append(policies, allPol)
+		}
+
+		// "all" is first
+		if rel == "all" {
+			continue
+		}
+
+		policies = append(policies, p.ReleasesElements[rel])
+	}
+	return policies
 }
 
 // Make a Regex to say we only want letters and numbers
 var re = regexp.MustCompile("[^a-zA-Z0-9]+")
 
-func (g generator) toID(prefix, s string) string {
-	s = strings.TrimPrefix(s, strings.ReplaceAll(policiesPkg.KeyPrefix, "/", `\`)+`\`+g.distroID)
-	return g.distroID + re.ReplaceAllString(strings.Title(prefix)+strings.Title(s), "")
+func (g generator) toID(key string, s ...string) string {
+	key = strings.TrimPrefix(key, strings.ReplaceAll(policiesPkg.KeyPrefix, "/", `\`)+`\`+g.distroID)
+	r := g.distroID
+
+	for _, e := range s {
+		r += re.ReplaceAllString(strings.Title(e), "")
+	}
+	return r + re.ReplaceAllString(strings.Title(key), "")
 }
 
 func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) (err error) {
@@ -399,23 +397,14 @@ func (g generator) collectCategoriesPolicies(category expandedCategory, parent s
 		Parent:      parent,
 	}
 	categories := []categoryForADMX{cat}
-	catID := g.toID("", cat.DisplayName)
+	catID := g.toID(cat.DisplayName)
 
 	var policies []policyForADMX
 	// Collect now directly attached policies
 	for _, p := range category.Policies {
 		policies = append(policies, policyForADMX{
-			Key:            p.Key,
-			DisplayName:    p.DisplayName,
+			mergedPolicy:   p,
 			ParentCategory: catID,
-			ExplainText:    p.ExplainText,
-			ElementType:    p.ElementType,
-			Meta:           p.Meta,
-			Class:          p.Class,
-
-			RangeValues: p.RangeValues,
-			Choices:     p.Choices,
-			Default:     p.Default,
 		})
 	}
 

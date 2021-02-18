@@ -90,13 +90,17 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 		// if the key is enabled, load value (or replace with defaultValues for empty results)
 		if !disabled {
 			switch t := e.dType; t {
-			case regSz:
+			case regSz, regMultiSz:
 				res, err = decodeUtf16(e.data)
 				if err != nil {
 					return nil, err
 				}
 				if res == "" {
 					res = metaValues[e.key].Default
+				}
+				// lines separators for multi lines textbox are \x00
+				if t == regMultiSz {
+					res = strings.ReplaceAll(res, "\x00", "\n")
 				}
 			case regDword:
 				var resInt uint32

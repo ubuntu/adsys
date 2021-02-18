@@ -1,0 +1,94 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple
+    explaintext: |-
+      description
+
+      - Default for textrelease: text default
+      - Default for multitextrelease: multitext default
+      - Default for longdecimalrelease: 2020
+      - Default for dropdownlistrelease: Choice 1
+      - Default for decimalrelease: 20
+      - Default for booleanrelease: 'true'
+
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu textrelease, multitextrelease, longdecimalrelease, dropdownlistrelease, decimalrelease, booleanrelease
+    meta: '{"textrelease":"{\"meta\": \"s\", \"default\": \"''''\"}",
+            "multitextrelease":"{\"meta\": \"as\", \"default\": \"[]\"}",
+            "longdecimalrelease":"{\"meta\": \"u\", \"default\": \"0\"}",
+            "dropdownlistrelease":"{\"meta\": \"s\", \"default\": \"''''\"}",
+            "decimalrelease":"{\"meta\": \"i\", \"default\": \"0\"}",
+            "booleanrelease":"{\"meta\": \"b\", \"default\": \"false\"}",
+            "all":"{\"meta\": \"s\", \"default\": \"''''\"}"}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: text
+        meta: '{"meta": "s", "default": "''''"}'
+        default: "text default"
+        release: "textrelease"
+        type: dconf
+      textrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: text
+        meta: '{"meta": "s", "default": "''''"}'
+        default: "text default"
+        release: "textrelease"
+        type: dconf
+      multitextrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: multiText
+        meta: '{"meta": "s", "default": "''''"}'
+        default: "multitext default"
+        release: "multitextrelease"
+        type: dconf
+      booleanrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: boolean
+        meta: '{"meta": "b", "default": "''''"}'
+        default: 'true'
+        release: "booleanrelease"
+        type: dconf
+      decimalrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: decimal
+        meta: '{"meta": "i", "default": "''''"}'
+        default: "20"
+        release: "decimalrelease"
+        type: dconf
+      longdecimalrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: longDecimal
+        meta: '{"meta": "u", "default": "''''"}'
+        default: "2020"
+        release: "longdecimalrelease"
+        type: dconf
+      dropdownlistrelease":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: 'Choice 3'
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
+        release: "dropdownlistrelease"
+        type: dconf

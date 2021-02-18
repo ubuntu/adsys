@@ -9,8 +9,6 @@ categories:
     children:
     - displayname: "Desktop"
       defaultpolicyclass: "User"
-      policies:
-        - "/org/gnome/system/locale/region"
       children:
       - displayname: "Accessibility"
         defaultpolicyclass: "User"

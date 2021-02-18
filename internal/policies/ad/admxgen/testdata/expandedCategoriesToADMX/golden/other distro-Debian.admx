@@ -14,12 +14,12 @@
   </categories>
 
   <policies>
-    <policy name="DebianMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.DebianDisplayMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.DebianExplainTextMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.DebianPresentationMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
+    <policy name="DebianMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.DebianDisplayMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.DebianExplainTextMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.DebianPresentationMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
       <parentCategory ref="DebianCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>{"20.04":"{\"meta\": \"s\", \"default\": \"''\"}","all":"{\"meta\": \"s\", \"default\": \"''\"}"}</string></enabledValue>
       <elements>
-        <text id="DebianElemMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" valueName="all" />
+        <text id="DebianElemMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" valueName="all" />
       </elements>
     </policy>
   </policies>

@@ -1,0 +1,53 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple
+    explaintext: |-
+      description
+
+      - Default for 20.04: 20
+      - Default for 18.04: 18
+
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04, 18.04
+    meta: '{"20.04":"{\"meta\": \"i\", \"default\": \"''''\"}","18.04":"{\"meta\": \"i\", \"default\": \"''''\"}","all":"{\"meta\": \"i\",
+      \"default\": \"''''\"}"}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: decimal
+        meta: '{"meta": "i", "default": "''''"}'
+        default: "20"
+        rangevalues:
+          min: "-20.000000"
+          max: "20.000000"
+        release: "20.04"
+        type: dconf
+      "20.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: decimal
+        meta: '{"meta": "i", "default": "''''"}'
+        default: "20"
+        rangevalues:
+          min: "-20.000000"
+          max: "20.000000"
+        release: "20.04"
+        type: dconf
+      "18.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: decimal
+        meta: '{"meta": "i", "default": "''''"}'
+        default: "18"
+        rangevalues:
+          min: "-18.000000"
+          max: "18.000000"
+        release: "18.04"
+        type: dconf

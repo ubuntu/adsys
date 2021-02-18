@@ -4,7 +4,7 @@
   elementtype: dropdownList
   meta: '{"meta": "s", "default": "''''"}'
   class: ""
-  default: '''Default Value'''
+  default: 'choice 2'
   choices:
     - choice 1
     - choice 2

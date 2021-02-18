@@ -34,6 +34,13 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "1234",
 				},
 			}},
+		"one element, multitext value": {
+			want: []entry.Entry{
+				{
+					Key:   defaultKey,
+					Value: "B\nA",
+				},
+			}},
 		"two elements": {
 			want: []entry.Entry{
 				{

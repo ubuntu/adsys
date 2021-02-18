@@ -14,12 +14,12 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfComUbuntuSimpleSimpleTextProperty" class="Machine" displayName="$(string.UbuntuDisplayMachineDconfComUbuntuSimpleSimpleTextProperty)" explainText="$(string.UbuntuExplainTextMachineDconfComUbuntuSimpleSimpleTextProperty)" presentation="$(presentation.UbuntuPresentationMachineDconfComUbuntuSimpleSimpleTextProperty)" key="Software\Policies\Ubuntu\dconf\com\ubuntu\simple\simple-text-property" valueName="metaValues">
+    <policy name="UbuntuMachineDconfComUbuntuSimpleSimpleTextProperty" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfComUbuntuSimpleSimpleTextProperty)" explainText="$(string.UbuntuExplainTextMachineDconfComUbuntuSimpleSimpleTextProperty)" presentation="$(presentation.UbuntuPresentationMachineDconfComUbuntuSimpleSimpleTextProperty)" key="Software\Policies\Ubuntu\dconf\com\ubuntu\simple\simple-text-property" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"all": "all": {"meta": "s", "default": "''"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":"\"all\": {\"meta\": \"s\", \"default\": \"''\"}","all":"\"all\": {\"meta\": \"s\", \"default\": \"''\"}"}</string></enabledValue>
       <elements>
-        <text id="UbuntuElemMachineDconfComUbuntuSimpleSimpleTextProperty" valueName="all" />
+        <text id="UbuntuElemMachineAllDconfComUbuntuSimpleSimpleTextProperty" valueName="all" />
       </elements>
     </policy>
   </policies>

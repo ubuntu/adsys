@@ -2,13 +2,23 @@
   parent: windows:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-boolean
-    displayname: summary
     explaintext: |-
       description
 
       Default: true
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: boolean
-    default: 'true'
-    meta: '{"meta": "s", "default": "false"}'
+
+      Supported on Ubuntu 20.04
+    meta: '{"20.04":"{\"meta\": \"b\", \"default\": \"false\"}","all":"{\"meta\": \"b\",
+      \"default\": \"false\"}'
     class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: boolean
+        meta: '{"meta": "b", "default": "false"}'
+        default: 'true'
+        release: "20.04"
+        type: dconf

@@ -32,119 +32,119 @@ func TestApplyPolicy(t *testing.T) {
 	}{
 		// user cases
 		"new user": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}}},
 		"user updates existing value": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
 			existingDconfDir: "existing-user"},
 		"user updates with different value": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: "['simple-as']", Meta: "as"}},
+			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"}},
 			existingDconfDir: "existing-user"},
 		"user updates key is now disabled": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Disabled: true, Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Disabled: true, Meta: "s"}},
 			existingDconfDir: "existing-user"},
 		"update user disabled key with value": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			existingDconfDir: "user-with-disabled-value"},
 
 		// machine cases
 		"first boot": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: true, existingDconfDir: "-"},
 		"machine updates existing value": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
 			isComputer: true},
 		"machine updates with different value": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: "['simple-as']", Meta: "as"}},
+			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"}},
 			isComputer: true},
 		"machine updates key is now disabled": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Disabled: true, Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Disabled: true, Meta: "s"}},
 			isComputer: true},
 		"update machine disabled key with value": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: true, existingDconfDir: "machine-with-disabled-value"},
 
 		"no policy still generates a valid db": {entries: nil},
 		"multiple keys same category": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"},
-			{Key: "com/ubuntu/category/key-as/all", Value: "['simple-as']", Meta: "as"},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
+			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"},
 		}},
 		"multiple sections": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"},
-			{Key: "com/ubuntu/category2/key-s2/all", Value: "'onekey-s2'", Meta: "s"},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
+			{Key: "com/ubuntu/category2/key-s2", Value: "'onekey-s2'", Meta: "s"},
 		}},
 		"multiple sections with disabled keys": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Disabled: true, Meta: "s"},
-			{Key: "com/ubuntu/category2/key-s2/all", Disabled: true, Meta: "s"},
+			{Key: "com/ubuntu/category/key-s", Disabled: true, Meta: "s"},
+			{Key: "com/ubuntu/category2/key-s2", Disabled: true, Meta: "s"},
 		}},
 		"mixing sections and keys still groups sections": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"},
-			{Key: "com/ubuntu/category2/key-s2/all", Value: "'onekey-s2'", Meta: "s"},
-			{Key: "com/ubuntu/category/key-as/all", Value: "['simple-as']", Meta: "as"},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
+			{Key: "com/ubuntu/category2/key-s2", Value: "'onekey-s2'", Meta: "s"},
+			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"},
 		}},
 
 		// Update edge cases
 		"no update when no change": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			existingDconfDir: "existing-user"},
 		"missing machine compiled db for machine": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: true, existingDconfDir: "missing-machine-compiled-db"},
 		"missing machine compiled db for user": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: false, existingDconfDir: "missing-machine-compiled-db"},
 		"missing user compiled db for user": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			existingDconfDir: "missing-user-compiled-db"},
 
 		// Normalized keys formats
 		"normalized canonical form for each supported key": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s'", Meta: "s"},
-			{Key: "com/ubuntu/category/key-i/all", Value: "'42'", Meta: "i"},
-			{Key: "com/ubuntu/category/key-b/all", Value: "true", Meta: "b"},
-			{Key: "com/ubuntu/category/key-as/all", Value: "['simple-as']", Meta: "as"},
-			{Key: "com/ubuntu/category/key-ai/all", Value: "[42]", Meta: "ai"},
-			{Key: "com/ubuntu/category/key-returnedunmodified/all", Value: "[[1,2,3],[4,5,6]]", Meta: "aai"},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s'", Meta: "s"},
+			{Key: "com/ubuntu/category/key-i", Value: "'42'", Meta: "i"},
+			{Key: "com/ubuntu/category/key-b", Value: "true", Meta: "b"},
+			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"},
+			{Key: "com/ubuntu/category/key-ai", Value: "[42]", Meta: "ai"},
+			{Key: "com/ubuntu/category/key-returnedunmodified", Value: "[[1,2,3],[4,5,6]]", Meta: "aai"},
 		}},
 
 		// help users with quoting, normalizing… (common use cases here: more tests in internal_tests)
 		"unquoted string": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "onekey-s", Meta: "s"},
+			{Key: "com/ubuntu/category/key-s", Value: "onekey-s", Meta: "s"},
 		}},
 		"quoted i": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-i/all", Value: "'1'", Meta: "i"},
+			{Key: "com/ubuntu/category/key-i", Value: "'1'", Meta: "i"},
 		}},
 		"quoted b": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-b/all", Value: "'true'", Meta: "b"},
+			{Key: "com/ubuntu/category/key-b", Value: "'true'", Meta: "b"},
 		}},
 		"no surrounding brackets ai": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai/all", Value: "1", Meta: "ai"},
+			{Key: "com/ubuntu/category/key-ai", Value: "1", Meta: "ai"},
 		}},
 		"no surrounding brackets multiple ai": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai/all", Value: "1,2", Meta: "ai"},
+			{Key: "com/ubuntu/category/key-ai", Value: "1,2", Meta: "ai"},
 		}},
 		"no surrounding brackets unquoted as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: "simple-as", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "simple-as", Meta: "as"},
 		}},
 		"no surrounding brackets unquoted multiple as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: "two-as1, two-as2", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "two-as1, two-as2", Meta: "as"},
 		}},
 		"no surrounding brackets quoted as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: "'simple-as'", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "'simple-as'", Meta: "as"},
 		}},
 		"no surrounding brackets quoted multiple as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: "'two-as1', 'two-as2'", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "'two-as1', 'two-as2'", Meta: "as"},
 		}},
 		"multi-lines as": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: "first\nsecond\n", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "first\nsecond\n", Meta: "as"},
 		}},
 		"multi-lines as mixed with comma": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: "first,second\nthird\n", Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: "first,second\nthird\n", Meta: "as"},
 		}},
 		"multi-lines ai": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai/all", Value: "1\n2\n", Meta: "ai"},
+			{Key: "com/ubuntu/category/key-ai", Value: "1\n2\n", Meta: "ai"},
 		}},
 		"multi-lines ai mixed with comma": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai/all", Value: "1,2\n3\n", Meta: "ai"},
+			{Key: "com/ubuntu/category/key-ai", Value: "1,2\n3\n", Meta: "ai"},
 		}},
 
 		// Profiles tests
@@ -165,31 +165,31 @@ func TestApplyPolicy(t *testing.T) {
 
 		// non adsys content
 		"do not update other files from db": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
 			existingDconfDir: "existing-user-with-extra-files"},
 		"do not interfere with other user profile": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
 			existingDconfDir: "existing-other-user"},
 
 		"invalid as is too robust to produce defaulting values": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-as/all", Value: `[value1, ] value2]`, Meta: "as"},
+			{Key: "com/ubuntu/category/key-as", Value: `[value1, ] value2]`, Meta: "as"},
 		}},
 
 		// Error cases
 		"no machine db will fail": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-s/all", Value: "'onekey-s-othervalue'", Meta: "s"},
+			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
 		}, existingDconfDir: "-", wantErr: true},
 		"error on invalid ai": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-ai/all", Value: "[1,b]", Meta: "ai"},
+			{Key: "com/ubuntu/category/key-ai", Value: "[1,b]", Meta: "ai"},
 		}, wantErr: true},
 		"error on invalid value for unnormalized type": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-i/all", Value: "NaN", Meta: "i"},
+			{Key: "com/ubuntu/category/key-i", Value: "NaN", Meta: "i"},
 		}, wantErr: true},
 		"error on invalid type": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-something/all", Value: "value", Meta: "sometype"},
+			{Key: "com/ubuntu/category/key-something", Value: "value", Meta: "sometype"},
 		}, wantErr: true},
 		"error on empty meta": {entries: []entry.Entry{
-			{Key: "com/ubuntu/category/key-something/all", Value: "value", Meta: ""},
+			{Key: "com/ubuntu/category/key-something", Value: "value", Meta: ""},
 		}, wantErr: true},
 	}
 

@@ -12,7 +12,7 @@ const (
 	// WidgetTypeText will use the text widget type
 	WidgetTypeText WidgetType = "text"
 	// WidgetTypeMultiText will use the multitext widget type
-	WidgetTypeMultiText WidgetType = "multitext"
+	WidgetTypeMultiText WidgetType = "multiText"
 	// WidgetTypeBool will use a checkbox
 	WidgetTypeBool WidgetType = "boolean"
 	// WidgetTypeDecimal will use a decimal input
@@ -32,14 +32,14 @@ type DecimalRange struct {
 	Max string `yaml:",omitempty"`
 }
 
-// ExpandedPolicy is the common result of inflating a policy of a given type to a generic one, having all needed elements.
+// ExpandedPolicy is the result of inflating a policy of a given type to a generic one, having all needed elements for a given release
 type ExpandedPolicy struct {
 	Key         string
 	DisplayName string
 	ExplainText string
 	ElementType WidgetType
 	Meta        string
-	Class       string
+	Class       string `yaml:",omitempty"`
 	Default     string
 
 	// optional
@@ -49,9 +49,23 @@ type ExpandedPolicy struct {
 	// decimal
 	RangeValues DecimalRange `yaml:",omitempty"`
 
-	// those are unused in expandedCategories
 	Release string `yaml:",omitempty"`
 	Type    string `yaml:",omitempty"` // dconf, install…
+}
+
+// GetDefaultForADM returns the default matching the policy elements default rules
+func (p ExpandedPolicy) GetDefaultForADM() string {
+	switch p.ElementType {
+	case WidgetTypeDropdownList:
+		for i, e := range p.Choices {
+			if e == p.Default {
+				return fmt.Sprintf("%d", i)
+			}
+		}
+		return "0"
+	default:
+		return p.Default
+	}
 }
 
 // ValidClass returns a valid, capitalized class. It will error out if it can’t match the input as valid class

@@ -1,0 +1,56 @@
+- displayname: Category1 Display Name
+  parent: windows:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-choices
+    explaintext: |-
+      description
+
+      - Default for 20.04: unmatched default
+      - Default for 21.10: choice 2
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04, 21.10
+    meta: '{"20.04":"{\"meta\": \"s\", \"default\": \"''''\"}","21.10":"{\"meta\":
+      \"s\", \"default\": \"''''\"}","all":"{\"meta\": \"s\", \"default\": \"''''\"}"}'
+    class: Machine
+    releaseselements:
+      "20.04":
+        key: /org/gnome/desktop/policy-choices
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: unmatched default
+        choices:
+        - choice 1
+        - choice 2
+        - choice 3
+        - choice 4
+        release: "20.04"
+        type: dconf
+      "21.10":
+        key: /org/gnome/desktop/policy-choices
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: choice 2
+        choices:
+        - choice 1
+        - choice 2
+        - choice 4
+        release: "21.10"
+        type: dconf
+      all:
+        key: /org/gnome/desktop/policy-choices
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta: '{"meta": "s", "default": "''''"}'
+        default: choice 2
+        choices:
+        - choice 1
+        - choice 2
+        - choice 4
+        release: "21.10"
+        type: dconf

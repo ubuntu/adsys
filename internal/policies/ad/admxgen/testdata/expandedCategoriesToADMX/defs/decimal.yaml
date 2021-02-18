@@ -2,13 +2,23 @@
   parent: windows:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-decimal
-    displayname: summary
     explaintext: |-
       description
 
       Default: 42
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: decimal
-    default: "42"
-    meta: '{"meta": "i", "default": "0"}'
+
+      Supported on Ubuntu 20.04
+    meta: '{"20.04":"{\"meta\": \"i\", \"default\": \"0\"}","all":"{\"meta\": \"i\",
+      \"default\": \"0\"}"}'
     class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: decimal
+        meta: '{"meta": "i", "default": "0"}'
+        default: "42"
+        release: "20.04"
+        type: dconf

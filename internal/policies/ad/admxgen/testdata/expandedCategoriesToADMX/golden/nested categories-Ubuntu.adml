@@ -8,27 +8,33 @@
     <stringTable>
       <string id="UbuntuDisplayParentCategoryDisplayName">Parent Category Display Name</string>
       <string id="UbuntuDisplayChildCategoryDisplayName">Child Category Display Name</string>
-      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicyFirst">summary first</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyFirst">description first
 
 Default: &#39;Default Value first&#39;
-Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
-      <string id="UbuntuDisplayMachineDconfOrgGnomeDesktopPolicySecond">summary second</string>
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyFirst">summary first</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySecond">description second
 
 Default: &#39;Default Value second&#39;
-Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySecond">summary second</string>
     </stringTable>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyFirst">
-        <textBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicyFirst">
+        <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyFirst">
           <label>summary first</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySecond">
-        <textBox refId="UbuntuElemMachineDconfOrgGnomeDesktopPolicySecond">
+        <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySecond">
           <label>summary second</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
     </presentationTable>

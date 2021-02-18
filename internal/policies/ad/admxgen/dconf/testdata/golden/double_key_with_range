@@ -3,7 +3,6 @@
   explaintext: double-property-with-range description
   elementtype: text
   meta: '{"meta": "d", "default": "0.0"}'
-  class: ""
   default: "42.0"
   rangevalues:
     min: "-123.000000"

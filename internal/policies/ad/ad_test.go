@@ -102,6 +102,7 @@ func TestGetPolicies(t *testing.T) {
 		objectName         string
 		objectClass        ad.ObjectClass
 		userKrb5CCBaseName string
+		versionID          string
 
 		dontCreateOriginalKrb5CCName bool
 		turnKrb5CCRO                 bool
@@ -168,6 +169,65 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "E", Value: "standardE"},
 					}}},
 			}},
+
+		// Multi releases cases
+		"Enabled override": {
+			versionID:          "21.04",
+			gpoListArgs:        "multiple-releases-one-enabled",
+			objectName:         "bob@WARTHOGS.BIZ",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.GPO{{ID: "multiple-releases-one-enabled", Name: "multiple-releases-one-enabled-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "21.04Value"},
+				}}},
+			}},
+		"Disabled override": {
+			versionID:          "21.04",
+			gpoListArgs:        "multiple-releases-one-disabled",
+			objectName:         "bob@WARTHOGS.BIZ",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.GPO{{ID: "multiple-releases-one-disabled", Name: "multiple-releases-one-disabled-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "AllValue"},
+				}}},
+			}},
+		"Enabled override for matching release, other releases override ignored": {
+			versionID:          "21.04",
+			gpoListArgs:        "multiple-releases",
+			objectName:         "bob@WARTHOGS.BIZ",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "21.04Value"},
+				}}},
+			}},
+		"Disable override for matching release, other releases override ignored": {
+			versionID:          "20.04",
+			gpoListArgs:        "multiple-releases",
+			objectName:         "bob@WARTHOGS.BIZ",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "AllValue"},
+				}}},
+			}},
+		"No override for this release, takes default value": {
+			versionID:          "not in pol file",
+			gpoListArgs:        "multiple-releases",
+			objectName:         "bob@WARTHOGS.BIZ",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: []entry.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "AllValue"},
+				}}},
+			}},
+
+		// No override option for this release
 
 		// Multi domain cases
 		"Multiple domains, same GPO": {
@@ -414,7 +474,8 @@ func TestGetPolicies(t *testing.T) {
 			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir(sssCacheDir),
-				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs)))
+				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs)),
+				ad.WithVersionID(tc.versionID))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.turnKrb5CCRO {

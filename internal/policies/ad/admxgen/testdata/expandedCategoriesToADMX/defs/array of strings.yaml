@@ -2,13 +2,23 @@
   parent: windows:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-string
-    displayname: summary
     explaintext: |-
       description
 
       Default: ['Value1', 'Value2']
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: multitext
-    default: '[''Value1'', ''Value2'']'
-    meta: '{"meta": "as", "default": "[]"}'
+
+      Supported on Ubuntu 20.04
+    meta: '{"20.04":"{\"meta\": \"as\", \"default\": \"[]\"}","all":"{\"meta\": \"as\",
+      \"default\": \"[]\"}"}'
     class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: multiText
+        meta: '{"meta": "as", "default": "[]"}'
+        default: '[''Value1'', ''Value2'']'
+        release: "20.04"
+        type: dconf

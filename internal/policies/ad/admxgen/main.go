@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -15,6 +14,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/dconf"
+	adcommon "github.com/ubuntu/adsys/internal/policies/ad/common"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v2"
 )
@@ -88,30 +88,9 @@ Commands:
 }
 
 func expand(src, dst, root, currentSession string) error {
-	// Get release
-	releaseFile := filepath.Join(root, "etc/os-release")
-
-	file, err := os.Open(releaseFile)
+	release, err := adcommon.GetVersionID(root)
 	if err != nil {
 		return err
-	}
-	defer file.Close()
-
-	var release string
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		if !strings.HasPrefix(scanner.Text(), "VERSION_ID=") {
-			continue
-		}
-		release = strings.ReplaceAll(strings.TrimPrefix(scanner.Text(), "VERSION_ID="), `"`, "")
-		break
-	}
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-	if release == "" {
-		return fmt.Errorf("can't read VERSION_ID from %s", releaseFile)
 	}
 
 	if _, err = os.Stat(src); err != nil {

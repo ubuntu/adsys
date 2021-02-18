@@ -3,7 +3,6 @@
   explaintext: simple-text-property-overridden-by-multiple-files description
   elementtype: text
   meta: '{"meta": "s", "default": "''''"}'
-  class: ""
   default: '''This is the simple-text-property-overridden-by-multiple-files overridden
     Value'''
   release: "20.04"

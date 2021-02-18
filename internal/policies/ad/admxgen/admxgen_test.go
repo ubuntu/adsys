@@ -48,17 +48,18 @@ func TestGenerateExpandedCategories(t *testing.T) {
 
 		"default policy class is capitalized": {},
 
+		// Optional content and options varies
+		"different element type": {},
+		"different meta":         {},
+		"different choices":      {},
+		"different range":        {},
+
 		// Error cases
-		"one policy not used":                   {wantErr: true},
-		"unexisting policy referenced":          {wantErr: true},
-		"different meta":                        {wantErr: true},
-		"different element type":                {wantErr: true},
-		"different policy type":                 {wantErr: true},
-		"different class":                       {wantErr: true},
-		"different range":                       {wantErr: true},
-		"different choices same length":         {wantErr: true},
-		"different choices different length":    {wantErr: true},
-		"missing release":                       {wantErr: true},
+		"error on one policy not used":          {wantErr: true},
+		"error on unexisting policy referenced": {wantErr: true},
+		"error on different policy type":        {wantErr: true},
+		"error on different class":              {wantErr: true},
+		"error on missing release":              {wantErr: true},
 		"error on nested category":              {wantErr: true},
 		"error on invalid default policy class": {wantErr: true},
 		"error on empty default policy class":   {wantErr: true},
@@ -125,12 +126,20 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"decimal with min only": {},
 		"decimal with max only": {},
 		// TODO: range with min or max < 0 -> text
-		"long decimal":      {},
-		"array of strings":  {},
-		"array of integers": {},
-		"choices":           {},
-		"double":            {},
-		"double with range": {},
+		"long decimal":         {},
+		"array of strings":     {},
+		"array of integers":    {},
+		"choices":              {},
+		"choices with default": {},
+		"double":               {},
+		"double with range":    {},
+
+		// Multiple releases
+		"multiple releases for one key":                             {},
+		"multiple releases with different widgettype":               {},
+		"multiple releases with different choices":                  {},
+		"multiple releases with different ranges":                   {},
+		"multiple releases with all widgets and different defaults": {},
 
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},

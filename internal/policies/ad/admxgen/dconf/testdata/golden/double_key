@@ -3,7 +3,6 @@
   explaintext: double-property description
   elementtype: text
   meta: '{"meta": "d", "default": "0.0"}'
-  class: ""
   default: "42.0"
   release: "20.04"
   type: dconf

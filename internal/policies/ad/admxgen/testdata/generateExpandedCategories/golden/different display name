@@ -2,13 +2,41 @@
   parent: windows:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-common
-    displayname: summary on 21.10
     explaintext: |-
       description
 
       Default: 'Default Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
-    elementtype: text
-    meta: '{"all": {"meta": "s", "default": "''''"}}'
+
+      Supported on Ubuntu 20.04, 21.10
+    meta: '{"20.04":"{\"meta\": \"s\", \"default\": \"''''\"}","21.10":"{\"meta\":
+      \"s\", \"default\": \"''''\"}","all":"{\"meta\": \"s\", \"default\": \"''''\"}"}'
     class: Machine
-    default: '''Default Value'''
+    releaseselements:
+      "20.04":
+        key: /org/gnome/desktop/policy-common
+        displayname: summary on 20.04
+        explaintext: description
+        elementtype: text
+        meta: '{"meta": "s", "default": "''''"}'
+        default: '''Default Value'''
+        release: "20.04"
+        type: dconf
+      "21.10":
+        key: /org/gnome/desktop/policy-common
+        displayname: summary on 21.10
+        explaintext: description
+        elementtype: text
+        meta: '{"meta": "s", "default": "''''"}'
+        default: '''Default Value'''
+        release: "21.10"
+        type: dconf
+      all:
+        key: /org/gnome/desktop/policy-common
+        displayname: summary on 21.10
+        explaintext: description
+        elementtype: text
+        meta: '{"meta": "s", "default": "''''"}'
+        default: '''Default Value'''
+        release: "21.10"
+        type: dconf
