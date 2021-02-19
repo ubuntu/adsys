@@ -9,6 +9,8 @@
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySimple">description
 
+- Type: dconf
+- Key: org/gnome/desktop/policy-simple
 - Default for 20.04: &#39;Default Value&#39;
 - Default for 18.04: true
 
@@ -29,7 +31,7 @@ Supported on Ubuntu 20.04, 18.04</string>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for 20.04:</checkBox>
         <textBox refId="UbuntuElemMachine2004DconfOrgGnomeDesktopPolicySimple">
-          <label>summary</label>
+          <label></label>
           <defaultValue>'Default Value'</defaultValue>
         </textBox>
         <text/>

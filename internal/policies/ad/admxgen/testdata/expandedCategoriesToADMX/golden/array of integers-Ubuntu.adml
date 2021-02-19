@@ -9,7 +9,9 @@
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayDecimal">description
 
-Default: [1, 2]
+- Type: dconf
+- Key: org/gnome/desktop/policy-array-decimal
+- Default: [1, 2]
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04</string>

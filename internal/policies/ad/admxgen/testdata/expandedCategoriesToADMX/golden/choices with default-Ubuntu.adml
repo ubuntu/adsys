@@ -9,9 +9,11 @@
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices">description
 
-Default for 20.04: Choice 3
-Default for 18.04: Choice 2
-Default for 16.04: Unmatched default
+- Type: dconf
+- Key: org/gnome/desktop/policy-choices
+- Default for 20.04: Choice 3
+- Default for 18.04: Choice 2
+- Default for 16.04: Unmatched default
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 18.04</string>
@@ -39,16 +41,16 @@ Supported on Ubuntu 20.04, 18.04</string>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyChoices">
-        <dropdownList  refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="">summary</dropdownList>
+        <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="">summary</dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeDesktopPolicyChoices" defaultChecked="false">Override value for 20.04:</checkBox>
-        <dropdownList  refId="UbuntuElemMachine2004DconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="2">summary</dropdownList>
+        <dropdownList refId="UbuntuElemMachine2004DconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="2"></dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine1804DconfOrgGnomeDesktopPolicyChoices" defaultChecked="false">Override value for 18.04:</checkBox>
-        <dropdownList  refId="UbuntuElemMachine1804DconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="1">summary</dropdownList>
+        <dropdownList refId="UbuntuElemMachine1804DconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="1"></dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine1604DconfOrgGnomeDesktopPolicyChoices" defaultChecked="false">Override value for 16.04:</checkBox>
-        <dropdownList  refId="UbuntuElemMachine1604DconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="0">summary</dropdownList>
+        <dropdownList refId="UbuntuElemMachine1604DconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="0"></dropdownList>
       </presentation>
     </presentationTable>
 

@@ -5,7 +5,9 @@
     explaintext: |-
       description
 
-      Default: choice 2
+      - Type: dconf
+      - Key: /org/gnome/desktop/policy-choices
+      - Default: choice 2
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04

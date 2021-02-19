@@ -5,6 +5,8 @@
     explaintext: |-
       description
 
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-simple
       - Default for 20.04: Choice 11
       - Default for 18.04: Choice 22
 

@@ -5,6 +5,8 @@
     explaintext: |-
       description
 
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-simple
       - Default for textrelease: text default
       - Default for multitextrelease: multitext default
       - Default for longdecimalrelease: 2020
