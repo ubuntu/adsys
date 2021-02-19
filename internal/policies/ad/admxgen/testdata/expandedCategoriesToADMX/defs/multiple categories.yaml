@@ -5,7 +5,9 @@
     explaintext: |-
       description 1
 
-      Default: 'Default Value 1'
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-multiple1
+      - Default: 'Default Value 1'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '{"20.04":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'
@@ -31,7 +33,9 @@
     explaintext: |-
       description 2
 
-      Default: 'Default Value 2'
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-multiple2
+      - Default: 'Default Value 2'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
     meta: '{"20.04":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'

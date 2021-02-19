@@ -9,7 +9,9 @@
       <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices">description
 
-Default: Choice 1
+- Type: dconf
+- Key: org/gnome/desktop/policy-choices
+- Default: Choice 1
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04</string>

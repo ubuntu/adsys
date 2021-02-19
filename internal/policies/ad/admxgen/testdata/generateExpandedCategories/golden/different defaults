@@ -5,6 +5,8 @@
     explaintext: |-
       description common
 
+      - Type: dconf
+      - Key: /org/gnome/desktop/policy-common
       - Default for 20.04: 'Default1 Value'
       - Default for 21.10: 'Default2 Value'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".

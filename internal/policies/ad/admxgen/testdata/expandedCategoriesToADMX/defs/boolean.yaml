@@ -5,7 +5,9 @@
     explaintext: |-
       description
 
-      Default: true
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-boolean
+      - Default: true
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04

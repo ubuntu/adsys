@@ -5,6 +5,8 @@
     explaintext: |-
       description
 
+      - Type: dconf
+      - Key: /org/gnome/desktop/policy-choices
       - Default for 20.04: unmatched default
       - Default for 21.10: choice 2
       Note: default system value is used for "Not Configured" and enforced if "Disabled".

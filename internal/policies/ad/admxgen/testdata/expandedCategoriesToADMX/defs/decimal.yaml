@@ -5,7 +5,9 @@
     explaintext: |-
       description
 
-      Default: 42
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-decimal
+      - Default: 42
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04
@@ -13,7 +15,7 @@
     class: Machine
     releaseselements:
       all:
-        key: /org/gnome/desktop/policy-simple
+        key: /org/gnome/desktop/policy-decimal
         displayname: summary
         explaintext: description
         elementtype: decimal

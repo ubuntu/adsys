@@ -5,6 +5,8 @@
     explaintext: |-
       description
 
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-simple
       - Default for 20.04: 'Default Value'
       - Default for 18.04: true
 
