@@ -2,7 +2,9 @@
   displayname: simple-text-property summary
   explaintext: simple-text-property description
   elementtype: text
-  meta: '{"meta": "s", "default": "''''"}'
+  meta:
+    default: ''''''
+    meta: s
   default: '''This override still works'''
   release: "20.04"
   type: dconf

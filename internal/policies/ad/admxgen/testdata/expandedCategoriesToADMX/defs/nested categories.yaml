@@ -9,8 +9,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04
-    meta: '{"20.04":"{\"meta\": \"s\", \"default\": \"''''\"}","all":"{\"meta\": \"s\",
-      \"default\": \"''''\"}"}'
+    meta: '{"20.04":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'
     class: Machine
     releaseselements:
       all:
@@ -18,7 +17,9 @@
         displayname: summary first
         explaintext: description first
         elementtype: text
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          default: ''''''
+          meta: "s"
         default: '''Default Value first'''
         release: "20.04"
         type: dconf
@@ -34,8 +35,7 @@
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
         Supported on Ubuntu 20.04
-      meta: '{"20.04":"{\"meta\": \"s\", \"default\": \"''''\"}","all":"{\"meta\":
-        \"s\", \"default\": \"''''\"}"}'
+      meta: '{"20.04":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'
       class: Machine
       releaseselements:
         all:
@@ -43,7 +43,9 @@
           displayname: summary second
           explaintext: description second
           elementtype: text
-          meta: '{"meta": "s", "default": "''''"}'
+          meta:
+            default: ''''''
+            meta: "s"
           default: '''Default Value second'''
           release: "20.04"
           type: dconf

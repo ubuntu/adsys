@@ -2,7 +2,9 @@
   displayname: summary
   explaintext: description
   elementtype: dropdownList
-  meta: '{"meta": "s", "default": "''''"}'
+  meta:
+    meta: "s"
+    default: ''''''
   class: ""
   default: 'choice 2'
   choices:

@@ -2,7 +2,9 @@
   displayname: summary common
   explaintext: description on 20.04
   elementtype: text
-  meta: '{"meta": "s", "default": "''''"}'
+  meta:
+    meta: "s"
+    default: ''''''
   class: ""
   default: '''Default Value'''
   release: "20.04"

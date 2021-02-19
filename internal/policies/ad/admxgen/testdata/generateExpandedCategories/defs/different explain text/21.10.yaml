@@ -2,7 +2,9 @@
   displayname: summary common
   explaintext: description on 21.10
   elementtype: text
-  meta: '{"meta": "s", "default": "''''"}'
+  meta:
+    meta: "s"
+    default: ''''''
   class: ""
   default: '''Default Value'''
   release: "21.10"

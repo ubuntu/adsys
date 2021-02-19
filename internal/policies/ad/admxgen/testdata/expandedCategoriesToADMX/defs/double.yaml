@@ -9,8 +9,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04
-    meta: '{"20.04":"{\"meta\": \"u\", \"default\": \"0\"}","all":"{\"meta\": \"u\",
-      \"default\": \"0\"}"}'
+    meta: '{"20.04":{"default":"0","meta":"u"},"all":{"default":"0","meta":"u"}}'
     class: Machine
     releaseselements:
       all:
@@ -18,7 +17,9 @@
         displayname: summary
         explaintext: description
         elementtype: text
-        meta: '{"meta": "u", "default": "0"}'
+        meta:
+          default: "0"
+          meta: u
         default: "123.456"
         release: "20.04"
         type: dconf

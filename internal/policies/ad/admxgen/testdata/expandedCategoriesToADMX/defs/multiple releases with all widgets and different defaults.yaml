@@ -15,13 +15,13 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu textrelease, multitextrelease, longdecimalrelease, dropdownlistrelease, decimalrelease, booleanrelease
-    meta: '{"textrelease":"{\"meta\": \"s\", \"default\": \"''''\"}",
-            "multitextrelease":"{\"meta\": \"as\", \"default\": \"[]\"}",
-            "longdecimalrelease":"{\"meta\": \"u\", \"default\": \"0\"}",
-            "dropdownlistrelease":"{\"meta\": \"s\", \"default\": \"''''\"}",
-            "decimalrelease":"{\"meta\": \"i\", \"default\": \"0\"}",
-            "booleanrelease":"{\"meta\": \"b\", \"default\": \"false\"}",
-            "all":"{\"meta\": \"s\", \"default\": \"''''\"}"}'
+    meta: '{"textrelease":{"meta": "s", "default": "''''"},
+            "multitextrelease":{"meta": "as", "default": "[]"},
+            "longdecimalrelease":{"meta": "u", "default": "0"},
+            "dropdownlistrelease":{"meta": "s", "default": "''''"},
+            "decimalrelease":{"meta": "i", "default": "0"},
+            "booleanrelease":{"meta": "b", "default": "false"},
+            "all":{"meta": "s", "default": "''''"}}'
     class: Machine
     releaseselements:
       all:
@@ -29,7 +29,9 @@
         displayname: summary
         explaintext: description
         elementtype: text
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          default: ''''''
+          meta: "s"
         default: "text default"
         release: "textrelease"
         type: dconf
@@ -38,7 +40,9 @@
         displayname: summary
         explaintext: description
         elementtype: text
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          default: ''''''
+          meta: "s"
         default: "text default"
         release: "textrelease"
         type: dconf
@@ -47,7 +51,9 @@
         displayname: summary
         explaintext: description
         elementtype: multiText
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          default: ''''''
+          meta: "s"
         default: "multitext default"
         release: "multitextrelease"
         type: dconf
@@ -56,7 +62,9 @@
         displayname: summary
         explaintext: description
         elementtype: boolean
-        meta: '{"meta": "b", "default": "''''"}'
+        meta:
+          default: "false"
+          meta: "b"
         default: 'true'
         release: "booleanrelease"
         type: dconf
@@ -65,7 +73,9 @@
         displayname: summary
         explaintext: description
         elementtype: decimal
-        meta: '{"meta": "i", "default": "''''"}'
+        meta:
+          default: "0"
+          meta: "i"
         default: "20"
         release: "decimalrelease"
         type: dconf
@@ -74,7 +84,9 @@
         displayname: summary
         explaintext: description
         elementtype: longDecimal
-        meta: '{"meta": "u", "default": "''''"}'
+        meta:
+          default: "u"
+          meta: "u"
         default: "2020"
         release: "longdecimalrelease"
         type: dconf
@@ -83,7 +95,9 @@
         displayname: summary
         explaintext: description
         elementtype: dropdownList
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          default: ''''''
+          meta: "s"
         default: 'Choice 3'
         choices:
           - Choice 1

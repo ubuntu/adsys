@@ -2,7 +2,9 @@
   displayname: array-decimal-property summary
   explaintext: array-decimal-property description
   elementtype: multiText
-  meta: '{"meta": "ai", "default": "[]"}'
+  meta:
+    default: '[]'
+    meta: ai
   default: '[1, 2]'
   release: "20.04"
   type: dconf

@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyChoices" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyChoices)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyChoices)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-choices" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":"{\"meta\": \"s\", \"default\": \"''\"}","all":"{\"meta\": \"s\", \"default\": \"''\"}"}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyChoices" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices0)">
