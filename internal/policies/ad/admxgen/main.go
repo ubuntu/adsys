@@ -206,13 +206,14 @@ func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy
 
 	var policies, p []common.ExpandedPolicy
 	for _, n := range epNames {
-		d, err := ioutil.ReadFile(filepath.Join(src, n))
+		f := filepath.Join(src, n)
+		d, err := ioutil.ReadFile(f)
 		if err != nil {
 			return nil, nilCategoryFileStruct, err
 		}
 		err = yaml.Unmarshal(d, &p)
 		if err != nil {
-			return nil, nilCategoryFileStruct, err
+			return nil, nilCategoryFileStruct, fmt.Errorf("trying to load %s: %v", f, err)
 		}
 		policies = append(policies, p...)
 	}
@@ -225,7 +226,7 @@ func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy
 	}
 	err = yaml.Unmarshal(catsDef, &catfs)
 	if err != nil {
-		return nil, nilCategoryFileStruct, err
+		return nil, nilCategoryFileStruct, fmt.Errorf("trying to load %s: %v", categoryDefinition, err)
 	}
 
 	return policies, catfs, nil
