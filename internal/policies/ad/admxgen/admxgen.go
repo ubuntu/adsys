@@ -166,27 +166,32 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			first = false
 		}
 
-		// assign "all" elements and default to higest release description
-		var explainText string
-		if highestRelease != "" {
-			releasesElements["all"] = releasesElements[highestRelease]
-			metas["all"] = releasesElements["all"].Meta
-			explainText = releasesElements["all"].ExplainText
+		// No key attached to this release
+		if highestRelease == "" {
+			continue
 		}
+
+		// assign "all" elements and default to higest release description
+		releasesElements["all"] = releasesElements[highestRelease]
+		metas["all"] = releasesElements["all"].Meta
+		explainText := releasesElements["all"].ExplainText
 
 		// Keep only all if there is one supported release on this key
 		if len(releasesElements) == 2 {
 			delete(releasesElements, highestRelease)
 		}
 
+		// Extends description
+		explainText = fmt.Sprintf("%s\n\n- Type: %s\n- Key: %s", explainText, releasesElements["all"].Type, releasesElements["all"].Key)
+
 		// Display all the default per release if there is at least 1 different
 		// otherwise display only 1 defaut for all the releases
 
 		// defaultVal is already ordered per release as we iterated previously
 		if differentDefaultsBetweenReleases {
-			explainText = fmt.Sprintf("%s\n\n%s", explainText, strings.Join(defaults, "\n"))
+			explainText = fmt.Sprintf("%s\n%s", explainText, strings.Join(defaults, "\n"))
 		} else {
-			explainText = fmt.Sprintf("%s\n\n%s", explainText, fmt.Sprintf(i18n.G("Default: %s"), defaultString))
+			explainText = fmt.Sprintf("%s\n%s", explainText, fmt.Sprintf(i18n.G("- Default: %s"), defaultString))
 		}
 
 		explainText = fmt.Sprintf(i18n.G("%s\nNote: default system value is used for \"Not Configured\" and enforced if \"Disabled\"."), explainText)
