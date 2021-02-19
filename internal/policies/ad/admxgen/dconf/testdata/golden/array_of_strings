@@ -2,7 +2,9 @@
   displayname: array-string-property summary
   explaintext: array-string-property description
   elementtype: multiText
-  meta: '{"meta": "as", "default": "[]"}'
+  meta:
+    default: '[]'
+    meta: as
   default: '[''Value1'', ''Value2'']'
   release: "20.04"
   type: dconf

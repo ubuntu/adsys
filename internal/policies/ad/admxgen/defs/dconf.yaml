@@ -1,4 +1,3 @@
-- objectpath: "/org/gnome/system/locale/region"
 - objectpath: "/org/gnome/desktop/interface/toolkit-accessibility"
 - objectpath: "/org/gnome/desktop/a11y/applications/screen-keyboard-enabled"
 - objectpath: "/org/gnome/desktop/a11y/applications/screen-magnifier-enabled"

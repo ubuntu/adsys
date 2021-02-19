@@ -20,7 +20,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyMultiple1" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyMultiple1)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple1)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple1)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-multiple1" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyMultiple1" valueName="all" />
       </elements>
@@ -28,7 +28,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyMultiple2" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyMultiple2)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple2)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple2)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-multiple2" valueName="metaValues">
       <parentCategory ref="UbuntuCategory2DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"meta": "s", "default": "''"}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyMultiple2" valueName="all" />
       </elements>

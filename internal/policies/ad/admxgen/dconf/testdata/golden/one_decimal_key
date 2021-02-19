@@ -2,7 +2,9 @@
   displayname: decimal-property summary
   explaintext: decimal-property description
   elementtype: decimal
-  meta: '{"meta": "i", "default": "0"}'
+  meta:
+    default: "0"
+    meta: i
   default: "42"
   release: "20.04"
   type: dconf

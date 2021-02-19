@@ -20,7 +20,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyFirst" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyFirst)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyFirst)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyFirst)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-first" valueName="metaValues">
       <parentCategory ref="UbuntuParentCategoryDisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":"{\"meta\": \"s\", \"default\": \"''\"}","all":"{\"meta\": \"s\", \"default\": \"''\"}"}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyFirst" valueName="all" />
       </elements>
@@ -28,7 +28,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicySecond" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySecond)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySecond)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySecond)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second" valueName="metaValues">
       <parentCategory ref="UbuntuChildCategoryDisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":"{\"meta\": \"s\", \"default\": \"''\"}","all":"{\"meta\": \"s\", \"default\": \"''\"}"}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySecond" valueName="all" />
       </elements>

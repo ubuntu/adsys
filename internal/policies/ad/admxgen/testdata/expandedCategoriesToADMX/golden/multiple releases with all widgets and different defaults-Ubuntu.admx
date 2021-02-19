@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"textrelease":"{\"meta\": \"s\", \"default\": \"''\"}", "multitextrelease":"{\"meta\": \"as\", \"default\": \"[]\"}", "longdecimalrelease":"{\"meta\": \"u\", \"default\": \"0\"}", "dropdownlistrelease":"{\"meta\": \"s\", \"default\": \"''\"}", "decimalrelease":"{\"meta\": \"i\", \"default\": \"0\"}", "booleanrelease":"{\"meta\": \"b\", \"default\": \"false\"}", "all":"{\"meta\": \"s\", \"default\": \"''\"}"}</string></enabledValue>
+      <enabledValue><string>{"textrelease":{"meta": "s", "default": "''"}, "multitextrelease":{"meta": "as", "default": "[]"}, "longdecimalrelease":{"meta": "u", "default": "0"}, "dropdownlistrelease":{"meta": "s", "default": "''"}, "decimalrelease":{"meta": "i", "default": "0"}, "booleanrelease":{"meta": "b", "default": "false"}, "all":{"meta": "s", "default": "''"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" valueName="all" />
         <boolean id="UbuntuOverrideElemMachineTextreleaseDconfOrgGnomeDesktopPolicySimple" valueName="Overridetextrelease">

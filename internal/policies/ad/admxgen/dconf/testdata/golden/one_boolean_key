@@ -2,7 +2,9 @@
   displayname: boolean-property summary
   explaintext: boolean-property description
   elementtype: boolean
-  meta: '{"meta": "b", "default": "false"}'
+  meta:
+    default: "false"
+    meta: b
   default: "true"
   release: "20.04"
   type: dconf

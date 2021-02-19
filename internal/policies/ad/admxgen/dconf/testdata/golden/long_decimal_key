@@ -2,7 +2,9 @@
   displayname: decimal-property summary
   explaintext: decimal-property description
   elementtype: longDecimal
-  meta: '{"meta": "u", "default": "0"}'
+  meta:
+    default: "0"
+    meta: u
   default: "42"
   rangevalues:
     min: "0"

@@ -11,8 +11,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04, 18.04
-    meta: '{"20.04":"{\"meta\": \"s\", \"default\": \"''''\"}","18.04":"{\"meta\": \"s\", \"default\": \"''''\"}","16.04":"{\"meta\": \"s\", \"default\": \"''''\"}","all":"{\"meta\": \"s\",
-      \"default\": \"''''\"}"}'
+    meta: '{"20.04":{"default":"''''","meta":"s"},"18.04":{"default":"''''","meta":"s"},"16.04":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'
     class: Machine
     releaseselements:
       all:
@@ -20,7 +19,9 @@
         displayname: summary
         explaintext: description
         elementtype: dropdownList
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          meta: "s"
+          default: ''''''
         default: 'Choice 3'
         release: "20.04"
         type: dconf
@@ -34,7 +35,9 @@
         displayname: summary
         explaintext: description
         elementtype: dropdownList
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          meta: "s"
+          default: ''''''
         default: 'Choice 3'
         release: "20.04"
         type: dconf
@@ -48,7 +51,9 @@
         displayname: summary
         explaintext: description
         elementtype: dropdownList
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          meta: "s"
+          default: ''''''
         default: 'Choice 2'
         release: "18.04"
         type: dconf
@@ -62,7 +67,9 @@
         displayname: summary
         explaintext: description
         elementtype: dropdownList
-        meta: '{"meta": "s", "default": "''''"}'
+        meta:
+          meta: "s"
+          default: ''''''
         default: 'Unmatched default'
         release: "16.04"
         type: dconf

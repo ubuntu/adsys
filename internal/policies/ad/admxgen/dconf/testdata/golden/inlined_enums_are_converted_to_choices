@@ -2,7 +2,9 @@
   displayname: enum-inline-property summary
   explaintext: enum-inline-property description
   elementtype: dropdownList
-  meta: '{"meta": "s", "default": "''''"}'
+  meta:
+    default: ''''''
+    meta: s
   default: '''HIGH'''
   choices:
   - LOW

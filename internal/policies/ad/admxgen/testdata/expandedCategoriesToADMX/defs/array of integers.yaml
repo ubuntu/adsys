@@ -9,8 +9,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04
-    meta: '{"20.04":"{\"meta\": \"ai\", \"default\": \"[]\"}","all":"{\"meta\": \"ai\",
-      \"default\": \"[]\"}"}'
+    meta: '{"20.04":{"default":"[]","meta":"ai"},"all":{"default":"[]","meta":"ai"}}'
     class: Machine
     releaseselements:
       all:
@@ -18,7 +17,9 @@
         displayname: summary
         explaintext: description
         elementtype: multiText
-        meta: '{"meta": "ai", "default": "[]"}'
+        meta:
+          meta: "ai"
+          default: "[]"
         default: '[1, 2]'
         release: "20.04"
         type: dconf

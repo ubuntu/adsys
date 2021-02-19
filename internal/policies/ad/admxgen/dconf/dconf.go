@@ -138,8 +138,10 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 		if len(s.Choices) > 0 {
 			ep.ElementType = common.WidgetTypeDropdownList
 		}
-		// TODO: per release
-		ep.Meta = fmt.Sprintf(`{"meta": "%s", "default": "%s"}`, s.Type, m.emptyValue)
+		ep.Meta = map[string]string{
+			"meta":    s.Type,
+			"default": m.emptyValue,
+		}
 
 		if m.widgetType == common.WidgetTypeLongDecimal {
 			min := ep.RangeValues.Min

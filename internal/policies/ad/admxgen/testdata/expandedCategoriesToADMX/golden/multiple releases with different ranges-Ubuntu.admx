@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":"{\"meta\": \"i\", \"default\": \"''\"}","18.04":"{\"meta\": \"i\", \"default\": \"''\"}","all":"{\"meta\": \"i\", \"default\": \"''\"}"}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"default":"0","meta":"i"},{"18.04":{"default":"0","meta":"i"},"all":{"default":"0","meta":"i"}}</string></enabledValue>
       <elements>
         <decimal id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" valueName="all" minValue="-20.000000" maxValue="20.000000" />
         <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeDesktopPolicySimple" valueName="Override20.04">

@@ -38,7 +38,7 @@ type ExpandedPolicy struct {
 	DisplayName string
 	ExplainText string
 	ElementType WidgetType
-	Meta        string
+	Meta        map[string]string
 	Class       string `yaml:",omitempty"`
 	Default     string
 

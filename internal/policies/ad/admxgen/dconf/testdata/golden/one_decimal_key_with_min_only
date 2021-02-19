@@ -2,7 +2,9 @@
   displayname: decimal-property-with-range summary
   explaintext: decimal-property-with-range description
   elementtype: decimal
-  meta: '{"meta": "i", "default": "0"}'
+  meta:
+    default: "0"
+    meta: i
   default: "42"
   rangevalues:
     min: "-123"
