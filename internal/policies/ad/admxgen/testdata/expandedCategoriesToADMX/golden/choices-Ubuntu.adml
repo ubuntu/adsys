@@ -24,7 +24,7 @@ Supported on Ubuntu 20.04</string>
 
     <presentationTable>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyChoices">
-        <dropdownList  refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="">summary</dropdownList>
+        <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyChoices" noSort="true" defaultItem="">summary</dropdownList>
       </presentation>
     </presentationTable>
 
