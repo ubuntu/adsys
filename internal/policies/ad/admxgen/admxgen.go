@@ -275,7 +275,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 
 	// Check that all policies are at least attached once
 	if len(unattachedPolicies) > 0 {
-		return nil, fmt.Errorf(i18n.G("the following policies have been assigned to a category: %v"), unattachedPolicies)
+		return nil, fmt.Errorf(i18n.G("the following policies have not been assigned to a category: %v"), unattachedPolicies)
 	}
 
 	return expandedCategories, nil
