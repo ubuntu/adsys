@@ -1,7 +1,7 @@
 distroid: "Ubuntu"
 supportedreleases:
-  - 18.04
   - 20.04
+  - 21.04
 categories:
   - displayname: "Ubuntu"
     parent: "windows:Desktop"
