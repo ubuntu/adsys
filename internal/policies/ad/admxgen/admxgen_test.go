@@ -55,14 +55,15 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"different range":        {},
 
 		// Error cases
-		"error on one policy not used":          {wantErr: true},
-		"error on unexisting policy referenced": {wantErr: true},
-		"error on different policy type":        {wantErr: true},
-		"error on different class":              {wantErr: true},
-		"error on missing release":              {wantErr: true},
-		"error on nested category":              {wantErr: true},
-		"error on invalid default policy class": {wantErr: true},
-		"error on empty default policy class":   {wantErr: true},
+		"error on one policy not used":                 {wantErr: true},
+		"error on unexisting policy referenced":        {wantErr: true},
+		"error on different policy type":               {wantErr: true},
+		"error on different class":                     {wantErr: true},
+		"error on missing release":                     {wantErr: true},
+		"error on nested category":                     {wantErr: true},
+		"error on invalid default policy class":        {wantErr: true},
+		"error on empty default policy class":          {wantErr: true},
+		"error on policy not attached to any releases": {wantErr: true},
 
 		"policy directory doesn't exist":    {wantErrLoadDefinitions: true},
 		"category definition doesn't exist": {wantErrLoadDefinitions: true},

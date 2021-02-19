@@ -1,0 +1,22 @@
+- key: /org/gnome/desktop/policy-simple
+  displayname: summary
+  explaintext: description
+  elementtype: text
+  meta:
+    meta: "s"
+    default: ''''''
+  class: ""
+  default: '''Default Value'''
+  release: "20.04"
+  type: "dconf"
+- key: /org/gnome/desktop/policy-not-attached
+  displayname: summary
+  explaintext: description
+  elementtype: text
+  meta:
+    meta: "s"
+    default: ''''''
+  class: ""
+  default: '''Default Value'''
+  release: "other-release"
+  type: "dconf"
