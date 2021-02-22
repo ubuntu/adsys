@@ -266,11 +266,13 @@ func TestMainADMX(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		destIsFile bool
+		autoDetectReleases bool
+		destIsFile         bool
 
 		wantErr bool
 	}{
-		"simple": {},
+		"releases from yaml":                      {},
+		"autodetect overrides releases from yaml": {autoDetectReleases: true},
 
 		// Error cases
 		"invalid definition file":  {wantErr: true},
@@ -295,7 +297,7 @@ func TestMainADMX(t *testing.T) {
 				require.NoError(t, err, "Setup: should create a file as destination")
 			}
 
-			err := admx(catDef, src, dst, false)
+			err := admx(catDef, src, dst, tc.autoDetectReleases)
 			if tc.wantErr {
 				require.Error(t, err, "admx should have errored out")
 				return

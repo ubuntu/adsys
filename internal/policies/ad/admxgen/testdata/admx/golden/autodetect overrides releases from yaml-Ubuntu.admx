@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="desktop" namespace="Microsoft.Policies.WindowsDesktop" />
+    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="windows:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfComUbuntuSimpleSimpleTextProperty" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfComUbuntuSimpleSimpleTextProperty)" explainText="$(string.UbuntuExplainTextMachineDconfComUbuntuSimpleSimpleTextProperty)" presentation="$(presentation.UbuntuPresentationMachineDconfComUbuntuSimpleSimpleTextProperty)" key="Software\Policies\Ubuntu\dconf\com\ubuntu\simple\simple-text-property" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"default":"''''","meta":"s"},"21.04":{"default":"''''","meta":"s"},"21.10":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllDconfComUbuntuSimpleSimpleTextProperty" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2110DconfComUbuntuSimpleSimpleTextProperty" valueName="Override21.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2110DconfComUbuntuSimpleSimpleTextProperty" valueName="21.10" />
+        <boolean id="UbuntuOverrideElemMachine2104DconfComUbuntuSimpleSimpleTextProperty" valueName="Override21.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2104DconfComUbuntuSimpleSimpleTextProperty" valueName="21.04" />
+        <boolean id="UbuntuOverrideElemMachine2004DconfComUbuntuSimpleSimpleTextProperty" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004DconfComUbuntuSimpleSimpleTextProperty" valueName="20.04" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>
