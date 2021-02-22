@@ -295,7 +295,7 @@ func TestMainADMX(t *testing.T) {
 				require.NoError(t, err, "Setup: should create a file as destination")
 			}
 
-			err := admx(catDef, src, dst)
+			err := admx(catDef, src, dst, false)
 			if tc.wantErr {
 				require.Error(t, err, "admx should have errored out")
 				return

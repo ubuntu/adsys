@@ -95,7 +95,7 @@ jobs:
             done
           done
           chmod +x artifacts/admxgen/admxgen
-          artifacts/admxgen/admxgen admx artifacts/admxgen/internal/policies/ad/admxgen/defs/categories.yaml wanted/ .
+          artifacts/admxgen/admxgen -auto-detect-releases admx artifacts/admxgen/internal/policies/ad/admxgen/defs/categories.yaml wanted/ .
           ls -R
       - name: Upload adm template files
         uses: actions/upload-artifact@v2
