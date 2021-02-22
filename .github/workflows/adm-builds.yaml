@@ -3,7 +3,7 @@ on:
   push:
 
 env:
-  goversion: '1.15'
+  goversion: '1.16'
 
 jobs:
   build-admxgen:
