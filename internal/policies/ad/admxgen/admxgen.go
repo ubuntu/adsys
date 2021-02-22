@@ -43,7 +43,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"sort"
 	"strings"
 	"text/template"
@@ -358,11 +357,6 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 	funcMap := template.FuncMap{
 		"toID": g.toID,
 	}
-	_, curF, _, ok := runtime.Caller(0)
-	if !ok {
-		return errors.New(i18n.G("can't determine current file"))
-	}
-	dir := filepath.Dir(curF)
 
 	// Create admx
 
@@ -371,7 +365,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
 	defer f.Close()
-	t := template.Must(template.New("admx.template").Funcs(funcMap).ParseFiles(filepath.Join(dir, "admx.template")))
+	t := template.Must(template.New("admx.template").Funcs(funcMap).Parse(admxTemplate))
 	err = t.Execute(f, input)
 	if err != nil {
 		return err
@@ -384,7 +378,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
 	defer f.Close()
-	t = template.Must(template.New("adml.template").Funcs(funcMap).ParseFiles(filepath.Join(dir, "adml.template")))
+	t = template.Must(template.New("adml.template").Funcs(funcMap).Parse(admlTemplate))
 	err = t.Execute(f, input)
 	if err != nil {
 		return err

@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +19,12 @@ import (
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v2"
 )
+
+//go:embed admx.template
+var admxTemplate string
+
+//go:embed adml.template
+var admlTemplate string
 
 /*
 Mode 1: pour tous les yaml dans desf sauf (category) generate 1 expanded policy file
