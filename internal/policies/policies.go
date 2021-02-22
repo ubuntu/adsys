@@ -15,9 +15,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
-// KeyPrefix is the prefix for all our policies in the GPO
-const KeyPrefix = "Software/Policies"
-
 // Manager handles all managers for various policy handlers.
 type Manager struct {
 	gpoRulesCacheDir string

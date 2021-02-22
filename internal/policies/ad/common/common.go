@@ -12,6 +12,9 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
+// KeyPrefix is the prefix for all our policies in the GPO
+const KeyPrefix = "Software/Policies"
+
 // GetVersionID returns from root a the VERSION_ID field of os-release
 func GetVersionID(root string) (versionID string, err error) {
 	defer decorate.OnError(&err, i18n.G("cannot get versionID"))

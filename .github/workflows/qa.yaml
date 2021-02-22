@@ -6,7 +6,7 @@ on:
   pull_request:
 
 env:
-  goversion: '1.15'
+  goversion: '1.16'
 
 jobs:
   quality:
@@ -50,7 +50,7 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-    container: ubuntu:devel
+    container: ubuntu:rolling
     steps:
       - uses: actions/checkout@v2
       - name: Setup go

@@ -43,15 +43,14 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"sort"
 	"strings"
 	"text/template"
 
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
-	policiesPkg "github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
+	adcommon "github.com/ubuntu/adsys/internal/policies/ad/common"
 )
 
 // expandedCategories generation
@@ -204,7 +203,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		}
 
 		mergedPolicies[key] = mergedPolicy{
-			Key:              fmt.Sprintf(`%s\%s\%s\%s`, strings.ReplaceAll(policiesPkg.KeyPrefix, "/", `\`), g.distroID, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
+			Key:              fmt.Sprintf(`%s\%s\%s\%s`, strings.ReplaceAll(adcommon.KeyPrefix, "/", `\`), g.distroID, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
 			Class:            class,
 			Meta:             string(meta),
 			ExplainText:      explainText,
@@ -325,7 +324,7 @@ func (p policyForADMX) GetOrderedPolicyElements() []common.ExpandedPolicy {
 var re = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 func (g generator) toID(key string, s ...string) string {
-	key = strings.TrimPrefix(key, strings.ReplaceAll(policiesPkg.KeyPrefix, "/", `\`)+`\`+g.distroID)
+	key = strings.TrimPrefix(key, strings.ReplaceAll(adcommon.KeyPrefix, "/", `\`)+`\`+g.distroID)
 	r := g.distroID
 
 	for _, e := range s {
@@ -358,11 +357,6 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 	funcMap := template.FuncMap{
 		"toID": g.toID,
 	}
-	_, curF, _, ok := runtime.Caller(0)
-	if !ok {
-		return errors.New(i18n.G("can't determine current file"))
-	}
-	dir := filepath.Dir(curF)
 
 	// Create admx
 
@@ -371,7 +365,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
 	defer f.Close()
-	t := template.Must(template.New("admx.template").Funcs(funcMap).ParseFiles(filepath.Join(dir, "admx.template")))
+	t := template.Must(template.New("admx.template").Funcs(funcMap).Parse(admxTemplate))
 	err = t.Execute(f, input)
 	if err != nil {
 		return err
@@ -384,7 +378,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
 	defer f.Close()
-	t = template.Must(template.New("adml.template").Funcs(funcMap).ParseFiles(filepath.Join(dir, "adml.template")))
+	t = template.Must(template.New("adml.template").Funcs(funcMap).Parse(admlTemplate))
 	err = t.Execute(f, input)
 	if err != nil {
 		return err

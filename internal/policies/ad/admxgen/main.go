@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -18,6 +19,12 @@ import (
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v2"
 )
+
+//go:embed admx.template
+var admxTemplate string
+
+//go:embed adml.template
+var admlTemplate string
 
 /*
 Mode 1: pour tous les yaml dans desf sauf (category) generate 1 expanded policy file
@@ -43,14 +50,19 @@ Commands:
 	-current-session is the current session to consider for dconf per-session
 	overrides. Default to "".
 
-  admx CATEGORIES_DEF.yaml SOURCE DEST
+  admx [-auto-detect-releases] CATEGORIES_DEF.yaml SOURCE DEST
 	Collects all intermediary policy definition files in SOURCE directory to
 	create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml.
+	-auto-detect-releases will override supportedreleases in categories definition
+	file and will takes all yaml files in SOURCE directory and use the basename
+	as their versions.
 `, filepath.Base(os.Args[0]))
 	}
 
 	flagRoot := flag.String("root", "/", "")
 	flagCurrentSession := flag.String("current-session", "", "")
+
+	autoDetectReleases := flag.Bool("auto-detect-releases", false, "")
 
 	flag.Parse()
 	args := flag.Args()
@@ -76,7 +88,7 @@ Commands:
 			flag.Usage()
 			os.Exit(1)
 		}
-		if err := admx(args[1], args[2], args[3]); err != nil {
+		if err := admx(args[1], args[2], args[3], *autoDetectReleases); err != nil {
 			log.Error(fmt.Errorf("command admx failed with %w", err))
 			os.Exit(1)
 		}
@@ -166,16 +178,32 @@ type categoryFileStruct struct {
 	Categories        []category
 }
 
-func admx(categoryDefinition, src, dst string) error {
+func admx(categoryDefinition, src, dst string, autoDetectReleases bool) error {
 	// Load all expanded categories
 	policies, catfs, err := loadDefinitions(categoryDefinition, src)
 	if err != nil {
 		return err
 	}
 
+	supportedReleases := catfs.SupportedReleases
+	if autoDetectReleases {
+		supportedReleases = nil
+		files, err := os.ReadDir(src)
+		if err != nil {
+			return fmt.Errorf("can't read source directory: %v", err)
+		}
+		for _, f := range files {
+			if !strings.HasSuffix(f.Name(), ".yaml") {
+				continue
+			}
+			n := strings.TrimSuffix(f.Name(), ".yaml")
+			supportedReleases = append(supportedReleases, n)
+		}
+	}
+
 	g := generator{
 		distroID:          catfs.DistroID,
-		supportedReleases: catfs.SupportedReleases,
+		supportedReleases: supportedReleases,
 	}
 	ec, err := g.generateExpandedCategories(catfs.Categories, policies)
 	if err != nil {
