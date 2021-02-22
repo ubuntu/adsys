@@ -32,7 +32,7 @@ jobs:
     needs: build-admxgen
     strategy:
       matrix:
-        releases: ['ubuntu:devel', 'ubuntu:rolling', 'ubuntu:latest']
+        releases: ['ubuntu:rolling', 'ubuntu:latest']
     container:
       image: ${{ matrix.releases }}
     steps:
