@@ -144,6 +144,10 @@ msgstr ""
 msgid "Did you mean this?\n"
 msgstr ""
 
+#: cmd/adsysd/client/admx.go:21
+msgid "Dump windows policy definitions"
+msgstr ""
+
 #: internal/grpc/grpcerror/grpcerror.go:37
 msgid "Error %s from server: %v"
 msgstr ""
@@ -338,6 +342,10 @@ msgstr ""
 msgid "can't get policies for %q"
 msgstr ""
 
+#: internal/policies/ad/definitions/embed.go:16
+msgid "can't get policy definition file"
+msgstr ""
+
 #: internal/policies/ad/ad.go:244
 msgid "can't list users from cache"
 msgstr ""
@@ -454,6 +462,10 @@ msgstr ""
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
+#: cmd/adsysd/client/admx.go:26
+msgid "distro for which to retrieve policy definition."
+msgstr ""
+
 #: cmd/adsysd/client/policies.go:32
 msgid "don't display colorized version."
 msgstr ""
@@ -476,8 +488,12 @@ msgstr ""
 msgid "error while checking signature"
 msgstr ""
 
-#: internal/adsysservice/policy.go:77
+#: internal/adsysservice/policy.go:78
 msgid "error while displaying applied policies"
+msgstr ""
+
+#: internal/adsysservice/policy.go:108
+msgid "error while dumping policy definitions"
 msgstr ""
 
 #: internal/adsysservice/version.go:14
@@ -496,7 +512,7 @@ msgstr ""
 msgid "error while trying to stop daemon"
 msgstr ""
 
-#: internal/adsysservice/policy.go:20
+#: internal/adsysservice/policy.go:21
 msgid "error while updating policy"
 msgstr ""
 
