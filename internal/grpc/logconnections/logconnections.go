@@ -44,6 +44,7 @@ func StreamServerInterceptor() func(srv interface{}, ss grpc.ServerStream, info 
 
 func (ss loggedServerStream) RecvMsg(m interface{}) error {
 	var msg string
+	err := ss.ServerStream.RecvMsg(m)
 	v := reflect.ValueOf(m).Elem()
 	t := v.Type()
 	for i := 0; i < t.NumField(); i++ {
@@ -58,5 +59,5 @@ func (ss loggedServerStream) RecvMsg(m interface{}) error {
 
 	log.Debugf(ss.Context(), "Requesting with parameters: %s", strings.TrimSuffix(msg, ", "))
 
-	return ss.ServerStream.RecvMsg(m)
+	return err
 }
