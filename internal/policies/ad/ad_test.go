@@ -275,7 +275,7 @@ func TestGetPolicies(t *testing.T) {
 					"dconf": {
 						{Key: "A", Value: "standardA"},
 						{Key: "B", Value: "standardB"},
-						// this value will be overriden with the higher one
+						// this value will be overridden with the higher one
 						{Key: "C", Value: "standardC"},
 					}}},
 			}},
@@ -288,7 +288,7 @@ func TestGetPolicies(t *testing.T) {
 				standardGPO,
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
-						// this value will be overriden with the higher one
+						// this value will be overridden with the higher one
 						{Key: "C", Value: "oneValueC"},
 					}}},
 			}},

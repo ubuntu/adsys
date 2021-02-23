@@ -341,7 +341,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 				}
 				pol.Key = strings.TrimPrefix(pol.Key, keyFilterPrefix)
 
-				// Some keys can be overriden
+				// Some keys can be overridden
 				releaseID := filepath.Base(pol.Key)
 				keyType := strings.Split(pol.Key, "/")[0]
 				pol.Key = filepath.Dir(strings.TrimPrefix(pol.Key, keyType+"/"))

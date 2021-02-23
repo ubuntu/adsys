@@ -71,7 +71,7 @@ func GetUniqueRules(gpos []GPO) map[string][]Entry {
 	return r
 }
 
-// FormatGPO write to w a formatted GPO. overriden entries are prepended with -
+// FormatGPO write to w a formatted GPO. overridden entries are prepended with -
 func (g GPO) FormatGPO(w io.Writer, withRules, withOverridden bool, alreadyProcessedRules map[string]struct{}) map[string]struct{} {
 	fmt.Fprintf(w, "* %s (%s)\n", g.Name, g.ID)
 
