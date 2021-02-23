@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -246,7 +245,7 @@ func (ad *AD) ListUsersFromCache(ctx context.Context) (users []string, err error
 	ad.Lock()
 	defer ad.Unlock()
 
-	files, err := ioutil.ReadDir(ad.krb5CacheDir)
+	files, err := os.ReadDir(ad.krb5CacheDir)
 	if err != nil {
 		return users, fmt.Errorf(i18n.G("failed to read cache directory: %v"), err)
 	}

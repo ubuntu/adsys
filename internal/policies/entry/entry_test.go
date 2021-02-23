@@ -2,7 +2,7 @@ package entry_test
 
 import (
 	"flag"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -348,10 +348,10 @@ func TestFormatGPO(t *testing.T) {
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
-				err = ioutil.WriteFile(goldPath, []byte(out.String()), 0644)
+				err = os.WriteFile(goldPath, []byte(out.String()), 0644)
 				require.NoError(t, err, "Cannot write golden file")
 			}
-			want, err := ioutil.ReadFile(goldPath)
+			want, err := os.ReadFile(goldPath)
 			require.NoError(t, err, "Cannot load policy golden file")
 
 			require.Equal(t, string(want), out.String(), "FormatGPO write expected output")

@@ -3,7 +3,7 @@ package entry
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 
@@ -120,7 +120,7 @@ func (g GPO) FormatGPO(w io.Writer, withRules, withOverridden bool, alreadyProce
 func NewGPOs(p string) (gpos []GPO, err error) {
 	defer decorate.OnError(&err, i18n.G("can't get cached GPO list from %s"), p)
 
-	d, err := ioutil.ReadFile(p)
+	d, err := os.ReadFile(p)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func SaveGPOs(gpos []GPO, p string) (err error) {
 	if err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(p, d, 0700); err != nil {
+	if err := os.WriteFile(p, d, 0700); err != nil {
 		return err
 	}
 

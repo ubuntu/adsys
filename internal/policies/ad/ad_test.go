@@ -3,7 +3,6 @@ package ad_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -931,7 +930,7 @@ func mockGPOListCmd(t *testing.T, args ...string) []string {
 func setKrb5CC(t *testing.T, ccRootName string) (string, func()) {
 	t.Helper()
 
-	f, err := ioutil.TempFile("", fmt.Sprintf("kbr5cc_adsys_tests_%s_*", ccRootName))
+	f, err := os.CreateTemp("", fmt.Sprintf("kbr5cc_adsys_tests_%s_*", ccRootName))
 	require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
 	defer f.Close()
 	krb5CCName := f.Name()

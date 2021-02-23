@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -184,11 +183,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 func writeIfChanged(path string, content string) (done bool, err error) {
 	defer decorate.OnError(&err, i18n.G("can't save %s"), path)
 
-	if oldContent, err := ioutil.ReadFile(path); err == nil && string(oldContent) == content {
+	if oldContent, err := os.ReadFile(path); err == nil && string(oldContent) == content {
 		return false, nil
 	}
 
-	if err := ioutil.WriteFile(path+".new", []byte(content), 0600); err != nil {
+	if err := os.WriteFile(path+".new", []byte(content), 0600); err != nil {
 		return false, err
 	}
 	if err := os.Rename(path+".new", path); err != nil {
@@ -211,12 +210,12 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	adsysUserDB := fmt.Sprintf("system-db:%s", user)
 
 	// Read existing content and create file if doesn’t exists
-	content, err := ioutil.ReadFile(profilePath)
+	content, err := os.ReadFile(profilePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		return ioutil.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0644)
+		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0644)
 	}
 
 	// Read file to insert them at the end, removing duplicates
@@ -238,7 +237,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	}
 
 	// Otherwise, update the file.
-	if err := ioutil.WriteFile(profilePath+".adsys.new", newContent, 0644); err != nil {
+	if err := os.WriteFile(profilePath+".adsys.new", newContent, 0644); err != nil {
 		return err
 	}
 	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {

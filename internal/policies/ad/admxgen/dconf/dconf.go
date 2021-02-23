@@ -4,7 +4,7 @@ package dconf
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math"
 	"os"
 	"path/filepath"
@@ -236,7 +236,7 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 		}
 		defer f.Close()
 
-		d, err := ioutil.ReadAll(f)
+		d, err := io.ReadAll(f)
 		if err != nil {
 			return nil, nil, fmt.Errorf(i18n.G("cannot read schema data: %w"), err)
 		}

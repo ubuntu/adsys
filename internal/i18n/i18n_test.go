@@ -2,7 +2,6 @@ package i18n_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -162,7 +161,7 @@ func compileMoFiles(t *testing.T, localeDir string) {
 		po := filepath.Join(localeDir, defaultDomain+".po")
 		mo := filepath.Join(fullLocaleDir, defaultDomain+".mo")
 
-		if err := ioutil.WriteFile(po, []byte(poContent), 0644); err != nil {
+		if err := os.WriteFile(po, []byte(poContent), 0644); err != nil {
 			t.Fatalf("couldn't write po file: %v", err)
 		}
 

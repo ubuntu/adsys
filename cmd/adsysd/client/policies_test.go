@@ -1,7 +1,7 @@
 package client
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/fatih/color"
@@ -36,7 +36,7 @@ Policies from user configuration:
 	got, err := colorizePolicies(policies)
 	require.NoError(t, err, "colorizePolicies should not return an error")
 
-	want, err := ioutil.ReadFile("testdata/golden/colorize.golden")
+	want, err := os.ReadFile("testdata/golden/colorize.golden")
 	require.NoError(t, err, "Setup: failed to read colorized golden file")
 
 	require.Equal(t, string(want), got, "colorizePolicies returned expected formatted output")

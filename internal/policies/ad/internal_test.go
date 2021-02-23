@@ -5,7 +5,7 @@ import (
 	"crypto/md5"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -248,7 +248,7 @@ func TestFetchGPO(t *testing.T) {
 			}
 
 			// Ensure that only wanted GPOs are cached
-			files, err := ioutil.ReadDir(adc.gpoCacheDir)
+			files, err := os.ReadDir(adc.gpoCacheDir)
 			require.NoError(t, err, "coudn't read destination directory")
 			for _, f := range files {
 				_, ok := tc.want[f.Name()]
@@ -474,12 +474,12 @@ guest ok = yes
 )
 
 func mkSmbDir() (string, func()) {
-	dir, err := ioutil.TempDir("", "adsys_smbd_")
+	dir, err := os.MkdirTemp("", "adsys_smbd_")
 	if err != nil {
 		log.Fatalf("Setup: failed to create temporary smb directory: %v", err)
 	}
 
-	brokenSmbDirShare, err = ioutil.TempDir("", "adsys_smbd_broken_share_")
+	brokenSmbDirShare, err = os.MkdirTemp("", "adsys_smbd_broken_share_")
 	if err != nil {
 		log.Fatalf("Setup: failed to create temporary broken smb share directory: %v", err)
 	}
@@ -551,7 +551,7 @@ func setupSmb() func() {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
 		}
 
-		d, err := ioutil.ReadAll(stderr)
+		d, err := io.ReadAll(stderr)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Setup: Can't show stderr from smbd command: %v", err)
 		}
@@ -601,7 +601,7 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 
 		md5Val := ""
 		if !info.IsDir() {
-			d, err := ioutil.ReadFile(path)
+			d, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}

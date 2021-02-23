@@ -5,7 +5,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -262,7 +261,7 @@ func treeContent(t *testing.T, dir string, ignoreHeaders []byte) map[string]stri
 
 		content := ""
 		if !info.IsDir() {
-			d, err := ioutil.ReadFile(path)
+			d, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
@@ -289,7 +288,7 @@ func ignoreDconfDB(src string, entries []os.FileInfo) []string {
 		if e.IsDir() {
 			continue
 		}
-		d, err := ioutil.ReadFile(filepath.Join(src, e.Name()))
+		d, err := os.ReadFile(filepath.Join(src, e.Name()))
 		if err != nil {
 			continue
 		}

@@ -1,8 +1,8 @@
 package unixsocket_test
 
 import (
-	"io/ioutil"
 	"net"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -40,7 +40,7 @@ func TestInvalidSocketFile(t *testing.T) {
 	t.Parallel()
 
 	d := t.TempDir()
-	f, err := ioutil.TempFile(d, "simplefile")
+	f, err := os.CreateTemp(d, "simplefile")
 	require.NoError(t, err, "setup; creating temporary file failed")
 
 	dial := unixsocket.ContextDialer()
