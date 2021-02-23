@@ -33,6 +33,30 @@ adsysctl COMMAND [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
+#### adsysctl admx
+
+Dump windows policy definitions
+
+```
+adsysctl admx lts-only|all [flags]
+```
+
+##### Options
+
+```
+      --distro string   distro for which to retrieve policy definition. (default "Ubuntu")
+  -h, --help            help for admx
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
 #### adsysctl completion
 
 Generates bash completion scripts
