@@ -1,6 +1,8 @@
 name: Update admx and adml templates
 on:
   push:
+  schedule:
+    - cron: '42 0 * * *'
 
 env:
   goversion: '1.16'
