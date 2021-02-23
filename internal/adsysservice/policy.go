@@ -12,6 +12,7 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad"
+	"github.com/ubuntu/adsys/internal/policies/ad/definitions"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -97,6 +98,29 @@ func (s *Service) DumpPolicies(r *adsys.DumpPoliciesRequest, stream adsys.Servic
 		Msg: msg,
 	}); err != nil {
 		log.Warningf(stream.Context(), "couldn't send currently applied policies to client: %v", err)
+	}
+
+	return nil
+}
+
+// DumpPolicyDefinitions dump requested policy definitions stored in daemon at build time.
+func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest, stream adsys.Service_DumpPoliciesDefinitionsServer) (err error) {
+	defer decorate.OnError(&err, i18n.G("error while dumping policy definitions"))
+
+	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
+		return err
+	}
+
+	admx, adml, err := definitions.GetPolicies(r.Format, r.GetDistroID())
+	if err != nil {
+		return err
+	}
+
+	if err := stream.Send(&adsys.DumpPolicyDefinitionsResponse{
+		Admx: admx,
+		Adml: adml,
+	}); err != nil {
+		log.Warningf(stream.Context(), "couldn't send policy definition to client: %v", err)
 	}
 
 	return nil

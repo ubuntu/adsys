@@ -23,6 +23,7 @@ type ServiceClient interface {
 	Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error)
 	UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error)
 	DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (Service_DumpPoliciesClient, error)
+	DumpPoliciesDefinitions(ctx context.Context, in *DumpPolicyDefinitionsRequest, opts ...grpc.CallOption) (Service_DumpPoliciesDefinitionsClient, error)
 }
 
 type serviceClient struct {
@@ -193,6 +194,38 @@ func (x *serviceDumpPoliciesClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
+func (c *serviceClient) DumpPoliciesDefinitions(ctx context.Context, in *DumpPolicyDefinitionsRequest, opts ...grpc.CallOption) (Service_DumpPoliciesDefinitionsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[5], "/service/DumpPoliciesDefinitions", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceDumpPoliciesDefinitionsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_DumpPoliciesDefinitionsClient interface {
+	Recv() (*DumpPolicyDefinitionsResponse, error)
+	grpc.ClientStream
+}
+
+type serviceDumpPoliciesDefinitionsClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceDumpPoliciesDefinitionsClient) Recv() (*DumpPolicyDefinitionsResponse, error) {
+	m := new(DumpPolicyDefinitionsResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
@@ -202,6 +235,7 @@ type ServiceServer interface {
 	Stop(*StopRequest, Service_StopServer) error
 	UpdatePolicy(*UpdatePolicyRequest, Service_UpdatePolicyServer) error
 	DumpPolicies(*DumpPoliciesRequest, Service_DumpPoliciesServer) error
+	DumpPoliciesDefinitions(*DumpPolicyDefinitionsRequest, Service_DumpPoliciesDefinitionsServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -223,6 +257,9 @@ func (UnimplementedServiceServer) UpdatePolicy(*UpdatePolicyRequest, Service_Upd
 }
 func (UnimplementedServiceServer) DumpPolicies(*DumpPoliciesRequest, Service_DumpPoliciesServer) error {
 	return status.Errorf(codes.Unimplemented, "method DumpPolicies not implemented")
+}
+func (UnimplementedServiceServer) DumpPoliciesDefinitions(*DumpPolicyDefinitionsRequest, Service_DumpPoliciesDefinitionsServer) error {
+	return status.Errorf(codes.Unimplemented, "method DumpPoliciesDefinitions not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -342,6 +379,27 @@ func (x *serviceDumpPoliciesServer) Send(m *StringResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Service_DumpPoliciesDefinitions_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(DumpPolicyDefinitionsRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).DumpPoliciesDefinitions(m, &serviceDumpPoliciesDefinitionsServer{stream})
+}
+
+type Service_DumpPoliciesDefinitionsServer interface {
+	Send(*DumpPolicyDefinitionsResponse) error
+	grpc.ServerStream
+}
+
+type serviceDumpPoliciesDefinitionsServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceDumpPoliciesDefinitionsServer) Send(m *DumpPolicyDefinitionsResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -373,6 +431,11 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "DumpPolicies",
 			Handler:       _Service_DumpPolicies_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "DumpPoliciesDefinitions",
+			Handler:       _Service_DumpPoliciesDefinitions_Handler,
 			ServerStreams: true,
 		},
 	},

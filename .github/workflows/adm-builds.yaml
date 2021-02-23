@@ -121,12 +121,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: adm-ALL
-          path: internal/policies/ad/definitions/all
+          path: internal/policies/ad/definitions/policy/Ubuntu/all
       - name: Download adm template files for lts only
         uses: actions/download-artifact@v2
         with:
           name: adm-LTS
-          path: internal/policies/ad/definitions/lts-only
+          path: internal/policies/ad/definitions/policy/Ubuntu/lts-only
       - name: Copy admx and adml to git
         run: |
           git add internal/policies/ad/definitions/
