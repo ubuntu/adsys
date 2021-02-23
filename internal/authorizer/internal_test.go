@@ -3,7 +3,6 @@ package authorizer
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
@@ -98,7 +97,7 @@ func TestServerPeerCredsHandshake(t *testing.T) {
 	t.Parallel()
 
 	s := serverPeerCreds{}
-	d, err := ioutil.TempDir(os.TempDir(), "adsystest")
+	d, err := os.MkdirTemp("", "adsystest")
 	if err != nil {
 		t.Fatalf("Failed to create temporary directory: %v", err)
 	}

@@ -103,7 +103,7 @@ func (s *Service) DumpPolicies(r *adsys.DumpPoliciesRequest, stream adsys.Servic
 	return nil
 }
 
-// DumpPolicyDefinitions dump requested policy definitions stored in daemon at build time.
+// DumpPoliciesDefinitions dumps requested policy definitions stored in daemon at build time.
 func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest, stream adsys.Service_DumpPoliciesDefinitionsServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while dumping policy definitions"))
 

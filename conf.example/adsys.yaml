@@ -1,0 +1,10 @@
+# Service and client configuration
+verbose: 2
+socket: /tmp/adsysd/socket
+
+# Service only configuration
+cache-dir: /tmp/adsysd/cache
+run-dir: /tmp/adsysd/run
+servicetimeout: 3600
+ad-server: warthogs.biz
+ad-domain: ldap://adc.warthogs.biz

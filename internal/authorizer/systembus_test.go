@@ -2,7 +2,6 @@ package authorizer
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,7 +29,7 @@ func StartLocalSystemBus(t *testing.T) func() {
 		dir := t.TempDir()
 		savedDbusSystemAddress := os.Getenv("DBUS_SYSTEM_BUS_ADDRESS")
 		config := filepath.Join(dir, "dbus.config")
-		ioutil.WriteFile(config, []byte(`<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+		os.WriteFile(config, []byte(`<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
   <type>system</type>

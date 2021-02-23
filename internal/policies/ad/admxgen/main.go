@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -123,7 +122,7 @@ func expand(src, dst, root, currentSession string) error {
 			if t == "categories" {
 				return nil
 			}
-			data, err := ioutil.ReadFile(f)
+			data, err := os.ReadFile(f)
 			if err != nil {
 				return err
 			}
@@ -165,7 +164,7 @@ func expand(src, dst, root, currentSession string) error {
 	if err := os.MkdirAll(dst, 0755); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(filepath.Join(dst, release+".yaml"), data, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dst, release+".yaml"), data, 0644); err != nil {
 		return err
 	}
 
@@ -222,7 +221,7 @@ func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy
 
 	var nilCategoryFileStruct categoryFileStruct
 
-	f, err := ioutil.ReadDir(src)
+	f, err := os.ReadDir(src)
 	if err != nil {
 		return nil, nilCategoryFileStruct, err
 	}
@@ -235,7 +234,7 @@ func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy
 	var policies, p []common.ExpandedPolicy
 	for _, n := range epNames {
 		f := filepath.Join(src, n)
-		d, err := ioutil.ReadFile(f)
+		d, err := os.ReadFile(f)
 		if err != nil {
 			return nil, nilCategoryFileStruct, err
 		}
@@ -248,7 +247,7 @@ func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy
 
 	// Load categories and meta
 	var catfs categoryFileStruct
-	catsDef, err := ioutil.ReadFile(categoryDefinition)
+	catsDef, err := os.ReadFile(categoryDefinition)
 	if err != nil {
 		return nil, nilCategoryFileStruct, err
 	}

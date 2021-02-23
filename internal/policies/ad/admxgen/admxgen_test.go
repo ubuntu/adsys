@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -165,7 +164,7 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 			}
 
 			var ec []expandedCategory
-			ecF, err := ioutil.ReadFile(filepath.Join("testdata", "expandedCategoriesToADMX", "defs", name+".yaml"))
+			ecF, err := os.ReadFile(filepath.Join("testdata", "expandedCategoriesToADMX", "defs", name+".yaml"))
 			require.NoError(t, err, "Setup: failed to load expanded categories from file")
 			err = yaml.Unmarshal(ecF, &ec)
 			require.NoError(t, err, "Setup: failed to unmarshal expanded categories")
@@ -181,9 +180,9 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 			require.NoError(t, err, "expandedCategoriesToADMX failed but shouldn't have")
 
 			goldPath := filepath.Join("testdata", "expandedCategoriesToADMX", "golden")
-			gotADMX, err := ioutil.ReadFile(filepath.Join(dst, tc.distroID+".admx"))
+			gotADMX, err := os.ReadFile(filepath.Join(dst, tc.distroID+".admx"))
 			require.NoError(t, err, "should be able to read destination admx file")
-			gotADML, err := ioutil.ReadFile(filepath.Join(dst, tc.distroID+".adml"))
+			gotADML, err := os.ReadFile(filepath.Join(dst, tc.distroID+".adml"))
 			require.NoError(t, err, "should be able to read destination adml file")
 
 			wantADMX := wantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.admx", name, tc.distroID)), gotADMX)
@@ -234,7 +233,7 @@ func TestMainExpand(t *testing.T) {
 			}
 			require.NoError(t, err, "expand failed but shouldn't have")
 
-			data, err := ioutil.ReadFile(filepath.Join(dst, "20.04.yaml"))
+			data, err := os.ReadFile(filepath.Join(dst, "20.04.yaml"))
 			require.NoError(t, err, "failed to generate expanded policies file")
 			goldPath := filepath.Join("testdata", "expand", "golden", name)
 			var got, want []common.ExpandedPolicy
@@ -305,9 +304,9 @@ func TestMainADMX(t *testing.T) {
 			require.NoError(t, err, "admx failed but shouldn't have")
 
 			goldPath := filepath.Join("testdata", "admx", "golden")
-			gotADMX, err := ioutil.ReadFile(filepath.Join(dst, "Ubuntu.admx"))
+			gotADMX, err := os.ReadFile(filepath.Join(dst, "Ubuntu.admx"))
 			require.NoError(t, err, "should be able to read destination admx file")
-			gotADML, err := ioutil.ReadFile(filepath.Join(dst, "Ubuntu.adml"))
+			gotADML, err := os.ReadFile(filepath.Join(dst, "Ubuntu.adml"))
 			require.NoError(t, err, "should be able to read destination adml file")
 
 			wantADMX := wantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.admx", name, "Ubuntu")), gotADMX)
@@ -326,11 +325,11 @@ func wantFromGoldenFileYAML(t *testing.T, goldPath string, got interface{}, want
 		t.Logf("updating golden file %s", goldPath)
 		data, err := yaml.Marshal(got)
 		require.NoError(t, err, "Cannot marshal expanded policies to YAML")
-		err = ioutil.WriteFile(goldPath, data, 0644)
+		err = os.WriteFile(goldPath, data, 0644)
 		require.NoError(t, err, "Cannot write golden file")
 	}
 
-	data, err := ioutil.ReadFile(goldPath)
+	data, err := os.ReadFile(goldPath)
 	require.NoError(t, err, "Cannot load policy golden file")
 	err = yaml.Unmarshal(data, want)
 	require.NoError(t, err, "Cannot create expanded policy objects from golden file")
@@ -341,11 +340,11 @@ func wantFromGoldenFile(t *testing.T, goldPath string, got []byte) (want []byte)
 
 	if update {
 		t.Logf("updating golden file %s", goldPath)
-		err := ioutil.WriteFile(goldPath, got, 0644)
+		err := os.WriteFile(goldPath, got, 0644)
 		require.NoError(t, err, "Cannot write golden file")
 	}
 
-	want, err := ioutil.ReadFile(goldPath)
+	want, err := os.ReadFile(goldPath)
 	require.NoError(t, err, "Cannot load policy golden file")
 
 	return want

@@ -2,7 +2,7 @@ package dconf_test
 
 import (
 	"flag"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -87,7 +87,7 @@ func TestGenerate(t *testing.T) {
 			}
 
 			var dconfPolicies []dconf.Policy
-			data, err := ioutil.ReadFile(filepath.Join("testdata", "defs", def))
+			data, err := os.ReadFile(filepath.Join("testdata", "defs", def))
 			require.NoError(t, err, "Setup: cannot load policy definition")
 			err = yaml.Unmarshal(data, &dconfPolicies)
 			require.NoError(t, err, "Setup: cannot create policy objects")
@@ -105,11 +105,11 @@ func TestGenerate(t *testing.T) {
 				t.Logf("updating golden file %s", goldPath)
 				data, err = yaml.Marshal(got)
 				require.NoError(t, err, "Cannot marshal expanded policies to YAML")
-				err = ioutil.WriteFile(goldPath, data, 0644)
+				err = os.WriteFile(goldPath, data, 0644)
 				require.NoError(t, err, "Cannot write golden file")
 			}
 			var want []common.ExpandedPolicy
-			data, err = ioutil.ReadFile(goldPath)
+			data, err = os.ReadFile(goldPath)
 			require.NoError(t, err, "Cannot load policy golden file")
 			err = yaml.Unmarshal(data, &want)
 			require.NoError(t, err, "Cannot create expanded policy objects from golden file")

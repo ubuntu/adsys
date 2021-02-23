@@ -5,7 +5,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -137,7 +136,7 @@ func updatePo(potfile, localeDir string) error {
 	}
 
 	// Merge existing po files
-	poCandidates, err := ioutil.ReadDir(localeDir)
+	poCandidates, err := os.ReadDir(localeDir)
 	if err != nil {
 		log.Fatalf("couldn't list content of %q: %v", localeDir, err)
 	}
@@ -173,7 +172,7 @@ func generateMo(domain, in, out string) error {
 		log.Fatalln(err)
 	}
 
-	poCandidates, err := ioutil.ReadDir(in)
+	poCandidates, err := os.ReadDir(in)
 	if err != nil {
 		log.Fatalf("couldn't list content of %q: %v", in, err)
 	}

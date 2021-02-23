@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
@@ -384,7 +383,7 @@ func fileToReader(t *testing.T, f **os.File) (io.Reader, func()) {
 func stringFromReader(t *testing.T, r io.Reader) string {
 	t.Helper()
 
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	require.NoError(t, err, "No error while reading stdout content")
 	return string(data)
 }

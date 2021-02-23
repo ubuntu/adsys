@@ -170,7 +170,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			continue
 		}
 
-		// assign "all" elements and default to higest release description
+		// assign "all" elements and default to highest release description
 		releasesElements["all"] = releasesElements[highestRelease]
 		metas["all"] = releasesElements["all"].Meta
 		explainText := releasesElements["all"].ExplainText

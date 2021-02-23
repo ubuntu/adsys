@@ -39,7 +39,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -124,7 +123,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			g.testConcurrent = true
 
 			// Download GPO in a temporary directory and only commit it if fully downloaded without any errors
-			tmpdest, err := ioutil.TempDir("", "adsys_gpo_*")
+			tmpdest, err := os.MkdirTemp("", "adsys_gpo_*")
 			if err != nil {
 				return err
 			}
@@ -237,12 +236,12 @@ func downloadRecursive(client *libsmbclient.Client, url string, dest string) err
 			defer f.Close()
 			// Read() is on *libsmbclient.File, not libsmbclient.File
 			pf := &f
-			data, err := ioutil.ReadAll(pf)
+			data, err := io.ReadAll(pf)
 			if err != nil {
 				return err
 			}
 
-			if err := ioutil.WriteFile(entityDest, data, 0700); err != nil {
+			if err := os.WriteFile(entityDest, data, 0700); err != nil {
 				return err
 			}
 		} else if dirent.Type == libsmbclient.SmbcDir {

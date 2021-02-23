@@ -3,7 +3,6 @@ package ad_test
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -275,7 +274,7 @@ func TestGetPolicies(t *testing.T) {
 					"dconf": {
 						{Key: "A", Value: "standardA"},
 						{Key: "B", Value: "standardB"},
-						// this value will be overriden with the higher one
+						// this value will be overridden with the higher one
 						{Key: "C", Value: "standardC"},
 					}}},
 			}},
@@ -288,7 +287,7 @@ func TestGetPolicies(t *testing.T) {
 				standardGPO,
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
-						// this value will be overriden with the higher one
+						// this value will be overridden with the higher one
 						{Key: "C", Value: "oneValueC"},
 					}}},
 			}},
@@ -931,7 +930,7 @@ func mockGPOListCmd(t *testing.T, args ...string) []string {
 func setKrb5CC(t *testing.T, ccRootName string) (string, func()) {
 	t.Helper()
 
-	f, err := ioutil.TempFile("", fmt.Sprintf("kbr5cc_adsys_tests_%s_*", ccRootName))
+	f, err := os.CreateTemp("", fmt.Sprintf("kbr5cc_adsys_tests_%s_*", ccRootName))
 	require.NoError(t, err, "Setup: failed to create temporary krb5 cache file")
 	defer f.Close()
 	krb5CCName := f.Name()
