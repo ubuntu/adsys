@@ -1,6 +1,8 @@
 name: Update admx and adml templates
 on:
   push:
+    paths:
+      - 'internal/policies/ad/admxgen/**'
   schedule:
     - cron: '42 0 * * *'
 
@@ -64,7 +66,7 @@ jobs:
           if-no-files-found: error
 
   generate-ad:
-    name: Collect and merge keys to generated admx/adml
+    name: Merge keys to generated admx/adml
     runs-on: ubuntu-latest
     needs: collect-releases
     strategy:
@@ -132,6 +134,10 @@ jobs:
       - name: Copy admx and adml to git
         run: |
           git add internal/policies/ad/definitions/
+      - name: Get output branch for branch name
+        id: get-branch-name
+        shell: bash
+        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
@@ -139,6 +145,6 @@ jobs:
           title: Refresh policy definition files
           labels: policies, automated pr
           body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+main+branch+automatically%22) by GitHub Action"
-          branch: auto-update-policydefinitions
+          branch: auto-update-policydefinitions-${{ steps.get-branch-name.outputs.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
