@@ -28,7 +28,7 @@ func ZeroOrNArgs(n int) cobra.PositionalArgs {
 // README and manpage refers to them in each subsection (parents are differents, but only one is kept if we use the same object)
 func RegisterAlias(cmd, parent *cobra.Command) {
 	alias := *cmd
-	t := fmt.Sprintf(i18n.G("Alias of %s"), cmd.CommandPath())
+	t := fmt.Sprintf(i18n.G("Alias of %q"), cmd.CommandPath())
 	if alias.Long != "" {
 		t = fmt.Sprintf("%s (%s)", alias.Long, t)
 	}
