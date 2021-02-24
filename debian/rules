@@ -5,6 +5,9 @@ export GOCACHE=$(shell mktemp -d /tmp/gocache-XXXX)
 export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/config.Version=$(shell dpkg-parsechangelog -S Version) --mod=vendor
 export DH_GOLANG_INSTALL_EXTRA := internal/policies/ad/admxgen/admx.template internal/policies/ad/admxgen/adml.template
 
+# Install all content to embed
+export DH_GOLANG_INSTALL_ALL := 1
+
 %:
 	dh $@ --buildsystem=golang --with=golang,apport
 
