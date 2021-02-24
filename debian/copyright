@@ -20,6 +20,11 @@ License: GPL-3
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
 
+Files: internal/policies/ad/adsys-gpolist
+Copyright: 2020-2021 Canonical Ltd.
+           Based on work by Andrew Tridgell 2010 and Amitay Isaacs 2011-2012.
+License: GPL-3+
+
 Files: vendor/github.com/coreos
 Copyright: 2015-2018 CoreOS, Inc. / 2014 Docker, Inc.
 License: Apache License 2.0
@@ -37,7 +42,7 @@ Copyright: 2013 Fatih Arslan
 License: MIT
 
 Files: vendor/github.com/fsnotify
-Copyright: 2011-2015 fsnotify Authors. / The Go Authors.
+Copyright: 2010-2015 fsnotify Authors. / The Go Authors.
 License: BSD-3
 
 Files: vendor/github.com/godbus
@@ -97,16 +102,26 @@ Copyright: 2016 Jonas Obrist
 License: BSD-3
 
 Files: vendor/github.com/spf13
-Copyright: 2009 The Go Authors.
-           2013-2015 Steve Francia <spf@spf13.com>.
-           2015 Red Hat Inc.
-           2016 French Ben.
+Copyright: 2011 The Go Authors.
+           2014-2015 Steve Francia <spf@spf13.com>.
 License: MIT
 
 Files: vendor/github.com/spf13/afero/
 Copyright: 2014-2016 Steve Francia <spf@spf13.com>.
            2015 The Hugo Authors
            2016-present Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>
+           2009-2015 The Go Authors.
+License: Apache-2.0
+
+Files: vendor/github.com/spf13/pflag
+Copyright: 2009-2012 The Go Authors.
+           2012 Alex Ogier.
+License: Apache-2.0
+
+Files: vendor/spf13/cobra/
+Copyright: 2013 Steve Francia <spf@spf13.com>.
+           2015 Red Hat Inc.
+           2016 French Ben.
 License: Apache-2.0
 
 Files: vendor/github.com/stretchr
@@ -137,6 +152,11 @@ License: Apache-2.0
 Files: vendor/gopkg.in/yaml.v*
 Copyright: 2011-2019 Canonical Ltd.
 License: Apache-2.0
+
+Files: vendor/gopkg.in/yaml.v3/{apic.go,emitterc.go,parserc.go}
+Copyright: 2011-2019 Canonical Ltd.
+           2006-2010 Kirill Simonov
+License: MIT
 
 Files: vendor/honnef.co/go/tools
 Copyright: 2016-2019 Dominik Honnef
@@ -174,6 +194,17 @@ License: BSD-3
    * Neither the name of Google Inc., Jonas Obrist nor the names of its
      contributors may be used to endorse or promote products derived from
      this software without specific prior written permission.
+
+License: GPL-3+
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation, either version 3 of the License, or (at your
+ option) any later version.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ Public License for more details.
 
 License: ISC License
  Permission to use, copy, modify, and/or distribute this software for any

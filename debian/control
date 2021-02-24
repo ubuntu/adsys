@@ -2,7 +2,7 @@ Source: adsys
 Section: admin
 Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-Build-Depends: debhelper (>= 13),
+Build-Depends: debhelper,
                debhelper-compat (= 13),
                dh-apport,
                dh-golang,
@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 13),
                libpam0g-dev,
                samba,
                dbus,
-Standards-Version: 4.1.3
+Standards-Version: 4.5.1
 XS-Go-Import-Path: github.com/ubuntu/adsys
 Homepage: https://github.com/ubuntu/adsys
 Description: AD SYStem integration
