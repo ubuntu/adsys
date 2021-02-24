@@ -138,6 +138,11 @@ Files: vendor/gopkg.in/yaml.v*
 Copyright: 2011-2019 Canonical Ltd.
 License: Apache-2.0
 
+Files: vendor/honnef.co/go/tools
+Copyright: 2016-2019 Dominik Honnef
+           2009-2018 The Go Authors.
+License: BSD-3
+
 License: Apache-2.0
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
