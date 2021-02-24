@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:331
+#: internal/policies/ad/ad.go:330
 msgid "%s :%v"
 msgstr ""
 
@@ -47,7 +47,7 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:402
+#: internal/policies/dconf/dconf.go:401
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -70,7 +70,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: cmd/adsysd/client/policies.go:113
+#: cmd/adsysd/client/policy.go:201
 #, c-format
 msgid "%s: Locked to system default"
 msgstr ""
@@ -85,7 +85,7 @@ msgstr ""
 msgid "- Default: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:105
+#: internal/policies/dconf/dconf.go:104
 msgid "- error on %s: %v"
 msgstr ""
 
@@ -102,23 +102,22 @@ msgid "AD integration daemon"
 msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:31
-#, c-format
-msgid "Alias of %s"
+msgid "Alias of %q"
 msgstr ""
 
 #: internal/daemon/daemon.go:194
 msgid "All connections have now ended."
 msgstr ""
 
-#: internal/authorizer/authorizer.go:158
+#: internal/authorizer/authorizer.go:157
 msgid "Any user always authorized"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:155
+#: internal/authorizer/authorizer.go:154
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:116
+#: internal/authorizer/authorizer.go:115
 msgid "Check if grpc request peer is authorized"
 msgstr ""
 
@@ -144,7 +143,7 @@ msgstr ""
 msgid "Did you mean this?\n"
 msgstr ""
 
-#: cmd/adsysd/client/admx.go:21
+#: cmd/adsysd/client/policy.go:33
 msgid "Dump windows policy definitions"
 msgstr ""
 
@@ -178,11 +177,15 @@ msgstr ""
 msgid "Policies from user configuration:"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:196
+#: cmd/adsysd/client/policy.go:25
+msgid "Policy management"
+msgstr ""
+
+#: internal/authorizer/authorizer.go:195
 msgid "Polkit call result, authorized: %t"
 msgstr ""
 
-#: cmd/adsysd/client/policies.go:20
+#: cmd/adsysd/client/policy.go:44
 msgid "Print last applied GPOs for current or given user/machine"
 msgstr ""
 
@@ -237,7 +240,7 @@ msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/client/update.go:22
+#: cmd/adsysd/client/policy.go:63
 msgid ""
 "Updates/Create a policy for current user or given user with its kerberos "
 "ticket"
@@ -247,27 +250,27 @@ msgstr ""
 msgid "Wait for active requests to close."
 msgstr ""
 
-#: cmd/adsysd/client/update.go:33
+#: cmd/adsysd/client/policy.go:74
 msgid ""
 "all updates the policy of the computer and all the logged in users. -m or "
 "USER_NAME/TICKET cannot be used with this option."
 msgstr ""
 
-#: internal/authorizer/authorizer.go:193
+#: internal/authorizer/authorizer.go:192
 msgid "call to polkit failed: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:55
+#: internal/policies/dconf/dconf.go:54
 #, c-format
 msgid "can't apply dconf policy to %s"
 msgstr ""
 
-#: internal/policies/ad/download.go:155
+#: internal/policies/ad/download.go:154
 #, c-format
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/ad/ad.go:92
+#: internal/policies/ad/ad.go:91
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -284,7 +287,7 @@ msgstr ""
 msgid "can't create client for service"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:57
+#: internal/authorizer/authorizer.go:56
 msgid "can't create create new authorizer"
 msgstr ""
 
@@ -296,11 +299,11 @@ msgstr ""
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:267
+#: internal/policies/ad/ad.go:266
 msgid "can't create symlink for caching"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:209
+#: internal/authorizer/authorizer.go:208
 msgid "can't determine start time of client process"
 msgstr ""
 
@@ -309,11 +312,11 @@ msgstr ""
 msgid "can't dial to %s"
 msgstr ""
 
-#: internal/policies/ad/download.go:103
+#: internal/policies/ad/download.go:102
 msgid "can't download GPO %q"
 msgstr ""
 
-#: internal/policies/ad/download.go:63
+#: internal/policies/ad/download.go:62
 msgid "can't download all gpos"
 msgstr ""
 
@@ -329,7 +332,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:274
+#: internal/policies/ad/ad.go:273
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -338,7 +341,7 @@ msgstr ""
 msgid "can't get cached GPO list from %s"
 msgstr ""
 
-#: internal/policies/ad/ad.go:156
+#: internal/policies/ad/ad.go:155
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -346,7 +349,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:244
+#: internal/policies/ad/ad.go:243
 msgid "can't list users from cache"
 msgstr ""
 
@@ -354,7 +357,7 @@ msgstr ""
 msgid "can't listen on new socket %q"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:221
+#: internal/policies/ad/admxgen/main.go:220
 msgid "can't load category definition"
 msgstr ""
 
@@ -367,7 +370,7 @@ msgstr ""
 msgid "can't load server info from %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:406
+#: internal/policies/dconf/dconf.go:405
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
@@ -383,7 +386,7 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:185
+#: internal/policies/dconf/dconf.go:184
 #, c-format
 msgid "can't save %s"
 msgstr ""
@@ -401,7 +404,7 @@ msgstr ""
 msgid "can't serve"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:205
+#: internal/policies/dconf/dconf.go:204
 #, c-format
 msgid "can't update user profile %s"
 msgstr ""
@@ -418,15 +421,15 @@ msgstr ""
 msgid "cannot read schema data: %w"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:122
+#: internal/authorizer/authorizer.go:121
 msgid "context request doesn't have grpc peer creds informations."
 msgstr ""
 
-#: internal/authorizer/authorizer.go:126
+#: internal/authorizer/authorizer.go:125
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
-#: internal/authorizer/authorizer.go:142
+#: internal/authorizer/authorizer.go:141
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
@@ -434,11 +437,11 @@ msgstr ""
 msgid "couldn't create adsys service"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:169
+#: internal/authorizer/authorizer.go:168
 msgid "couldn't open stat file for process: %v"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:138
+#: internal/authorizer/authorizer.go:137
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
@@ -450,7 +453,7 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:177
+#: internal/policies/dconf/dconf.go:176
 msgid "dconf update failed: %v"
 msgstr ""
 
@@ -462,15 +465,15 @@ msgstr ""
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
-#: cmd/adsysd/client/admx.go:26
+#: cmd/adsysd/client/policy.go:38
 msgid "distro for which to retrieve policy definition."
 msgstr ""
 
-#: cmd/adsysd/client/policies.go:32
+#: cmd/adsysd/client/policy.go:56
 msgid "don't display colorized version."
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:397
+#: internal/policies/dconf/dconf.go:396
 msgid "empty signature for %v"
 msgstr ""
 
@@ -484,7 +487,7 @@ msgstr ""
 msgid "error opening raw connection: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:394
+#: internal/policies/dconf/dconf.go:393
 msgid "error while checking signature"
 msgstr ""
 
@@ -516,7 +519,7 @@ msgstr ""
 msgid "error while updating policy"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:109
+#: internal/policies/ad/admxgen/main.go:108
 msgid "failed to access definition files: %w"
 msgstr ""
 
@@ -540,11 +543,11 @@ msgstr ""
 msgid "failed to marshal meta data"
 msgstr ""
 
-#: internal/policies/ad/ad.go:251
+#: internal/policies/ad/ad.go:250
 msgid "failed to read cache directory: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:114
+#: internal/policies/ad/admxgen/main.go:113
 msgid "failed to read list of definition files: %w"
 msgstr ""
 
@@ -556,11 +559,11 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:285
+#: internal/policies/ad/ad.go:284
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:200
+#: internal/policies/ad/ad.go:199
 msgid ""
 "failed to retrieve the list of GPO: %v\n"
 "%s"
@@ -592,7 +595,7 @@ msgstr ""
 msgid "invalid policy"
 msgstr ""
 
-#: internal/policies/ad/download.go:188
+#: internal/policies/ad/download.go:187
 msgid "invalid remote GPT.INI"
 msgstr ""
 
@@ -600,21 +603,21 @@ msgstr ""
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:76
+#: internal/policies/dconf/dconf.go:75
 msgid ""
 "machine dconf database is required before generating a policy for an user. "
 "This one returns: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:207
+#: internal/policies/ad/ad.go:206
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
-#: cmd/adsysd/client/update.go:40
+#: cmd/adsysd/client/policy.go:253
 msgid "machine or user arguments cannot be used with update all"
 msgstr ""
 
-#: cmd/adsysd/client/update.go:32
+#: cmd/adsysd/client/policy.go:73
 msgid "machine updates the policy of the computer."
 msgstr ""
 
@@ -640,23 +643,23 @@ msgstr ""
 msgid "no policy applied for %q: %v"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:239
+#: internal/authorizer/authorizer.go:238
 msgid "parsing error: %v"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:231
+#: internal/authorizer/authorizer.go:230
 msgid "parsing error: ) at the end"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:235
+#: internal/authorizer/authorizer.go:234
 msgid "parsing error: less fields than required"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:227
+#: internal/authorizer/authorizer.go:226
 msgid "parsing error: missing )"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:118
+#: internal/authorizer/authorizer.go:117
 msgid "permission denied"
 msgstr ""
 
@@ -664,15 +667,15 @@ msgstr ""
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:199
+#: internal/authorizer/authorizer.go:198
 msgid "polkit denied access"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:134
+#: internal/authorizer/authorizer.go:133
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/policies/ad/ad.go:166
+#: internal/policies/ad/ad.go:165
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -680,11 +683,11 @@ msgstr ""
 msgid "server handshake failed"
 msgstr ""
 
-#: cmd/adsysd/client/policies.go:30
+#: cmd/adsysd/client/policy.go:54
 msgid "show applied rules in addition to GPOs."
 msgstr ""
 
-#: cmd/adsysd/client/policies.go:31
+#: cmd/adsysd/client/policy.go:55
 msgid "show overridden rules in each GPOs."
 msgstr ""
 
@@ -733,10 +736,10 @@ msgstr ""
 msgid "use a specific configuration file"
 msgstr ""
 
-#: cmd/adsysd/client/update.go:43
+#: cmd/adsysd/client/policy.go:256
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/policies/ad/ad.go:161
+#: internal/policies/ad/ad.go:160
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
