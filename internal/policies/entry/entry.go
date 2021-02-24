@@ -9,7 +9,7 @@ import (
 
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // Entry represents a key/value based policy (dconf, apparmor, ...) entry

@@ -16,7 +16,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/dconf"
 	adcommon "github.com/ubuntu/adsys/internal/policies/ad/common"
 	"golang.org/x/sync/errgroup"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 //go:embed admx.template
