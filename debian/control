@@ -2,8 +2,7 @@ Source: adsys
 Section: admin
 Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
-Build-Depends: debhelper,
-               debhelper-compat (= 13),
+Build-Depends: debhelper-compat (= 13),
                dh-apport,
                dh-golang,
                golang-go (>= 2:1.16~),

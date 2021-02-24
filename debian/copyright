@@ -27,7 +27,7 @@ License: GPL-3+
 
 Files: vendor/github.com/coreos
 Copyright: 2015-2018 CoreOS, Inc. / 2014 Docker, Inc.
-License: Apache License 2.0
+License: Apache-2.0
 
 Files: vendor/github.com/cpuguy83
 Copyright: 2014 Brian Goff
@@ -35,7 +35,7 @@ License: MIT
 
 Files: vendor/github.com/davecgh
 Copyright: 2012-2016 Dave Collins <dave@davec.name>
-License: ISC License
+License: ISC
 
 Files: vendor/github.com/fatih
 Copyright: 2013 Fatih Arslan
@@ -153,9 +153,9 @@ Files: vendor/gopkg.in/yaml.v*
 Copyright: 2011-2019 Canonical Ltd.
 License: Apache-2.0
 
-Files: vendor/gopkg.in/yaml.v3/{apic.go,emitterc.go,parserc.go}
+Files: vendor/gopkg.in/yaml.v3/{apic,emitterc,parserc,readerc,scannerc,writerc,yamlh,yamlprivateh}.go
 Copyright: 2011-2019 Canonical Ltd.
-           2006-2010 Kirill Simonov
+           2006-2011 Kirill Simonov
 License: MIT
 
 Files: vendor/honnef.co/go/tools
@@ -206,7 +206,7 @@ License: GPL-3+
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  Public License for more details.
 
-License: ISC License
+License: ISC
  Permission to use, copy, modify, and/or distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
  copyright notice and this permission notice appear in all copies.
@@ -238,7 +238,7 @@ License: MIT
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE.
 
-License: MPL-2
+License: MPL-2.0
  This Source Code Form is subject to the terms of the Mozilla Public
  License, v. 2.0. If a copy of the MPL was not distributed with this
  file, You can obtain one at http://mozilla.org/MPL/2.0/.
