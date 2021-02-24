@@ -15,11 +15,13 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58
-	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
+	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
+	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4
 	google.golang.org/grpc v1.33.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.23.0
 	gopkg.in/ini.v1 v1.51.0
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+	honnef.co/go/tools v0.1.2
 )
