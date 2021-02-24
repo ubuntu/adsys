@@ -33,19 +33,25 @@ adsysctl COMMAND [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
-#### adsysctl admx
+#### adsysctl applied
 
-Dump windows policy definitions
+Print last applied GPOs for current or given user/machine
+
+##### Synopsis
+
+Alias of "policy applied"
 
 ```
-adsysctl admx lts-only|all [flags]
+adsysctl applied [USER_NAME] [flags]
 ```
 
 ##### Options
 
 ```
-      --distro string   distro for which to retrieve policy definition. (default "Ubuntu")
-  -h, --help            help for admx
+  -a, --all        show overridden rules in each GPOs.
+      --details    show applied rules in addition to GPOs.
+  -h, --help       help for applied
+      --no-color   don't display colorized version.
 ```
 
 ##### Options inherited from parent commands
@@ -91,12 +97,59 @@ adsysctl completion [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
-#### adsysctl policies
+#### adsysctl policy
+
+Policy management
+
+```
+adsysctl policy COMMAND [flags]
+```
+
+##### Options
+
+```
+  -h, --help   help for policy
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+#### adsysctl policy admx
+
+Dump windows policy definitions
+
+```
+adsysctl policy admx lts-only|all [flags]
+```
+
+##### Options
+
+```
+      --distro string   distro for which to retrieve policy definition. (default "Ubuntu")
+  -h, --help            help for admx
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+#### adsysctl policy applied
 
 Print last applied GPOs for current or given user/machine
 
 ```
-adsysctl policies [USER_NAME] [flags]
+adsysctl policy applied [USER_NAME] [flags]
 ```
 
 ##### Options
@@ -104,8 +157,33 @@ adsysctl policies [USER_NAME] [flags]
 ```
   -a, --all        show overridden rules in each GPOs.
       --details    show applied rules in addition to GPOs.
-  -h, --help       help for policies
+  -h, --help       help for applied
       --no-color   don't display colorized version.
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+#### adsysctl policy update
+
+Updates/Create a policy for current user or given user with its kerberos ticket
+
+```
+adsysctl policy update [USER_NAME KERBEROS_TICKET_PATH] [flags]
+```
+
+##### Options
+
+```
+  -a, --all       all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option.
+  -h, --help      help for update
+  -m, --machine   machine updates the policy of the computer.
 ```
 
 ##### Options inherited from parent commands
@@ -190,6 +268,10 @@ adsysctl service stop [flags]
 #### adsysctl update
 
 Updates/Create a policy for current user or given user with its kerberos ticket
+
+##### Synopsis
+
+Alias of "policy update"
 
 ```
 adsysctl update [USER_NAME KERBEROS_TICKET_PATH] [flags]
