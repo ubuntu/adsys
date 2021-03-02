@@ -23,6 +23,8 @@ override_dh_auto_install:
 	rmdir debian/adsys/usr/
 	# create adsysctl command
 	ln -s adsysd debian/adsys/sbin/adsysctl
+	# Workaround file system race making debian/adsys/lib/ a file while it’s a directory
+	mkdir debian/adsys/lib
 	# run go generate to install assets, but don’t regenerate them
 	GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/adsys go generate -tags tools $(GOFLAGS) ./...
 	# remove admxgen helper from installation
