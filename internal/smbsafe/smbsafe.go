@@ -14,12 +14,15 @@ requests in the same mode can be executed in parallel.
 #include <signal.h>
 #include <string.h>
 
+struct sigaction orig_action;
+
+void captureoriginsigchild() {
+	sigaction(SIGCHLD, NULL, &orig_action);
+}
+
 void restoresigchild() {
-	struct sigaction action;
-	struct sigaction old_action;
-	sigaction(SIGCHLD, NULL, &action);
-	action.sa_flags = action.sa_flags | SA_ONSTACK;
-	sigaction(SIGCHLD, &action, &old_action);
+	struct sigaction modified_action;
+	sigaction(SIGCHLD, &orig_action, &modified_action);
 }
 */
 import "C"
@@ -33,6 +36,8 @@ var (
 // as .Wait() would then segfault.
 // Please use the Wait/Done functions to wrap any Exec or smb calls.
 func init() {
+	C.captureoriginsigchild()
+
 	wantSmb, doneSmb, wantExec, doneExec = make(chan struct{}), make(chan struct{}), make(chan struct{}), make(chan struct{})
 	go func() {
 		for {
@@ -53,8 +58,8 @@ func init() {
 						break
 					}
 				}
-			case <-wantExec:
 				C.restoresigchild()
+			case <-wantExec:
 				numExec := 1
 				// wait for all execs (maybe new ones can be created) to be done
 				for {
