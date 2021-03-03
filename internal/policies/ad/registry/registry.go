@@ -193,8 +193,8 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 	delimiter := []byte{0, 0, ';', 0} // \0; in little endian (UTF-16)
 	for s.Scan() {
 		elems := bytes.SplitN(s.Bytes(), delimiter, 5)
-		if len(elems) < 5 {
-			return nil, fmt.Errorf("item should contains at least 5 ';' separator: %s", s.Text())
+		if len(elems) != 5 {
+			return nil, fmt.Errorf("item should contains 5 fields separated by ';': %s", strings.ToValidUTF8(s.Text(), "?"))
 		}
 
 		keyPrefix, err := decodeUtf16(elems[0])
@@ -207,17 +207,23 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		}
 
 		if keyPrefix == "" {
-			return nil, fmt.Errorf("empty key in %s", s.Text())
+			return nil, fmt.Errorf("empty key in %s", strings.ToValidUTF8(s.Text(), "?"))
 		}
 		if keySuffix == "" {
-			return nil, fmt.Errorf("empty value in %s", s.Text())
+			return nil, fmt.Errorf("empty value in %s", strings.ToValidUTF8(s.Text(), "?"))
 		}
+
+		// Copy data to avoid pointing to newer elements on the next loop
+		// This reuse of memory is visible on files bigger than 4106.
+		// (-8 header bytes -> 4098).
+		var data = make([]byte, len(elems[4]))
+		copy(data, elems[4])
 
 		entries = append(entries, policyRawEntry{
 			path:  keyPrefix,
 			key:   keySuffix,
 			dType: dataType(elems[2][0]),
-			data:  elems[4], // TODO: if admx support binary data, then also return size
+			data:  data, // TODO: if admx support binary data, then also return size
 		})
 	}
 
