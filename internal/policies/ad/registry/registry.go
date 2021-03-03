@@ -213,11 +213,17 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 			return nil, fmt.Errorf("empty value in %s", s.Text())
 		}
 
+		// Copy data to avoid pointing to newer elements on the next loop
+		// This reuse of memory is visible on files bigger than 4106.
+		// (-8 header bytes -> 4098).
+		var data = make([]byte, len(elems[4]))
+		copy(data, elems[4])
+
 		entries = append(entries, policyRawEntry{
 			path:  keyPrefix,
 			key:   keySuffix,
 			dType: dataType(elems[2][0]),
-			data:  elems[4], // TODO: if admx support binary data, then also return size
+			data:  data, // TODO: if admx support binary data, then also return size
 		})
 	}
 
