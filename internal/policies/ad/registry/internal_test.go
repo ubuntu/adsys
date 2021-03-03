@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/text/encoding/unicode"
 )
 
 func TestReadPolicy(t *testing.T) {
@@ -50,6 +51,106 @@ func TestReadPolicy(t *testing.T) {
 					key:   "QueryLimit",
 					dType: dataType(4),
 					data:  []byte("\x39\x30\x00\x00"),
+				},
+			}},
+		// 4106 bytes file (-8 header bytes -> 4098)
+		"memory on multiple elements dont overlap": {
+			want: []policyRawEntry{
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options`,
+					key:   "metaValues",
+					dType: dataType(1),
+					data:  toUtf16(t, `{"20.04":{"default":"''","meta":"s"},"21.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options`,
+					key:   "all",
+					dType: dataType(1),
+					data:  toUtf16(t, `stretched`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options`,
+					key:   "Override21.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `false`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options`,
+					key:   "21.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `none`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options`,
+					key:   "Override20.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `false`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options`,
+					key:   "20.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `none`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri`,
+					key:   "metaValues",
+					dType: dataType(1),
+					data:  toUtf16(t, `{"20.04":{"default":"''","meta":"s"},"21.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri`,
+					key:   "all",
+					dType: dataType(1),
+					data:  toUtf16(t, `file:///usr/share/backgrounds/canonical.png`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri`,
+					key:   "Override21.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `false`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri`,
+					key:   "21.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `'file:///usr/backgrounds/warty-final-ubuntu.png'`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri`,
+					key:   "Override20.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `false`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri`,
+					key:   "20.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `'file:///xxxxusrpng'`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps`,
+					key:   "metaValues",
+					dType: dataType(1),
+					data:  toUtf16(t, `{"20.04":{"default":"","meta":"as"},"21.04":{"default":"","meta":"as"},"all":{"default":"","meta":"as"}}`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps`,
+					key:   "all",
+					dType: dataType(7),
+					data:  toUtf16(t, "'firefox.desktop'\x00'thunderbird.desktop'\x00'org.gnome.Nautilus.desktop'\x00"),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps`,
+					key:   "Override21.04",
+					dType: dataType(1),
+					data:  toUtf16(t, `true`),
+				},
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps`,
+					key:   "21.04",
+					dType: dataType(7),
+					data:  toUtf16(t, "'firefox.desktop', 'thunderbird.desktop', 'yelp.desktop'\x00"),
 				},
 			}},
 
@@ -124,4 +225,13 @@ func TestReadPolicy(t *testing.T) {
 
 func policyFilePath(name string) string {
 	return filepath.Join("testdata", strings.ReplaceAll(strings.ReplaceAll(name, ",", "_"), " ", "_")+".pol")
+}
+
+// toUtf16 is a utility function to convert test data from string to utf16 data
+func toUtf16(t *testing.T, s string) []byte {
+	encoder := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewEncoder()
+	r, err := encoder.Bytes([]byte(s))
+	require.NoError(t, err, "Setup: string converted to utf16 should not error out")
+	r = append(r, '\x00', '\x00')
+	return r
 }
