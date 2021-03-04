@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -101,7 +102,8 @@ func (g GPO) FormatGPO(w io.Writer, withRules, withOverridden bool, alreadyProce
 			if overr {
 				prefix += "-"
 			}
-			v := r.Value
+			// Trim EOL \n and replace them all with \n in text to keep each value printed in one single line
+			v := strings.ReplaceAll(strings.TrimSpace(r.Value), "\n", `\n`)
 			if r.Disabled {
 				prefix += "+"
 				fmt.Fprintf(w, "%s %s\n", prefix, r.Key)

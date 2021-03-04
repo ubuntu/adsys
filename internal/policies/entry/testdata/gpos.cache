@@ -6,7 +6,10 @@
       value: ValueOfKey1
       meta: s
     - key: path/to/key2
-      value: ValueOfKey2
+      value: |
+        ValueOfKey2
+        On
+        Multilines
       meta: s
     scripts:
     - key: path/to/key3

@@ -12,7 +12,7 @@
 [1m[94mPolicies from user configuration:[0m[0m
 - [35mGPOName3[0m ({GPOId2})
     - [1mdconf:[0m
-[90m        - path/to/key1: ValueOfKey1[0m
+[90m        - path/to/key1: ValueOfKey1\nOn\nMultilines[0m
 [90m        - path/to/key2: ValueOfKey2[0m
     - [1mscripts:[0m
 [90m        - path/to/key3: Locked to system default[0m
