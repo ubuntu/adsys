@@ -49,6 +49,11 @@ type Manager struct {
 	dconfDir string
 }
 
+// NewWithDconfDir creates a manager with a specific dconf directory
+func NewWithDconfDir(dir string) *Manager {
+	return &Manager{dconfDir: dir}
+}
+
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't apply dconf policy to %s"), objectName)

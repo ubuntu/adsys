@@ -20,11 +20,12 @@ import (
 type Manager struct {
 	gpoRulesCacheDir string
 
-	dconf dconf.Manager
+	dconf *dconf.Manager
 }
 
 type options struct {
 	cacheDir string
+	dconf    *dconf.Manager
 }
 type option func(*options) error
 
@@ -43,6 +44,7 @@ func New(opts ...option) (m *Manager, err error) {
 	// defaults
 	args := options{
 		cacheDir: config.DefaultCacheDir,
+		dconf:    &dconf.Manager{},
 	}
 	// applied options
 	for _, o := range opts {
@@ -59,7 +61,7 @@ func New(opts ...option) (m *Manager, err error) {
 	return &Manager{
 		gpoRulesCacheDir: gpoRulesCacheDir,
 
-		dconf: dconf.Manager{},
+		dconf: args.dconf,
 	}, nil
 }
 
@@ -80,11 +82,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	// Write cache GPO results
-	if err := entry.SaveGPOs(gpos, filepath.Join(m.gpoRulesCacheDir, objectName)); err != nil {
-		return err
-	}
-
-	return nil
+	return entry.SaveGPOs(gpos, filepath.Join(m.gpoRulesCacheDir, objectName))
 }
 
 // DumpPolicies displays the currently applied policies and rules (since last update) for objectName.
