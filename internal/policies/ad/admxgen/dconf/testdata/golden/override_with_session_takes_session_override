@@ -3,7 +3,7 @@
   explaintext: simple-text-property-overridden-ubuntu description
   elementtype: text
   meta:
-    default: ''''''
+    empty: ''''''
     meta: s
   default: '''Overridden simple-text-property-overridden-ubuntu Value For Ubuntu Session'''
   release: "20.04"

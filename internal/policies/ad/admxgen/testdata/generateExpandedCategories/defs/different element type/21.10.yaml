@@ -4,7 +4,7 @@
   elementtype: NotText
   meta:
     meta: "s"
-    default: ''''''
+    empty: ''''''
   class: ""
   default: '''Default Value common'''
   release: "21.10"

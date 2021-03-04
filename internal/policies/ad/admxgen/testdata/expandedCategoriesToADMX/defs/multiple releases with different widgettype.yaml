@@ -13,7 +13,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04, 18.04
-    meta: '{"20.04":{"default":"''''","meta":"s"},{"18.04":{"default":"false","meta":"b"},"all":{"default":"''''","meta":"s"}}'
+    meta: '{"20.04":{"empty":"''''","meta":"s"},{"18.04":{"empty":"false","meta":"b"},"all":{"empty":"''''","meta":"s"}}'
     class: Machine
     releaseselements:
       all:
@@ -22,7 +22,7 @@
         explaintext: description
         elementtype: text
         meta:
-          default: ''''''
+          empty: ''''''
           meta: "s"
         default: '''Default Value'''
         release: "20.04"
@@ -33,7 +33,7 @@
         explaintext: description
         elementtype: text
         meta:
-          default: ''''''
+          empty: ''''''
           meta: "s"
         default: '''Default Value'''
         release: "20.04"
@@ -44,7 +44,7 @@
         explaintext: description
         elementtype: boolean
         meta:
-          default: "false"
+          empty: "false"
           meta: "b"
         default: 'true'
         release: "18.04"

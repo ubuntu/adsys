@@ -4,7 +4,7 @@
   elementtype: dropdownList
   meta:
     meta: "s"
-    default: ''''''
+    empty: ''''''
   class: ""
   default: 'choice 2'
   choices:

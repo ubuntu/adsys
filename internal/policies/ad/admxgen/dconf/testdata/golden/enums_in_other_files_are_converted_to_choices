@@ -3,7 +3,7 @@
   explaintext: enum-otherfile-property description
   elementtype: dropdownList
   meta:
-    default: ''''''
+    empty: ''''''
     meta: s
   default: '''up'''
   choices:

@@ -4,7 +4,7 @@
   elementtype: text
   meta:
     meta: "s"
-    default: ''''''
+    empty: ''''''
   class: ""
   default: '''Default Value common'''
   release: "21.10"
@@ -16,7 +16,7 @@
   elementtype: text
   meta:
     meta: "s"
-    default: ''''''
+    empty: ''''''
   class: ""
   default: '''Default Value policy-only-21.10'''
   release: "21.10"

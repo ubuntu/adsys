@@ -3,7 +3,7 @@
   explaintext: long-decimal-property-with-range-min-lt-zero description
   elementtype: longDecimal
   meta:
-    default: "0"
+    empty: "0"
     meta: u
   default: "42"
   rangevalues:

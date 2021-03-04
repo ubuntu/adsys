@@ -47,7 +47,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\interface\toolkit-accessibility" valueName="metaValues">
       <parentCategory ref="UbuntuAccessibility" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -74,7 +74,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\a11y\applications\screen-keyboard-enabled" valueName="metaValues">
       <parentCategory ref="UbuntuAccessibility" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -101,7 +101,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\a11y\applications\screen-magnifier-enabled" valueName="metaValues">
       <parentCategory ref="UbuntuAccessibility" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -128,7 +128,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\a11y\applications\screen-reader-enabled" valueName="metaValues">
       <parentCategory ref="UbuntuAccessibility" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -155,7 +155,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundPictureUri" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUri)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureUri)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureUri)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri" valueName="metaValues">
       <parentCategory ref="UbuntuBackground" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"20.10":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureUri" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopBackgroundPictureUri" valueName="Override20.10">
@@ -173,7 +173,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundPictureOptions" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureOptions)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureOptions)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options" valueName="metaValues">
       <parentCategory ref="UbuntuBackground" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"20.10":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <enum id="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions" valueName="all">
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions0)">
@@ -299,7 +299,7 @@
     <policy name="UbuntuUserDconfOrgGnomeShellFavoriteApps" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeShellFavoriteApps)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeShellFavoriteApps)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeShellFavoriteApps)" key="Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps" valueName="metaValues">
       <parentCategory ref="UbuntuShell" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"[]","meta":"as"},"20.10":{"default":"[]","meta":"as"},"all":{"default":"[]","meta":"as"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"20.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeShellFavoriteApps" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeShellFavoriteApps" valueName="Override20.10">
@@ -317,7 +317,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons" valueName="metaValues">
       <parentCategory ref="UbuntuShell" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -344,7 +344,7 @@
     <policy name="UbuntuUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton)" key="Software\Policies\Ubuntu\dconf\org\gnome\shell\extensions\dash-to-dock\show-show-apps-button" valueName="metaValues">
       <parentCategory ref="UbuntuShell" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -371,7 +371,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopInterfaceClockFormat" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockFormat)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockFormat)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockFormat)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\interface\clock-format" valueName="metaValues">
       <parentCategory ref="UbuntuClock" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"20.10":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <enum id="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockFormat" valueName="all">
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat0)">
@@ -422,7 +422,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopInterfaceClockShowDate" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowDate)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockShowDate)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowDate)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\interface\clock-show-date" valueName="metaValues">
       <parentCategory ref="UbuntuClock" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -449,7 +449,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopInterfaceClockShowWeekday" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockShowWeekday)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowWeekday)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\interface\clock-show-weekday" valueName="metaValues">
       <parentCategory ref="UbuntuClock" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -476,7 +476,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopNotificationsShowBanners" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowBanners)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopNotificationsShowBanners)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowBanners)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\notifications\show-banners" valueName="metaValues">
       <parentCategory ref="UbuntuNotifications" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowBanners" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -503,7 +503,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableCommandLine" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableCommandLine)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableCommandLine)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-command-line" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -530,7 +530,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableLogOut" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLogOut)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableLogOut)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLogOut)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-log-out" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLogOut" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -557,7 +557,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableUserSwitching" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableUserSwitching)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableUserSwitching)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-user-switching" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -584,7 +584,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisablePrinting" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrinting)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisablePrinting)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrinting)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-printing" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrinting" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -611,7 +611,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisablePrintSetup" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisablePrintSetup)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrintSetup)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-print-setup" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -638,7 +638,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-save-to-disk" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -665,7 +665,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\user-administration-disabled" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -692,7 +692,7 @@
     <policy name="UbuntuUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\media-keys\control-center" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"[]","meta":"as"},"20.10":{"default":"[]","meta":"as"},"all":{"default":"[]","meta":"as"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"20.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" valueName="Override20.10">
@@ -710,7 +710,7 @@
     <policy name="UbuntuUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\media-keys\terminal" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"[]","meta":"as"},"20.10":{"default":"[]","meta":"as"},"all":{"default":"[]","meta":"as"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"20.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" valueName="Override20.10">
@@ -728,7 +728,7 @@
     <policy name="UbuntuUserDconfOrgGnomeShellKeybindingsToggleOverview" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleOverview)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeShellKeybindingsToggleOverview)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeShellKeybindingsToggleOverview)" key="Software\Policies\Ubuntu\dconf\org\gnome\shell\keybindings\toggle-overview" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"[]","meta":"as"},"20.10":{"default":"[]","meta":"as"},"all":{"default":"[]","meta":"as"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"20.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeShellKeybindingsToggleOverview" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeShellKeybindingsToggleOverview" valueName="Override20.10">
@@ -746,7 +746,7 @@
     <policy name="UbuntuUserDconfOrgGnomeShellKeybindingsToggleApplicationView" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeShellKeybindingsToggleApplicationView)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeShellKeybindingsToggleApplicationView)" key="Software\Policies\Ubuntu\dconf\org\gnome\shell\keybindings\toggle-application-view" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"[]","meta":"as"},"20.10":{"default":"[]","meta":"as"},"all":{"default":"[]","meta":"as"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"20.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeShellKeybindingsToggleApplicationView" valueName="Override20.10">
@@ -764,7 +764,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\wm\keybindings\panel-main-menu" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"[]","meta":"as"},"20.10":{"default":"[]","meta":"as"},"all":{"default":"[]","meta":"as"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"20.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" valueName="Override20.10">
@@ -782,7 +782,7 @@
     <policy name="UbuntuUserDconfOrgGnomeMutterOverlayKey" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeMutterOverlayKey)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeMutterOverlayKey)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeMutterOverlayKey)" key="Software\Policies\Ubuntu\dconf\org\gnome\mutter\overlay-key" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"20.10":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemUserAllDconfOrgGnomeMutterOverlayKey" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeMutterOverlayKey" valueName="Override20.10">
@@ -800,7 +800,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopScreensaverPictureUri" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureUri)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopScreensaverPictureUri)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopScreensaverPictureUri)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\screensaver\picture-uri" valueName="metaValues">
       <parentCategory ref="UbuntuScreensaver" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"20.10":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemUserAllDconfOrgGnomeDesktopScreensaverPictureUri" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopScreensaverPictureUri" valueName="Override20.10">
@@ -818,7 +818,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopScreensaverPictureOptions" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureOptions)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopScreensaverPictureOptions)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopScreensaverPictureOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\screensaver\picture-options" valueName="metaValues">
       <parentCategory ref="UbuntuScreensaver" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"''","meta":"s"},"20.10":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <enum id="UbuntuElemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions" valueName="all">
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions0)">
@@ -944,7 +944,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopNotificationsShowInLockScreen" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopNotificationsShowInLockScreen)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowInLockScreen)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\notifications\show-in-lock-screen" valueName="metaValues">
       <parentCategory ref="UbuntuScreensaver" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -971,7 +971,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableLockScreen" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableLockScreen)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLockScreen)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-lock-screen" valueName="metaValues">
       <parentCategory ref="UbuntuScreensaver" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen" valueName="all">
           <trueValue><string>true</string></trueValue>
@@ -998,7 +998,7 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopMediaHandlingAutomount" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopMediaHandlingAutomount)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopMediaHandlingAutomount)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopMediaHandlingAutomount)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\media-handling\automount" valueName="metaValues">
       <parentCategory ref="UbuntuPeripherals" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"false","meta":"b"},"20.10":{"default":"false","meta":"b"},"all":{"default":"false","meta":"b"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopMediaHandlingAutomount" valueName="all">
           <trueValue><string>true</string></trueValue>

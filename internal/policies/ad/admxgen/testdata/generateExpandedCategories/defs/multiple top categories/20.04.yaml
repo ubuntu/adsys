@@ -4,7 +4,7 @@
   elementtype: text
   meta:
     meta: "s"
-    default: ''''''
+    empty: ''''''
   class: ""
   default: '''Default Value first'''
   release: "20.04"
@@ -16,7 +16,7 @@
   elementtype: text
   meta:
     meta: "s"
-    default: ''''''
+    empty: ''''''
   class: ""
   default: '''Default Value second'''
   release: "20.04"

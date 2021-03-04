@@ -11,7 +11,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04, 18.04
-    meta: '{"20.04":{"default":"''''","meta":"s"},{"18.04":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'
+    meta: '{"20.04":{"empty":"''''","meta":"s"},{"18.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
     class: Machine
     releaseselements:
       all:
@@ -21,7 +21,7 @@
         elementtype: text
         meta:
           meta: "s"
-          default: ''''''
+          empty: ''''''
         default: '''Default Value'''
         release: "20.04"
         type: dconf
@@ -32,7 +32,7 @@
         elementtype: text
         meta:
           meta: "s"
-          default: ''''''
+          empty: ''''''
         default: '''Default Value'''
         release: "20.04"
         type: dconf
@@ -43,7 +43,7 @@
         elementtype: text
         meta:
           meta: "s"
-          default: ''''''
+          empty: ''''''
         default: '''Default Value'''
         release: "18.04"
         type: dconf

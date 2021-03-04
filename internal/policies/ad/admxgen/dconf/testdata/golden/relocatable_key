@@ -3,7 +3,7 @@
   explaintext: property description
   elementtype: text
   meta:
-    default: ''''''
+    empty: ''''''
     meta: s
   default: '''property Default Value'''
   release: "20.04"

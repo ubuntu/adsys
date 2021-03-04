@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDecimal" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyDecimal)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDecimal)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDecimal)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-decimal" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"0","meta":"i"},"all":{"default":"0","meta":"i"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
       <elements>
         <decimal id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyDecimal" valueName="all" />
       </elements>

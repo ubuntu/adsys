@@ -3,7 +3,7 @@
   explaintext: simple-text-property-overridden-by-multiple-files description
   elementtype: text
   meta:
-    default: ''''''
+    empty: ''''''
     meta: s
   default: '''This is the simple-text-property-overridden-by-multiple-files overridden
     Value'''

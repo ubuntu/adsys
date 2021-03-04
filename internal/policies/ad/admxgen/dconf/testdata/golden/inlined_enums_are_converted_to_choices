@@ -3,7 +3,7 @@
   explaintext: enum-inline-property description
   elementtype: dropdownList
   meta:
-    default: ''''''
+    empty: ''''''
     meta: s
   default: '''HIGH'''
   choices:

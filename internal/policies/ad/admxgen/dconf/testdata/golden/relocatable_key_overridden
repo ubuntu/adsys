@@ -3,7 +3,7 @@
   explaintext: property-with-override description
   elementtype: text
   meta:
-    default: ''''''
+    empty: ''''''
     meta: s
   default: '''Overridden property-with-override Value'''
   release: "20.04"

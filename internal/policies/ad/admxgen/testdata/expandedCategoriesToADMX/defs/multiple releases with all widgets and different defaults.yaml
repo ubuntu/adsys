@@ -17,13 +17,13 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu textrelease, multitextrelease, longdecimalrelease, dropdownlistrelease, decimalrelease, booleanrelease
-    meta: '{"textrelease":{"meta": "s", "default": "''''"},
-            "multitextrelease":{"meta": "as", "default": "[]"},
-            "longdecimalrelease":{"meta": "u", "default": "0"},
-            "dropdownlistrelease":{"meta": "s", "default": "''''"},
-            "decimalrelease":{"meta": "i", "default": "0"},
-            "booleanrelease":{"meta": "b", "default": "false"},
-            "all":{"meta": "s", "default": "''''"}}'
+    meta: '{"textrelease":{"meta": "s", "empty": "''''"},
+            "multitextrelease":{"meta": "as", "empty": "[]"},
+            "longdecimalrelease":{"meta": "u", "empty": "0"},
+            "dropdownlistrelease":{"meta": "s", "empty": "''''"},
+            "decimalrelease":{"meta": "i", "empty": "0"},
+            "booleanrelease":{"meta": "b", "empty": "false"},
+            "all":{"meta": "s", "empty": "''''"}}'
     class: Machine
     releaseselements:
       all:
@@ -32,7 +32,7 @@
         explaintext: description
         elementtype: text
         meta:
-          default: ''''''
+          empty: ''''''
           meta: "s"
         default: "text default"
         release: "textrelease"
@@ -43,7 +43,7 @@
         explaintext: description
         elementtype: text
         meta:
-          default: ''''''
+          empty: ''''''
           meta: "s"
         default: "text default"
         release: "textrelease"
@@ -54,7 +54,7 @@
         explaintext: description
         elementtype: multiText
         meta:
-          default: ''''''
+          empty: ''''''
           meta: "s"
         default: "multitext default"
         release: "multitextrelease"
@@ -65,7 +65,7 @@
         explaintext: description
         elementtype: boolean
         meta:
-          default: "false"
+          empty: "false"
           meta: "b"
         default: 'true'
         release: "booleanrelease"
@@ -76,7 +76,7 @@
         explaintext: description
         elementtype: decimal
         meta:
-          default: "0"
+          empty: "0"
           meta: "i"
         default: "20"
         release: "decimalrelease"
@@ -87,7 +87,7 @@
         explaintext: description
         elementtype: longDecimal
         meta:
-          default: "u"
+          empty: "u"
           meta: "u"
         default: "2020"
         release: "longdecimalrelease"
@@ -98,7 +98,7 @@
         explaintext: description
         elementtype: dropdownList
         meta:
-          default: ''''''
+          empty: ''''''
           meta: "s"
         default: 'Choice 3'
         choices:

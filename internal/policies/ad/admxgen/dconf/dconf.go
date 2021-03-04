@@ -139,8 +139,8 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			ep.ElementType = common.WidgetTypeDropdownList
 		}
 		ep.Meta = map[string]string{
-			"meta":    s.Type,
-			"default": m.emptyValue,
+			"meta":  s.Type,
+			"empty": m.emptyValue,
 		}
 
 		if m.widgetType == common.WidgetTypeLongDecimal {

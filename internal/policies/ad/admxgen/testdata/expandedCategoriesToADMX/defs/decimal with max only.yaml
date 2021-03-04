@@ -11,7 +11,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04
-    meta: '{"20.04":{"default":"0","meta":"i"},"all":{"default":"0","meta":"i"}}'
+    meta: '{"20.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}'
     class: Machine
     releaseselements:
       all:
@@ -20,7 +20,7 @@
         explaintext: description
         elementtype: decimal
         meta:
-          default: "0"
+          empty: "0"
           meta: i
         default: "42"
         rangevalues:
