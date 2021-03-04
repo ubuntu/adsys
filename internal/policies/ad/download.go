@@ -87,7 +87,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 		client.SetUseKerberos()
 	}
 
-	errg := new(errgroup.Group)
+	var errg errgroup.Group
 	for name, url := range gpos {
 		g, ok := ad.gpos[name]
 		if !ok {

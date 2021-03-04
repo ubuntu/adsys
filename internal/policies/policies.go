@@ -13,6 +13,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"golang.org/x/sync/errgroup"
 )
 
 // Manager handles all managers for various policy handlers.
@@ -69,20 +70,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
 
-	for entryType, entries := range entry.GetUniqueRules(gpos) {
-		switch entryType {
-		case "dconf":
-			err = m.dconf.ApplyPolicy(ctx, objectName, isComputer, entries)
-		case "script":
-			// TODO err = script.ApplyPolicy(objectName, isComputer, entries)
-		case "apparmor":
-			// TODO err = apparmor.ApplyPolicy(objectName, isComputer, entries)
-		default:
-			return fmt.Errorf(i18n.G("unknown entry type: %s for keys %s"), entryType, entries)
-		}
-		if err != nil {
-			return err
-		}
+	rules := entry.GetUniqueRules(gpos)
+	var g errgroup.Group
+	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
+	// TODO g.Go(func() error { return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"]) })
+	// TODO g.Go(func() error { return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"]) })
+	if err := g.Wait(); err != nil {
+		return err
 	}
 
 	// Write cache GPO results
