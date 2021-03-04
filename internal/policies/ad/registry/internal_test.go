@@ -60,7 +60,7 @@ func TestReadPolicy(t *testing.T) {
 					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options`,
 					key:   "metaValues",
 					dType: dataType(1),
-					data:  toUtf16(t, `{"20.04":{"default":"''","meta":"s"},"21.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}`),
+					data:  toUtf16(t, `{"20.04":{"empty":"''","meta":"s"},"21.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}`),
 				},
 				{
 					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options`,
@@ -96,7 +96,7 @@ func TestReadPolicy(t *testing.T) {
 					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri`,
 					key:   "metaValues",
 					dType: dataType(1),
-					data:  toUtf16(t, `{"20.04":{"default":"''","meta":"s"},"21.04":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}`),
+					data:  toUtf16(t, `{"20.04":{"empty":"''","meta":"s"},"21.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}`),
 				},
 				{
 					path:  `Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri`,
@@ -132,7 +132,7 @@ func TestReadPolicy(t *testing.T) {
 					path:  `Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps`,
 					key:   "metaValues",
 					dType: dataType(1),
-					data:  toUtf16(t, `{"20.04":{"default":"","meta":"as"},"21.04":{"default":"","meta":"as"},"all":{"default":"","meta":"as"}}`),
+					data:  toUtf16(t, `{"20.04":{"empty":"","meta":"as"},"21.04":{"empty":"","meta":"as"},"all":{"empty":"","meta":"as"}}`),
 				},
 				{
 					path:  `Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps`,

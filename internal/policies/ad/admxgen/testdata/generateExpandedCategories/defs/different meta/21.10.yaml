@@ -4,7 +4,7 @@
   elementtype: text
   meta:
     meta: "as"
-    default: "[]"
+    empty: "[]"
   class: ""
   default: '''Default Value common'''
   release: "21.10"

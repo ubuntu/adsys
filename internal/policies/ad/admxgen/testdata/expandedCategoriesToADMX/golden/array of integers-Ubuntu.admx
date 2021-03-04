@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyArrayDecimal" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyArrayDecimal)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyArrayDecimal)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyArrayDecimal)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-decimal" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"[]","meta":"ai"},"all":{"default":"[]","meta":"ai"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"ai"},"all":{"empty":"[]","meta":"ai"}}</string></enabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyArrayDecimal" valueName="all" />
       </elements>

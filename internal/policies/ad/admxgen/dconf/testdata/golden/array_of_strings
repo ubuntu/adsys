@@ -3,7 +3,7 @@
   explaintext: array-string-property description
   elementtype: multiText
   meta:
-    default: '[]'
+    empty: '[]'
     meta: as
   default: '[''Value1'', ''Value2'']'
   release: "20.04"

@@ -10,7 +10,7 @@
       - Default: 'Default Value 1'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
-    meta: '{"20.04":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'
+    meta: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
     class: Machine
     releaseselements:
       all:
@@ -20,7 +20,7 @@
         elementtype: text
         meta:
           meta: "s"
-          default: ''''''
+          empty: ''''''
         default: '''Default Value 1'''
         release: "20.04"
         type: dconf
@@ -38,7 +38,7 @@
       - Default: 'Default Value 2'
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
     elementtype: text
-    meta: '{"20.04":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'
+    meta: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
     class: Machine
     releaseselements:
       all:
@@ -48,7 +48,7 @@
         elementtype: text
         meta:
           meta: "s"
-          default: ''''''
+          empty: ''''''
         default: '''Default Value 2'''
         release: "20.04"
         type: dconf

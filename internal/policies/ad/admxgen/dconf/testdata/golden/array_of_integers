@@ -3,7 +3,7 @@
   explaintext: array-decimal-property description
   elementtype: multiText
   meta:
-    default: '[]'
+    empty: '[]'
     meta: ai
   default: '[1, 2]'
   release: "20.04"

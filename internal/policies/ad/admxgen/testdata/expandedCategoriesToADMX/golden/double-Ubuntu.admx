@@ -17,7 +17,7 @@
     <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyDouble" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyDouble)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyDouble)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyDouble)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-double" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"default":"0","meta":"u"},"all":{"default":"0","meta":"u"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"u"},"all":{"empty":"0","meta":"u"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyDouble" valueName="all" />
       </elements>

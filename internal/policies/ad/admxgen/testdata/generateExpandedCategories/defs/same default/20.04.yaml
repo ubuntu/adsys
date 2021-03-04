@@ -4,7 +4,7 @@
   elementtype: text
   meta:
     meta: "s"
-    default: ''''''
+    empty: ''''''
   class: ""
   default: '''Default Value common'''
   release: "20.04"

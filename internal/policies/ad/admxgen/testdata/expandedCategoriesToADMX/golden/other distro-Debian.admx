@@ -17,7 +17,7 @@
     <policy name="DebianMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.DebianDisplayMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.DebianExplainTextMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.DebianPresentationMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
       <parentCategory ref="DebianCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"sid":{"default":"''","meta":"s"},"all":{"default":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"sid":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="DebianElemMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" valueName="all" />
       </elements>

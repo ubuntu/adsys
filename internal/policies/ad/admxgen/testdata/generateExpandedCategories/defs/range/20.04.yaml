@@ -4,7 +4,7 @@
   elementtype: decimal
   meta:
     meta: "i"
-    default: "0"
+    empty: "0"
   class: ""
   default: '''Default Value'''
   rangevalues:

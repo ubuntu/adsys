@@ -11,7 +11,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Debian sid
-    meta: '{"sid":{"default":"''''","meta":"s"},"all":{"default":"''''","meta":"s"}}'
+    meta: '{"sid":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
     class: Machine
     releaseselements:
       all:
@@ -20,7 +20,7 @@
         explaintext: description
         elementtype: text
         meta:
-          default: ''''''
+          empty: ''''''
           meta: "s"
         default: '''Default Value'''
         release: "sid"

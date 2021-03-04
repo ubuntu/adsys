@@ -11,7 +11,7 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04
-    meta: '{"20.04":{"default":"[]","meta":"ai"},"all":{"default":"[]","meta":"ai"}}'
+    meta: '{"20.04":{"empty":"[]","meta":"ai"},"all":{"empty":"[]","meta":"ai"}}'
     class: Machine
     releaseselements:
       all:
@@ -21,7 +21,7 @@
         elementtype: multiText
         meta:
           meta: "ai"
-          default: "[]"
+          empty: "[]"
         default: '[1, 2]'
         release: "20.04"
         type: dconf

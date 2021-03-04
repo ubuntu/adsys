@@ -3,7 +3,7 @@
   explaintext: boolean-property description
   elementtype: boolean
   meta:
-    default: "false"
+    empty: "false"
     meta: b
   default: "true"
   release: "20.04"

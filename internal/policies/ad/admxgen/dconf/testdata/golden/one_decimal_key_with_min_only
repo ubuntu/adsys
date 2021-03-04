@@ -3,7 +3,7 @@
   explaintext: decimal-property-with-range description
   elementtype: decimal
   meta:
-    default: "0"
+    empty: "0"
     meta: i
   default: "42"
   rangevalues:
