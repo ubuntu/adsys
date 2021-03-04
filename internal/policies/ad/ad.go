@@ -11,6 +11,9 @@ import (
 	"strings"
 	"sync"
 
+	// embed gpolist python binary
+	_ "embed"
+
 	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -86,6 +89,9 @@ func WithRunDir(runDir string) func(o *options) error {
 	}
 }
 
+//go:embed adsys-gpolist
+var adsysGpoListCode string
+
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
 func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
@@ -100,7 +106,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 		runDir:      config.DefaultRunDir,
 		cacheDir:    config.DefaultCacheDir,
 		sssCacheDir: "/var/lib/sss/db",
-		gpoListCmd:  []string{"/usr/libexec/adsys-gpolist"},
+		gpoListCmd:  []string{"python3", "-c", adsysGpoListCode},
 		versionID:   versionID,
 	}
 	// applied options
