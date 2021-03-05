@@ -1,3 +1,23 @@
+adsys (0.2) hirsute; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Fix FTBFS due to race:
+    - workaround amd64 mkdirall while creating directory for pam module
+      integration
+    - fix sigchild flag capture, including additional flags on non amd64,
+      before restoring them after each samba call to workaround libsamba
+      signals override.
+  * Fix utf-16 and memory management when .pol windows file are more than 4106
+    size long (-8 header bytes > 4096).
+  * Fix GPO list order when a policy is enforced
+  * Embed GPO list python helper inside the go binary
+  * Fix emptying a GPO after setting value doesn’t reset the applied policy
+  * Fix multi-lines support while dumping applied policies
+  * Internal: rename "default" dconf metadata to "empty" for clarity
+
+ -- Didier Roche <didrocks@ubuntu.com>  Thu, 25 Feb 2021 10:11:13 +0100
+
 adsys (0.1) hirsute; urgency=medium
 
   * Initial release
