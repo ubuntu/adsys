@@ -325,7 +325,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			if err != nil && os.IsExist(err) {
 				return err
 			} else if err != nil && os.IsNotExist(err) {
-				log.Debugf(ctx, "Policy %s doesn't have any policy for class %q %s", name, objectClass, err)
+				log.Debugf(ctx, "Policy %q doesn't have any policy for class %q %s", name, objectClass, err)
 				return nil
 			}
 			defer f.Close()
