@@ -71,9 +71,10 @@ categories:
         - "/org/gnome/desktop/media-handling/automount"
 
 
-  #- displayname: "Ubuntu Desktop"
-  #  parent: "windows:Desktop"
-  #  defaultpolicyclass: "Machine"
-  #  #policies:
-  #  #  - "/org/gnome/desktop/policy-common"
-  #  children:
+    - displayname: "Login Screen"
+      defaultpolicyclass: "Machine"
+      prefix: "gdm"
+      policies:
+        - "/org/gnome/desktop/interface/clock-format"
+        - "/org/gnome/desktop/interface/clock-show-date"
+        - "/org/gnome/desktop/interface/clock-show-weekday"
