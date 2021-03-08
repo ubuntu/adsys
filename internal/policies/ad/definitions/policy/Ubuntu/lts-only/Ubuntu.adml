@@ -17,6 +17,7 @@
       <string id="UbuntuDisplayKeyboardShortcuts">Keyboard shortcuts</string>
       <string id="UbuntuDisplayScreensaver">Screensaver</string>
       <string id="UbuntuDisplayPeripherals">Peripherals</string>
+      <string id="UbuntuDisplayLoginScreen">Login Screen</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
 
 - Type: dconf
@@ -312,6 +313,35 @@ Note: default system value is used for &#34;Not Configured&#34; and enforced if 
 
 Supported on Ubuntu 20.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-format
+- Default: &#39;24h&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
+      <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
+      <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate">If true, display date in the clock, in addition to time.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-show-date
+- Default: true
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">If true, display weekday in the clock, in addition to time.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-show-weekday
+- Default: false
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
     </stringTable>
 
     <presentationTable>
@@ -422,6 +452,15 @@ Supported on Ubuntu 20.04</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopMediaHandlingAutomount">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Whether to automatically mount media</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">
+        <dropdownList refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="">Whether the clock displays in 24h or 12h format</dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Show date in clock</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
       </presentation>
     </presentationTable>
 
