@@ -1,5 +1,5 @@
 - displayname: Category1 Display Name
-  parent: windows:Desktop
+  parent: ubuntu:Desktop
   policies:
   - key: Software\Ubuntu\notdconf\org\gnome\desktop\policy-common
     displayname: summary common

@@ -1,5 +1,5 @@
 - displayname: Category 1 Display Name
-  parent: windows:Desktop
+  parent: ubuntu:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-first
     explaintext: |-
@@ -26,7 +26,7 @@
         release: "20.04"
         type: dconf
 - displayname: Category 2 Display Name
-  parent: windows:Desktop
+  parent: ubuntu:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second
     explaintext: |-

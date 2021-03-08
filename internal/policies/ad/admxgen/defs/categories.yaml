@@ -4,7 +4,7 @@ supportedreleases:
   - 21.04
 categories:
   - displayname: "Ubuntu"
-    parent: "windows:Desktop"
+    parent: "ubuntu:Desktop"
     defaultpolicyclass: "User"
     children:
     - displayname: "Desktop"

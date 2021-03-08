@@ -1,5 +1,5 @@
 - displayname: Category1 Display Name
-  parent: windows:Desktop
+  parent: ubuntu:Desktop
   policies:
   - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-string
     explaintext: |-
