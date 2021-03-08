@@ -18,6 +18,8 @@
       <string id="UbuntuDisplayScreensaver">Screensaver</string>
       <string id="UbuntuDisplayPeripherals">Peripherals</string>
       <string id="UbuntuDisplayLoginScreen">Login Screen</string>
+      <string id="UbuntuDisplayAuthentication">Authentication</string>
+      <string id="UbuntuDisplayInterface">Interface</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
 
 - Type: dconf
@@ -313,6 +315,87 @@ Note: default system value is used for &#34;Not Configured&#34; and enforced if 
 
 Supported on Ubuntu 20.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons">Set to true to disable showing the restart buttons in the login window.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/disable-restart-buttons
+- Default: false
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Whether notifications are shown in the lock screen or not.
+
+- Type: dconf
+- Key: /org/gnome/desktop/notifications/show-in-lock-screen
+- Default: true
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners">Whether notification banners are visible for application notifications.
+
+- Type: dconf
+- Key: /org/gnome/desktop/notifications/show-banners
+- Default: true
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/toolkit-accessibility
+- Default: false
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenDisableUserList">The login screen normally shows a list of available users to log in as. This setting can be toggled to disable showing the user list.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/disable-user-list
+- Default: false
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">The login screen can be configured to disallow password authentication, forcing the user to use smartcard or fingerprint authentication.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/enable-password-authentication
+- Default: true
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">The login screen can optionally allow users who have enrolled their fingerprints to log in using those prints.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/enable-fingerprint-authentication
+- Default: true
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">The login screen can optionally allow users who have smartcards to log in using those smartcards.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/enable-smartcard-authentication
+- Default: true
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenAllowedFailures">The number of times a user is allowed to attempt authentication, before giving up and going back to user selection.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/allowed-failures
+- Default: 3
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format
 
 - Type: dconf
@@ -342,6 +425,42 @@ Note: default system value is used for &#34;Not Configured&#34; and enforced if 
 
 Supported on Ubuntu 20.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable">Set to true to show the banner message text.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/banner-message-enable
+- Default: false
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenBannerMessageText">Text banner message to show in the login window.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/banner-message-text
+- Default: &#39;&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenLogo">The login screen can optionally show a small image to provide site administrators and distributions a way to display branding.
+
+- Type: dconf
+- Key: /org/gnome/login-screen/logo
+- Default: &#39;/usr/share/plymouth/ubuntu-logo.png&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs.
+
+- Type: dconf
+- Key: /org/gnome/desktop/screensaver/picture-uri
+- Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
     </stringTable>
 
     <presentationTable>
@@ -453,6 +572,33 @@ Supported on Ubuntu 20.04</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopMediaHandlingAutomount">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Whether to automatically mount media</checkBox>
       </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Disable showing the restart buttons</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Show notifications in the lock screen</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Show notification banners</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableUserList">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Avoid showing user list</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="false">Whether or not to allow passwords for login</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="false">Whether or not to allow fingerprint readers for login</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="false">Whether or not to allow smartcard readers for login</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenAllowedFailures">
+        <decimalTextBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures" defaultValue="">Number of allowed authentication failures</decimalTextBox>
+      </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">
         <dropdownList refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="">Whether the clock displays in 24h or 12h format</dropdownList>
       </presentation>
@@ -461,6 +607,27 @@ Supported on Ubuntu 20.04</string>
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Enable showing the banner message</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenBannerMessageText">
+        <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText">
+          <label>Banner message text</label>
+          <defaultValue></defaultValue>
+        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenLogo">
+        <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenLogo">
+          <label>Path to small image at top of user list</label>
+          <defaultValue></defaultValue>
+        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri">
+        <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri">
+          <label>Picture URI</label>
+          <defaultValue></defaultValue>
+        </textBox>
       </presentation>
     </presentationTable>
 

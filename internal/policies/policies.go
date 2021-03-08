@@ -13,6 +13,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/adsys/internal/policies/gdm"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -21,11 +22,13 @@ type Manager struct {
 	gpoRulesCacheDir string
 
 	dconf *dconf.Manager
+	gdm   *gdm.Manager
 }
 
 type options struct {
 	cacheDir string
 	dconf    *dconf.Manager
+	gdm      *gdm.Manager
 }
 type option func(*options) error
 
@@ -45,10 +48,17 @@ func New(opts ...option) (m *Manager, err error) {
 	args := options{
 		cacheDir: config.DefaultCacheDir,
 		dconf:    &dconf.Manager{},
+		gdm:      nil,
 	}
-	// applied options
+	// applied options (including dconf manager used by gdm)
 	for _, o := range opts {
 		if err := o(&args); err != nil {
+			return nil, err
+		}
+	}
+	// inject applied dconf mangager if we need to build a gdm manager
+	if args.gdm == nil {
+		if args.gdm, err = gdm.New(gdm.WithDconf(args.dconf)); err != nil {
 			return nil, err
 		}
 	}
@@ -62,6 +72,7 @@ func New(opts ...option) (m *Manager, err error) {
 		gpoRulesCacheDir: gpoRulesCacheDir,
 
 		dconf: args.dconf,
+		gdm:   args.gdm,
 	}, nil
 }
 
@@ -75,10 +86,18 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	rules := entry.GetUniqueRules(gpos)
 	var g errgroup.Group
 	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
+
 	// TODO g.Go(func() error { return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"]) })
 	// TODO g.Go(func() error { return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"]) })
 	if err := g.Wait(); err != nil {
 		return err
+	}
+
+	if isComputer {
+		// Apply GDM policy only now as we need dconf machine database to be ready first
+		if err := m.gdm.ApplyPolicy(ctx, rules["gdm"]); err != nil {
+			return err
+		}
 	}
 
 	// Write cache GPO results

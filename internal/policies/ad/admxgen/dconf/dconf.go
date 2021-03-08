@@ -264,8 +264,8 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 					Schema:      s.ID,
 					ObjectPath:  objectPath, // Relocatable schemas don’t have object path
 					Type:        k.Type,
-					Summary:     k.Summary,
-					Description: k.Description,
+					Summary:     strings.TrimSpace(k.Summary),
+					Description: strings.TrimSpace(k.Description),
 					enumID:      k.Enum,
 				}
 
