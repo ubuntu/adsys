@@ -119,8 +119,6 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt install -y git
       # Checkout code with git
       - uses: actions/checkout@v2
-        with:
-          ref: main
       - name: Download adm template files for "all"
         uses: actions/download-artifact@v2
         with:
