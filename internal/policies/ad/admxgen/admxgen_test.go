@@ -41,6 +41,8 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"same policy used in two categories but different default class": {},
 		"multiple top categories":                                        {},
 
+		"with prefix": {},
+
 		// Optional content
 		"range":   {},
 		"choices": {},

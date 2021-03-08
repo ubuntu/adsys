@@ -1,0 +1,10 @@
+distroid: "Ubuntu"
+supportedreleases:
+  - 20.04
+categories:
+  - displayname: "Category1 for Prefix"
+    parent: "ubuntu:Desktop"
+    defaultpolicyclass: "Machine"
+    prefix: "gdm"
+    policies:
+      - "/org/gnome/desktop/policy-simple"

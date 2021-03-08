@@ -66,6 +66,7 @@ type category struct {
 	DisplayName        string
 	Parent             string
 	DefaultPolicyClass string
+	Prefix             string
 	Policies           []string
 	Children           []category
 }
@@ -95,6 +96,8 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 	for _, r := range g.supportedReleases {
 		noPoliciesOn[r] = struct{}{}
 	}
+
+	keyPrefix := fmt.Sprintf(`%s\%s`, strings.ReplaceAll(adcommon.KeyPrefix, "/", `\`), g.distroID)
 
 	// 1. Create MergedPolicies, indexed by key
 
@@ -203,7 +206,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		}
 
 		mergedPolicies[key] = mergedPolicy{
-			Key:              fmt.Sprintf(`%s\%s\%s\%s`, strings.ReplaceAll(adcommon.KeyPrefix, "/", `\`), g.distroID, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
+			Key:              fmt.Sprintf(`%s\%s\%s`, keyPrefix, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
 			Class:            class,
 			Meta:             string(meta),
 			ExplainText:      explainText,
@@ -234,6 +237,11 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			return expandedCategory{}, err
 		}
 
+		var prefix string
+		if cat.Prefix != "" {
+			prefix = strings.TrimRight(cat.Prefix, "/")
+		}
+
 		for _, p := range cat.Policies {
 			pol, ok := mergedPolicies[p]
 			if !ok {
@@ -241,6 +249,10 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			}
 			if pol.Class == "" {
 				pol.Class = defaultPolicyClass
+			}
+			// inject prefix before type of policy
+			if prefix != "" {
+				pol.Key = strings.Replace(pol.Key, keyPrefix, keyPrefix+`\`+prefix, 1)
 			}
 			policies = append(policies, pol)
 			delete(unattachedPolicies, p)
