@@ -41,6 +41,15 @@
     <category name="UbuntuPeripherals" displayName="$(string.UbuntuDisplayPeripherals)">
       <parentCategory ref="UbuntuUbuntu" />
     </category>
+    <category name="UbuntuLoginScreen" displayName="$(string.UbuntuDisplayLoginScreen)">
+      <parentCategory ref="UbuntuUbuntu" />
+    </category>
+    <category name="UbuntuAuthentication" displayName="$(string.UbuntuDisplayAuthentication)">
+      <parentCategory ref="UbuntuLoginScreen" />
+    </category>
+    <category name="UbuntuInterface" displayName="$(string.UbuntuDisplayInterface)">
+      <parentCategory ref="UbuntuLoginScreen" />
+    </category>
   </categories>
 
   <policies>
@@ -1020,6 +1029,426 @@
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\disable-restart-buttons" valueName="metaValues">
+      <parentCategory ref="UbuntuLoginScreen" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenDisableRestartButtons" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenDisableRestartButtons" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenDisableRestartButtons" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenDisableRestartButtons" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\notifications\show-in-lock-screen" valueName="metaValues">
+      <parentCategory ref="UbuntuLoginScreen" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\notifications\show-banners" valueName="metaValues">
+      <parentCategory ref="UbuntuLoginScreen" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopNotificationsShowBanners" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopNotificationsShowBanners" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeDesktopNotificationsShowBanners" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeDesktopNotificationsShowBanners" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\toolkit-accessibility" valueName="metaValues">
+      <parentCategory ref="UbuntuLoginScreen" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenDisableUserList" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenDisableUserList)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableUserList)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\disable-user-list" valueName="metaValues">
+      <parentCategory ref="UbuntuLoginScreen" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenDisableUserList" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenDisableUserList" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenDisableUserList" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenDisableUserList" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\enable-password-authentication" valueName="metaValues">
+      <parentCategory ref="UbuntuAuthentication" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\enable-fingerprint-authentication" valueName="metaValues">
+      <parentCategory ref="UbuntuAuthentication" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\enable-smartcard-authentication" valueName="metaValues">
+      <parentCategory ref="UbuntuAuthentication" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenAllowedFailures" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenAllowedFailures)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenAllowedFailures)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\allowed-failures" valueName="metaValues">
+      <parentCategory ref="UbuntuAuthentication" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"20.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <elements>
+        <decimal id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="20.10" />
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format" valueName="metaValues">
+      <parentCategory ref="UbuntuInterface" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat0)">
+            <value>
+              <string>24h</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat1)">
+            <value>
+              <string>12h</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="20.10">
+          <item displayName="$(string.UbuntuItemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat0)">
+            <value>
+              <string>24h</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat1)">
+            <value>
+              <string>12h</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004GdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfOrgGnomeDesktopInterfaceClockFormat0)">
+            <value>
+              <string>24h</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfOrgGnomeDesktopInterfaceClockFormat1)">
+            <value>
+              <string>12h</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-date" valueName="metaValues">
+      <parentCategory ref="UbuntuInterface" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday" valueName="metaValues">
+      <parentCategory ref="UbuntuInterface" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable" valueName="metaValues">
+      <parentCategory ref="UbuntuInterface" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"20.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageEnable" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageEnable" valueName="20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageEnable" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageEnable" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenBannerMessageText" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenBannerMessageText)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenBannerMessageText)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text" valueName="metaValues">
+      <parentCategory ref="UbuntuInterface" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="20.10" />
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenLogo" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenLogo)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenLogo)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenLogo)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\logo" valueName="metaValues">
+      <parentCategory ref="UbuntuInterface" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenLogo" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenLogo" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenLogo" valueName="20.10" />
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeLoginScreenLogo" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004GdmDconfOrgGnomeLoginScreenLogo" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\screensaver\picture-uri" valueName="metaValues">
+      <parentCategory ref="UbuntuInterface" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"20.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopScreensaverPictureUri" valueName="Override20.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopScreensaverPictureUri" valueName="20.10" />
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeDesktopScreensaverPictureUri" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004GdmDconfOrgGnomeDesktopScreensaverPictureUri" valueName="20.04" />
       </elements>
     </policy>
   </policies>
