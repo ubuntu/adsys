@@ -41,6 +41,9 @@
     <category name="UbuntuPeripherals" displayName="$(string.UbuntuDisplayPeripherals)">
       <parentCategory ref="UbuntuUbuntu" />
     </category>
+    <category name="UbuntuLoginScreen" displayName="$(string.UbuntuDisplayLoginScreen)">
+      <parentCategory ref="UbuntuUbuntu" />
+    </category>
   </categories>
 
   <policies>
@@ -427,6 +430,47 @@
       <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopMediaHandlingAutomount" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format" valueName="metaValues">
+      <parentCategory ref="UbuntuLoginScreen" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat0)">
+            <value>
+              <string>24h</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat1)">
+            <value>
+              <string>12h</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-date" valueName="metaValues">
+      <parentCategory ref="UbuntuLoginScreen" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday" valueName="metaValues">
+      <parentCategory ref="UbuntuLoginScreen" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="all">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
