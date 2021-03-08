@@ -2,8 +2,8 @@
 <!--  (c) 2021 Canonical  -->
 <policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <policyNamespaces>
-    <target prefix="desktop" namespace="Microsoft.Policies.WindowsDesktop" />
-    <using prefix="windows" namespace="Microsoft.Policies.Windows" />
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
   </policyNamespaces>
   <resources minRequiredRevision="1.0" />
 
