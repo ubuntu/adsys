@@ -15,7 +15,9 @@ import (
 
 // Entry represents a key/value based policy (dconf, apparmor, ...) entry
 type Entry struct {
-	Key      string // Absolute path to setting. Ex: Software/Ubuntu/User/dconf/wallpaper
+	// Key is the relative path to setting. Ex: Software/Ubuntu/User/dconf/wallpaper/path outside of GPO, and then
+	// wallpaper/path in "dconf" rule category.
+	Key      string
 	Value    string
 	Disabled bool
 	Meta     string
