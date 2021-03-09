@@ -187,15 +187,22 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 	/* check if it is a local or remote use
 	 * is there a better/more reliable way?
 	 */
-	if (strchr(username, '@') == NULL) {
+	if (strchr(username, '@') == NULL && strcmp(username, "gdm") != 0) {
 		return PAM_IGNORE;
 	}
 
+	// set dconf profile for AD and gdm user.
 	retval = set_dconf_profile(pamh, username, debug);
 	if (retval != PAM_SUCCESS) {
 		return retval;
 	};
 
+	/*
+	  update user policy is only for AD users.
+	*/
+	if (strchr(username, '@') == NULL) {
+		return PAM_IGNORE;
+	}
 	return update_policy(pamh, username, debug);
 }
 
