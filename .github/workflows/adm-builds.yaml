@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'internal/policies/ad/admxgen/**'
+      - '.github/workflows/adm-builds.yaml'
   schedule:
     - cron: '42 0 * * *'
 
