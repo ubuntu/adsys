@@ -27,8 +27,9 @@
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">Whether the on-screen keyboard is turned on.
@@ -38,8 +39,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Whether the screen magnifier is turned on.
@@ -49,8 +51,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Whether the screen reader is turned on.
@@ -60,8 +63,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs.
@@ -71,8 +75,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureOptions">Determines how the image set by wallpaper_filename is rendered. Possible values are “none”, “wallpaper”, “centered”, “scaled”, “stretched”, “zoom”, “spanned”.
@@ -82,7 +87,7 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;zoom&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureOptions">Picture Options</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions0">none</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions1">wallpaper</string>
@@ -91,6 +96,14 @@ Supported on Ubuntu 20.04, 20.10</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions4">stretched</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions5">zoom</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions6">spanned</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopBackgroundPictureOptions">Picture Options</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions0">none</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions1">wallpaper</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions2">centered</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions3">scaled</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions4">stretched</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions5">zoom</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions6">spanned</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopBackgroundPictureOptions">Picture Options</string>
       <string id="UbuntuItemUser2010DconfOrgGnomeDesktopBackgroundPictureOptions0">none</string>
       <string id="UbuntuItemUser2010DconfOrgGnomeDesktopBackgroundPictureOptions1">wallpaper</string>
@@ -114,8 +127,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: [ &#39;ubiquity.desktop&#39;, &#39;firefox.desktop&#39;, &#39;thunderbird.desktop&#39;, &#39;org.gnome.Nautilus.desktop&#39;, &#39;rhythmbox.desktop&#39;, &#39;libreoffice-writer.desktop&#39;, &#39;snap-store_ubuntu-software.desktop&#39;, &#39;yelp.desktop&#39; ]
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons">If set to true, then file manager will draw the icons on the desktop.
@@ -125,8 +139,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button in the dash
@@ -136,8 +151,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format
@@ -147,10 +163,13 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;24h&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemUser2010DconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemUser2010DconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
@@ -164,8 +183,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockShowWeekday">If true, display weekday in the clock, in addition to time.
@@ -175,8 +195,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopNotificationsShowBanners">Whether notification banners are visible for application notifications.
@@ -186,8 +207,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableCommandLine">Prevent the user from accessing the terminal or specifying a command line to be executed. For example, this would disable access to the panel’s “Run Application” dialog.
@@ -197,8 +219,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableLogOut">Prevent the user from logging out.
@@ -208,8 +231,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableUserSwitching">Prevent the user from switching to another account while his session is active.
@@ -219,8 +243,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisablePrinting">Prevent the user from printing. For example, this would disable access to all applications’ “Print” dialogs.
@@ -230,8 +255,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisablePrintSetup">Prevent the user from modifying print settings. For example, this would disable access to all applications’ “Print Setup” dialogs.
@@ -241,8 +267,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk">Prevent the user from saving files to disk. For example, this would disable access to all applications’ “Save as” dialogs.
@@ -252,8 +279,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Stop the user from modifying user accounts. By default, we allow adding and removing users, as well as changing other users settings.
@@ -263,8 +291,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Binding to launch GNOME Settings.
@@ -274,8 +303,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: [&#39;&#39;]
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Binding to launch the terminal.
@@ -285,8 +315,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: [&#39;&lt;Primary&gt;&lt;Alt&gt;t&#39;]
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the Activities Overview.
@@ -296,8 +327,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: [&#34;&lt;Super&gt;s&#34;]
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view of the Activities Overview.
@@ -307,8 +339,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: [&#34;&lt;Super&gt;a&#34;]
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">
@@ -318,8 +351,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: [&#39;&lt;Alt&gt;F1&#39;]
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeMutterOverlayKey">This key will initiate the “overlay”, which is a combination window overview and application launching system.  The default is intended to be the “Windows key” on PC hardware.  It’s expected that this binding either the default or set to the empty string.
@@ -329,8 +363,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;Super_L&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopScreensaverPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs.
@@ -340,8 +375,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopScreensaverPictureOptions">Determines how the image set by wallpaper_filename is rendered. Possible values are “none”, “wallpaper”, “centered”, “scaled”, “stretched”, “zoom”, “spanned”.
@@ -351,7 +387,7 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;zoom&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureOptions">Picture Options</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions0">none</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions1">wallpaper</string>
@@ -360,6 +396,14 @@ Supported on Ubuntu 20.04, 20.10</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions4">stretched</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions5">zoom</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions6">spanned</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopScreensaverPictureOptions">Picture Options</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions0">none</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions1">wallpaper</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions2">centered</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions3">scaled</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions4">stretched</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions5">zoom</string>
+      <string id="UbuntuItemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions6">spanned</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopScreensaverPictureOptions">Picture Options</string>
       <string id="UbuntuItemUser2010DconfOrgGnomeDesktopScreensaverPictureOptions0">none</string>
       <string id="UbuntuItemUser2010DconfOrgGnomeDesktopScreensaverPictureOptions1">wallpaper</string>
@@ -383,8 +427,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableLockScreen">Prevent the user to lock his screen.
@@ -394,8 +439,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopMediaHandlingAutomount">If set to true, then Nautilus will automatically mount media such as user-visible hard disks and removable media on start-up and media insertion.
@@ -405,8 +451,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
+      <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
       <string id="UbuntuDisplayUser2010DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons">Set to true to disable showing the restart buttons in the login window.
@@ -416,8 +463,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Whether notifications are shown in the lock screen or not.
@@ -427,8 +475,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners">Whether notification banners are visible for application notifications.
@@ -438,8 +487,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
@@ -449,8 +499,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenDisableUserList">The login screen normally shows a list of available users to log in as. This setting can be toggled to disable showing the user list.
@@ -460,8 +511,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">The login screen can be configured to disallow password authentication, forcing the user to use smartcard or fingerprint authentication.
@@ -471,8 +523,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">The login screen can optionally allow users who have enrolled their fingerprints to log in using those prints.
@@ -482,8 +535,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">The login screen can optionally allow users who have smartcards to log in using those smartcards.
@@ -493,8 +547,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenAllowedFailures">The number of times a user is allowed to attempt authentication, before giving up and going back to user selection.
@@ -504,8 +559,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: 3
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format
@@ -515,10 +571,13 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;24h&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
+      <string id="UbuntuItemMachine2104GdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
+      <string id="UbuntuItemMachine2104GdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
@@ -532,8 +591,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: true
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">If true, display weekday in the clock, in addition to time.
@@ -543,8 +603,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable">Set to true to show the banner message text.
@@ -554,8 +615,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: false
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenBannerMessageText">Text banner message to show in the login window.
@@ -565,8 +627,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenLogo">The login screen can optionally show a small image to provide site administrators and distributions a way to display branding.
@@ -576,8 +639,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;/usr/share/plymouth/ubuntu-logo.png&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs.
@@ -587,8 +651,9 @@ Supported on Ubuntu 20.04, 20.10</string>
 - Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10</string>
+Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
+      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
     </stringTable>
@@ -596,6 +661,9 @@ Supported on Ubuntu 20.04, 20.10</string>
     <presentationTable>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
@@ -606,6 +674,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">On-screen keyboard</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">On-screen keyboard</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">On-screen keyboard</checkBox>
         <text/>
@@ -615,6 +686,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Screen magnifier</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Screen magnifier</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Screen magnifier</checkBox>
         <text/>
@@ -623,6 +697,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Screen reader</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Screen reader</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Screen reader</checkBox>
@@ -634,6 +711,12 @@ Supported on Ubuntu 20.04, 20.10</string>
         <textBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureUri">
           <label>Picture URI</label>
           <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopBackgroundPictureUri" defaultChecked="false">Override value for 21.04:</checkBox>
+        <textBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopBackgroundPictureUri">
+          <label></label>
+          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopBackgroundPictureUri" defaultChecked="false">Override value for 20.10:</checkBox>
@@ -651,6 +734,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureOptions">
         <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions" noSort="true" defaultItem="">Picture Options</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions" defaultChecked="false">Override value for 21.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2104DconfOrgGnomeDesktopBackgroundPictureOptions" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopBackgroundPictureOptions" defaultChecked="false">Override value for 20.10:</checkBox>
         <dropdownList refId="UbuntuElemUser2010DconfOrgGnomeDesktopBackgroundPictureOptions" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -660,6 +746,10 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeShellFavoriteApps">
         <text>List of desktop file IDs for favorite applications</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeShellFavoriteApps" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeShellFavoriteApps" defaultChecked="false">Override value for 21.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2104DconfOrgGnomeShellFavoriteApps" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeShellFavoriteApps" defaultChecked="false">Override value for 20.10:</checkBox>
         
@@ -672,6 +762,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="false">Have file manager handle the desktop</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="true">Have file manager handle the desktop</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="true">Have file manager handle the desktop</checkBox>
         <text/>
@@ -680,6 +773,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="false">Show applications button</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="true">Show applications button</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="true">Show applications button</checkBox>
@@ -690,6 +786,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockFormat">
         <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="">Whether the clock displays in 24h or 12h format</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopInterfaceClockFormat" defaultChecked="false">Override value for 21.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2104DconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopInterfaceClockFormat" defaultChecked="false">Override value for 20.10:</checkBox>
         <dropdownList refId="UbuntuElemUser2010DconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -698,6 +797,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowDate">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Show date in clock</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="true">Show date in clock</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="true">Show date in clock</checkBox>
@@ -708,6 +810,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowWeekday">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
         <text/>
@@ -716,6 +821,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowBanners">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Show notification banners</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="true">Show notification banners</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="true">Show notification banners</checkBox>
@@ -726,6 +834,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableCommandLine">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Disable command line</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Disable command line</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Disable command line</checkBox>
         <text/>
@@ -734,6 +845,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLogOut">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Disable log out</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Disable log out</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Disable log out</checkBox>
@@ -744,6 +858,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableUserSwitching">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Disable user switching</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Disable user switching</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Disable user switching</checkBox>
         <text/>
@@ -752,6 +869,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrinting">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Disable printing</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Disable printing</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Disable printing</checkBox>
@@ -762,6 +882,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrintSetup">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Disable print setup</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Disable print setup</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Disable print setup</checkBox>
         <text/>
@@ -770,6 +893,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Disable saving files to disk</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Disable saving files to disk</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Disable saving files to disk</checkBox>
@@ -780,6 +906,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
         <text/>
@@ -789,6 +918,10 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">
         <text>Launch settings</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" defaultChecked="false">Override value for 21.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2104DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" defaultChecked="false">Override value for 20.10:</checkBox>
         
@@ -802,6 +935,10 @@ Supported on Ubuntu 20.04, 20.10</string>
         <text>Launch terminal</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultHeight="5" />
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultChecked="false">Override value for 21.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2104DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultHeight="5" />
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultChecked="false">Override value for 20.10:</checkBox>
         
         <multiTextBox refId="UbuntuElemUser2010DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultHeight="5" />
@@ -813,6 +950,10 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeShellKeybindingsToggleOverview">
         <text>Keybinding to open the overview</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeShellKeybindingsToggleOverview" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeShellKeybindingsToggleOverview" defaultChecked="false">Override value for 21.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2104DconfOrgGnomeShellKeybindingsToggleOverview" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeShellKeybindingsToggleOverview" defaultChecked="false">Override value for 20.10:</checkBox>
         
@@ -826,6 +967,10 @@ Supported on Ubuntu 20.04, 20.10</string>
         <text>Keybinding to open the “Show Applications” view</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView" defaultHeight="5" />
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeShellKeybindingsToggleApplicationView" defaultChecked="false">Override value for 21.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2104DconfOrgGnomeShellKeybindingsToggleApplicationView" defaultHeight="5" />
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeShellKeybindingsToggleApplicationView" defaultChecked="false">Override value for 20.10:</checkBox>
         
         <multiTextBox refId="UbuntuElemUser2010DconfOrgGnomeShellKeybindingsToggleApplicationView" defaultHeight="5" />
@@ -837,6 +982,10 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">
         <text>Show the activities overview</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultChecked="false">Override value for 21.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultChecked="false">Override value for 20.10:</checkBox>
         
@@ -850,6 +999,12 @@ Supported on Ubuntu 20.04, 20.10</string>
         <textBox refId="UbuntuElemUserAllDconfOrgGnomeMutterOverlayKey">
           <label>Modifier to use for extended window management operations</label>
           <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeMutterOverlayKey" defaultChecked="false">Override value for 21.04:</checkBox>
+        <textBox refId="UbuntuElemUser2104DconfOrgGnomeMutterOverlayKey">
+          <label></label>
+          <defaultValue>'Super_L'</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeMutterOverlayKey" defaultChecked="false">Override value for 20.10:</checkBox>
@@ -870,6 +1025,12 @@ Supported on Ubuntu 20.04, 20.10</string>
           <defaultValue></defaultValue>
         </textBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 21.04:</checkBox>
+        <textBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopScreensaverPictureUri">
+          <label></label>
+          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
+        </textBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 20.10:</checkBox>
         <textBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopScreensaverPictureUri">
           <label></label>
@@ -885,6 +1046,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopScreensaverPictureOptions">
         <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions" noSort="true" defaultItem="">Picture Options</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions" defaultChecked="false">Override value for 21.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2104DconfOrgGnomeDesktopScreensaverPictureOptions" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopScreensaverPictureOptions" defaultChecked="false">Override value for 20.10:</checkBox>
         <dropdownList refId="UbuntuElemUser2010DconfOrgGnomeDesktopScreensaverPictureOptions" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -893,6 +1057,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowInLockScreen">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Show notifications in the lock screen</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="true">Show notifications in the lock screen</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="true">Show notifications in the lock screen</checkBox>
@@ -903,6 +1070,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLockScreen">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Disable lock screen</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Disable lock screen</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Disable lock screen</checkBox>
         <text/>
@@ -911,6 +1081,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopMediaHandlingAutomount">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Whether to automatically mount media</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2104DconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2104DconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="true">Whether to automatically mount media</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2010DconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemUser2010DconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="true">Whether to automatically mount media</checkBox>
@@ -921,6 +1094,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Disable showing the restart buttons</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Disable showing the restart buttons</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Disable showing the restart buttons</checkBox>
         <text/>
@@ -929,6 +1105,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Show notifications in the lock screen</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="true">Show notifications in the lock screen</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="true">Show notifications in the lock screen</checkBox>
@@ -939,6 +1118,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Show notification banners</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="true">Show notification banners</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="true">Show notification banners</checkBox>
         <text/>
@@ -947,6 +1129,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
@@ -957,6 +1142,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableUserList">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Avoid showing user list</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Avoid showing user list</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Avoid showing user list</checkBox>
         <text/>
@@ -965,6 +1153,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="false">Whether or not to allow passwords for login</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="true">Whether or not to allow passwords for login</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="true">Whether or not to allow passwords for login</checkBox>
@@ -975,6 +1166,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="false">Whether or not to allow fingerprint readers for login</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="true">Whether or not to allow fingerprint readers for login</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="true">Whether or not to allow fingerprint readers for login</checkBox>
         <text/>
@@ -983,6 +1177,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="false">Whether or not to allow smartcard readers for login</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="true">Whether or not to allow smartcard readers for login</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="true">Whether or not to allow smartcard readers for login</checkBox>
@@ -993,6 +1190,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenAllowedFailures">
         <decimalTextBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures" defaultValue="">Number of allowed authentication failures</decimalTextBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenAllowedFailures" defaultChecked="false">Override value for 21.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenAllowedFailures" defaultValue="3">Number of allowed authentication failures</decimalTextBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenAllowedFailures" defaultChecked="false">Override value for 20.10:</checkBox>
         <decimalTextBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenAllowedFailures" defaultValue="3">Number of allowed authentication failures</decimalTextBox>
         <text/>
@@ -1001,6 +1201,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">
         <dropdownList refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="">Whether the clock displays in 24h or 12h format</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeDesktopInterfaceClockFormat" defaultChecked="false">Override value for 21.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2104GdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="0"></dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat" defaultChecked="false">Override value for 20.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="0"></dropdownList>
@@ -1011,6 +1214,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Show date in clock</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="true">Show date in clock</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="true">Show date in clock</checkBox>
         <text/>
@@ -1020,6 +1226,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
         <text/>
@@ -1028,6 +1237,9 @@ Supported on Ubuntu 20.04, 20.10</string>
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Enable showing the banner message</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Override value for 21.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Enable showing the banner message</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Override value for 20.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Enable showing the banner message</checkBox>
@@ -1039,6 +1251,12 @@ Supported on Ubuntu 20.04, 20.10</string>
         <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText">
           <label>Banner message text</label>
           <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenBannerMessageText" defaultChecked="false">Override value for 21.04:</checkBox>
+        <textBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenBannerMessageText">
+          <label></label>
+          <defaultValue>''</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenBannerMessageText" defaultChecked="false">Override value for 20.10:</checkBox>
@@ -1059,6 +1277,12 @@ Supported on Ubuntu 20.04, 20.10</string>
           <defaultValue></defaultValue>
         </textBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeLoginScreenLogo" defaultChecked="false">Override value for 21.04:</checkBox>
+        <textBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeLoginScreenLogo">
+          <label></label>
+          <defaultValue>'/usr/share/plymouth/ubuntu-logo.png'</defaultValue>
+        </textBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeLoginScreenLogo" defaultChecked="false">Override value for 20.10:</checkBox>
         <textBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeLoginScreenLogo">
           <label></label>
@@ -1075,6 +1299,12 @@ Supported on Ubuntu 20.04, 20.10</string>
         <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri">
           <label>Picture URI</label>
           <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 21.04:</checkBox>
+        <textBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeDesktopScreensaverPictureUri">
+          <label></label>
+          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 20.10:</checkBox>
