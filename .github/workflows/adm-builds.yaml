@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'internal/policies/ad/admxgen/**'
+      - '.github/workflows/adm-builds.yaml'
   schedule:
     - cron: '42 0 * * *'
 
@@ -36,7 +37,7 @@ jobs:
     needs: build-admxgen
     strategy:
       matrix:
-        releases: ['ubuntu:rolling', 'ubuntu:latest']
+        releases: ['ubuntu:devel', 'ubuntu:rolling', 'ubuntu:latest']
     container:
       image: ${{ matrix.releases }}
     steps:
