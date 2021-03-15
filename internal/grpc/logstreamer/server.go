@@ -2,12 +2,11 @@ package log
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"strconv"
-	"sync"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/internal/decorate"
@@ -118,16 +117,10 @@ func validUniqueMdEntry(md metadata.MD, key string) (string, error) {
 	return v[0], nil
 }
 
-var seedOnce = sync.Once{}
-
 func createID() (id string) {
-	seedOnce.Do(func() {
-		rand.Seed(time.Now().Unix())
-	})
-
-	id = strconv.Itoa(rand.Int())
-	runes := []rune(id)
-	id = string(runes[0:6])
-
-	return id
+	r, err := rand.Int(rand.Reader, big.NewInt(999999))
+	if err != nil {
+		return "xxxxxx"
+	}
+	return fmt.Sprintf("%6d", r.Int64())
 }
