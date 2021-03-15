@@ -44,5 +44,5 @@ func NewClient(socket string, timeout time.Duration) (c *AdSysClient, err error)
 
 // Close ends the underlying connection
 func (c *AdSysClient) Close() {
-	c.conn.Close()
+	decorate.LogFuncOnError(c.conn.Close)
 }

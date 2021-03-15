@@ -191,6 +191,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
 	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, userForGPOList)
+	// #nosec G204 - cmdArgs is under our control (python embedded script or mock for tests)
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
 	var stdout, stderr bytes.Buffer
@@ -328,7 +329,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 				log.Debugf(ctx, "Policy %q doesn't have any policy for class %q %s", name, objectClass, err)
 				return nil
 			}
-			defer f.Close()
+			defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
 			// Decode and apply policies in gpo order. First win
 			pols, err := registry.DecodePolicy(f)

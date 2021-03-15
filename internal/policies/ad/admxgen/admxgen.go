@@ -376,7 +376,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
-	defer f.Close()
+	defer decorate.LogFuncOnError(f.Close)
 	t := template.Must(template.New("admx.template").Funcs(funcMap).Parse(admxTemplate))
 	err = t.Execute(f, input)
 	if err != nil {
@@ -389,7 +389,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
 	}
-	defer f.Close()
+	defer decorate.LogFuncOnError(f.Close)
 	t = template.Must(template.New("adml.template").Funcs(funcMap).Parse(admlTemplate))
 	err = t.Execute(f, input)
 	if err != nil {

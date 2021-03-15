@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
@@ -50,9 +51,9 @@ To configure your bash shell to load completions for each session add to your ~/
 
 . <(%s completion)
 `), prog, prog),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			// use upstream completion for now as we don’t have hidden subcommands
-			rootCmd.GenBashCompletion(os.Stdout)
+			return rootCmd.GenBashCompletion(os.Stdout)
 		},
 	}
 	rootCmd.AddCommand(completionCmd)
@@ -61,14 +62,14 @@ To configure your bash shell to load completions for each session add to your ~/
 // InstallVerboseFlag adds the -v and -vv options and returns the reference to it.
 func InstallVerboseFlag(cmd *cobra.Command) *int {
 	r := cmd.PersistentFlags().CountP("verbose", "v", i18n.G("issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"))
-	viper.BindPFlag("verbose", cmd.PersistentFlags().Lookup("verbose"))
+	decorate.LogOnError(viper.BindPFlag("verbose", cmd.PersistentFlags().Lookup("verbose")))
 	return r
 }
 
 // InstallSocketFlag adds the -s and --sockets options and returns the reference to it.
 func InstallSocketFlag(cmd *cobra.Command, defaultPath string) *string {
 	s := cmd.PersistentFlags().StringP("socket", "s", defaultPath, i18n.G("socket path to use between daemon and client. Can be overridden by systemd socket activation."))
-	viper.BindPFlag("socket", cmd.PersistentFlags().Lookup("socket"))
+	decorate.LogOnError(viper.BindPFlag("socket", cmd.PersistentFlags().Lookup("socket")))
 	return s
 }
 

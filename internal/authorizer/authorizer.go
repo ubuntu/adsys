@@ -167,7 +167,7 @@ func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid
 	if err != nil {
 		return fmt.Errorf(i18n.G("couldn't open stat file for process: %v"), err)
 	}
-	defer f.Close()
+	defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
 	startTime, err := getStartTimeFromReader(f)
 	if err != nil {

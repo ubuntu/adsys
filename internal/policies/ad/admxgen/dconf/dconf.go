@@ -230,11 +230,11 @@ func loadSchemasFromDisk(path string, currentSessions string) (entries map[strin
 	}
 
 	for _, p := range schemas {
-		f, err := os.Open(p)
+		f, err := os.Open(filepath.Clean(p))
 		if err != nil {
 			return nil, nil, fmt.Errorf(i18n.G("cannot open file: %w"), err)
 		}
-		defer f.Close()
+		defer decorate.LogFuncOnError(f.Close)
 
 		d, err := io.ReadAll(f)
 		if err != nil {

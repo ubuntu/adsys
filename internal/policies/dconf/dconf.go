@@ -178,6 +178,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	// we will call update multiple times.
 	smbsafe.WaitExec()
 	m.dconfMu.Lock()
+	// #nosec G204 - we control the input
 	out, errExec := exec.Command("dconf", "update", filepath.Join(dconfDir, "db")).CombinedOutput()
 	m.dconfMu.Unlock()
 	smbsafe.DoneExec()

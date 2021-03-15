@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/sirupsen/logrus"
-	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -83,7 +82,12 @@ func (ss serverStreamWithLogs) sendLogs(logLevel, caller, msg string) error {
 type sendStreamFn func(logLevel, caller, msg string) error
 
 func extractMetaFromContext(ctx context.Context) (clientID string, withCaller bool, err error) {
-	defer decorate.OnError(&err, i18n.G("invalid metdata from client: %v\n. Please use the StreamClientInterceptor."))
+	// decorate depends on logstreamer: we can’t use it here
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf(i18n.G("invalid metdata from client: %v\n. Please use the StreamClientInterceptor: %v"), err)
+		}
+	}()
 
 	// extract logs metadata from the client
 	md, ok := metadata.FromIncomingContext(ctx)
