@@ -54,7 +54,6 @@ jobs:
         if: ${{ env.modified == 'true' }}
         run: |
           git push origin auto-update-po:main
-          git push origin --delete auto-update-po
 
   update-readme:
     name: Update readme file
@@ -101,4 +100,3 @@ jobs:
         if: ${{ env.modified == 'true' }}
         run: |
           git push origin auto-update-readme:main
-          git push origin --delete auto-update-readme
