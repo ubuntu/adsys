@@ -161,7 +161,7 @@ func expand(src, dst, root, currentSession string) error {
 	if err != nil {
 		return fmt.Errorf("expanded policy format is incorrect: %w", err)
 	}
-	if err := os.MkdirAll(dst, 0755); err != nil {
+	if err := os.MkdirAll(dst, 0750); err != nil {
 		return err
 	}
 	if err := os.WriteFile(filepath.Join(dst, release+".yaml"), data, 0644); err != nil {

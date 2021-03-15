@@ -362,7 +362,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 		Policies   []policyForADMX
 	}{g.distroID, inputCategories, inputPolicies}
 
-	if err := os.MkdirAll(dest, 0755); err != nil {
+	if err := os.MkdirAll(dest, 0750); err != nil {
 		return fmt.Errorf(i18n.G("can't create destination directory for AD policies: %v"), err)
 	}
 

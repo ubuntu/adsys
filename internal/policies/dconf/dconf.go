@@ -83,6 +83,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// Create profiles for users only
 	if !isComputer {
+		// Profile must be readable by everyone
+		// #nosec G301
 		if err := os.MkdirAll(profilesPath, 0755); err != nil {
 			m.dconfMu.RUnlock()
 			return err
@@ -138,6 +140,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	var needsRefresh bool
 
 	// Commit on disk
+	// Locks must be readable by everyone
+	// #nosec G301
 	if err := os.MkdirAll(filepath.Join(dbPath, "locks"), 0755); err != nil {
 		m.dconfMu.RUnlock()
 		return err

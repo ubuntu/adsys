@@ -118,6 +118,8 @@ func (d *Daemon) UseSocket(socket string) (err error) {
 	if err != nil {
 		return err
 	}
+	// We want everyone to be able to write to our socket and use polkit to filter permissions
+	// #nosec G302
 	if err = os.Chmod(socket, 0666); err != nil {
 		lis.Close()
 		return err
