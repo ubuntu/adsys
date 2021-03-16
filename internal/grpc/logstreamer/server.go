@@ -2,15 +2,13 @@ package log
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"strconv"
-	"sync"
-	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -84,7 +82,12 @@ func (ss serverStreamWithLogs) sendLogs(logLevel, caller, msg string) error {
 type sendStreamFn func(logLevel, caller, msg string) error
 
 func extractMetaFromContext(ctx context.Context) (clientID string, withCaller bool, err error) {
-	defer decorate.OnError(&err, i18n.G("invalid metdata from client: %v\n. Please use the StreamClientInterceptor."))
+	// decorate depends on logstreamer: we can’t use it here
+	defer func() {
+		if err != nil {
+			err = fmt.Errorf(i18n.G("invalid metdata from client: %v\n. Please use the StreamClientInterceptor: %v"), err)
+		}
+	}()
 
 	// extract logs metadata from the client
 	md, ok := metadata.FromIncomingContext(ctx)
@@ -118,16 +121,10 @@ func validUniqueMdEntry(md metadata.MD, key string) (string, error) {
 	return v[0], nil
 }
 
-var seedOnce = sync.Once{}
-
 func createID() (id string) {
-	seedOnce.Do(func() {
-		rand.Seed(time.Now().Unix())
-	})
-
-	id = strconv.Itoa(rand.Int())
-	runes := []rune(id)
-	id = string(runes[0:6])
-
-	return id
+	r, err := rand.Int(rand.Reader, big.NewInt(999999))
+	if err != nil {
+		return "xxxxxx"
+	}
+	return fmt.Sprintf("%6d", r.Int64())
 }

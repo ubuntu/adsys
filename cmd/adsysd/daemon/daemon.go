@@ -12,6 +12,7 @@ import (
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/daemon"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
@@ -109,17 +110,17 @@ func New() *App {
 	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().StringP("cache-dir", "", config.DefaultCacheDir, i18n.G("directory where ADsys caches GPOs downloads and policies."))
-	viper.BindPFlag("cache-dir", a.rootCmd.PersistentFlags().Lookup("cache-dir"))
+	decorate.LogOnError(viper.BindPFlag("cache-dir", a.rootCmd.PersistentFlags().Lookup("cache-dir")))
 	a.rootCmd.PersistentFlags().StringP("run-dir", "", config.DefaultRunDir, i18n.G("directory where ADsys stores transient information erased on reboot."))
-	viper.BindPFlag("run-dir", a.rootCmd.PersistentFlags().Lookup("run-dir"))
+	decorate.LogOnError(viper.BindPFlag("run-dir", a.rootCmd.PersistentFlags().Lookup("run-dir")))
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
-	viper.BindPFlag("servicetimeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
+	decorate.LogOnError(viper.BindPFlag("servicetimeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	a.rootCmd.PersistentFlags().StringP("ad-server", "S", "", i18n.G("URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."))
-	viper.BindPFlag("ad-server", a.rootCmd.PersistentFlags().Lookup("ad-server"))
+	decorate.LogOnError(viper.BindPFlag("ad-server", a.rootCmd.PersistentFlags().Lookup("ad-server")))
 	a.rootCmd.PersistentFlags().StringP("ad-domain", "D", "", i18n.G("AD domain to use. Empty to let ADSys parsing sssd.conf."))
-	viper.BindPFlag("ad-domain", a.rootCmd.PersistentFlags().Lookup("ad-domain"))
+	decorate.LogOnError(viper.BindPFlag("ad-domain", a.rootCmd.PersistentFlags().Lookup("ad-domain")))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)

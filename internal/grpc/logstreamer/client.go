@@ -58,7 +58,9 @@ func (ss *logClientStream) RecvMsg(m interface{}) error {
 			return nil
 		}
 		var logMsg Log
-		proto.Unmarshal(bytes, &logMsg)
+		if err = proto.Unmarshal(bytes, &logMsg); err != nil {
+			Warning(context.Background(), err)
+		}
 		if logMsg.LogHeader == logIdentifier {
 			level, err := logrus.ParseLevel(logMsg.Level)
 			if err != nil {

@@ -21,11 +21,11 @@ func GetVersionID(root string) (versionID string, err error) {
 
 	releaseFile := filepath.Join(root, "etc/os-release")
 
-	file, err := os.Open(releaseFile)
+	file, err := os.Open(filepath.Clean(releaseFile))
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer decorate.LogFuncOnError(file.Close)
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {

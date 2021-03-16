@@ -38,6 +38,12 @@ jobs:
       - name: Staticcheck
         run: staticcheck ./...
         if: ${{ always() }}
+      - name: Gosec Security Scanner
+        run: |
+          # Run manually here due to GOROOT issue.
+          export PATH=$PATH:$(go env GOPATH)/bin
+          go get github.com/securego/gosec/cmd/gosec
+          gosec ./...
       - name: Module files are up to date
         run: ./.github/ci/check-modules
         if: ${{ always() }}

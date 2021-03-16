@@ -109,7 +109,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 		if len(dest.writers) == 0 {
 			w := *std
 			*std = dest.out
-			w.Close()
+			decorate.LogFuncOnError(w.Close)
 			wgIOCopy.Wait()
 
 			// reset std forwarder to be ready for reinitialization

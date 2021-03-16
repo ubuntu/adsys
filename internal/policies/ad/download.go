@@ -157,8 +157,9 @@ func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g *gpo, 
 	defer g.mu.RUnlock()
 
 	var localVersion, remoteVersion int
-	if f, err := os.Open(filepath.Join(localPath, "GPT.INI")); err == nil {
-		defer f.Close()
+	gptIniPath := filepath.Join(localPath, "GPT.INI")
+	if f, err := os.Open(filepath.Clean(gptIniPath)); err == nil {
+		defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
 		if localVersion, err = getGPOVersion(f); err != nil {
 			log.Warningf(ctx, "Invalid local GPT.INI for %s: %v\nDownloading GPO…", g.name, err)
