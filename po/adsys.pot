@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:336
+#: internal/policies/ad/ad.go:337
 msgid "%s :%v"
 msgstr ""
 
@@ -47,11 +47,11 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:406
+#: internal/policies/dconf/dconf.go:411
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:104
+#: internal/grpc/logstreamer/server.go:107
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
@@ -85,27 +85,27 @@ msgstr ""
 msgid "- Default: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:109
+#: internal/policies/dconf/dconf.go:111
 msgid "- error on %s: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:121
+#: cmd/adsysd/daemon/daemon.go:122
 msgid "AD domain to use. Empty to let ADSys parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/client/client.go:41
+#: cmd/adsysd/client/client.go:42
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:47
+#: cmd/adsysd/daemon/daemon.go:48
 msgid "AD integration daemon"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:31
+#: internal/cmdhandler/cmdhandler.go:32
 msgid "Alias of %q"
 msgstr ""
 
-#: internal/daemon/daemon.go:194
+#: internal/daemon/daemon.go:196
 msgid "All connections have now ended."
 msgstr ""
 
@@ -121,7 +121,7 @@ msgstr ""
 msgid "Check if grpc request peer is authorized"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:45
+#: internal/grpc/logstreamer/server.go:43
 #, c-format
 msgid "Connecting as [[%s]]"
 msgstr ""
@@ -135,7 +135,7 @@ msgstr ""
 msgid "Couldn't connect to %s daemon: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:46
+#: internal/grpc/logstreamer/server.go:44
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
@@ -155,7 +155,7 @@ msgstr ""
 msgid "Error from server: %v"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:44
+#: internal/cmdhandler/cmdhandler.go:45
 msgid "Generates bash completion scripts"
 msgstr ""
 
@@ -164,7 +164,7 @@ msgstr ""
 msgid "GetsockoptUcred() error: %s"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:48
+#: internal/grpc/logstreamer/server.go:46
 #, c-format
 msgid "New connection from client [[%s]]"
 msgstr ""
@@ -193,11 +193,11 @@ msgstr ""
 msgid "Print service logs"
 msgstr ""
 
-#: internal/daemon/daemon.go:165
+#: internal/daemon/daemon.go:167
 msgid "Quitting"
 msgstr ""
 
-#: internal/daemon/daemon.go:145
+#: internal/daemon/daemon.go:147
 msgid "Ready state sent to systemd"
 msgstr ""
 
@@ -221,12 +221,12 @@ msgstr ""
 msgid "Service took too long to respond. Disconnecting client."
 msgstr ""
 
-#: internal/daemon/daemon.go:152
+#: internal/daemon/daemon.go:154
 #, c-format
 msgid "Serving on %s"
 msgstr ""
 
-#: internal/daemon/daemon.go:186
+#: internal/daemon/daemon.go:188
 msgid "Stopping daemon requested."
 msgstr ""
 
@@ -235,7 +235,7 @@ msgstr ""
 msgid "Supported on %s %s"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:119
+#: cmd/adsysd/daemon/daemon.go:120
 msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
 msgstr ""
@@ -246,7 +246,7 @@ msgid ""
 "ticket"
 msgstr ""
 
-#: internal/daemon/daemon.go:192
+#: internal/daemon/daemon.go:194
 msgid "Wait for active requests to close."
 msgstr ""
 
@@ -307,7 +307,7 @@ msgstr ""
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:272
+#: internal/policies/ad/ad.go:273
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -340,7 +340,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:279
+#: internal/policies/ad/ad.go:280
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -357,7 +357,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:249
+#: internal/policies/ad/ad.go:250
 msgid "can't list users from cache"
 msgstr ""
 
@@ -378,7 +378,7 @@ msgstr ""
 msgid "can't load server info from %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:410
+#: internal/policies/dconf/dconf.go:415
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
@@ -394,7 +394,7 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:189
+#: internal/policies/dconf/dconf.go:194
 #, c-format
 msgid "can't save %s"
 msgstr ""
@@ -404,15 +404,15 @@ msgstr ""
 msgid "can't save GPO list to %s"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:155
-msgid "can't send logs to client"
+#: internal/grpc/logstreamer/log.go:157
+msgid "can't send logs to client: %v"
 msgstr ""
 
-#: internal/daemon/daemon.go:140
+#: internal/daemon/daemon.go:142
 msgid "can't serve"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:209
+#: internal/policies/dconf/dconf.go:214
 #, c-format
 msgid "can't update user profile %s"
 msgstr ""
@@ -453,23 +453,23 @@ msgstr ""
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:150
+#: internal/grpc/logstreamer/log.go:149
 msgid "couldn't send logs to client"
 msgstr ""
 
-#: internal/daemon/daemon.go:143
+#: internal/daemon/daemon.go:145
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:181
+#: internal/policies/dconf/dconf.go:186
 msgid "dconf update failed: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:111
+#: cmd/adsysd/daemon/daemon.go:112
 msgid "directory where ADsys caches GPOs downloads and policies."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:113
+#: cmd/adsysd/daemon/daemon.go:114
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
@@ -481,7 +481,7 @@ msgstr ""
 msgid "don't display colorized version."
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:401
+#: internal/policies/dconf/dconf.go:406
 msgid "empty signature for %v"
 msgstr ""
 
@@ -495,7 +495,7 @@ msgstr ""
 msgid "error opening raw connection: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:398
+#: internal/policies/dconf/dconf.go:403
 msgid "error while checking signature"
 msgstr ""
 
@@ -551,7 +551,7 @@ msgstr ""
 msgid "failed to marshal meta data"
 msgstr ""
 
-#: internal/policies/ad/ad.go:256
+#: internal/policies/ad/ad.go:257
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -567,11 +567,11 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:290
+#: internal/policies/ad/ad.go:291
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:205
+#: internal/policies/ad/ad.go:206
 msgid ""
 "failed to retrieve the list of GPO: %v\n"
 "%s"
@@ -589,25 +589,25 @@ msgstr ""
 msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:116
+#: internal/grpc/logstreamer/server.go:119
 msgid "invalid metadata %s for incoming request: %q"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:87
+#: internal/grpc/logstreamer/server.go:88
 msgid ""
 "invalid metdata from client: %v\n"
-". Please use the StreamClientInterceptor."
+". Please use the StreamClientInterceptor: %v"
 msgstr ""
 
 #: internal/policies/ad/registry/registry.go:141
 msgid "invalid policy"
 msgstr ""
 
-#: internal/policies/ad/download.go:187
+#: internal/policies/ad/download.go:188
 msgid "invalid remote GPT.INI"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:63
+#: internal/cmdhandler/cmdhandler.go:64
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
@@ -617,7 +617,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:212
+#: internal/policies/ad/ad.go:213
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
@@ -638,11 +638,11 @@ msgstr ""
 msgid "min value for long decimal is not a valid float: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:92
+#: internal/grpc/logstreamer/server.go:95
 msgid "missing client metadata"
 msgstr ""
 
-#: internal/grpc/logstreamer/server.go:113
+#: internal/grpc/logstreamer/server.go:116
 #, c-format
 msgid "missing metadata %s for incoming request"
 msgstr ""
@@ -699,7 +699,7 @@ msgstr ""
 msgid "show overridden rules in each GPOs."
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:70
+#: internal/cmdhandler/cmdhandler.go:71
 msgid ""
 "socket path to use between daemon and client. Can be overridden by systemd "
 "socket activation."
@@ -715,13 +715,13 @@ msgstr ""
 msgid "the following policies have not been assigned to a category: %v"
 msgstr ""
 
-#: cmd/adsysd/client/client.go:83
+#: cmd/adsysd/client/client.go:84
 msgid ""
 "time in seconds before cancelling the client request when the server gives "
 "no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:116
+#: cmd/adsysd/daemon/daemon.go:117
 msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
@@ -735,7 +735,7 @@ msgstr ""
 msgid "unexpected socket type"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:77
+#: internal/cmdhandler/cmdhandler.go:78
 msgid "use a specific configuration file"
 msgstr ""
 
