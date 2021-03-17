@@ -15,10 +15,10 @@ const (
 	maxDuration = time.Duration(1<<63 - 1)
 )
 
-// StreamClientInterceptor allows to tag the client with an unique ID and request the server
-// to stream back to the client logs corresponding to that request to the given logger.
-// It will use ReportCaller value from logger to decide if we print the call	ck (first frame outside
-// of that package)
+// StreamClientInterceptor allows to timeout any idled client connection.
+// An idle connection is a connection which hasn’t received any messages from server during timeout time.
+// The stream call will return EOF though if the client itself request a cancellation
+// A 0 timeout means no timeout.
 func StreamClientInterceptor(timeout time.Duration) grpc.StreamClientInterceptor {
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		ctx, cancel := context.WithCancel(ctx)
@@ -82,8 +82,8 @@ func (ss *idlerClientStream) RecvMsg(m interface{}) error {
 			return err
 		}
 
-		// We stopped the timer, so if there was a cancellation,
-		// this is client cancellation (under our control), but not timeout.
+		// We were able to stop the timer, so this one hasn’t expired yet.
+		// Consequentely, if there was a cancellation, this is client cancellation (under our control), but not a timeout.
 		if st.Code() == codes.Canceled {
 			err = io.EOF
 		}
