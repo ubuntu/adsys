@@ -92,6 +92,33 @@ func TestAppCanQuitWithoutExecute(t *testing.T) {
 	a.Quit()
 }
 
+func TestAppRunFailsOnDaemonCreationAndQuit(t *testing.T) {
+	// Trigger the error with a socket that cannot be created over an existing
+	// directory
+	defer prepareEnv(t)()
+	socket := os.Getenv("ADSYS_SOCKET")
+	os.MkdirAll(socket, 0755)
+
+	a := daemon.New()
+	err := a.Run()
+	require.Error(t, err, "Run should exit with an error")
+	a.Quit()
+}
+
+func TestAppRunFailsOnServiceCreationAndQuit(t *testing.T) {
+	// Trigger the error with a cache directory that cannot be created over an
+	// existing file
+	defer prepareEnv(t)()
+	cachedir := os.Getenv("ADSYS_CACHE_DIR")
+	err := os.WriteFile(cachedir, []byte(""), 0644)
+	require.NoError(t, err, "Can't create cachedir file to make service fails")
+
+	a := daemon.New()
+	err = a.Run()
+	require.Error(t, err, "Run should exit with an error")
+	a.Quit()
+}
+
 func TestAppCanSigHupWhenExecute(t *testing.T) {
 	r, w, err := os.Pipe()
 	require.NoError(t, err, "Setup: pipe shouldn’t fail")
