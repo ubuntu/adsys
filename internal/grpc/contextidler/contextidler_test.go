@@ -32,7 +32,7 @@ func TestActiveConnection(t *testing.T) {
 
 	// Ping multiple times, each ping is less than timeout, but total time is more than the timeout
 	for i := 0; i < 5; i++ {
-		time.Sleep(5 * time.Millisecond)
+		time.Sleep(3 * time.Millisecond)
 		require.NoError(t, c.RecvMsg("something"), "RecvMsg with no error")
 	}
 }
