@@ -34,7 +34,7 @@ func SetVerboseMode(level int) {
 // It call the refreshConfig function so that you can deserialized the configuration and returns any error.
 // It automatically watches any configuration changes and will call refreshConfig with the config file that changed
 // passed as an argument. No config path is the initial loading.
-func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath string) error) (err error) {
+func Configure(name string, rootCmd cobra.Command, vip *viper.Viper, refreshConfig func(configPath string) error) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't load configuration"))
 
 	// Get cmdline flag for verbosity to configure logger until we have everything parsed.
@@ -46,15 +46,15 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath
 	SetVerboseMode(v)
 
 	if v, err := rootCmd.PersistentFlags().GetString("config"); err == nil && v != "" {
-		viper.SetConfigFile(v)
+		vip.SetConfigFile(v)
 	} else {
-		viper.SetConfigName(name)
-		viper.AddConfigPath("./")
-		viper.AddConfigPath("$HOME/")
-		viper.AddConfigPath("/etc/")
+		vip.SetConfigName(name)
+		vip.AddConfigPath("./")
+		vip.AddConfigPath("$HOME/")
+		vip.AddConfigPath("/etc/")
 	}
 
-	if err := viper.ReadInConfig(); err != nil {
+	if err := vip.ReadInConfig(); err != nil {
 		var e viper.ConfigFileNotFoundError
 		if errors.As(err, &e) {
 			log.Infof("No configuration file: %v.\nWe will use the defaults, env variables or flags.", e)
@@ -62,9 +62,9 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath
 			return fmt.Errorf("invalid configuration file: %v", err)
 		}
 	} else {
-		log.Infof("Using configuration file: %v", viper.ConfigFileUsed())
-		viper.WatchConfig()
-		viper.OnConfigChange(func(e fsnotify.Event) {
+		log.Infof("Using configuration file: %v", vip.ConfigFileUsed())
+		vip.WatchConfig()
+		vip.OnConfigChange(func(e fsnotify.Event) {
 			if e.Op != fsnotify.Write {
 				return
 			}
@@ -74,8 +74,8 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath
 		})
 	}
 
-	viper.SetEnvPrefix(name)
-	viper.AutomaticEnv()
+	vip.SetEnvPrefix(name)
+	vip.AutomaticEnv()
 
 	if err := refreshConfig(""); err != nil {
 		return err
@@ -85,7 +85,7 @@ func Configure(name string, rootCmd cobra.Command, refreshConfig func(configPath
 }
 
 // DefaultLoadConfig takes c and unmarshall the config to it.
-func DefaultLoadConfig(c interface{}) error {
+func DefaultLoadConfig(c interface{}, viper *viper.Viper) error {
 	if err := viper.Unmarshal(&c); err != nil {
 		return fmt.Errorf("unable to decode configuration into struct: %v", err)
 	}
