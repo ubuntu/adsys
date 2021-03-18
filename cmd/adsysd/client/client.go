@@ -38,12 +38,12 @@ type daemonConfig struct {
 // New registers commands and return a new App.
 func New() *App {
 	a := App{}
+	a.ctx, a.cancel = context.WithCancel(context.Background())
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
 		Short: i18n.G("AD integration client"),
 		Long:  i18n.G(`Active Directory integration bridging toolset command line tool.`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			a.ctx, a.cancel = context.WithCancel(context.Background())
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
 			return config.Configure("adsys", a.rootCmd, a.viper, func(configPath string) error {
