@@ -90,9 +90,12 @@ func (ss *idlerClientStream) RecvMsg(m interface{}) error {
 		return err
 	}
 
-	// Stop the timer and drain the channel before resetting it
+	// Stop the timer and optionally drain the channel before resetting it
 	if !ss.timer.Stop() {
-		<-ss.timer.C
+		select {
+		case <-ss.timer.C:
+		default:
+		}
 	}
 	ss.timer.Reset(ss.timeout)
 	return nil
