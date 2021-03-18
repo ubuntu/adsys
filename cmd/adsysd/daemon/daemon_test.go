@@ -2,6 +2,7 @@ package daemon_test
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
 )
@@ -218,6 +220,77 @@ func TestAppGetRootCmd(t *testing.T) {
 	require.NotNil(t, a.RootCmd(), "Returns root command")
 }
 
+func TestConfigLoad(t *testing.T) {
+	dir := t.TempDir()
+	configFile := writeConfig(t, dir, "adsys.socket", 1, 10)
+	defer changeArgs("adsysd", "-c", configFile)()
+
+	a, wait := startDaemon(t, false)
+	defer wait()
+	defer a.Quit()
+
+	a.IsReady(5 * time.Second) // Wait until the socket is really createad
+	_, err := os.Stat(filepath.Join(dir, "adsys.socket"))
+	require.NoError(t, err, "Socket should exist")
+	require.Equal(t, 1, a.Verbosity(), "Verbosity is set from config")
+}
+
+func TestConfigChange(t *testing.T) {
+	dir := t.TempDir()
+	configFile := writeConfig(t, dir, "adsys.socket", 1, 10)
+	defer changeArgs("adsysd", "-c", configFile)()
+
+	a, wait := startDaemon(t, false)
+	defer wait()
+	defer a.Quit()
+
+	a.IsReady(5 * time.Second) // Wait until the socket is really created
+	_, err := os.Stat(filepath.Join(dir, "adsys.socket"))
+	require.NoError(t, err, "Socket should exist")
+	require.Equal(t, 1, a.Verbosity(), "Verbosity is set from config")
+
+	out, restore := captureLogs(t)
+	defer restore()
+
+	// Write new config
+	writeConfig(t, dir, "adsys.socket", 2, 5)
+
+	time.Sleep(time.Second) // let the config change
+
+	logs := out()
+	require.Contains(t, logs, "changed. Reloading", "Config file has changed")
+}
+
+// writeConfig is a helper to generate a config file for adsysd.
+// It returns the path to the config file.
+func writeConfig(t *testing.T, dir, socketName string, verbose, serviceTimeout int) string {
+	t.Helper()
+
+	configFile := filepath.Join(dir, "config.yaml")
+
+	data := []byte(fmt.Sprintf(`# Service and client configuration
+verbose: %d
+socket: %s
+
+# Service only configuration
+cache_dir: %s
+run_dir: %s
+servicetimeout: %d
+ad_server: warthogs.biz
+ad_domain: ldap://adc.warthogs.biz
+`,
+		verbose,
+		filepath.Join(dir, socketName),
+		filepath.Join(dir, "cache"),
+		filepath.Join(dir, "run"),
+		serviceTimeout))
+
+	err := os.WriteFile(configFile, data, 0700)
+	require.NoError(t, err, "Setup: failed to write test config file")
+
+	return configFile
+}
+
 // startDaemon prepares and start the daemon in the background. The done function should be called
 // to wait for the daemon to stop
 func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
@@ -280,4 +353,32 @@ func changeArgs(args ...string) func() {
 	orig := os.Args
 	os.Args = args
 	return func() { os.Args = orig }
+}
+
+// captureLogs captures current logs.
+// It returns a couple of function: One to read the buffer and the other to restore
+// log output.
+func captureLogs(t *testing.T) (out func() string, restore func()) {
+	t.Helper()
+
+	localLogger := logrus.StandardLogger()
+	orig := localLogger.Out
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatal("Setup error: creating pipe:", err)
+	}
+	localLogger.SetOutput(w)
+
+	return func() string {
+			w.Close()
+			var buf bytes.Buffer
+			_, errCopy := io.Copy(&buf, r)
+			if errCopy != nil {
+				t.Fatal("Setup error: couldn’t get buffer content:", err)
+			}
+			return buf.String()
+		},
+		func() {
+			localLogger.SetOutput(orig)
+		}
 }
