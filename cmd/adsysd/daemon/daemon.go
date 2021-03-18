@@ -35,12 +35,12 @@ type daemonConfig struct {
 	Verbose int
 
 	Socket   string
-	CacheDir string `mapstructure:"cache-dir"`
-	RunDir   string `mapstructure:"run-dir"`
+	CacheDir string `mapstructure:"cache_dir"`
+	RunDir   string `mapstructure:"run_dir"`
 
 	ServiceTimeout int
-	ADServer       string `mapstructure:"ad-server"`
-	ADDomain       string `mapstructure:"ad-domain"`
+	ADServer       string `mapstructure:"ad_server"`
+	ADDomain       string `mapstructure:"ad_domain"`
 }
 
 // New registers commands and return a new App.
@@ -115,17 +115,17 @@ func New() *App {
 	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, config.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().StringP("cache-dir", "", config.DefaultCacheDir, i18n.G("directory where ADsys caches GPOs downloads and policies."))
-	decorate.LogOnError(a.viper.BindPFlag("cache-dir", a.rootCmd.PersistentFlags().Lookup("cache-dir")))
+	decorate.LogOnError(a.viper.BindPFlag("cache_dir", a.rootCmd.PersistentFlags().Lookup("cache-dir")))
 	a.rootCmd.PersistentFlags().StringP("run-dir", "", config.DefaultRunDir, i18n.G("directory where ADsys stores transient information erased on reboot."))
-	decorate.LogOnError(a.viper.BindPFlag("run-dir", a.rootCmd.PersistentFlags().Lookup("run-dir")))
+	decorate.LogOnError(a.viper.BindPFlag("run_dir", a.rootCmd.PersistentFlags().Lookup("run-dir")))
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
 	decorate.LogOnError(a.viper.BindPFlag("servicetimeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	a.rootCmd.PersistentFlags().StringP("ad-server", "S", "", i18n.G("URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."))
-	decorate.LogOnError(a.viper.BindPFlag("ad-server", a.rootCmd.PersistentFlags().Lookup("ad-server")))
+	decorate.LogOnError(a.viper.BindPFlag("ad_server", a.rootCmd.PersistentFlags().Lookup("ad-server")))
 	a.rootCmd.PersistentFlags().StringP("ad-domain", "D", "", i18n.G("AD domain to use. Empty to let ADSys parsing sssd.conf."))
-	decorate.LogOnError(a.viper.BindPFlag("ad-domain", a.rootCmd.PersistentFlags().Lookup("ad-domain")))
+	decorate.LogOnError(a.viper.BindPFlag("ad_domain", a.rootCmd.PersistentFlags().Lookup("ad-domain")))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)

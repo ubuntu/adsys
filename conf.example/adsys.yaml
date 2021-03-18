@@ -3,8 +3,8 @@ verbose: 2
 socket: /tmp/adsysd/socket
 
 # Service only configuration
-cache-dir: /tmp/adsysd/cache
-run-dir: /tmp/adsysd/run
+cache_dir: /tmp/adsysd/cache
+run_dir: /tmp/adsysd/run
 servicetimeout: 3600
-ad-server: warthogs.biz
-ad-domain: ldap://adc.warthogs.biz
+ad_server: warthogs.biz
+ad_domain: ldap://adc.warthogs.biz
