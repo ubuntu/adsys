@@ -27,6 +27,8 @@ type App struct {
 
 	config daemonConfig
 	daemon *daemon.Daemon
+
+	ready chan struct{}
 }
 
 type daemonConfig struct {
@@ -43,7 +45,7 @@ type daemonConfig struct {
 
 // New registers commands and return a new App.
 func New() *App {
-	a := App{}
+	a := App{ready: make(chan struct{})}
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
 		Short: i18n.G("AD integration daemon"),
@@ -100,6 +102,7 @@ func New() *App {
 				return err
 			}
 			a.daemon = d
+			close(a.ready)
 			return a.daemon.Listen()
 		},
 		// We display usage error ourselves
@@ -166,7 +169,8 @@ func (a App) Hup() (shouldQuit bool) {
 }
 
 // Quit gracefully shutdown the service.
-func (a App) Quit() {
+func (a *App) Quit() {
+	<-a.ready
 	a.daemon.Quit(false)
 }
 
