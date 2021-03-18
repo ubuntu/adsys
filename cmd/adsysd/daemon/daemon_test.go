@@ -382,3 +382,7 @@ func captureLogs(t *testing.T) (out func() string, restore func()) {
 			localLogger.SetOutput(orig)
 		}
 }
+func TestMain(m *testing.M) {
+	defer startLocalSystemBus()()
+	m.Run()
+}
