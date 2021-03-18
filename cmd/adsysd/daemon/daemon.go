@@ -93,12 +93,14 @@ func New() *App {
 			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain,
 				adsysservice.WithCacheDir(a.config.CacheDir), adsysservice.WithRunDir(a.config.RunDir))
 			if err != nil {
+				close(a.ready)
 				return err
 			}
 
 			timeout := time.Duration(a.config.ServiceTimeout) * time.Second
 			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket, daemon.WithTimeout(timeout))
 			if err != nil {
+				close(a.ready)
 				return err
 			}
 			a.daemon = d
@@ -171,6 +173,9 @@ func (a App) Hup() (shouldQuit bool) {
 // Quit gracefully shutdown the service.
 func (a *App) Quit() {
 	<-a.ready
+	if a.daemon == nil {
+		return
+	}
 	a.daemon.Quit(false)
 }
 
