@@ -70,7 +70,7 @@ func TestAppUsageError(t *testing.T) {
 }
 
 func TestAppCanQuitWhenExecute(t *testing.T) {
-	a, wait := startDaemon(t)
+	a, wait := startDaemon(t, true)
 	defer wait()
 
 	a.Quit()
@@ -81,7 +81,7 @@ func TestAppCanQuitAfterExecute(t *testing.T) {
 	defer func() {
 		os.Unsetenv("ADSYS_SERVICETIMEOUT")
 	}()
-	a, wait := startDaemon(t)
+	a, wait := startDaemon(t, true)
 	wait()
 	a.Quit()
 }
@@ -123,7 +123,7 @@ func TestAppCanSigHupWhenExecute(t *testing.T) {
 	r, w, err := os.Pipe()
 	require.NoError(t, err, "Setup: pipe shouldn’t fail")
 
-	a, wait := startDaemon(t)
+	a, wait := startDaemon(t, true)
 
 	defer wait()
 	defer a.Quit()
@@ -150,7 +150,7 @@ func TestAppCanSigHupAfterExecute(t *testing.T) {
 	defer func() {
 		os.Unsetenv("ADSYS_SERVICETIMEOUT")
 	}()
-	a, wait := startDaemon(t)
+	a, wait := startDaemon(t, true)
 	wait()
 	a.Quit()
 
@@ -193,7 +193,7 @@ func TestAppTimeout(t *testing.T) {
 	defer func() {
 		os.Unsetenv("ADSYS_SERVICETIMEOUT")
 	}()
-	a, wait := startDaemon(t)
+	a, wait := startDaemon(t, true)
 
 	done := make(chan struct{})
 	go func() {
@@ -220,10 +220,13 @@ func TestAppGetRootCmd(t *testing.T) {
 
 // startDaemon prepares and start the daemon in the background. The done function should be called
 // to wait for the daemon to stop
-func startDaemon(t *testing.T) (app *daemon.App, done func()) {
+func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
 	t.Helper()
 
-	cleanup := prepareEnv(t)
+	cleanup := func() {}
+	if setupEnv {
+		cleanup = prepareEnv(t)
+	}
 
 	a := daemon.New()
 
