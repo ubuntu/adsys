@@ -21,6 +21,7 @@ const CmdName = "adsysctl"
 // App encapsulate commands and options of the CLI, which can be controlled by env variables.
 type App struct {
 	rootCmd cobra.Command
+	viper   *viper.Viper
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -45,9 +46,9 @@ func New() *App {
 			a.ctx, a.cancel = context.WithCancel(context.Background())
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
-			return config.Configure("adsys", a.rootCmd, func(configPath string) error {
+			return config.Configure("adsys", a.rootCmd, a.viper, func(configPath string) error {
 				var newConfig daemonConfig
-				if err := config.DefaultLoadConfig(&newConfig); err != nil {
+				if err := config.DefaultLoadConfig(&newConfig, a.viper); err != nil {
 					return err
 				}
 
@@ -76,13 +77,14 @@ func New() *App {
 		// We display usage error ourselves
 		SilenceErrors: true,
 	}
+	a.viper = viper.New()
 
-	cmdhandler.InstallVerboseFlag(&a.rootCmd)
+	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
 	cmdhandler.InstallConfigFlag(&a.rootCmd)
-	cmdhandler.InstallSocketFlag(&a.rootCmd, config.DefaultSocket)
+	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, config.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
-	decorate.LogOnError(viper.BindPFlag("clienttimeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
+	decorate.LogOnError(a.viper.BindPFlag("clienttimeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)
