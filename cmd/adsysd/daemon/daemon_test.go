@@ -133,6 +133,9 @@ func TestAppCanSigHupWhenExecute(t *testing.T) {
 	orig := os.Stdout
 	os.Stdout = w
 
+	err = a.IsReady(time.Second)
+	require.NoError(t, err, "Daemon should start within second")
+
 	a.Hup()
 
 	os.Stdout = orig
