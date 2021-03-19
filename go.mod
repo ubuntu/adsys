@@ -9,7 +9,7 @@ require (
 	github.com/godbus/dbus/v5 v5.0.3
 	github.com/golang/protobuf v1.4.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20201002095607-f9fa2a5c1104
-	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989 // indirect
+	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989
 	github.com/sirupsen/logrus v1.7.0
 	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
 	github.com/spf13/cobra v1.1.1
@@ -19,7 +19,7 @@ require (
 	golang.org/x/net v0.0.0-20201021035429-f5854403a974
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
 	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4
-	golang.org/x/text v0.3.5 // indirect
+	golang.org/x/text v0.3.5
 	google.golang.org/grpc v1.33.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.23.0
