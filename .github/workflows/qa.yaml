@@ -45,7 +45,9 @@ jobs:
           go get github.com/securego/gosec/cmd/gosec
           gosec ./...
       - name: Module files are up to date
-        run: ./.github/ci/check-modules
+        run: |
+          go mod tidy
+          ./.github/ci/check-modules
         if: ${{ always() }}
       - name: Building
         run: go build ./...
