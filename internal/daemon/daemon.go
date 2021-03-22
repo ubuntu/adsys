@@ -160,6 +160,8 @@ func (d *Daemon) Listen() (err error) {
 		var ok bool
 		lis, ok = <-d.lis
 		if !ok {
+			// Remove every forwards in case we forced stop the daemon.
+			log.RemoveAllStreams()
 			break
 		}
 		d.grpcserver = d.registerGRPCServer(d)

@@ -9,6 +9,8 @@ import (
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (a *App) installService() {
@@ -79,7 +81,10 @@ func (a *App) serviceStop(force bool) error {
 	}
 
 	if _, err := stream.Recv(); err != nil && err != io.EOF {
-		return err
+		// Ignore "transport is closing" error if force (i.e immediately drop all connections) was used.
+		if force && status.Code(err) == codes.Unavailable {
+			return nil
+		}
 	}
 
 	return nil

@@ -59,3 +59,11 @@ func AddStreamToForward(stream grpc.ServerStream) func() {
 		streamsForwarders.showCaller = showCaller
 	}
 }
+
+// RemoveAllStreams flushes all streams from the existing forwarders
+func RemoveAllStreams() {
+	streamsForwarders.mu.Lock()
+	defer streamsForwarders.mu.Unlock()
+
+	streamsForwarders.fw = make(map[streamWithCaller]bool)
+}

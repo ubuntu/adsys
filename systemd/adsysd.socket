@@ -4,6 +4,7 @@ PartOf=adsysd.service
 
 [Socket]
 ListenStream=/run/adsysd.sock
+FlushPending=yes
 
 [Install]
 WantedBy=sockets.target
