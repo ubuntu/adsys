@@ -57,6 +57,6 @@ func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) (e
 		return err
 	}
 
-	s.quit.Quit(r.GetForce())
+	go s.quit.Quit(r.GetForce())
 	return nil
 }
