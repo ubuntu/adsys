@@ -1,3 +1,19 @@
+adsys (0.3) hirsute; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Fix namespace in admx files to avoid conflict with Windows one.
+  * Special case GDM user as a machine to support login screen configuration
+    in both admx and policy daemon side.
+  * CI fixes and additions for admx generation and tests. Enable devel (hirsute) series.
+  * Multiple gosec fixes.
+  * Add missing samba dependencies to packaging
+  * Graceful stop handling fixes.
+  * Lot of new tests
+  * Multiple fixes/races discovered by tests
+
+ -- Didier Roche <didrocks@ubuntu.com>  Thu, 25 Mar 2021 10:58:58 +0100
+
 adsys (0.2) hirsute; urgency=medium
 
   [ Jean-Baptiste Lallement ]
