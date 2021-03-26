@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -50,7 +51,9 @@ func TestAppVersion(t *testing.T) {
 	var out bytes.Buffer
 	_, err = io.Copy(&out, r)
 	require.NoError(t, err, "Couldn’t copy stdout to buffer")
-	require.Equal(t, "adsysd\tdev\n", out.String(), "Version is printed")
+	require.True(t, strings.HasPrefix(out.String(), "adsysd\t"), "Start printing daemon name")
+	version := strings.TrimSpace(strings.TrimPrefix(out.String(), "adsysd\t"))
+	require.NotEmpty(t, version, "Version is printed")
 }
 
 func TestAppNoUsageError(t *testing.T) {
