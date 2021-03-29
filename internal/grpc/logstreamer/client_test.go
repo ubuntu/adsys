@@ -212,7 +212,6 @@ func (c *clientStream) RecvMsg(m interface{}) error {
 		_ = proto.Unmarshal(d, mv)
 		c.callCount++
 		return nil
-
 	}
 
 	if c.wantErrRecvMsg != nil {

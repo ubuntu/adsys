@@ -24,7 +24,7 @@ type streamWithCaller struct {
 }
 
 // AddStreamToForward adds stream identified to forward all logs to it.
-func AddStreamToForward(stream grpc.ServerStream) func() {
+func AddStreamToForward(stream grpc.ServerStream) (disconnect func()) {
 	// Initialize our forwarder
 	streamsForwarders.once.Do(func() {
 		streamsForwarders.fw = make(map[streamWithCaller]bool)
