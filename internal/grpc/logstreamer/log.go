@@ -190,7 +190,7 @@ func logLocallyMaybeRemote(level logrus.Level, caller, msg string, localLogger *
 			Caller:    caller,
 			Msg:       forwardMsg,
 		}); err != nil {
-			Warningf(context.Background(), "Couldn't send log to one or more listener: %v", err)
+			localLogger.Warningf("Couldn't send log to one or more listener: %v", err)
 		}
 	}
 	streamsForwarders.mu.RUnlock()
