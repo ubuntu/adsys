@@ -102,9 +102,9 @@ func (i *idler) ChangeTimeout(d time.Duration) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 
-	i.timeout = d
 	// the mutex ensures you nothing is calling in between the 2 channel send
 	i.sendOrTimeout(stopTimeout)
+	i.timeout = d
 	i.sendOrTimeout(startTimeout)
 }
 
