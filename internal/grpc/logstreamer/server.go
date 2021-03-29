@@ -126,5 +126,5 @@ func createID() (id string) {
 	if err != nil {
 		return "xxxxxx"
 	}
-	return fmt.Sprintf("%6d", r.Int64())
+	return fmt.Sprintf("%06d", r.Int64())
 }
