@@ -166,14 +166,14 @@ func msgContains(t *testing.T, expected string, msg interface{}, description str
 	assert.Contains(t, l.Msg, expected, description)
 }
 
-func createLogStream(t *testing.T, level logrus.Level, callerForLocal, callerForRemote bool, sendError error) (ctx context.Context, localLogs func() string, remoteLogs func() string) {
+func createLogStream(t *testing.T, level logrus.Level, callerForLocal, callerForRemote bool, sendError error) (stream grpc.ServerStream, localLogs func() string, remoteLogs func() string) {
 	t.Helper()
-	handler := func(srv interface{}, stream grpc.ServerStream) error {
-		ctx = stream.Context()
+	handler := func(srv interface{}, s grpc.ServerStream) error {
+		stream = s
 		return nil
 	}
 
-	stream := &myStream{
+	myS := &myStream{
 		ctx:          addMetaToContext(context.Background(), callerForRemote),
 		sendMsgError: sendError,
 	}
@@ -183,12 +183,12 @@ func createLogStream(t *testing.T, level logrus.Level, callerForLocal, callerFor
 	localLogger.ReportCaller = callerForLocal
 	localLogs = captureLogs(t, localLogger)
 	s := struct{}{}
-	err := log.StreamServerInterceptor(localLogger)(s, stream, nil, handler)
+	err := log.StreamServerInterceptor(localLogger)(s, myS, nil, handler)
 	require.NoError(t, err, "StreamServerInterceptor returned an error when expecting none")
 
-	return ctx, localLogs, func() string {
+	return stream, localLogs, func() string {
 		var out []string
-		for _, m := range stream.msgs {
+		for _, m := range myS.msgs {
 			l, ok := m.(*log.Log)
 			if !ok {
 				t.Fatalf("Expected a log, but send: %+v", m)
