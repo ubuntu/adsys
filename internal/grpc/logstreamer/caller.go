@@ -27,7 +27,7 @@ const (
 // getCaller retrieves the name of the first non-logrus calling function
 func getCaller() *runtime.Frame {
 	// cache this package's fully-qualified name
-	callerInitOnce.Do(func() {
+	getPackageFunc := func() {
 		pcs := make([]uintptr, maximumCallerDepth)
 		_ = runtime.Callers(0, pcs)
 
@@ -41,7 +41,8 @@ func getCaller() *runtime.Frame {
 		}
 
 		minimumCallerDepth = knownInternalFrames
-	})
+	}
+	callerInitOnce.Do(getPackageFunc)
 
 	// Restrict the lookback frames to avoid runaway lookups
 	pcs := make([]uintptr, maximumCallerDepth)
