@@ -8,6 +8,9 @@ export DH_GOLANG_INSTALL_EXTRA := internal/policies/ad/admxgen/admx.template int
 # Install all content to embed
 export DH_GOLANG_INSTALL_ALL := 1
 
+# The package fails to build on duplicate symbols in the archive with LTO enabled
+export DEB_BUILD_MAINT_OPTIONS=optimize=-lto
+
 %:
 	dh $@ --buildsystem=golang --with=golang,apport
 
