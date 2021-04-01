@@ -172,7 +172,7 @@ func (a App) Hup() (shouldQuit bool) {
 
 // Quit gracefully shutdown the service.
 func (a *App) Quit() {
-	<-a.ready
+	a.WaitReady()
 	if a.daemon == nil {
 		return
 	}
@@ -182,4 +182,10 @@ func (a *App) Quit() {
 // RootCmd returns a copy of the root command for the app. Shouldn’t be in general necessary apart when running generators.
 func (a App) RootCmd() cobra.Command {
 	return a.rootCmd
+}
+
+// WaitReady signals when the daemon is ready
+// Note: we need to use a pointer to not copy the App object before the daemon is ready, and thus, creates a data race.
+func (a *App) WaitReady() {
+	<-a.ready
 }
