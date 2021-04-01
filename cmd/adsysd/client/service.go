@@ -85,6 +85,7 @@ func (a *App) serviceStop(force bool) error {
 		if force && status.Code(err) == codes.Unavailable {
 			return nil
 		}
+		return err
 	}
 
 	return nil
