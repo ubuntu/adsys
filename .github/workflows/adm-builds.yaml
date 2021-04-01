@@ -1,6 +1,8 @@
 name: Update admx and adml templates
 on:
   push:
+    branches:
+      - '**' # Ignore tag push, but take any branch
     paths:
       - 'internal/policies/ad/admxgen/**'
       - '.github/workflows/adm-builds.yaml'
