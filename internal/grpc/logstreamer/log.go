@@ -108,7 +108,7 @@ func logf(ctx context.Context, level logrus.Level, format string, args ...interf
 }
 
 var (
-	callerMu = sync.RWMutex{}
+	localLoggerMu = sync.RWMutex{}
 )
 
 func log(ctx context.Context, level logrus.Level, args ...interface{}) {
@@ -131,9 +131,9 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	// We are controlling and unwrapping the caller ourself outside of this package.
 	// As logrus doesn't allow to specify which package to exclude manually, do it there.
 	// https://github.com/sirupsen/logrus/issues/867
-	callerMu.RLock()
+	localLoggerMu.RLock()
 	callerForLocal := localLogger.ReportCaller
-	callerMu.RUnlock()
+	localLoggerMu.RUnlock()
 
 	// Handle call stack collect
 	var caller string
@@ -164,7 +164,7 @@ func logLocallyMaybeRemote(level logrus.Level, caller, msg string, localLogger *
 	}
 	forwardMsg := localMsg
 
-	callerMu.Lock()
+	localLoggerMu.Lock()
 	callerForLocal := localLogger.ReportCaller
 	localLogger.SetReportCaller(false)
 	if callerForLocal {
@@ -173,7 +173,7 @@ func logLocallyMaybeRemote(level logrus.Level, caller, msg string, localLogger *
 	localLogger.Log(level, localMsg)
 	// Reset value for next call
 	localLogger.SetReportCaller(callerForLocal)
-	callerMu.Unlock()
+	localLoggerMu.Unlock()
 
 	if sendStream != nil {
 		if err = sendStream(level.String(), caller, msg); err != nil {
