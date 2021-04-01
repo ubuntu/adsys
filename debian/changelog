@@ -1,3 +1,15 @@
+adsys (0.4) hirsute; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Disable LTO to fix FTBFS
+  * Fix Version test on released package
+  * Fix timeout idler race
+  * Add tests for logstreamer
+  * Misc cleanups
+
+ -- Didier Roche <didrocks@ubuntu.com>  Thu, 01 Apr 2021 10:23:52 +0200
+
 adsys (0.3) hirsute; urgency=medium
 
   [ Jean-Baptiste Lallement ]
