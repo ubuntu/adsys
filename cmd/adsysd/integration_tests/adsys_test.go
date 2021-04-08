@@ -57,7 +57,7 @@ ad_domain: ldap://adc.warthogs.biz
 
 	var wg sync.WaitGroup
 	d := daemon.New()
-	os.Args = []string{"tests", "-c", confFile}
+	defer changeOsArgs(t, confFile)()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -87,9 +87,8 @@ ad_domain: ldap://adc.warthogs.biz
 // It returns the stdout content and error from client.
 func runClient(t *testing.T, conf string, args ...string) (stdout string, err error) {
 	t.Helper()
-	origArgs := os.Args
 
-	os.Args = append([]string{"tests", "-c", conf, "-vv"}, args...)
+	defer changeOsArgs(t, conf, args...)()
 	c := client.New()
 
 	// capture stdout
@@ -107,8 +106,28 @@ func runClient(t *testing.T, conf string, args ...string) (stdout string, err er
 	_, errCopy := io.Copy(&out, r)
 	require.NoError(t, errCopy, "Couldn’t copy stdout to buffer")
 
-	os.Args = origArgs
 	return out.String(), err
+}
+
+// changeOsArgs modifies the os Args for cobra to parse them successfully.
+// It returns a teardown funciton to restore original args.
+// As os.Args is global, calling it prevents any parallell testing.
+func changeOsArgs(t *testing.T, conf string, args ...string) (teardown func()) {
+	t.Helper()
+
+	origArgs := os.Args
+
+	os.Args = []string{"tests", "-vv"}
+	if conf != "" {
+		os.Args = append(os.Args, "-c", conf)
+	}
+	if args != nil {
+		os.Args = append(os.Args, args...)
+	}
+
+	return func() {
+		os.Args = origArgs
+	}
 }
 
 func TestMain(m *testing.M) {

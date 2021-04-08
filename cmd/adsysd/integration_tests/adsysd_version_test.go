@@ -14,8 +14,8 @@ import (
 
 func TestAdsysdVersion(t *testing.T) {
 	d := daemon.New()
-	origArgs := os.Args
-	os.Args = []string{"tests", "version"}
+
+	defer changeOsArgs(t, "", "version")()
 
 	// capture stdout
 	r, w, err := os.Pipe()
@@ -31,8 +31,6 @@ func TestAdsysdVersion(t *testing.T) {
 	var out bytes.Buffer
 	_, errCopy := io.Copy(&out, r)
 	require.NoError(t, errCopy, "Couldn’t copy stdout to buffer")
-
-	os.Args = origArgs
 
 	require.NoError(t, err, "daemon should't exit in error")
 
