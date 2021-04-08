@@ -70,9 +70,10 @@ out:
 			}
 		}
 	}
-	c := i.operations
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	close(i.operations)
 	i.operations = nil
-	close(c)
 }
 
 func (i *idler) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) {
