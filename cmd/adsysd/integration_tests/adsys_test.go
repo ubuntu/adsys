@@ -57,7 +57,7 @@ ad_domain: ldap://adc.warthogs.biz
 
 	var wg sync.WaitGroup
 	d := daemon.New()
-	defer changeOsArgs(t, confFile)()
+	defer changeOsArgs(t, d, confFile)()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -88,8 +88,8 @@ ad_domain: ldap://adc.warthogs.biz
 func runClient(t *testing.T, conf string, args ...string) (stdout string, err error) {
 	t.Helper()
 
-	defer changeOsArgs(t, conf, args...)()
 	c := client.New()
+	defer changeOsArgs(t, c, conf, args...)()
 
 	// capture stdout
 	r, w, err := os.Pipe()
@@ -109,11 +109,23 @@ func runClient(t *testing.T, conf string, args ...string) (stdout string, err er
 	return out.String(), err
 }
 
+var osArgsMu sync.Mutex
+
+type WaitReadyer interface {
+	WaitReady()
+}
+
 // changeOsArgs modifies the os Args for cobra to parse them successfully.
 // It returns a teardown funciton to restore original args.
 // As os.Args is global, calling it prevents any parallell testing.
-func changeOsArgs(t *testing.T, conf string, args ...string) (teardown func()) {
+func changeOsArgs(t *testing.T, app WaitReadyer, conf string, args ...string) (teardown func()) {
 	t.Helper()
+
+	osArgsMu.Lock()
+	go func() {
+		app.WaitReady()
+		osArgsMu.Unlock()
+	}()
 
 	origArgs := os.Args
 
