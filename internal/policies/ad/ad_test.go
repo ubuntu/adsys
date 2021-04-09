@@ -922,9 +922,9 @@ func TestMockGPOList(t *testing.T) {
 func mockGPOListCmd(t *testing.T, args ...string) []string {
 	t.Helper()
 
-	cArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockGPOList", "--"}
-	cArgs = append(cArgs, args...)
-	return cArgs
+	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockGPOList", "--"}
+	cmdArgs = append(cmdArgs, args...)
+	return cmdArgs
 }
 
 func setKrb5CC(t *testing.T, ccRootName string) (string, func()) {

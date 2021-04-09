@@ -219,7 +219,6 @@ func runPolkitd() (teardown func()) {
 		}()
 
 		for answer := range answers {
-
 			out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
 			if err != nil {
 				log.Fatalf("Teardown: can’t stop polkitd container: %v", string(out))
