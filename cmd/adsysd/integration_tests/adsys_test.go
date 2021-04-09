@@ -22,6 +22,15 @@ import (
 
 const dockerPolkitdImage = "docker.pkg.github.com/ubuntu/adsys/polkitd:0.1"
 
+func TestMain(m *testing.M) {
+	// Start local polkitd in container with our policy (one for always yes, one for always no)
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		defer runPolkitd()()
+	}
+
+	m.Run()
+}
+
 func TestStartAndStopDaemon(t *testing.T) {
 	defer polkitAnswer(t, "yes")()
 
@@ -131,15 +140,6 @@ func changeOsArgs(t *testing.T, conf string, args ...string) (teardown func()) {
 	}
 }
 
-func TestMain(m *testing.M) {
-	// Start local polkitd in container with our policy (one for always yes, one for always no)
-	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		defer runPolkitd()()
-	}
-
-	m.Run()
-}
-
 var (
 	yesSocket string
 	noSocket  string
@@ -208,7 +208,7 @@ func runPolkitd() (teardown func()) {
 	noSocket = fmt.Sprintf("unix:path=%s/system_bus_socket", answers["no"])
 
 	// give time for polkit containers to start
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	return func() {
 		defer func() {
