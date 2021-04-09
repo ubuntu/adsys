@@ -197,6 +197,8 @@ func TestCat(t *testing.T) {
 			assert.Contains(t, outCat(), "New request /service/Version", "debug logs for clients are forwarded")
 
 			if tc.multipleCats {
+				// Give time for the server to forward first Cat closing
+				time.Sleep(time.Second)
 				err = stopCat2()
 				require.Error(t, err, "cat2 has been killed")
 
