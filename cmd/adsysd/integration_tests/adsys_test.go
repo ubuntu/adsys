@@ -23,6 +23,10 @@ import (
 const dockerPolkitdImage = "docker.pkg.github.com/ubuntu/adsys/polkitd:0.1"
 
 func TestMain(m *testing.M) {
+	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
+		fmt.Println("Integration tests skipped as requested")
+		return
+	}
 	// Start local polkitd in container with our policy (one for always yes, one for always no)
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		defer runPolkitd()()
@@ -192,7 +196,7 @@ func runPolkitd() (teardown func()) {
 				"--volume", fmt.Sprintf("%s:%s:ro", adsysActionsDir, "/usr/share/polkit-1/actions.orig"),
 				"--volume", `/etc/group:/etc/group:ro`,
 				"--volume", `/etc/passwd:/etc/passwd:ro`,
-				"-v", fmt.Sprintf("%s:/dbus/", socketDir),
+				"--volume", fmt.Sprintf("%s:/dbus/", socketDir),
 				dockerPolkitdImage,
 				answer,
 			)
