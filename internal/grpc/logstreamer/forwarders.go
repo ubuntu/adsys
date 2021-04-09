@@ -27,7 +27,9 @@ type streamWithCaller struct {
 func AddStreamToForward(stream grpc.ServerStream) (disconnect func()) {
 	// Initialize our forwarder
 	streamsForwarders.once.Do(func() {
+		streamsForwarders.mu.Lock()
 		streamsForwarders.fw = make(map[streamWithCaller]bool)
+		streamsForwarders.mu.Unlock()
 	})
 
 	var showCaller bool
