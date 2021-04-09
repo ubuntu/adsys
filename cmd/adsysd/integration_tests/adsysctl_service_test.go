@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
+	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
 )
 
 func TestStop(t *testing.T) {
@@ -49,6 +51,40 @@ func TestStop(t *testing.T) {
 			require.NoError(t, err, "client should exit with no error")
 		})
 	}
+}
+
+func TestForceStopWithHangingClient(t *testing.T) {
+	defer polkitAnswer(t, "yes")()
+
+	conf, quit := runDaemon(t, false)
+	defer quit()
+	var wg sync.WaitGroup
+	d := daemon.New()
+	defer changeOsArgs(t, conf)()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := d.Run()
+		require.NoError(t, err, "daemon should exit with no error")
+	}()
+	d.WaitReady()
+
+	outCat, stopCat, err := startCmd(t, false, "adsysctl", "-vv", "-c", conf, "service", "cat")
+	require.NoError(t, err, "cat should start successfully")
+
+	// Let cat connecting to daemon and daemon forwarding logs
+	time.Sleep(time.Second)
+
+	start := time.Now()
+	out, err := runClient(t, conf, "service", "stop", "-f")
+	assert.Empty(t, out, "Nothing printed on stdout")
+	require.NoError(t, err, "client should exit with no error")
+
+	wg.Wait()
+
+	require.True(t, time.Since(start) < time.Second*3, "daemon should stop quickly after forced stop")
+	stopCat()
+	assert.NotEmpty(t, outCat(), "Cat has captured some outputs")
 }
 
 func TestCat(t *testing.T) {
