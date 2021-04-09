@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"log"
 	"os"
-	"sync"
 	"testing"
 	"time"
 
@@ -53,17 +53,17 @@ func TestStop(t *testing.T) {
 	}
 }
 
-func TestForceStopWithHangingClient(t *testing.T) {
+func TestStopWaitForHangingClient(t *testing.T) {
 	defer polkitAnswer(t, "yes")()
 
 	conf, quit := runDaemon(t, false)
 	defer quit()
-	var wg sync.WaitGroup
 	d := daemon.New()
 	defer changeOsArgs(t, conf)()
-	wg.Add(1)
+
+	daemonStopped := make(chan struct{})
 	go func() {
-		defer wg.Done()
+		defer close(daemonStopped)
 		err := d.Run()
 		require.NoError(t, err, "daemon should exit with no error")
 	}()
@@ -75,14 +75,67 @@ func TestForceStopWithHangingClient(t *testing.T) {
 	// Let cat connecting to daemon and daemon forwarding logs
 	time.Sleep(time.Second)
 
-	start := time.Now()
-	out, err := runClient(t, conf, "service", "stop", "-f")
-	assert.Empty(t, out, "Nothing printed on stdout")
+	// Stop without forcing: shouldn’t be able to stop it
+	// Don’t use the helper as we don’t need stdout (and cat will trigger the stdout capturer in daemon logs)
+	c := client.New()
+	restoreArgs := changeOsArgs(t, conf, "service", "stop")
+	err = c.Run()
+	restoreArgs()
+	require.NoError(t, err, "client should exit with no error (graceful stop requested)")
+
+	// Let’s wait 5 seconds to ensure it hadn’t stopped
+	select {
+	case <-daemonStopped:
+		log.Fatal("Daemon stopped when we expected to hang out")
+	case <-time.After(5 * time.Second):
+	}
+
+	stopCat()
+	assert.NotEmpty(t, outCat(), "Cat has captured some outputs")
+
+	// Let’s give it 3 seconds to stop
+	select {
+	case <-time.After(3 * time.Second):
+		log.Fatal("Daemon hadn’t stopped quickly once Cat has quit")
+	case <-daemonStopped:
+	}
+}
+
+func TestStopForcedWithHangingClient(t *testing.T) {
+	defer polkitAnswer(t, "yes")()
+
+	conf, quit := runDaemon(t, false)
+	defer quit()
+	d := daemon.New()
+	defer changeOsArgs(t, conf)()
+
+	daemonStopped := make(chan struct{})
+	go func() {
+		defer close(daemonStopped)
+		err := d.Run()
+		require.NoError(t, err, "daemon should exit with no error")
+	}()
+	d.WaitReady()
+
+	outCat, stopCat, err := startCmd(t, false, "adsysctl", "-vv", "-c", conf, "service", "cat")
+	require.NoError(t, err, "cat should start successfully")
+
+	// Let cat connecting to daemon and daemon forwarding logs
+	time.Sleep(time.Second)
+
+	// Force stop it
+	// Don’t use the helper as we don’t need stdout (and cat will trigger the stdout capturer in daemon logs)
+	c := client.New()
+	restoreArgs := changeOsArgs(t, conf, "service", "stop", "-f")
+	err = c.Run()
+	restoreArgs()
 	require.NoError(t, err, "client should exit with no error")
 
-	wg.Wait()
-
-	require.True(t, time.Since(start) < time.Second*3, "daemon should stop quickly after forced stop")
+	select {
+	case <-time.After(3 * time.Second):
+		t.Fatal("daemon should stop quickly after forced stop")
+	case <-daemonStopped:
+	}
 	stopCat()
 	assert.NotEmpty(t, outCat(), "Cat has captured some outputs")
 }
