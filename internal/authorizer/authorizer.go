@@ -61,11 +61,11 @@ func New(options ...func(*Authorizer)) (auth *Authorizer, err error) {
 		return nil, err
 	}
 	if err = bus.Auth(nil); err != nil {
-		bus.Close()
+		_ = bus.Close()
 		return nil, err
 	}
 	if err = bus.Hello(); err != nil {
-		bus.Close()
+		_ = bus.Close()
 		return nil, err
 	}
 	authority := bus.Object("org.freedesktop.PolicyKit1",
