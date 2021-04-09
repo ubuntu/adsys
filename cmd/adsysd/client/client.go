@@ -27,8 +27,6 @@ type App struct {
 	cancel context.CancelFunc
 
 	config daemonConfig
-
-	ready chan struct{}
 }
 
 type daemonConfig struct {
@@ -39,7 +37,7 @@ type daemonConfig struct {
 
 // New registers commands and return a new App.
 func New() *App {
-	a := App{ready: make(chan struct{})}
+	a := App{}
 	a.ctx, a.cancel = context.WithCancel(context.Background())
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
@@ -48,7 +46,6 @@ func New() *App {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
-			close(a.ready)
 			return config.Configure("adsys", a.rootCmd, a.viper, func(configPath string) error {
 				var newConfig daemonConfig
 				if err := config.DefaultLoadConfig(&newConfig, a.viper); err != nil {
@@ -127,10 +124,4 @@ func (a App) RootCmd() cobra.Command {
 
 func (a App) getTimeout() time.Duration {
 	return time.Duration(a.config.ClientTimeout * int(time.Second))
-}
-
-// WaitReady signals when the daemon is ready
-// Note: we need to use a pointer to not copy the App object before the daemon is ready, and thus, creates a data race.
-func (a *App) WaitReady() {
-	<-a.ready
 }
