@@ -63,6 +63,7 @@ func TestCat(t *testing.T) {
 		polkitAnswer     string
 		daemonNotStarted bool
 		coverCatClient   bool
+		multipleCats     bool
 
 		wantErr bool
 	}{
@@ -73,6 +74,8 @@ func TestCat(t *testing.T) {
 		"Cat other clients and daemon - cover client": {polkitAnswer: "yes", coverCatClient: true},
 		"Cat denied - cover client":                   {polkitAnswer: "no", coverCatClient: true, wantErr: true},
 		"Daemon not responding - cover client":        {daemonNotStarted: true, coverCatClient: true, wantErr: true},
+
+		"Multiple cats": {multipleCats: true, polkitAnswer: "yes"},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -91,8 +94,8 @@ func TestCat(t *testing.T) {
 				time.Sleep(5 * time.Second)
 			}
 
-			var outCat func() string
-			var stopCat func() error
+			var outCat, outCat2 func() string
+			var stopCat, stopCat2 func() error
 			if tc.coverCatClient {
 				// create cat client and control it, capturing stderr for logs
 
@@ -125,7 +128,13 @@ func TestCat(t *testing.T) {
 					return errors.New("Mimic cat killing")
 				}
 			} else {
+
 				var err error
+				if tc.multipleCats {
+					outCat2, stopCat2, err = startCmd(t, false, "adsysctl", "-vv", "-c", conf, "service", "cat")
+					require.NoError(t, err, "cat should start successfully")
+				}
+
 				outCat, stopCat, err = startCmd(t, false, "adsysctl", "-vv", "-c", conf, "service", "cat")
 				require.NoError(t, err, "cat should start successfully")
 			}
@@ -150,6 +159,16 @@ func TestCat(t *testing.T) {
 
 			assert.Contains(t, outCat(), "New connection from client", "internal logs from server are forwarded")
 			assert.Contains(t, outCat(), "New request /service/Version", "debug logs for clients are forwarded")
+
+			if tc.multipleCats {
+				err = stopCat2()
+				require.Error(t, err, "cat2 has been killed")
+
+				assert.Contains(t, outCat2(), "New connection from client", "internal logs from server are forwarded")
+				assert.Contains(t, outCat2(), "New request /service/Cat", "debug logs for the other cat is forwarded")
+				assert.Contains(t, outCat2(), "Request /service/Cat done", "the other cat is closed")
+				assert.Contains(t, outCat2(), "New request /service/Version", "debug logs for clients are forwarded")
+			}
 		})
 	}
 }
