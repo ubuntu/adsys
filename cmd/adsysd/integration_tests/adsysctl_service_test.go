@@ -16,7 +16,7 @@ import (
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
 )
 
-func TestStop(t *testing.T) {
+func TestServiceStop(t *testing.T) {
 	tests := map[string]struct {
 		polkitAnswer     string
 		daemonNotStarted bool
@@ -53,7 +53,7 @@ func TestStop(t *testing.T) {
 	}
 }
 
-func TestStopWaitForHangingClient(t *testing.T) {
+func TestServiceStopWaitForHangingClient(t *testing.T) {
 	defer polkitAnswer(t, "yes")()
 
 	conf, quit := runDaemon(t, false)
@@ -101,7 +101,7 @@ func TestStopWaitForHangingClient(t *testing.T) {
 	}
 }
 
-func TestStopForcedWithHangingClient(t *testing.T) {
+func TestServiceStopForcedWithHangingClient(t *testing.T) {
 	defer polkitAnswer(t, "yes")()
 
 	conf, quit := runDaemon(t, false)
@@ -140,7 +140,7 @@ func TestStopForcedWithHangingClient(t *testing.T) {
 	assert.NotEmpty(t, outCat(), "Cat has captured some outputs")
 }
 
-func TestCat(t *testing.T) {
+func TestServiceCat(t *testing.T) {
 	// Unfortunately, we can’t easily create the cat client and other pingers in the same process:
 	// as cat will print what was forwarded to it, and the daemon, other clients and such will all write
 	// also, this creates multiple calls, with overriding fds and such.
