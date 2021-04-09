@@ -2,6 +2,7 @@ package adsys_test
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"fmt"
 	"io"
@@ -132,7 +133,9 @@ func changeOsArgs(t *testing.T, conf string, args ...string) (teardown func()) {
 
 func TestMain(m *testing.M) {
 	// Start local polkitd in container with our policy (one for always yes, one for always no)
-	defer runPolkitd()()
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		defer runPolkitd()()
+	}
 
 	m.Run()
 }
@@ -255,4 +258,77 @@ func polkitAnswer(t *testing.T, answer string) func() {
 			t.Fatalf("Setup: couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
 		}
 	}
+}
+
+type runner interface {
+	Run() error
+}
+
+func TestExecuteCommand(t *testing.T) {
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		return
+	}
+	defer os.Exit(0)
+
+	args := os.Args
+	for len(args) > 0 {
+		if args[0] != "--" {
+			args = args[1:]
+			continue
+		}
+		args = args[1:]
+		break
+	}
+
+	// let cobra knows what we want to execute
+	os.Args = args
+
+	var app runner
+	switch args[0] {
+	case "adsysctl":
+		app = client.New()
+	case "adsysd":
+		app = daemon.New()
+	default:
+		fmt.Fprintf(os.Stderr, "UNKNOWN command: %s", args[0])
+		os.Exit(1)
+	}
+
+	if err := app.Run(); err != nil {
+		fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+var testCmdName = os.Args[0]
+
+func startCmd(t *testing.T, wait bool, args ...string) (out func() string, teardown func() error, err error) {
+	t.Helper()
+
+	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", testCmdName, "-test.run=TestExecuteCommand", "--"}
+	cmdArgs = append(cmdArgs, args...)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
+
+	var b bytes.Buffer
+	cmd.Stdout = &b
+	cmd.Stderr = &b
+
+	err = cmd.Start()
+	if wait {
+		err := cmd.Wait()
+		cancel()
+		return func() string { return b.String() }, func() error { return nil }, err
+	}
+
+	return func() string { return b.String() },
+		func() error {
+			if err := cmd.Process.Kill(); err != nil {
+				t.Fatal("Failed to kill process: ", err)
+			}
+			err := cmd.Wait()
+			cancel()
+			return err
+		}, err
 }
