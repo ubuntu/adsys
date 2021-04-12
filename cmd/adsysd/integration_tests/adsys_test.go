@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 		fmt.Println("Integration tests skipped as requested")
 		return
 	}
-	// Start local polkitd in container with our policy (one for always yes, one for always no)
+	// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		defer runPolkitd()()
 	}
