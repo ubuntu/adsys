@@ -1,0 +1,8 @@
+Policies from machine configuration:
+- MainOffice Policy ({C4F393CA-AD9A-4595-AEBC-3FA6EE484285})
+- Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})
+
+Policies from user configuration:
+- RnD Policy ({5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242})
+- IT Policy ({75545F76-DEC2-4ADA-B7B8-D5209FD48727})
+- Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})

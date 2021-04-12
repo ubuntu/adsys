@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -22,6 +23,8 @@ import (
 
 const dockerPolkitdImage = "docker.pkg.github.com/ubuntu/adsys/polkitd:0.1"
 
+var update bool
+
 func TestMain(m *testing.M) {
 	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
 		fmt.Println("Integration tests skipped as requested")
@@ -31,6 +34,9 @@ func TestMain(m *testing.M) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		defer runPolkitd()()
 	}
+
+	flag.BoolVar(&update, "update", false, "update golden files")
+	flag.Parse()
 
 	m.Run()
 }
