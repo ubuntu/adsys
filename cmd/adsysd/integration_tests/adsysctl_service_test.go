@@ -35,8 +35,10 @@ func TestServiceStop(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			defer polkitAnswer(t, tc.polkitAnswer)()
 
-			conf, quit := runDaemon(t, !tc.daemonNotStarted)
-			defer quit()
+			conf := createConf(t, "")
+			if !tc.daemonNotStarted {
+				defer runDaemon(t, conf)()
+			}
 
 			args := []string{"service", "stop"}
 			if tc.force {
@@ -56,8 +58,7 @@ func TestServiceStop(t *testing.T) {
 func TestServiceStopWaitForHangingClient(t *testing.T) {
 	defer polkitAnswer(t, "yes")()
 
-	conf, quit := runDaemon(t, false)
-	defer quit()
+	conf := createConf(t, "")
 	d := daemon.New()
 	defer changeOsArgs(t, conf)()
 
@@ -104,8 +105,7 @@ func TestServiceStopWaitForHangingClient(t *testing.T) {
 func TestServiceStopForcedWithHangingClient(t *testing.T) {
 	defer polkitAnswer(t, "yes")()
 
-	conf, quit := runDaemon(t, false)
-	defer quit()
+	conf := createConf(t, "")
 	d := daemon.New()
 	defer changeOsArgs(t, conf)()
 
@@ -171,9 +171,10 @@ func TestServiceCat(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			defer polkitAnswer(t, tc.polkitAnswer)()
 
-			startInProcessDaemon := !tc.daemonNotStarted && !tc.coverCatClient
-			conf, quit := runDaemon(t, startInProcessDaemon)
-			defer quit()
+			conf := createConf(t, "")
+			if !tc.daemonNotStarted && !tc.coverCatClient {
+				defer runDaemon(t, conf)()
+			}
 
 			if tc.coverCatClient {
 				_, stopDaemon, err := startCmd(t, false, "adsysd", "-c", conf)

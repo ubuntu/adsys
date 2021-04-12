@@ -7,8 +7,8 @@ import (
 )
 
 func TestCompletion(t *testing.T) {
-	conf, quit := runDaemon(t, false)
-	defer quit()
+	conf := createConf(t, "")
+	defer runDaemon(t, conf)()
 
 	out, err := runClient(t, conf, "completion")
 	require.NoError(t, err, "client should exit with no error")

@@ -24,8 +24,10 @@ func TestVersion(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			defer polkitAnswer(t, tc.polkitAnswer)()
 
-			conf, quit := runDaemon(t, !tc.daemonNotStarted)
-			defer quit()
+			conf := createConf(t, "")
+			if !tc.daemonNotStarted {
+				defer runDaemon(t, conf)()
+			}
 
 			out, err := runClient(t, conf, "version")
 			if tc.wantErr {

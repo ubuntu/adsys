@@ -38,16 +38,20 @@ func TestMain(m *testing.M) {
 func TestStartAndStopDaemon(t *testing.T) {
 	defer polkitAnswer(t, "yes")()
 
-	_, quit := runDaemon(t, true)
+	conf := createConf(t, "")
+	quit := runDaemon(t, conf)
 	quit()
 }
 
-// runDaemon generates the configuration file and the daemon lifecycle.
-// It returns the configuration file path and a quit() function.
-func runDaemon(t *testing.T, startDaemon bool) (conf string, quit func()) {
+// createConf generates an adsys configuration in a temporary directory
+// It will use adsysDir for socket, cache and run dir if provided
+func createConf(t *testing.T, adsysDir string) (conf string) {
 	t.Helper()
 
-	dir := t.TempDir()
+	dir := adsysDir
+	if dir == "" {
+		dir = t.TempDir()
+	}
 
 	// Create config
 	confFile := filepath.Join(dir, "adsys.yaml")
@@ -61,17 +65,20 @@ cache_dir: %s/cache
 run_dir: %s/run
 servicetimeout: 30
 ad_server: warthogs.biz
-ad_domain: ldap://adc.warthogs.biz
-`, dir, dir, dir)), 0644)
+ad_domain: ldap://adc.warthogs.biz`, dir, dir, dir)), 0644)
 	require.NoError(t, err, "Setup: config file should be created")
 
-	if !startDaemon {
-		return confFile, func() {}
-	}
+	return confFile
+}
+
+// runDaemon starts the adsys daemon lifecycle.
+// It returns a quit() function.
+func runDaemon(t *testing.T, conf string) (quit func()) {
+	t.Helper()
 
 	var wg sync.WaitGroup
 	d := daemon.New()
-	defer changeOsArgs(t, confFile)()
+	defer changeOsArgs(t, conf)()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -81,7 +88,7 @@ ad_domain: ldap://adc.warthogs.biz
 
 	d.WaitReady()
 
-	return confFile, func() {
+	return func() {
 		done := make(chan struct{})
 		go func() {
 			d.Quit()

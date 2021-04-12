@@ -36,8 +36,10 @@ func TestPolicyAdmx(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			defer polkitAnswer(t, tc.polkitAnswer)()
 
-			conf, quit := runDaemon(t, !tc.daemonNotStarted)
-			defer quit()
+			conf := createConf(t, "")
+			if !tc.daemonNotStarted {
+				defer runDaemon(t, conf)()
+			}
 			args := []string{"policy", "admx"}
 			if tc.arg != "" {
 				args = append(args, tc.arg)
