@@ -25,6 +25,8 @@ import (
 
 const policyPath = "SYSVOL/localdomain/Policies"
 
+var Update bool
+
 func TestFetchGPO(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
@@ -523,6 +525,9 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	flag.BoolVar(&Update, "update", false, "update golden files")
+	flag.Parse()
+
 	for _, arg := range os.Args {
 		if !strings.HasPrefix(arg, "-test.coverprofile=") {
 			continue

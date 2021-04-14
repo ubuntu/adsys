@@ -1,0 +1,4 @@
+RnDDep1 GPO1	smb://warthogs.biz/SysVol/warthogs.biz/Policies/RnDDep1_GPO1
+RnDDep1 GPO2	smb://warthogs.biz/SysVol/warthogs.biz/Policies/RnDDep1_GPO2
+RnD GPO	smb://warthogs.biz/SysVol/warthogs.biz/Policies/RnD_GPO
+Default Domain Policy	smb://warthogs.biz/SysVol/warthogs.biz/Policies/Default_Domain_Policy

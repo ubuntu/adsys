@@ -1,0 +1,5 @@
+RnDDep2 Forced GPO	smb://warthogs.biz/SysVol/warthogs.biz/Policies/RnDDep2_Forced_GPO
+SubDep2ForcedPolicy Forced GPO	smb://warthogs.biz/SysVol/warthogs.biz/Policies/SubDep2ForcedPolicy_Forced_GPO
+RnDDep2 GPO	smb://warthogs.biz/SysVol/warthogs.biz/Policies/RnDDep2_GPO
+RnD GPO	smb://warthogs.biz/SysVol/warthogs.biz/Policies/RnD_GPO
+Default Domain Policy	smb://warthogs.biz/SysVol/warthogs.biz/Policies/Default_Domain_Policy
