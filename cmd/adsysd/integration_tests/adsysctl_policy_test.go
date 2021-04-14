@@ -29,10 +29,10 @@ func TestPolicyAdmx(t *testing.T) {
 
 		"Need one valid argument": {polkitAnswer: "yes", wantErr: true},
 
-		"Admx generation denied":    {arg: "lts-only", polkitAnswer: "no"},
-		"Fail on non stored distro": {arg: "lts-only", distroOption: "Tartanpion", polkitAnswer: "yes", wantErr: true},
-		"Fail on invalid arg":       {arg: "something", polkitAnswer: "yes", wantErr: true},
-		"Daemon not responding":     {arg: "lts-only", daemonNotStarted: true, wantErr: true},
+		"Admx generation is always allowed": {arg: "lts-only", polkitAnswer: "no"},
+		"Fail on non stored distro":         {arg: "lts-only", distroOption: "Tartanpion", polkitAnswer: "yes", wantErr: true},
+		"Fail on invalid arg":               {arg: "something", polkitAnswer: "yes", wantErr: true},
+		"Daemon not responding":             {arg: "lts-only", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
