@@ -11,6 +11,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -60,13 +61,10 @@ func CoverageToGoFormat(t *testing.T, include string) (coverageOn bool) {
 	realBinaryPath, err := filepath.Abs(include)
 	require.NoError(t, err, "Setup: can’t resolve real binary path")
 	n := filepath.Base(include)
-	f, err := os.OpenFile(filepath.Join(tempdir, n), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0766)
-	require.NoError(t, err, "Setup: can’t prefix covered python mocks to PATH")
-	defer f.Close()
 	d := []byte(fmt.Sprintf(`#!/bin/sh
 python3-coverage run -a %s $@
 `, realBinaryPath))
-	err = os.WriteFile(filepath.Join(tempdir, n), d, 0766)
+	err = os.WriteFile(filepath.Join(tempdir, n), d, 0700)
 	require.NoError(t, err, "Setup: can’t create prefixed covered python mock")
 
 	t.Cleanup(func() {
@@ -78,6 +76,7 @@ python3-coverage run -a %s $@
 		require.NoError(t, err, "Teardown: can’t restore original PATH")
 
 		// Convert to text format
+		// #nosec G204 - we have a const for coverageCmd
 		out, err := exec.Command(coverageCmd, "annotate", "-d", coverDir, "--include", include).CombinedOutput()
 		require.NoErrorf(t, err, "Teardown: can’t combine python coverage: %v", string(out))
 
@@ -91,14 +90,15 @@ python3-coverage run -a %s $@
 		coverDir := filepath.Dir(goCoverProfile)
 
 		// transform include to golang compatible format
-		inF, err := os.Open(filepath.Join(coverDir, include+",cover"))
+		//in := filepath.Join(coverDir, include+",cover")
+		inF, err := os.Open(filepath.Clean(filepath.Join(coverDir, include+",cover")))
 		require.NoErrorf(t, err, "Teardown: failed opening python cover file: %s", err)
-		defer inF.Close()
+		defer func() { assert.NoError(t, inF.Close(), "Teardown: can’t close python cover file") }()
 
 		golangInclude := filepath.Join(coverDir, include+".gocover")
 		outF, err := os.Create(golangInclude)
 		require.NoErrorf(t, err, "Teardown: failed opening output golang compatible cover file: %s", err)
-		defer outF.Close()
+		defer func() { assert.NoError(t, outF.Close(), "Teardown: can’t close golang compatible cover file") }()
 
 		var line int
 		scanner := bufio.NewScanner(inF)
@@ -148,7 +148,7 @@ func appendToFile(main, add string) error {
 		return fmt.Errorf("can't open python coverage file named: %v", err)
 	}
 
-	f, err := os.OpenFile(main, os.O_APPEND|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(main, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return fmt.Errorf("can't open golang cover profile file: %v", err)
 	}
@@ -167,18 +167,18 @@ func fqdnToPath(t *testing.T, path string) string {
 
 	d := srcPath
 	for d != "/" {
-		f, err := os.Open(filepath.Join(d, "go.mod"))
+		f, err := os.Open(filepath.Clean(filepath.Join(d, "go.mod")))
 		if err != nil {
 			d = filepath.Dir(d)
 			continue
 		}
-		defer f.Close()
+		defer func() { assert.NoError(t, f.Close(), "Setup: can’t close go.mod") }()
 
 		r := bufio.NewReader(f)
 		l, err := r.ReadString('\n')
 		require.NoError(t, err, "can't read go.mod first line")
 		if !strings.HasPrefix(l, "module ") {
-			t.Fatal(`failed to find "module" line in go.mod`)
+			t.Fatal(`Setup: failed to find "module" line in go.mod`)
 		}
 
 		prefix := strings.TrimSpace(strings.TrimPrefix(l, "module "))
