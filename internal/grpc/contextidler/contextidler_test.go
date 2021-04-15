@@ -50,7 +50,7 @@ func TestTimeoutOnInactiveConnection(t *testing.T) {
 	require.NoError(t, err, "StreamClient Interceptor should return no error")
 
 	// Wait for more than timeout
-	time.Sleep(20 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 	err = c.RecvMsg("something")
 	require.Error(t, err, "RecvMsg should return an error")
 	require.Equal(t, codes.DeadlineExceeded, status.Code(err), "Got DeadlineExceeded code")
