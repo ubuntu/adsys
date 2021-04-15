@@ -33,81 +33,65 @@ func TestAdsysGPOList(t *testing.T) {
 		wantErr bool
 	}{
 		"Return one gpo": {
-			url:         "ldap://somepath",
 			accountName: "UserAtRoot",
 		},
 
 		"Return hierarchy": {
-			url:         "ldap://somepath",
 			accountName: "RnDUser",
 		},
 		"Multiple GPOs in same OU": {
-			url:         "ldap://somepath",
 			accountName: "RnDUserDep1",
 		},
 
 		"Machine GPOs": {
-			url:         "ldap://somepath",
 			accountName: "hostname1",
 			objectClass: "computer",
 		},
 
 		"Disabled GPOs": {
-			url:         "ldap://somepath",
 			accountName: "RnDUserDep3",
 		},
 
 		"No GPO on OU": {
-			url:         "ldap://somepath",
 			accountName: "UserNoGPO",
 		},
 
 		// Filtering cases
 		"Filter user only GPOs": {
-			url:         "ldap://somepath",
 			accountName: "hostname2",
 			objectClass: "computer",
 		},
 		"Filter machine only GPOs": {
-			url:         "ldap://somepath",
 			accountName: "RnDUserDep7",
 		},
 
 		// Forced GPOs and inheritance handling
 		"Forced GPO are first by reverse order": {
-			url:         "ldap://somepath",
 			accountName: "RndUserSubDep2ForcedPolicy",
 		},
 		"Block inheritance": {
-			url:         "ldap://somepath",
 			accountName: "RnDUserWithBlockedInheritance",
 		},
 		"Forced GPO and blocked inheritance": {
-			url:         "ldap://somepath",
 			accountName: "RnDUserWithBlockedInheritanceAndForcedPolicies",
 		},
 
 		// Access cases
 		"Security descriptor missing ignores GPO": { // AD is doing that for windows client
-			url:         "ldap://somepath",
 			accountName: "RnDUserDep4",
 		},
 		"Fail on security descriptor access failure": {
-			url:         "ldap://somepath",
 			accountName: "RnDUserDep5",
 			wantErr:     true,
 		},
 		"Security descriptor access denied ignores GPO": {
-			url:         "ldap://somepath",
 			accountName: "RnDUserDep6",
 		},
 		"Security descriptor accepted is for another user": {
-			url:         "ldap://somepath",
 			accountName: "RnDUserDep8",
 		},
 
 		"No gPOptions fallbacks to 0": {
-			url:         "ldap://somepath",
 			accountName: "UserNogPOptions",
 		},
 
@@ -118,24 +102,20 @@ func TestAdsysGPOList(t *testing.T) {
 			wantErr:     true,
 		},
 		"Fail on non existent account": {
-			url:         "ldap://ldap_url",
 			accountName: "nonexistent",
 			wantErr:     true,
 		},
 		"Fail on user requested but found machine": {
-			url:         "ldap://ldap_url",
 			accountName: "hostname1",
 			objectClass: "user",
 			wantErr:     true,
 		},
 		"Fail on computer requested but found user": {
-			url:         "ldap://ldap_url",
 			accountName: "UserAtRoot",
 			objectClass: "computer",
 			wantErr:     true,
 		},
 		"Fail invalid GPO link": {
-			url:         "ldap://ldap_url",
 			accountName: "UserInvalidLink",
 			wantErr:     true,
 		},
@@ -145,6 +125,9 @@ func TestAdsysGPOList(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			if tc.objectClass == "" {
 				tc.objectClass = "user"
+			}
+			if tc.url == "" {
+				tc.url = "ldap://ldap_url"
 			}
 
 			args := append(prefix, "./adsys-gpolist", "--objectclass", tc.objectClass, tc.url, tc.accountName)
