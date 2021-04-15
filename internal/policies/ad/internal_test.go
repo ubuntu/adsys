@@ -21,6 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 const policyPath = "SYSVOL/localdomain/Policies"
@@ -519,21 +520,9 @@ func mkSmbDir() (string, func()) {
 	}
 }
 
-var (
-	GoCoverProfile         string
-	PythonCoveragesToMerge []func() error
-)
-
 func TestMain(m *testing.M) {
 	flag.BoolVar(&Update, "update", false, "update golden files")
 	flag.Parse()
-
-	for _, arg := range os.Args {
-		if !strings.HasPrefix(arg, "-test.coverprofile=") {
-			continue
-		}
-		GoCoverProfile = strings.TrimPrefix(arg, "-test.coverprofile=")
-	}
 
 	// Don’t setup samba for mock helpers
 	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
@@ -545,12 +534,7 @@ func TestMain(m *testing.M) {
 		defer setupSmb()()
 	}
 	m.Run()
-
-	for _, f := range PythonCoveragesToMerge {
-		if err := f(); err != nil {
-			log.Fatalf("can’t inject python coverage to golang one: %v", err)
-		}
-	}
+	testutils.MergePythonCoverage()
 }
 
 func setupSmb() func() {
