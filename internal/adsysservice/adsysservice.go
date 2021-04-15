@@ -39,6 +39,7 @@ type Service struct {
 type options struct {
 	cacheDir   string
 	runDir     string
+	dconfDir   string
 	sssdConf   string
 	authorizer *authorizer.Authorizer
 }
@@ -56,6 +57,14 @@ func WithCacheDir(p string) func(o *options) error {
 func WithRunDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.runDir = p
+		return nil
+	}
+}
+
+// WithDconfDir specifies a personalized /etc/dconf
+func WithDconfDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.dconfDir = p
 		return nil
 	}
 }
@@ -98,7 +107,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		}
 	}
 
-	m, err := policies.New(policies.WithCacheDir(args.cacheDir))
+	m, err := policies.New(policies.WithCacheDir(args.cacheDir), policies.WithDconfDir(args.dconfDir))
 	if err != nil {
 		return nil, err
 	}

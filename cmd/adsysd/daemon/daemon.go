@@ -37,6 +37,7 @@ type daemonConfig struct {
 	Socket   string
 	CacheDir string `mapstructure:"cache_dir"`
 	RunDir   string `mapstructure:"run_dir"`
+	DconfDir string `mapstructure:"dconf_dir"`
 
 	ServiceTimeout int
 	ADServer       string `mapstructure:"ad_server"`
@@ -91,7 +92,10 @@ func New() *App {
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain,
-				adsysservice.WithCacheDir(a.config.CacheDir), adsysservice.WithRunDir(a.config.RunDir))
+				adsysservice.WithCacheDir(a.config.CacheDir),
+				adsysservice.WithRunDir(a.config.RunDir),
+				adsysservice.WithDconfDir(a.config.DconfDir),
+			)
 			if err != nil {
 				close(a.ready)
 				return err

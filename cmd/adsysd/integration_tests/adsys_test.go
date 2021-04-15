@@ -71,8 +71,11 @@ cache_dir: %s/cache
 run_dir: %s/run
 servicetimeout: 30
 ad_server: warthogs.biz
-ad_domain: ldap://adc.warthogs.biz`, dir, dir, dir)), 0644)
+ad_domain: ldap://adc.warthogs.biz
+dconf_dir: %s/dconf`, dir, dir, dir, dir)), 0644)
 	require.NoError(t, err, "Setup: config file should be created")
+
+	require.NoError(t, os.Mkdir(filepath.Join(dir, "dconf"), 0755), "Setup: should create dconf dir")
 
 	return confFile
 }
