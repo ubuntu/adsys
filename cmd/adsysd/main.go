@@ -69,6 +69,7 @@ func installSignalHandler(a app) {
 				return
 			case syscall.SIGHUP:
 				if a.Hup() {
+					a.Quit()
 					return
 				}
 			}
