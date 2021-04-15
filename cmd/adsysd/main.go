@@ -18,7 +18,14 @@ import (
 //go:generate go run ../generate_compl_man_readme.go update-readme
 
 func main() {
-	os.Exit(run(os.Args))
+	var a app
+	switch filepath.Base(os.Args[0]) {
+	case daemon.CmdName:
+		a = daemon.New()
+	default:
+		a = client.New()
+	}
+	os.Exit(run(a))
 }
 
 type app interface {
@@ -28,18 +35,8 @@ type app interface {
 	Quit()
 }
 
-func run(args []string) int {
+func run(a app) int {
 	i18n.InitI18nDomain(config.TEXTDOMAIN)
-	var a app
-
-	switch filepath.Base(args[0]) {
-	case daemon.CmdName:
-		a = daemon.New()
-	default:
-		a = client.New()
-	}
-	//a = daemon.New()
-
 	installSignalHandler(a)
 
 	log.SetFormatter(&log.TextFormatter{
