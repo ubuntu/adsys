@@ -317,6 +317,7 @@ func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
 		require.NoError(t, err, "Run should exits without any error")
 	}()
 	a.WaitReady()
+	time.Sleep(50 * time.Millisecond)
 
 	return a, func() {
 		wg.Wait()
