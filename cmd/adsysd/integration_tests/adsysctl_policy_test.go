@@ -37,7 +37,7 @@ func TestPolicyAdmx(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			defer polkitAnswer(t, tc.polkitAnswer)()
+			polkitAnswer(t, tc.polkitAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {
@@ -53,7 +53,7 @@ func TestPolicyAdmx(t *testing.T) {
 				distro = tc.distroOption
 			}
 			dest := t.TempDir()
-			defer chdir(t, dest)()
+			chdir(t, dest)
 			_, err := runClient(t, conf, args...)
 			if tc.wantErr {
 				require.Error(t, err, "client should exit with an error")
@@ -105,7 +105,7 @@ func TestPolicyApplied(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			defer polkitAnswer(t, tc.polkitAnswer)()
+			polkitAnswer(t, tc.polkitAnswer)
 
 			// Reset color that we disable on client when we request --no-color
 			color.NoColor = false
@@ -158,7 +158,44 @@ func TestPolicyApplied(t *testing.T) {
 	}
 }
 
-func chdir(t *testing.T, dir string) func() {
+func TestPolicyUpdate(t *testing.T) {
+	//prefix := testutils.CoverageToGoFormat(t, "../../../internal/policies/ad/adsys-gpolist")
+
+	// update
+	// no cache and no AD
+	/*
+		tests := map[string]struct {
+			arg              string
+			distroOption     string
+			polkitAnswer     string
+			daemonNotStarted bool
+
+			wantErr bool
+		}{
+			"LTS only content":               {arg: "lts-only", polkitAnswer: "yes"},
+			"All supported releases content": {arg: "all", polkitAnswer: "yes"},
+
+			"Accept distro option": {arg: "lts-only", distroOption: "Ubuntu", polkitAnswer: "yes"},
+
+			"Need one valid argument": {polkitAnswer: "yes", wantErr: true},
+
+			"Admx generation denied":    {arg: "lts-only", polkitAnswer: "no"},
+			"Fail on non stored distro": {arg: "lts-only", distroOption: "Tartanpion", polkitAnswer: "yes", wantErr: true},
+			"Fail on invalid arg":       {arg: "something", polkitAnswer: "yes", wantErr: true},
+			"Daemon not responding":     {arg: "lts-only", daemonNotStarted: true, wantErr: true},
+		}
+		for name, tc := range tests {
+			tc := tc
+			t.Run(name, func(t *testing.T) {
+				defer polkitAnswer(t, tc.polkitAnswer)()
+			})
+		}
+	*/
+}
+
+// chdir change current directory to dir.
+// The previous current directory is restored when the test ends.
+func chdir(t *testing.T, dir string) {
 	t.Helper()
 
 	orig, err := os.Getwd()
@@ -168,9 +205,9 @@ func chdir(t *testing.T, dir string) func() {
 	if err := os.Chdir(dir); err != nil {
 		t.Fatalf("Setup: Can’t change current directory: %v", err)
 	}
-	return func() {
+	t.Cleanup(func() {
 		if err := os.Chdir(orig); err != nil {
 			t.Fatalf("Teardown: Can’t restore current directory: %v", err)
 		}
-	}
+	})
 }

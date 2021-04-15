@@ -28,8 +28,7 @@ func TestOnErrorWithError(t *testing.T) {
 }
 
 func TestLogOnErrorWithNoError(t *testing.T) {
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	var err error
 	decorate.LogOnError(err)
@@ -38,8 +37,7 @@ func TestLogOnErrorWithNoError(t *testing.T) {
 }
 
 func TestLogOnErrorWithError(t *testing.T) {
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	err := errors.New("Some error")
 	decorate.LogOnError(err)
@@ -48,8 +46,7 @@ func TestLogOnErrorWithError(t *testing.T) {
 }
 
 func TestLogOnErrorContextWithNoError(t *testing.T) {
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	var err error
 	decorate.LogOnErrorContext(context.Background(), err)
@@ -58,8 +55,7 @@ func TestLogOnErrorContextWithNoError(t *testing.T) {
 }
 
 func TestLogOnErrorContextWithError(t *testing.T) {
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	err := errors.New("Some error")
 	decorate.LogOnErrorContext(context.Background(), err)
@@ -68,8 +64,7 @@ func TestLogOnErrorContextWithError(t *testing.T) {
 }
 
 func TestLogFuncOnErrorWithNoError(t *testing.T) {
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	f := func() error { return nil }
 	decorate.LogFuncOnError(f)
@@ -78,8 +73,7 @@ func TestLogFuncOnErrorWithNoError(t *testing.T) {
 }
 
 func TestLogFuncOnErrorWithError(t *testing.T) {
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	err := errors.New("Some error")
 	f := func() error { return err }
@@ -89,8 +83,7 @@ func TestLogFuncOnErrorWithError(t *testing.T) {
 }
 
 func TestLogFuncOnErrorContextNoError(t *testing.T) {
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	f := func() error { return nil }
 	decorate.LogFuncOnErrorContext(context.Background(), f)
@@ -99,8 +92,7 @@ func TestLogFuncOnErrorContextNoError(t *testing.T) {
 }
 
 func TestLogFuncOnErrorContextWithError(t *testing.T) {
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	err := errors.New("Some error")
 	f := func() error { return err }
@@ -110,9 +102,9 @@ func TestLogFuncOnErrorContextWithError(t *testing.T) {
 }
 
 // captureLogs captures current logs.
-// It returns a couple of function: One to read the buffer and the other to restore
-// log output.
-func captureLogs(t *testing.T) (out func() string, restore func()) {
+// It returns a function to read the bufferred log output.
+// The logs output will be restored when the test ends.
+func captureLogs(t *testing.T) (out func() string) {
 	t.Helper()
 
 	localLogger := logrus.StandardLogger()
@@ -123,16 +115,16 @@ func captureLogs(t *testing.T) (out func() string, restore func()) {
 	}
 	localLogger.SetOutput(w)
 
+	t.Cleanup(func() {
+		localLogger.SetOutput(orig)
+	})
 	return func() string {
-			w.Close()
-			var buf bytes.Buffer
-			_, errCopy := io.Copy(&buf, r)
-			if errCopy != nil {
-				t.Fatal("Setup error: couldn’t get buffer content:", err)
-			}
-			return buf.String()
-		},
-		func() {
-			localLogger.SetOutput(orig)
+		w.Close()
+		var buf bytes.Buffer
+		_, errCopy := io.Copy(&buf, r)
+		if errCopy != nil {
+			t.Fatal("Setup error: couldn’t get buffer content:", err)
 		}
+		return buf.String()
+	}
 }

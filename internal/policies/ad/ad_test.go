@@ -458,9 +458,7 @@ func TestGetPolicies(t *testing.T) {
 				krb5CCName = tc.userKrb5CCBaseName
 				// only create original cc file when requested
 				if !tc.dontCreateOriginalKrb5CCName && tc.userKrb5CCBaseName != "" {
-					var cleanup func()
-					krb5CCName, cleanup = setKrb5CC(t, tc.userKrb5CCBaseName)
-					defer cleanup()
+					krb5CCName = setKrb5CC(t, tc.userKrb5CCBaseName)
 				}
 			} else if tc.objectClass == ad.ComputerObject {
 				sssCacheDir = "testdata/sss/db"
@@ -546,8 +544,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 			objectName := "useroffline@WARTHOGS.BIZ"
 
-			krb5CCName, cleanup := setKrb5CC(t, objectName)
-			defer cleanup()
+			krb5CCName := setKrb5CC(t, objectName)
 
 			if tc.getFromCache {
 				err := entry.SaveGPOs(tc.want, filepath.Join(adc.GpoRulesCacheDir(), objectName))
@@ -625,8 +622,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-			krb5CCName, cleanup := setKrb5CC(t, tc.userKrb5CCBaseName1)
-			defer cleanup()
+			krb5CCName := setKrb5CC(t, tc.userKrb5CCBaseName1)
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
 
@@ -646,8 +642,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 				if tc.userKrb5CCBaseName2 == "EMPTY" {
 					krb5CCName = ""
 				} else {
-					krb5CCName, cleanup = setKrb5CC(t, tc.userKrb5CCBaseName2)
-					defer cleanup()
+					krb5CCName = setKrb5CC(t, tc.userKrb5CCBaseName2)
 				}
 			}
 
@@ -737,10 +732,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-			krb5CCName1, cleanup := setKrb5CC(t, tc.objectName1)
-			defer cleanup()
-			krb5CCName2, cleanup := setKrb5CC(t, tc.objectName2)
-			defer cleanup()
+			krb5CCName1 := setKrb5CC(t, tc.objectName1)
+			krb5CCName2 := setKrb5CC(t, tc.objectName2)
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
 
@@ -927,7 +920,9 @@ func mockGPOListCmd(t *testing.T, args ...string) []string {
 	return cmdArgs
 }
 
-func setKrb5CC(t *testing.T, ccRootName string) (string, func()) {
+// setKrb5CC create a temporary file for a KRB5 ticket.
+// It will be automatically purged when the test ends.
+func setKrb5CC(t *testing.T, ccRootName string) string {
 	t.Helper()
 
 	f, err := os.CreateTemp("", fmt.Sprintf("kbr5cc_adsys_tests_%s_*", ccRootName))
@@ -936,8 +931,6 @@ func setKrb5CC(t *testing.T, ccRootName string) (string, func()) {
 	krb5CCName := f.Name()
 	_, err = f.Write([]byte("KRB5 Ticket file content"))
 	require.NoError(t, err, "Setup: failed to write to temporary krb5 cache file")
-	require.NoError(t, f.Close(), "Setup: failed to close temporary krb5 cache file")
-	return krb5CCName, func() {
-		os.Remove(krb5CCName) // clean up
-	}
+	t.Cleanup(func() { os.Remove(krb5CCName) })
+	return krb5CCName
 }

@@ -22,7 +22,7 @@ func TestVersion(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			defer polkitAnswer(t, tc.polkitAnswer)()
+			polkitAnswer(t, tc.polkitAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {

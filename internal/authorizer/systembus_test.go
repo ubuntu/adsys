@@ -18,7 +18,8 @@ var (
 )
 
 // StartLocalSystemBus allows to start and set environment variable to a local bus, preventing polluting system ones
-func StartLocalSystemBus(t *testing.T) func() {
+// The bus is shutted down when the test ends.
+func StartLocalSystemBus(t *testing.T) {
 	t.Helper()
 
 	sdbusMU.Lock()
@@ -87,9 +88,9 @@ func StartLocalSystemBus(t *testing.T) func() {
 		}()
 	})
 
-	return func() {
+	t.Cleanup(func() {
 		sdbusMU.Lock()
 		defer sdbusMU.Unlock()
 		nbRunningTestsSdbus--
-	}
+	})
 }

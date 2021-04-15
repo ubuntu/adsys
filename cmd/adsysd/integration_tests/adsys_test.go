@@ -42,7 +42,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStartAndStopDaemon(t *testing.T) {
-	defer polkitAnswer(t, "yes")()
+	polkitAnswer(t, "yes")
 
 	conf := createConf(t, "")
 	quit := runDaemon(t, conf)
@@ -87,7 +87,7 @@ func runDaemon(t *testing.T, conf string) (quit func()) {
 
 	var wg sync.WaitGroup
 	d := daemon.New()
-	defer changeOsArgs(t, conf)()
+	changeOsArgs(t, conf)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -119,7 +119,7 @@ func runClient(t *testing.T, conf string, args ...string) (stdout string, err er
 	t.Helper()
 
 	c := client.New()
-	defer changeOsArgs(t, conf, args...)()
+	changeOsArgs(t, conf, args...)
 
 	// capture stdout
 	r, w, err := os.Pipe()
@@ -140,9 +140,9 @@ func runClient(t *testing.T, conf string, args ...string) (stdout string, err er
 }
 
 // changeOsArgs modifies the os Args for cobra to parse them successfully.
-// It returns a teardown funciton to restore original args.
 // As os.Args is global, calling it prevents any parallell testing.
-func changeOsArgs(t *testing.T, conf string, args ...string) (teardown func()) {
+// It returns a function to restore the args if you want to do so before the test ends.
+func changeOsArgs(t *testing.T, conf string, args ...string) (restore func()) {
 	t.Helper()
 
 	origArgs := os.Args
@@ -155,9 +155,15 @@ func changeOsArgs(t *testing.T, conf string, args ...string) (teardown func()) {
 		os.Args = append(os.Args, args...)
 	}
 
-	return func() {
-		os.Args = origArgs
+	var once sync.Once
+	restore = func() {
+		once.Do(func() {
+			os.Args = origArgs
+		})
 	}
+
+	t.Cleanup(restore)
+	return restore
 }
 
 var (
@@ -252,7 +258,8 @@ func runPolkitd() (teardown func()) {
 // - yes for polkit always authorizing our actions.
 // - no for polkit always denying our actions.
 // Note that this modify the environment variable, and so, tests using them can’t run in parallel.
-func polkitAnswer(t *testing.T, answer string) func() {
+// The environment is restored when the test ends.
+func polkitAnswer(t *testing.T, answer string) {
 	t.Helper()
 
 	var socket string
@@ -262,7 +269,7 @@ func polkitAnswer(t *testing.T, answer string) func() {
 	case "no":
 		socket = noSocket
 	case "":
-		return func() {}
+		return
 	default:
 		t.Fatalf("Setup: unknown polkit answer to support: %s", answer)
 	}
@@ -272,11 +279,11 @@ func polkitAnswer(t *testing.T, answer string) func() {
 		t.Fatalf("Setup: couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
 	}
 
-	return func() {
+	t.Cleanup(func() {
 		if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", old); err != nil {
 			t.Fatalf("Setup: couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
 		}
-	}
+	})
 }
 
 type runner interface {
@@ -321,7 +328,7 @@ func TestExecuteCommand(t *testing.T) {
 
 var testCmdName = os.Args[0]
 
-func startCmd(t *testing.T, wait bool, args ...string) (out func() string, teardown func() error, err error) {
+func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop func() error, err error) {
 	t.Helper()
 
 	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", testCmdName, "-test.run=TestExecuteCommand", "--"}

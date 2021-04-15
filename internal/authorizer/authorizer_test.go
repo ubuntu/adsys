@@ -13,7 +13,7 @@ import (
 
 func TestIsAllowedFromContext(t *testing.T) {
 	t.Parallel()
-	defer authorizer.StartLocalSystemBus(t)()
+	authorizer.StartLocalSystemBus(t)
 
 	var emptyAction authorizer.Action
 	simpleAction := authorizer.Action{
@@ -90,7 +90,7 @@ func TestIsAllowedFromContext(t *testing.T) {
 
 func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 	t.Parallel()
-	defer authorizer.StartLocalSystemBus(t)()
+	authorizer.StartLocalSystemBus(t)
 
 	a, err := authorizer.New()
 	if err != nil {
@@ -103,7 +103,7 @@ func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 
 func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 	t.Parallel()
-	defer authorizer.StartLocalSystemBus(t)()
+	authorizer.StartLocalSystemBus(t)
 
 	a, err := authorizer.New()
 	if err != nil {
@@ -121,7 +121,7 @@ func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 
 func TestIsAllowedFromContextWithoutUserKey(t *testing.T) {
 	t.Parallel()
-	defer authorizer.StartLocalSystemBus(t)()
+	authorizer.StartLocalSystemBus(t)
 
 	myUserOtherAction := authorizer.Action{
 		ID:      "UserOtherActionID",

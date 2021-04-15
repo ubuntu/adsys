@@ -33,7 +33,7 @@ func TestServiceStop(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			defer polkitAnswer(t, tc.polkitAnswer)()
+			polkitAnswer(t, tc.polkitAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {
@@ -56,11 +56,11 @@ func TestServiceStop(t *testing.T) {
 }
 
 func TestServiceStopWaitForHangingClient(t *testing.T) {
-	defer polkitAnswer(t, "yes")()
+	polkitAnswer(t, "yes")
 
 	conf := createConf(t, "")
 	d := daemon.New()
-	defer changeOsArgs(t, conf)()
+	changeOsArgs(t, conf)
 
 	daemonStopped := make(chan struct{})
 	go func() {
@@ -103,11 +103,11 @@ func TestServiceStopWaitForHangingClient(t *testing.T) {
 }
 
 func TestServiceStopForcedWithHangingClient(t *testing.T) {
-	defer polkitAnswer(t, "yes")()
+	polkitAnswer(t, "yes")
 
 	conf := createConf(t, "")
 	d := daemon.New()
-	defer changeOsArgs(t, conf)()
+	changeOsArgs(t, conf)
 
 	daemonStopped := make(chan struct{})
 	go func() {
@@ -169,7 +169,7 @@ func TestServiceCat(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			defer polkitAnswer(t, tc.polkitAnswer)()
+			polkitAnswer(t, tc.polkitAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted && !tc.coverCatClient {
@@ -201,7 +201,7 @@ func TestServiceCat(t *testing.T) {
 				done := make(chan struct{})
 				go func() {
 					defer close(done)
-					defer changeOsArgs(t, conf, "service", "cat")()
+					changeOsArgs(t, conf, "service", "cat")
 					err = c.Run()
 				}()
 
