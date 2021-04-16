@@ -1,3 +1,23 @@
+adsys (0.5) hirsute; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Add integration tests to cover (all but policy update command):
+    - command line parsing and handling
+    - interaction between daemon and client
+  * Add tests and coverage support for python embedded code to interact with
+    samba (ldap AD connection).
+  * Create a samba mock to test adsys-gpolist.
+  * Add a container to control and tests polkitd with our uninstalled,
+    current version in branch .policy file on its own couple of system dbus.
+  * Abstract many test helpers in their own function to be more reusable.
+  * Code cleanup (races, shutdown handling and other fixes) detected
+    via the new tests.
+  * CI coverage integration.
+  * Various CI fixes on tagged version.
+
+ -- Didier Roche <didrocks@ubuntu.com>  Fri, 16 Apr 2021 09:53:07 +0200
+
 adsys (0.4) hirsute; urgency=medium
 
   [ Jean-Baptiste Lallement ]
