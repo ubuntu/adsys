@@ -62,6 +62,7 @@ func (a *App) serviceCat() error {
 			}
 			return err
 		}
+		// TODO: write a ping command writing on stdout PONG and sending that to the client. We can cover it with the cat test
 		fmt.Print(msg.GetMsg())
 	}
 
@@ -85,6 +86,7 @@ func (a *App) serviceStop(force bool) error {
 		if force && status.Code(err) == codes.Unavailable {
 			return nil
 		}
+		return err
 	}
 
 	return nil

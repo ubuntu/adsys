@@ -21,9 +21,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 const policyPath = "SYSVOL/localdomain/Policies"
+
+var Update bool
 
 func TestFetchGPO(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
@@ -518,6 +521,8 @@ func mkSmbDir() (string, func()) {
 }
 
 func TestMain(m *testing.M) {
+	flag.BoolVar(&Update, "update", false, "update golden files")
+	flag.Parse()
 
 	// Don’t setup samba for mock helpers
 	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
@@ -529,6 +534,7 @@ func TestMain(m *testing.M) {
 		defer setupSmb()()
 	}
 	m.Run()
+	testutils.MergePythonCoverage()
 }
 
 func setupSmb() func() {

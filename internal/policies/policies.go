@@ -27,7 +27,7 @@ type Manager struct {
 
 type options struct {
 	cacheDir string
-	dconf    *dconf.Manager
+	dconfDir string
 	gdm      *gdm.Manager
 }
 type option func(*options) error
@@ -40,6 +40,14 @@ func WithCacheDir(p string) func(o *options) error {
 	}
 }
 
+// WithDconfDir specifies a personalized dconf directory
+func WithDconfDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.dconfDir = p
+		return nil
+	}
+}
+
 // New returns a new manager with all default policy handlers.
 func New(opts ...option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
@@ -47,7 +55,6 @@ func New(opts ...option) (m *Manager, err error) {
 	// defaults
 	args := options{
 		cacheDir: config.DefaultCacheDir,
-		dconf:    &dconf.Manager{},
 		gdm:      nil,
 	}
 	// applied options (including dconf manager used by gdm)
@@ -56,9 +63,15 @@ func New(opts ...option) (m *Manager, err error) {
 			return nil, err
 		}
 	}
+	// dconf manager
+	dconfManager := &dconf.Manager{}
+	if args.dconfDir != "" {
+		dconfManager = dconf.NewWithDconfDir(args.dconfDir)
+	}
+
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {
-		if args.gdm, err = gdm.New(gdm.WithDconf(args.dconf)); err != nil {
+		if args.gdm, err = gdm.New(gdm.WithDconf(dconfManager)); err != nil {
 			return nil, err
 		}
 	}
@@ -71,7 +84,7 @@ func New(opts ...option) (m *Manager, err error) {
 	return &Manager{
 		gpoRulesCacheDir: gpoRulesCacheDir,
 
-		dconf: args.dconf,
+		dconf: dconfManager,
 		gdm:   args.gdm,
 	}, nil
 }

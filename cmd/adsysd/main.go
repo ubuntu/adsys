@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"sync"
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
@@ -18,7 +19,14 @@ import (
 //go:generate go run ../generate_compl_man_readme.go update-readme
 
 func main() {
-	os.Exit(run(os.Args))
+	var a app
+	switch filepath.Base(os.Args[0]) {
+	case daemon.CmdName:
+		a = daemon.New()
+	default:
+		a = client.New()
+	}
+	os.Exit(run(a))
 }
 
 type app interface {
@@ -28,19 +36,9 @@ type app interface {
 	Quit()
 }
 
-func run(args []string) int {
+func run(a app) int {
 	i18n.InitI18nDomain(config.TEXTDOMAIN)
-	var a app
-
-	switch filepath.Base(args[0]) {
-	case daemon.CmdName:
-		a = daemon.New()
-	default:
-		a = client.New()
-	}
-	//a = daemon.New()
-
-	installSignalHandler(a)
+	defer installSignalHandler(a)()
 
 	log.SetFormatter(&log.TextFormatter{
 		DisableLevelTruncation: true,
@@ -59,12 +57,16 @@ func run(args []string) int {
 	return 0
 }
 
-func installSignalHandler(a app) {
+func installSignalHandler(a app) func() {
 	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
-			switch <-c {
+			switch v, ok := <-c; v {
 			case syscall.SIGINT:
 				fallthrough
 			case syscall.SIGTERM:
@@ -72,9 +74,21 @@ func installSignalHandler(a app) {
 				return
 			case syscall.SIGHUP:
 				if a.Hup() {
+					a.Quit()
+					return
+				}
+			default:
+				// channel was closed: we exited
+				if !ok {
 					return
 				}
 			}
 		}
 	}()
+
+	return func() {
+		signal.Stop(c)
+		close(c)
+		wg.Wait()
+	}
 }

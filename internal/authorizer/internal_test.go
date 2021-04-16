@@ -16,7 +16,7 @@ import (
 
 func TestIsAllowed(t *testing.T) {
 	t.Parallel()
-	defer StartLocalSystemBus(t)()
+	StartLocalSystemBus(t)
 
 	var emptyAction Action
 	simpleAction := Action{

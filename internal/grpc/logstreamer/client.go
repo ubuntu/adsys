@@ -19,7 +19,9 @@ import (
 // of that package)
 func StreamClientInterceptor(logger *logrus.Logger) grpc.StreamClientInterceptor {
 	clientID := strconv.Itoa(os.Getpid())
+	localLoggerMu.RLock()
 	reportCallerMsg := strconv.FormatBool(logger.ReportCaller)
+	localLoggerMu.RUnlock()
 	return func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		ctx = metadata.AppendToOutgoingContext(ctx,
 			clientIDKey, clientID,
@@ -67,6 +69,7 @@ func (ss *logClientStream) RecvMsg(m interface{}) error {
 				return fmt.Errorf("client received an invalid debug log level: %s", logMsg.Level)
 			}
 
+			localLoggerMu.Lock()
 			reportCaller := ss.logger.ReportCaller
 			ss.logger.SetReportCaller(false)
 			// We are controlling and unwrapping the caller ourself outside of this package.
@@ -80,6 +83,7 @@ func (ss *logClientStream) RecvMsg(m interface{}) error {
 			ss.logger.Log(level, msg)
 			// Restore if we use direct calls
 			ss.logger.SetReportCaller(reportCaller)
+			localLoggerMu.Unlock()
 
 			// this message doesn’t concern the client, treat next one
 			continue

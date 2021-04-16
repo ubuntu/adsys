@@ -2,6 +2,7 @@
 cmd/adsysd/adsysd
 generated/
 internal/policies/ad/admxgen/admxgen
+__pycache__/
 
 # Test binary, build with `go test -c`
 *.test

@@ -100,7 +100,7 @@ func TestAppCanQuitWithoutExecute(t *testing.T) {
 func TestAppRunFailsOnDaemonCreationAndQuit(t *testing.T) {
 	// Trigger the error with a socket that cannot be created over an existing
 	// directory
-	defer prepareEnv(t)()
+	prepareEnv(t)
 	socket := os.Getenv("ADSYS_SOCKET")
 	os.MkdirAll(socket, 0755)
 
@@ -113,7 +113,7 @@ func TestAppRunFailsOnDaemonCreationAndQuit(t *testing.T) {
 func TestAppRunFailsOnServiceCreationAndQuit(t *testing.T) {
 	// Trigger the error with a cache directory that cannot be created over an
 	// existing file
-	defer prepareEnv(t)()
+	prepareEnv(t)
 	cachedir := os.Getenv("ADSYS_CACHE_DIR")
 	err := os.WriteFile(cachedir, []byte(""), 0644)
 	require.NoError(t, err, "Can't create cachedir file to make service fails")
@@ -255,8 +255,7 @@ func TestConfigChange(t *testing.T) {
 	require.NoError(t, err, "Socket should exist")
 	require.Equal(t, 1, a.Verbosity(), "Verbosity is set from config")
 
-	out, restore := captureLogs(t)
-	defer restore()
+	out := captureLogs(t)
 
 	// Write new config
 	writeConfig(t, dir, "adsys.socket", 2, 5)
@@ -302,9 +301,8 @@ ad_domain: ldap://adc.warthogs.biz
 func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
 	t.Helper()
 
-	cleanup := func() {}
 	if setupEnv {
-		cleanup = prepareEnv(t)
+		prepareEnv(t)
 	}
 
 	a := daemon.New()
@@ -316,16 +314,17 @@ func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
 		err := a.Run()
 		require.NoError(t, err, "Run should exits without any error")
 	}()
+	a.WaitReady()
+	time.Sleep(50 * time.Millisecond)
 
 	return a, func() {
 		wg.Wait()
-		cleanup()
 	}
 }
 
-// prepareEnv prepares adsys generic configuration with temporary socket and caches
-// It returns a function to restore it
-func prepareEnv(t *testing.T) func() {
+// prepareEnv prepares adsys generic configuration with temporary socket and caches.
+// The original environment is restored when the test ends.
+func prepareEnv(t *testing.T) {
 	t.Helper()
 
 	dir := t.TempDir()
@@ -340,7 +339,7 @@ func prepareEnv(t *testing.T) func() {
 	err = os.Setenv("ADSYS_AD_DOMAIN", "adserver.domain")
 	require.NoError(t, err, "Setup: can’t set env variable")
 
-	return func() {
+	t.Cleanup(func() {
 		err := os.Unsetenv("ADSYS_SOCKET")
 		require.NoError(t, err, "Teardown: can’t restore env variable")
 		err = os.Unsetenv("ADSYS_CACHE_DIR")
@@ -351,20 +350,20 @@ func prepareEnv(t *testing.T) func() {
 		require.NoError(t, err, "Teardown: can’t restore env variable")
 		err = os.Unsetenv("ADSYS_AD_DOMAIN")
 		require.NoError(t, err, "Teardown: can’t restore env variable")
-	}
+	})
 }
 
-// changeArgs allows changing command line arguments and return a function to return it
-func changeArgs(args ...string) func() {
+// changeArgs allows changing command line arguments and return a function to restore it.
+func changeArgs(args ...string) (restore func()) {
 	orig := os.Args
 	os.Args = args
 	return func() { os.Args = orig }
 }
 
 // captureLogs captures current logs.
-// It returns a couple of function: One to read the buffer and the other to restore
-// log output.
-func captureLogs(t *testing.T) (out func() string, restore func()) {
+// It returns a function to read the buffered log output.
+// The original log output is restored when the test ends.
+func captureLogs(t *testing.T) (out func() string) {
 	t.Helper()
 
 	localLogger := logrus.StandardLogger()
@@ -374,19 +373,19 @@ func captureLogs(t *testing.T) (out func() string, restore func()) {
 		t.Fatal("Setup error: creating pipe:", err)
 	}
 	localLogger.SetOutput(w)
+	t.Cleanup(func() {
+		localLogger.SetOutput(orig)
+	})
 
 	return func() string {
-			w.Close()
-			var buf bytes.Buffer
-			_, errCopy := io.Copy(&buf, r)
-			if errCopy != nil {
-				t.Fatal("Setup error: couldn’t get buffer content:", err)
-			}
-			return buf.String()
-		},
-		func() {
-			localLogger.SetOutput(orig)
+		w.Close()
+		var buf bytes.Buffer
+		_, errCopy := io.Copy(&buf, r)
+		if errCopy != nil {
+			t.Fatal("Setup error: couldn’t get buffer content:", err)
 		}
+		return buf.String()
+	}
 }
 func TestMain(m *testing.M) {
 	defer startLocalSystemBus()()

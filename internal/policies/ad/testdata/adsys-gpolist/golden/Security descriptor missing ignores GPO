@@ -1,0 +1,4 @@
+Failed to fetch gpo object with nTSecurityDescriptor RnDDep4_Security_descriptor_missing_GPO
+
+RnD GPO	smb://warthogs.biz/SysVol/warthogs.biz/Policies/RnD_GPO
+Default Domain Policy	smb://warthogs.biz/SysVol/warthogs.biz/Policies/Default_Domain_Policy

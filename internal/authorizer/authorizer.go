@@ -55,8 +55,17 @@ func withRoot(root string) func(*Authorizer) {
 func New(options ...func(*Authorizer)) (auth *Authorizer, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create create new authorizer"))
 
-	bus, err := dbus.SystemBus()
+	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
+	bus, err := dbus.SystemBusPrivate()
 	if err != nil {
+		return nil, err
+	}
+	if err = bus.Auth(nil); err != nil {
+		_ = bus.Close()
+		return nil, err
+	}
+	if err = bus.Hello(); err != nil {
+		_ = bus.Close()
 		return nil, err
 	}
 	authority := bus.Object("org.freedesktop.PolicyKit1",

@@ -23,7 +23,6 @@ func TestAddStdoutForwarder(t *testing.T) {
 	commonText := "content on stdout and writer"
 
 	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
-	defer restoreStdout()
 
 	// 1. Hook up the writer
 	var myWriter strings.Builder
@@ -50,7 +49,6 @@ func TestAddStderrForwarder(t *testing.T) {
 	commonText := "content on stderr and writer"
 
 	stderrReader, restoreStderr := fileToReader(t, &os.Stderr)
-	defer restoreStderr()
 
 	// 1. Hook up the writer
 	var myWriter strings.Builder
@@ -78,9 +76,7 @@ func TestAddStdoutForwarderEnsureStderrNoPolluted(t *testing.T) {
 	stdErrText := "content on stderr"
 
 	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
-	defer restoreStdout()
 	stderrReader, restoreStderr := fileToReader(t, &os.Stderr)
-	defer restoreStderr()
 
 	// 1. Hook up the writer
 	var myWriter strings.Builder
@@ -110,7 +106,6 @@ func TestAddForwarderAndDisconnect(t *testing.T) {
 	stdoutOnlyText := "|content only on stdout"
 
 	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
-	defer restoreStdout()
 
 	// 1. Hook up the writer
 	var myWriter strings.Builder
@@ -142,7 +137,6 @@ func TestAddForwardersGraduallyAndDisconnect(t *testing.T) {
 	text3 := "|content 3"
 
 	_, restoreStdout := fileToReader(t, &os.Stdout)
-	defer restoreStdout()
 
 	// 1. Hook up the first writer and write first text
 	var myWriter1 strings.Builder
@@ -180,9 +174,7 @@ func TestAddForwarderDifferentWriterStdoutStderr(t *testing.T) {
 	stdErrText := "content on stderr"
 
 	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
-	defer restoreStdout()
 	stderrReader, restoreStderr := fileToReader(t, &os.Stderr)
-	defer restoreStderr()
 
 	// 1. Hook up the writer
 	var myWriterStdout, myWriterStderr strings.Builder
@@ -227,9 +219,7 @@ func TestAddForwarderSameWriterStdoutStderr(t *testing.T) {
 	stdErrText := "content on stderr"
 
 	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
-	defer restoreStdout()
 	stderrReader, restoreStderr := fileToReader(t, &os.Stderr)
-	defer restoreStderr()
 
 	// 1. Hook up the writer
 	myWriter := concurrentStringsBuilder{}
@@ -262,7 +252,6 @@ func TestAddStdoutForwarderWithBlockedStdout(t *testing.T) {
 	commonText := "content on stdout and writer"
 
 	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
-	defer restoreStdout()
 
 	// close our fake stdout
 	os.Stdout.Close()
@@ -296,7 +285,6 @@ func TestAddStderrForwarderWithBlockedStderr(t *testing.T) {
 	commonText := "content on stderr and writer"
 
 	stderrReader, restoreStderr := fileToReader(t, &os.Stderr)
-	defer restoreStderr()
 
 	// close our fake stderr
 	os.Stderr.Close()
@@ -330,7 +318,6 @@ func TestAddStdoutForwarderOneWithFailingForwarder(t *testing.T) {
 	commonText := "content on stdout and writer"
 
 	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
-	defer restoreStdout()
 
 	// 1. Hook up the writer and failed writer
 	restorefailed, err := stdforward.AddStdoutWriter(failedWriter{})
@@ -359,7 +346,9 @@ func TestAddStdoutForwarderOneWithFailingForwarder(t *testing.T) {
 	assert.Equal(t, commonText+commonText+commonText, myWriter.String(), "Both messages are on the custom writer")
 }
 
-func fileToReader(t *testing.T, f **os.File) (io.Reader, func()) {
+// fileToReader redirects file to a reader.
+// It returns a restore function if you don’t want to wait for the end of the test to restore the output.
+func fileToReader(t *testing.T, f **os.File) (r io.Reader, restore func()) {
 	t.Helper()
 
 	stdoutReader, stdoutWriter, err := os.Pipe()
@@ -372,12 +361,14 @@ func fileToReader(t *testing.T, f **os.File) (io.Reader, func()) {
 
 	// Only restore once (defer or direct call)
 	once := sync.Once{}
-	return stdoutReader, func() {
+	restore = func() {
 		once.Do(func() {
 			*f = origStdout
 			stdoutWriter.Close()
 		})
 	}
+	t.Cleanup(restore)
+	return stdoutReader, restore
 }
 
 func stringFromReader(t *testing.T, r io.Reader) string {

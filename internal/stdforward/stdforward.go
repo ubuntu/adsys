@@ -18,9 +18,10 @@ var (
 )
 
 type forwarder struct {
-	out     *os.File
-	writers map[io.Writer]bool
-	mu      sync.RWMutex
+	out      *os.File
+	capturer *os.File
+	writers  map[io.Writer]bool
+	mu       sync.RWMutex
 
 	once sync.Once
 }
@@ -78,6 +79,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 		dest.writers = make(map[io.Writer]bool)
 
 		rOut, wOut, err := os.Pipe()
+		dest.capturer = wOut
 		if err != nil {
 			onceErr = err
 			return
@@ -91,7 +93,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 			}
 		}()
 
-		*std = wOut
+		*std = dest.capturer
 	})
 	if onceErr != nil {
 		return nil, onceErr
@@ -107,9 +109,8 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 
 		// restore std and unblock goroutine
 		if len(dest.writers) == 0 {
-			w := *std
 			*std = dest.out
-			decorate.LogFuncOnError(w.Close)
+			decorate.LogFuncOnError(dest.capturer.Close)
 			wgIOCopy.Wait()
 
 			// reset std forwarder to be ready for reinitialization

@@ -15,7 +15,6 @@ import (
 	"github.com/termie/go-shutil"
 
 	"github.com/ubuntu/adsys/internal/policies"
-	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
@@ -196,7 +195,7 @@ func TestApplyPolicy(t *testing.T) {
 			cacheDir := filepath.Join(fakeRootDir, "var", "cache", "adsys")
 			dconfDir := filepath.Join(fakeRootDir, "etc", "dconf")
 			m, err := policies.New(policies.WithCacheDir(cacheDir),
-				policies.WithDconf(dconf.NewWithDconfDir(dconfDir)))
+				policies.WithDconfDir(dconfDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0755)

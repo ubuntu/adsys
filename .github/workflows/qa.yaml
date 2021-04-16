@@ -58,7 +58,6 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
-    container: ubuntu:rolling
     steps:
       - uses: actions/checkout@v2
       - name: Setup go
@@ -67,19 +66,22 @@ jobs:
           go-version: ${{ env.goversion }}
       # We add a new user and execute under it for file permissions to be taken into account
       # as root can write in RO directories.
-      - name: Install dependencies and add user
+      - name: Install dependencies
         run: |
-          apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli
-          adduser --disabled-password --gecos "" ubuntu
+          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage
+      - name: Authenticate to docker local regitry and pull image with our token
+        run: |
+          echo "${{ github.token }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
+          docker pull docker.pkg.github.com/ubuntu/adsys/polkitd:0.1
       - name: Run tests
-        run: sudo -u ubuntu env "PATH=$PATH" go test -coverprofile=/tmp/coverage.txt -covermode=count ./...
+        run: go test -coverpkg=./... -coverprofile=/tmp/coverage.txt -covermode=count ./...
       - name: Run tests (with race detector)
-        run: sudo -u ubuntu env "PATH=$PATH" go test -race ./...
+        run: go test -race ./...
       - name: Install curl for codecov
         run: |
-          apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y curl
+          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y curl
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
