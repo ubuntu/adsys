@@ -456,7 +456,8 @@ func TestMain(m *testing.M) {
 			logrus.StandardLogger().SetLevel(logrus.DebugLevel)
 		}
 
-		brokenSmbDirShare, err := os.MkdirTemp("", "adsys_smbd_broken_share_")
+		var err error
+		brokenSmbDirShare, err = os.MkdirTemp("", "adsys_smbd_broken_share_")
 		if err != nil {
 			log.Fatalf("Setup: failed to create temporary broken smb share directory: %v", err)
 		}
