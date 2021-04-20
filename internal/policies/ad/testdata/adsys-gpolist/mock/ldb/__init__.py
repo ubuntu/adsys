@@ -135,7 +135,10 @@ class GPO:
         if name == "RnDDep8 allow for one user only GPO":
             self.nTSecurityDescriptor = [self.nTSecurityDescriptor[0].replace("S-1-5-21-16178157-162784614-155579044-1103", "OtherUserSid")]
 
-        self.gPCFileSysPath = ['\\\\warthogs.biz\\SysVol\\warthogs.biz\\Policies\\%s' % self.name]
+        smb_port = getenv("ADSYS_TESTS_SMB_PORT")
+        if smb_port:
+            smb_port = ":" + smb_port
+        self.gPCFileSysPath = ['\\\\localhost%s\\SYSVOL\\warthogs.biz\\Policies\\%s' % (smb_port, self.name)]
 
 
 # Can be a User or a Computer
