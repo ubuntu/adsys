@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/policies/ad"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestNew(t *testing.T) {
@@ -908,7 +909,7 @@ func TestMockGPOList(t *testing.T) {
 	}
 
 	for _, gpo := range gpos {
-		fmt.Fprintf(os.Stdout, "%s-name\tsmb://localhost:%d/SYSVOL/warthogs.biz/Policies/%s\n", gpo, ad.SmbPort, gpo)
+		fmt.Fprintf(os.Stdout, "%s-name\tsmb://localhost:%d/SYSVOL/warthogs.biz/Policies/%s\n", gpo, testutils.SmbPort, gpo)
 	}
 }
 
