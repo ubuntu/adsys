@@ -1,10 +1,12 @@
 package adsys_test
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/fatih/color"
@@ -191,6 +193,34 @@ func TestPolicyUpdate(t *testing.T) {
 			})
 		}
 	*/
+}
+
+func modifyCurrentUser(t *testing.T, new string) (passwd string) {
+	t.Helper()
+	dest := filepath.Join(t.TempDir(), "passwd")
+
+	f, err := os.Open("/etc/passwd")
+	require.NoError(t, err, "Setup: can't open source passwd file")
+	defer func() { require.NoError(t, f.Close(), "Setup: can’t close") }()
+
+	d, err := os.Create(dest)
+	require.NoError(t, err, "Setup: can’t create passwd temp file")
+	defer func() { require.NoError(t, d.Close(), "Setup: can’t close") }()
+
+	u, err := user.Current()
+	require.NoError(t, err, "Setup: can’t get current user name")
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		l := scanner.Text()
+		if strings.HasPrefix(l, fmt.Sprintf("%s:", u.Username)) {
+			l = fmt.Sprintf("%s%s", new, strings.TrimPrefix(l, u.Username))
+		}
+		d.Write([]byte(l + "\n"))
+	}
+	require.NoError(t, scanner.Err(), "Setup: can't write temporary passwd file")
+
+	return dest
 }
 
 // chdir change current directory to dir.
