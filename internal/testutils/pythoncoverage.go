@@ -21,8 +21,8 @@ var (
 	once    sync.Once
 )
 
-// CoverageToGoFormat allow tracking include file to the global go coverage profile
-func CoverageToGoFormat(t *testing.T, include string) (coverageOn bool) {
+// PythonCoverageToGoFormat allow tracking python include file and convert them to the global go coverage profile
+func PythonCoverageToGoFormat(t *testing.T, include string) (coverageOn bool) {
 	t.Helper()
 
 	goCoverProfile := testCoverageFile()
