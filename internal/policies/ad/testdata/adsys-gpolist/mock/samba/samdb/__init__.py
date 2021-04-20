@@ -1,5 +1,7 @@
 import ldb
 from collections import namedtuple
+import os
+from socket import gethostname
 
 
 class AccountSearch(dict):
@@ -39,7 +41,7 @@ class SamDB:
                 return []
 
             objectClass = b"user"
-            if accountName.startswith("hostname"):
+            if accountName.startswith("hostname") or accountName == gethostname():
                 objectClass = b"computer"
 
             return [AccountSearch(accountName, objectClass, ["S-1-5-21-16178157-162784614-155579044-1103"])]

@@ -1,7 +1,9 @@
 
 from samba import dsdb
 
-from os import path
+from getpass import getuser
+from os import getenv, path
+from socket import gethostname
 
 SCOPE_BASE = ""
 
@@ -57,6 +59,17 @@ accounts = {}
 ##            -- NogPOptions GPO
 #  /warthogs/InvalidGPOLink              <- UserInvalidLink
 
+#  /warthogs/IntegrationTests/
+#  /warthogs/IntegrationTests/Dep1                          <-[CURRENT_HOSTNAME]
+##            -- {C4F393CA-AD9A-4595-AEBC-3FA6EE484285} "GPO for current machine"
+#  /warthogs/IntegrationTests/Dep2                          <- MachineIntegrationTest
+##            -- {B8D10A86-0B78-4899-91AF-6F0124ECEB48} "GPO for MachineIntegrationTest"
+#  /warthogs/IntegrationTests/User                          <- UserIntegrationTest
+##            -- {75545F76-DEC2-4ADA-B7B8-D5209FD48727} "GPO for Integration Test User"
+#  /warthogs/IntegrationTests/User/UserDep1                 <-[CURRENT_USER]
+##            -- {5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242} "GPO1 for current User"
+##            -- {073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04} "GPO2 for current User"
+
 ##############################
 
 # Only called on user/machine, returns correct account object
@@ -107,9 +120,11 @@ class OU:
 
 
 class GPO:
-    def __init__(self, name):
+    def __init__(self, name, display_name=None):
         self.name = name.replace(" ", "_")
         self.display_name = name
+        if display_name:
+            self.display_name = display_name
 
         self.flags = [b'0']
         if name == "ITDep2 User only GPO":
@@ -154,7 +169,7 @@ class Account:
 
 # Build Domains
 o = OU("/warthogs")
-o.addGPO(GPO("Default Domain Policy"))
+o.addGPO(GPO("{31B2F340-016D-11D2-945F-00C04FB984F9}", display_name="Default Domain Policy"))
 o.addAccount("UserAtRoot")
 
 o = OU("/warthogs/IT")
@@ -230,6 +245,26 @@ o.addAccount("UserNogPOptions")
 
 o = OU("/warthogs/InvalidGPOLink")
 o.addAccount("UserInvalidLink")
+
+# Integration tests OU and GPO
+OU("/warthogs/IntegrationTests")
+
+o = OU("/warthogs/IntegrationTests/Dep1")
+o.addGPO(GPO("{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}", display_name="GPO for current machine"))
+o.addAccount(gethostname())
+
+o = OU("/warthogs/IntegrationTests/Dep2")
+o.addGPO(GPO("{B8D10A86-0B78-4899-91AF-6F0124ECEB48}", display_name="GPO for MachineIntegrationTest"))
+o.addAccount("MachineIntegrationTest")
+
+o = OU("/warthogs/IntegrationTests/UserDep")
+o.addGPO(GPO("{75545F76-DEC2-4ADA-B7B8-D5209FD48727}", display_name="GPO for Integration Test User"))
+o.addAccount("UserIntegrationTest")
+
+o = OU("/warthogs/IntegrationTests/UserDep/Dep1")
+o.addGPO(GPO("{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}", display_name="GPO1 for current User"))
+o.addGPO(GPO("{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}", display_name="GPO2 for current User"))
+o.addAccount(getuser())
 
 # [b'[LDAP://cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=warthogs,DC=biz;0][LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=warthogs,DC=biz;0]'
 
