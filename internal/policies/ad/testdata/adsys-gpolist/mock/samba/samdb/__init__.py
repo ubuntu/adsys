@@ -23,6 +23,13 @@ class SamDB:
         if url == "ldap://unreachable_url":
             raise Exception("Unreachable ldap url requested")
 
+        krb5ccname = os.getenv("KRB5CCNAME")
+        if not krb5ccname:
+            raise Exception("$KRB5CCNAME is not set")
+
+        if 'invalid' in krb5ccname:
+            raise Exception("Invalid Kerberos Ticket")
+
 
     def search(self, expression="", attrs=[], base="", scope=ldb.SCOPE_BASE, controls=""):
         # User/Machine search

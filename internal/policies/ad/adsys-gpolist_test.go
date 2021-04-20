@@ -24,7 +24,14 @@ func TestAdsysGPOList(t *testing.T) {
 	require.NoError(t, err, "Setup: Failed to get current absolute path for mock")
 	require.NoError(t, os.Setenv("PYTHONPATH", p), "Setup: Failed to set $PYTHONPATH")
 	t.Cleanup(func() {
-		require.NoError(t, os.Setenv("PYTHONPATH", orig), "Teardown: can't restore PYTHONPATH to original value")
+		require.NoError(t, os.Setenv("PYTHONPATH", orig), "Teardown: can't restore $PYTHONPATH to original value")
+	})
+
+	orig = os.Getenv("KRB5CCNAME")
+	require.NoError(t, err, "Setup: Failed to get current absolute path for mock")
+	require.NoError(t, os.Setenv("KRB5CCNAME", "SOMETHING"), "Setup: Failed to set $KRB5CCNAME")
+	t.Cleanup(func() {
+		require.NoError(t, os.Setenv("KRB5CCNAME", orig), "Teardown: can't restore $KRB5CCNAME to original value")
 	})
 
 	tests := map[string]struct {
