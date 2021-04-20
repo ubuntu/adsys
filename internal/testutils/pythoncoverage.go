@@ -3,7 +3,6 @@ package testutils
 import (
 	"bufio"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,10 +17,8 @@ import (
 const coverageCmd = "python3-coverage"
 
 var (
-	goCoverProfile string
-	tempdir        string
-	once           sync.Once
-	mergeCoverage  []func() error
+	tempdir string
+	once    sync.Once
 )
 
 // CoverageToGoFormat allow tracking include file to the global go coverage profile
@@ -127,35 +124,10 @@ python3-coverage run -a %s $@
 		}
 
 		// append to merge that file when tests are done
-		mergeCoverage = append(mergeCoverage, func() error { return appendToFile(goCoverProfile, golangInclude) })
+		AddCoverageFile(golangInclude)
 	})
 
 	return true
-}
-
-func MergePythonCoverage() {
-	for _, m := range mergeCoverage {
-		if err := m(); err != nil {
-			log.Fatalf("can’t inject python coverage to golang one: %v", err)
-		}
-	}
-}
-
-// appendToFile appends toInclude to the coverprofile file at the end
-func appendToFile(main, add string) error {
-	d, err := os.ReadFile(add)
-	if err != nil {
-		return fmt.Errorf("can't open python coverage file named: %v", err)
-	}
-
-	f, err := os.OpenFile(main, os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		return fmt.Errorf("can't open golang cover profile file: %v", err)
-	}
-	if _, err := f.Write(d); err != nil {
-		return fmt.Errorf("can't write to golang cover profile file: %v", err)
-	}
-	return nil
 }
 
 // fqdnToPath allows to return the fqdn path for this file relative to go.mod

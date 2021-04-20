@@ -471,7 +471,7 @@ func TestMain(m *testing.M) {
 		defer testutils.SetupSmb("testdata/AD/SYSVOL", brokenSmbDirShare)()
 	}
 	m.Run()
-	testutils.MergePythonCoverage()
+	testutils.MergeCoverages()
 }
 
 // md5Tree build a recursive file list of dir and with their md5sum
