@@ -1,9 +1,11 @@
 package testutils
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -44,16 +46,35 @@ func testCoverageFile() string {
 
 // appendToFile appends src to the dst coverprofile file at the end
 func appendToFile(src, dst string) error {
-	d, err := os.ReadFile(src)
+	f, err := os.Open(src)
 	if err != nil {
 		return fmt.Errorf("can't open python coverage file named: %v", err)
 	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Fatalf("can't close %v", err)
+		}
+	}()
 
-	f, err := os.OpenFile(main, os.O_APPEND|os.O_WRONLY, 0600)
+	d, err := os.OpenFile(dst, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return fmt.Errorf("can't open golang cover profile file: %v", err)
 	}
-	if _, err := f.Write(d); err != nil {
+	defer func() {
+		if err := d.Close(); err != nil {
+			log.Fatalf("can't close %v", err)
+		}
+	}()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), "mode: ") {
+			continue
+		}
+		d.Write(scanner.Bytes())
+		d.Write([]byte("\n"))
+	}
+	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("can't write to golang cover profile file: %v", err)
 	}
 	return nil
