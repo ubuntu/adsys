@@ -24,8 +24,8 @@ func AddCoverageFile(cov string) {
 // MergeCoverages append all coverage files marked for merging to main Go Cover Profile
 func MergeCoverages() {
 	for _, cov := range coveragesToMerge {
-		if err := appendToFile(goCoverProfile, cov); err != nil {
-			log.Fatalf("can’t inject python coverage to golang one: %v", err)
+		if err := appendToFile(cov, goCoverProfile); err != nil {
+			log.Fatalf("can’t inject coverage to golang one: %v", err)
 		}
 	}
 }
@@ -42,9 +42,9 @@ func testCoverageFile() string {
 	return ""
 }
 
-// appendToFile appends toInclude to the coverprofile file at the end
-func appendToFile(main, add string) error {
-	d, err := os.ReadFile(add)
+// appendToFile appends src to the dst coverprofile file at the end
+func appendToFile(src, dst string) error {
+	d, err := os.ReadFile(src)
 	if err != nil {
 		return fmt.Errorf("can't open python coverage file named: %v", err)
 	}
