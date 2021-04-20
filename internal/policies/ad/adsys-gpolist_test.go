@@ -20,7 +20,7 @@ func TestAdsysGPOList(t *testing.T) {
 
 	// Setup samba mock
 	orig := os.Getenv("PYTHONPATH")
-	p, err := filepath.Abs("testdata/adsys-gpolist/mock")
+	p, err := filepath.Abs("../../testutils/admock")
 	require.NoError(t, err, "Setup: Failed to get current absolute path for mock")
 	require.NoError(t, os.Setenv("PYTHONPATH", p), "Setup: Failed to set $PYTHONPATH")
 	t.Cleanup(func() {
