@@ -31,8 +31,10 @@ func TestMain(m *testing.M) {
 		return
 	}
 	// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
+	// We only start samba on non helper process
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		defer runPolkitd()()
+		defer testutils.SetupSmb("testdata/PolicyUpdate/AD/SYSVOL", "")()
 	}
 
 	flag.BoolVar(&update, "update", false, "update golden files")
