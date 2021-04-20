@@ -19,6 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 const dockerPolkitdImage = "docker.pkg.github.com/ubuntu/adsys/polkitd:0.1"
@@ -41,6 +42,10 @@ func TestMain(m *testing.M) {
 	flag.Parse()
 
 	m.Run()
+
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		testutils.MergeCoverages()
+	}
 }
 
 func TestStartAndStopDaemon(t *testing.T) {
