@@ -25,12 +25,7 @@ var (
 func CoverageToGoFormat(t *testing.T, include string) (coverageOn bool) {
 	t.Helper()
 
-	for _, arg := range os.Args {
-		if !strings.HasPrefix(arg, "-test.coverprofile=") {
-			continue
-		}
-		goCoverProfile = strings.TrimPrefix(arg, "-test.coverprofile=")
-	}
+	goCoverProfile := testCoverageFile()
 	if goCoverProfile == "" {
 		return false
 	}

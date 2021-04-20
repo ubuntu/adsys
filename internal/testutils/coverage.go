@@ -4,15 +4,20 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 )
 
 var (
 	goCoverProfile   string
 	coveragesToMerge []string
+	onceCovFile      sync.Once
 )
 
 // AddCoverageFile append cov to the list of file to merge when calling MergeCoverages
 func AddCoverageFile(cov string) {
+	onceCovFile.Do(func() {
+		goCoverProfile = testCoverageFile()
+	})
 	coveragesToMerge = append(coveragesToMerge, cov)
 }
 
@@ -23,6 +28,18 @@ func MergeCoverages() {
 			log.Fatalf("can’t inject python coverage to golang one: %v", err)
 		}
 	}
+}
+
+// testCoverageFile returns the coverprofile file relative path.
+// It returns nothing if coverage is not enabled.
+func testCoverageFile() string {
+	for _, arg := range os.Args {
+		if !strings.HasPrefix(arg, "-test.coverprofile=") {
+			continue
+		}
+		return strings.TrimPrefix(arg, "-test.coverprofile=")
+	}
+	return ""
 }
 
 // appendToFile appends toInclude to the coverprofile file at the end
