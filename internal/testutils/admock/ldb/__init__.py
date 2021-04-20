@@ -1,8 +1,8 @@
 
 from samba import dsdb
 
-from getpass import getuser
-from os import getenv, path
+from os import getenv, getuid, path
+from pwd import getpwuid
 from socket import gethostname
 
 SCOPE_BASE = ""
@@ -167,6 +167,13 @@ class Account:
         return self.parentDn
 
 
+def getuserWithoutDomain():
+    user = getpwuid(getuid())[0]
+    if "@" not in user:
+        return user
+    return user[:user.index("@")]
+
+
 # Build Domains
 o = OU("/warthogs")
 o.addGPO(GPO("{31B2F340-016D-11D2-945F-00C04FB984F9}", display_name="Default Domain Policy"))
@@ -264,7 +271,7 @@ o.addAccount("UserIntegrationTest")
 o = OU("/warthogs/IntegrationTests/UserDep/Dep1")
 o.addGPO(GPO("{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}", display_name="GPO1 for current User"))
 o.addGPO(GPO("{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}", display_name="GPO2 for current User"))
-o.addAccount(getuser())
+o.addAccount(getuserWithoutDomain())
 
 # [b'[LDAP://cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=warthogs,DC=biz;0][LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=warthogs,DC=biz;0]'
 
