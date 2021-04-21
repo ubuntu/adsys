@@ -12,7 +12,7 @@ import (
 )
 
 func TestAdsysGPOList(t *testing.T) {
-	coverageOn := testutils.PythonCoverageToGoFormat(t, "adsys-gpolist")
+	coverageOn := testutils.PythonCoverageToGoFormat(t, "adsys-gpolist", false)
 	adsysGPOListcmd := "./adsys-gpolist"
 	if coverageOn {
 		adsysGPOListcmd = "adsys-gpolist"

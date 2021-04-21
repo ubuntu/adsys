@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"bufio"
+	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
@@ -21,8 +22,12 @@ var (
 	once    sync.Once
 )
 
+//go:embed python3-mock.in
+var python3Mock string
+
 // PythonCoverageToGoFormat allow tracking python include file and convert them to the global go coverage profile
-func PythonCoverageToGoFormat(t *testing.T, include string) (coverageOn bool) {
+// commandOnStdin replace python3 binary to include with -c.
+func PythonCoverageToGoFormat(t *testing.T, include string, commandOnStdin bool) (coverageOn bool) {
 	t.Helper()
 
 	goCoverProfile := testCoverageFile()
@@ -49,31 +54,40 @@ func PythonCoverageToGoFormat(t *testing.T, include string) (coverageOn bool) {
 		require.NoError(t, err, "Setup: can’t prefix covered python mocks to PATH")
 	})
 
-	// Create shell starting python module with python3-coverage
-	realBinaryPath, err := filepath.Abs(include)
-	require.NoError(t, err, "Setup: can’t resolve real binary path")
-	n := filepath.Base(include)
-	d := []byte(fmt.Sprintf(`#!/bin/sh
-python3-coverage run -a %s $@
+	tracedFile := include
+
+	var mockedFile string
+	var d []byte
+	if commandOnStdin {
+		mockedFile = "python3"
+		tracedFile = filepath.Join(tempdir, filepath.Base(include))
+		d = []byte(strings.ReplaceAll(python3Mock, "#SCRIPTFILE#", tracedFile))
+	} else {
+		// Create shell starting python module with python3-coverage
+		realBinaryPath, err := filepath.Abs(include)
+		require.NoError(t, err, "Setup: can’t resolve real binary path")
+		mockedFile = filepath.Base(include)
+		d = []byte(fmt.Sprintf(`#!/bin/sh
+exec python3-coverage run -a %s $@
 `, realBinaryPath))
-	err = os.WriteFile(filepath.Join(tempdir, n), d, 0700)
+	}
+	err = os.WriteFile(filepath.Join(tempdir, mockedFile), d, 0700)
 	require.NoError(t, err, "Setup: can’t create prefixed covered python mock")
 
 	t.Cleanup(func() {
-		_, err = os.Stat(filepath.Join(tempdir, n))
+		// Convert to text format
+		// #nosec G204 - we have a const for coverageCmd
+		out, err := exec.Command(coverageCmd, "annotate", "-d", coverDir, "--include", tracedFile).CombinedOutput()
+		require.NoErrorf(t, err, "Teardown: can’t combine python coverage: %v", string(out))
+
+		err = os.Unsetenv("COVERAGE_FILE")
+		require.NoError(t, err, "Teardown: can’t restore coverage file env variable")
+
 		// Restore mocks and env variables
 		err = os.RemoveAll(tempdir)
 		require.NoError(t, err, "Teardown: can’t remove temporary directory for covered python mocks")
 		err = os.Setenv("PATH", origPath)
 		require.NoError(t, err, "Teardown: can’t restore original PATH")
-
-		// Convert to text format
-		// #nosec G204 - we have a const for coverageCmd
-		out, err := exec.Command(coverageCmd, "annotate", "-d", coverDir, "--include", include).CombinedOutput()
-		require.NoErrorf(t, err, "Teardown: can’t combine python coverage: %v", string(out))
-
-		err = os.Unsetenv("COVERAGE_FILE")
-		require.NoError(t, err, "Teardown: can’t restore coverage file env variable")
 
 		// Convert to golang compatible cover format
 		// search for go.mod to file fqdnFile
@@ -81,13 +95,11 @@ python3-coverage run -a %s $@
 
 		coverDir := filepath.Dir(goCoverProfile)
 
-		// transform include to golang compatible format
-		//in := filepath.Join(coverDir, include+",cover")
-		inF, err := os.Open(filepath.Clean(filepath.Join(coverDir, include+",cover")))
+		inF, err := os.Open(filepath.Clean(filepath.Join(coverDir, strings.ReplaceAll(tracedFile, "/", "_")+",cover")))
 		require.NoErrorf(t, err, "Teardown: failed opening python cover file: %s", err)
 		defer func() { assert.NoError(t, inF.Close(), "Teardown: can’t close python cover file") }()
 
-		golangInclude := filepath.Join(coverDir, include+".gocover")
+		golangInclude := filepath.Join(coverDir, filepath.Base(include)+".gocover")
 		outF, err := os.Create(golangInclude)
 		require.NoErrorf(t, err, "Teardown: failed opening output golang compatible cover file: %s", err)
 		defer func() { assert.NoError(t, outF.Close(), "Teardown: can’t close golang compatible cover file") }()
