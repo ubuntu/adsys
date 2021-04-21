@@ -177,7 +177,8 @@ def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
                     secdesc_ndr = gmsg[0]['nTSecurityDescriptor'][0]
                     secdesc = ndr_unpack(security.descriptor, secdesc_ndr)
                 except Exception:
-                    print("Failed to fetch gpo object with nTSecurityDescriptor %s\n" % g['dn'], file=sys.stderr)
+                    print("Failed to fetch gpo object with nTSecurityDescriptor %s" % g['dn'], file=sys.stderr)
+                    print(file=sys.stderr) # Empty line (no escaped EOL as we need to echo -E the script when using integration tests coverage)
                     # GPOs that are unreadable are just skipped by AD
                     continue
 
@@ -187,7 +188,7 @@ def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
                                                 | security.SEC_ADS_LIST
                                                 | security.SEC_ADS_READ_PROP)
                 except RuntimeError:
-                    raise Exception("Failed access check on %s\n" % g['dn'])
+                    raise Exception("Failed access check on %s" % g['dn'])
 
                 if not check_apply_gpo_right(secdesc, sids):
                     continue
