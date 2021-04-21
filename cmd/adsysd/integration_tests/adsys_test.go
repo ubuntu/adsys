@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 	// We only start samba on non helper process
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		defer runPolkitd()()
-		defer testutils.SetupSmb("testdata/PolicyUpdate/AD/SYSVOL", "")()
+		defer testutils.SetupSmb(1446, "testdata/PolicyUpdate/AD/SYSVOL", "")()
 	}
 
 	flag.BoolVar(&update, "update", false, "update golden files")

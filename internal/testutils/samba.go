@@ -12,8 +12,9 @@ import (
 	"time"
 )
 
-func SetupSmb(sysvolDir, brokenSmbDir string) func() {
-	dir, cleanup := mkSmbDir(sysvolDir, brokenSmbDir)
+func SetupSmb(port int, sysvolDir, brokenSmbDir string) func() {
+	smbPort := port
+	dir, cleanup := mkSmbDir(smbPort, sysvolDir, brokenSmbDir)
 
 	cmd := exec.Command("smbd", "-FS", "-s", filepath.Join(dir, "smbd.conf"))
 	stderr, err := cmd.StderrPipe()
@@ -26,7 +27,7 @@ func SetupSmb(sysvolDir, brokenSmbDir string) func() {
 		log.Fatalf("Setup: can’t start smb: %v", err)
 	}
 
-	waitForPortReady(SmbPort)
+	waitForPortReady(smbPort)
 	return func() {
 		if err := cmd.Process.Kill(); err != nil {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
@@ -49,7 +50,6 @@ func SetupSmb(sysvolDir, brokenSmbDir string) func() {
 }
 
 const (
-	SmbPort         = 1445
 	smbConfTemplate = `[global]
 workgroup = TESTGROUP
 interfaces = lo 127.0.0.0/8
@@ -75,7 +75,7 @@ guest ok = yes
 `
 )
 
-func mkSmbDir(sysvolDir, brokenSmbDir string) (string, func()) {
+func mkSmbDir(smbPort int, sysvolDir, brokenSmbDir string) (string, func()) {
 	dir, err := os.MkdirTemp("", "adsys_smbd_")
 	if err != nil {
 		log.Fatalf("Setup: failed to create temporary smb directory: %v", err)
@@ -102,10 +102,10 @@ func mkSmbDir(sysvolDir, brokenSmbDir string) (string, func()) {
 	if err != nil {
 		log.Fatalf("Setup: can’t determine current work directory: %v", err)
 	}
-	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: SmbPort, SysvolRoot: sysvolDir, BrokenRoot: brokenSmbDir}); err != nil {
+	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: smbPort, SysvolRoot: sysvolDir, BrokenRoot: brokenSmbDir}); err != nil {
 		log.Fatalf("Setup: failed to create smb.conf: %v", err)
 	}
-	if err := os.Setenv("ADSYS_TESTS_SMB_PORT", fmt.Sprintf("%d", SmbPort)); err != nil {
+	if err := os.Setenv("ADSYS_TESTS_SMB_PORT", fmt.Sprintf("%d", smbPort)); err != nil {
 		log.Fatalf("Setup: failed to set test env variable: %v", err)
 	}
 

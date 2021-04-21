@@ -205,7 +205,7 @@ func TestFetchGPO(t *testing.T) {
 			gpos := make(map[string]string)
 			for _, n := range tc.gpos {
 				// differentiate the gpo name from the url base path
-				gpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/%s/%s", testutils.SmbPort, policyPath, n)
+				gpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
 			}
 
 			if tc.concurrentGposDownload == nil {
@@ -219,7 +219,7 @@ func TestFetchGPO(t *testing.T) {
 				concurrentGpos := make(map[string]string)
 				for _, n := range tc.concurrentGposDownload {
 					// differentiate the gpo name from the url base path
-					concurrentGpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/%s/%s", testutils.SmbPort, policyPath, n)
+					concurrentGpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
 				}
 
 				wg := sync.WaitGroup{}
@@ -271,7 +271,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 	// Prepare GPO with unreadable file.
 	// Defer will work after all tests are done because we don’t run it in parallel
 	gpos := map[string]string{
-		"gpo1-name": fmt.Sprintf("smb://localhost:%d/broken/%s/%s", testutils.SmbPort, policyPath, "gpo1"),
+		"gpo1-name": fmt.Sprintf("smb://localhost:%d/broken/%s/%s", SmbPort, policyPath, "gpo1"),
 	}
 	require.NoError(t,
 		shutil.CopyTree(
@@ -355,7 +355,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 				require.NoError(t, os.Chmod(adc.gpoCacheDir, 0400), "Setup: can’t set gpoCacheDir to Read only")
 			}
 
-			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/%s/gpo1", testutils.SmbPort, policyPath)})
+			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/%s/gpo1", SmbPort, policyPath)})
 
 			require.NotNil(t, err, "fetch should return an error but didn't")
 			assert.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "gpo1"), "gpo1 shouldn't be downloaded")
@@ -383,7 +383,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	// create the lock made by fetch which is always called before parseGPOs in the public API
 	adc.gpos["standard-name"] = &gpo{
 		name: "standard-name",
-		url:  fmt.Sprintf("smb://localhost:%d/%s/standard", testutils.SmbPort, policyPath),
+		url:  fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
 		mu:   &sync.RWMutex{},
 	}
 
@@ -422,7 +422,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 
 	// Fetch the GPO to set it up
 	gpos := map[string]string{
-		"standard-name": fmt.Sprintf("smb://localhost:%d/%s/standard", testutils.SmbPort, policyPath),
+		"standard-name": fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
 	}
 	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
 	err = adc.fetch(context.Background(), "", gpos)
@@ -441,6 +441,8 @@ func TestParseGPOConcurrent(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+const SmbPort = 1445
 
 var brokenSmbDirShare string
 
@@ -469,7 +471,7 @@ func TestMain(m *testing.M) {
 				log.Fatalf("Teardown: failed to remove broken smb directory: %v", err)
 			}
 		}()
-		defer testutils.SetupSmb("testdata/AD/SYSVOL", brokenSmbDirShare)()
+		defer testutils.SetupSmb(SmbPort, "testdata/AD/SYSVOL", brokenSmbDirShare)()
 	}
 	m.Run()
 	testutils.MergeCoverages()
