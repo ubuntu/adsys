@@ -234,8 +234,18 @@ def main():
     try:
         samdb = connectLDAP(args.url)
     except Exception as exc:
+        # Could be a private _ldb.Error, check status
+        if len(exc.args) > 1:
+            if exc.args[1].split()[-1] in (
+                  "NT_STATUS_HOST_UNREACHABLE",      # Host does not respond
+                  "NT_STATUS_NETWORK_UNREACHABLE",   # Local link is down
+                  "NT_STATUS_CONNECTION_REFUSED",    # Service does not respond on the other end
+                  "NT_STATUS_OBJECT_NAME_NOT_FOUND"  # Host does not exist
+                  ):
+                # samba/ldb prints the error message on stderr
+                return ReturnCode.CONNECTION_FAILED
         print("Failed to open session: %s" % exc, file=sys.stderr)
-        return ReturnCode.CONNECTION_FAILED
+        return ReturnCode.NOT_FOUND
 
     try:
         dn, object_sid = get_entity(samdb, accountname, args.objectclass)
