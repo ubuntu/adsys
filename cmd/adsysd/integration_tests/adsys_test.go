@@ -77,12 +77,16 @@ socket: %s/socket
 cache_dir: %s/cache
 run_dir: %s/run
 servicetimeout: 30
-ad_server: warthogs.biz
-ad_domain: ldap://adc.warthogs.biz
-dconf_dir: %s/dconf`, dir, dir, dir, dir)), 0644)
+ad_server: ldap://adc.warthogs.biz
+ad_domain: warthogs.biz
+
+# Those are more for tests
+dconf_dir: %s/dconf
+sss_cache_dir: %s/sss_cache
+`, dir, dir, dir, dir, dir)), 0644)
 	require.NoError(t, err, "Setup: config file should be created")
 
-	require.NoError(t, os.Mkdir(filepath.Join(dir, "dconf"), 0755), "Setup: should create dconf dir")
+	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0755), "Setup: should create dconf dir")
 
 	return confFile
 }
