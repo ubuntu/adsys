@@ -22,15 +22,23 @@ class GPOSearch(dict):
 class SamDB:
     def __init__(self, url=None, session_info=None, credentials=None, lp=None):
         self.lp = lp
-        if url == "ldap://unreachable_url":
-            raise Exception("Unreachable ldap url requested")
+        if url.startswith("ldap://NT_STATUS_"):
+            raise Exception(1, "ldap/ldb error: %s" % url[7:])
 
         krb5ccname = os.getenv("KRB5CCNAME")
         if not krb5ccname:
             raise Exception("$KRB5CCNAME is not set")
+        # krb5ccname does not need to start with FILE:
+        # the samba bindings knows how to deal with it.
+        if krb5ccname.startswith("FILE:"):
+            krb5ccname = krb5ccname[5:]
+        krb5ccname = os.readlink(krb5ccname)
+        if not os.path.exists(krb5ccname):
+            raise Exception("KRB5CCNAME ticket does not exists")
 
-        if 'invalid' in krb5ccname:
-            raise Exception("Invalid Kerberos Ticket")
+        with open(krb5ccname, 'r') as f:
+            if 'invalid' in f.readline():
+                raise Exception("Invalid Kerberos Ticket")
 
 
     def search(self, expression="", attrs=[], base="", scope=ldb.SCOPE_BASE, controls=""):
