@@ -195,7 +195,7 @@ func TestPolicyUpdate(t *testing.T) {
 	*/
 }
 
-func modifyCurrentUser(t *testing.T, new string) (passwd string) {
+func modifyAndAddUsers(t *testing.T, new string, users ...string) (passwd string) {
 	t.Helper()
 	dest := filepath.Join(t.TempDir(), "passwd")
 
@@ -209,6 +209,9 @@ func modifyCurrentUser(t *testing.T, new string) (passwd string) {
 
 	u, err := user.Current()
 	require.NoError(t, err, "Setup: can’t get current user name")
+	groups, err := u.GroupIds()
+	require.NoError(t, err, "Setup: can’t get group for current user")
+	group := groups[0]
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -219,6 +222,10 @@ func modifyCurrentUser(t *testing.T, new string) (passwd string) {
 		d.Write([]byte(l + "\n"))
 	}
 	require.NoError(t, scanner.Err(), "Setup: can't write temporary passwd file")
+
+	for i, u := range users {
+		d.Write([]byte(fmt.Sprintf("%s:x:%d:%s::/nonexistent:/usr/bin/false", u, i+23450, group)))
+	}
 
 	return dest
 }
