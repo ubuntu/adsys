@@ -89,6 +89,14 @@ func WithRunDir(runDir string) func(o *options) error {
 	}
 }
 
+// WithSSSCacheDir specifies which cache directory to use for SSS
+func WithSSSCacheDir(cacheDir string) func(o *options) error {
+	return func(o *options) error {
+		o.sssCacheDir = cacheDir
+		return nil
+	}
+}
+
 //go:embed adsys-gpolist
 var adsysGpoListCode string
 

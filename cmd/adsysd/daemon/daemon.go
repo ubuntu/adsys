@@ -37,7 +37,9 @@ type daemonConfig struct {
 	Socket   string
 	CacheDir string `mapstructure:"cache_dir"`
 	RunDir   string `mapstructure:"run_dir"`
-	DconfDir string `mapstructure:"dconf_dir"`
+
+	DconfDir    string `mapstructure:"dconf_dir"`
+	SSSCacheDir string `mapstructure:"sss_cache_dir"`
 
 	ServiceTimeout int
 	ADServer       string `mapstructure:"ad_server"`
@@ -95,6 +97,7 @@ func New() *App {
 				adsysservice.WithCacheDir(a.config.CacheDir),
 				adsysservice.WithRunDir(a.config.RunDir),
 				adsysservice.WithDconfDir(a.config.DconfDir),
+				adsysservice.WithSSSCacheDir(a.config.SSSCacheDir),
 			)
 			if err != nil {
 				close(a.ready)
