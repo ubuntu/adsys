@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -46,7 +47,7 @@ func testCoverageFile() string {
 
 // appendToFile appends src to the dst coverprofile file at the end
 func appendToFile(src, dst string) error {
-	f, err := os.Open(src)
+	f, err := os.Open(filepath.Clean(src))
 	if err != nil {
 		return fmt.Errorf("can't open python coverage file named: %v", err)
 	}
@@ -71,11 +72,12 @@ func appendToFile(src, dst string) error {
 		if strings.HasPrefix(scanner.Text(), "mode: ") {
 			continue
 		}
-		d.Write(scanner.Bytes())
-		d.Write([]byte("\n"))
+		if _, err := d.Write([]byte(scanner.Text() + "\n")); err != nil {
+			return fmt.Errorf("can't write to golang cover profile file: %v", err)
+		}
 	}
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("can't write to golang cover profile file: %v", err)
+		return fmt.Errorf("error while scanning golang cover profile file: %v", err)
 	}
 	return nil
 }

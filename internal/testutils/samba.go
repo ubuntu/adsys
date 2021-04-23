@@ -16,6 +16,7 @@ func SetupSmb(port int, sysvolDir, brokenSmbDir string) func() {
 	smbPort := port
 	dir, cleanup := mkSmbDir(smbPort, sysvolDir, brokenSmbDir)
 
+	// #nosec:G204 - we control the directory we run smbd on (on tests)
 	cmd := exec.Command("smbd", "-FS", "-s", filepath.Join(dir, "smbd.conf"))
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -96,7 +97,11 @@ func mkSmbDir(smbPort int, sysvolDir, brokenSmbDir string) (string, func()) {
 	if err != nil {
 		log.Fatalf("Setup: can’t create smbd configuration: %v", err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			log.Fatalf("Setup: could not close smbd.conf file: %v", err)
+		}
+	}()
 
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -110,9 +115,11 @@ func mkSmbDir(smbPort int, sysvolDir, brokenSmbDir string) (string, func()) {
 	}
 
 	return dir, func() {
-		os.RemoveAll(dir)
+		if err = os.RemoveAll(dir); err != nil {
+			log.Fatalf("Teardown: can’t clean up temporary directory: %v", err)
+		}
 		if err = os.Unsetenv("ADSYS_TESTS_SMB_PORT"); err != nil {
-			log.Fatalf("Setup: failed to unset test env variable: %v", err)
+			log.Fatalf("Teardown: failed to unset test env variable: %v", err)
 		}
 	}
 }
@@ -132,7 +139,9 @@ func waitForPortReady(port int) {
 			time.Sleep(10 * time.Millisecond)
 			continue
 		}
-		conn.Close()
+		if err := conn.Close(); err != nil {
+			log.Fatalf("Setup: can’t close connection made to smbd port: %v", err)
+		}
 		time.Sleep(10 * time.Millisecond)
 		return
 	}
