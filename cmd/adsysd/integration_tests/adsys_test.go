@@ -19,6 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 const dockerPolkitdImage = "docker.pkg.github.com/ubuntu/adsys/polkitd:0.1"
@@ -31,14 +32,20 @@ func TestMain(m *testing.M) {
 		return
 	}
 	// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
+	// We only start samba on non helper process
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		defer runPolkitd()()
+		defer testutils.SetupSmb(1446, "testdata/PolicyUpdate/AD/SYSVOL", "")()
 	}
 
 	flag.BoolVar(&update, "update", false, "update golden files")
 	flag.Parse()
 
 	m.Run()
+
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		testutils.MergeCoverages()
+	}
 }
 
 func TestStartAndStopDaemon(t *testing.T) {
@@ -70,12 +77,16 @@ socket: %s/socket
 cache_dir: %s/cache
 run_dir: %s/run
 servicetimeout: 30
-ad_server: warthogs.biz
-ad_domain: ldap://adc.warthogs.biz
-dconf_dir: %s/dconf`, dir, dir, dir, dir)), 0644)
+ad_server: ldap://adc.warthogs.biz
+ad_domain: warthogs.biz
+
+# Those are more for tests
+dconf_dir: %s/dconf
+sss_cache_dir: %s/sss_cache
+`, dir, dir, dir, dir, dir)), 0644)
 	require.NoError(t, err, "Setup: config file should be created")
 
-	require.NoError(t, os.Mkdir(filepath.Join(dir, "dconf"), 0755), "Setup: should create dconf dir")
+	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0755), "Setup: should create dconf dir")
 
 	return confFile
 }

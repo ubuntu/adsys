@@ -1,7 +1,6 @@
 package ad
 
 var (
-	WithSSSCacheDir = withSSSCacheDir
 	WithoutKerberos = withoutKerberos
 	WithGPOListCmd  = withGPOListCmd
 )

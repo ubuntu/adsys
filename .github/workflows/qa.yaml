@@ -69,13 +69,16 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper
       - name: Authenticate to docker local regitry and pull image with our token
         run: |
           echo "${{ github.token }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
           docker pull docker.pkg.github.com/ubuntu/adsys/polkitd:0.1
       - name: Run tests
-        run: go test -coverpkg=./... -coverprofile=/tmp/coverage.txt -covermode=count ./...
+        run: |
+          go test -coverpkg=./... -coverprofile=/tmp/coverage.txt.full -covermode=count ./...
+          # Filter out test utilities and generated files
+          grep -v -e "testutils" -e "pb.go:" "/tmp/coverage.txt.full" > "/tmp/coverage.txt"
       - name: Run tests (with race detector)
         run: go test -race ./...
       - name: Install curl for codecov

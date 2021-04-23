@@ -1,2 +1,2 @@
-IT GPO	smb://warthogs.biz/SysVol/warthogs.biz/Policies/IT_GPO
-Default Domain Policy	smb://warthogs.biz/SysVol/warthogs.biz/Policies/Default_Domain_Policy
+IT GPO	smb://localhost:1445/SYSVOL/warthogs.biz/Policies/IT_GPO
+Default Domain Policy	smb://localhost:1445/SYSVOL/warthogs.biz/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}

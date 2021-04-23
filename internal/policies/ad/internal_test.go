@@ -5,17 +5,12 @@ import (
 	"crypto/md5"
 	"flag"
 	"fmt"
-	"io"
 	"log"
-	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
-	"text/template"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -193,7 +188,7 @@ func TestFetchGPO(t *testing.T) {
 			dest, rundir := t.TempDir(), t.TempDir()
 
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
-				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -304,7 +299,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 			dest, rundir := t.TempDir(), t.TempDir()
 
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
-				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.withExistingGPO {
@@ -350,7 +345,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 
 			dest, rundir := t.TempDir(), t.TempDir()
 			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
-				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.removeGPOCacheDir {
@@ -375,7 +370,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	dest, rundir := t.TempDir(), t.TempDir()
 
 	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
 	// ensure the GPO is already downloaded with an older version to force redownload
@@ -422,7 +417,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 	dest, rundir := t.TempDir(), t.TempDir()
 
 	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
-		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), withSSSCacheDir("testdata/sss/db"))
+		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
 	// Fetch the GPO to set it up
@@ -447,78 +442,9 @@ func TestParseGPOConcurrent(t *testing.T) {
 	wg.Wait()
 }
 
+const SmbPort = 1445
+
 var brokenSmbDirShare string
-
-const (
-	SmbPort         = 1445
-	smbConfTemplate = `[global]
-workgroup = TESTGROUP
-interfaces = lo 127.0.0.0/8
-smb ports = {{.SmbPort}}
-log level = 2
-map to guest = Bad User
-passdb backend = smbpasswd
-smb passwd file = {{.Tempdir}}/smbpasswd
-lock directory = {{.Tempdir}}/intern
-state directory = {{.Tempdir}}/intern
-cache directory = {{.Tempdir}}/intern
-pid directory = {{.Tempdir}}/intern
-private dir = {{.Tempdir}}/intern
-ncalrpc dir = {{.Tempdir}}/intern
-
-[SYSVOL]
-path = {{.Cwd}}/testdata/AD/SYSVOL
-guest ok = yes
-
-[broken]
-path = {{.BrokenRoot}}
-guest ok = yes
-`
-)
-
-func mkSmbDir() (string, func()) {
-	dir, err := os.MkdirTemp("", "adsys_smbd_")
-	if err != nil {
-		log.Fatalf("Setup: failed to create temporary smb directory: %v", err)
-	}
-
-	brokenSmbDirShare, err = os.MkdirTemp("", "adsys_smbd_broken_share_")
-	if err != nil {
-		log.Fatalf("Setup: failed to create temporary broken smb share directory: %v", err)
-	}
-	if err = os.MkdirAll(filepath.Join(brokenSmbDirShare, policyPath), 0700); err != nil {
-		log.Fatalf("Setup: failed to created temporary broken smb share AD structure: %v", err)
-	}
-
-	type smbConfVars struct {
-		Tempdir    string
-		Cwd        string
-		SmbPort    int
-		BrokenRoot string
-	}
-	t, err := template.New("smb-conf").Parse(smbConfTemplate)
-	if err != nil {
-		log.Fatalf("Setup: can’t open template for smbd configuration: %v", err)
-	}
-
-	f, err := os.Create(filepath.Join(dir, "smbd.conf"))
-	if err != nil {
-		log.Fatalf("Setup: can’t create smbd configuration: %v", err)
-	}
-	defer f.Close()
-
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("Setup: can’t determine current work directory: %v", err)
-	}
-	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: SmbPort, BrokenRoot: brokenSmbDirShare}); err != nil {
-		log.Fatalf("Setup: failed to create smb.conf: %v", err)
-	}
-
-	return dir, func() {
-		os.RemoveAll(dir)
-	}
-}
 
 func TestMain(m *testing.M) {
 	flag.BoolVar(&Update, "update", false, "update golden files")
@@ -531,67 +457,24 @@ func TestMain(m *testing.M) {
 		if *debug {
 			logrus.StandardLogger().SetLevel(logrus.DebugLevel)
 		}
-		defer setupSmb()()
+
+		var err error
+		brokenSmbDirShare, err = os.MkdirTemp("", "adsys_smbd_broken_share_")
+		if err != nil {
+			log.Fatalf("Setup: failed to create temporary broken smb share directory: %v", err)
+		}
+		if err = os.MkdirAll(filepath.Join(brokenSmbDirShare, policyPath), 0700); err != nil {
+			log.Fatalf("Setup: failed to created temporary broken smb share AD structure: %v", err)
+		}
+		defer func() {
+			if err := os.RemoveAll(brokenSmbDirShare); err != nil {
+				log.Fatalf("Teardown: failed to remove broken smb directory: %v", err)
+			}
+		}()
+		defer testutils.SetupSmb(SmbPort, "testdata/AD/SYSVOL", brokenSmbDirShare)()
 	}
 	m.Run()
-	testutils.MergePythonCoverage()
-}
-
-func setupSmb() func() {
-	dir, cleanup := mkSmbDir()
-
-	cmd := exec.Command("smbd", "-FS", "-s", filepath.Join(dir, "smbd.conf"))
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		log.Fatalf("Setup: can’t get smb output: %v", err)
-	}
-
-	if err := cmd.Start(); err != nil {
-		cleanup()
-		log.Fatalf("Setup: can’t start smb: %v", err)
-	}
-
-	waitForPortReady(SmbPort)
-	return func() {
-		if err := cmd.Process.Kill(); err != nil {
-			log.Fatalf("Setup: failed to kill smbd process: %v", err)
-		}
-
-		d, err := io.ReadAll(stderr)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Setup: Can't show stderr from smbd command: %v", err)
-		}
-		if string(d) != "" {
-			fmt.Fprintf(os.Stderr, "Setup: samba output: %s\n", d)
-		}
-
-		if _, err = cmd.Process.Wait(); err != nil {
-			log.Fatalf("Setup: failed to wait for smbd: %v", err)
-		}
-
-		cleanup()
-	}
-}
-
-// waitForPortReady to be opened.
-func waitForPortReady(port int) {
-	timeout := time.NewTimer(5 * time.Second)
-	for {
-		select {
-		case <-timeout.C:
-			log.Fatalf("Setup: smbd hasn’t started successfully")
-		default:
-		}
-
-		conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", port))
-		if err != nil {
-			time.Sleep(10 * time.Millisecond)
-			continue
-		}
-		conn.Close()
-		time.Sleep(10 * time.Millisecond)
-		return
-	}
+	testutils.MergeCoverages()
 }
 
 // md5Tree build a recursive file list of dir and with their md5sum

@@ -1,12 +1,5 @@
 package ad
 
-func withSSSCacheDir(cacheDir string) func(o *options) error {
-	return func(o *options) error {
-		o.sssCacheDir = cacheDir
-		return nil
-	}
-}
-
 func withoutKerberos() func(o *options) error {
 	return func(o *options) error {
 		o.withoutKerberos = true

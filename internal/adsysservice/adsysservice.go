@@ -37,11 +37,12 @@ type Service struct {
 }
 
 type options struct {
-	cacheDir   string
-	runDir     string
-	dconfDir   string
-	sssdConf   string
-	authorizer *authorizer.Authorizer
+	cacheDir    string
+	runDir      string
+	dconfDir    string
+	sssCacheDir string
+	sssdConf    string
+	authorizer  *authorizer.Authorizer
 }
 type option func(*options) error
 
@@ -69,6 +70,14 @@ func WithDconfDir(p string) func(o *options) error {
 	}
 }
 
+// WithSSSCacheDir specifies a personalized /
+func WithSSSCacheDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.sssCacheDir = p
+		return nil
+	}
+}
+
 // New returns a new instance of an AD service.
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
@@ -77,9 +86,10 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 
 	// defaults
 	args := options{
-		cacheDir: config.DefaultCacheDir,
-		runDir:   config.DefaultRunDir,
-		sssdConf: "/etc/sssd/sssd.conf",
+		cacheDir:    config.DefaultCacheDir,
+		runDir:      config.DefaultRunDir,
+		sssdConf:    "/etc/sssd/sssd.conf",
+		sssCacheDir: "/var/lib/sss/db",
 	}
 	// applied options
 	for _, o := range opts {
@@ -95,7 +105,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if !strings.HasPrefix(url, "ldap://") {
 		url = fmt.Sprintf("ldap://%s", url)
 	}
-	adc, err := ad.New(ctx, url, domain, ad.WithCacheDir(args.cacheDir), ad.WithRunDir(args.runDir))
+	adc, err := ad.New(ctx, url, domain, ad.WithCacheDir(args.cacheDir), ad.WithRunDir(args.runDir), ad.WithSSSCacheDir(args.sssCacheDir))
 	if err != nil {
 		return nil, err
 	}

@@ -177,7 +177,8 @@ def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
                     secdesc_ndr = gmsg[0]['nTSecurityDescriptor'][0]
                     secdesc = ndr_unpack(security.descriptor, secdesc_ndr)
                 except Exception:
-                    print("Failed to fetch gpo object with nTSecurityDescriptor %s\n" % g['dn'], file=sys.stderr)
+                    print("Failed to fetch gpo object with nTSecurityDescriptor %s" % g['dn'], file=sys.stderr)
+                    print(file=sys.stderr) # Empty line (no escaped EOL as we need to echo -E the script when using integration tests coverage)
                     # GPOs that are unreadable are just skipped by AD
                     continue
 
@@ -187,7 +188,7 @@ def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
                                                 | security.SEC_ADS_LIST
                                                 | security.SEC_ADS_READ_PROP)
                 except RuntimeError:
-                    raise Exception("Failed access check on %s\n" % g['dn'])
+                    raise Exception("Failed access check on %s" % g['dn'])
 
                 if not check_apply_gpo_right(secdesc, sids):
                     continue
@@ -233,8 +234,21 @@ def main():
     try:
         samdb = connectLDAP(args.url)
     except Exception as exc:
+        # Could be a private _ldb.Error, check status
+        if len(exc.args) > 1:
+            # TODO: MIRROR sssd behavior (with other ldap, other daemon on same part, network)
+            if exc.args[1].split()[-1] in (
+                  "NT_STATUS_HOST_UNREACHABLE",      # Host does not respond
+                  "NT_STATUS_NETWORK_UNREACHABLE",   # Local link is down
+                  "NT_STATUS_CONNECTION_REFUSED",    # Service does not respond on the other end
+                  # "NT_STATUS_INVALID_BUFFER_SIZE",   # Something listening on ldap port but is not ldap
+                  # "NT_STATUS_INVALID_PARAMETER_MIX"  # Talking SSL but not listening SSL
+                  "NT_STATUS_OBJECT_NAME_NOT_FOUND"  # Host does not exist
+                  ):
+                # samba/ldb prints the error message on stderr
+                return ReturnCode.CONNECTION_FAILED
         print("Failed to open session: %s" % exc, file=sys.stderr)
-        return ReturnCode.CONNECTION_FAILED
+        return ReturnCode.NOT_FOUND
 
     try:
         dn, object_sid = get_entity(samdb, accountname, args.objectclass)
