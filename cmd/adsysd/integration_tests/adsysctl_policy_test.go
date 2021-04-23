@@ -250,20 +250,6 @@ func TestPolicyUpdate(t *testing.T) {
 		machine      bool
 	}
 
-	/*
-		misconfigured (fqdn in name) machine
-
-		no valid krb5 ticket
-
-		   with KRB5CCNAME
-		   should fail without KRB5CCNAME
-		   (env variables)
-		   invalid ticket, valid ticket…
-		   no ticket withe cache
-
-		   invalid format for KRB5CCNAME
-	*/
-
 	tests := map[string]struct {
 		args             []string
 		initState        string
@@ -448,6 +434,50 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 
+		// Tickets handling
+		"KRB5CCNAME is ignored with existing ticket for user": {
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+		"KRB5CCNAME is ignored when requesting ticket on other user": {
+			args:       []string{"UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			initState:  "localhost-uptodate",
+			krb5ccname: "NonexistentTicket.krb5",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{src: "UserIntegrationTest@warthogs.biz.krb5"},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+		"Invalid KRB5CCNAME format is supported": {
+			initState:  "localhost-uptodate",
+			krb5ccname: "invalidformat" + currentUser + ".krb5",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src: currentUser + ".krb5",
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+
 		// Error cases
 		"User needs machine to be updated": {wantErr: true},
 		"Polkit denied updating self":      {polkitAnswer: "no", initState: "localhost-uptodate", wantErr: true},
@@ -475,6 +505,143 @@ func TestPolicyUpdate(t *testing.T) {
 					src:          currentUser + ".krb5",
 					adsysSymlink: currentUser,
 				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		// danglink symlink
+		"Error on no KRB5CCNAME and no adsys symlink created": {
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			wantErr:    true,
+		},
+		"Error on non-existent ticket provided": {
+			args:       []string{"UserIntegrationTest@warthogs.biz", "NonexistentTicket.krb5"},
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{src: "UserIntegrationTest@warthogs.biz.krb5"},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		"Error on invalid ticket in KRB5CCNAME": {
+			initState: "localhost-uptodate",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     currentUser + ".krb5",
+					invalid: true,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		"Error on invalid ticket provided": {
+			args:       []string{"UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "UserIntegrationTest@warthogs.biz.krb5",
+					invalid: true,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		"Error on dangling symlink for current user ticket": {
+			initState: "localhost-uptodate",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		"Error with no ticket, even with cache": {
+			initState: "old-data",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		// Incompatible options
+		"Error on all and specific user requested": {
+			args:       []string{"--all", "UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "UserIntegrationTest@warthogs.biz.krb5",
+					invalid: true,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		"Error on all and computer requested": {
+			args:       []string{"--all", "-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		"Error computer and specific user requested": {
+			args:       []string{"-m", "UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "UserIntegrationTest@warthogs.biz.krb5",
+					invalid: true,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		"Error on computer requested directly (argument is user)": {
+			args:       []string{"-m", hostname, "ccache_WARTHOGS.BIZ"},
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
 				{
 					src:          "ccache_WARTHOGS.BIZ",
 					adsysSymlink: hostname,
