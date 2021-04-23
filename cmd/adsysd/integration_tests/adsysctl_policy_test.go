@@ -373,6 +373,17 @@ func TestPolicyUpdate(t *testing.T) {
 					machine:      true,
 				},
 			}},
+		"Refresh with no user connected updates machines": {args: []string{"--all"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
 
 		// no AD connection
 		"Host is offline, get from cache (no update)": {
@@ -642,6 +653,30 @@ func TestPolicyUpdate(t *testing.T) {
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
+		// FIXME: if one user fails (ticket expired for a long time, do we really want to fail there?
+		// we say we are failing, but the other were updated)
+		// maybe only a warning if better
+		"Error on refresh with one user failing": {args: []string{"--all"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					// dangling adsys symlink for this user
+					//src:          "UserIntegrationTest@warthogs.biz.krb5",
+					adsysSymlink: "UserIntegrationTest@warthogs.biz",
+				},
 				{
 					src:          "ccache_WARTHOGS.BIZ",
 					adsysSymlink: hostname,
