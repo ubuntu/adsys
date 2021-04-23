@@ -2,6 +2,7 @@ package adsys_test
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -162,32 +163,6 @@ func TestPolicyApplied(t *testing.T) {
 	}
 }
 
-/*
-  User: update
-  Computer: update old data
-
-  current user (no arg): update
-
-  all users (already connected users with existing KRB5_TICKET)
-
-  no valid krb5 ticket
-  no network no cache
-  no network cache
-  dconf (or other apply policy) fails
-
-  2 user updates at the same time
-
-  misconfigured (fqdn in name) machine
-
-  with KRB5CCNAME
-  should fail without KRB5CCNAME
-  (env variables)
-  invalid ticket, valid ticket…
-  no ticket withe cache
-
-  invalid format for KRB5CCNAME
-*/
-
 func TestPolicyUpdate(t *testing.T) {
 	currentUser := "adsystestuser@warthogs.biz"
 
@@ -275,15 +250,32 @@ func TestPolicyUpdate(t *testing.T) {
 		machine      bool
 	}
 
+	/*
+		misconfigured (fqdn in name) machine
+
+		no valid krb5 ticket
+
+		   with KRB5CCNAME
+		   should fail without KRB5CCNAME
+		   (env variables)
+		   invalid ticket, valid ticket…
+		   no ticket withe cache
+
+		   invalid format for KRB5CCNAME
+	*/
+
 	tests := map[string]struct {
 		args             []string
 		initState        string
 		polkitAnswer     string
 		krb5ccname       string
 		krb5ccNamesState []krb5ccNamesWithState
+		isOffLine        bool
+		clearDirs        []string // Removes already generated system files eg dconf db, apparmor profiles, ...
 
 		wantErr bool
 	}{
+		// First time download
 		"Current user, first time": {
 			initState: "localhost-uptodate",
 		},
@@ -292,12 +284,15 @@ func TestPolicyUpdate(t *testing.T) {
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
+				{src: "UserIntegrationTest@warthogs.biz.krb5"},
 				{
-					src: "UserIntegrationTest@warthogs.biz.krb5",
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
 				},
 			}},
-
-		"Machine, first time": {args: []string{"-m"},
+		"Machine, first time": {
+			args:       []string{"-m"},
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -306,10 +301,188 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			}},
 
+		// Download and update cached data
+		"Current user, update old data": {
+			initState: "old-data",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+		"Other user, update old data": {
+			args:       []string{"UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "UserIntegrationTest@warthogs.biz.krb5",
+					adsysSymlink: "UserIntegrationTest@warthogs.biz",
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			}},
+		"Machine, update old data": {args: []string{"-m"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			}},
+		"Already up to date": {args: []string{"-m"},
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			}},
+		"Refresh all connected": {args: []string{"--all"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "UserIntegrationTest@warthogs.biz.krb5",
+					adsysSymlink: "UserIntegrationTest@warthogs.biz",
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			}},
+		"Refresh some connected": {args: []string{"--all"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				// UserIntegration is not connected (no symlink, old ticket exists though)
+				{
+					src: "UserIntegrationTest@warthogs.biz.krb5",
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			}},
+
+		// no AD connection
+		"Host is offline, get from cache (no update)": {
+			isOffLine: true,
+			initState: "old-data",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+		"Host is offline, regenerate from old data": {
+			isOffLine: true,
+			initState: "old-data",
+			// clean generate dconf dbs to regenerate
+			clearDirs: []string{
+				"dconf/db/adsystestuser@warthogs.biz.d",
+				"dconf/profile/adsystestuser@warthogs.biz",
+			},
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+		"Host is offline, gpos cache is cleared, with gpo_rules cache": {
+			isOffLine: true,
+			initState: "old-data",
+			// clean gpos cache, but keep machine ones and user gpo_rules
+			clearDirs: []string{
+				"dconf/db/adsystestuser@warthogs.biz.d",
+				"dconf/profile/adsystestuser@warthogs.biz",
+				"cache/gpo_cache/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
+				"cache/gpo_cache/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
+				"cache/gpo_cache/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
+			},
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+
 		// Error cases
 		"User needs machine to be updated": {wantErr: true},
 		"Polkit denied updating self":      {polkitAnswer: "no", initState: "localhost-uptodate", wantErr: true},
 		"Polkit denied updating other":     {polkitAnswer: "no", args: []string{"UserIntegrationTest@warthogs.biz", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
+		"Polkit denied updating machine":   {polkitAnswer: "no", args: []string{"-m"}, wantErr: true},
+		"Error on dconf apply failing": {
+			initState: "localhost-uptodate",
+			// this generates an error when checking that a machine dconf is present
+			clearDirs: []string{
+				"dconf",
+			},
+			wantErr: true,
+		},
+		"Error on host is offline, without gpo_rules": {
+			isOffLine: true,
+			initState: "old-data",
+			// clean gpos rules, but gpo_cache
+			clearDirs: []string{
+				"dconf/db/adsystestuser@warthogs.biz.d",
+				"dconf/profile/adsystestuser@warthogs.biz",
+				"cache/gpo_rules/adsystestuser@warthogs.biz",
+			},
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "ccache_WARTHOGS.BIZ",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -335,6 +508,11 @@ func TestPolicyUpdate(t *testing.T) {
 				err := shutil.CopyTree(filepath.Join("testdata", "PolicyUpdate", "states", tc.initState), adsysDir, &shutil.CopyTreeOptions{CopyFunction: copyRenameHost})
 				require.NoError(t, err, "Setup: could not copy initial state")
 			}
+			// Some tests will need some initial state assets
+			for _, k := range tc.clearDirs {
+				err := os.RemoveAll(filepath.Join(adsysDir, k))
+				require.NoError(t, err, "Remove generate assets db")
+			}
 
 			// Ticket creation for mock.
 			krb5dir := t.TempDir()
@@ -344,6 +522,11 @@ func TestPolicyUpdate(t *testing.T) {
 			if tc.krb5ccNamesState == nil {
 				tc.krb5ccNamesState = []krb5ccNamesWithState{
 					{src: currentUser + ".krb5"},
+					{
+						src:          "ccache_WARTHOGS.BIZ",
+						adsysSymlink: hostname,
+						machine:      true,
+					},
 				}
 			}
 			for _, krb5 := range tc.krb5ccNamesState {
@@ -393,6 +576,13 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 
 			conf := createConf(t, adsysDir)
+			if tc.isOffLine {
+				content, err := os.ReadFile(conf)
+				require.NoError(t, err, "Setup: can’t read configuration file")
+				content = bytes.Replace(content, []byte("ldap://adc.warthogs.biz"), []byte("ldap://NT_STATUS_HOST_UNREACHABLE"), 1)
+				err = os.WriteFile(conf, content, 0644)
+				require.NoError(t, err, "Setup: can’t rewrite configuration file")
+			}
 			defer runDaemon(t, conf)()
 
 			args := []string{"policy", "update"}
