@@ -64,9 +64,9 @@ accounts = {}
 ##            -- {C4F393CA-AD9A-4595-AEBC-3FA6EE484285} "GPO for current machine"
 #  /warthogs/IntegrationTests/Dep2                          <- MachineIntegrationTest
 ##            -- {B8D10A86-0B78-4899-91AF-6F0124ECEB48} "GPO for MachineIntegrationTest"
-#  /warthogs/IntegrationTests/User                          <- UserIntegrationTest
+#  /warthogs/IntegrationTests/UserDep                       <- UserIntegrationTest
 ##            -- {75545F76-DEC2-4ADA-B7B8-D5209FD48727} "GPO for Integration Test User"
-#  /warthogs/IntegrationTests/User/UserDep1                 <-[CURRENT_USER]
+#  /warthogs/IntegrationTests/UserDep/UserDep1              <-[CURRENT_USER]
 ##            -- {5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242} "GPO1 for current User"
 ##            -- {073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04} "GPO2 for current User"
 

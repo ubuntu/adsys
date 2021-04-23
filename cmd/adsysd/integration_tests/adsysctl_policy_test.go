@@ -372,7 +372,6 @@ func TestPolicyUpdate(t *testing.T) {
 
 				err = os.Symlink(krb5.src, filepath.Join(krb5ccDir, krb5.adsysSymlink))
 				require.NoError(t, err, "Setup: could not set krb5 file adsys symlink")
-				fmt.Println(krb5.src, filepath.Join(krb5ccDir, krb5.adsysSymlink))
 			}
 
 			if tc.krb5ccname == "" {
@@ -384,7 +383,6 @@ func TestPolicyUpdate(t *testing.T) {
 				} else {
 					tc.krb5ccname = fmt.Sprintf("FILE:%s/%s", krb5dir, tc.krb5ccname)
 				}
-				fmt.Println(tc.krb5ccname)
 				orig := os.Getenv("KRB5CCNAME")
 				err := os.Setenv("KRB5CCNAME", tc.krb5ccname)
 				require.NoError(t, err, "Setup: could not set KRB5CCNAME environment name")
