@@ -236,10 +236,13 @@ def main():
     except Exception as exc:
         # Could be a private _ldb.Error, check status
         if len(exc.args) > 1:
+            # TODO: MIRROR sssd behavior (with other ldap, other daemon on same part, network)
             if exc.args[1].split()[-1] in (
                   "NT_STATUS_HOST_UNREACHABLE",      # Host does not respond
                   "NT_STATUS_NETWORK_UNREACHABLE",   # Local link is down
                   "NT_STATUS_CONNECTION_REFUSED",    # Service does not respond on the other end
+                  # "NT_STATUS_INVALID_BUFFER_SIZE",   # Something listening on ldap port but is not ldap
+                  # "NT_STATUS_INVALID_PARAMETER_MIX"  # Talking SSL but not listening SSL
                   "NT_STATUS_OBJECT_NAME_NOT_FOUND"  # Host does not exist
                   ):
                 # samba/ldb prints the error message on stderr

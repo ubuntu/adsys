@@ -146,7 +146,7 @@ func TestPolicyApplied(t *testing.T) {
 			}
 			require.NoError(t, err, "client should exit with no error")
 
-			// // Compare golden files
+			// Compare golden files
 			goldPath := filepath.Join("testdata/PolicyApplied/golden", name)
 			// Update golden file
 			if update {

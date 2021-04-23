@@ -191,8 +191,6 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	// Get the list of GPO for object
-	// ./list --objectclass=user  ldap://adc01.warthogs.biz bob
-	// TODO: Embed adsys-gpolist in binary
 	userForGPOList := objectName
 	if i := strings.LastIndex(userForGPOList, "@"); i > 0 {
 		userForGPOList = userForGPOList[:i]
