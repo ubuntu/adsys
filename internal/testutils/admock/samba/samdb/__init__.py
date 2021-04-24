@@ -75,5 +75,5 @@ class SamDB:
 
 
     def get_default_basedn(self):
-        return ldb.OUs["/warthogs"]
+        return ldb.OUs["/example"]
 

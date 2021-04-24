@@ -164,7 +164,7 @@ func TestPolicyApplied(t *testing.T) {
 }
 
 func TestPolicyUpdate(t *testing.T) {
-	currentUser := "adsystestuser@warthogs.biz"
+	currentUser := "adsystestuser@example.com"
 
 	// Reexec ourself, with a mock passwd file
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
@@ -205,7 +205,7 @@ func TestPolicyUpdate(t *testing.T) {
 		admock, err := filepath.Abs("../../../internal/testutils/admock")
 		require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
 
-		passwd := modifyAndAddUsers(t, currentUser, "UserIntegrationTest@warthogs.biz")
+		passwd := modifyAndAddUsers(t, currentUser, "UserIntegrationTest@example.com")
 
 		// Setup correct child environment, including LD_PRELOAD for nss mock
 		cmd.Env = append(os.Environ(),
@@ -266,13 +266,13 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "localhost-uptodate",
 		},
 		"Other user, first time": {
-			args:       []string{"UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@warthogs.biz.krb5"},
+				{src: "UserIntegrationTest@example.com.krb5"},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -282,7 +282,7 @@ func TestPolicyUpdate(t *testing.T) {
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "ccache_WARTHOGS.BIZ",
+					src:     "ccache_EXAMPLE.COM",
 					machine: true,
 				},
 			}},
@@ -296,23 +296,23 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
 			},
 		},
 		"Other user, update old data": {
-			args:       []string{"UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
 			initState:  "old-data",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "UserIntegrationTest@warthogs.biz.krb5",
-					adsysSymlink: "UserIntegrationTest@warthogs.biz",
+					src:          "UserIntegrationTest@example.com.krb5",
+					adsysSymlink: "UserIntegrationTest@example.com",
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -322,7 +322,7 @@ func TestPolicyUpdate(t *testing.T) {
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -332,7 +332,7 @@ func TestPolicyUpdate(t *testing.T) {
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -346,11 +346,11 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "UserIntegrationTest@warthogs.biz.krb5",
-					adsysSymlink: "UserIntegrationTest@warthogs.biz",
+					src:          "UserIntegrationTest@example.com.krb5",
+					adsysSymlink: "UserIntegrationTest@example.com",
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -365,10 +365,10 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 				// UserIntegration is not connected (no symlink, old ticket exists though)
 				{
-					src: "UserIntegrationTest@warthogs.biz.krb5",
+					src: "UserIntegrationTest@example.com.krb5",
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -378,7 +378,7 @@ func TestPolicyUpdate(t *testing.T) {
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -395,7 +395,7 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -406,8 +406,8 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "old-data",
 			// clean generate dconf dbs to regenerate
 			clearDirs: []string{
-				"dconf/db/adsystestuser@warthogs.biz.d",
-				"dconf/profile/adsystestuser@warthogs.biz",
+				"dconf/db/adsystestuser@example.com.d",
+				"dconf/profile/adsystestuser@example.com",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -415,7 +415,7 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -426,8 +426,8 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "old-data",
 			// clean gpos cache, but keep machine ones and user gpo_rules
 			clearDirs: []string{
-				"dconf/db/adsystestuser@warthogs.biz.d",
-				"dconf/profile/adsystestuser@warthogs.biz",
+				"dconf/db/adsystestuser@example.com.d",
+				"dconf/profile/adsystestuser@example.com",
 				"cache/gpo_cache/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
 				"cache/gpo_cache/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
 				"cache/gpo_cache/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
@@ -438,7 +438,7 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -455,20 +455,20 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
 			},
 		},
 		"KRB5CCNAME is ignored when requesting ticket on other user": {
-			args:       []string{"UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "NonexistentTicket.krb5",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@warthogs.biz.krb5"},
+				{src: "UserIntegrationTest@example.com.krb5"},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -482,7 +482,7 @@ func TestPolicyUpdate(t *testing.T) {
 					src: currentUser + ".krb5",
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -492,7 +492,7 @@ func TestPolicyUpdate(t *testing.T) {
 		// Error cases
 		"User needs machine to be updated": {wantErr: true},
 		"Polkit denied updating self":      {polkitAnswer: "no", initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating other":     {polkitAnswer: "no", args: []string{"UserIntegrationTest@warthogs.biz", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
+		"Polkit denied updating other":     {polkitAnswer: "no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
 		"Polkit denied updating machine":   {polkitAnswer: "no", args: []string{"-m"}, wantErr: true},
 		"Error on dconf apply failing": {
 			initState: "localhost-uptodate",
@@ -507,9 +507,9 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "old-data",
 			// clean gpos rules, but gpo_cache
 			clearDirs: []string{
-				"dconf/db/adsystestuser@warthogs.biz.d",
-				"dconf/profile/adsystestuser@warthogs.biz",
-				"cache/gpo_rules/adsystestuser@warthogs.biz",
+				"dconf/db/adsystestuser@example.com.d",
+				"dconf/profile/adsystestuser@example.com",
+				"cache/gpo_rules/adsystestuser@example.com",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -517,7 +517,7 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -531,13 +531,13 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr:    true,
 		},
 		"Error on non-existent ticket provided": {
-			args:       []string{"UserIntegrationTest@warthogs.biz", "NonexistentTicket.krb5"},
+			args:       []string{"UserIntegrationTest@example.com", "NonexistentTicket.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@warthogs.biz.krb5"},
+				{src: "UserIntegrationTest@example.com.krb5"},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -552,7 +552,7 @@ func TestPolicyUpdate(t *testing.T) {
 					invalid: true,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -560,16 +560,16 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr: true,
 		},
 		"Error on invalid ticket provided": {
-			args:       []string{"UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@warthogs.biz.krb5",
+					src:     "UserIntegrationTest@example.com.krb5",
 					invalid: true,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -583,7 +583,7 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -594,7 +594,7 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "old-data",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -603,16 +603,16 @@ func TestPolicyUpdate(t *testing.T) {
 		},
 		// Incompatible options
 		"Error on all and specific user requested": {
-			args:       []string{"--all", "UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			args:       []string{"--all", "UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@warthogs.biz.krb5",
+					src:     "UserIntegrationTest@example.com.krb5",
 					invalid: true,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -624,7 +624,7 @@ func TestPolicyUpdate(t *testing.T) {
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -632,16 +632,16 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr: true,
 		},
 		"Error computer and specific user requested": {
-			args:       []string{"-m", "UserIntegrationTest@warthogs.biz", "UserIntegrationTest@warthogs.biz.krb5"},
+			args:       []string{"-m", "UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@warthogs.biz.krb5",
+					src:     "UserIntegrationTest@example.com.krb5",
 					invalid: true,
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -649,12 +649,12 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr: true,
 		},
 		"Error on computer requested directly (argument is user)": {
-			args:       []string{"-m", hostname, "ccache_WARTHOGS.BIZ"},
+			args:       []string{"-m", hostname, "ccache_EXAMPLE.COM"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -674,11 +674,11 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 				{
 					// dangling adsys symlink for this user
-					//src:          "UserIntegrationTest@warthogs.biz.krb5",
-					adsysSymlink: "UserIntegrationTest@warthogs.biz",
+					//src:          "UserIntegrationTest@example.com.krb5",
+					adsysSymlink: "UserIntegrationTest@example.com",
 				},
 				{
-					src:          "ccache_WARTHOGS.BIZ",
+					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -725,7 +725,7 @@ func TestPolicyUpdate(t *testing.T) {
 				tc.krb5ccNamesState = []krb5ccNamesWithState{
 					{src: currentUser + ".krb5"},
 					{
-						src:          "ccache_WARTHOGS.BIZ",
+						src:          "ccache_EXAMPLE.COM",
 						adsysSymlink: hostname,
 						machine:      true,
 					},
@@ -781,7 +781,7 @@ func TestPolicyUpdate(t *testing.T) {
 			if tc.isOffLine {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
-				content = bytes.Replace(content, []byte("ldap://adc.warthogs.biz"), []byte("ldap://NT_STATUS_HOST_UNREACHABLE"), 1)
+				content = bytes.Replace(content, []byte("ldap://adc.example.com"), []byte("ldap://NT_STATUS_HOST_UNREACHABLE"), 1)
 				err = os.WriteFile(conf, content, 0644)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}

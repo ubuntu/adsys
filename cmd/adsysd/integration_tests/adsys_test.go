@@ -77,8 +77,8 @@ socket: %s/socket
 cache_dir: %s/cache
 run_dir: %s/run
 servicetimeout: 30
-ad_server: ldap://adc.warthogs.biz
-ad_domain: warthogs.biz
+ad_server: ldap://adc.example.com
+ad_domain: example.com
 
 # Those are more for tests
 dconf_dir: %s/dconf

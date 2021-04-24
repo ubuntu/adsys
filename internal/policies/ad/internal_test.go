@@ -366,10 +366,10 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	const policyPath = "SYSVOL/warthogs.biz/Policies"
+	const policyPath = "SYSVOL/example.com/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "example.com",
 		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -413,10 +413,10 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 func TestParseGPOConcurrent(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	const policyPath = "SYSVOL/warthogs.biz/Policies"
+	const policyPath = "SYSVOL/example.com/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "warthogs.biz",
+	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "example.com",
 		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
