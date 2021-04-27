@@ -6,5 +6,5 @@ socket: /tmp/adsysd/socket
 cache_dir: /tmp/adsysd/cache
 run_dir: /tmp/adsysd/run
 servicetimeout: 3600
-ad_server: warthogs.biz
-ad_domain: ldap://adc.warthogs.biz
+ad_server: example.com
+ad_domain: ldap://adc.example.com

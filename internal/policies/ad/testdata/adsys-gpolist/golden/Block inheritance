@@ -1,1 +1,1 @@
-RnDDepBlockInheritance GPO	smb://localhost:1445/SYSVOL/warthogs.biz/Policies/RnDDepBlockInheritance_GPO
+RnDDepBlockInheritance GPO	smb://localhost:1445/SYSVOL/example.com/Policies/RnDDepBlockInheritance_GPO

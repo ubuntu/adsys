@@ -15,58 +15,58 @@ GPOs = {}
 accounts = {}
 
 ##############################
-# OU=RnD,OU=IT Dept,DC=warthogs,DC=biz
+# OU=RnD,OU=IT Dept,DC=example,DC=com
 
-#  /warthogs
+#  /example
 #            -- Default Domain Policy    <- UserAtRoot
-#  /warthogs/IT
+#  /example/IT
 ##            -- IT GPO
-#  /warthogs/IT/ITDep1                   <- hostname1
+#  /example/IT/ITDep1                   <- hostname1
 ##            -- ITDep1 GPO
-#  /warthogs/IT/ITDep2                   <- hostname2
+#  /example/IT/ITDep2                   <- hostname2
 ##            -- ITDep2 User only GPO                                 <- machine flag disabled
-#  /warthogs/RnD                         <- RnDUser
+#  /example/RnD                         <- RnDUser
 ##            -- RnD GPO
-#  /warthogs/RnD/RnDDep1                 <- RnDUserDep1
+#  /example/RnD/RnDDep1                 <- RnDUserDep1
 ##            -- RnDDep1 GPO1
 ##            -- RnDDep1 GPO2
-#  /warthogs/RnD/RnDDep2
+#  /example/RnD/RnDDep2
 ##            -- RnDDep2 GPO
 ##            -- RnDDep2 Forced GPO                                   <- forced GPO
-#  /warthogs/RnD/RnDDep2/SubDep2ForcedPolicy     <- RndUserSubDep2ForcedPolicy
+#  /example/RnD/RnDDep2/SubDep2ForcedPolicy     <- RndUserSubDep2ForcedPolicy
 ##            -- SubDep2ForcedPolicy Forced GPO                       <- forced GPO
-#  /warthogs/RnD/RnDDep2/SubDep2BlockInheritance                      <- block inheritance
+#  /example/RnD/RnDDep2/SubDep2BlockInheritance                      <- block inheritance
 ##            -- SubDep2BlockInheritance GPO
-#  /warthogs/RnD/RnDDep2/SubDep2BlockInheritance/SubBlocked   <- RnDUserWithBlockedInheritanceAndForcedPolicies
+#  /example/RnD/RnDDep2/SubDep2BlockInheritance/SubBlocked   <- RnDUserWithBlockedInheritanceAndForcedPolicies
 ##            -- SubBlocked GPO
-#  /warthogs/RnD/RnDDep3                 <- RnDUserDep3
+#  /example/RnD/RnDDep3                 <- RnDUserDep3
 ##            -- RnDDep3 Disabled GPO                                 <- disabled gpo
 ##            -- RnDDep3 GPO
-#  /warthogs/RnD/RnDDep4                 <- RnDUserDep4
+#  /example/RnD/RnDDep4                 <- RnDUserDep4
 ##            -- RnDDep4 Security descriptor missing GPO              <- security descriptor missing
-#  /warthogs/RnD/RnDDep5                 <- RnDUserDep5
+#  /example/RnD/RnDDep5                 <- RnDUserDep5
 ##            -- RnDDep5 security access failed GPO                   <- security failed denied
-#  /warthogs/RnD/RnDDep6                 <- RnDUserDep6
+#  /example/RnD/RnDDep6                 <- RnDUserDep6
 ##            -- RnDDep6 security access denied GPO                   <- security access denied
-#  /warthogs/RnD/RnDDep7                 <- RnDUserDep7
+#  /example/RnD/RnDDep7                 <- RnDUserDep7
 ##            -- RnDDep7 machine only GPO                             <- user flag disabled
-#  /warthogs/RnD/RnDDep8                 <- RnDUserDep8
+#  /example/RnD/RnDDep8                 <- RnDUserDep8
 ##            -- RnDDep8 allow for one user only GPO  <- RnDUserDep8  <- nTSecurityDescriptor allowed for another user that our one
-#  /warthogs/RnD/RnDDepBlockInheritance               <-RnDUserWithBlockedInheritance      <- block inheritance
+#  /example/RnD/RnDDepBlockInheritance               <-RnDUserWithBlockedInheritance      <- block inheritance
 ##            -- RnDDepBlockInheritance GPO
-#  /warthogs/NoGPO                       <- UserNoGPO
-#  /warthogs/NogPOptions                 <- UserNogPOptions
+#  /example/NoGPO                       <- UserNoGPO
+#  /example/NogPOptions                 <- UserNogPOptions
 ##            -- NogPOptions GPO
-#  /warthogs/InvalidGPOLink              <- UserInvalidLink
+#  /example/InvalidGPOLink              <- UserInvalidLink
 
-#  /warthogs/IntegrationTests/
-#  /warthogs/IntegrationTests/Dep1                          <-[CURRENT_HOSTNAME]
+#  /example/IntegrationTests/
+#  /example/IntegrationTests/Dep1                          <-[CURRENT_HOSTNAME]
 ##            -- {C4F393CA-AD9A-4595-AEBC-3FA6EE484285} "GPO for current machine"
-#  /warthogs/IntegrationTests/Dep2                          <- MachineIntegrationTest
+#  /example/IntegrationTests/Dep2                          <- MachineIntegrationTest
 ##            -- {B8D10A86-0B78-4899-91AF-6F0124ECEB48} "GPO for MachineIntegrationTest"
-#  /warthogs/IntegrationTests/UserDep                       <- UserIntegrationTest
+#  /example/IntegrationTests/UserDep                       <- UserIntegrationTest
 ##            -- {75545F76-DEC2-4ADA-B7B8-D5209FD48727} "GPO for Integration Test User"
-#  /warthogs/IntegrationTests/UserDep/UserDep1              <-[CURRENT_USER]
+#  /example/IntegrationTests/UserDep/UserDep1              <-[CURRENT_USER]
 ##            -- {5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242} "GPO1 for current User"
 ##            -- {073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04} "GPO2 for current User"
 
@@ -153,7 +153,7 @@ class GPO:
         smb_port = getenv("ADSYS_TESTS_SMB_PORT")
         if smb_port:
             smb_port = ":" + smb_port
-        self.gPCFileSysPath = ['\\\\localhost%s\\SYSVOL\\warthogs.biz\\Policies\\%s' % (smb_port, self.name)]
+        self.gPCFileSysPath = ['\\\\localhost%s\\SYSVOL\\example.com\\Policies\\%s' % (smb_port, self.name)]
 
 
 # Can be a User or a Computer
@@ -175,123 +175,123 @@ def getuserWithoutDomain():
 
 
 # Build Domains
-o = OU("/warthogs")
+o = OU("/example")
 o.addGPO(GPO("{31B2F340-016D-11D2-945F-00C04FB984F9}", display_name="Default Domain Policy"))
 o.addAccount("UserAtRoot")
 
-o = OU("/warthogs/IT")
+o = OU("/example/IT")
 o.addGPO(GPO("IT GPO"))
 
-o = OU("/warthogs/IT/ITDep1")
+o = OU("/example/IT/ITDep1")
 o.addGPO(GPO("ITDep1 GPO"))
 o.addAccount("hostname1")
 
-o = OU("/warthogs/IT/ITDep2")
+o = OU("/example/IT/ITDep2")
 o.addGPO(GPO("ITDep2 User only GPO"))
 o.addAccount("hostname2")
 
-o = OU("/warthogs/RnD")
+o = OU("/example/RnD")
 o.addGPO(GPO("RnD GPO"))
 o.addAccount("RnDUser")
 
-o = OU("/warthogs/RnD/RnDDep1")
+o = OU("/example/RnD/RnDDep1")
 o.addGPO(GPO("RnDDep1 GPO1"))
 o.addGPO(GPO("RnDDep1 GPO2"))
 o.addAccount("RnDUserDep1")
 
-o = OU("/warthogs/RnD/RnDDep2")
+o = OU("/example/RnD/RnDDep2")
 o.addGPO(GPO("RnDDep2 GPO"))
 o.addGPO(GPO("RnDDep2 Forced GPO"))
 
-o = OU("/warthogs/RnD/RnDDep2/SubDep2ForcedPolicy")
+o = OU("/example/RnD/RnDDep2/SubDep2ForcedPolicy")
 o.addGPO(GPO("SubDep2ForcedPolicy Forced GPO"))
 o.addAccount("RndUserSubDep2ForcedPolicy")
 
-o = OU("/warthogs/RnD/RnDDep2/SubDep2BlockInheritance")
+o = OU("/example/RnD/RnDDep2/SubDep2BlockInheritance")
 o.addGPO(GPO("SubDep2BlockInheritance GPO"))
 
-o = OU("/warthogs/RnD/RnDDep2/SubDep2BlockInheritance/SubBlocked")
+o = OU("/example/RnD/RnDDep2/SubDep2BlockInheritance/SubBlocked")
 o.addGPO(GPO("SubBlocked GPO"))
 o.addAccount("RnDUserWithBlockedInheritanceAndForcedPolicies")
 
-o = OU("/warthogs/RnD/RnDDep3")
+o = OU("/example/RnD/RnDDep3")
 o.addGPO(GPO("RnDDep3 Disabled GPO"))
 o.addGPO(GPO("RnDDep3 GPO"))
 o.addAccount("RnDUserDep3")
 
-o = OU("/warthogs/RnD/RnDDep4")
+o = OU("/example/RnD/RnDDep4")
 o.addGPO(GPO("RnDDep4 Security descriptor missing GPO"))
 o.addAccount("RnDUserDep4")
 
-o = OU("/warthogs/RnD/RnDDep5")
+o = OU("/example/RnD/RnDDep5")
 o.addGPO(GPO("RnDDep5 security access failed GPO"))
 o.addAccount("RnDUserDep5")
 
-o = OU("/warthogs/RnD/RnDDep6")
+o = OU("/example/RnD/RnDDep6")
 o.addGPO(GPO("RnDDep6 security access denied GPO"))
 o.addAccount("RnDUserDep6")
 
-o = OU("/warthogs/RnD/RnDDep7")
+o = OU("/example/RnD/RnDDep7")
 o.addGPO(GPO("RnDDep7 machine only GPO"))
 o.addAccount("RnDUserDep7")
 
-o = OU("/warthogs/RnD/RnDDep8")
+o = OU("/example/RnD/RnDDep8")
 o.addGPO(GPO("RnDDep8 allow for one user only GPO"))
 o.addAccount("RnDUserDep8")
 
-o = OU("/warthogs/RnD/RnDDepBlockInheritance")
+o = OU("/example/RnD/RnDDepBlockInheritance")
 o.addGPO(GPO("RnDDepBlockInheritance GPO"))
 o.addAccount("RnDUserWithBlockedInheritance")
 
-o = OU("/warthogs/NoGPO")
+o = OU("/example/NoGPO")
 o.addAccount("UserNoGPO")
 
-o = OU("/warthogs/NogPOptions")
+o = OU("/example/NogPOptions")
 o.addGPO(GPO("NogPOptions GPO"))
 o.addAccount("UserNogPOptions")
 
-o = OU("/warthogs/InvalidGPOLink")
+o = OU("/example/InvalidGPOLink")
 o.addAccount("UserInvalidLink")
 
 # Integration tests OU and GPO
-OU("/warthogs/IntegrationTests")
+OU("/example/IntegrationTests")
 
-o = OU("/warthogs/IntegrationTests/Dep1")
+o = OU("/example/IntegrationTests/Dep1")
 o.addGPO(GPO("{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}", display_name="GPO for current machine"))
 o.addAccount(gethostname())
 
-o = OU("/warthogs/IntegrationTests/Dep2")
+o = OU("/example/IntegrationTests/Dep2")
 o.addGPO(GPO("{B8D10A86-0B78-4899-91AF-6F0124ECEB48}", display_name="GPO for MachineIntegrationTest"))
 o.addAccount("MachineIntegrationTest")
 
-o = OU("/warthogs/IntegrationTests/UserDep")
+o = OU("/example/IntegrationTests/UserDep")
 o.addGPO(GPO("{75545F76-DEC2-4ADA-B7B8-D5209FD48727}", display_name="GPO for Integration Test User"))
 o.addAccount("UserIntegrationTest")
 
-o = OU("/warthogs/IntegrationTests/UserDep/Dep1")
+o = OU("/example/IntegrationTests/UserDep/Dep1")
 o.addGPO(GPO("{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}", display_name="GPO1 for current User"))
 o.addGPO(GPO("{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}", display_name="GPO2 for current User"))
 o.addAccount(getuserWithoutDomain())
 
-# [b'[LDAP://cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=warthogs,DC=biz;0][LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=warthogs,DC=biz;0]'
+# [b'[LDAP://cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=example,DC=com;0][LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=example,DC=com;0]'
 
-# Message({'dn': Dn('OU=RnD,OU=IT Dept,DC=warthogs,DC=biz'),
+# Message({'dn': Dn('OU=RnD,OU=IT Dept,DC=example,DC=com'),
 # 'gPLink': MessageElement(
-#   [b'[LDAP://cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=warthogs,DC=biz;0][LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=warthogs,DC=biz;0]']),
+#   [b'[LDAP://cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=example,DC=com;0][LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=example,DC=com;0]']),
 # 'gPOptions': MessageElement([b'0'])})
 
 
 # 'AAAAAA'
-# Message({'dn': Dn('OU=RnD,OU=IT Dept,DC=warthogs,DC=biz'), 'gPLink': MessageElement([b'[LDAP://cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=warthogs,DC=biz;0][LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=warthogs,DC=biz;0]']), 'gPOptions': MessageElement([b'0'])})
+# Message({'dn': Dn('OU=RnD,OU=IT Dept,DC=example,DC=com'), 'gPLink': MessageElement([b'[LDAP://cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=example,DC=com;0][LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=example,DC=com;0]']), 'gPOptions': MessageElement([b'0'])})
 # 'XXXXXX'
-# Message({'dn': Dn('cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=warthogs,DC=biz'), 'displayName': MessageElement([b'RnD Policy 2']), 'nTSecurityDescriptor': MessageElement([b'\x01\x00\x04\x9c\x00\x01\x00\x00\x1c\x01\x00\x00\x00\x00\x00\x00\x14\x00\x00\x00\x04\x00\xec\x00\x08\x00\x00\x00\x05\x02(\x00\x00\x01\x00\x00\x01\x00\x00\x00\x8f\xfd\xac\xed\xb3\xff\xd1\x11\xb4\x1d\x00\xa0\xc9h\xf99\x01\x01\x00\x00\x00\x00\x00\x05\x0b\x00\x00\x00\x00\x00$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x00\x02$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x00\x02$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x07\x02\x00\x00\x00\x02\x14\x00\x94\x00\x02\x00\x01\x01\x00\x00\x00\x00\x00\x05\t\x00\x00\x00\x00\x02\x14\x00\x94\x00\x02\x00\x01\x01\x00\x00\x00\x00\x00\x05\x0b\x00\x00\x00\x00\x02\x14\x00\xff\x00\x0f\x00\x01\x01\x00\x00\x00\x00\x00\x05\x12\x00\x00\x00\x00\n\x14\x00\xff\x00\x0f\x00\x01\x01\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00']), 'name': MessageElement([b'{83A5BD5B-1D5D-472D-827F-DE0E6F714300}']), 'flags': MessageElement([b'0']), 'gPCFileSysPath': MessageElement([b'\\\\warthogs.biz\\SysVol\\warthogs.biz\\Policies\\{83A5BD5B-1D5D-472D-827F-DE0E6F714300}'])})
+# Message({'dn': Dn('cn={83A5BD5B-1D5D-472D-827F-DE0E6F714300},cn=policies,cn=system,DC=example,DC=com'), 'displayName': MessageElement([b'RnD Policy 2']), 'nTSecurityDescriptor': MessageElement([b'\x01\x00\x04\x9c\x00\x01\x00\x00\x1c\x01\x00\x00\x00\x00\x00\x00\x14\x00\x00\x00\x04\x00\xec\x00\x08\x00\x00\x00\x05\x02(\x00\x00\x01\x00\x00\x01\x00\x00\x00\x8f\xfd\xac\xed\xb3\xff\xd1\x11\xb4\x1d\x00\xa0\xc9h\xf99\x01\x01\x00\x00\x00\x00\x00\x05\x0b\x00\x00\x00\x00\x00$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x00\x02$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x00\x02$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x07\x02\x00\x00\x00\x02\x14\x00\x94\x00\x02\x00\x01\x01\x00\x00\x00\x00\x00\x05\t\x00\x00\x00\x00\x02\x14\x00\x94\x00\x02\x00\x01\x01\x00\x00\x00\x00\x00\x05\x0b\x00\x00\x00\x00\x02\x14\x00\xff\x00\x0f\x00\x01\x01\x00\x00\x00\x00\x00\x05\x12\x00\x00\x00\x00\n\x14\x00\xff\x00\x0f\x00\x01\x01\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00']), 'name': MessageElement([b'{83A5BD5B-1D5D-472D-827F-DE0E6F714300}']), 'flags': MessageElement([b'0']), 'gPCFileSysPath': MessageElement([b'\\\\example.com\\SysVol\\example.com\\Policies\\{83A5BD5B-1D5D-472D-827F-DE0E6F714300}'])})
 # 'XXXXXX'
-# Message({'dn': Dn('cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=warthogs,DC=biz'), 'displayName': MessageElement([b'RnD Policy']), 'nTSecurityDescriptor': MessageElement([b'\x01\x00\x04\x9c\x00\x01\x00\x00\x1c\x01\x00\x00\x00\x00\x00\x00\x14\x00\x00\x00\x04\x00\xec\x00\x08\x00\x00\x00\x05\x02(\x00\x00\x01\x00\x00\x01\x00\x00\x00\x8f\xfd\xac\xed\xb3\xff\xd1\x11\xb4\x1d\x00\xa0\xc9h\xf99\x01\x01\x00\x00\x00\x00\x00\x05\x0b\x00\x00\x00\x00\x00$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x00\x02$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x00\x02$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x07\x02\x00\x00\x00\x02\x14\x00\x94\x00\x02\x00\x01\x01\x00\x00\x00\x00\x00\x05\t\x00\x00\x00\x00\x02\x14\x00\x94\x00\x02\x00\x01\x01\x00\x00\x00\x00\x00\x05\x0b\x00\x00\x00\x00\x02\x14\x00\xff\x00\x0f\x00\x01\x01\x00\x00\x00\x00\x00\x05\x12\x00\x00\x00\x00\n\x14\x00\xff\x00\x0f\x00\x01\x01\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00']), 'name': MessageElement([b'{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}']), 'flags': MessageElement([b'0']), 'gPCFileSysPath': MessageElement([b'\\\\warthogs.biz\\SysVol\\warthogs.biz\\Policies\\{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}'])})
+# Message({'dn': Dn('cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=example,DC=com'), 'displayName': MessageElement([b'RnD Policy']), 'nTSecurityDescriptor': MessageElement([b'\x01\x00\x04\x9c\x00\x01\x00\x00\x1c\x01\x00\x00\x00\x00\x00\x00\x14\x00\x00\x00\x04\x00\xec\x00\x08\x00\x00\x00\x05\x02(\x00\x00\x01\x00\x00\x01\x00\x00\x00\x8f\xfd\xac\xed\xb3\xff\xd1\x11\xb4\x1d\x00\xa0\xc9h\xf99\x01\x01\x00\x00\x00\x00\x00\x05\x0b\x00\x00\x00\x00\x00$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x00\x02$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x00\x02$\x00\xff\x00\x0f\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x07\x02\x00\x00\x00\x02\x14\x00\x94\x00\x02\x00\x01\x01\x00\x00\x00\x00\x00\x05\t\x00\x00\x00\x00\x02\x14\x00\x94\x00\x02\x00\x01\x01\x00\x00\x00\x00\x00\x05\x0b\x00\x00\x00\x00\x02\x14\x00\xff\x00\x0f\x00\x01\x01\x00\x00\x00\x00\x00\x05\x12\x00\x00\x00\x00\n\x14\x00\xff\x00\x0f\x00\x01\x01\x00\x00\x00\x00\x00\x03\x00\x00\x00\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00\x01\x05\x00\x00\x00\x00\x00\x05\x15\x00\x00\x00\xed\xdb\xf6\x00f\xe5\xb3\t\xa4\xf2E\t\x00\x02\x00\x00']), 'name': MessageElement([b'{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}']), 'flags': MessageElement([b'0']), 'gPCFileSysPath': MessageElement([b'\\\\example.com\\SysVol\\example.com\\Policies\\{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}'])})
 
 
-# Message({'dn': Dn('OU=RnD,OU=IT Dept,DC=warthogs,DC=biz'), 'gPLink': MessageElement([b'[LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=warthogs,DC=biz;0]']), 'gPOptions': MessageElement([b'0'])})
-# Message({'dn': Dn('OU=IT Dept,DC=warthogs,DC=biz'), 'gPLink': MessageElement([b'[LDAP://cn={75545F76-DEC2-4ADA-B7B8-D5209FD48727},cn=policies,cn=system,DC=warthogs,DC=biz;0]'])})
-# Message({'dn': Dn('DC=warthogs,DC=biz'), 'gPLink': MessageElement([b'[LDAP://CN={31B2F340-016D-11D2-945F-00C04FB984F9},CN=Policies,CN=System,DC=warthogs,DC=biz;0]'])})
+# Message({'dn': Dn('OU=RnD,OU=IT Dept,DC=example,DC=com'), 'gPLink': MessageElement([b'[LDAP://cn={5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242},cn=policies,cn=system,DC=example,DC=com;0]']), 'gPOptions': MessageElement([b'0'])})
+# Message({'dn': Dn('OU=IT Dept,DC=example,DC=com'), 'gPLink': MessageElement([b'[LDAP://cn={75545F76-DEC2-4ADA-B7B8-D5209FD48727},cn=policies,cn=system,DC=example,DC=com;0]'])})
+# Message({'dn': Dn('DC=example,DC=com'), 'gPLink': MessageElement([b'[LDAP://CN={31B2F340-016D-11D2-945F-00C04FB984F9},CN=Policies,CN=System,DC=example,DC=com;0]'])})
 
 
 # GPO_APPLY_GUID = "edacfd8f-ffb3-11d1-b41d-00a0c968f939"

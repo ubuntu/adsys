@@ -281,8 +281,8 @@ socket: %s
 cache_dir: %s
 run_dir: %s
 servicetimeout: %d
-ad_server: warthogs.biz
-ad_domain: ldap://adc.warthogs.biz
+ad_server: example.com
+ad_domain: ldap://adc.example.com
 `,
 		verbose,
 		filepath.Join(dir, socketName),

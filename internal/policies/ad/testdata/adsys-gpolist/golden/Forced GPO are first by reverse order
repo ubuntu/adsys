@@ -1,5 +1,5 @@
-RnDDep2 Forced GPO	smb://localhost:1445/SYSVOL/warthogs.biz/Policies/RnDDep2_Forced_GPO
-SubDep2ForcedPolicy Forced GPO	smb://localhost:1445/SYSVOL/warthogs.biz/Policies/SubDep2ForcedPolicy_Forced_GPO
-RnDDep2 GPO	smb://localhost:1445/SYSVOL/warthogs.biz/Policies/RnDDep2_GPO
-RnD GPO	smb://localhost:1445/SYSVOL/warthogs.biz/Policies/RnD_GPO
-Default Domain Policy	smb://localhost:1445/SYSVOL/warthogs.biz/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}
+RnDDep2 Forced GPO	smb://localhost:1445/SYSVOL/example.com/Policies/RnDDep2_Forced_GPO
+SubDep2ForcedPolicy Forced GPO	smb://localhost:1445/SYSVOL/example.com/Policies/SubDep2ForcedPolicy_Forced_GPO
+RnDDep2 GPO	smb://localhost:1445/SYSVOL/example.com/Policies/RnDDep2_GPO
+RnD GPO	smb://localhost:1445/SYSVOL/example.com/Policies/RnD_GPO
+Default Domain Policy	smb://localhost:1445/SYSVOL/example.com/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}
