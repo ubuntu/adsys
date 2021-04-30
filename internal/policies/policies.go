@@ -30,7 +30,7 @@ type options struct {
 	dconfDir string
 	gdm      *gdm.Manager
 }
-type option func(*options) error
+type Option func(*options) error
 
 // WithCacheDir specifies a personalized daemon cache directory
 func WithCacheDir(p string) func(o *options) error {
@@ -49,7 +49,7 @@ func WithDconfDir(p string) func(o *options) error {
 }
 
 // New returns a new manager with all default policy handlers.
-func New(opts ...option) (m *Manager, err error) {
+func New(opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
 
 	// defaults

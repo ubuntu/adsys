@@ -71,7 +71,7 @@ type options struct {
 	gpoListCmd      []string
 }
 
-type option func(*options) error
+type Option func(*options) error
 
 // WithCacheDir specifies a personalized daemon cache directory
 func WithCacheDir(cacheDir string) func(o *options) error {
@@ -101,7 +101,7 @@ func WithSSSCacheDir(cacheDir string) func(o *options) error {
 var adsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
-func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err error) {
+func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
 	versionID, err := adcommon.GetVersionID("/")

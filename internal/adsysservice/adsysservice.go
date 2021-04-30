@@ -86,10 +86,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 
 	// defaults
 	args := options{
-		cacheDir:    config.DefaultCacheDir,
-		runDir:      config.DefaultRunDir,
-		sssdConf:    "/etc/sssd/sssd.conf",
-		sssCacheDir: "/var/lib/sss/db",
+		sssdConf: "/etc/sssd/sssd.conf",
 	}
 	// applied options
 	for _, o := range opts {
@@ -105,7 +102,17 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if !strings.HasPrefix(url, "ldap://") {
 		url = fmt.Sprintf("ldap://%s", url)
 	}
-	adc, err := ad.New(ctx, url, domain, ad.WithCacheDir(args.cacheDir), ad.WithRunDir(args.runDir), ad.WithSSSCacheDir(args.sssCacheDir))
+	var adOptions []ad.Option
+	if args.cacheDir != "" {
+		adOptions = append(adOptions, ad.WithCacheDir(args.cacheDir))
+	}
+	if args.runDir != "" {
+		adOptions = append(adOptions, ad.WithRunDir(args.runDir))
+	}
+	if args.sssCacheDir != "" {
+		adOptions = append(adOptions, ad.WithSSSCacheDir(args.sssCacheDir))
+	}
+	adc, err := ad.New(ctx, url, domain, adOptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +124,14 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		}
 	}
 
-	m, err := policies.New(policies.WithCacheDir(args.cacheDir), policies.WithDconfDir(args.dconfDir))
+	var policyOptions []policies.Option
+	if args.cacheDir != "" {
+		policyOptions = append(policyOptions, policies.WithCacheDir(args.cacheDir))
+	}
+	if args.dconfDir != "" {
+		policyOptions = append(policyOptions, policies.WithDconfDir(args.dconfDir))
+	}
+	m, err := policies.New(policyOptions...)
 	if err != nil {
 		return nil, err
 	}
