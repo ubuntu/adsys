@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -54,7 +54,7 @@ func New(opts ...Option) (m *Manager, err error) {
 
 	// defaults
 	args := options{
-		cacheDir: config.DefaultCacheDir,
+		cacheDir: consts.DefaultCacheDir,
 		gdm:      nil,
 	}
 	// applied options (including dconf manager used by gdm)

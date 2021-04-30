@@ -3,7 +3,7 @@ package adsysservice
 import (
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/authorizer"
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -18,7 +18,7 @@ func (s *Service) Version(r *adsys.Empty, stream adsys.Service_VersionServer) (e
 	}
 
 	if err := stream.Send(&adsys.StringResponse{
-		Msg: config.Version,
+		Msg: consts.Version,
 	}); err != nil {
 		log.Warningf(stream.Context(), "couldn't send service version to client: %v", err)
 	}

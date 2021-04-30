@@ -11,6 +11,7 @@ import (
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/daemon"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -121,14 +122,14 @@ func New() *App {
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
 	cmdhandler.InstallConfigFlag(&a.rootCmd)
-	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, config.DefaultSocket)
+	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
-	a.rootCmd.PersistentFlags().StringP("cache-dir", "", config.DefaultCacheDir, i18n.G("directory where ADsys caches GPOs downloads and policies."))
+	a.rootCmd.PersistentFlags().StringP("cache-dir", "", consts.DefaultCacheDir, i18n.G("directory where ADsys caches GPOs downloads and policies."))
 	decorate.LogOnError(a.viper.BindPFlag("cache_dir", a.rootCmd.PersistentFlags().Lookup("cache-dir")))
-	a.rootCmd.PersistentFlags().StringP("run-dir", "", config.DefaultRunDir, i18n.G("directory where ADsys stores transient information erased on reboot."))
+	a.rootCmd.PersistentFlags().StringP("run-dir", "", consts.DefaultRunDir, i18n.G("directory where ADsys stores transient information erased on reboot."))
 	decorate.LogOnError(a.viper.BindPFlag("run_dir", a.rootCmd.PersistentFlags().Lookup("run-dir")))
 
-	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
+	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
 	decorate.LogOnError(a.viper.BindPFlag("servicetimeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	a.rootCmd.PersistentFlags().StringP("ad-server", "S", "", i18n.G("URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."))

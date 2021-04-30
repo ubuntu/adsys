@@ -14,7 +14,7 @@ import (
 	// embed gpolist python binary
 	_ "embed"
 
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -111,8 +111,8 @@ func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err e
 
 	// defaults
 	args := options{
-		runDir:      config.DefaultRunDir,
-		cacheDir:    config.DefaultCacheDir,
+		runDir:      consts.DefaultRunDir,
+		cacheDir:    consts.DefaultCacheDir,
 		sssCacheDir: "/var/lib/sss/db",
 		gpoListCmd:  []string{"python3", "-c", adsysGpoListCode},
 		versionID:   versionID,
@@ -307,7 +307,7 @@ func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) 
 func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) ([]entry.GPO, error) {
 	var r []entry.GPO
 
-	keyFilterPrefix := fmt.Sprintf("%s/%s/", adcommon.KeyPrefix, config.DistroID)
+	keyFilterPrefix := fmt.Sprintf("%s/%s/", adcommon.KeyPrefix, consts.DistroID)
 
 	for _, g := range gpos {
 		name, url := g.name, g.url

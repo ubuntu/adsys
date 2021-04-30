@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/grpc/grpcerror"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -81,9 +82,9 @@ func New() *App {
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
 	cmdhandler.InstallConfigFlag(&a.rootCmd)
-	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, config.DefaultSocket)
+	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
-	a.rootCmd.PersistentFlags().IntP("timeout", "t", config.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
+	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
 	decorate.LogOnError(a.viper.BindPFlag("clienttimeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	// subcommands

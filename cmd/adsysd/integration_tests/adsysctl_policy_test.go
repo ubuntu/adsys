@@ -14,7 +14,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -52,7 +52,7 @@ func TestPolicyAdmx(t *testing.T) {
 			if tc.arg != "" {
 				args = append(args, tc.arg)
 			}
-			distro := config.DistroID
+			distro := consts.DistroID
 			if tc.distroOption != "" {
 				args = append(args, "--distro", tc.distroOption)
 				distro = tc.distroOption

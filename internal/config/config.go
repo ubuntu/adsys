@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
@@ -19,7 +20,7 @@ const TEXTDOMAIN = "adsys"
 func SetVerboseMode(level int) {
 	switch level {
 	case 0:
-		log.SetLevel(defaultLevel)
+		log.SetLevel(consts.DefaultLogLevel)
 	case 1:
 		log.SetLevel(log.InfoLevel)
 	case 3:

@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/authorizer"
-	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/daemon"
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
