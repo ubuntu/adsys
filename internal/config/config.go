@@ -13,9 +13,6 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
-// TEXTDOMAIN is the gettext domain for l10n
-const TEXTDOMAIN = "adsys"
-
 // SetVerboseMode change ErrorFormat and logs between very, middly and non verbose
 func SetVerboseMode(level int) {
 	switch level {

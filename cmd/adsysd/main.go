@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
@@ -37,7 +37,7 @@ type app interface {
 }
 
 func run(a app) int {
-	i18n.InitI18nDomain(config.TEXTDOMAIN)
+	i18n.InitI18nDomain(consts.TEXTDOMAIN)
 	defer installSignalHandler(a)()
 
 	log.SetFormatter(&log.TextFormatter{

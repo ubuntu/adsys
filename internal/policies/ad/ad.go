@@ -113,7 +113,7 @@ func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err e
 	args := options{
 		runDir:      consts.DefaultRunDir,
 		cacheDir:    consts.DefaultCacheDir,
-		sssCacheDir: "/var/lib/sss/db",
+		sssCacheDir: consts.DefaultSSSCacheDir,
 		gpoListCmd:  []string{"python3", "-c", adsysGpoListCode},
 		versionID:   versionID,
 	}

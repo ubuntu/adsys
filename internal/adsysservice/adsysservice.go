@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/authorizer"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/daemon"
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
@@ -85,7 +86,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 
 	// defaults
 	args := options{
-		sssdConf: "/etc/sssd/sssd.conf",
+		sssdConf: consts.DefaultSSSConf,
 	}
 	// applied options
 	for _, o := range opts {
