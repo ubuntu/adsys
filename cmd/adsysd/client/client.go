@@ -12,7 +12,6 @@ import (
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/grpc/grpcerror"
-	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
@@ -47,25 +46,28 @@ func New() *App {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
-			return config.Configure("adsys", a.rootCmd, a.viper, func(configPath string) error {
+			return config.Init("adsys", a.rootCmd, a.viper, func(refreshed bool) error {
 				var newConfig daemonConfig
-				if err := config.DefaultLoadConfig(&newConfig, a.viper); err != nil {
+				if err := config.LoadConfig(&newConfig, a.viper); err != nil {
 					return err
 				}
 
-				// config reload
-				if configPath != "" {
-					// No change in config file: skip.
-					if a.config == newConfig {
-						return nil
-					}
-					log.Infof(context.Background(), "Config file %q changed. Reloading.", configPath)
+				// First run: just init configuration.
+				if !refreshed {
+					a.config = newConfig
+					return nil
 				}
 
-				oldVerbose := a.config.Verbose
-				a.config = newConfig
+				// Config reload
+
+				// No change in config file: skip.
+				if a.config == newConfig {
+					return nil
+				}
 
 				// Reload necessary parts
+				oldVerbose := a.config.Verbose
+				a.config = newConfig
 				if oldVerbose != a.config.Verbose {
 					config.SetVerboseMode(a.config.Verbose)
 				}
