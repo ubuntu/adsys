@@ -46,6 +46,8 @@ type gpo struct {
 
 // AD structure to manage call concurrency
 type AD struct {
+	IsOffline bool
+
 	hostname string
 	url      string
 
@@ -215,6 +217,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		// Exit status 2 is a network error (host of network unreadchable)
 		// In this case we assume an offline connection and try to load the GPOs from cache
 		// Otherwise we fail with an error.
+		ad.Lock()
+		ad.IsOffline = true
+		ad.Unlock()
 		if r, err = entry.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
 			return nil, fmt.Errorf(i18n.G("machine is offline and GPO rules cache is unavailable: %v"), err)
 		}
@@ -223,6 +228,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return r, nil
 	}
 
+	ad.Lock()
+	ad.IsOffline = false
+	ad.Unlock()
 	gpos := make(map[string]string)
 	var orderedGPOs []gpo
 	scanner := bufio.NewScanner(&stdout)
