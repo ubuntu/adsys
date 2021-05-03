@@ -17,17 +17,19 @@ import (
 
 // SetVerboseMode change ErrorFormat and logs between very, middly and non verbose
 func SetVerboseMode(level int) {
+	var reportCaller bool
 	switch level {
 	case 0:
 		logrus.SetLevel(consts.DefaultLogLevel)
 	case 1:
 		logrus.SetLevel(logrus.InfoLevel)
 	case 3:
-		logrus.SetReportCaller(true)
+		reportCaller = true
 		fallthrough
 	default:
 		logrus.SetLevel(logrus.DebugLevel)
 	}
+	logrus.SetReportCaller(reportCaller)
 }
 
 // Init sets verbosity level and add config env variables and file support based on name prefix.
