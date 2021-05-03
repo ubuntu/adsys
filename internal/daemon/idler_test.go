@@ -19,7 +19,8 @@ func TestServerStartListenTimeout(t *testing.T) {
 	dir := t.TempDir()
 	grpcRegister := &grpcServiceRegister{}
 
-	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(time.Duration(10*time.Millisecond)))
+	timeout := time.Duration(10 * time.Millisecond)
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(timeout))
 	require.NoError(t, err, "New should return the daemon handler")
 
 	errs := make(chan error)
@@ -41,6 +42,7 @@ func TestServerStartListenTimeout(t *testing.T) {
 		require.NoError(t, err, "No error from listen")
 	}
 	wg.Wait()
+	require.Equal(t, timeout, d.Timeout(), "Report expected timeout")
 }
 
 func TestServerDontTimeoutWithActiveRequest(t *testing.T) {
@@ -139,11 +141,15 @@ func TestServerChangeTimeout(t *testing.T) {
 
 	// initial timeout is 10 millisecond
 	start := time.Now()
-	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(time.Duration(10*time.Millisecond)))
+	currentTimeout := time.Duration(10 * time.Millisecond)
+	changedTimeout := time.Duration(50 * time.Millisecond)
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(currentTimeout))
 	require.NoError(t, err, "New should return the daemon handler")
+	require.Equal(t, currentTimeout, d.Timeout(), "Report expected timeout")
 
 	// change it to 50 Millisecond which should be the minimum time of wait
-	d.ChangeTimeout(50 * time.Millisecond)
+	d.ChangeTimeout(changedTimeout)
+	require.Equal(t, changedTimeout, d.Timeout(), "Report modified timeout")
 
 	errs := make(chan error)
 	wg := sync.WaitGroup{}
