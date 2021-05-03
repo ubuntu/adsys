@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -60,7 +61,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	dconfDir := m.dconfDir
 	if dconfDir == "" {
-		dconfDir = "/etc/dconf"
+		dconfDir = consts.DefaultDconfDir
 	}
 
 	m.dconfMu.RLock()

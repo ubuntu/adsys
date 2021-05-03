@@ -26,6 +26,8 @@ const (
 	DefaultSSSCacheDir = "/var/lib/sss/db"
 	// DefaultSSSConf is the default sssd.conf location
 	DefaultSSSConf = "/etc/sssd/sssd.conf"
+	// DefaultDconfDir is the default dconf directory
+	DefaultDconfDir = "/etc/dconf"
 
 	// DefaultClientTimeout is the default time in seconds  between 2 server activity before the client returns.
 	DefaultClientTimeout = 30
