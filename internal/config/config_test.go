@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/config"
@@ -71,6 +72,55 @@ func TestSetVerboseMode(t *testing.T) {
 			for _, msg := range dontWantMsgs {
 				assert.NotContains(t, out.String(), msg, "Should not be in logs")
 			}
+		})
+	}
+}
+
+func TestLoadConfig(t *testing.T) {
+	t.Parallel()
+
+	type configType struct {
+		Verbose int
+		Socket  string
+	}
+	origConf := configType{
+		Verbose: 42,
+		Socket:  "/some/socket/path",
+	}
+
+	tests := map[string]struct {
+		noConfig bool
+
+		want    configType
+		wantErr bool
+	}{
+		"Load configuration deserialize its": {want: origConf},
+		"Empty configuration is supported":   {noConfig: true},
+
+		// Error cases
+		/*"Error on undecodable data to": {},*/
+	}
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			// Setup config to read
+			vip := viper.New()
+			if !tc.noConfig {
+				vip.Set("Socket", origConf.Socket)
+				vip.Set("Verbose", origConf.Verbose)
+			}
+
+			var got configType
+			err := config.LoadConfig(&got, vip)
+			if tc.wantErr {
+				require.Error(t, err, "LoadConfig should have errored out")
+				return
+			}
+			require.NoError(t, err, "LoadConfig should not have errored out")
+
+			require.EqualValues(t, tc.want, got, "LoadConfig returns the expected configuration")
 		})
 	}
 }
