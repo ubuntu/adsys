@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
@@ -156,4 +157,25 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 	}
 
 	return out.String(), nil
+}
+
+// LastUpdateFor returns the last update time for object or current machine.
+func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachine bool) (t time.Time, err error) {
+	defer decorate.OnError(&err, i18n.G("failed to get policy last update time %q (machine: %q)"), objectName, isMachine)
+
+	log.Infof(ctx, "Get policies last update time %q (machine: %t)", objectName, isMachine)
+
+	if isMachine {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return time.Time{}, err
+		}
+		objectName = hostname
+	}
+
+	info, err := os.Stat(filepath.Join(m.gpoRulesCacheDir, objectName))
+	if err != nil {
+		return time.Time{}, fmt.Errorf(i18n.G("gpo was not applied for %q: %v"), objectName, err)
+	}
+	return info.ModTime(), nil
 }
