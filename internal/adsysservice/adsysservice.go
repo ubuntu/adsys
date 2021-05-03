@@ -33,7 +33,22 @@ type Service struct {
 
 	authorizer *authorizer.Authorizer
 
+	state state
+
 	quit quitter
+}
+
+type state struct {
+	connectedToDaemon *daemon.Daemon
+
+	cacheDir    string
+	runDir      string
+	dconfDir    string
+	sssCacheDir string
+	sssConf     string
+
+	adServer string
+	adDomain string
 }
 
 type options struct {
@@ -140,6 +155,14 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		adc:           adc,
 		policyManager: m,
 		authorizer:    args.authorizer,
+		state: state{
+			cacheDir:    args.cacheDir,
+			dconfDir:    args.dconfDir,
+			runDir:      args.runDir,
+			sssCacheDir: args.sssCacheDir,
+			adServer:    url,
+			adDomain:    domain,
+		},
 	}, nil
 }
 
@@ -193,5 +216,6 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 			logconnections.StreamServerInterceptor(),
 		)), authorizer.WithUnixPeerCreds())
 	adsys.RegisterServiceServer(srv, s)
+	s.state.connectedToDaemon = d
 	return srv
 }
