@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type ServiceClient interface {
 	Cat(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CatClient, error)
 	Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error)
+	Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_StatusClient, error)
 	Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error)
 	UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error)
 	DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (Service_DumpPoliciesClient, error)
@@ -98,8 +99,40 @@ func (x *serviceVersionClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
+func (c *serviceClient) Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_StatusClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[2], "/service/Status", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceStatusClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_StatusClient interface {
+	Recv() (*StringResponse, error)
+	grpc.ClientStream
+}
+
+type serviceStatusClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceStatusClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *serviceClient) Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[2], "/service/Stop", opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[3], "/service/Stop", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +164,7 @@ func (x *serviceStopClient) Recv() (*Empty, error) {
 }
 
 func (c *serviceClient) UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[3], "/service/UpdatePolicy", opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[4], "/service/UpdatePolicy", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +196,7 @@ func (x *serviceUpdatePolicyClient) Recv() (*Empty, error) {
 }
 
 func (c *serviceClient) DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (Service_DumpPoliciesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[4], "/service/DumpPolicies", opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[5], "/service/DumpPolicies", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +228,7 @@ func (x *serviceDumpPoliciesClient) Recv() (*StringResponse, error) {
 }
 
 func (c *serviceClient) DumpPoliciesDefinitions(ctx context.Context, in *DumpPolicyDefinitionsRequest, opts ...grpc.CallOption) (Service_DumpPoliciesDefinitionsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[5], "/service/DumpPoliciesDefinitions", opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[6], "/service/DumpPoliciesDefinitions", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -232,6 +265,7 @@ func (x *serviceDumpPoliciesDefinitionsClient) Recv() (*DumpPolicyDefinitionsRes
 type ServiceServer interface {
 	Cat(*Empty, Service_CatServer) error
 	Version(*Empty, Service_VersionServer) error
+	Status(*Empty, Service_StatusServer) error
 	Stop(*StopRequest, Service_StopServer) error
 	UpdatePolicy(*UpdatePolicyRequest, Service_UpdatePolicyServer) error
 	DumpPolicies(*DumpPoliciesRequest, Service_DumpPoliciesServer) error
@@ -248,6 +282,9 @@ func (UnimplementedServiceServer) Cat(*Empty, Service_CatServer) error {
 }
 func (UnimplementedServiceServer) Version(*Empty, Service_VersionServer) error {
 	return status.Errorf(codes.Unimplemented, "method Version not implemented")
+}
+func (UnimplementedServiceServer) Status(*Empty, Service_StatusServer) error {
+	return status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
 func (UnimplementedServiceServer) Stop(*StopRequest, Service_StopServer) error {
 	return status.Errorf(codes.Unimplemented, "method Stop not implemented")
@@ -313,6 +350,27 @@ type serviceVersionServer struct {
 }
 
 func (x *serviceVersionServer) Send(m *StringResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Service_Status_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).Status(m, &serviceStatusServer{stream})
+}
+
+type Service_StatusServer interface {
+	Send(*StringResponse) error
+	grpc.ServerStream
+}
+
+type serviceStatusServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceStatusServer) Send(m *StringResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -416,6 +474,11 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Version",
 			Handler:       _Service_Version_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Status",
+			Handler:       _Service_Status_Handler,
 			ServerStreams: true,
 		},
 		{

@@ -115,3 +115,11 @@ func (i *idler) sendOrTimeout(op operation) {
 	case <-time.After(1 * time.Second):
 	}
 }
+
+// Timeout returns current daemon idle timeout
+func (i *idler) Timeout() time.Duration {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+
+	return i.timeout
+}

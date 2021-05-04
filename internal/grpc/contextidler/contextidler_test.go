@@ -23,7 +23,7 @@ func TestActiveConnection(t *testing.T) {
 		s = &clientStream{ctx: ctx}
 		return s, nil
 	}
-	c, err := contextidler.StreamClientInterceptor(10*time.Millisecond)(context.Background(), nil, nil, "method", streamCreation)
+	c, err := contextidler.StreamClientInterceptor(100*time.Millisecond)(context.Background(), nil, nil, "method", streamCreation)
 	require.NoError(t, err, "StreamClient Interceptor should return no error")
 
 	// Ping once and get expected value on child stream called
@@ -32,7 +32,7 @@ func TestActiveConnection(t *testing.T) {
 
 	// Ping multiple times, each ping is less than timeout, but total time is more than the timeout
 	for i := 0; i < 5; i++ {
-		time.Sleep(3 * time.Millisecond)
+		time.Sleep(30 * time.Millisecond)
 		require.NoError(t, c.RecvMsg("something"), "RecvMsg with no error")
 	}
 }

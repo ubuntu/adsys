@@ -6,12 +6,15 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"regexp"
 	"testing"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
 )
@@ -261,6 +264,116 @@ func TestServiceCat(t *testing.T) {
 				assert.Contains(t, outCat2(), "Request /service/Cat done", "the other cat is closed")
 				assert.Contains(t, outCat2(), "New request /service/Version", "debug logs for clients are forwarded")
 			}
+		})
+	}
+}
+
+func TestServiceStatus(t *testing.T) {
+
+	admock, err := filepath.Abs("../../../internal/testutils/admock")
+	require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
+	os.Setenv("PYTHONPATH", admock)
+
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get current user")
+
+	tests := map[string]struct {
+		polkitAnswer        string
+		daemonNotStarted    bool
+		noCacheUsersMachine bool
+		krb5ccNoCache       bool
+		isOffLine           bool
+
+		wantErr bool
+	}{
+		"Status with users and machines":          {polkitAnswer: "yes"},
+		"Status offline cache":                    {isOffLine: true, polkitAnswer: "yes"},
+		"Status no user connected and no machine": {noCacheUsersMachine: true, polkitAnswer: "yes"},
+		"Status is always authorized":             {polkitAnswer: "no"},
+		"Status on user connected with no cache":  {krb5ccNoCache: true, polkitAnswer: "yes"},
+
+		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
+	}
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			polkitAnswer(t, tc.polkitAnswer)
+
+			adsysDir := t.TempDir()
+			gpoRulesDir := filepath.Join(adsysDir, "cache", "gpo_rules")
+			conf := createConf(t, adsysDir)
+			if tc.isOffLine {
+				content, err := os.ReadFile(conf)
+				require.NoError(t, err, "Setup: can’t read configuration file")
+				content = bytes.Replace(content, []byte("ldap://adc.example.com"), []byte("ldap://NT_STATUS_HOST_UNREACHABLE"), 1)
+				err = os.WriteFile(conf, content, 0644)
+				require.NoError(t, err, "Setup: can’t rewrite configuration file")
+			}
+
+			// copy machine gpo rules for first update
+			if !tc.noCacheUsersMachine || tc.isOffLine {
+				err := os.MkdirAll(gpoRulesDir, 0700)
+				require.NoError(t, err, "Setup: couldn't create gpo_rules directory: %v", err)
+				err = shutil.CopyFile("testdata/PolicyApplied/gpo_rules/machine.yaml", filepath.Join(gpoRulesDir, hostname), false)
+				require.NoError(t, err, "Setup: failed to copy machine gporules cache")
+			}
+
+			if !tc.daemonNotStarted {
+				defer runDaemon(t, conf)()
+			}
+
+			// Update will try to update the machine and will turn the daemon offline.
+			if tc.isOffLine {
+				_, err := runClient(t, conf, "policy", "update", "--all")
+				require.NoError(t, err, "Setup: can't turn the daemon offline with first update")
+			}
+
+			// Create users krb5cc and GPO caches
+			if !tc.noCacheUsersMachine {
+				krb5UserDir := filepath.Join(adsysDir, "run", "krb5cc")
+				err := os.MkdirAll(krb5UserDir, 0755)
+				require.NoError(t, err, "Setup: could not create gpo cache dir: %v", err)
+				for _, user := range []string{"user1@example.com", "user2@example.com"} {
+					f, err := os.Create(filepath.Join(krb5UserDir, user))
+					require.NoError(t, err, "Setup: could not create krb5 cache dir for %s: %v", user, err)
+					f.Close()
+					f, err = os.Create(filepath.Join(gpoRulesDir, user))
+					require.NoError(t, err, "Setup: could not create gpo cache dir for %s: %v", user, err)
+					f.Close()
+				}
+				// TODO: change modification time? (golden)
+			}
+			if tc.krb5ccNoCache {
+				err := os.RemoveAll(gpoRulesDir)
+				require.NoError(t, err, "Setup: can’t delete gpo rules cache directory")
+			}
+
+			got, err := runClient(t, conf, "service", "status")
+			if tc.wantErr {
+				require.Error(t, err, "client should exit with an error")
+				return
+			}
+			require.NoError(t, err, "client should exit with no error")
+
+			// Make paths suitable for golden recording and comparison
+			re := regexp.MustCompile(`_.*/`)
+			got = re.ReplaceAllString(got, "_XXXXXX/")
+
+			re = regexp.MustCompile(`(updated on)([^\n]*)`)
+			got = re.ReplaceAllString(got, "$1 DDD MON D HH:MM")
+
+			// Compare golden files
+			goldPath := filepath.Join("testdata/PolicyStatus/golden", name)
+			// Update golden file
+			if update {
+				t.Logf("updating golden file %s", goldPath)
+				err = os.WriteFile(goldPath, []byte(got), 0644)
+				require.NoError(t, err, "Cannot write golden file")
+			}
+			want, err := os.ReadFile(goldPath)
+			require.NoError(t, err, "Cannot load policy golden file")
+
+			require.Equal(t, string(want), got, "Status returned expected output")
 		})
 	}
 }

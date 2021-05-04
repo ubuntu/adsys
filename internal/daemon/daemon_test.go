@@ -77,8 +77,12 @@ func TestChangeSocket(t *testing.T) {
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
 	require.Equal(t, d, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
 
-	d.UseSocket(filepath.Join(dir, "test2.sock"))
+	newSocket := filepath.Join(dir, "test2.sock")
+	d.UseSocket(newSocket)
 	time.Sleep(time.Millisecond * 10)
+
+	gotSocket := d.GetSocketAddr()
+	require.Equal(t, newSocket, gotSocket, "Socket was changed to expected one")
 
 	d.Quit(false)
 	wg.Wait()
@@ -112,8 +116,10 @@ func TestSocketActivation(t *testing.T) {
 			grpcRegister := &grpcServiceRegister{}
 
 			var listeners []net.Listener
+			var sock string
 			for _, socket := range tc.sockets {
-				l, err := net.Listen("unix", filepath.Join(dir, socket))
+				sock = filepath.Join(dir, socket)
+				l, err := net.Listen("unix", sock)
 				require.NoErrorf(t, err, "setup failed: couldn't create unix socket: %v", err)
 				defer l.Close()
 				listeners = append(listeners, l)
@@ -146,6 +152,7 @@ func TestSocketActivation(t *testing.T) {
 			require.NoError(t, err, "Listen should return no error")
 			require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called during creation")
 
+			require.Equal(t, sock, d.GetSocketAddr(), "Socket is the socket activated value")
 		})
 	}
 }
@@ -156,7 +163,8 @@ func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
 	dir := t.TempDir()
 	grpcRegister := &grpcServiceRegister{}
 
-	l, err := net.Listen("unix", filepath.Join(dir, "socket"))
+	sock := filepath.Join(dir, "socket")
+	l, err := net.Listen("unix", sock)
 	require.NoErrorf(t, err, "setup failed: couldn't create unix socket: %v", err)
 	defer l.Close()
 
@@ -176,10 +184,12 @@ func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
 
 	// make sure Serve() is called. Even std golang grpc has this timeout in tests
 	time.Sleep(time.Millisecond * 10)
+	require.Equal(t, sock, d.GetSocketAddr(), "Socket is the socket activated value")
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
 	d.UseSocket("/tmp/this/is/also/ignored")
 	time.Sleep(time.Millisecond * 10)
+	require.Equal(t, sock, d.GetSocketAddr(), "Socket has not changed")
 
 	d.Quit(false)
 

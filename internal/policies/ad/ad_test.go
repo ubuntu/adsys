@@ -491,6 +491,7 @@ func TestGetPolicies(t *testing.T) {
 				require.NoError(t, err, "GetPolicies should return no error")
 			}
 			require.Equal(t, tc.want, entries, "GetPolicies returns expected gpo entries in correct order")
+			assert.False(t, adc.IsOffline, "We report that we are online")
 		})
 	}
 }
@@ -559,6 +560,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 			require.NoError(t, err, "GetPolicies should return no error")
 			require.Equal(t, tc.want, entries, "GetPolicies returns expected gpo entries in correct order")
+			assert.True(t, adc.IsOffline, "We report that we are offline")
 		})
 	}
 }

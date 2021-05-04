@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
@@ -20,6 +20,6 @@ func (a *App) installVersion() {
 
 // getVersion returns the current service version.
 func getVersion() (err error) {
-	fmt.Printf(i18n.G("%s\t%s")+"\n", CmdName, config.Version)
+	fmt.Printf(i18n.G("%s\t%s")+"\n", CmdName, consts.Version)
 	return nil
 }

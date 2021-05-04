@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
 
@@ -213,6 +215,64 @@ func TestApplyPolicy(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, fakeRootDir, filepath.Join("testdata", "golden", name), update)
 		})
 	}
+}
+
+func TestLastUpdateFor(t *testing.T) {
+	t.Parallel()
+
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get hostname")
+
+	tests := map[string]struct {
+		target    string
+		isMachine bool
+
+		wantErr bool
+	}{
+		"Returns user's last update time":       {target: "user"},
+		"Returns machine's last update time":    {target: hostname, isMachine: true},
+		"Target is ignored for machine request": {target: "does_not_exit", isMachine: true},
+
+		// Error cases
+		"Target does not exist": {target: "does_not_exit", wantErr: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			cacheDir := t.TempDir()
+			m, err := policies.New(policies.WithCacheDir(cacheDir))
+			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
+
+			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0755)
+			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
+
+			start := time.Now()
+			// Starts and ends are monotic, while os.Stat is wall clock, we have to wait for measuring difference…
+			time.Sleep(10 * time.Millisecond)
+			f, err := os.Create(filepath.Join(cacheDir, entry.GPORulesCacheBaseName, "user"))
+			require.NoError(t, err, "Setup: couldn’t copy user cache")
+			f.Close()
+			f, err = os.Create(filepath.Join(cacheDir, entry.GPORulesCacheBaseName, hostname))
+			require.NoError(t, err, "Setup: couldn’t copy user cache")
+			f.Close()
+
+			got, err := m.LastUpdateFor(context.Background(), tc.target, tc.isMachine)
+			if tc.wantErr {
+				require.Error(t, err, "LastUpdateFor should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "LastUpdateFor should return no error but got one")
+			end := time.Now()
+
+			assert.True(t, got.After(start), "expected got after start")
+			assert.True(t, got.Before(end), "expected got before end")
+		})
+	}
+
 }
 
 func TestMain(m *testing.M) {

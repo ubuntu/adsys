@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/authorizer"
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/daemon"
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
@@ -33,7 +33,22 @@ type Service struct {
 
 	authorizer *authorizer.Authorizer
 
+	state state
+
 	quit quitter
+}
+
+type state struct {
+	connectedToDaemon *daemon.Daemon
+
+	cacheDir    string
+	runDir      string
+	dconfDir    string
+	sssCacheDir string
+	sssConf     string
+
+	adServer string
+	adDomain string
 }
 
 type options struct {
@@ -86,10 +101,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 
 	// defaults
 	args := options{
-		cacheDir:    config.DefaultCacheDir,
-		runDir:      config.DefaultRunDir,
-		sssdConf:    "/etc/sssd/sssd.conf",
-		sssCacheDir: "/var/lib/sss/db",
+		sssdConf: consts.DefaultSSSConf,
 	}
 	// applied options
 	for _, o := range opts {
@@ -105,7 +117,17 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if !strings.HasPrefix(url, "ldap://") {
 		url = fmt.Sprintf("ldap://%s", url)
 	}
-	adc, err := ad.New(ctx, url, domain, ad.WithCacheDir(args.cacheDir), ad.WithRunDir(args.runDir), ad.WithSSSCacheDir(args.sssCacheDir))
+	var adOptions []ad.Option
+	if args.cacheDir != "" {
+		adOptions = append(adOptions, ad.WithCacheDir(args.cacheDir))
+	}
+	if args.runDir != "" {
+		adOptions = append(adOptions, ad.WithRunDir(args.runDir))
+	}
+	if args.sssCacheDir != "" {
+		adOptions = append(adOptions, ad.WithSSSCacheDir(args.sssCacheDir))
+	}
+	adc, err := ad.New(ctx, url, domain, adOptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +139,14 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		}
 	}
 
-	m, err := policies.New(policies.WithCacheDir(args.cacheDir), policies.WithDconfDir(args.dconfDir))
+	var policyOptions []policies.Option
+	if args.cacheDir != "" {
+		policyOptions = append(policyOptions, policies.WithCacheDir(args.cacheDir))
+	}
+	if args.dconfDir != "" {
+		policyOptions = append(policyOptions, policies.WithDconfDir(args.dconfDir))
+	}
+	m, err := policies.New(policyOptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -126,6 +155,14 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		adc:           adc,
 		policyManager: m,
 		authorizer:    args.authorizer,
+		state: state{
+			cacheDir:    args.cacheDir,
+			dconfDir:    args.dconfDir,
+			runDir:      args.runDir,
+			sssCacheDir: args.sssCacheDir,
+			adServer:    url,
+			adDomain:    domain,
+		},
 	}, nil
 }
 
@@ -179,5 +216,6 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 			logconnections.StreamServerInterceptor(),
 		)), authorizer.WithUnixPeerCreds())
 	adsys.RegisterServiceServer(srv, s)
+	s.state.connectedToDaemon = d
 	return srv
 }

@@ -30,6 +30,14 @@ func (a *App) installService() {
 	}
 	mainCmd.AddCommand(cmd)
 
+	cmd = &cobra.Command{
+		Use:   "status",
+		Short: i18n.G("Print service status"),
+		Args:  cobra.NoArgs,
+		RunE:  func(cmd *cobra.Command, args []string) error { return a.getStatus() },
+	}
+	mainCmd.AddCommand(cmd)
+
 	var stopForce *bool
 	cmd = &cobra.Command{
 		Use:   "stop",
@@ -65,6 +73,28 @@ func (a *App) serviceCat() error {
 		// TODO: write a ping command writing on stdout PONG and sending that to the client. We can cover it with the cat test
 		fmt.Print(msg.GetMsg())
 	}
+
+	return nil
+}
+
+// getStatus returns the current server status.
+func (a App) getStatus() (err error) {
+	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	stream, err := client.Status(a.ctx, &adsys.Empty{})
+	if err != nil {
+		return err
+	}
+
+	status, err := singleMsg(stream)
+	if err != nil {
+		return err
+	}
+	fmt.Println(status)
 
 	return nil
 }

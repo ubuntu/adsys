@@ -1,13 +1,15 @@
-// Package config defines the constants used by the project
-package config
+// Package consts defines the constants used by the project
+package consts
 
 import log "github.com/sirupsen/logrus"
 
 const (
-	defaultLevel = log.WarnLevel
-)
+	// TEXTDOMAIN is the gettext domain for l10n
+	TEXTDOMAIN = "adsys"
 
-var (
+	// DefaultLogLevel is the default logging level selected without any option
+	DefaultLogLevel = log.WarnLevel
+
 	// Version is the version of the executable
 	Version = "dev"
 
@@ -19,6 +21,13 @@ var (
 
 	// DefaultRunDir is the default path for adsys run directory
 	DefaultRunDir = "/run/adsys"
+
+	// DefaultSSSCacheDir is the default sssd cache dir
+	DefaultSSSCacheDir = "/var/lib/sss/db"
+	// DefaultSSSConf is the default sssd.conf location
+	DefaultSSSConf = "/etc/sssd/sssd.conf"
+	// DefaultDconfDir is the default dconf directory
+	DefaultDconfDir = "/etc/dconf"
 
 	// DefaultClientTimeout is the default time in seconds  between 2 server activity before the client returns.
 	DefaultClientTimeout = 30

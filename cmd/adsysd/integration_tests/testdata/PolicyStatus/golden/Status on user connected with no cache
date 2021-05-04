@@ -1,0 +1,19 @@
+Machine, no gpo applied found
+Connected users:
+  user1@example.com, no gpo applied found
+  user2@example.com, no gpo applied found
+
+Active Directory:
+  Server: ldap://adc.example.com
+  Domain: example.com
+
+SSS:
+  Configuration: /etc/sssd/sssd.conf
+  Cache directory: /tmp/TestServiceStatus_XXXXXX/sss_cache
+
+Daemon:
+  Timeout after 30s
+  Listening on: /tmp/TestServiceStatus_XXXXXX/socket
+  Cache path: /tmp/TestServiceStatus_XXXXXX/cache
+  Run path: /tmp/TestServiceStatus_XXXXXX/run
+  Dconf path: /tmp/TestServiceStatus_XXXXXX/dconf

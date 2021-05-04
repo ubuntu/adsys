@@ -14,7 +14,7 @@ import (
 	// embed gpolist python binary
 	_ "embed"
 
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -46,6 +46,8 @@ type gpo struct {
 
 // AD structure to manage call concurrency
 type AD struct {
+	IsOffline bool
+
 	hostname string
 	url      string
 
@@ -71,7 +73,7 @@ type options struct {
 	gpoListCmd      []string
 }
 
-type option func(*options) error
+type Option func(*options) error
 
 // WithCacheDir specifies a personalized daemon cache directory
 func WithCacheDir(cacheDir string) func(o *options) error {
@@ -101,7 +103,7 @@ func WithSSSCacheDir(cacheDir string) func(o *options) error {
 var adsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
-func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err error) {
+func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
 	versionID, err := adcommon.GetVersionID("/")
@@ -111,9 +113,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (ad *AD, err e
 
 	// defaults
 	args := options{
-		runDir:      config.DefaultRunDir,
-		cacheDir:    config.DefaultCacheDir,
-		sssCacheDir: "/var/lib/sss/db",
+		runDir:      consts.DefaultRunDir,
+		cacheDir:    consts.DefaultCacheDir,
+		sssCacheDir: consts.DefaultSSSCacheDir,
 		gpoListCmd:  []string{"python3", "-c", adsysGpoListCode},
 		versionID:   versionID,
 	}
@@ -215,6 +217,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		// Exit status 2 is a network error (host of network unreadchable)
 		// In this case we assume an offline connection and try to load the GPOs from cache
 		// Otherwise we fail with an error.
+		ad.Lock()
+		ad.IsOffline = true
+		ad.Unlock()
 		if r, err = entry.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
 			return nil, fmt.Errorf(i18n.G("machine is offline and GPO rules cache is unavailable: %v"), err)
 		}
@@ -223,6 +228,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return r, nil
 	}
 
+	ad.Lock()
+	ad.IsOffline = false
+	ad.Unlock()
 	gpos := make(map[string]string)
 	var orderedGPOs []gpo
 	scanner := bufio.NewScanner(&stdout)
@@ -307,7 +315,7 @@ func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) 
 func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) ([]entry.GPO, error) {
 	var r []entry.GPO
 
-	keyFilterPrefix := fmt.Sprintf("%s/%s/", adcommon.KeyPrefix, config.DistroID)
+	keyFilterPrefix := fmt.Sprintf("%s/%s/", adcommon.KeyPrefix, consts.DistroID)
 
 	for _, g := range gpos {
 		name, url := g.name, g.url

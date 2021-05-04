@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice"
-	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
@@ -22,7 +22,7 @@ func (a *App) installVersion() {
 
 // getVersion returns the current server and client versions.
 func (a App) getVersion() (err error) {
-	fmt.Printf(i18n.G("%s\t%s")+"\n", CmdName, config.Version)
+	fmt.Printf(i18n.G("%s\t%s")+"\n", CmdName, consts.Version)
 
 	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
 	if err != nil {

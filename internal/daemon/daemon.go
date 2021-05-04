@@ -25,7 +25,9 @@ type Daemon struct {
 	idler
 	shutdown sync.Once
 
-	lis chan net.Listener
+	lis        chan net.Listener
+	socketAddr string
+	socketMu   sync.RWMutex
 
 	systemdSdNotifier   func(unsetEnvironment bool, state string) (bool, error)
 	useSocketActivation bool
@@ -148,6 +150,9 @@ func (d *Daemon) Listen() (err error) {
 	}
 
 	lis := <-d.lis
+	d.socketMu.Lock()
+	d.socketAddr = lis.Addr().String()
+	d.socketMu.Unlock()
 
 	// handle socket configuration reloading
 	for {
@@ -164,6 +169,9 @@ func (d *Daemon) Listen() (err error) {
 			log.RemoveAllStreams()
 			break
 		}
+		d.socketMu.Lock()
+		d.socketAddr = lis.Addr().String()
+		d.socketMu.Unlock()
 		d.grpcserver = d.registerGRPCServer(d)
 	}
 	log.Debug(context.Background(), i18n.G("Quitting"))
@@ -196,4 +204,12 @@ func (d *Daemon) stop(force bool) {
 	log.Info(context.Background(), i18n.G("Wait for active requests to close."))
 	d.grpcserver.GracefulStop()
 	log.Debug(context.Background(), i18n.G("All connections have now ended."))
+}
+
+// GetSocketAddr returns currenly used socket address by daemon.
+func (d *Daemon) GetSocketAddr() string {
+	d.socketMu.RLock()
+	defer d.socketMu.RUnlock()
+
+	return d.socketAddr
 }
