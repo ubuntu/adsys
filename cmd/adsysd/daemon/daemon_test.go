@@ -260,7 +260,7 @@ func TestConfigChange(t *testing.T) {
 	// Write new config
 	writeConfig(t, dir, "adsys.socket", 2, 5)
 
-	time.Sleep(time.Second) // let the config change
+	time.Sleep(2 * time.Second) // let the config change
 
 	logs := out()
 	require.Contains(t, logs, "changed. Reloading", "Config file has changed")
