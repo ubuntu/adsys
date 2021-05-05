@@ -97,6 +97,8 @@ func New() *App {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			config.SetVerboseMode(a.config.Verbose)
+
 			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain,
 				adsysservice.WithCacheDir(a.config.CacheDir),
 				adsysservice.WithRunDir(a.config.RunDir),
