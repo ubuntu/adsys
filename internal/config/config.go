@@ -29,7 +29,7 @@ func SetVerboseMode(level int) {
 	default:
 		logrus.SetLevel(logrus.DebugLevel)
 	}
-	logrus.SetReportCaller(reportCaller)
+	log.SetReportCaller(reportCaller)
 }
 
 // Init sets verbosity level and add config env variables and file support based on name prefix.
