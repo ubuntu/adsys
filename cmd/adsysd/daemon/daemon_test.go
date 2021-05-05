@@ -235,7 +235,6 @@ func TestConfigLoad(t *testing.T) {
 	defer wait()
 	defer a.Quit()
 
-	a.IsReady(5 * time.Second) // Wait until the socket is really createad
 	_, err := os.Stat(filepath.Join(dir, "adsys.socket"))
 	require.NoError(t, err, "Socket should exist")
 	require.Equal(t, 1, a.Verbosity(), "Verbosity is set from config")
@@ -250,7 +249,6 @@ func TestConfigChange(t *testing.T) {
 	defer wait()
 	defer a.Quit()
 
-	a.IsReady(5 * time.Second) // Wait until the socket is really created
 	_, err := os.Stat(filepath.Join(dir, "adsys.socket"))
 	require.NoError(t, err, "Socket should exist")
 	require.Equal(t, 1, a.Verbosity(), "Verbosity is set from config")
@@ -260,7 +258,7 @@ func TestConfigChange(t *testing.T) {
 	// Write new config
 	writeConfig(t, dir, "adsys.socket", 2, 5)
 
-	time.Sleep(2 * time.Second) // let the config change
+	time.Sleep(100 * time.Millisecond) // let the config change
 
 	logs := out()
 	require.Contains(t, logs, "changed. Reloading", "Config file has changed")
@@ -373,11 +371,9 @@ func captureLogs(t *testing.T) (out func() string) {
 		t.Fatal("Setup error: creating pipe:", err)
 	}
 	localLogger.SetOutput(w)
-	t.Cleanup(func() {
-		localLogger.SetOutput(orig)
-	})
 
 	return func() string {
+		localLogger.SetOutput(orig)
 		w.Close()
 		var buf bytes.Buffer
 		_, errCopy := io.Copy(&buf, r)
