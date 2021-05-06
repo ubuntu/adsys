@@ -7,14 +7,12 @@ import (
 	"path/filepath"
 	"sync"
 	"testing"
-	"time"
 )
 
 var (
 	sdbus sync.Once
 
-	sdbusMU             sync.Mutex
-	nbRunningTestsSdbus uint
+	dbusStop sync.WaitGroup
 )
 
 // StartLocalSystemBus allows to start and set environment variable to a local bus, preventing polluting system ones
@@ -22,9 +20,7 @@ var (
 func StartLocalSystemBus(t *testing.T) {
 	t.Helper()
 
-	sdbusMU.Lock()
-	defer sdbusMU.Unlock()
-	nbRunningTestsSdbus++
+	dbusStop.Add(1)
 
 	sdbus.Do(func() {
 		dir := t.TempDir()
@@ -62,35 +58,21 @@ func StartLocalSystemBus(t *testing.T) {
 			t.Fatalf("couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
 		}
 
-		go func() {
-			for {
-				time.Sleep(time.Second)
-				sdbusMU.Lock()
+		t.Cleanup(func() {
+			// Wait for all tests that started to be done to cleanup properly
+			dbusStop.Wait()
+			stopDbus()
+			cmd.Wait()
 
-				// Wait for all tests that started to be done to cleanup properly
-				if nbRunningTestsSdbus != 0 {
-					sdbusMU.Unlock()
-					continue
-				}
-
-				stopDbus()
-				cmd.Wait()
-
-				if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", savedDbusSystemAddress); err != nil {
-					t.Errorf("couldn't restore DBUS_SYSTEM_BUS_ADDRESS: %v", err)
-				}
-
-				// Restore dbus system launcher
-				sdbus = sync.Once{}
-				sdbusMU.Unlock()
-				break
+			if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", savedDbusSystemAddress); err != nil {
+				t.Errorf("couldn't restore DBUS_SYSTEM_BUS_ADDRESS: %v", err)
 			}
-		}()
+
+			// Restore dbus system launcher
+			sdbus = sync.Once{}
+			dbusStop = sync.WaitGroup{}
+		})
 	})
 
-	t.Cleanup(func() {
-		sdbusMU.Lock()
-		defer sdbusMU.Unlock()
-		nbRunningTestsSdbus--
-	})
+	t.Cleanup(dbusStop.Done)
 }
