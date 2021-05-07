@@ -111,7 +111,9 @@ func New() *App {
 			}
 
 			timeout := time.Duration(a.config.ServiceTimeout) * time.Second
-			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket, daemon.WithTimeout(timeout))
+			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket,
+				daemon.WithTimeout(timeout),
+				daemon.WithServerQuit(adsys.Quit))
 			if err != nil {
 				close(a.ready)
 				return err
