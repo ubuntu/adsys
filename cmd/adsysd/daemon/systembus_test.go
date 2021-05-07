@@ -16,6 +16,7 @@ var (
 	nbRunningTestsSdbus    uint
 	stopDbus               context.CancelFunc
 	dbusCmd                *exec.Cmd
+	config                 string
 	savedDbusSystemAddress string
 )
 
@@ -32,7 +33,7 @@ func startLocalSystemBus() func() {
 		}
 
 		savedDbusSystemAddress = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS")
-		config := filepath.Join(dir, "dbus.config")
+		config = filepath.Join(dir, "dbus.config")
 		os.WriteFile(config, []byte(`<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
@@ -82,6 +83,10 @@ func startLocalSystemBus() func() {
 
 		stopDbus()
 		dbusCmd.Wait()
+
+		if err := os.RemoveAll(filepath.Dir(config)); err != nil {
+			log.Fatalf("couldn't remove dbus configuration directory: %v", err)
+		}
 
 		if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", savedDbusSystemAddress); err != nil {
 			log.Fatalf("couldn't restore DBUS_SYSTEM_BUS_ADDRESS: %v", err)
