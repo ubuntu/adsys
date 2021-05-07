@@ -35,12 +35,10 @@ type Service struct {
 
 	state state
 
-	quit quitter
+	daemon *daemon.Daemon
 }
 
 type state struct {
-	connectedToDaemon *daemon.Daemon
-
 	cacheDir    string
 	runDir      string
 	dconfDir    string
@@ -200,15 +198,10 @@ func loadServerInfo(sssdConf, url, domain string) (rurl string, rdomain string, 
 	return url, domain, nil
 }
 
-type quitter interface {
-	Quit(bool)
-}
-
 // RegisterGRPCServer registers our service with the new interceptor chains.
 // It will notify the daemon of any new connection
 func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 	s.logger = logrus.StandardLogger()
-	s.quit = d
 	srv := grpc.NewServer(grpc.StreamInterceptor(
 		interceptorschain.StreamServer(
 			log.StreamServerInterceptor(s.logger),
@@ -216,6 +209,6 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 			logconnections.StreamServerInterceptor(),
 		)), authorizer.WithUnixPeerCreds())
 	adsys.RegisterServiceServer(srv, s)
-	s.state.connectedToDaemon = d
+	s.daemon = d
 	return srv
 }
