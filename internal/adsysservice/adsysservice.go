@@ -31,7 +31,7 @@ type Service struct {
 	adc           *ad.AD
 	policyManager *policies.Manager
 
-	authorizer *authorizer.Authorizer
+	authorizer authorizerer
 
 	state state
 
@@ -55,9 +55,14 @@ type options struct {
 	dconfDir    string
 	sssCacheDir string
 	sssdConf    string
-	authorizer  *authorizer.Authorizer
+	authorizer  authorizerer
 }
 type option func(*options) error
+
+type authorizerer interface {
+	IsAllowedFromContext(context.Context, authorizer.Action) error
+	Done() error
+}
 
 // WithCacheDir specifies a personalized daemon cache directory
 func WithCacheDir(p string) func(o *options) error {
