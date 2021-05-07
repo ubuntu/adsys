@@ -21,6 +21,7 @@ import (
 type Daemon struct {
 	grpcserver         *grpc.Server
 	registerGRPCServer GRPCServerRegisterer
+	serverQuit         func(context.Context)
 
 	idler
 	shutdown sync.Once
@@ -35,6 +36,7 @@ type Daemon struct {
 
 type options struct {
 	idlingTimeout time.Duration
+	serverQuit    func(context.Context)
 
 	// private member that we export for tests.
 	systemdActivationListener func() ([]net.Listener, error)
@@ -54,6 +56,14 @@ func WithTimeout(timeout time.Duration) func(o *options) error {
 	}
 }
 
+// WithServerQuit adds a server quit function to tear down any connexion from the linked service.
+func WithServerQuit(f func(context.Context)) func(o *options) error {
+	return func(o *options) error {
+		o.serverQuit = f
+		return nil
+	}
+}
+
 // New returns an new, initialized daemon server, which handles systemd activation.
 // If systemd activation is used, it will override any socket passed here.
 func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option) (d *Daemon, err error) {
@@ -61,6 +71,7 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 
 	// defaults
 	args := options{
+		serverQuit:                func(context.Context) {},
 		systemdActivationListener: activation.Listeners,
 		systemdSdNotifier:         daemon.SdNotify,
 	}
@@ -73,6 +84,7 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 
 	d = &Daemon{
 		registerGRPCServer: registerGRPCServer,
+		serverQuit:         args.serverQuit,
 
 		idler: newIdler(args.idlingTimeout),
 
@@ -175,6 +187,7 @@ func (d *Daemon) Listen() (err error) {
 		d.grpcserver = d.registerGRPCServer(d)
 	}
 	log.Debug(context.Background(), i18n.G("Quitting"))
+	d.serverQuit(context.Background())
 
 	return nil
 }

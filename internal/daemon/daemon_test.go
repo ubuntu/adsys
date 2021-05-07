@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/daemon"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
@@ -20,10 +21,16 @@ func TestStartStop(t *testing.T) {
 
 	dir := t.TempDir()
 
+	var serverQuitCalled int
+	serverQuit := func(context.Context) {
+		serverQuitCalled++
+	}
+
 	// Count the number of grpc call
 	grpcRegister := &grpcServiceRegister{}
 
-	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"))
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"),
+		daemon.WithServerQuit(serverQuit))
 	require.NoError(t, err, "New should return the daemon handler")
 
 	go func() {
@@ -37,6 +44,8 @@ func TestStartStop(t *testing.T) {
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
 	require.Equal(t, d, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
+
+	require.Equal(t, 1, serverQuitCalled, "Server service hooked up Quit has been called once")
 }
 
 func TestStopBeforeServe(t *testing.T) {
