@@ -80,6 +80,7 @@ func TestIsAllowedFromContext(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create authorizer: %v", err)
 			}
+			defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 			errAllowed := a.IsAllowedFromContext(ctx, tc.action)
 
@@ -96,6 +97,7 @@ func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create authorizer: %v", err)
 	}
+	defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 	errAllowed := a.IsAllowedFromContext(context.Background(), authorizer.ActionAlwaysAllowed)
 	assert.Equal(t, false, errAllowed == nil, "IsAllowedFromContext must deny without peer creds info")
@@ -109,6 +111,7 @@ func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create authorizer: %v", err)
 	}
+	defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 	p := peer.Peer{
 		AuthInfo: invalidPeerCredsInfo{},
@@ -138,6 +141,7 @@ func TestIsAllowedFromContextWithoutUserKey(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create authorizer: %v", err)
 	}
+	defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 	errAllowed := a.IsAllowedFromContext(ctx, myUserOtherAction)
 	assert.Equal(t, false, errAllowed == nil, "IsAllowedFromContext must deny without peer creds info")
