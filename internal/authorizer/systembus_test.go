@@ -12,7 +12,8 @@ import (
 var (
 	sdbus sync.Once
 
-	dbusStop sync.WaitGroup
+	handleDaemon sync.Mutex
+	dbusStop     sync.WaitGroup
 )
 
 // StartLocalSystemBus allows to start and set environment variable to a local bus, preventing polluting system ones
@@ -20,6 +21,8 @@ var (
 func StartLocalSystemBus(t *testing.T) {
 	t.Helper()
 
+	handleDaemon.Lock()
+	defer handleDaemon.Unlock()
 	dbusStop.Add(1)
 
 	sdbus.Do(func() {
@@ -60,6 +63,8 @@ func StartLocalSystemBus(t *testing.T) {
 
 		t.Cleanup(func() {
 			// Wait for all tests that started to be done to cleanup properly
+			handleDaemon.Lock()
+			defer handleDaemon.Unlock()
 			dbusStop.Wait()
 			stopDbus()
 			cmd.Wait()
