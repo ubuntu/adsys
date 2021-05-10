@@ -107,6 +107,15 @@ func TestAdsysGPOList(t *testing.T) {
 			krb5ccNameState: "invalidenvformat",
 		},
 
+		// Special object name cases
+		"No @ in user name returns the same thing": {
+			accountName: "UserAtRoot",
+		},
+		"Computers are truncated at 15 characters": {
+			accountName: "hostnameWithLongName",
+			objectClass: "computer",
+		},
+
 		// Error cases
 		"Fail on no network": {
 			url:            "ldap://NT_STATUS_NETWORK_UNREACHABLE",
