@@ -886,22 +886,19 @@ func TestMockGPOList(t *testing.T) {
 		os.Exit(2)
 	}
 
-	// domain shouldn’t be used on object name, as we will return nothing
-	if strings.Contains(args[len(args)-1], "@") {
-		return
-	}
+	// as in gpolist, we split on the @ if any
+	objectName := args[len(args)-1]
+	objectName = strings.Split(objectName, "@")[0]
 
 	var gpos []string
 
 	// Parameterized on user gpos
 	if strings.HasPrefix(args[0], "DEPENDS:") {
-		// user is the last argument of the list command
-		user := args[len(args)-1]
 		v := strings.TrimPrefix(args[0], "DEPENDS:")
 		gpoItems := strings.Split(v, ":")
 		for _, gpoItem := range gpoItems {
 			i := strings.SplitN(gpoItem, "@", 2)
-			if i[0] == user {
+			if i[0] == objectName {
 				gpos = append(gpos, i[1])
 			}
 		}

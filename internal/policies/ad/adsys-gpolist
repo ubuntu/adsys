@@ -231,6 +231,13 @@ def main():
 
     accountname = args.accountname
 
+    # Computer objects are limited to 15 characters
+    # Users don’t need @, as we already have the specific-domain ticket
+    if args.objectclass == ObjectClass.computer:
+        accountname = accountname[:15]
+    else:
+        accountname = accountname.split('@')[0]
+
     try:
         samdb = connectLDAP(args.url)
     except Exception as exc:
@@ -241,8 +248,6 @@ def main():
                   "NT_STATUS_HOST_UNREACHABLE",      # Host does not respond
                   "NT_STATUS_NETWORK_UNREACHABLE",   # Local link is down
                   "NT_STATUS_CONNECTION_REFUSED",    # Service does not respond on the other end
-                  # "NT_STATUS_INVALID_BUFFER_SIZE",   # Something listening on ldap port but is not ldap
-                  # "NT_STATUS_INVALID_PARAMETER_MIX"  # Talking SSL but not listening SSL
                   "NT_STATUS_OBJECT_NAME_NOT_FOUND"  # Host does not exist
                   ):
                 # samba/ldb prints the error message on stderr

@@ -21,7 +21,7 @@ accounts = {}
 #            -- Default Domain Policy    <- UserAtRoot
 #  /example/IT
 ##            -- IT GPO
-#  /example/IT/ITDep1                   <- hostname1
+#  /example/IT/ITDep1                   <- hostname1   <- hostnameWithLon // truncated computer name
 ##            -- ITDep1 GPO
 #  /example/IT/ITDep2                   <- hostname2
 ##            -- ITDep2 User only GPO                                 <- machine flag disabled
@@ -185,6 +185,7 @@ o.addGPO(GPO("IT GPO"))
 o = OU("/example/IT/ITDep1")
 o.addGPO(GPO("ITDep1 GPO"))
 o.addAccount("hostname1")
+o.addAccount("hostnameWithLon")
 
 o = OU("/example/IT/ITDep2")
 o.addGPO(GPO("ITDep2 User only GPO"))

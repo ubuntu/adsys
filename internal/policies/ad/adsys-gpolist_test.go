@@ -39,14 +39,14 @@ func TestAdsysGPOList(t *testing.T) {
 		wantReturnCode int
 	}{
 		"Return one gpo": {
-			accountName: "UserAtRoot",
+			accountName: "UserAtRoot@EXAMPLE.COM",
 		},
 
 		"Return hierarchy": {
-			accountName: "RnDUser",
+			accountName: "RnDUser@EXAMPLE.COM",
 		},
 		"Multiple GPOs in same OU": {
-			accountName: "RnDUserDep1",
+			accountName: "RnDUserDep1@EXAMPLE.COM",
 		},
 
 		"Machine GPOs": {
@@ -55,11 +55,11 @@ func TestAdsysGPOList(t *testing.T) {
 		},
 
 		"Disabled GPOs": {
-			accountName: "RnDUserDep3",
+			accountName: "RnDUserDep3@EXAMPLE.COM",
 		},
 
 		"No GPO on OU": {
-			accountName: "UserNoGPO",
+			accountName: "UserNoGPO@EXAMPLE.COM",
 		},
 
 		// Filtering cases
@@ -68,73 +68,82 @@ func TestAdsysGPOList(t *testing.T) {
 			objectClass: "computer",
 		},
 		"Filter machine only GPOs": {
-			accountName: "RnDUserDep7",
+			accountName: "RnDUserDep7@EXAMPLE.COM",
 		},
 
 		// Forced GPOs and inheritance handling
 		"Forced GPO are first by reverse order": {
-			accountName: "RndUserSubDep2ForcedPolicy",
+			accountName: "RndUserSubDep2ForcedPolicy@EXAMPLE.COM",
 		},
 		"Block inheritance": {
-			accountName: "RnDUserWithBlockedInheritance",
+			accountName: "RnDUserWithBlockedInheritance@EXAMPLE.COM",
 		},
 		"Forced GPO and blocked inheritance": {
-			accountName: "RnDUserWithBlockedInheritanceAndForcedPolicies",
+			accountName: "RnDUserWithBlockedInheritanceAndForcedPolicies@EXAMPLE.COM",
 		},
 
 		// Access cases
 		"Security descriptor missing ignores GPO": { // AD is doing that for windows client
-			accountName: "RnDUserDep4",
+			accountName: "RnDUserDep4@EXAMPLE.COM",
 		},
 		"Fail on security descriptor access failure": {
-			accountName:    "RnDUserDep5",
+			accountName:    "RnDUserDep5@EXAMPLE.COM",
 			wantReturnCode: 3,
 			wantErr:        true,
 		},
 		"Security descriptor access denied ignores GPO": {
-			accountName: "RnDUserDep6",
+			accountName: "RnDUserDep6@EXAMPLE.COM",
 		},
 		"Security descriptor accepted is for another user": {
-			accountName: "RnDUserDep8",
+			accountName: "RnDUserDep8@EXAMPLE.COM",
 		},
 
 		"No gPOptions fallbacks to 0": {
-			accountName: "UserNogPOptions",
+			accountName: "UserNogPOptions@EXAMPLE.COM",
 		},
 
 		"KRB5CCNAME without FILE: is supported by the samba bindings": {
-			accountName:     "UserAtRoot",
+			accountName:     "UserAtRoot@EXAMPLE.COM",
 			krb5ccNameState: "invalidenvformat",
+		},
+
+		// Special object name cases
+		"No @ in user name returns the same thing": {
+			accountName: "UserAtRoot",
+		},
+		"Computers are truncated at 15 characters": {
+			accountName: "hostnameWithLongName",
+			objectClass: "computer",
 		},
 
 		// Error cases
 		"Fail on no network": {
 			url:            "ldap://NT_STATUS_NETWORK_UNREACHABLE",
-			accountName:    "UserAtRoot",
+			accountName:    "UserAtRoot@EXAMPLE.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Fail on unreachable ldap host": {
 			url:            "ldap://NT_STATUS_HOST_UNREACHABLE",
-			accountName:    "UserAtRoot",
+			accountName:    "UserAtRoot@EXAMPLE.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Fail on ldap connection refused": {
 			url:            "ldap://NT_STATUS_CONNECTION_REFUSED",
-			accountName:    "UserAtRoot",
+			accountName:    "UserAtRoot@EXAMPLE.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Fail on machine with no ldap": {
 			url:            "ldap://NT_STATUS_OBJECT_NAME_NOT_FOUND",
-			accountName:    "UserAtRoot",
+			accountName:    "UserAtRoot@EXAMPLE.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 
 		"Fail on non existent account": {
-			accountName:    "nonexistent",
+			accountName:    "nonexistent@EXAMPLE.COM",
 			wantReturnCode: 1,
 			wantErr:        true,
 		},
@@ -145,31 +154,31 @@ func TestAdsysGPOList(t *testing.T) {
 			wantErr:        true,
 		},
 		"Fail on computer requested but found user": {
-			accountName:    "UserAtRoot",
+			accountName:    "UserAtRoot@EXAMPLE.COM",
 			objectClass:    "computer",
 			wantReturnCode: 1,
 			wantErr:        true,
 		},
 		"Fail invalid GPO link": {
-			accountName:    "UserInvalidLink",
+			accountName:    "UserInvalidLink@EXAMPLE.COM",
 			wantReturnCode: 3,
 			wantErr:        true,
 		},
 
 		"Fail on KRB5CCNAME unset": {
-			accountName:     "UserAtRoot",
+			accountName:     "UserAtRoot@EXAMPLE.COM",
 			krb5ccNameState: "unset",
 			wantReturnCode:  1,
 			wantErr:         true,
 		},
 		"Fail on invalid ticket": {
-			accountName:     "UserAtRoot",
+			accountName:     "UserAtRoot@EXAMPLE.COM",
 			krb5ccNameState: "invalid",
 			wantReturnCode:  1,
 			wantErr:         true,
 		},
 		"Fail on dangling ticket symlink": {
-			accountName:     "UserAtRoot",
+			accountName:     "UserAtRoot@EXAMPLE.COM",
 			krb5ccNameState: "dangling",
 			wantReturnCode:  1,
 			wantErr:         true,

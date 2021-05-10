@@ -192,13 +192,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		}
 	}
 
-	// Get the list of GPO for object
-	userForGPOList := objectName
-	if i := strings.LastIndex(userForGPOList, "@"); i > 0 {
-		userForGPOList = userForGPOList[:i]
-	}
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
-	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, userForGPOList)
+	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, objectName)
 	// #nosec G204 - cmdArgs is under our control (python embedded script or mock for tests)
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
