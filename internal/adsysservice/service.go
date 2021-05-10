@@ -74,9 +74,9 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 
 	timeout := i18n.G("unknown")
 	socket := i18n.G("unknown")
-	if state.connectedToDaemon != nil {
-		timeout = state.connectedToDaemon.Timeout().String()
-		sock := state.connectedToDaemon.GetSocketAddr()
+	if s.daemon != nil {
+		timeout = s.daemon.Timeout().String()
+		sock := s.daemon.GetSocketAddr()
 		if sock != "" {
 			socket = sock
 		}
@@ -150,6 +150,6 @@ func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) (e
 		return err
 	}
 
-	go s.quit.Quit(r.GetForce())
+	go s.daemon.Quit(r.GetForce())
 	return nil
 }

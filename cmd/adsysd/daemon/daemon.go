@@ -97,6 +97,8 @@ func New() *App {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
+			config.SetVerboseMode(a.config.Verbose)
+
 			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain,
 				adsysservice.WithCacheDir(a.config.CacheDir),
 				adsysservice.WithRunDir(a.config.RunDir),
@@ -109,7 +111,9 @@ func New() *App {
 			}
 
 			timeout := time.Duration(a.config.ServiceTimeout) * time.Second
-			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket, daemon.WithTimeout(timeout))
+			d, err := daemon.New(adsys.RegisterGRPCServer, a.config.Socket,
+				daemon.WithTimeout(timeout),
+				daemon.WithServerQuit(adsys.Quit))
 			if err != nil {
 				close(a.ready)
 				return err

@@ -155,7 +155,7 @@ func TestRecvLogMsg(t *testing.T) {
 			logs := captureLogs(t, logger)
 
 			if !tc.invalidObjectCall {
-				err = c.RecvMsg(&test.Empty{})
+				err = c.RecvMsg(&test.EmptyLogTest{})
 			} else {
 				err = c.RecvMsg("Some invalid struct")
 			}

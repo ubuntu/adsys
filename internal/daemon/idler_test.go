@@ -35,7 +35,7 @@ func TestServerStartListenTimeout(t *testing.T) {
 	}()
 
 	select {
-	case <-time.After(time.Second):
+	case <-time.After(5 * time.Second):
 		d.Quit(false)
 		t.Fatalf("Server should have timed out, but it didn't")
 	case err := <-errs:
@@ -79,7 +79,7 @@ func TestServerDontTimeoutWithActiveRequest(t *testing.T) {
 	d.OnDoneConnection(context.Background(), info)
 
 	select {
-	case <-time.After(time.Second):
+	case <-time.After(5 * time.Second):
 		d.Quit(false)
 		t.Fatalf("Server should have timed out, but it didn't")
 	case err := <-errs:
@@ -124,7 +124,7 @@ func TestServerDontTimeoutWithMultipleActiveRequests(t *testing.T) {
 	d.OnDoneConnection(context.Background(), info)
 
 	select {
-	case <-time.After(time.Second):
+	case <-time.After(5 * time.Second):
 		d.Quit(false)
 		t.Fatalf("Server should have timed out, but it didn't")
 	case err := <-errs:
@@ -164,7 +164,7 @@ func TestServerChangeTimeout(t *testing.T) {
 
 	// check initial timeout of 50 milliseconds min
 	select {
-	case <-time.After(time.Second):
+	case <-time.After(5 * time.Second):
 		d.Quit(false)
 		t.Fatalf("Server should have timed out, but it didn't")
 	case err := <-errs:

@@ -72,6 +72,7 @@ func TestIsAllowed(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create authorizer: %v", err)
 			}
+			defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 			errAllowed := a.isAllowed(context.Background(), tc.action, tc.pid, tc.uid, tc.actionUID)
 

@@ -149,6 +149,37 @@ func TestLogWithNoCaller(t *testing.T) {
 	assert.NotContains(t, remoteLogs(), "HASCALLER", "No caller info sent remotely")
 }
 
+func TestSetReportCaller(t *testing.T) {
+	tests := map[string]struct {
+		reportCaller bool
+
+		want string
+	}{
+		"Report caller":  {reportCaller: true, want: "level=warning msg=something func=github.com/ubuntu/adsys/internal/grpc/logstreamer_test.TestSetReportCaller"},
+		"Disable caller": {reportCaller: false, want: "level=warning msg=something"},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			orig := logrus.StandardLogger().ReportCaller
+			defer logrus.SetReportCaller(orig)
+
+			// This should safely set
+			log.SetReportCaller(tc.reportCaller)
+
+			localLogger := logrus.New()
+			localLogger.SetLevel(logrus.DebugLevel)
+			localLogger.ReportCaller = logrus.StandardLogger().ReportCaller
+			logs := captureLogs(t, localLogger)
+
+			localLogger.Warning("something")
+
+			require.Contains(t, logs(), tc.want, "contains expected logs")
+		})
+	}
+}
+
 func TestLogSendingFail(t *testing.T) {
 	t.Parallel()
 

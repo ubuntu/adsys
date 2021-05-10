@@ -111,6 +111,16 @@ var (
 	localLoggerMu = sync.RWMutex{}
 )
 
+// SetReportCaller set if we want to report caller to standard logger
+func SetReportCaller(reportCaller bool) {
+	localLogger := logrus.StandardLogger()
+
+	localLoggerMu.Lock()
+	defer localLoggerMu.Unlock()
+
+	localLogger.SetReportCaller(reportCaller)
+}
+
 func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	msg := fmt.Sprint(args...)
 

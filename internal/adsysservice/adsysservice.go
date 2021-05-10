@@ -31,16 +31,14 @@ type Service struct {
 	adc           *ad.AD
 	policyManager *policies.Manager
 
-	authorizer *authorizer.Authorizer
+	authorizer authorizerer
 
 	state state
 
-	quit quitter
+	daemon *daemon.Daemon
 }
 
 type state struct {
-	connectedToDaemon *daemon.Daemon
-
 	cacheDir    string
 	runDir      string
 	dconfDir    string
@@ -57,9 +55,14 @@ type options struct {
 	dconfDir    string
 	sssCacheDir string
 	sssdConf    string
-	authorizer  *authorizer.Authorizer
+	authorizer  authorizerer
 }
 type option func(*options) error
+
+type authorizerer interface {
+	IsAllowedFromContext(context.Context, authorizer.Action) error
+	Done() error
+}
 
 // WithCacheDir specifies a personalized daemon cache directory
 func WithCacheDir(p string) func(o *options) error {
@@ -200,15 +203,10 @@ func loadServerInfo(sssdConf, url, domain string) (rurl string, rdomain string, 
 	return url, domain, nil
 }
 
-type quitter interface {
-	Quit(bool)
-}
-
 // RegisterGRPCServer registers our service with the new interceptor chains.
 // It will notify the daemon of any new connection
 func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 	s.logger = logrus.StandardLogger()
-	s.quit = d
 	srv := grpc.NewServer(grpc.StreamInterceptor(
 		interceptorschain.StreamServer(
 			log.StreamServerInterceptor(s.logger),
@@ -216,6 +214,12 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 			logconnections.StreamServerInterceptor(),
 		)), authorizer.WithUnixPeerCreds())
 	adsys.RegisterServiceServer(srv, s)
-	s.state.connectedToDaemon = d
+	s.daemon = d
 	return srv
+}
+
+func (s *Service) Quit(ctx context.Context) {
+	if err := s.authorizer.Done(); err != nil {
+		log.Warningf(ctx, i18n.G("Can't disconnect authorizer: %v"), err)
+	}
 }

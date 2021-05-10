@@ -127,6 +127,12 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			if err != nil {
 				return err
 			}
+			// Always to try remove temporary directory, so that in case of any failures, it’s not left behind
+			defer func() {
+				if err := os.RemoveAll(tmpdest); err != nil {
+					log.Info(ctx, i18n.G("Could not clean up temporary directory:"), err)
+				}
+			}()
 			if err := downloadRecursive(client, g.url, tmpdest); err != nil {
 				return err
 			}
