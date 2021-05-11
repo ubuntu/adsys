@@ -252,7 +252,7 @@ func TestLastUpdateFor(t *testing.T) {
 
 			start := time.Now()
 			// Starts and ends are monotic, while os.Stat is wall clock, we have to wait for measuring difference…
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 			f, err := os.Create(filepath.Join(cacheDir, entry.GPORulesCacheBaseName, "user"))
 			require.NoError(t, err, "Setup: couldn’t copy user cache")
 			f.Close()
