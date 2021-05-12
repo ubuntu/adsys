@@ -10,6 +10,8 @@ service service {
   rpc UpdatePolicy(UpdatePolicyRequest) returns (stream Empty);
   rpc DumpPolicies(DumpPoliciesRequest) returns (stream StringResponse);
   rpc DumpPoliciesDefinitions(DumpPolicyDefinitionsRequest) returns (stream DumpPolicyDefinitionsResponse);
+  rpc GetDoc(GetDocRequest) returns (stream StringResponse);
+  rpc ListDoc(ListDocRequest) returns (stream StringResponse);
 }
 
 message Empty {}
@@ -43,4 +45,12 @@ message DumpPolicyDefinitionsRequest {
 message DumpPolicyDefinitionsResponse {
   string admx = 1;
   string adml = 2;
+}
+
+message GetDocRequest {
+  string chapter = 1;
+}
+
+message ListDocRequest {
+  bool raw = 1; // Set to true to not format the output of the table of content
 }
