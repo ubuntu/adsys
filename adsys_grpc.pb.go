@@ -25,6 +25,8 @@ type ServiceClient interface {
 	UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error)
 	DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (Service_DumpPoliciesClient, error)
 	DumpPoliciesDefinitions(ctx context.Context, in *DumpPolicyDefinitionsRequest, opts ...grpc.CallOption) (Service_DumpPoliciesDefinitionsClient, error)
+	GetDoc(ctx context.Context, in *GetDocRequest, opts ...grpc.CallOption) (Service_GetDocClient, error)
+	ListDoc(ctx context.Context, in *ListDocRequest, opts ...grpc.CallOption) (Service_ListDocClient, error)
 }
 
 type serviceClient struct {
@@ -259,6 +261,70 @@ func (x *serviceDumpPoliciesDefinitionsClient) Recv() (*DumpPolicyDefinitionsRes
 	return m, nil
 }
 
+func (c *serviceClient) GetDoc(ctx context.Context, in *GetDocRequest, opts ...grpc.CallOption) (Service_GetDocClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[7], "/service/GetDoc", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceGetDocClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_GetDocClient interface {
+	Recv() (*StringResponse, error)
+	grpc.ClientStream
+}
+
+type serviceGetDocClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceGetDocClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *serviceClient) ListDoc(ctx context.Context, in *ListDocRequest, opts ...grpc.CallOption) (Service_ListDocClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[8], "/service/ListDoc", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceListDocClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_ListDocClient interface {
+	Recv() (*StringResponse, error)
+	grpc.ClientStream
+}
+
+type serviceListDocClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceListDocClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
@@ -270,6 +336,8 @@ type ServiceServer interface {
 	UpdatePolicy(*UpdatePolicyRequest, Service_UpdatePolicyServer) error
 	DumpPolicies(*DumpPoliciesRequest, Service_DumpPoliciesServer) error
 	DumpPoliciesDefinitions(*DumpPolicyDefinitionsRequest, Service_DumpPoliciesDefinitionsServer) error
+	GetDoc(*GetDocRequest, Service_GetDocServer) error
+	ListDoc(*ListDocRequest, Service_ListDocServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -297,6 +365,12 @@ func (UnimplementedServiceServer) DumpPolicies(*DumpPoliciesRequest, Service_Dum
 }
 func (UnimplementedServiceServer) DumpPoliciesDefinitions(*DumpPolicyDefinitionsRequest, Service_DumpPoliciesDefinitionsServer) error {
 	return status.Errorf(codes.Unimplemented, "method DumpPoliciesDefinitions not implemented")
+}
+func (UnimplementedServiceServer) GetDoc(*GetDocRequest, Service_GetDocServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetDoc not implemented")
+}
+func (UnimplementedServiceServer) ListDoc(*ListDocRequest, Service_ListDocServer) error {
+	return status.Errorf(codes.Unimplemented, "method ListDoc not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -458,6 +532,48 @@ func (x *serviceDumpPoliciesDefinitionsServer) Send(m *DumpPolicyDefinitionsResp
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Service_GetDoc_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetDocRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).GetDoc(m, &serviceGetDocServer{stream})
+}
+
+type Service_GetDocServer interface {
+	Send(*StringResponse) error
+	grpc.ServerStream
+}
+
+type serviceGetDocServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceGetDocServer) Send(m *StringResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Service_ListDoc_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ListDocRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).ListDoc(m, &serviceListDocServer{stream})
+}
+
+type Service_ListDocServer interface {
+	Send(*StringResponse) error
+	grpc.ServerStream
+}
+
+type serviceListDocServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceListDocServer) Send(m *StringResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -499,6 +615,16 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "DumpPoliciesDefinitions",
 			Handler:       _Service_DumpPoliciesDefinitions_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetDoc",
+			Handler:       _Service_GetDoc_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "ListDoc",
+			Handler:       _Service_ListDoc_Handler,
 			ServerStreams: true,
 		},
 	},
