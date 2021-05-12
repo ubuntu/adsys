@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:351
+#: internal/policies/ad/ad.go:346
 msgid "%s :%v"
 msgstr ""
 
@@ -99,6 +99,10 @@ msgstr ""
 #: internal/policies/ad/admxgen/admxgen.go:196
 #, c-format
 msgid "- Default: %s"
+msgstr ""
+
+#: internal/adsysservice/doc.go:82
+msgid "- can't read content -"
 msgstr ""
 
 #: internal/policies/dconf/dconf.go:112
@@ -173,6 +177,10 @@ msgstr ""
 
 #: internal/cmdhandler/suggest.go:51
 msgid "Did you mean this?\n"
+msgstr ""
+
+#: cmd/adsysd/client/doc.go:17
+msgid "Documentation"
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:33
@@ -355,7 +363,7 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/ad/ad.go:287
+#: internal/policies/ad/ad.go:282
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -388,7 +396,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:294
+#: internal/policies/ad/ad.go:289
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -405,7 +413,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:264
+#: internal/policies/ad/ad.go:259
 msgid "can't list users from cache"
 msgstr ""
 
@@ -485,6 +493,14 @@ msgstr ""
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
+#: internal/adsysservice/doc.go:63 internal/adsysservice/doc.go:115
+msgid "could not list documentation directory: %v"
+msgstr ""
+
+#: internal/adsysservice/doc.go:42
+msgid "could not read chapter %q: %v"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:156
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
@@ -525,6 +541,10 @@ msgstr ""
 msgid "distro for which to retrieve policy definition."
 msgstr ""
 
+#: cmd/adsysd/client/doc.go:27
+msgid "do not render markup."
+msgstr ""
+
 #: cmd/adsysd/client/policy.go:56
 msgid "don't display colorized version."
 msgstr ""
@@ -561,6 +581,14 @@ msgstr ""
 
 #: internal/adsysservice/version.go:14
 msgid "error while getting daemon version"
+msgstr ""
+
+#: internal/adsysservice/doc.go:21
+msgid "error while getting documentation"
+msgstr ""
+
+#: internal/adsysservice/doc.go:55
+msgid "error while listing documentation"
 msgstr ""
 
 #: internal/policies/ad/admxgen/dconf/dconf.go:220
@@ -607,7 +635,7 @@ msgstr ""
 msgid "failed to marshal meta data"
 msgstr ""
 
-#: internal/policies/ad/ad.go:271
+#: internal/policies/ad/ad.go:266
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -623,11 +651,11 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:305
+#: internal/policies/ad/ad.go:300
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:214
+#: internal/policies/ad/ad.go:209
 msgid ""
 "failed to retrieve the list of GPO: %v\n"
 "%s"
@@ -677,7 +705,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:224
+#: internal/policies/ad/ad.go:219
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
@@ -705,6 +733,14 @@ msgstr ""
 #: internal/grpc/logstreamer/server.go:116
 #, c-format
 msgid "missing metadata %s for incoming request"
+msgstr ""
+
+#: internal/adsysservice/doc.go:36
+msgid "no chapter %q found in documentation"
+msgstr ""
+
+#: internal/adsysservice/doc.go:139
+msgid "no file found matching chapter %q"
 msgstr ""
 
 #: internal/policies/policies.go:142 internal/policies/policies.go:153
