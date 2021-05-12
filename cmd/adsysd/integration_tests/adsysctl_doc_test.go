@@ -27,14 +27,14 @@ func TestDocChapter(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Get documentation chapter": {chapter: "intro"},
-		"Get raw documentation":     {chapter: "intro", raw: true},
+		"Get documentation chapter": {chapter: "prerequisites"},
+		"Get raw documentation":     {chapter: "prerequisites", raw: true},
 
 		// Tried to match filename
-		"Get documentation chapter with prefix":    {chapter: "1-intro"},
-		"Get documentation chapter with full name": {chapter: "1-intro.md"},
+		"Get documentation chapter with prefix":    {chapter: "2-prerequisites"},
+		"Get documentation chapter with full name": {chapter: "2-prerequisites.md"},
 
-		"Get documentation is always authorized": {polkitAnswer: "no", chapter: "intro"},
+		"Get documentation is always authorized": {polkitAnswer: "no", chapter: "prerequisites"},
 
 		// Error cases
 		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
@@ -70,6 +70,8 @@ func TestDocChapter(t *testing.T) {
 			} else {
 				assert.True(t, strings.HasPrefix(out, "\n  "), "markdown should be rendered")
 			}
+			// Images urls are translated to online version
+			assert.NotContains(t, out, "(images/", "No local images are referenced")
 		})
 	}
 }
