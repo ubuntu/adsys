@@ -3,7 +3,7 @@
 **ADSys** is the **Active Directory Group Policy client** for Ubuntu. It allows system administrators to manage and control Ubuntu Desktop clients from a central Microsoft Active Directory.
 The project contains everything you need to integrate Ubuntu to your Active Directory, including **admx** and **adml** template files.
 
-The role of **ADSys** is solely the configuration of the host via Active Directory. Authentication of the users, creation of the home directory is still the responsibility of SSSD and PAM.
+The role of **ADSys** is solely the configuration of the host via Active Directory. Authentication of the users, initial security policy of the `Default Domain Policy` and creation of the home directory is still the responsibility of SSSD and PAM.
 Once an Ubuntu client is configured, Active Directory Group Policies are applied on boot for the machine and at login time for each user, then refreshed periodically.
 
 It is composed of 2 parts: a daemon and a client and a command line interface:
@@ -25,4 +25,8 @@ The source code is available on [GitHub upstream repository](https://github.com/
 
 If you ever find an issue, you can report it following our [project template](https://github.com/ubuntu/adsys/issues/new).
 
-This documentation is also [available online](https://github.com/ubuntu/adsys/wiki)
+## Recommended readings
+
+* `adsysd help` or `man adsysd`.
+* `adsysctl help` or `man adsysctl`.
+* This documentation is also [available online](https://github.com/ubuntu/adsys/wiki)

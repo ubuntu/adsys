@@ -1,0 +1,67 @@
+## Pre-requisites
+
+In order to use Group Policies on an Ubuntu client, the first thing to do is, of course, to join the computer to an Active Directory domain.
+
+There are 2 ways to join an AD domain:
+
+ 1. At installation time with the Ubuntu Desktop installer.
+ 1. After installation, by manually setting up the connection to AD.
+
+## Joining Active Directory domain
+
+### Joining at installation time
+
+Joining during installation is only supported by the Ubuntu Desktop graphical installer Ubiquity. So, start an installation of Ubuntu Desktop as you would usually do and proceed to the page **"Who are you?"**. Enter user and computer name information.
+
+[INSERT SCREENSHOT]
+
+> *Note about the host name:*
+>
+> *In order to set and resolve the host name properly, you must enter the **Fully Qualified Domain Name** (FQDN) of the machine in the field "Your computer's name". For example, `host01.example.com` instead of only the host name `host01`.*
+>
+> *After installation you can check if it is correct with the command `hostname` and `hostname -f` which must return the name of the machine (`host01`) and the full name of the machine with the domain (`host01.example.com`) respectively.*
+
+Check the box **"Use Active Directory"** and click **"Continue"** to proceed with next step **"Configure Active Directory"**.
+
+On this page you can enter the address of the Active Directory controller and credentials of the user allowed to add machines to the domain.
+
+[INSERT SCREENSHOT]
+
+You can verify that the server is reachable by pressing **"Test Connection"**.
+
+Once all the information has been entered and is valid, press **"Continue"** to proceed with the remaining usual steps of the installation.
+
+At the end of the installation you can reboot the machine and you are ready to log in as a user of the domain on first boot.
+
+If anything goes wrong with the join process during installation, you will be notified by a dialog box. You can still reboot the machine, log in as the administrator user of the machine (ie the user you entered in the page **"Who are you?"**) and troubleshoot the issue. The [Ubuntu Server Guide](https://ubuntu.com/server/docs/service-sssd) provides instructions to perform such troubleshooting.
+
+### Joining manually
+
+The purpose of this document is to describe how to operate ADSys. So we won’t do an in depth description of the operations to manually configure a connection to Active Directory from an Ubuntu Client.
+
+Authentication of Ubuntu against the Active Directory server requires to configure SSSD and Kerberos. SSSD will then retrieve the credentials and the initial security policy of the `Default Domain Policy` .
+
+All these operations are perfectly described in the [Ubuntu Server Guide “Service - SSSD”](https://ubuntu.com/server/docs/service-sssd) and the White Paper [How to integrate Ubuntu Desktop with Active Directory](https://ubuntu.com/engage/microsoft-active-directory).
+
+## Installing ADSys
+
+**ADSys** is not currently installed by default on Ubuntu desktop. This must be done manually by the local administrator of the machine.
+
+To do so, log in on first boot, update the repositories and install **ADSys** with the following commands:
+
+```sh
+$ sudo apt update
+$ sudo apt install adsys
+```
+
+Reboot then to allow the machine to do its policy refresh.
+
+## Logging in as a user of the domain
+
+To log in as a user of the domain, press the link **"Not listed?"** in the greeter. Then enter the username followed by the password.
+
+By default, there is no default domain configured in SSSD. You have to enter the full user name with one of the forms `USER@DOMAIN` or `DOMAIN/USER`.
+
+On first log in the user's home directory is created.
+
+All of this (default domain, default path for home directories, default shell, etc.) is configurable in `/etc/sssd/sssd.conf`.
