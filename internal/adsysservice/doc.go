@@ -88,7 +88,7 @@ func (s *Service) ListDoc(r *adsys.ListDocRequest, stream adsys.Service_ListDocS
 				log.Infof(stream.Context(), "Can't close documentation file: %v", err)
 			}
 		}
-		content += fmt.Sprintf("  1. **%s**: %s\n", fileNameToDocumentChapter(n), title)
+		content += fmt.Sprintf("  1. [**%s**] %s\n", fileNameToDocumentChapter(n), title)
 	}
 
 	if err := stream.Send(&adsys.StringResponse{
