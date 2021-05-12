@@ -1,4 +1,4 @@
-# Adsys: Active Directory Group Policy integration
+# ADSys: Active Directory Group Policy integration
 
 **ADSys** is the **Active Directory Group Policy client** for Ubuntu. It allows system administrators to manage and control Ubuntu Desktop clients from a central Microsoft Active Directory.
 The project contains everything you need to integrate Ubuntu to your Active Directory, including **admx** and **adml** template files.

@@ -1,4 +1,4 @@
-## Pre-requisites
+# Pre-requisites and installation
 
 In order to use Group Policies on an Ubuntu client, the first thing to do is, of course, to join the computer to an Active Directory domain.
 
@@ -13,7 +13,7 @@ There are 2 ways to join an AD domain:
 
 Joining during installation is only supported by the Ubuntu Desktop graphical installer Ubiquity. So, start an installation of Ubuntu Desktop as you would usually do and proceed to the page **"Who are you?"**. Enter user and computer name information.
 
-[INSERT SCREENSHOT]
+![Who are you installer screen](images/2-installer-whoareyou.png)
 
 > *Note about the host name:*
 >
@@ -25,7 +25,7 @@ Check the box **"Use Active Directory"** and click **"Continue"** to proceed wit
 
 On this page you can enter the address of the Active Directory controller and credentials of the user allowed to add machines to the domain.
 
-[INSERT SCREENSHOT]
+![Configure Active Directory installer screen](images/2-installer-configure_ad.png)
 
 You can verify that the server is reachable by pressing **"Test Connection"**.
 
