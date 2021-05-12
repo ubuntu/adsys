@@ -97,6 +97,30 @@ adsysctl completion [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
+#### adsysctl doc
+
+Documentation
+
+```
+adsysctl doc [CHAPTER] [flags]
+```
+
+##### Options
+
+```
+  -h, --help   help for doc
+  -r, --raw    do not render markup.
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
 #### adsysctl policy
 
 Policy management
