@@ -5,7 +5,7 @@ import (
 )
 
 // WithGDM specifies a personalized gdm manager
-func WithGDM(m *gdm.Manager) func(o *options) error {
+func WithGDM(m *gdm.Manager) Option {
 	return func(o *options) error {
 		o.gdm = m
 		return nil

@@ -218,6 +218,7 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 	return srv
 }
 
+// Quit cleans every ressources than the service was using.
 func (s *Service) Quit(ctx context.Context) {
 	if err := s.authorizer.Done(); err != nil {
 		log.Warningf(ctx, i18n.G("Can't disconnect authorizer: %v"), err)

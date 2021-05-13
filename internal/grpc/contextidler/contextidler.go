@@ -83,7 +83,7 @@ func (ss *idlerClientStream) RecvMsg(m interface{}) error {
 		}
 
 		// We were able to stop the timer, so this one hasn’t expired yet.
-		// Consequentely, if there was a cancellation, this is client cancellation (under our control), but not a timeout.
+		// Consequently, if there was a cancellation, this is client cancellation (under our control), but not a timeout.
 		if st.Code() == codes.Canceled {
 			err = io.EOF
 		}

@@ -1,0 +1,67 @@
+name: Documentation
+
+on:
+  push:
+    paths:
+      - "doc/**"
+    branches:
+      - "main"
+  gollum:
+
+jobs:
+  job-sync-docs-to-wiki:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'gollum'
+    steps:
+      - name: Checkout Source Repo
+        uses: actions/checkout@v2
+        with:
+          path: repo
+      - name: Checkout WIKI Repo
+        uses: actions/checkout@v2
+        with:
+          path: wiki
+          repository: ubuntu/adsys.wiki
+      - name: Sync repository documentation to wiki
+        run: |
+          DOC_DIR=doc
+          DIFF=$(diff -qr --exclude=.git repo/"${DOC_DIR}/" wiki/ || true)
+          [ "$DIFF" == "" ] && exit 0
+          rsync -avzr --delete --exclude='.git/' repo/"${DOC_DIR}/" wiki/
+          (
+            cd wiki/ || exit 1
+            git config user.name "Auto update wiki bot"
+            git config user.email "actions@github.com"
+            git add .
+            git commit -m "Auto-update WIKI from source code"
+            git push origin master
+          )
+
+  job-sync-wiki-to-docs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'gollum'
+    steps:
+      - name: Checkout Source Repo
+        uses: actions/checkout@v2
+        with:
+          path: repo
+      - name: Checkout WIKI Repo
+        uses: actions/checkout@v2
+        with:
+          path: wiki
+          repository: ubuntu/adsys.wiki
+      - name: Sync wiki to repository documentation
+        run: |
+          set -x
+          DOC_DIR=doc
+          DIFF=$(diff -qr --exclude=.git repo/"${DOC_DIR}/" wiki/ || true)
+          [ "$DIFF" == "" ] && exit 0
+          rsync -avzr --delete --exclude='.git/' repo/"${DOC_DIR}/" wiki/
+          (
+            cd repo/ || exit 1
+            git config user.name "Auto update wiki bot"
+            git config user.email "actions@github.com"
+            git add .
+            git commit -m "Auto-update from wiki edition"
+            git push
+          )

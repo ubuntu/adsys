@@ -219,7 +219,7 @@ func (d *Daemon) stop(force bool) {
 	log.Debug(context.Background(), i18n.G("All connections have now ended."))
 }
 
-// GetSocketAddr returns currenly used socket address by daemon.
+// GetSocketAddr returns currently used socket address by daemon.
 func (d *Daemon) GetSocketAddr() string {
 	d.socketMu.RLock()
 	defer d.socketMu.RUnlock()

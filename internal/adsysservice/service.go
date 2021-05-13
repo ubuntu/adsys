@@ -52,6 +52,7 @@ func (ss streamWriter) Write(b []byte) (n int, err error) {
 	return len(b), ss.SendMsg(&adsys.StringResponse{Msg: string(b)})
 }
 
+// Status returns internal daemon status to the client.
 func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while getting daemon status"))
 

@@ -31,10 +31,12 @@ type options struct {
 	dconfDir string
 	gdm      *gdm.Manager
 }
+
+// Option reprents an optional function to change Policies behavior.
 type Option func(*options) error
 
 // WithCacheDir specifies a personalized daemon cache directory
-func WithCacheDir(p string) func(o *options) error {
+func WithCacheDir(p string) Option {
 	return func(o *options) error {
 		o.cacheDir = p
 		return nil
@@ -42,7 +44,7 @@ func WithCacheDir(p string) func(o *options) error {
 }
 
 // WithDconfDir specifies a personalized dconf directory
-func WithDconfDir(p string) func(o *options) error {
+func WithDconfDir(p string) Option {
 	return func(o *options) error {
 		o.dconfDir = p
 		return nil

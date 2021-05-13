@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+// SetupSmb starts a local smbd process on specified part, serving sysvolDir.
+// brokenSmbDir is optional. It is used to specify an unreachable directory or a directory with broken content.
 func SetupSmb(port int, sysvolDir, brokenSmbDir string) func() {
 	smbPort := port
 	dir, cleanup := mkSmbDir(smbPort, sysvolDir, brokenSmbDir)
