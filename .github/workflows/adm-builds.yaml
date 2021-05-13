@@ -87,7 +87,7 @@ jobs:
       - name: Display structure of downloaded files
         run: |
           set -x
-          target=$(ubuntu-distro-info -r --supported | grep -w LTS | cut -d" " -f1)
+          target=$(ubuntu-distro-info -r --lts | cut -d" " -f1)
           if [ ${{ matrix.releases }} = "ALL" ]; then
             target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
           fi
