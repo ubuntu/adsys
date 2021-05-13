@@ -33,13 +33,61 @@ jobs:
             ./internal/policies/ad/admxgen/defs/*
           if-no-files-found: error
 
+  supported-releases:
+    name: Build matrix for supported ADSys, Ubuntu, and docker releases
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-supported-releases.outputs.matrix }}
+    needs: build-admxgen
+    steps:
+      - name: Install needed binaries
+        run: |
+          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y distro-info jq
+      - name: Build matrix for supported ADSys, Ubuntu, and docker releases
+        id: set-supported-releases
+        run: |
+          set -eu
+
+          function releaseDockerExists() {
+              local codename="${1}"
+              exists=1
+              curl "https://registry.hub.docker.com/api/content/v1/repositories/public/library/ubuntu/tags?page_size=3000" 2>/dev/null | \
+                  jq -r '.results[].name' | grep -q "${codename}" && exists=0
+              echo "${exists}"
+          }
+
+          all="$(distro-info --supported-esm) $(distro-info --supported) toto"
+          all="$(echo $all | tr ' ' '\n' | sort -u)"
+
+          releases=""
+
+          for r in ${all}; do
+              # Filter out unsupported LTS releases
+              if [ "${r}" = "trusty" -o "${r}" = "xenial" -o "${r}" = "bionic" ]; then
+                  continue
+              fi
+
+              exists=$(releaseDockerExists ${r})
+              if [ ${exists} != 0 ]; then
+                  continue
+              fi
+              if [ -n "${releases}" ]; then
+                  releases="${releases}, "
+              fi
+              releases="${releases}'ubuntu:${r}'"
+          done
+
+          echo "::set-output name=matrix::{\"releases\":[${releases}]}"
+
   collect-releases:
     name: Collect supported keys on each releases
     runs-on: ubuntu-latest
-    needs: build-admxgen
+    needs:
+      - build-admxgen
+      - supported-releases
     strategy:
-      matrix:
-        releases: ['ubuntu:devel', 'ubuntu:rolling', 'ubuntu:latest']
+      matrix: ${{fromJson(needs.supported-releases.outputs.matrix)}}
     container:
       image: ${{ matrix.releases }}
     steps:
