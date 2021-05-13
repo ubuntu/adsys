@@ -24,7 +24,7 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 		return err
 	}
 
-	onlineDocUrl := doc.GetPackageUrl()
+	onlineDocURL := doc.GetPackageURL()
 
 	chapter := r.GetChapter()
 	docDir := doc.Dir
@@ -44,7 +44,7 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 		return fmt.Errorf(i18n.G("could not read chapter %q: %v"), chapter, err)
 	}
 
-	out := strings.ReplaceAll(string(content), "(images/", fmt.Sprintf("(%s/images/", onlineDocUrl))
+	out := strings.ReplaceAll(string(content), "(images/", fmt.Sprintf("(%s/images/", onlineDocURL))
 
 	if err := stream.Send(&adsys.StringResponse{
 		Msg: out,

@@ -73,10 +73,11 @@ type options struct {
 	gpoListCmd      []string
 }
 
+// Option reprents an optional function to change AD behavior.
 type Option func(*options) error
 
 // WithCacheDir specifies a personalized daemon cache directory
-func WithCacheDir(cacheDir string) func(o *options) error {
+func WithCacheDir(cacheDir string) Option {
 	return func(o *options) error {
 		o.cacheDir = cacheDir
 		return nil
@@ -84,7 +85,7 @@ func WithCacheDir(cacheDir string) func(o *options) error {
 }
 
 // WithRunDir specifies a personalized /run
-func WithRunDir(runDir string) func(o *options) error {
+func WithRunDir(runDir string) Option {
 	return func(o *options) error {
 		o.runDir = runDir
 		return nil
@@ -92,7 +93,7 @@ func WithRunDir(runDir string) func(o *options) error {
 }
 
 // WithSSSCacheDir specifies which cache directory to use for SSS
-func WithSSSCacheDir(cacheDir string) func(o *options) error {
+func WithSSSCacheDir(cacheDir string) Option {
 	return func(o *options) error {
 		o.sssCacheDir = cacheDir
 		return nil

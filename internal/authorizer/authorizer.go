@@ -86,6 +86,7 @@ func New(options ...func(*Authorizer)) (auth *Authorizer, err error) {
 	return &a, nil
 }
 
+// Done closes the underlying system dbus connection.
 func (a *Authorizer) Done() error {
 	return a.bus.Close()
 }
