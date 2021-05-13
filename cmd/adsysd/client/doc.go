@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/glamour"
 	"github.com/spf13/cobra"
@@ -16,6 +17,26 @@ func (a *App) installDoc() {
 		Use:   "doc [CHAPTER]",
 		Short: i18n.G("Documentation"),
 		Args:  cobra.MaximumNArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			defer client.Close()
+			stream, err := client.ListDoc(a.ctx, &adsys.ListDocRequest{Raw: true})
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			list, err := singleMsg(stream)
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			return strings.Split(list, "\n"), cobra.ShellCompDirectiveNoFileComp
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var chapter string
 			if len(args) > 0 {
