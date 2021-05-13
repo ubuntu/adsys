@@ -42,7 +42,7 @@ jobs:
     steps:
       - name: Install needed binaries
         run: |
-          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y distro-info jq
       - name: Build matrix for supported ADSys, Ubuntu, and docker releases
         id: set-supported-releases
@@ -97,8 +97,9 @@ jobs:
           name: admxgen
       - name: Install desktop with all default package in container
         run: |
-          DEBIAN_FRONTEND=noninteractive apt update
-          DEBIAN_FRONTEND=noninteractive apt -y install ubuntu-desktop
+          export DEBIAN_FRONTEND=noninteractive
+          apt update
+          apt -y install ubuntu-desktop
       - name: Collect support keys
         run: |
           chmod 755 ./admxgen
@@ -106,6 +107,8 @@ jobs:
       - name: Prepare artefact name variable
         shell: bash
         run: |
+          set -eu
+
           artifacts_name=${{ matrix.releases }}
           artifacts_name=${artifacts_name/:/-}
           echo "artifacts_name=${artifacts_name}" >> $GITHUB_ENV
@@ -126,7 +129,7 @@ jobs:
     steps:
       - name: Install needed binaries
         run: |
-          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y distro-info
       - name: Download all available artifacts
         uses: actions/download-artifact@v2
@@ -134,7 +137,8 @@ jobs:
           path: artifacts
       - name: Display structure of downloaded files
         run: |
-          set -x
+          set -eu
+
           target=$(ubuntu-distro-info -r --lts | cut -d" " -f1)
           if [ ${{ matrix.releases }} = "ALL" ]; then
             target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
@@ -166,7 +170,7 @@ jobs:
     steps:
       - name: Install dependencies, including git for checkout
         run: |
-          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y git
       # Checkout code with git
       - uses: actions/checkout@v2

@@ -23,6 +23,8 @@ jobs:
           repository: ubuntu/adsys.wiki
       - name: Sync wiki to repository documentation
         run: |
+          set -eu
+
           DOC_DIR=doc
           DIFF=$(diff -qr --exclude=.git repo/"${DOC_DIR}/" wiki/ || true)
           [ "$DIFF" == "" ] && exit 0
@@ -51,6 +53,8 @@ jobs:
           repository: ubuntu/adsys.wiki
       - name: Sync repository documentation to wiki
         run: |
+          set -eu
+
           DOC_DIR=doc
           DIFF=$(diff -qr --exclude=.git repo/"${DOC_DIR}/" wiki/ || true)
           [ "$DIFF" == "" ] && exit 0

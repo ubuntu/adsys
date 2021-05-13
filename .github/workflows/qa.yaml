@@ -17,8 +17,9 @@ jobs:
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
         run: |
+          export DEBIAN_FRONTEND=noninteractive
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc libsmbclient-dev
+          apt install -y ca-certificates git gcc libsmbclient-dev
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
@@ -41,6 +42,8 @@ jobs:
         if: ${{ always() }}
       - name: Gosec Security Scanner
         run: |
+          set -eu
+
           # Run manually here due to GOROOT issue.
           export PATH=$PATH:$(go env GOPATH)/bin
           go get github.com/securego/gosec/cmd/gosec
@@ -48,6 +51,8 @@ jobs:
         if: ${{ always() }}
       - name: Module files are up to date
         run: |
+          set -eu
+
           go mod tidy
           ./.github/ci/check-modules
         if: ${{ always() }}
@@ -68,14 +73,18 @@ jobs:
       # as root can write in RO directories.
       - name: Install dependencies
         run: |
-          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper
       - name: Authenticate to docker local regitry and pull image with our token
         run: |
+          set -eu
+
           echo "${{ github.token }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
           docker pull docker.pkg.github.com/ubuntu/adsys/polkitd:0.1
       - name: Run tests
         run: |
+          set -eu
+
           go test -coverpkg=./... -coverprofile=/tmp/coverage.txt.full -covermode=count ./...
           # Filter out test utilities and generated files
           grep -v -e "testutils" -e "pb.go:" "/tmp/coverage.txt.full" > "/tmp/coverage.txt"
@@ -83,7 +92,7 @@ jobs:
         run: go test -race ./...
       - name: Install curl for codecov
         run: |
-          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y curl
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
@@ -98,8 +107,9 @@ jobs:
       # Add dependencies
       - name: Install dependencies
         run: |
+          export DEBIAN_FRONTEND=noninteractive
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc protobuf-compiler gettext git libsmbclient-dev
+          apt install -y ca-certificates gcc protobuf-compiler gettext git libsmbclient-dev
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
@@ -107,6 +117,8 @@ jobs:
           go-version: ${{ env.goversion }}
       - name: Install go grpc protoc generator
         run: |
+          set -eu
+
           go install google.golang.org/protobuf/cmd/protoc-gen-go \
             google.golang.org/grpc/cmd/protoc-gen-go-grpc
       - name: Check generated files
