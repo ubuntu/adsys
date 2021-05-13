@@ -13,5 +13,5 @@ var Dir embed.FS
 type foo struct{}
 
 func GetPackageUrl() string {
-	return fmt.Sprintf("https://%s/blob/main/doc", filepath.Dir(reflect.TypeOf(foo{}).PkgPath()))
+	return fmt.Sprintf("https://%s/raw/main/doc", filepath.Dir(reflect.TypeOf(foo{}).PkgPath()))
 }
