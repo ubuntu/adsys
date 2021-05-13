@@ -12,7 +12,6 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad"
-	"github.com/ubuntu/adsys/internal/policies/ad/definitions"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -111,7 +110,7 @@ func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest,
 		return err
 	}
 
-	admx, adml, err := definitions.GetPolicies(r.Format, r.GetDistroID())
+	admx, adml, err := ad.GetPolicyDefinitions(r.Format, r.GetDistroID())
 	if err != nil {
 		return err
 	}
