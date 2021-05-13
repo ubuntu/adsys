@@ -7,7 +7,8 @@ import (
 	"reflect"
 )
 
-//go:embed *.md
+//go:embed *-*.md
+// Only embed structured documentation.
 // Dir is the embedded directory containing documentation
 var Dir embed.FS
 
