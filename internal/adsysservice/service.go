@@ -97,7 +97,7 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 	}
 
 	updateUsers := fmt.Sprint(i18n.G("Can't get connected users"))
-	users, err := s.adc.ListUsersFromCache(stream.Context())
+	users, err := s.adc.ListActiveUsers(stream.Context())
 	if err == nil {
 		updateUsers = fmt.Sprint(i18n.G("Connected users:"))
 		for _, u := range users {

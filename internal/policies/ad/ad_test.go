@@ -840,7 +840,7 @@ func TestListUsersFromCache(t *testing.T) {
 				require.NoError(t, os.RemoveAll(krb5CacheDir), "Setup: can’t remove krb5 cache directory")
 			}
 
-			got, err := adc.ListUsersFromCache(context.Background())
+			got, err := adc.ListActiveUsers(context.Background())
 			if tc.wantErr {
 				require.Error(t, err, "ListUsersFromCache should return an error and didn't")
 				return

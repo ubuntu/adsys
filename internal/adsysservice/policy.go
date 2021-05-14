@@ -39,7 +39,7 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 		err = s.updatePolicyFor(stream.Context(), true, target, ad.ComputerObject, "")
 
 		if r.GetAll() {
-			users, err := s.adc.ListUsersFromCache(stream.Context())
+			users, err := s.adc.ListActiveUsers(stream.Context())
 			if err != nil {
 				return err
 			}
