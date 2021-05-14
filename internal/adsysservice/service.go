@@ -2,6 +2,7 @@ package adsysservice
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice/actions"
@@ -152,5 +153,26 @@ func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) (e
 	}
 
 	go s.daemon.Quit(r.GetForce())
+	return nil
+}
+
+// ListActiveUsers returns the list of currently active users.
+func (s *Service) ListActiveUsers(r *adsys.Empty, stream adsys.Service_ListActiveUsersServer) (err error) {
+	defer decorate.OnError(&err, i18n.G("error while trying to get the list of active users"))
+
+	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
+		return err
+	}
+
+	users, err := s.adc.ListActiveUsers(stream.Context())
+	if err != nil {
+		return err
+	}
+
+	if err := stream.Send(&adsys.StringResponse{
+		Msg: strings.Join(users, " "),
+	}); err != nil {
+		log.Warningf(stream.Context(), "couldn't send service version to client: %v", err)
+	}
 	return nil
 }
