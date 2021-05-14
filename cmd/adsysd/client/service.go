@@ -23,27 +23,30 @@ func (a *App) installService() {
 	a.rootCmd.AddCommand(mainCmd)
 
 	cmd := &cobra.Command{
-		Use:   "cat",
-		Short: i18n.G("Print service logs"),
-		Args:  cobra.NoArgs,
-		RunE:  func(cmd *cobra.Command, args []string) error { return a.serviceCat() },
+		Use:               "cat",
+		Short:             i18n.G("Print service logs"),
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cmdhandler.NoValidArgs,
+		RunE:              func(cmd *cobra.Command, args []string) error { return a.serviceCat() },
 	}
 	mainCmd.AddCommand(cmd)
 
 	cmd = &cobra.Command{
-		Use:   "status",
-		Short: i18n.G("Print service status"),
-		Args:  cobra.NoArgs,
-		RunE:  func(cmd *cobra.Command, args []string) error { return a.getStatus() },
+		Use:               "status",
+		Short:             i18n.G("Print service status"),
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cmdhandler.NoValidArgs,
+		RunE:              func(cmd *cobra.Command, args []string) error { return a.getStatus() },
 	}
 	mainCmd.AddCommand(cmd)
 
 	var stopForce *bool
 	cmd = &cobra.Command{
-		Use:   "stop",
-		Short: i18n.G("Requests to stop the service once all connections are done"),
-		Args:  cobra.NoArgs,
-		RunE:  func(cmd *cobra.Command, args []string) error { return a.serviceStop(*stopForce) },
+		Use:               "stop",
+		Short:             i18n.G("Requests to stop the service once all connections are done"),
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cmdhandler.NoValidArgs,
+		RunE:              func(cmd *cobra.Command, args []string) error { return a.serviceStop(*stopForce) },
 	}
 	stopForce = cmd.Flags().BoolP("force", "f", false, i18n.G("force will shut it down immediately and drop existing connections."))
 	mainCmd.AddCommand(cmd)

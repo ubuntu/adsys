@@ -6,16 +6,18 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice"
+	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 func (a *App) installVersion() {
 	cmd := &cobra.Command{
-		Use:   "version",
-		Short: i18n.G("Returns version of client and service"),
-		Args:  cobra.NoArgs,
-		RunE:  func(cmd *cobra.Command, args []string) error { return a.getVersion() },
+		Use:               "version",
+		Short:             i18n.G("Returns version of client and service"),
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cmdhandler.NoValidArgs,
+		RunE:              func(cmd *cobra.Command, args []string) error { return a.getVersion() },
 	}
 	a.rootCmd.AddCommand(cmd)
 }
