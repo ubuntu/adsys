@@ -259,6 +259,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 func (ad *AD) ListActiveUsers(ctx context.Context) (users []string, err error) {
 	defer decorate.OnError(&err, i18n.G("can't list users from cache"))
 
+	log.Debug(ctx, "ListActiveUsers")
+
 	ad.Lock()
 	defer ad.Unlock()
 

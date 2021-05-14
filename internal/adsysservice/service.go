@@ -160,7 +160,7 @@ func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) (e
 func (s *Service) ListActiveUsers(r *adsys.Empty, stream adsys.Service_ListActiveUsersServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while trying to get the list of active users"))
 
-	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
+	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
 	}
 

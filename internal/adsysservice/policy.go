@@ -110,7 +110,7 @@ func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest,
 		return err
 	}
 
-	admx, adml, err := ad.GetPolicyDefinitions(r.Format, r.GetDistroID())
+	admx, adml, err := ad.GetPolicyDefinitions(stream.Context(), r.Format, r.GetDistroID())
 	if err != nil {
 		return err
 	}

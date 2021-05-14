@@ -1,6 +1,7 @@
 package ad_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -46,7 +47,7 @@ func TestGetPolicyDefinitions(t *testing.T) {
 				tc.distroID = "Ubuntu"
 			}
 
-			admx, adml, err := ad.GetPolicyDefinitions(tc.format, tc.distroID)
+			admx, adml, err := ad.GetPolicyDefinitions(context.Background(), tc.format, tc.distroID)
 			if tc.wantErr {
 				require.NotNil(t, err, "GetPolicyDefinitions returned no error when expecting one")
 				return
