@@ -107,6 +107,7 @@ func runDaemon(t *testing.T, conf string) (quit func()) {
 	}()
 
 	d.WaitReady()
+	time.Sleep(10 * time.Millisecond)
 
 	return func() {
 		done := make(chan struct{})
