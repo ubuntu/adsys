@@ -18,8 +18,9 @@ jobs:
     steps:
       - name: Install dependencies, including git for checkout
         run: |
+          export DEBIAN_FRONTEND=noninteractive
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y gettext git
+          apt install -y gettext git
       # Checkout code with git
       - uses: actions/checkout@v2
         with:
@@ -32,6 +33,8 @@ jobs:
       - name: Check po files
         id: checkpo
         run: |
+          set -eu
+
           hasModif="false"
           go generate ./internal/i18n/
           # Exclude line diffs only
@@ -64,8 +67,9 @@ jobs:
     steps:
       - name: Install dependencies, including git for checkout
         run: |
+          export DEBIAN_FRONTEND=noninteractive
           apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y libsmbclient-dev gcc git
+          apt install -y libsmbclient-dev gcc git
       # Checkout code with git
       - uses: actions/checkout@v2
         with:
@@ -78,6 +82,8 @@ jobs:
       - name: Check README file
         id: checkreadme
         run: |
+          set -eu
+
           hasModif="false"
           cd cmd/adsysd
           go run ../generate_compl_man_readme.go update-readme

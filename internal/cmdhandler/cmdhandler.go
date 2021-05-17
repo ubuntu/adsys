@@ -25,6 +25,11 @@ func ZeroOrNArgs(n int) cobra.PositionalArgs {
 	}
 }
 
+// NoValidArgs prevents any completion, including files.
+func NoValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	return nil, cobra.ShellCompDirectiveNoFileComp
+}
+
 // RegisterAlias will register a given alias of a command.
 // README and manpage refers to them in each subsection (parents are differents, but only one is kept if we use the same object)
 func RegisterAlias(cmd, parent *cobra.Command) {
@@ -51,6 +56,8 @@ To configure your bash shell to load completions for each session add to your ~/
 
 . <(%s completion)
 `), prog, prog),
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: NoValidArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// use upstream completion for now as we don’t have hidden subcommands
 			return rootCmd.GenBashCompletion(os.Stdout)

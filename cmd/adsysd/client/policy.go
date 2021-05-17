@@ -29,11 +29,16 @@ func (a *App) installPolicy() {
 
 	var distro *string
 	mainCmd := &cobra.Command{
-		Use:       "admx lts-only|all",
-		Short:     i18n.G("Dump windows policy definitions"),
-		ValidArgs: []string{"lts-only", "all"},
-		Args:      cobra.ExactValidArgs(1),
-		RunE:      func(cmd *cobra.Command, args []string) error { return a.getPolicyDefinitions(args[0], *distro) },
+		Use:   "admx lts-only|all",
+		Short: i18n.G("Dump windows policy definitions"),
+		Args:  cobra.ExactValidArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return []string{"lts-only", "all"}, cobra.ShellCompDirectiveNoFileComp
+		},
+		RunE: func(cmd *cobra.Command, args []string) error { return a.getPolicyDefinitions(args[0], *distro) },
 	}
 	distro = mainCmd.Flags().StringP("distro", "", consts.DistroID, i18n.G("distro for which to retrieve policy definition."))
 	policyCmd.AddCommand(mainCmd)
@@ -43,6 +48,13 @@ func (a *App) installPolicy() {
 		Use:   "applied [USER_NAME]",
 		Short: i18n.G("Print last applied GPOs for current or given user/machine"),
 		Args:  cmdhandler.ZeroOrNArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			return a.completeWithConnectedUsers()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var target string
 			if len(args) > 0 {
@@ -62,6 +74,23 @@ func (a *App) installPolicy() {
 		Use:   "update [USER_NAME KERBEROS_TICKET_PATH]",
 		Short: i18n.G("Updates/Create a policy for current user or given user with its kerberos ticket"),
 		Args:  cmdhandler.ZeroOrNArgs(2),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			// All and machine options don’t take arguments
+			if *updateAll || *updateMachine {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			switch len(args) {
+			case 0:
+				// Get all connected users
+				return a.completeWithConnectedUsers()
+			case 1:
+				// The user has already been process, let then specifying the ticket path
+				return nil, cobra.ShellCompDirectiveDefault
+			}
+
+			// We already have our 2 args: no more arg completion
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var user, krb5cc string
 			if len(args) > 0 {
@@ -299,4 +328,22 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 	}
 
 	return nil
+}
+
+func (a App) completeWithConnectedUsers() ([]string, cobra.ShellCompDirective) {
+	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	defer client.Close()
+	stream, err := client.ListActiveUsers(a.ctx, &adsys.Empty{})
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	list, err := singleMsg(stream)
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	return strings.Split(list, " "), cobra.ShellCompDirectiveNoFileComp
 }

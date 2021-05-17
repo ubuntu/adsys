@@ -12,7 +12,6 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad"
-	"github.com/ubuntu/adsys/internal/policies/ad/definitions"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -40,7 +39,7 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 		err = s.updatePolicyFor(stream.Context(), true, target, ad.ComputerObject, "")
 
 		if r.GetAll() {
-			users, err := s.adc.ListUsersFromCache(stream.Context())
+			users, err := s.adc.ListActiveUsers(stream.Context())
 			if err != nil {
 				return err
 			}
@@ -111,7 +110,7 @@ func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest,
 		return err
 	}
 
-	admx, adml, err := definitions.GetPolicies(r.Format, r.GetDistroID())
+	admx, adml, err := ad.GetPolicyDefinitions(stream.Context(), r.Format, r.GetDistroID())
 	if err != nil {
 		return err
 	}

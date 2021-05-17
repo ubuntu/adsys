@@ -1,14 +1,15 @@
-package definitions_test
+package ad_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/policies/ad/definitions"
+	"github.com/ubuntu/adsys/internal/policies/ad"
 )
 
-func TestGetPolicies(t *testing.T) {
+func TestGetPolicyDefinitions(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -21,8 +22,8 @@ func TestGetPolicies(t *testing.T) {
 	}{
 		"Load ADMX and ADML": {
 			format:   "lts-only",
-			wantADMX: "policy/Ubuntu/lts-only/Ubuntu.admx",
-			wantADML: "policy/Ubuntu/lts-only/Ubuntu.adml",
+			wantADMX: "../../../policies/Ubuntu/lts-only/Ubuntu.admx",
+			wantADML: "../../../policies/Ubuntu/lts-only/Ubuntu.adml",
 		},
 
 		"ADMX and ADML does not exist for this format": {
@@ -46,12 +47,12 @@ func TestGetPolicies(t *testing.T) {
 				tc.distroID = "Ubuntu"
 			}
 
-			admx, adml, err := definitions.GetPolicies(tc.format, tc.distroID)
+			admx, adml, err := ad.GetPolicyDefinitions(context.Background(), tc.format, tc.distroID)
 			if tc.wantErr {
-				require.NotNil(t, err, "GetPolicies returned no error when expecting one")
+				require.NotNil(t, err, "GetPolicyDefinitions returned no error when expecting one")
 				return
 			}
-			require.NoError(t, err, "GetPolicies returned an error when expecting none")
+			require.NoError(t, err, "GetPolicyDefinitions returned an error when expecting none")
 
 			wantADMX, err := os.ReadFile(tc.wantADMX)
 			require.NoError(t, err, "Could not read wanted admx file")

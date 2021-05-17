@@ -12,6 +12,7 @@ service service {
   rpc DumpPoliciesDefinitions(DumpPolicyDefinitionsRequest) returns (stream DumpPolicyDefinitionsResponse);
   rpc GetDoc(GetDocRequest) returns (stream StringResponse);
   rpc ListDoc(ListDocRequest) returns (stream StringResponse);
+  rpc ListActiveUsers(Empty) returns (stream StringResponse);
 }
 
 message Empty {}

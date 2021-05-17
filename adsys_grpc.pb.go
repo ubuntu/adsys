@@ -27,6 +27,7 @@ type ServiceClient interface {
 	DumpPoliciesDefinitions(ctx context.Context, in *DumpPolicyDefinitionsRequest, opts ...grpc.CallOption) (Service_DumpPoliciesDefinitionsClient, error)
 	GetDoc(ctx context.Context, in *GetDocRequest, opts ...grpc.CallOption) (Service_GetDocClient, error)
 	ListDoc(ctx context.Context, in *ListDocRequest, opts ...grpc.CallOption) (Service_ListDocClient, error)
+	ListActiveUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_ListActiveUsersClient, error)
 }
 
 type serviceClient struct {
@@ -325,6 +326,38 @@ func (x *serviceListDocClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
+func (c *serviceClient) ListActiveUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_ListActiveUsersClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[9], "/service/ListActiveUsers", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceListActiveUsersClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_ListActiveUsersClient interface {
+	Recv() (*StringResponse, error)
+	grpc.ClientStream
+}
+
+type serviceListActiveUsersClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceListActiveUsersClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
@@ -338,6 +371,7 @@ type ServiceServer interface {
 	DumpPoliciesDefinitions(*DumpPolicyDefinitionsRequest, Service_DumpPoliciesDefinitionsServer) error
 	GetDoc(*GetDocRequest, Service_GetDocServer) error
 	ListDoc(*ListDocRequest, Service_ListDocServer) error
+	ListActiveUsers(*Empty, Service_ListActiveUsersServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -371,6 +405,9 @@ func (UnimplementedServiceServer) GetDoc(*GetDocRequest, Service_GetDocServer) e
 }
 func (UnimplementedServiceServer) ListDoc(*ListDocRequest, Service_ListDocServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListDoc not implemented")
+}
+func (UnimplementedServiceServer) ListActiveUsers(*Empty, Service_ListActiveUsersServer) error {
+	return status.Errorf(codes.Unimplemented, "method ListActiveUsers not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -574,6 +611,27 @@ func (x *serviceListDocServer) Send(m *StringResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Service_ListActiveUsers_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).ListActiveUsers(m, &serviceListActiveUsersServer{stream})
+}
+
+type Service_ListActiveUsersServer interface {
+	Send(*StringResponse) error
+	grpc.ServerStream
+}
+
+type serviceListActiveUsersServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceListActiveUsersServer) Send(m *StringResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -625,6 +683,11 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "ListDoc",
 			Handler:       _Service_ListDoc_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "ListActiveUsers",
+			Handler:       _Service_ListActiveUsers_Handler,
 			ServerStreams: true,
 		},
 	},
