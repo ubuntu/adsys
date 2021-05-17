@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/doc"
+	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 func TestDocChapter(t *testing.T) {
@@ -19,6 +20,8 @@ func TestDocChapter(t *testing.T) {
 		require.NoError(t, err, "Teardown: can’t restore GLAMOUR_STYLE env variable")
 	}()
 
+	fullName, strippedExt, baseName := getTestChapter(t, "2.")
+
 	tests := map[string]struct {
 		chapter          string
 		raw              bool
@@ -27,18 +30,18 @@ func TestDocChapter(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Get documentation chapter": {chapter: "prerequisites"},
-		"Get raw documentation":     {chapter: "prerequisites", raw: true},
+		"Get documentation chapter": {chapter: baseName},
+		"Get raw documentation":     {chapter: baseName, raw: true},
 
 		// Tried to match filename
-		"Get documentation chapter with prefix":    {chapter: "2-prerequisites"},
-		"Get documentation chapter with full name": {chapter: "2-prerequisites.md"},
+		"Get documentation chapter with prefix":            {chapter: strippedExt},
+		"Get documentation chapter with full name":         {chapter: fullName},
 
-		"Get documentation is always authorized": {polkitAnswer: "no", chapter: "prerequisites"},
+		"Get documentation is always authorized": {polkitAnswer: "no", chapter: baseName},
 
 		// Error cases
-		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
-		"Nonexistent chapter":   {chapter: "nonexistent-chapter", wantErr: true},
+		"Daemon not responding":                        {daemonNotStarted: true, wantErr: true},
+		"Nonexistent chapter":                          {chapter: "nonexistent-chapter", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -142,4 +145,30 @@ func TestDocList(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Returns the names(s) of the chapter used for testing corresponding to chapterPrefix,
+// so tests do not break if chapters are renamed.
+func getTestChapter(t *testing.T, chapterPrefix string) (fullName string, strippedExt string, baseName string) {
+	t.Helper()
+
+	fs, err := doc.Dir.ReadDir(".")
+	if err != nil {
+		t.Fatalf(i18n.G("could not list documentation directory: %v"), err)
+	}
+
+	// Sort all file names while they have their prefix
+	var name string
+	for _, f := range fs {
+		if !strings.HasPrefix(f.Name(), chapterPrefix) {
+			continue
+		}
+		name = f.Name()
+	}
+
+	if name == "" {
+		t.Fatalf(i18n.G("could not find chapter starting with %s"), chapterPrefix)
+	}
+
+	return name, strings.TrimSuffix(name, ".md"), strings.TrimPrefix(strings.TrimSuffix(name, ".md"), chapterPrefix+"-")
 }
