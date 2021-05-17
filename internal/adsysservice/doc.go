@@ -127,7 +127,7 @@ func documentChapterToFileName(dir embed.FS, chapter string) (string, error) {
 	sort.Strings(names)
 
 	for _, n := range names {
-		if fileNameToDocumentChapter(n) == chapter {
+		if strings.EqualFold(fileNameToDocumentChapter(n), chapter) {
 			return n, nil
 		}
 	}
