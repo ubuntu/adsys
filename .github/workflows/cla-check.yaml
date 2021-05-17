@@ -1,7 +1,6 @@
-
 name: Check if CLA is signed
 on:
-  pull_request:
+  pull_request_target:
 
 jobs:
   cla-check:
