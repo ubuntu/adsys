@@ -25,6 +25,7 @@ func TestDocChapter(t *testing.T) {
 	tests := map[string]struct {
 		chapter          string
 		raw              bool
+		modifyCase       bool
 		polkitAnswer     string
 		daemonNotStarted bool
 
@@ -36,12 +37,14 @@ func TestDocChapter(t *testing.T) {
 		// Tried to match filename
 		"Get documentation chapter with prefix":            {chapter: strippedExt},
 		"Get documentation chapter with full name":         {chapter: fullName},
+		"Get documentation chapter with non matching case": {chapter: baseName, modifyCase: true},
 
 		"Get documentation is always authorized": {polkitAnswer: "no", chapter: baseName},
 
 		// Error cases
 		"Daemon not responding":                        {daemonNotStarted: true, wantErr: true},
 		"Nonexistent chapter":                          {chapter: "nonexistent-chapter", wantErr: true},
+		"Error on exact name matching with wrong case": {chapter: fullName, modifyCase: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -50,6 +53,13 @@ func TestDocChapter(t *testing.T) {
 				tc.polkitAnswer = "yes"
 			}
 			polkitAnswer(t, tc.polkitAnswer)
+
+			if tc.modifyCase {
+				tc.chapter = strings.ToUpper(tc.chapter)
+				if strings.HasSuffix(tc.chapter, ".MD") {
+					tc.chapter = strings.TrimSuffix(tc.chapter, ".MD") + ".md"
+				}
+			}
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {
