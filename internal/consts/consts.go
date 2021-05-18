@@ -31,7 +31,7 @@ const (
 	// DefaultDconfDir is the default dconf directory
 	DefaultDconfDir = "/etc/dconf"
 
-	// DefaultClientTimeout is the default time in seconds  between 2 server activity before the client returns.
+	// DefaultClientTimeout is the maximum default time in seconds between 2 server activities before the client returns and abort the request.
 	DefaultClientTimeout = 30
 
 	// DefaultServiceTimeout is the default time in seconds without any active request before the service exits.
