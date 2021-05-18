@@ -42,7 +42,7 @@ type daemonConfig struct {
 	DconfDir    string `mapstructure:"dconf_dir"`
 	SSSCacheDir string `mapstructure:"sss_cache_dir"`
 
-	ServiceTimeout int
+	ServiceTimeout int    `mapstructure:"service_timeout"`
 	ADServer       string `mapstructure:"ad_server"`
 	ADDomain       string `mapstructure:"ad_domain"`
 }
@@ -137,7 +137,7 @@ func New() *App {
 	decorate.LogOnError(a.viper.BindPFlag("run_dir", a.rootCmd.PersistentFlags().Lookup("run-dir")))
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
-	decorate.LogOnError(a.viper.BindPFlag("servicetimeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
+	decorate.LogOnError(a.viper.BindPFlag("service_timeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	a.rootCmd.PersistentFlags().StringP("ad-server", "S", "", i18n.G("URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."))
 	decorate.LogOnError(a.viper.BindPFlag("ad_server", a.rootCmd.PersistentFlags().Lookup("ad-server")))

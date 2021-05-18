@@ -14,9 +14,10 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
-//go:generate go run ../generate_compl_man_readme.go completion ../../generated
-//go:generate go run ../generate_compl_man_readme.go man ../../generated
-//go:generate go run ../generate_compl_man_readme.go update-readme
+//go:generate go run ../generate_completion_documentation.go completion ../../generated
+//go:generate go run ../generate_completion_documentation.go man ../../generated
+//go:generate go run ../generate_completion_documentation.go update-readme
+//go:generate go run ../generate_completion_documentation.go update-doc-cli-ref
 
 func main() {
 	var a app
