@@ -96,6 +96,15 @@ PATH=.:$PATH
 . <(adsysctl completion)
 ```
 
+### Building the PAM module
+
+```sh
+$ cd pam/
+$ go generate .
+```
+
+The PAM module will be built and copied in `<project_root>/generated/lib/security/`.
+
 ### About the testsuite
 
 The project includes a comprehensive testsuite made of unit and integration tests. All the tests must pass with and without the race detector.
