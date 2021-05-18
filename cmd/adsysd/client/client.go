@@ -87,7 +87,7 @@ func New() *App {
 	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
-	decorate.LogOnError(a.viper.BindPFlag("clienttimeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
+	decorate.LogOnError(a.viper.BindPFlag("client_timeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	// subcommands
 	cmdhandler.InstallCompletionCmd(&a.rootCmd)

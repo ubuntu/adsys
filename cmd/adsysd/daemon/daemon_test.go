@@ -82,9 +82,9 @@ func TestAppCanQuitWhenExecute(t *testing.T) {
 }
 
 func TestAppCanQuitAfterExecute(t *testing.T) {
-	os.Setenv("ADSYS_SERVICETIMEOUT", "1")
+	os.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
 	defer func() {
-		os.Unsetenv("ADSYS_SERVICETIMEOUT")
+		os.Unsetenv("ADSYS_SERVICE_TIMEOUT")
 	}()
 	a, wait := startDaemon(t, true)
 	wait()
@@ -154,9 +154,9 @@ func TestAppCanSigHupAfterExecute(t *testing.T) {
 	r, w, err := os.Pipe()
 	require.NoError(t, err, "Setup: pipe shouldn’t fail")
 
-	os.Setenv("ADSYS_SERVICETIMEOUT", "1")
+	os.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
 	defer func() {
-		os.Unsetenv("ADSYS_SERVICETIMEOUT")
+		os.Unsetenv("ADSYS_SERVICE_TIMEOUT")
 	}()
 	a, wait := startDaemon(t, true)
 	wait()
@@ -197,9 +197,9 @@ func TestAppCanSigHupWithoutExecute(t *testing.T) {
 }
 
 func TestAppTimeout(t *testing.T) {
-	os.Setenv("ADSYS_SERVICETIMEOUT", "1")
+	os.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
 	defer func() {
-		os.Unsetenv("ADSYS_SERVICETIMEOUT")
+		os.Unsetenv("ADSYS_SERVICE_TIMEOUT")
 	}()
 	a, wait := startDaemon(t, true)
 
@@ -278,7 +278,7 @@ socket: %s
 # Service only configuration
 cache_dir: %s
 run_dir: %s
-servicetimeout: %d
+service_timeout: %d
 ad_server: example.com
 ad_domain: ldap://adc.example.com
 `,

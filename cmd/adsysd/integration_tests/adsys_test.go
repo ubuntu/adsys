@@ -76,7 +76,7 @@ socket: %s/socket
 # Service only configuration
 cache_dir: %s/cache
 run_dir: %s/run
-servicetimeout: 30
+service_timeout: 30
 ad_server: ldap://adc.example.com
 ad_domain: example.com
 
