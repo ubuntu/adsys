@@ -27,6 +27,8 @@ const usage = `Usage of %s:
      Create man pages files in a structured hierarchy in DIRECTORY.
    update-readme
      Update repository README with commands.
+   update-doc-cli-ref
+	Update repository doc with commands.
 `
 
 func main() {
@@ -55,7 +57,12 @@ func main() {
 		if generators.InstallOnlyMode() {
 			return
 		}
-		updateREADME(commands)
+		updateFromCmd(commands, "README.md")
+	case "update-doc-cli-ref":
+		if generators.InstallOnlyMode() {
+			return
+		}
+		updateFromCmd(commands, filepath.Join("doc", "8.-Command-line-reference.md"))
 	default:
 		log.Fatalf(usage, os.Args[0])
 	}
@@ -99,21 +106,23 @@ func genManPages(cmds []cobra.Command, dir string) {
 	}
 }
 
-func updateREADME(cmds []cobra.Command) {
+// updateFromCmd creates a file containing the detail of the commands
+// the target filePath is relative to the root of the project
+func updateFromCmd(cmds []cobra.Command, filePath string) {
 	_, current, _, ok := runtime.Caller(1)
 	if !ok {
 		log.Fatal("Couldn't find current file name")
 	}
 
-	readme := filepath.Join(filepath.Dir(current), "..", "README.md")
+	targetFile := filepath.Join(filepath.Dir(current), "..", filePath)
 
-	in, err := os.Open(readme)
+	in, err := os.Open(targetFile)
 	if err != nil {
 		log.Fatalf("Couldn't open source readme file: %v", err)
 	}
 	defer in.Close()
 
-	tmp, err := os.Create(readme + ".new")
+	tmp, err := os.Create(targetFile + ".new")
 	if err != nil {
 		log.Fatalf("Couldn't create temporary readme file: %v", err)
 	}
@@ -162,7 +171,7 @@ func updateREADME(cmds []cobra.Command) {
 	if err := tmp.Close(); err != nil {
 		log.Fatalf("Couldn't close temporary readme file: %v", err)
 	}
-	if err := os.Rename(readme+".new", readme); err != nil {
+	if err := os.Rename(targetFile+".new", targetFile); err != nil {
 		log.Fatalf("Couldn't rename to destination readme file: %v", err)
 	}
 }

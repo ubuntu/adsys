@@ -58,8 +58,8 @@ jobs:
         run: |
           git push origin auto-update-po:main
 
-  update-readme:
-    name: Update readme file
+  update-readme-clid-ref:
+    name: Update readme and CLI ref files
     # This should just be "after", but we don't want the 2 jobs to push at the same time
     needs: update-po
     runs-on: ubuntu-latest
@@ -86,7 +86,8 @@ jobs:
 
           hasModif="false"
           cd cmd/adsysd
-          go run ../generate_compl_man_readme.go update-readme
+          go run ../generate_completion_documentation.go update-readme
+          go run ../generate_completion_documentation.go update-doc-cli-ref
           MODIFIED=$(git status --porcelain --untracked-files=no)
           if [ -n "$MODIFIED" ]; then
             hasModif="true"
@@ -100,9 +101,9 @@ jobs:
           title: Auto update readme files
           labels: readme, automated pr
           body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+main+branch+automatically%22) by GitHub Action"
-          branch: auto-update-readme
+          branch: auto-update-readme-cli-ref
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch
         if: ${{ env.modified == 'true' }}
         run: |
-          git push origin auto-update-readme:main
+          git push origin auto-update-readme-cli-ref:main
