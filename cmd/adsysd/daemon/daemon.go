@@ -42,7 +42,7 @@ type daemonConfig struct {
 	DconfDir    string `mapstructure:"dconf_dir"`
 	SSSCacheDir string `mapstructure:"sss_cache_dir"`
 
-	ServiceTimeout int
+	ServiceTimeout int    `mapstructure:"service_timeout"`
 	ADServer       string `mapstructure:"ad_server"`
 	ADDomain       string `mapstructure:"ad_domain"`
 }

@@ -3,8 +3,13 @@ verbose: 2
 socket: /tmp/adsysd/socket
 
 # Service only configuration
-cache_dir: /tmp/adsysd/cache
-run_dir: /tmp/adsysd/run
-servicetimeout: 3600
+service_timeout: 3600
 ad_server: example.com
 ad_domain: ldap://adc.example.com
+cache_dir: /tmp/adsysd/cache
+run_dir: /tmp/adsysd/run
+dconf_dir: /etc/dconf
+sss_cache_dir: /var/lib/sss/db
+
+# Client only configuration
+client_timeout: 60

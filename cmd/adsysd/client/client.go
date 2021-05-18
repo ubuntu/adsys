@@ -32,7 +32,7 @@ type App struct {
 type daemonConfig struct {
 	Verbose       int
 	Socket        string
-	ClientTimeout int
+	ClientTimeout int `mapstructure:"client_timeout"`
 }
 
 // New registers commands and return a new App.
