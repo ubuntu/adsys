@@ -49,12 +49,15 @@ Commands:
 	-current-session is the current session to consider for dconf per-session
 	overrides. Default to "".
 
-  admx [-auto-detect-releases] CATEGORIES_DEF.yaml SOURCE DEST
+  admx [-auto-detect-releases] [-allow-missing-keys] CATEGORIES_DEF.yaml SOURCE DEST
 	Collects all intermediary policy definition files in SOURCE directory to
 	create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml.
 	-auto-detect-releases will override supportedreleases in categories definition
 	file and will takes all yaml files in SOURCE directory and use the basename
 	as their versions.
+	-allow-missing-keys will not fail but display a warning if some keys are not
+	available in a release. This is the case when news keys are added to non-lts
+	releases.
 `, filepath.Base(os.Args[0]))
 	}
 
@@ -62,6 +65,7 @@ Commands:
 	flagCurrentSession := flag.String("current-session", "", "")
 
 	autoDetectReleases := flag.Bool("auto-detect-releases", false, "")
+	allowMissingKeys := flag.Bool("allow-missing-keys", false, "")
 
 	flag.Parse()
 	args := flag.Args()
@@ -87,7 +91,7 @@ Commands:
 			flag.Usage()
 			os.Exit(1)
 		}
-		if err := admx(args[1], args[2], args[3], *autoDetectReleases); err != nil {
+		if err := admx(args[1], args[2], args[3], *autoDetectReleases, *allowMissingKeys); err != nil {
 			log.Error(fmt.Errorf("command admx failed with %w", err))
 			os.Exit(1)
 		}
@@ -177,7 +181,7 @@ type categoryFileStruct struct {
 	Categories        []category
 }
 
-func admx(categoryDefinition, src, dst string, autoDetectReleases bool) error {
+func admx(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
 	// Load all expanded categories
 	policies, catfs, err := loadDefinitions(categoryDefinition, src)
 	if err != nil {
@@ -204,7 +208,7 @@ func admx(categoryDefinition, src, dst string, autoDetectReleases bool) error {
 		distroID:          catfs.DistroID,
 		supportedReleases: supportedReleases,
 	}
-	ec, err := g.generateExpandedCategories(catfs.Categories, policies)
+	ec, err := g.generateExpandedCategories(catfs.Categories, policies, allowMissingKeys)
 	if err != nil {
 		return err
 	}

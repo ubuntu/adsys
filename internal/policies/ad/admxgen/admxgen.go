@@ -37,6 +37,7 @@ admxgen generates admx and adml from a category and multiple policies per releas
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -48,6 +49,7 @@ import (
 	"text/template"
 
 	"github.com/ubuntu/adsys/internal/decorate"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	adcommon "github.com/ubuntu/adsys/internal/policies/ad/common"
@@ -88,7 +90,7 @@ type generator struct {
 	supportedReleases []string
 }
 
-func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy) (ep []expandedCategory, err error) {
+func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy, allowMissingKeys bool) (ep []expandedCategory, err error) {
 	defer decorate.OnError(&err, i18n.G("can't generate expanded categories"))
 
 	// noPoliciesOn is a map to attest that each release was assigned at least one property
@@ -245,7 +247,12 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		for _, p := range cat.Policies {
 			pol, ok := mergedPolicies[p]
 			if !ok {
-				return expandedCategory{}, fmt.Errorf(i18n.G("policy %s referenced in %q does not exist in any supported releases"), p, cat.DisplayName)
+				msg := fmt.Sprintf(i18n.G("policy %s referenced in %q does not exist in any supported releases"), p, cat.DisplayName)
+				if allowMissingKeys {
+					log.Warningf(context.Background(), msg)
+					continue
+				}
+				return expandedCategory{}, errors.New(msg)
 			}
 			if pol.Class == "" {
 				pol.Class = defaultPolicyClass

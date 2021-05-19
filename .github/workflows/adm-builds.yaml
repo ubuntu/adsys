@@ -139,9 +139,11 @@ jobs:
         run: |
           set -eu
 
+          allowflag="-allow-missing-keys"
           target=$(ubuntu-distro-info -r --lts | cut -d" " -f1)
           if [ ${{ matrix.releases }} = "ALL" ]; then
             target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
+            allowflag=""
           fi
 
           mkdir wanted/
@@ -154,7 +156,7 @@ jobs:
             done
           done
           chmod +x artifacts/admxgen/admxgen
-          artifacts/admxgen/admxgen -auto-detect-releases admx artifacts/admxgen/internal/policies/ad/admxgen/defs/categories.yaml wanted/ .
+          artifacts/admxgen/admxgen -auto-detect-releases ${allowflag} admx artifacts/admxgen/internal/policies/ad/admxgen/defs/categories.yaml wanted/ .
           ls -R
       - name: Upload adm template files
         uses: actions/upload-artifact@v2
@@ -197,7 +199,7 @@ jobs:
           commit-message: Refresh policy definition files
           title: Refresh policy definition files
           labels: policies, automated pr
-          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+main+branch+automatically%22) by GitHub Action"
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/adm-builds.yaml) by GitHub Action"
           branch: auto-update-policydefinitions-${{ steps.get-branch-name.outputs.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true

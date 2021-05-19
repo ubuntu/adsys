@@ -50,7 +50,7 @@ jobs:
           commit-message: Auto update po files
           title: Auto update po files
           labels: po, automated pr
-          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+main+branch+automatically%22) by GitHub Action"
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/auto-updates.yaml) by GitHub Action"
           branch: auto-update-po
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch
@@ -100,7 +100,7 @@ jobs:
           commit-message: Auto update readme files
           title: Auto update readme files
           labels: readme, automated pr
-          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+main+branch+automatically%22) by GitHub Action"
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/auto-updates.yaml) by GitHub Action"
           branch: auto-update-readme-cli-ref
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch

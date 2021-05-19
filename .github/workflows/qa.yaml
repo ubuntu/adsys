@@ -80,7 +80,7 @@ jobs:
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper
-      - name: Authenticate to docker local regitry and pull image with our token
+      - name: Authenticate to docker local registry and pull image with our token
         run: |
           set -eu
 
