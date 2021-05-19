@@ -452,15 +452,6 @@ Note: default system value is used for &#34;Not Configured&#34; and enforced if 
 
 Supported on Ubuntu 20.04</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
-      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs.
-
-- Type: dconf
-- Key: /org/gnome/desktop/screensaver/picture-uri
-- Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
-Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
-
-Supported on Ubuntu 20.04</string>
-      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
     </stringTable>
 
     <presentationTable>
@@ -620,12 +611,6 @@ Supported on Ubuntu 20.04</string>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenLogo">
         <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenLogo">
           <label>Path to small image at top of user list</label>
-          <defaultValue></defaultValue>
-        </textBox>
-      </presentation>
-      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri">
-        <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri">
-          <label>Picture URI</label>
           <defaultValue></defaultValue>
         </textBox>
       </presentation>
