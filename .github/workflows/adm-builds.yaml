@@ -197,7 +197,7 @@ jobs:
           commit-message: Refresh policy definition files
           title: Refresh policy definition files
           labels: policies, automated pr
-          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions?query=workflow%3A%22Update+translation+and+readme+in+main+branch+automatically%22) by GitHub Action"
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/adm-builds.yaml) by GitHub Action"
           branch: auto-update-policydefinitions-${{ steps.get-branch-name.outputs.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
