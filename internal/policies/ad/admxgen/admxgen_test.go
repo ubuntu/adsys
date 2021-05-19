@@ -20,6 +20,8 @@ func TestGenerateExpandedCategories(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
+		allowMissingKeys bool
+
 		wantErrLoadDefinitions bool
 		wantErr                bool
 	}{
@@ -55,9 +57,11 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"different choices":      {},
 		"different range":        {},
 
+		"allow policy referenced but not available in any releases": {allowMissingKeys: true},
+
 		// Error cases
 		"error on one policy not used":                 {wantErr: true},
-		"error on unexisting policy referenced":        {wantErr: true},
+		"error on unexisting policy referenced":        {allowMissingKeys: false, wantErr: true},
 		"error on different policy type":               {wantErr: true},
 		"error on different class":                     {wantErr: true},
 		"error on missing release":                     {wantErr: true},
@@ -91,7 +95,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 				distroID:          catfs.DistroID,
 				supportedReleases: catfs.SupportedReleases,
 			}
-			got, err := g.generateExpandedCategories(catfs.Categories, policies)
+			got, err := g.generateExpandedCategories(catfs.Categories, policies, tc.allowMissingKeys)
 			if tc.wantErr {
 				require.Error(t, err, "generateExpandedCategories should have errored out")
 				return
@@ -298,7 +302,7 @@ func TestMainADMX(t *testing.T) {
 				require.NoError(t, err, "Setup: should create a file as destination")
 			}
 
-			err := admx(catDef, src, dst, tc.autoDetectReleases)
+			err := admx(catDef, src, dst, tc.autoDetectReleases, false)
 			if tc.wantErr {
 				require.Error(t, err, "admx should have errored out")
 				return
