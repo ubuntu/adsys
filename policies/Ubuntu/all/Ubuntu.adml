@@ -644,18 +644,53 @@ Supported on Ubuntu 20.04, 20.10, 21.04</string>
       <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
-      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs.
+      <string id="UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color to use when the background picture URI is missing or when it doesn&#39;t cover the whole background. It overrides the value defined in the default style sheet.
 
 - Type: dconf
-- Key: /org/gnome/desktop/screensaver/picture-uri
-- Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
+- Key: /com/ubuntu/login-screen/background-color
+- Default: &#39;&#39;
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 20.10, 21.04</string>
-      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
-      <string id="UbuntuDisplayMachine2104GdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
-      <string id="UbuntuDisplayMachine2010GdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
-      <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
+Supported on Ubuntu 21.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
+      <string id="UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs. It overrides the value defined in the default style sheet.
+
+- Type: dconf
+- Key: /com/ubuntu/login-screen/background-picture-uri
+- Default: &#39;&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 21.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
+      <string id="UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat">The background-repeat property sets if/how a background image will be repeated. By default, a background-image is repeated both vertically and horizontally.  It overrides the value defined in the default style sheet.
+
+- Type: dconf
+- Key: /com/ubuntu/login-screen/background-repeat
+- Default: &#39;default&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 21.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat">The background-repeat property sets if/how the background image will be repeated.</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat0">default</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat1">repeat</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat2">repeat-x</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat3">repeat-y</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat4">no-repeat</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat5">space</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat6">round</string>
+      <string id="UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundSize">The background-size property specifies the size of the background images.  There are three keywords you can use with this property: auto: The background image is displayed in its original size; cover: Resize the background image to cover the entire container, even if it has to stretch the image or cut a little bit off one of the edges; contain: Resize the background image to make sure the image is fully visible.  It overrides the value defined in the default style sheet.
+
+- Type: dconf
+- Key: /com/ubuntu/login-screen/background-size
+- Default: &#39;default&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 21.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize">The background-size property specifies the size of the background image.</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize0">default</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize1">auto</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize2">cover</string>
+      <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize3">contain</string>
     </stringTable>
 
     <presentationTable>
@@ -1295,29 +1330,23 @@ Supported on Ubuntu 20.04, 20.10, 21.04</string>
           <defaultValue>'/usr/share/plymouth/ubuntu-logo.png'</defaultValue>
         </textBox>
       </presentation>
-      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri">
-        <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri">
-          <label>Picture URI</label>
+      <presentation id="UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundColor">
+        <textBox refId="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor">
+          <label>The background-color property sets the background color.</label>
           <defaultValue></defaultValue>
         </textBox>
-        <text/>
-        <checkBox refId="UbuntuOverrideElemMachine2104GdmDconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 21.04:</checkBox>
-        <textBox refId="UbuntuElemMachine2104GdmDconfOrgGnomeDesktopScreensaverPictureUri">
-          <label></label>
-          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundPictureUri">
+        <textBox refId="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundPictureUri">
+          <label>Sets the background image for the login screen.</label>
+          <defaultValue></defaultValue>
         </textBox>
-        <text/>
-        <checkBox refId="UbuntuOverrideElemMachine2010GdmDconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 20.10:</checkBox>
-        <textBox refId="UbuntuElemMachine2010GdmDconfOrgGnomeDesktopScreensaverPictureUri">
-          <label></label>
-          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
-        </textBox>
-        <text/>
-        <checkBox refId="UbuntuOverrideElemMachine2004GdmDconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 20.04:</checkBox>
-        <textBox refId="UbuntuElemMachine2004GdmDconfOrgGnomeDesktopScreensaverPictureUri">
-          <label></label>
-          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
-        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat">
+        <dropdownList refId="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat" noSort="true" defaultItem="">The background-repeat property sets if/how the background image will be repeated.</dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundSize">
+        <dropdownList refId="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize" noSort="true" defaultItem="">The background-size property specifies the size of the background image.</dropdownList>
       </presentation>
     </presentationTable>
 

@@ -605,14 +605,6 @@
         <text id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenLogo" valueName="all" />
       </elements>
     </policy>
-    <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopScreensaverPictureUri)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\screensaver\picture-uri" valueName="metaValues">
-      <parentCategory ref="UbuntuInterface" />
-      <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <elements>
-        <text id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopScreensaverPictureUri" valueName="all" />
-      </elements>
-    </policy>
   </policies>
 
 </policyDefinitions>
