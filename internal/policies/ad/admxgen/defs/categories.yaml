@@ -99,4 +99,7 @@ categories:
             - "/org/gnome/login-screen/banner-message-enable"
             - "/org/gnome/login-screen/banner-message-text"
             - "/org/gnome/login-screen/logo"
-            - "/org/gnome/desktop/screensaver/picture-uri"
+            - "/com/ubuntu/login-screen/background-color"
+            - "/com/ubuntu/login-screen/background-picture-uri"
+            - "/com/ubuntu/login-screen/background-repeat"
+            - "/com/ubuntu/login-screen/background-size"

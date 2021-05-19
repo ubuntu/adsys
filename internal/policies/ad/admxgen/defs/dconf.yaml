@@ -38,3 +38,7 @@
 - objectpath: "/org/gnome/login-screen/enable-fingerprint-authentication"
 - objectpath: "/org/gnome/login-screen/enable-smartcard-authentication"
 - objectpath: "/org/gnome/login-screen/disable-user-list"
+- objectpath: "/com/ubuntu/login-screen/background-color"
+- objectpath: "/com/ubuntu/login-screen/background-picture-uri"
+- objectpath: "/com/ubuntu/login-screen/background-repeat"
+- objectpath: "/com/ubuntu/login-screen/background-size"
