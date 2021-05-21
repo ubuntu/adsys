@@ -2,7 +2,6 @@ package adsysservice_test
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,17 +12,10 @@ import (
 )
 
 type mockAuthorizer struct {
-	doneCalled int
-	doneError  error
 }
 
 func (mockAuthorizer) IsAllowedFromContext(context.Context, authorizer.Action) error {
 	return nil
-}
-
-func (m *mockAuthorizer) Done() error {
-	m.doneCalled++
-	return m.doneError
 }
 
 func TestNew(t *testing.T) {
@@ -35,12 +27,10 @@ func TestNew(t *testing.T) {
 		existingAdsysDirs      bool
 		readUnexistingSssdConf bool
 
-		wantNewErr     bool
-		wantDoneCalled int
+		wantNewErr bool
 	}{
-		"New and Done succeeds as expected, first run": {wantDoneCalled: 1},
-		"Done fails only prints a warning":             {authorizerDoneFail: errors.New("Fail to create authorizer"), wantDoneCalled: 1},
-		"Adsys directory can already exists":           {existingAdsysDirs: true, wantDoneCalled: 1},
+		"New and Done succeeds as expected, first run": {},
+		"Adsys directory can already exists":           {existingAdsysDirs: true},
 
 		// Error cases
 		"Ad New fails prevents adsysservice creation":      {AdNewFail: true, existingAdsysDirs: true, wantNewErr: true},
@@ -61,7 +51,7 @@ func TestNew(t *testing.T) {
 				require.NoError(t, os.MkdirAll(adsysRunDir, 0700), "Setup: could not create adsys run directory")
 			}
 
-			auth := mockAuthorizer{doneError: tc.authorizerDoneFail}
+			auth := mockAuthorizer{}
 
 			if tc.AdNewFail {
 				err := os.Chmod(adsysCacheDir, 0000)
@@ -94,7 +84,6 @@ func TestNew(t *testing.T) {
 			require.NoError(t, err, "New should not return an error")
 
 			s.Quit(context.Background())
-			require.Equal(t, tc.wantDoneCalled, auth.doneCalled, "Done was called the expected number of times")
 
 			_, err = os.Stat(adsysCacheDir)
 			require.NoError(t, err, "adsys cache directory exists as expected")

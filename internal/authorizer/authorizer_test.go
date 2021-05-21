@@ -15,6 +15,8 @@ func TestIsAllowedFromContext(t *testing.T) {
 	t.Parallel()
 	authorizer.StartLocalSystemBus(t)
 
+	bus := authorizer.NewDbusConn(t)
+
 	var emptyAction authorizer.Action
 	simpleAction := authorizer.Action{
 		ID: "simpleAction",
@@ -76,11 +78,10 @@ func TestIsAllowedFromContext(t *testing.T) {
 			d := &authorizer.DbusMock{
 				IsAuthorized:    tc.wantAuthorized,
 				WantPolkitError: tc.wantPolkitError}
-			a, err := authorizer.New(authorizer.WithAuthority(d), authorizer.WithRoot("testdata"), authorizer.WithUserLookup(userLookup))
+			a, err := authorizer.New(bus, authorizer.WithAuthority(d), authorizer.WithRoot("testdata"), authorizer.WithUserLookup(userLookup))
 			if err != nil {
 				t.Fatalf("Failed to create authorizer: %v", err)
 			}
-			defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 			errAllowed := a.IsAllowedFromContext(ctx, tc.action)
 
@@ -92,12 +93,12 @@ func TestIsAllowedFromContext(t *testing.T) {
 func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 	t.Parallel()
 	authorizer.StartLocalSystemBus(t)
+	bus := authorizer.NewDbusConn(t)
 
-	a, err := authorizer.New()
+	a, err := authorizer.New(bus)
 	if err != nil {
 		t.Fatalf("Failed to create authorizer: %v", err)
 	}
-	defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 	errAllowed := a.IsAllowedFromContext(context.Background(), authorizer.ActionAlwaysAllowed)
 	assert.Equal(t, false, errAllowed == nil, "IsAllowedFromContext must deny without peer creds info")
@@ -106,12 +107,12 @@ func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 	t.Parallel()
 	authorizer.StartLocalSystemBus(t)
+	bus := authorizer.NewDbusConn(t)
 
-	a, err := authorizer.New()
+	a, err := authorizer.New(bus)
 	if err != nil {
 		t.Fatalf("Failed to create authorizer: %v", err)
 	}
-	defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 	p := peer.Peer{
 		AuthInfo: invalidPeerCredsInfo{},
@@ -125,6 +126,7 @@ func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 func TestIsAllowedFromContextWithoutUserKey(t *testing.T) {
 	t.Parallel()
 	authorizer.StartLocalSystemBus(t)
+	bus := authorizer.NewDbusConn(t)
 
 	myUserOtherAction := authorizer.Action{
 		ID:      "UserOtherActionID",
@@ -137,11 +139,10 @@ func TestIsAllowedFromContextWithoutUserKey(t *testing.T) {
 	}
 	ctx := peer.NewContext(context.Background(), &p)
 
-	a, err := authorizer.New(authorizer.WithRoot("testdata"))
+	a, err := authorizer.New(bus, authorizer.WithRoot("testdata"))
 	if err != nil {
 		t.Fatalf("Failed to create authorizer: %v", err)
 	}
-	defer func() { assert.NoError(t, a.Done(), "No error on closing connection") }()
 
 	errAllowed := a.IsAllowedFromContext(ctx, myUserOtherAction)
 	assert.Equal(t, false, errAllowed == nil, "IsAllowedFromContext must deny without peer creds info")

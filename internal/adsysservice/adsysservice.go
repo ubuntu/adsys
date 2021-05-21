@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/authorizer"
@@ -35,6 +36,7 @@ type Service struct {
 
 	state state
 
+	bus    *dbus.Conn
 	daemon *daemon.Daemon
 }
 
@@ -61,7 +63,6 @@ type option func(*options) error
 
 type authorizerer interface {
 	IsAllowedFromContext(context.Context, authorizer.Action) error
-	Done() error
 }
 
 // WithCacheDir specifies a personalized daemon cache directory
@@ -135,9 +136,24 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		return nil, err
 	}
 
+	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
+	bus, err := dbus.SystemBusPrivate()
+	if err != nil {
+		return nil, err
+	}
+	if err = bus.Auth(nil); err != nil {
+		_ = bus.Close()
+		return nil, err
+	}
+	if err = bus.Hello(); err != nil {
+		_ = bus.Close()
+		return nil, err
+	}
+
 	if args.authorizer == nil {
-		args.authorizer, err = authorizer.New()
+		args.authorizer, err = authorizer.New(bus)
 		if err != nil {
+			_ = bus.Close()
 			return nil, err
 		}
 	}
@@ -166,6 +182,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 			adServer:    url,
 			adDomain:    domain,
 		},
+		bus: bus,
 	}, nil
 }
 
@@ -220,7 +237,7 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 
 // Quit cleans every ressources than the service was using.
 func (s *Service) Quit(ctx context.Context) {
-	if err := s.authorizer.Done(); err != nil {
-		log.Warningf(ctx, i18n.G("Can't disconnect authorizer: %v"), err)
+	if err := s.bus.Close(); err != nil {
+		log.Warningf(ctx, i18n.G("Can't disconnect system dbus: %v"), err)
 	}
 }
