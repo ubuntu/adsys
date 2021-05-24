@@ -26,7 +26,7 @@ func TestDocChapter(t *testing.T) {
 		chapter          string
 		raw              bool
 		modifyCase       bool
-		polkitAnswer     string
+		systemAnswer     string
 		daemonNotStarted bool
 
 		wantErr bool
@@ -39,7 +39,7 @@ func TestDocChapter(t *testing.T) {
 		"Get documentation chapter with full name":         {chapter: fullName},
 		"Get documentation chapter with non matching case": {chapter: baseName, modifyCase: true},
 
-		"Get documentation is always authorized": {polkitAnswer: "no", chapter: baseName},
+		"Get documentation is always authorized": {systemAnswer: "no", chapter: baseName},
 
 		// Error cases
 		"Daemon not responding":                        {daemonNotStarted: true, wantErr: true},
@@ -49,10 +49,10 @@ func TestDocChapter(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			if tc.polkitAnswer == "" {
-				tc.polkitAnswer = "yes"
+			if tc.systemAnswer == "" {
+				tc.systemAnswer = "yes"
 			}
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.systemAnswer)
 
 			if tc.modifyCase {
 				tc.chapter = strings.ToUpper(tc.chapter)
@@ -100,7 +100,7 @@ func TestDocList(t *testing.T) {
 
 	tests := map[string]struct {
 		raw              bool
-		polkitAnswer     string
+		systemAnswer     string
 		daemonNotStarted bool
 
 		wantErr bool
@@ -108,7 +108,7 @@ func TestDocList(t *testing.T) {
 		"List every documentation chapter":        {},
 		"Raw list of everu documentation chapter": {raw: true},
 
-		"List documentation is always authorized": {polkitAnswer: "no"},
+		"List documentation is always authorized": {systemAnswer: "no"},
 
 		// Error cases
 		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
@@ -116,10 +116,10 @@ func TestDocList(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			if tc.polkitAnswer == "" {
-				tc.polkitAnswer = "yes"
+			if tc.systemAnswer == "" {
+				tc.systemAnswer = "yes"
 			}
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {

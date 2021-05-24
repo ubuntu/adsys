@@ -85,7 +85,7 @@ jobs:
           set -eu
 
           echo "${{ github.token }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
-          docker pull docker.pkg.github.com/ubuntu/adsys/polkitd:0.1
+          docker pull docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1
       - name: Run tests
         run: |
           set -eu
