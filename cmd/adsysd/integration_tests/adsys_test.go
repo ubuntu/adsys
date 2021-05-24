@@ -183,8 +183,12 @@ var (
 )
 
 // runDaemons is a helper to start polkit, mock systemd and a system dbus session in multile containers:
-// - one giving all permissions to any actions
-// - one giving no permissions to every actions
+// - one giving all permissions to any actions, with a harcoded startup time and next refresh unit time.
+// - one giving no permissions to every actions, with a harcoded startup time and next refresh unit time.
+// - one having no startup time available.
+// - one having an invalid startup time.
+// - one having no refresh unit time available.
+// - one having an invalid refresh unit time.
 // The current branch .policy file is used.
 // you can then select the correct daemon via the system dbus socket with systemAnswer().
 // teardown will ensure the containers are stopped.
@@ -206,8 +210,12 @@ func runDaemons() (teardown func()) {
 	}
 
 	answers := map[string]string{
-		"yes": filepath.Join(dir, "yes"),
-		"no":  filepath.Join(dir, "no"),
+		"yes":                      filepath.Join(dir, "yes"),
+		"no":                       filepath.Join(dir, "no"),
+		"no_startup_time":          filepath.Join(dir, "nostartuptime"),
+		"invalid_startup_time":     filepath.Join(dir, "invalidstartuptime"),
+		"no_nextrefresh_time":      filepath.Join(dir, "nonextrefreshtime"),
+		"invalid_nextrefresh_time": filepath.Join(dir, "invalidnextrefreshtime"),
 	}
 	systemSockets = make(map[string]string)
 
@@ -268,8 +276,12 @@ func runDaemons() (teardown func()) {
 }
 
 // systemAnswer will flip to which polkit and systemd mock to communicate to:
-// - yes for polkit always authorizing our actions.
-// - no for polkit always denying our actions.
+// - yes for polkit always authorizing our actions, with a harcoded startup time and next refresh unit time.
+// - no for polkit always denying our actions, with a harcoded startup time and next refresh unit time.
+// - one having no startup time available.
+// - one having an invalid startup time.
+// - one having no refresh unit time available.
+// - one having an invalid refresh unit time.
 // Note that this modify the environment variable, and so, tests using them can’t run in parallel.
 // The environment is restored when the test ends.
 func systemAnswer(t *testing.T, answer string) {
