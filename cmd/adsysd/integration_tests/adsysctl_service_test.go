@@ -292,6 +292,12 @@ func TestServiceStatus(t *testing.T) {
 		"Status is always authorized":             {systemAnswer: "no"},
 		"Status on user connected with no cache":  {krb5ccNoCache: true, systemAnswer: "yes"},
 
+		// Refresh time exception
+		"No startup time leads to unknown refresh time":           {systemAnswer: "no_startup_time"},
+		"Invalid startup time leads to unknown refresh time":      {systemAnswer: "invalid_startup_time"},
+		"No unit refresh time leads to unknown refresh time":      {systemAnswer: "no_nextrefresh_time"},
+		"Invalid unit refresh time leads to unknown refresh time": {systemAnswer: "invalid_nextrefresh_time"},
+
 		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
