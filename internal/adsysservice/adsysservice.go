@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/sirupsen/logrus"
@@ -34,7 +35,8 @@ type Service struct {
 
 	authorizer authorizerer
 
-	state state
+	state          state
+	initSystemTime *time.Time
 
 	bus    *dbus.Conn
 	daemon *daemon.Daemon
@@ -170,6 +172,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		return nil, err
 	}
 
+	// Init system reference time
+	initSysTime := initSystemTime(bus)
+
 	return &Service{
 		adc:           adc,
 		policyManager: m,
@@ -182,7 +187,8 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 			adServer:    url,
 			adDomain:    domain,
 		},
-		bus: bus,
+		initSystemTime: initSysTime,
+		bus:            bus,
 	}, nil
 }
 
@@ -240,4 +246,22 @@ func (s *Service) Quit(ctx context.Context) {
 	if err := s.bus.Close(); err != nil {
 		log.Warningf(ctx, i18n.G("Can't disconnect system dbus: %v"), err)
 	}
+}
+
+// initSystemTime returns systemd generator init system time
+func initSystemTime(bus *dbus.Conn) *time.Time {
+	systemd := bus.Object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
+	val, err := systemd.GetProperty("org.freedesktop.systemd1.Manager.GeneratorsStartTimestamp")
+	if err != nil {
+		log.Warningf(context.Background(), "could not get system startup time? Can’t list next refresh: %v", err)
+		return nil
+	}
+	start, ok := val.Value().(uint64)
+	if !ok {
+		log.Warningf(context.Background(), "invalid next system startup time: %q", val.Value())
+		return nil
+	}
+
+	initSystemTime := time.Unix(int64(start)/1000000, 0)
+	return &initSystemTime
 }
