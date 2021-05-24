@@ -361,6 +361,10 @@ func TestServiceStatus(t *testing.T) {
 
 			re = regexp.MustCompile(`(updated on)([^\n]*)`)
 			got = re.ReplaceAllString(got, "$1 DDD MON D HH:MM")
+			// Hardcode time for making next refresh time independent of current timezone, but still
+			// check some values (day digit, month…)
+			re = regexp.MustCompile(`(Next Refresh:) .* May 2.*([^\n]*)`)
+			got = re.ReplaceAllString(got, "$1 Tue May 25 14:55")
 
 			// Compare golden files
 			goldPath := filepath.Join("testdata/PolicyStatus/golden", name)
