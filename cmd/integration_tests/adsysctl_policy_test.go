@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -805,6 +806,51 @@ func TestPolicyUpdate(t *testing.T) {
 			require.NoError(t, err, "client should exit with no error")
 
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "dconf"), update)
+		})
+	}
+}
+
+func TestPolicyDebugGPOListScript(t *testing.T) {
+	gpolistSrc, err := ioutil.ReadFile("../../internal/policies/ad/adsys-gpolist")
+	require.NoError(t, err, "Setup: failed to load source of adsys-gpolist")
+
+	tests := map[string]struct {
+		systemAnswer     string
+		daemonNotStarted bool
+
+		wantErr bool
+	}{
+		"Get adsys-gpolist script":     {systemAnswer: "yes"},
+		"Version is always authorized": {systemAnswer: "no"},
+		"Daemon not responding":        {daemonNotStarted: true, wantErr: true},
+	}
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			systemAnswer(t, tc.systemAnswer)
+
+			conf := createConf(t, "")
+			if !tc.daemonNotStarted {
+				defer runDaemon(t, conf)()
+			}
+
+			chdir(t, os.TempDir())
+
+			_, err := runClient(t, conf, "policy", "debug", "gpolist-script")
+			if tc.wantErr {
+				require.Error(t, err, "client should exit with an error")
+				return
+			}
+
+			f, err := os.Stat("adsys-gpolist")
+			require.NoError(t, err, "gpo list script should exists")
+
+			require.NotEqual(t, 0, f.Mode()&0111, "Script should be executable")
+
+			got, err := os.ReadFile("adsys-gpolist")
+			require.NoError(t, err, "gpo list script is not readable")
+
+			require.Equal(t, string(gpolistSrc), string(got), "Script content should match source")
 		})
 	}
 }

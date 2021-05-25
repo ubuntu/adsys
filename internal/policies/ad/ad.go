@@ -100,8 +100,10 @@ func WithSSSCacheDir(cacheDir string) Option {
 	}
 }
 
+// AdsysGpoListCode is the embedded script which request
+// Samba to get our GPO list for the given object.
 //go:embed adsys-gpolist
-var adsysGpoListCode string
+var AdsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
 func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err error) {
@@ -117,7 +119,7 @@ func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err e
 		runDir:      consts.DefaultRunDir,
 		cacheDir:    consts.DefaultCacheDir,
 		sssCacheDir: consts.DefaultSSSCacheDir,
-		gpoListCmd:  []string{"python3", "-c", adsysGpoListCode},
+		gpoListCmd:  []string{"python3", "-c", AdsysGpoListCode},
 		versionID:   versionID,
 	}
 	// applied options
