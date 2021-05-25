@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:349
+#: internal/policies/ad/ad.go:351
 msgid "%s :%v"
 msgstr ""
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:230
+#: cmd/adsysd/client/policy.go:267
 #, c-format
 msgid "%s: Locked to system default"
 msgstr ""
@@ -173,6 +173,10 @@ msgstr ""
 
 #: internal/grpc/logstreamer/server.go:44
 msgid "Couldn't send initial connection log to client"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:74
+msgid "Debug various policy infos"
 msgstr ""
 
 #: internal/cmdhandler/suggest.go:51
@@ -300,7 +304,7 @@ msgid ""
 "URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:75
+#: cmd/adsysd/client/policy.go:92
 msgid ""
 "Updates/Create a policy for current user or given user with its kerberos "
 "ticket"
@@ -310,11 +314,15 @@ msgstr ""
 msgid "Wait for active requests to close."
 msgstr ""
 
+#: cmd/adsysd/client/policy.go:82
+msgid "Write GPO list python embeeded script in current directory"
+msgstr ""
+
 #: cmd/adsysd/client/doc.go:55
 msgid "Write documentation file(s) to this directory."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:103
+#: cmd/adsysd/client/policy.go:120
 msgid ""
 "all updates the policy of the computer and all the logged in users. -m or "
 "USER_NAME/TICKET cannot be used with this option."
@@ -342,7 +350,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/policies/ad/ad.go:108
+#: internal/policies/ad/ad.go:110
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -375,7 +383,7 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/ad/ad.go:285
+#: internal/policies/ad/ad.go:287
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -408,7 +416,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:292
+#: internal/policies/ad/ad.go:294
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -417,7 +425,7 @@ msgstr ""
 msgid "can't get cached GPO list from %s"
 msgstr ""
 
-#: internal/policies/ad/ad.go:172
+#: internal/policies/ad/ad.go:174
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -425,7 +433,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:260
+#: internal/policies/ad/ad.go:262
 msgid "can't list users from cache"
 msgstr ""
 
@@ -610,6 +618,10 @@ msgstr ""
 msgid "error while getting documentation"
 msgstr ""
 
+#: internal/adsysservice/policy.go:130
+msgid "error while getting gpo list script"
+msgstr ""
+
 #: internal/adsysservice/doc.go:84
 msgid "error while listing documentation"
 msgstr ""
@@ -666,7 +678,7 @@ msgstr ""
 msgid "failed to marshal meta data"
 msgstr ""
 
-#: internal/policies/ad/ad.go:269
+#: internal/policies/ad/ad.go:271
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -682,11 +694,11 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:303
+#: internal/policies/ad/ad.go:305
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:210
+#: internal/policies/ad/ad.go:212
 msgid ""
 "failed to retrieve the list of GPO: %v\n"
 "%s"
@@ -740,15 +752,15 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:220
+#: internal/policies/ad/ad.go:222
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:282
+#: cmd/adsysd/client/policy.go:319
 msgid "machine or user arguments cannot be used with update all"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:102
+#: cmd/adsysd/client/policy.go:119
 msgid "machine updates the policy of the computer."
 msgstr ""
 
@@ -818,7 +830,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/policies/ad/ad.go:182
+#: internal/policies/ad/ad.go:184
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -879,10 +891,10 @@ msgstr ""
 msgid "use a specific configuration file"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:285
+#: cmd/adsysd/client/policy.go:322
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/policies/ad/ad.go:177
+#: internal/policies/ad/ad.go:179
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
