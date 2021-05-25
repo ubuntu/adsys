@@ -2,17 +2,23 @@ package client
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/glamour"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys"
+	"github.com/ubuntu/adsys/doc"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 func (a *App) installDoc() {
-	var raw *bool
+	var format, dest *string
 	docCmd := &cobra.Command{
 		Use:   "doc [CHAPTER]",
 		Short: i18n.G("Documentation"),
@@ -42,15 +48,20 @@ func (a *App) installDoc() {
 			if len(args) > 0 {
 				chapter = args[0]
 			}
-			return a.renderDocumentation(chapter, *raw)
+			return a.getDocumentation(chapter, *format, *dest)
 		},
 	}
-	raw = docCmd.Flags().BoolP("raw", "r", false, i18n.G("do not render markup."))
+	format = docCmd.Flags().StringP("format", "f", "markdown", i18n.G("Format type (markdown, raw or html)."))
+	dest = docCmd.Flags().StringP("dest", "d", "", i18n.G("Write documentation file(s) to this directory."))
 
 	a.rootCmd.AddCommand(docCmd)
 }
 
-func (a *App) renderDocumentation(chapter string, raw bool) error {
+func (a *App) getDocumentation(chapter, format, dest string) error {
+	if format != "markdown" && format != "raw" && format != "html" {
+		return fmt.Errorf("format can only be markdown, raw or html. Got %q", format)
+	}
+
 	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
 	if err != nil {
 		return err
@@ -58,10 +69,15 @@ func (a *App) renderDocumentation(chapter string, raw bool) error {
 	defer client.Close()
 
 	var stream recver
-	if chapter == "" {
-		stream, err = client.ListDoc(a.ctx, &adsys.ListDocRequest{Raw: raw})
+	var withHeader bool
+	if dest != "" {
+		stream, err = client.GetDoc(a.ctx, &adsys.GetDocRequest{Chapter: chapter})
+		withHeader = true
+	} else if chapter == "" {
+		stream, err = client.ListDoc(a.ctx, &adsys.ListDocRequest{Raw: false})
 	} else {
 		stream, err = client.GetDoc(a.ctx, &adsys.GetDocRequest{Chapter: chapter})
+		withHeader = true
 	}
 	if err != nil {
 		return err
@@ -72,18 +88,56 @@ func (a *App) renderDocumentation(chapter string, raw bool) error {
 		return err
 	}
 
-	out := content
-	if !raw {
-		r, err := glamour.NewTermRenderer(glamour.WithEnvironmentConfig())
-		if err != nil {
-			return err
+	for _, out := range strings.Split(content, doc.SplitFilesToken) {
+		if len(out) == 0 {
+			continue
 		}
-		out, err = r.Render(content)
-		if err != nil {
-			return err
+		var filename string
+		if withHeader {
+			d := strings.SplitN(out, "\n", 2)
+			filename, out = d[0], d[1]
+		}
+
+		var ext string
+		switch format {
+		case "markdown":
+			// Transform stdout content
+			if dest == "" {
+				r, err := glamour.NewTermRenderer(glamour.WithEnvironmentConfig())
+				if err != nil {
+					return err
+				}
+				out, err = r.Render(out)
+				if err != nil {
+					return err
+				}
+			}
+			ext = ".md"
+		case "html":
+			extensions := parser.CommonExtensions | parser.AutoHeadingIDs
+			parser := parser.NewWithExtensions(extensions)
+			htmlFlags := html.CommonFlags | html.HrefTargetBlank | html.TOC | html.CompletePage
+			opts := html.RendererOptions{Flags: htmlFlags}
+			renderer := html.NewRenderer(opts)
+			out = string(markdown.ToHTML([]byte(out), parser, renderer))
+			ext = ".html"
+		default:
+		}
+
+		// Write directly on stdout
+		if dest == "" {
+			fmt.Print(out)
+			continue
+		}
+
+		// Dump documentation in a directory
+		if err = os.MkdirAll(dest, 0755); err != nil {
+			return fmt.Errorf(i18n.G("can’t create %q"), dest)
+		}
+		if err := os.WriteFile(filepath.Join(dest, filename+ext), []byte(out), 0644); err != nil {
+			return fmt.Errorf(i18n.G("can’t write documentation chapter %q: %v"), filename+ext, err)
 		}
 	}
-	fmt.Print(out)
 
 	return nil
 }

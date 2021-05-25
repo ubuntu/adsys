@@ -9,6 +9,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/godbus/dbus/v5 v5.0.3
 	github.com/golang/protobuf v1.5.2
+	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7 // indirect
 	github.com/mvo5/libsmbclient-go v0.0.0-20201002095607-f9fa2a5c1104
 	github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354 // indirect
 	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989

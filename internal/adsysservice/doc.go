@@ -17,6 +17,7 @@ import (
 )
 
 // GetDoc returns a chapter documentation from server
+// If chapter is empty, all documentation documentation is outputted, with a separator between them
 func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while getting documentation"))
 
@@ -26,25 +27,49 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 
 	onlineDocURL := doc.GetPackageURL()
 
+	var out string
 	chapter := r.GetChapter()
 	docDir := doc.Dir
-	filename, err := documentChapterToFileName(docDir, chapter)
-	if err != nil {
-		return err
-	}
+	// Get all documentation, separate file names with special characters
+	if chapter == "" {
+		fs, err := docDir.ReadDir(".")
+		if err != nil {
+			return fmt.Errorf(i18n.G("could not list documentation directory: %v"), err)
+		}
+		// Sort all file names, having a chapter prefix
+		var names []string
+		for _, f := range fs {
+			names = append(names, f.Name())
+		}
+		sort.Strings(names)
 
-	f, err := docDir.Open(filename)
-	if err != nil {
-		return fmt.Errorf(i18n.G("no chapter %q found in documentation"), chapter)
-	}
-	defer f.Close()
+		for _, n := range names {
+			d, err := docDir.ReadFile(n)
+			if err != nil {
+				return err
+			}
+			out = fmt.Sprintf("%s%s%s\n%s", out, doc.SplitFilesToken, strings.TrimSuffix(n, ".md"), string(d))
+		}
+	} else {
+		// Get a give chapter content
+		filename, err := documentChapterToFileName(docDir, chapter)
+		if err != nil {
+			return err
+		}
 
-	content, err := io.ReadAll(f)
-	if err != nil {
-		return fmt.Errorf(i18n.G("could not read chapter %q: %v"), chapter, err)
-	}
+		f, err := docDir.Open(filename)
+		if err != nil {
+			return fmt.Errorf(i18n.G("no chapter %q found in documentation"), chapter)
+		}
+		defer f.Close()
 
-	out := strings.ReplaceAll(string(content), "(images/", fmt.Sprintf("(%s/images/", onlineDocURL))
+		content, err := io.ReadAll(f)
+		if err != nil {
+			return fmt.Errorf(i18n.G("could not read chapter %q: %v"), chapter, err)
+		}
+		out = fmt.Sprintf("%s%s\n%s", doc.SplitFilesToken, strings.TrimSuffix(filename, ".md"), string(content))
+	}
+	out = strings.ReplaceAll(out, "(images/", fmt.Sprintf("(%s/images/", onlineDocURL))
 
 	if err := stream.Send(&adsys.StringResponse{
 		Msg: out,
