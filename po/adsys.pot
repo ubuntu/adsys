@@ -101,7 +101,7 @@ msgstr ""
 msgid "- Default: %s"
 msgstr ""
 
-#: internal/adsysservice/doc.go:86
+#: internal/adsysservice/doc.go:111
 msgid "- can't read content -"
 msgstr ""
 
@@ -179,7 +179,7 @@ msgstr ""
 msgid "Did you mean this?\n"
 msgstr ""
 
-#: cmd/adsysd/client/doc.go:18
+#: cmd/adsysd/client/doc.go:24
 msgid "Documentation"
 msgstr ""
 
@@ -193,6 +193,10 @@ msgstr ""
 
 #: internal/grpc/grpcerror/grpcerror.go:34
 msgid "Error from server: %v"
+msgstr ""
+
+#: cmd/adsysd/client/doc.go:54
+msgid "Format type (markdown, raw or html)."
 msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:50
@@ -306,6 +310,10 @@ msgstr ""
 msgid "Wait for active requests to close."
 msgstr ""
 
+#: cmd/adsysd/client/doc.go:55
+msgid "Write documentation file(s) to this directory."
+msgstr ""
+
 #: cmd/adsysd/client/policy.go:103
 msgid ""
 "all updates the policy of the computer and all the logged in users. -m or "
@@ -328,6 +336,10 @@ msgstr ""
 #: internal/policies/ad/download.go:160
 #, c-format
 msgid "can't check if %s needs refreshing"
+msgstr ""
+
+#: cmd/adsysd/client/doc.go:135
+msgid "can't create %q"
 msgstr ""
 
 #: internal/policies/ad/ad.go:108
@@ -473,6 +485,10 @@ msgstr ""
 msgid "can't update user profile %s"
 msgstr ""
 
+#: cmd/adsysd/client/doc.go:138
+msgid "can't write documentation chapter %q: %v"
+msgstr ""
+
 #: internal/policies/ad/common/common.go:20
 msgid "cannot get versionID"
 msgstr ""
@@ -497,17 +513,18 @@ msgstr ""
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
-#: cmd/adsysd/integration_tests/adsysctl_doc_test.go:180
+#: cmd/integration_tests/adsysctl_doc_test.go:235
 #, c-format
 msgid "could not find chapter starting with %s"
 msgstr ""
 
-#: cmd/adsysd/integration_tests/adsysctl_doc_test.go:167
-#: internal/adsysservice/doc.go:67 internal/adsysservice/doc.go:119
+#: cmd/integration_tests/adsysctl_doc_test.go:222
+#: internal/adsysservice/doc.go:37 internal/adsysservice/doc.go:92
+#: internal/adsysservice/doc.go:144
 msgid "could not list documentation directory: %v"
 msgstr ""
 
-#: internal/adsysservice/doc.go:44
+#: internal/adsysservice/doc.go:68
 msgid "could not read chapter %q: %v"
 msgstr ""
 
@@ -551,10 +568,6 @@ msgstr ""
 msgid "distro for which to retrieve policy definition."
 msgstr ""
 
-#: cmd/adsysd/client/doc.go:48
-msgid "do not render markup."
-msgstr ""
-
 #: cmd/adsysd/client/policy.go:68
 msgid "don't display colorized version."
 msgstr ""
@@ -593,11 +606,11 @@ msgstr ""
 msgid "error while getting daemon version"
 msgstr ""
 
-#: internal/adsysservice/doc.go:21
+#: internal/adsysservice/doc.go:22
 msgid "error while getting documentation"
 msgstr ""
 
-#: internal/adsysservice/doc.go:59
+#: internal/adsysservice/doc.go:84
 msgid "error while listing documentation"
 msgstr ""
 
@@ -761,11 +774,11 @@ msgstr ""
 msgid "no boot system time found"
 msgstr ""
 
-#: internal/adsysservice/doc.go:38
+#: internal/adsysservice/doc.go:62
 msgid "no chapter %q found in documentation"
 msgstr ""
 
-#: internal/adsysservice/doc.go:143
+#: internal/adsysservice/doc.go:168
 msgid "no file found matching chapter %q"
 msgstr ""
 
