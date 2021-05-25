@@ -132,10 +132,10 @@ func (a *App) getDocumentation(chapter, format, dest string) error {
 
 		// Dump documentation in a directory
 		if err = os.MkdirAll(dest, 0755); err != nil {
-			return fmt.Errorf(i18n.G("can’t create %q"), dest)
+			return fmt.Errorf(i18n.G("can't create %q"), dest)
 		}
 		if err := os.WriteFile(filepath.Join(dest, filename+ext), []byte(out), 0644); err != nil {
-			return fmt.Errorf(i18n.G("can’t write documentation chapter %q: %v"), filename+ext, err)
+			return fmt.Errorf(i18n.G("can't write documentation chapter %q: %v"), filename+ext, err)
 		}
 	}
 
