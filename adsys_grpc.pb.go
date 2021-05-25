@@ -28,6 +28,7 @@ type ServiceClient interface {
 	GetDoc(ctx context.Context, in *GetDocRequest, opts ...grpc.CallOption) (Service_GetDocClient, error)
 	ListDoc(ctx context.Context, in *ListDocRequest, opts ...grpc.CallOption) (Service_ListDocClient, error)
 	ListActiveUsers(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_ListActiveUsersClient, error)
+	GPOListScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_GPOListScriptClient, error)
 }
 
 type serviceClient struct {
@@ -358,6 +359,38 @@ func (x *serviceListActiveUsersClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
+func (c *serviceClient) GPOListScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_GPOListScriptClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[10], "/service/GPOListScript", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceGPOListScriptClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_GPOListScriptClient interface {
+	Recv() (*StringResponse, error)
+	grpc.ClientStream
+}
+
+type serviceGPOListScriptClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceGPOListScriptClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
@@ -372,6 +405,7 @@ type ServiceServer interface {
 	GetDoc(*GetDocRequest, Service_GetDocServer) error
 	ListDoc(*ListDocRequest, Service_ListDocServer) error
 	ListActiveUsers(*Empty, Service_ListActiveUsersServer) error
+	GPOListScript(*Empty, Service_GPOListScriptServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -408,6 +442,9 @@ func (UnimplementedServiceServer) ListDoc(*ListDocRequest, Service_ListDocServer
 }
 func (UnimplementedServiceServer) ListActiveUsers(*Empty, Service_ListActiveUsersServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListActiveUsers not implemented")
+}
+func (UnimplementedServiceServer) GPOListScript(*Empty, Service_GPOListScriptServer) error {
+	return status.Errorf(codes.Unimplemented, "method GPOListScript not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -632,6 +669,27 @@ func (x *serviceListActiveUsersServer) Send(m *StringResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Service_GPOListScript_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).GPOListScript(m, &serviceGPOListScriptServer{stream})
+}
+
+type Service_GPOListScriptServer interface {
+	Send(*StringResponse) error
+	grpc.ServerStream
+}
+
+type serviceGPOListScriptServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceGPOListScriptServer) Send(m *StringResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -688,6 +746,11 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "ListActiveUsers",
 			Handler:       _Service_ListActiveUsers_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GPOListScript",
+			Handler:       _Service_GPOListScript_Handler,
 			ServerStreams: true,
 		},
 	},

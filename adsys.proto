@@ -13,6 +13,7 @@ service service {
   rpc GetDoc(GetDocRequest) returns (stream StringResponse);
   rpc ListDoc(ListDocRequest) returns (stream StringResponse);
   rpc ListActiveUsers(Empty) returns (stream StringResponse);
+  rpc GPOListScript(Empty) returns (stream StringResponse);
 }
 
 message Empty {}

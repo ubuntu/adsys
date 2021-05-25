@@ -69,6 +69,23 @@ func (a *App) installPolicy() {
 	policyCmd.AddCommand(appliedCmd)
 	cmdhandler.RegisterAlias(appliedCmd, &a.rootCmd)
 
+	debugCmd := &cobra.Command{
+		Use:    "debug",
+		Short:  i18n.G("Debug various policy infos"),
+		Hidden: true,
+		Args:   cmdhandler.SubcommandsRequiredWithSuggestions,
+		RunE:   cmdhandler.NoCmd,
+	}
+	policyCmd.AddCommand(debugCmd)
+	gpoListCmd := &cobra.Command{
+		Use:               "gpolist-script",
+		Short:             i18n.G("Write GPO list python embeeded script in current directory"),
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cmdhandler.NoValidArgs,
+		RunE:              func(cmd *cobra.Command, args []string) error { return a.dumpGPOListScript() },
+	}
+	debugCmd.AddCommand(gpoListCmd)
+
 	var updateMachine, updateAll *bool
 	updateCmd := &cobra.Command{
 		Use:   "update [USER_NAME KERBEROS_TICKET_PATH]",
@@ -195,6 +212,26 @@ func (a *App) dumpPolicies(target string, showDetails, showOverridden, nocolor b
 	fmt.Print(policies)
 
 	return nil
+}
+
+func (a *App) dumpGPOListScript() error {
+	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	stream, err := client.GPOListScript(a.ctx, &adsys.Empty{})
+	if err != nil {
+		return err
+	}
+
+	script, err := singleMsg(stream)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile("adsys-gpolist", []byte(script), 0750)
 }
 
 func colorizePolicies(policies string) (string, error) {

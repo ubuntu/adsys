@@ -125,4 +125,21 @@ func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest,
 	return nil
 }
 
+// DumpPolicies displays all applied policies for a given user.
+func (s *Service) GPOListScript(r *adsys.Empty, stream adsys.Service_GPOListScriptServer) (err error) {
+	defer decorate.OnError(&err, i18n.G("error while getting gpo list script"))
+
+	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
+		return err
+	}
+
+	if err := stream.Send(&adsys.StringResponse{
+		Msg: ad.AdsysGpoListCode,
+	}); err != nil {
+		log.Warningf(stream.Context(), "couldn't send gpo list to client: %v", err)
+	}
+
+	return nil
+}
+
 // FIXME: check cache file permission
