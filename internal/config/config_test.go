@@ -256,11 +256,11 @@ func TestInit(t *testing.T) {
 				require.NoError(t, err, "Setup: failed to write initial config file")
 				select {
 				case <-secondCallbackDone:
-					if tc.configFileContent == "" {
+					if tc.wantCallbackCalled != 2 {
 						t.Fatal("We shouldn’t have a secondary callback call when the configuration file was not created before Init()")
 					}
 				case <-time.After(time.Millisecond * 100):
-					if tc.configFileContent != "" {
+					if tc.wantCallbackCalled == 2 {
 						t.Fatal("Secondary callback call for refresh has not happened while we had an initial configuration file on creation")
 					}
 				}
