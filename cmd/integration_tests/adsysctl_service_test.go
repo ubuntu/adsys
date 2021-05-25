@@ -270,7 +270,7 @@ func TestServiceCat(t *testing.T) {
 
 func TestServiceStatus(t *testing.T) {
 
-	admock, err := filepath.Abs("../../../internal/testutils/admock")
+	admock, err := filepath.Abs("../../internal/testutils/admock")
 	require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
 	os.Setenv("PYTHONPATH", admock)
 

@@ -171,7 +171,7 @@ func TestPolicyUpdate(t *testing.T) {
 		err := exec.Command("pkg-config", "--exists", "nss_wrapper").Run()
 		require.NoError(t, err, "libnss_wrapper is not installed on disk, either skip integration tests or install it")
 
-		testutils.PythonCoverageToGoFormat(t, "../../../internal/policies/ad/adsys-gpolist", true)
+		testutils.PythonCoverageToGoFormat(t, "../../internal/policies/ad/adsys-gpolist", true)
 
 		var subArgs []string
 		// We are going to only reexec ourself: only take options (without -run)
@@ -202,7 +202,7 @@ func TestPolicyUpdate(t *testing.T) {
 
 		cmd := exec.Command(subArgs[0], subArgs[1:]...)
 
-		admock, err := filepath.Abs("../../../internal/testutils/admock")
+		admock, err := filepath.Abs("../../internal/testutils/admock")
 		require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
 
 		passwd := modifyAndAddUsers(t, currentUser, "UserIntegrationTest@example.com")

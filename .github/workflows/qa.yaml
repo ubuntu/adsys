@@ -130,13 +130,13 @@ jobs:
         run: |
           set -eu
 
-          # Ignore mod file changes; README.md and po files
+          # Ignore mod file changes; doc/ and README.md and po files
           # Modules are handled in another check and aren't related to generator
           # po and README.md files will be automatically updated once master in master.
-          git update-index --assume-unchanged go.* po/* README.md
+          git update-index --assume-unchanged go.* po/* doc/*.md README.md
           on_exit() {
               # Restore files
-              git update-index --no-assume-unchanged go.* po/* README.md
+              git update-index --no-assume-unchanged go.* po/* doc/*.md README.md
           }
           trap on_exit EXIT INT QUIT ABRT PIPE TERM
 

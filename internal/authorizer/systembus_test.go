@@ -2,33 +2,38 @@ package authorizer
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sync"
-	"testing"
 )
 
 var (
 	sdbus sync.Once
 
-	handleDaemon sync.Mutex
-	dbusStop     sync.WaitGroup
+	sdbusMU                sync.Mutex
+	nbRunningTestsSdbus    uint
+	stopDbus               context.CancelFunc
+	dbusCmd                *exec.Cmd
+	config                 string
+	savedDbusSystemAddress string
 )
 
 // StartLocalSystemBus allows to start and set environment variable to a local bus, preventing polluting system ones
-// The bus is shutted down when the test ends.
-func StartLocalSystemBus(t *testing.T) {
-	t.Helper()
-
-	handleDaemon.Lock()
-	defer handleDaemon.Unlock()
-	dbusStop.Add(1)
+func StartLocalSystemBus() func() {
+	sdbusMU.Lock()
+	defer sdbusMU.Unlock()
+	nbRunningTestsSdbus++
 
 	sdbus.Do(func() {
-		dir := t.TempDir()
-		savedDbusSystemAddress := os.Getenv("DBUS_SYSTEM_BUS_ADDRESS")
-		config := filepath.Join(dir, "dbus.config")
+		dir, err := os.MkdirTemp("", "adsys-tests-dbus")
+		if err != nil {
+			log.Fatalf("Setup: can’t create dbus system directory: %v", err)
+		}
+
+		savedDbusSystemAddress = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS")
+		config = filepath.Join(dir, "dbus.config")
 		os.WriteFile(config, []byte(`<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
@@ -42,42 +47,52 @@ func StartLocalSystemBus(t *testing.T) {
     <allow own="*"/>
   </policy>
 </busconfig>`), 0666)
-		ctx, stopDbus := context.WithCancel(context.Background())
-		cmd := exec.CommandContext(ctx, "dbus-daemon", "--print-address=1", "--config-file="+config)
-		dbusStdout, err := cmd.StdoutPipe()
+		var ctx context.Context
+		ctx, stopDbus = context.WithCancel(context.Background())
+		dbusCmd = exec.CommandContext(ctx, "dbus-daemon", "--print-address=1", "--config-file="+config)
+		dbusStdout, err := dbusCmd.StdoutPipe()
 		if err != nil {
-			t.Fatalf("couldn't get stdout of dbus-daemon: %v", err)
+			os.RemoveAll(dir)
+			log.Fatalf("couldn't get stdout of dbus-daemon: %v", err)
 		}
-		if err := cmd.Start(); err != nil {
-			t.Fatalf("couldn't start dbus-daemon: %v", err)
+		if err := dbusCmd.Start(); err != nil {
+			os.RemoveAll(dir)
+			log.Fatalf("couldn't start dbus-daemon: %v", err)
 		}
 		dbusAddr := make([]byte, 256)
 		n, err := dbusStdout.Read(dbusAddr)
 		if err != nil {
-			t.Fatalf("couldn't get dbus address: %v", err)
+			os.RemoveAll(dir)
+			log.Fatalf("couldn't get dbus address: %v", err)
 		}
 		dbusAddr = dbusAddr[:n]
 		if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", string(dbusAddr)); err != nil {
-			t.Fatalf("couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
+			os.RemoveAll(dir)
+			log.Fatalf("couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
 		}
-
-		t.Cleanup(func() {
-			// Wait for all tests that started to be done to cleanup properly
-			handleDaemon.Lock()
-			defer handleDaemon.Unlock()
-			dbusStop.Wait()
-			stopDbus()
-			cmd.Wait()
-
-			if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", savedDbusSystemAddress); err != nil {
-				t.Errorf("couldn't restore DBUS_SYSTEM_BUS_ADDRESS: %v", err)
-			}
-
-			// Restore dbus system launcher
-			sdbus = sync.Once{}
-			dbusStop = sync.WaitGroup{}
-		})
 	})
 
-	t.Cleanup(dbusStop.Done)
+	return func() {
+		sdbusMU.Lock()
+		defer sdbusMU.Unlock()
+		nbRunningTestsSdbus--
+
+		if nbRunningTestsSdbus != 0 {
+			return
+		}
+
+		stopDbus()
+		dbusCmd.Wait()
+
+		if err := os.RemoveAll(filepath.Dir(config)); err != nil {
+			log.Fatalf("couldn't remove dbus configuration directory: %v", err)
+		}
+
+		if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", savedDbusSystemAddress); err != nil {
+			log.Fatalf("couldn't restore DBUS_SYSTEM_BUS_ADDRESS: %v", err)
+		}
+
+		// Restore dbus system launcher
+		sdbus = sync.Once{}
+	}
 }
