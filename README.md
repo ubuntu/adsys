@@ -108,8 +108,9 @@ adsysctl doc [CHAPTER] [flags]
 ##### Options
 
 ```
-  -h, --help   help for doc
-  -r, --raw    do not render markup.
+  -d, --dest string     Write documentation file(s) to this directory.
+  -f, --format string   Format type (markdown, raw or html). (default "markdown")
+  -h, --help            help for doc
 ```
 
 ##### Options inherited from parent commands
