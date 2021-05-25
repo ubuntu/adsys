@@ -2,6 +2,7 @@ package adsys_test
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -24,7 +25,8 @@ func TestDocChapter(t *testing.T) {
 
 	tests := map[string]struct {
 		chapter          string
-		raw              bool
+		format           string
+		withDest         bool
 		modifyCase       bool
 		systemAnswer     string
 		daemonNotStarted bool
@@ -32,7 +34,13 @@ func TestDocChapter(t *testing.T) {
 		wantErr bool
 	}{
 		"Get documentation chapter": {chapter: baseName},
-		"Get raw documentation":     {chapter: baseName, raw: true},
+		"Get raw documentation":     {chapter: baseName, format: "raw"},
+		"Get html documentation":    {chapter: baseName, format: "html"},
+
+		"Write all documentation":            {withDest: true},
+		"Write one documentation":            {chapter: baseName, withDest: true},
+		"Write documentation in raw format":  {chapter: baseName, format: "raw", withDest: true},
+		"Write documentation in html format": {chapter: baseName, format: "html", withDest: true},
 
 		// Tried to match filename
 		"Get documentation chapter with prefix":            {chapter: strippedExt},
@@ -45,6 +53,7 @@ func TestDocChapter(t *testing.T) {
 		"Daemon not responding":                        {daemonNotStarted: true, wantErr: true},
 		"Nonexistent chapter":                          {chapter: "nonexistent-chapter", wantErr: true},
 		"Error on exact name matching with wrong case": {chapter: fullName, modifyCase: true, wantErr: true},
+		"Error on documentation in unknown format":     {format: "unknown format", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -66,9 +75,19 @@ func TestDocChapter(t *testing.T) {
 				defer runDaemon(t, conf)()
 			}
 
-			args := []string{"doc", tc.chapter}
-			if tc.raw {
-				args = append(args, "-r")
+			args := []string{"doc"}
+			if tc.chapter != "" {
+				args = append(args, tc.chapter)
+			}
+			if tc.format != "" {
+				args = append(args, "--format", tc.format)
+			}
+			var dest string
+			if tc.withDest {
+				dest = t.TempDir()
+				err = os.RemoveAll(dest)
+				require.NoError(t, err, "Setup: can’t delete destination directory")
+				args = append(args, "--dest", dest)
 			}
 			out, err := runClient(t, conf, args...)
 			if tc.wantErr {
@@ -77,14 +96,50 @@ func TestDocChapter(t *testing.T) {
 			}
 
 			require.NoError(t, err, "client should exit with no error")
-			require.NotEmpty(t, out, "some documentation is printed")
-			if tc.raw {
-				assert.False(t, strings.HasPrefix(out, "\n  "), "markdown should not be rendered")
-			} else {
-				assert.True(t, strings.HasPrefix(out, "\n  "), "markdown should be rendered")
+
+			// Printing on stdout
+			if !tc.withDest {
+				require.NotEmpty(t, out, "some documentation is printed")
+				// Images urls are translated to online version
+				assert.NotContains(t, out, "(images/", "No local images are referenced")
+
+				switch tc.format {
+				case "markdown":
+					assert.True(t, strings.HasPrefix(out, "\n  "), "markdown should be rendered")
+					assert.Contains(t, out, "###", "markdown should be printed")
+				case "html":
+					assert.Contains(t, out, "<html>", "html should be printed")
+				case "raw":
+					assert.False(t, strings.HasPrefix(out, "\n  "), "markdown should not be rendered")
+				}
+				return
 			}
-			// Images urls are translated to online version
-			assert.NotContains(t, out, "(images/", "No local images are referenced")
+
+			// Documentation written on disk
+			fs, err := os.ReadDir(dest)
+			require.NoError(t, err, "Destination directory exists")
+			if tc.chapter == "" {
+				require.True(t, len(fs) > 1, "Multiple files are created when requesting the whole documentation")
+			}
+			for _, f := range fs {
+				content, err := os.ReadFile(filepath.Join(dest, f.Name()))
+				require.NoError(t, err, "Can't read destination file")
+
+				out = string(content)
+				var ext string
+				switch tc.format {
+				case "markdown":
+					ext = ".md"
+					assert.True(t, strings.HasPrefix(out, "\n  "), "markdown should be rendered")
+					assert.Contains(t, out, "###", "markdown should be printed")
+				case "html":
+					ext = ".html"
+					assert.Contains(t, out, "<html>", "html should be printed")
+				case "raw":
+					assert.False(t, strings.HasPrefix(out, "\n  "), "markdown should not be rendered")
+				}
+				require.True(t, strings.HasSuffix(f.Name(), ext), "File %q has expected suffix: %q", f.Name(), ext)
+			}
 		})
 	}
 }
@@ -128,7 +183,7 @@ func TestDocList(t *testing.T) {
 
 			args := []string{"doc"}
 			if tc.raw {
-				args = append(args, "-r")
+				args = append(args, "--format", "raw")
 			}
 			out, err := runClient(t, conf, args...)
 			if tc.wantErr {
