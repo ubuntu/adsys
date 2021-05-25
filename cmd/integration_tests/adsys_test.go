@@ -199,7 +199,7 @@ func runDaemons() (teardown func()) {
 	}
 	containerName := fmt.Sprintf("adsys-tests-%06d", r.Int64())
 
-	adsysActionsDir, err := filepath.Abs("../../../internal/adsysservice/actions")
+	adsysActionsDir, err := filepath.Abs("../../internal/adsysservice/actions")
 	if err != nil {
 		log.Fatalf("Setup: couldn't get absolute path for actions: %v", err)
 	}
