@@ -21,22 +21,22 @@ import (
 
 func TestServiceStop(t *testing.T) {
 	tests := map[string]struct {
-		polkitAnswer     string
+		daemonAnswer     string
 		daemonNotStarted bool
 		force            bool
 
 		wantErr bool
 	}{
-		"Stop daemon":           {polkitAnswer: "yes"},
-		"Stop daemon denied":    {polkitAnswer: "no", wantErr: true},
+		"Stop daemon":           {daemonAnswer: "yes"},
+		"Stop daemon denied":    {daemonAnswer: "no", wantErr: true},
 		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
 
-		"Force stop doesn’t exit on error": {polkitAnswer: "yes", force: true, wantErr: false},
+		"Force stop doesn’t exit on error": {daemonAnswer: "yes", force: true, wantErr: false},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.daemonAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {
@@ -59,7 +59,7 @@ func TestServiceStop(t *testing.T) {
 }
 
 func TestServiceStopWaitForHangingClient(t *testing.T) {
-	polkitAnswer(t, "yes")
+	systemAnswer(t, "yes")
 
 	conf := createConf(t, "")
 	d := daemon.New()
@@ -106,7 +106,7 @@ func TestServiceStopWaitForHangingClient(t *testing.T) {
 }
 
 func TestServiceStopForcedWithHangingClient(t *testing.T) {
-	polkitAnswer(t, "yes")
+	systemAnswer(t, "yes")
 
 	conf := createConf(t, "")
 	d := daemon.New()
@@ -152,27 +152,27 @@ func TestServiceCat(t *testing.T) {
 	// Always keep version in its own process.
 
 	tests := map[string]struct {
-		polkitAnswer     string
+		systemAnswer     string
 		daemonNotStarted bool
 		coverCatClient   bool
 		multipleCats     bool
 
 		wantErr bool
 	}{
-		"Cat other clients and daemon - cover daemon": {polkitAnswer: "yes"},
-		"Cat denied - cover daemon":                   {polkitAnswer: "no", wantErr: true},
+		"Cat other clients and daemon - cover daemon": {systemAnswer: "yes"},
+		"Cat denied - cover daemon":                   {systemAnswer: "no", wantErr: true},
 		"Daemon not responding - cover daemon":        {daemonNotStarted: true, wantErr: true},
 
-		"Cat other clients and daemon - cover client": {polkitAnswer: "yes", coverCatClient: true},
-		"Cat denied - cover client":                   {polkitAnswer: "no", coverCatClient: true, wantErr: true},
+		"Cat other clients and daemon - cover client": {systemAnswer: "yes", coverCatClient: true},
+		"Cat denied - cover client":                   {systemAnswer: "no", coverCatClient: true, wantErr: true},
 		"Daemon not responding - cover client":        {daemonNotStarted: true, coverCatClient: true, wantErr: true},
 
-		"Multiple cats": {multipleCats: true, polkitAnswer: "yes"},
+		"Multiple cats": {multipleCats: true, systemAnswer: "yes"},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted && !tc.coverCatClient {
@@ -278,7 +278,7 @@ func TestServiceStatus(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get current user")
 
 	tests := map[string]struct {
-		polkitAnswer        string
+		systemAnswer        string
 		daemonNotStarted    bool
 		noCacheUsersMachine bool
 		krb5ccNoCache       bool
@@ -286,18 +286,24 @@ func TestServiceStatus(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Status with users and machines":          {polkitAnswer: "yes"},
-		"Status offline cache":                    {isOffLine: true, polkitAnswer: "yes"},
-		"Status no user connected and no machine": {noCacheUsersMachine: true, polkitAnswer: "yes"},
-		"Status is always authorized":             {polkitAnswer: "no"},
-		"Status on user connected with no cache":  {krb5ccNoCache: true, polkitAnswer: "yes"},
+		"Status with users and machines":          {systemAnswer: "yes"},
+		"Status offline cache":                    {isOffLine: true, systemAnswer: "yes"},
+		"Status no user connected and no machine": {noCacheUsersMachine: true, systemAnswer: "yes"},
+		"Status is always authorized":             {systemAnswer: "no"},
+		"Status on user connected with no cache":  {krb5ccNoCache: true, systemAnswer: "yes"},
+
+		// Refresh time exception
+		"No startup time leads to unknown refresh time":           {systemAnswer: "no_startup_time"},
+		"Invalid startup time leads to unknown refresh time":      {systemAnswer: "invalid_startup_time"},
+		"No unit refresh time leads to unknown refresh time":      {systemAnswer: "no_nextrefresh_time"},
+		"Invalid unit refresh time leads to unknown refresh time": {systemAnswer: "invalid_nextrefresh_time"},
 
 		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.systemAnswer)
 
 			adsysDir := t.TempDir()
 			gpoRulesDir := filepath.Join(adsysDir, "cache", "gpo_rules")
@@ -361,6 +367,10 @@ func TestServiceStatus(t *testing.T) {
 
 			re = regexp.MustCompile(`(updated on)([^\n]*)`)
 			got = re.ReplaceAllString(got, "$1 DDD MON D HH:MM")
+			// Hardcode time for making next refresh time independent of current timezone, but still
+			// check some values (day digit, month…)
+			re = regexp.MustCompile(`(Next Refresh:) .* May 2.*([^\n]*)`)
+			got = re.ReplaceAllString(got, "$1 Tue May 25 14:55")
 
 			// Compare golden files
 			goldPath := filepath.Join("testdata/PolicyStatus/golden", name)

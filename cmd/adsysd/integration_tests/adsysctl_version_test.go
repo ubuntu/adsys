@@ -10,19 +10,19 @@ import (
 
 func TestVersion(t *testing.T) {
 	tests := map[string]struct {
-		polkitAnswer     string
+		systemAnswer     string
 		daemonNotStarted bool
 
 		wantErr bool
 	}{
-		"Get client version":           {polkitAnswer: "yes"},
-		"Version is always authorized": {polkitAnswer: "no"},
+		"Get client version":           {systemAnswer: "yes"},
+		"Version is always authorized": {systemAnswer: "no"},
 		"Daemon not responding":        {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {

@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/authorizer"
@@ -33,8 +35,10 @@ type Service struct {
 
 	authorizer authorizerer
 
-	state state
+	state          state
+	initSystemTime *time.Time
 
+	bus    *dbus.Conn
 	daemon *daemon.Daemon
 }
 
@@ -61,7 +65,6 @@ type option func(*options) error
 
 type authorizerer interface {
 	IsAllowedFromContext(context.Context, authorizer.Action) error
-	Done() error
 }
 
 // WithCacheDir specifies a personalized daemon cache directory
@@ -135,9 +138,24 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		return nil, err
 	}
 
+	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
+	bus, err := dbus.SystemBusPrivate()
+	if err != nil {
+		return nil, err
+	}
+	if err = bus.Auth(nil); err != nil {
+		_ = bus.Close()
+		return nil, err
+	}
+	if err = bus.Hello(); err != nil {
+		_ = bus.Close()
+		return nil, err
+	}
+
 	if args.authorizer == nil {
-		args.authorizer, err = authorizer.New()
+		args.authorizer, err = authorizer.New(bus)
 		if err != nil {
+			_ = bus.Close()
 			return nil, err
 		}
 	}
@@ -154,6 +172,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		return nil, err
 	}
 
+	// Init system reference time
+	initSysTime := initSystemTime(bus)
+
 	return &Service{
 		adc:           adc,
 		policyManager: m,
@@ -166,6 +187,8 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 			adServer:    url,
 			adDomain:    domain,
 		},
+		initSystemTime: initSysTime,
+		bus:            bus,
 	}, nil
 }
 
@@ -220,7 +243,25 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 
 // Quit cleans every ressources than the service was using.
 func (s *Service) Quit(ctx context.Context) {
-	if err := s.authorizer.Done(); err != nil {
-		log.Warningf(ctx, i18n.G("Can't disconnect authorizer: %v"), err)
+	if err := s.bus.Close(); err != nil {
+		log.Warningf(ctx, i18n.G("Can't disconnect system dbus: %v"), err)
 	}
+}
+
+// initSystemTime returns systemd generator init system time
+func initSystemTime(bus *dbus.Conn) *time.Time {
+	systemd := bus.Object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
+	val, err := systemd.GetProperty("org.freedesktop.systemd1.Manager.GeneratorsStartTimestamp")
+	if err != nil {
+		log.Warningf(context.Background(), "could not get system startup time? Can’t list next refresh: %v", err)
+		return nil
+	}
+	start, ok := val.Value().(uint64)
+	if !ok {
+		log.Warningf(context.Background(), "invalid next system startup time: %q", val.Value())
+		return nil
+	}
+
+	initSystemTime := time.Unix(int64(start)/1000000, 0)
+	return &initSystemTime
 }

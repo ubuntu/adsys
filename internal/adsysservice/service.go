@@ -1,9 +1,12 @@
 package adsysservice
 
 import (
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice/actions"
 	"github.com/ubuntu/adsys/internal/authorizer"
@@ -90,6 +93,14 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 	}
 
 	timeLayout := "Mon Jan 2 15:04"
+
+	nextRefresh := i18n.G("unknown")
+	if next, err := s.nextRefreshTime(); err == nil {
+		nextRefresh = next.Format(timeLayout)
+	} else {
+		log.Warning(stream.Context(), err)
+	}
+
 	updateFmt := i18n.G("%s, updated on %s")
 	updateMachine := i18n.G("Machine, no gpo applied found")
 	t, err := s.policyManager.LastUpdateFor(stream.Context(), "", true)
@@ -115,6 +126,7 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 
 	status := fmt.Sprintf(i18n.G(`%s%s
 %s
+Next Refresh: %s
 
 Active Directory:
   Server: %s
@@ -129,7 +141,7 @@ Daemon:
   Listening on: %s
   Cache path: %s
   Run path: %s
-  Dconf path: %s`), offline, updateMachine, updateUsers,
+  Dconf path: %s`), offline, updateMachine, updateUsers, nextRefresh,
 		state.adServer, state.adDomain,
 		state.sssConf, state.sssCacheDir,
 		timeout, socket, state.cacheDir, state.runDir, state.dconfDir)
@@ -175,4 +187,30 @@ func (s *Service) ListActiveUsers(r *adsys.Empty, stream adsys.Service_ListActiv
 		log.Warningf(stream.Context(), "couldn't send service version to client: %v", err)
 	}
 	return nil
+}
+
+// nextRefreshTime returns next adsys schedule refresh call
+func (s Service) nextRefreshTime() (next *time.Time, err error) {
+	defer decorate.OnError(&err, i18n.G("error while trying to determine next refresh time"))
+
+	if s.initSystemTime == nil {
+		return nil, errors.New(i18n.G("no boot system time found"))
+	}
+
+	const unit = "adsys-gpo-refresh.timer"
+
+	timerUnit := s.bus.Object("org.freedesktop.systemd1",
+		dbus.ObjectPath(fmt.Sprintf("/org/freedesktop/systemd1/unit/%s",
+			strings.ReplaceAll(strings.ReplaceAll(unit, ".", "_2e"), "-", "_2d"))))
+	val, err := timerUnit.GetProperty("org.freedesktop.systemd1.Timer.NextElapseUSecMonotonic")
+	if err != nil {
+		return nil, fmt.Errorf(i18n.G("could not find %s unit on systemd bus: no GPO refresh scheduled? %v"), unit, err)
+	}
+	nextRaw, ok := val.Value().(uint64)
+	if !ok {
+		return nil, fmt.Errorf(i18n.G("invalid next GPO refresh value: %v"), val.Value(), err)
+	}
+
+	nextRefresh := s.initSystemTime.Add(time.Duration(nextRaw) * time.Microsecond / time.Nanosecond)
+	return &nextRefresh, nil
 }

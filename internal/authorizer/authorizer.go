@@ -28,7 +28,6 @@ type caller interface {
 // Authorizer is an abstraction of polkit authorization.
 type Authorizer struct {
 	authority  caller
-	bus        *dbus.Conn
 	userLookup func(string) (*user.User, error)
 
 	root string
@@ -53,27 +52,13 @@ func withRoot(root string) func(*Authorizer) {
 }
 
 // New returns a new authorizer.
-func New(options ...func(*Authorizer)) (auth *Authorizer, err error) {
+func New(bus *dbus.Conn, options ...func(*Authorizer)) (auth *Authorizer, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create new authorizer"))
 
-	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
-	bus, err := dbus.SystemBusPrivate()
-	if err != nil {
-		return nil, err
-	}
-	if err = bus.Auth(nil); err != nil {
-		_ = bus.Close()
-		return nil, err
-	}
-	if err = bus.Hello(); err != nil {
-		_ = bus.Close()
-		return nil, err
-	}
 	authority := bus.Object("org.freedesktop.PolicyKit1",
 		"/org/freedesktop/PolicyKit1/Authority")
 
 	a := Authorizer{
-		bus:        bus,
 		authority:  authority,
 		root:       "/",
 		userLookup: user.Lookup,
@@ -84,11 +69,6 @@ func New(options ...func(*Authorizer)) (auth *Authorizer, err error) {
 	}
 
 	return &a, nil
-}
-
-// Done closes the underlying system dbus connection.
-func (a *Authorizer) Done() error {
-	return a.bus.Close()
 }
 
 // Action is an polkit action

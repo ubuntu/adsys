@@ -22,27 +22,27 @@ func TestPolicyAdmx(t *testing.T) {
 	tests := map[string]struct {
 		arg              string
 		distroOption     string
-		polkitAnswer     string
+		systemAnswer     string
 		daemonNotStarted bool
 
 		wantErr bool
 	}{
-		"LTS only content":               {arg: "lts-only", polkitAnswer: "yes"},
-		"All supported releases content": {arg: "all", polkitAnswer: "yes"},
+		"LTS only content":               {arg: "lts-only", systemAnswer: "yes"},
+		"All supported releases content": {arg: "all", systemAnswer: "yes"},
 
-		"Accept distro option": {arg: "lts-only", distroOption: "Ubuntu", polkitAnswer: "yes"},
+		"Accept distro option": {arg: "lts-only", distroOption: "Ubuntu", systemAnswer: "yes"},
 
-		"Need one valid argument": {polkitAnswer: "yes", wantErr: true},
+		"Need one valid argument": {systemAnswer: "yes", wantErr: true},
 
-		"Admx generation is always allowed": {arg: "lts-only", polkitAnswer: "no"},
-		"Fail on non stored distro":         {arg: "lts-only", distroOption: "Tartanpion", polkitAnswer: "yes", wantErr: true},
-		"Fail on invalid arg":               {arg: "something", polkitAnswer: "yes", wantErr: true},
+		"Admx generation is always allowed": {arg: "lts-only", systemAnswer: "no"},
+		"Fail on non stored distro":         {arg: "lts-only", distroOption: "Tartanpion", systemAnswer: "yes", wantErr: true},
+		"Fail on invalid arg":               {arg: "something", systemAnswer: "yes", wantErr: true},
 		"Daemon not responding":             {arg: "lts-only", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {
@@ -84,33 +84,33 @@ func TestPolicyApplied(t *testing.T) {
 
 	tests := map[string]struct {
 		args              []string
-		polkitAnswer      string
+		systemAnswer      string
 		daemonNotStarted  bool
 		userGPORules      string
 		noMachineGPORules bool
 
 		wantErr bool
 	}{
-		"Current user applied gpos": {polkitAnswer: "yes"},
+		"Current user applied gpos": {systemAnswer: "yes"},
 		// we use user "root" here as another user because the test user must exist on the machine for the authorizer.
-		"Other user applied gpos":   {args: []string{"root"}, userGPORules: "root", polkitAnswer: "yes"},
-		"Machine only applied gpos": {args: []string{hostname}, polkitAnswer: "yes"},
+		"Other user applied gpos":   {args: []string{"root"}, userGPORules: "root", systemAnswer: "yes"},
+		"Machine only applied gpos": {args: []string{hostname}, systemAnswer: "yes"},
 
-		"Detailed policy without override":               {args: []string{"--details"}, polkitAnswer: "yes"},
-		"Detailed policy with overrides (all)":           {args: []string{"--all"}, polkitAnswer: "yes"},
-		"Current user gpos no color":                     {args: []string{"--no-color"}, polkitAnswer: "yes"},
-		"Detailed policy with overrides (all), no color": {args: []string{"--no-color", "--all"}, polkitAnswer: "yes"},
+		"Detailed policy without override":               {args: []string{"--details"}, systemAnswer: "yes"},
+		"Detailed policy with overrides (all)":           {args: []string{"--all"}, systemAnswer: "yes"},
+		"Current user gpos no color":                     {args: []string{"--no-color"}, systemAnswer: "yes"},
+		"Detailed policy with overrides (all), no color": {args: []string{"--no-color", "--all"}, systemAnswer: "yes"},
 
 		// Error cases
-		"Machine cache not available": {noMachineGPORules: true, polkitAnswer: "yes", wantErr: true},
-		"User cache not available":    {userGPORules: "-", polkitAnswer: "yes", wantErr: true},
-		"Applied denied":              {polkitAnswer: "no", wantErr: true},
+		"Machine cache not available": {noMachineGPORules: true, systemAnswer: "yes", wantErr: true},
+		"User cache not available":    {userGPORules: "-", systemAnswer: "yes", wantErr: true},
+		"Applied denied":              {systemAnswer: "no", wantErr: true},
 		"Daemon not responding":       {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.systemAnswer)
 
 			// Reset color that we disable on client when we request --no-color
 			color.NoColor = false
@@ -212,8 +212,8 @@ func TestPolicyUpdate(t *testing.T) {
 			"GO_WANT_HELPER_PROCESS=1",
 
 			// dbus addresses to be reset in child
-			fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_YES=%s", yesSocket),
-			fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_NO=%s", noSocket),
+			fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_YES=%s", systemSockets["yes"]),
+			fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_NO=%s", systemSockets["no"]),
 
 			// mock for ad python samba code
 			fmt.Sprintf("PYTHONPATH=%s", admock),
@@ -237,8 +237,9 @@ func TestPolicyUpdate(t *testing.T) {
 	// Real test (in a subprocess, with coverage report when enabled in main one)
 
 	// Restore for subprocess the yes and no socket to connect to polkitd
-	yesSocket = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_YES")
-	noSocket = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_NO")
+	systemSockets = make(map[string]string)
+	systemSockets["yes"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_YES")
+	systemSockets["no"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_NO")
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get current host")
@@ -253,7 +254,7 @@ func TestPolicyUpdate(t *testing.T) {
 	tests := map[string]struct {
 		args             []string
 		initState        string
-		polkitAnswer     string
+		systemAnswer     string
 		krb5ccname       string
 		krb5ccNamesState []krb5ccNamesWithState
 		isOffLine        bool
@@ -491,9 +492,9 @@ func TestPolicyUpdate(t *testing.T) {
 
 		// Error cases
 		"User needs machine to be updated": {wantErr: true},
-		"Polkit denied updating self":      {polkitAnswer: "no", initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating other":     {polkitAnswer: "no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating machine":   {polkitAnswer: "no", args: []string{"-m"}, wantErr: true},
+		"Polkit denied updating self":      {systemAnswer: "no", initState: "localhost-uptodate", wantErr: true},
+		"Polkit denied updating other":     {systemAnswer: "no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
+		"Polkit denied updating machine":   {systemAnswer: "no", args: []string{"-m"}, wantErr: true},
 		"Error on dconf apply failing": {
 			initState: "localhost-uptodate",
 			// this generates an error when checking that a machine dconf is present
@@ -689,10 +690,10 @@ func TestPolicyUpdate(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			if tc.polkitAnswer == "" {
-				tc.polkitAnswer = "yes"
+			if tc.systemAnswer == "" {
+				tc.systemAnswer = "yes"
 			}
-			polkitAnswer(t, tc.polkitAnswer)
+			systemAnswer(t, tc.systemAnswer)
 
 			adsysDir := t.TempDir()
 

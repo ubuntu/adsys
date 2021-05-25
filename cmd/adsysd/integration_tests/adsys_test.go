@@ -22,7 +22,7 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-const dockerPolkitdImage = "docker.pkg.github.com/ubuntu/adsys/polkitd:0.1"
+const dockerSystemDaemonsImage = "docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1"
 
 var update bool
 
@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 	// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
 	// We only start samba on non helper process
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		defer runPolkitd()()
+		defer runDaemons()()
 		defer testutils.SetupSmb(1446, "testdata/PolicyUpdate/AD/SYSVOL", "")()
 	}
 
@@ -49,7 +49,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStartAndStopDaemon(t *testing.T) {
-	polkitAnswer(t, "yes")
+	systemAnswer(t, "yes")
 
 	conf := createConf(t, "")
 	quit := runDaemon(t, conf)
@@ -179,17 +179,20 @@ func changeOsArgs(t *testing.T, conf string, args ...string) (restore func()) {
 }
 
 var (
-	yesSocket string
-	noSocket  string
+	systemSockets map[string]string
 )
 
-// runPolkitd is a helper to start polkit and a system dbus session in two containers:
-// - one giving all permissions to any actions
-// - one giving no permissions to every actions
+// runDaemons is a helper to start polkit, mock systemd and a system dbus session in multile containers:
+// - one giving all permissions to any actions, with a harcoded startup time and next refresh unit time.
+// - one giving no permissions to every actions, with a harcoded startup time and next refresh unit time.
+// - one having no startup time available.
+// - one having an invalid startup time.
+// - one having no refresh unit time available.
+// - one having an invalid refresh unit time.
 // The current branch .policy file is used.
-// you can then select the correct daemon via the system dbus socket with polkitAnswer().
+// you can then select the correct daemon via the system dbus socket with systemAnswer().
 // teardown will ensure the containers are stopped.
-func runPolkitd() (teardown func()) {
+func runDaemons() (teardown func()) {
 	r, err := rand.Int(rand.Reader, big.NewInt(999999))
 	if err != nil {
 		log.Fatalf("Setup: couldn't set a random name for docker container: %v", err)
@@ -201,15 +204,20 @@ func runPolkitd() (teardown func()) {
 		log.Fatalf("Setup: couldn't get absolute path for actions: %v", err)
 	}
 
-	dir, err := os.MkdirTemp("/tmp", "adsys-polkitd.*")
+	dir, err := os.MkdirTemp("/tmp", "adsys-system-daemons.*")
 	if err != nil {
 		log.Fatalf("Setup: failed to create temporary directory: %v", err)
 	}
 
 	answers := map[string]string{
-		"yes": filepath.Join(dir, "yes"),
-		"no":  filepath.Join(dir, "no"),
+		"yes":                      filepath.Join(dir, "yes"),
+		"no":                       filepath.Join(dir, "no"),
+		"no_startup_time":          filepath.Join(dir, "nostartuptime"),
+		"invalid_startup_time":     filepath.Join(dir, "invalidstartuptime"),
+		"no_nextrefresh_time":      filepath.Join(dir, "nonextrefreshtime"),
+		"invalid_nextrefresh_time": filepath.Join(dir, "invalidnextrefreshtime"),
 	}
+	systemSockets = make(map[string]string)
 
 	var wg sync.WaitGroup
 	for answer, socketDir := range answers {
@@ -231,19 +239,20 @@ func runPolkitd() (teardown func()) {
 				"--volume", `/etc/group:/etc/group:ro`,
 				"--volume", `/etc/passwd:/etc/passwd:ro`,
 				"--volume", fmt.Sprintf("%s:/dbus/", socketDir),
-				dockerPolkitdImage,
+				dockerSystemDaemonsImage,
 				answer,
 			)
 			out, _ := cmd.CombinedOutput()
 			// Docker stop -t 0 will kill it anyway the container with exit code 143
 			if cmd.ProcessState.ExitCode() > 0 && cmd.ProcessState.ExitCode() != 143 {
-				log.Fatalf("Error running polkit %s container: %v", answer, string(out))
+				log.Fatalf("Error running system daemons %s container: %v", answer, string(out))
 			}
 		}()
 	}
 
-	yesSocket = fmt.Sprintf("unix:path=%s/system_bus_socket", answers["yes"])
-	noSocket = fmt.Sprintf("unix:path=%s/system_bus_socket", answers["no"])
+	for a, s := range answers {
+		systemSockets[a] = fmt.Sprintf("unix:path=%s/system_bus_socket", s)
+	}
 
 	// give time for polkit containers to start
 	time.Sleep(5 * time.Second)
@@ -259,31 +268,33 @@ func runPolkitd() (teardown func()) {
 		for answer := range answers {
 			out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
 			if err != nil {
-				log.Fatalf("Teardown: can’t stop polkitd container: %v", string(out))
+				log.Fatalf("Teardown: can’t stop system daemons container: %v", string(out))
 			}
 		}
 		wg.Wait()
 	}
 }
 
-// polkitAnswer will flip to which polkit to communicate to:
-// - yes for polkit always authorizing our actions.
-// - no for polkit always denying our actions.
+// systemAnswer will flip to which polkit and systemd mock to communicate to:
+// - yes for polkit always authorizing our actions, with a harcoded startup time and next refresh unit time.
+// - no for polkit always denying our actions, with a harcoded startup time and next refresh unit time.
+// - one having no startup time available.
+// - one having an invalid startup time.
+// - one having no refresh unit time available.
+// - one having an invalid refresh unit time.
 // Note that this modify the environment variable, and so, tests using them can’t run in parallel.
 // The environment is restored when the test ends.
-func polkitAnswer(t *testing.T, answer string) {
+func systemAnswer(t *testing.T, answer string) {
 	t.Helper()
 
-	var socket string
-	switch answer {
-	case "yes":
-		socket = yesSocket
-	case "no":
-		socket = noSocket
-	case "":
+	if answer == "" {
 		return
-	default:
-		t.Fatalf("Setup: unknown polkit answer to support: %s", answer)
+	}
+
+	var socket string
+	socket, ok := systemSockets[answer]
+	if !ok {
+		t.Fatalf("Setup: unknown daemon answer to support: %q", answer)
 	}
 
 	old := os.Getenv("DBUS_SYSTEM_BUS_ADDRESS")
