@@ -13,7 +13,6 @@ import (
 
 func TestIsAllowedFromContext(t *testing.T) {
 	t.Parallel()
-	authorizer.StartLocalSystemBus(t)
 
 	bus := authorizer.NewDbusConn(t)
 
@@ -92,7 +91,6 @@ func TestIsAllowedFromContext(t *testing.T) {
 
 func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 	t.Parallel()
-	authorizer.StartLocalSystemBus(t)
 	bus := authorizer.NewDbusConn(t)
 
 	a, err := authorizer.New(bus)
@@ -106,7 +104,6 @@ func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 
 func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 	t.Parallel()
-	authorizer.StartLocalSystemBus(t)
 	bus := authorizer.NewDbusConn(t)
 
 	a, err := authorizer.New(bus)
@@ -125,7 +122,6 @@ func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 
 func TestIsAllowedFromContextWithoutUserKey(t *testing.T) {
 	t.Parallel()
-	authorizer.StartLocalSystemBus(t)
 	bus := authorizer.NewDbusConn(t)
 
 	myUserOtherAction := authorizer.Action{

@@ -18,7 +18,6 @@ import (
 
 func TestIsAllowed(t *testing.T) {
 	t.Parallel()
-	StartLocalSystemBus(t)
 
 	bus := NewDbusConn(t)
 
@@ -186,4 +185,9 @@ func NewDbusConn(t *testing.T) *dbus.Conn {
 	require.NoError(t, err, "Setup: can’t send hello message on private system bus")
 
 	return bus
+}
+
+func TestMain(m *testing.M) {
+	defer StartLocalSystemBus()()
+	m.Run()
 }
