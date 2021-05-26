@@ -456,7 +456,53 @@ adsysd version [flags]
   -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
-### System commands
+### Hidden commands
 
-Those commands are hidden from help and should primarily be used by the system itself.
+Those commands are hidden from help and should primarily be used by the system or for debugging.
+
+#### adsysctl policy debug
+
+Debug various policy infos
+
+```
+adsysctl policy debug [flags]
+```
+
+##### Options
+
+```
+  -h, --help   help for debug
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+#### adsysctl policy debug gpolist-script
+
+Write GPO list python embeeded script in current directory
+
+```
+adsysctl policy debug gpolist-script [flags]
+```
+
+##### Options
+
+```
+  -h, --help   help for gpolist-script
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
 
