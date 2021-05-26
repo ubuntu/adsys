@@ -34,7 +34,7 @@ func StartLocalSystemBus() func() {
 
 		savedDbusSystemAddress = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS")
 		config = filepath.Join(dir, "dbus.config")
-		os.WriteFile(config, []byte(`<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+		err = os.WriteFile(config, []byte(`<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
   <type>system</type>
@@ -47,27 +47,31 @@ func StartLocalSystemBus() func() {
     <allow own="*"/>
   </policy>
 </busconfig>`), 0666)
+		if err != nil {
+			log.Fatalf("Setup: can’t create dbus configuration: %v", err)
+		}
 		var ctx context.Context
 		ctx, stopDbus = context.WithCancel(context.Background())
+		// #nosec G204 - this is only for tests, we are in control of the config
 		dbusCmd = exec.CommandContext(ctx, "dbus-daemon", "--print-address=1", "--config-file="+config)
 		dbusStdout, err := dbusCmd.StdoutPipe()
 		if err != nil {
-			os.RemoveAll(dir)
+			_ = os.RemoveAll(dir)
 			log.Fatalf("couldn't get stdout of dbus-daemon: %v", err)
 		}
 		if err := dbusCmd.Start(); err != nil {
-			os.RemoveAll(dir)
+			_ = os.RemoveAll(dir)
 			log.Fatalf("couldn't start dbus-daemon: %v", err)
 		}
 		dbusAddr := make([]byte, 256)
 		n, err := dbusStdout.Read(dbusAddr)
 		if err != nil {
-			os.RemoveAll(dir)
+			_ = os.RemoveAll(dir)
 			log.Fatalf("couldn't get dbus address: %v", err)
 		}
 		dbusAddr = dbusAddr[:n]
 		if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", string(dbusAddr)); err != nil {
-			os.RemoveAll(dir)
+			_ = os.RemoveAll(dir)
 			log.Fatalf("couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
 		}
 	})
@@ -82,7 +86,8 @@ func StartLocalSystemBus() func() {
 		}
 
 		stopDbus()
-		dbusCmd.Wait()
+		// dbus command is killed
+		_ = dbusCmd.Wait()
 
 		if err := os.RemoveAll(filepath.Dir(config)); err != nil {
 			log.Fatalf("couldn't remove dbus configuration directory: %v", err)
