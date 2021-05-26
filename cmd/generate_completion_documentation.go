@@ -142,12 +142,12 @@ func updateFromCmd(cmds []cobra.Command, filePath string) {
 	}
 
 	// Write markdown
-	user, system := getCmdsAndSystems(cmds)
+	user, hidden := getCmdsAndHiddens(cmds)
 	mustWriteLine(tmp, "### User commands\n")
 	filterCommandMarkdown(user, tmp)
-	mustWriteLine(tmp, "### System commands\n")
-	mustWriteLine(tmp, "Those commands are hidden from help and should primarily be used by the system itself.\n")
-	filterCommandMarkdown(system, tmp)
+	mustWriteLine(tmp, "### Hidden commands\n")
+	mustWriteLine(tmp, "Those commands are hidden from help and should primarily be used by the system or for debugging.\n")
+	filterCommandMarkdown(hidden, tmp)
 
 	// Write footer (skip previously generated content)
 	skip := true
@@ -207,35 +207,37 @@ func genManTreeFromOpts(cmd cobra.Command, header doc.GenManHeader, dir string) 
 	return doc.GenMan(&cmd, &header, f)
 }
 
-func getCmdsAndSystems(cmds []cobra.Command) (user []cobra.Command, system []cobra.Command) {
+func getCmdsAndHiddens(cmds []cobra.Command) (user []cobra.Command, hidden []cobra.Command) {
 	for _, cmd := range cmds {
 		user = append(user, cmd)
 		user = append(user, collectSubCmds(cmd, false /* selectHidden */, false /* parentWasHidden */)...)
 	}
 	for _, cmd := range cmds {
-		system = append(system, collectSubCmds(cmd, true /* selectHidden */, false /* parentWasHidden */)...)
+		hidden = append(hidden, collectSubCmds(cmd, true /* selectHidden */, false /* parentWasHidden */)...)
 	}
 
-	return user, system
+	return user, hidden
 }
 
 // collectSubCmds get recursiverly commands from a root one.
 // It will filter hidden commands if selected, but will present children if needed.
 func collectSubCmds(cmd cobra.Command, selectHidden, parentWasHidden bool) (cmds []cobra.Command) {
 	for _, c := range cmd.Commands() {
-		if c.Name() == "help" {
+		// Don’t collect command or children (hidden or not) of a hidden command
+		if c.Name() == "help" || c.Hidden && !selectHidden {
 			continue
 		}
-		// Only continue selecting non hidden child of hidden commands
-		if (c.Hidden && !selectHidden) || (!c.Hidden && selectHidden && !parentWasHidden) {
-			continue
+		// Add this command if matching request (hidden or non hidden collect).
+		// Special case: if a parent is hidden, any children commands (hidden or not) will be selected.
+		if (c.Hidden == selectHidden) || (selectHidden && parentWasHidden) {
+			cmds = append(cmds, *c)
 		}
 		// Flip that we have a hidden parent
 		currentOrParentHidden := parentWasHidden
 		if c.Hidden {
 			currentOrParentHidden = true
 		}
-		cmds = append(cmds, *c)
+
 		cmds = append(cmds, collectSubCmds(*c, selectHidden, currentOrParentHidden)...)
 	}
 	return cmds
@@ -249,7 +251,7 @@ func filterCommandMarkdown(cmds []cobra.Command, w io.Writer) {
 	go func() {
 		for _, cmd := range cmds {
 			if err := doc.GenMarkdown(&cmd, pw); err != nil {
-				pw.CloseWithError(fmt.Errorf("Couldn't generate markdown for %s: %v", cmd.Name(), err))
+				pw.CloseWithError(fmt.Errorf("couldn't generate markdown for %s: %v", cmd.Name(), err))
 				return
 			}
 		}
