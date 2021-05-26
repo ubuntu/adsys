@@ -14,6 +14,7 @@ import (
 	"github.com/godbus/dbus/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestIsAllowed(t *testing.T) {
@@ -188,6 +189,6 @@ func NewDbusConn(t *testing.T) *dbus.Conn {
 }
 
 func TestMain(m *testing.M) {
-	defer StartLocalSystemBus()()
+	defer testutils.StartLocalSystemBus()()
 	m.Run()
 }

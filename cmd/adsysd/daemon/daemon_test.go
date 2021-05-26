@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestAppHelp(t *testing.T) {
@@ -384,6 +385,6 @@ func captureLogs(t *testing.T) (out func() string) {
 	}
 }
 func TestMain(m *testing.M) {
-	defer startLocalSystemBus()()
+	defer testutils.StartLocalSystemBus()()
 	m.Run()
 }

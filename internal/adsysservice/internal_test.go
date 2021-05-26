@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestLoadServerInfo(t *testing.T) {
@@ -58,4 +59,9 @@ func TestLoadServerInfo(t *testing.T) {
 			assert.Equal(t, tc.wantURL, gotURL, "return URL as expected")
 		})
 	}
+}
+
+func TestMain(m *testing.M) {
+	defer testutils.StartLocalSystemBus()()
+	m.Run()
 }
