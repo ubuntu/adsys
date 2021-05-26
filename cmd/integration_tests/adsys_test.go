@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"math/big"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,9 +18,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
+	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/testutils"
+	"google.golang.org/grpc"
 )
 
 const dockerSystemDaemonsImage = "docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1"
@@ -54,6 +58,125 @@ func TestStartAndStopDaemon(t *testing.T) {
 	conf := createConf(t, "")
 	quit := runDaemon(t, conf)
 	quit()
+}
+
+func TestCommandsError(t *testing.T) {
+	// No command is implemented, and so, they should all returns an error
+	errorServer := adsys.UnimplementedServiceServer{}
+	srv := grpc.NewServer(authorizer.WithUnixPeerCreds())
+	adsys.RegisterServiceServer(srv, &errorServer)
+
+	dir := t.TempDir()
+	socket := filepath.Join(dir, "socket")
+	go func() {
+		lis, err := net.Listen("unix", socket)
+		require.NoError(t, err, "Setup: Listen on unix socket failed")
+		err = srv.Serve(lis)
+		require.NoError(t, err, "Setup: Serving GRPC on unix socket failed")
+	}()
+	defer srv.Stop()
+	time.Sleep(time.Second)
+	confFile := filepath.Join(dir, "adsys.yaml")
+	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
+socket: %s`, socket)), 0644)
+	require.NoError(t, err, "Setup: config file should be created")
+
+	tests := map[string]struct {
+		args []string
+	}{
+		"doc":                         {args: []string{"doc"}},
+		"doc chapter":                 {args: []string{"doc", "chapter"}},
+		"policy admx all":             {args: []string{"policy", "admx", "all"}},
+		"policy applied":              {args: []string{"policy", "applied"}},
+		"policy debug gpolist-script": {args: []string{"policy", "debug", "gpolist-script"}},
+		"policy update":               {args: []string{"policy", "update"}},
+		"service cat":                 {args: []string{"service", "cat"}},
+		"service status":              {args: []string{"service", "status"}},
+		"service stop":                {args: []string{"service", "stop"}},
+		"version":                     {args: []string{"version"}},
+	}
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			_, err = runClient(t, confFile, tc.args...)
+			require.Error(t, err, "command should fail")
+		})
+	}
+}
+
+type timeoutOnVersionServer struct {
+	adsys.UnimplementedServiceServer
+	clientCancelled bool
+	callbackHandled chan struct{}
+}
+
+func (server *timeoutOnVersionServer) Version(_ *adsys.Empty, s adsys.Service_VersionServer) error {
+	defer close(server.callbackHandled)
+	select {
+	case <-s.Context().Done():
+		server.clientCancelled = true
+	case <-time.After(5 * time.Second):
+	}
+
+	return nil
+}
+
+func TestCommandsTimeout(t *testing.T) {
+	// We only implement one command to test the client timeout functionality
+	timeoutServer := timeoutOnVersionServer{callbackHandled: make(chan struct{})}
+	srv := grpc.NewServer(authorizer.WithUnixPeerCreds())
+	adsys.RegisterServiceServer(srv, &timeoutServer)
+
+	dir := t.TempDir()
+	socket := filepath.Join(dir, "socket")
+	go func() {
+		lis, err := net.Listen("unix", socket)
+		require.NoError(t, err, "Setup: Listen on unix socket failed")
+		err = srv.Serve(lis)
+		require.NoError(t, err, "Setup: Serving GRPC on unix socket failed")
+	}()
+	defer srv.Stop()
+	time.Sleep(time.Second)
+	confFile := filepath.Join(dir, "adsys.yaml")
+	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
+socket: %s
+client_timeout: 1`, socket)), 0644)
+	require.NoError(t, err, "Setup: config file should be created")
+
+	_, err = runClient(t, confFile, "version")
+	require.Error(t, err, "command should fail due to timeout")
+
+	<-timeoutServer.callbackHandled
+	require.True(t, timeoutServer.clientCancelled, "server should have got timeout request")
+}
+
+func TestCommands0IsNoTimeout(t *testing.T) {
+	// We only implement one command to test the client timeout functionality
+	timeoutServer := timeoutOnVersionServer{callbackHandled: make(chan struct{})}
+	srv := grpc.NewServer(authorizer.WithUnixPeerCreds())
+	adsys.RegisterServiceServer(srv, &timeoutServer)
+
+	dir := t.TempDir()
+	socket := filepath.Join(dir, "socket")
+	go func() {
+		lis, err := net.Listen("unix", socket)
+		require.NoError(t, err, "Setup: Listen on unix socket failed")
+		err = srv.Serve(lis)
+		require.NoError(t, err, "Setup: Serving GRPC on unix socket failed")
+	}()
+	defer srv.Stop()
+	time.Sleep(time.Second)
+	confFile := filepath.Join(dir, "adsys.yaml")
+	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
+socket: %s
+client_timeout: 0`, socket)), 0644)
+	require.NoError(t, err, "Setup: config file should be created")
+
+	_, err = runClient(t, confFile, "version")
+	require.NoError(t, err, "command should not fail as there is no timeout")
+
+	<-timeoutServer.callbackHandled
+	require.False(t, timeoutServer.clientCancelled, "server should have not got a timeout request")
 }
 
 // createConf generates an adsys configuration in a temporary directory
