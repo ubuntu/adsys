@@ -13,7 +13,7 @@ require (
 	github.com/mvo5/libsmbclient-go v0.0.0-20201002095607-f9fa2a5c1104
 	github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354 // indirect
 	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989
-	github.com/sirupsen/logrus v1.7.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
