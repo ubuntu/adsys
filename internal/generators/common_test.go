@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/generators"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestCleanDirectory(t *testing.T) {
@@ -60,17 +61,15 @@ func TestCleanDirectoryCantRemoveDirectory(t *testing.T) {
 func TestInstallOnlyMode(t *testing.T) {
 	require.False(t, generators.InstallOnlyMode(), "No environment variable is no install only mode")
 
-	os.Setenv("GENERATE_ONLY_INSTALL_TO_DESTDIR", "/some/directory")
+	testutils.Setenv(t, "GENERATE_ONLY_INSTALL_TO_DESTDIR", "/some/directory")
 	require.True(t, generators.InstallOnlyMode(), "The environment variable trigger install only mode")
-	os.Unsetenv("GENERATE_ONLY_INSTALL_TO_DESTDIR")
 }
 
 func TestDestDirectory(t *testing.T) {
 	got := generators.DestDirectory("/fallback")
 	require.Equal(t, "/fallback", got, "Fallback path received when no environment variable is available")
 
-	os.Setenv("GENERATE_ONLY_INSTALL_TO_DESTDIR", "/some/directory")
+	testutils.Setenv(t, "GENERATE_ONLY_INSTALL_TO_DESTDIR", "/some/directory")
 	got = generators.DestDirectory("/fallback")
 	require.Equal(t, "/some/directory", got, "Environment varilable value takes precedence over fallback")
-	os.Unsetenv("GENERATE_ONLY_INSTALL_TO_DESTDIR")
 }

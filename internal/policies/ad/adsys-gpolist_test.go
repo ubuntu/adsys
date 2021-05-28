@@ -21,13 +21,9 @@ func TestAdsysGPOList(t *testing.T) {
 	}
 
 	// Setup samba mock
-	orig := os.Getenv("PYTHONPATH")
 	p, err := filepath.Abs("../../testutils/admock")
 	require.NoError(t, err, "Setup: Failed to get current absolute path for mock")
-	require.NoError(t, os.Setenv("PYTHONPATH", p), "Setup: Failed to set $PYTHONPATH")
-	t.Cleanup(func() {
-		require.NoError(t, os.Setenv("PYTHONPATH", orig), "Teardown: can't restore $PYTHONPATH to original value")
-	})
+	testutils.Setenv(t, "PYTHONPATH", p)
 
 	tests := map[string]struct {
 		url             string
@@ -216,13 +212,7 @@ func TestAdsysGPOList(t *testing.T) {
 					krb5ccname = krb5symlink
 				}
 
-				orig := os.Getenv("KRB5CCNAME")
-				err := os.Setenv("KRB5CCNAME", krb5ccname)
-				require.NoError(t, err, "Setup: could not set KRB5CCNAME environment name")
-				defer func() {
-					err := os.Setenv("KRB5CCNAME", orig)
-					require.NoError(t, err, "Teardown: could not restore KRB5CCNAME environment name")
-				}()
+				testutils.Setenv(t, "KRB5CCNAME", krb5ccname)
 			}
 
 			cmd := exec.Command(adsysGPOListcmd, "--objectclass", tc.objectClass, tc.url, tc.accountName)

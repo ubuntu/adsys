@@ -83,10 +83,7 @@ func TestAppCanQuitWhenExecute(t *testing.T) {
 }
 
 func TestAppCanQuitAfterExecute(t *testing.T) {
-	os.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
-	defer func() {
-		os.Unsetenv("ADSYS_SERVICE_TIMEOUT")
-	}()
+	testutils.Setenv(t, "ADSYS_SERVICE_TIMEOUT", "1")
 	a, wait := startDaemon(t, true)
 	wait()
 	a.Quit()
@@ -155,10 +152,7 @@ func TestAppCanSigHupAfterExecute(t *testing.T) {
 	r, w, err := os.Pipe()
 	require.NoError(t, err, "Setup: pipe shouldn’t fail")
 
-	os.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
-	defer func() {
-		os.Unsetenv("ADSYS_SERVICE_TIMEOUT")
-	}()
+	testutils.Setenv(t, "ADSYS_SERVICE_TIMEOUT", "1")
 	a, wait := startDaemon(t, true)
 	wait()
 	a.Quit()
@@ -198,10 +192,7 @@ func TestAppCanSigHupWithoutExecute(t *testing.T) {
 }
 
 func TestAppTimeout(t *testing.T) {
-	os.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
-	defer func() {
-		os.Unsetenv("ADSYS_SERVICE_TIMEOUT")
-	}()
+	testutils.Setenv(t, "ADSYS_SERVICE_TIMEOUT", "1")
 	a, wait := startDaemon(t, true)
 
 	done := make(chan struct{})
@@ -327,29 +318,12 @@ func prepareEnv(t *testing.T) {
 	t.Helper()
 
 	dir := t.TempDir()
-	err := os.Setenv("ADSYS_SOCKET", filepath.Join(dir, "socket"))
-	require.NoError(t, err, "Setup: can’t set env variable")
-	err = os.Setenv("ADSYS_CACHE_DIR", filepath.Join(dir, "cache"))
-	require.NoError(t, err, "Setup: can’t set env variable")
-	err = os.Setenv("ADSYS_RUN_DIR", filepath.Join(dir, "run"))
-	require.NoError(t, err, "Setup: can’t set env variable")
-	err = os.Setenv("ADSYS_AD_SERVER", "ldap://adserver")
-	require.NoError(t, err, "Setup: can’t set env variable")
-	err = os.Setenv("ADSYS_AD_DOMAIN", "adserver.domain")
-	require.NoError(t, err, "Setup: can’t set env variable")
 
-	t.Cleanup(func() {
-		err := os.Unsetenv("ADSYS_SOCKET")
-		require.NoError(t, err, "Teardown: can’t restore env variable")
-		err = os.Unsetenv("ADSYS_CACHE_DIR")
-		require.NoError(t, err, "Teardown: can’t restore env variable")
-		err = os.Unsetenv("ADSYS_RUN_DIR")
-		require.NoError(t, err, "Teardown: can’t restore env variable")
-		err = os.Unsetenv("ADSYS_AD_SERVER")
-		require.NoError(t, err, "Teardown: can’t restore env variable")
-		err = os.Unsetenv("ADSYS_AD_DOMAIN")
-		require.NoError(t, err, "Teardown: can’t restore env variable")
-	})
+	testutils.Setenv(t, "ADSYS_SOCKET", filepath.Join(dir, "socket"))
+	testutils.Setenv(t, "ADSYS_CACHE_DIR", filepath.Join(dir, "cache"))
+	testutils.Setenv(t, "ADSYS_RUN_DIR", filepath.Join(dir, "run"))
+	testutils.Setenv(t, "ADSYS_AD_SERVER", "ldap://adserver")
+	testutils.Setenv(t, "ADSYS_AD_DOMAIN", "adserver.domain")
 }
 
 // changeArgs allows changing command line arguments and return a function to restore it.
