@@ -9,8 +9,6 @@ import (
 )
 
 func TestColorizePolicies(t *testing.T) {
-	t.Parallel()
-
 	policies := `Policies from machine configuration:
 * GPOName1 ({GPOId1})
 ** dconf:
@@ -31,7 +29,19 @@ Policies from user configuration:
 `
 
 	// force color despite running tests without a tty
+	origColor := color.NoColor
 	color.NoColor = false
+	orig, existed := os.LookupEnv("NO_COLOR")
+	err := os.Unsetenv("NO_COLOR")
+	require.NoError(t, err, "Setup: unable to unset NO_COLOR")
+	defer func() {
+		color.NoColor = origColor
+		if !existed {
+			return
+		}
+		err = os.Setenv("NO_COLOR", orig)
+		require.NoError(t, err, "Teardown: unable to reset NO_COLOR")
+	}()
 
 	got, err := colorizePolicies(policies)
 	require.NoError(t, err, "colorizePolicies should not return an error")
