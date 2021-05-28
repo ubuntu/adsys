@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/charmbracelet/glamour v0.3.0
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
-	github.com/fatih/color v1.7.0
+	github.com/fatih/color v1.12.0
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/godbus/dbus/v5 v5.0.4
 	github.com/golang/protobuf v1.5.2
