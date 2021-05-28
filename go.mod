@@ -15,7 +15,7 @@ require (
 	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989
 	github.com/sirupsen/logrus v1.8.1
 	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
-	github.com/spf13/cobra v1.1.1
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
@@ -29,7 +29,6 @@ require (
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/ini.v1 v1.62.0
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 	honnef.co/go/tools v0.2.0
 )
