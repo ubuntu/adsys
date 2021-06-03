@@ -17,6 +17,7 @@ import (
 	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestServiceStop(t *testing.T) {
@@ -272,7 +273,7 @@ func TestServiceStatus(t *testing.T) {
 
 	admock, err := filepath.Abs("../../internal/testutils/admock")
 	require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
-	os.Setenv("PYTHONPATH", admock)
+	testutils.Setenv(t, "PYTHONPATH", admock)
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get current user")

@@ -420,16 +420,7 @@ func systemAnswer(t *testing.T, answer string) {
 		t.Fatalf("Setup: unknown daemon answer to support: %q", answer)
 	}
 
-	old := os.Getenv("DBUS_SYSTEM_BUS_ADDRESS")
-	if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", socket); err != nil {
-		t.Fatalf("Setup: couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
-	}
-
-	t.Cleanup(func() {
-		if err := os.Setenv("DBUS_SYSTEM_BUS_ADDRESS", old); err != nil {
-			t.Fatalf("Setup: couldn't set DBUS_SYSTEM_BUS_ADDRESS: %v", err)
-		}
-	})
+	testutils.Setenv(t, "DBUS_SYSTEM_BUS_ADDRESS", socket)
 }
 
 type runner interface {

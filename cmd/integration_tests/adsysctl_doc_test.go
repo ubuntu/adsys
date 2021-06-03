@@ -10,16 +10,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/doc"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestDocChapter(t *testing.T) {
-	orig := os.Getenv("GLAMOUR_STYLE")
-	err := os.Setenv("GLAMOUR_STYLE", "notty")
-	require.NoError(t, err, "Setup: can’t set GLAMOUR_STYLE env variable")
-	defer func() {
-		err := os.Setenv("GLAMOUR_STYLE", orig)
-		require.NoError(t, err, "Teardown: can’t restore GLAMOUR_STYLE env variable")
-	}()
+	testutils.Setenv(t, "GLAMOUR_STYLE", "notty")
 
 	fullName, strippedExt, baseName := getTestChapter(t, "2.")
 
@@ -85,7 +80,7 @@ func TestDocChapter(t *testing.T) {
 			var dest string
 			if tc.withDest {
 				dest = t.TempDir()
-				err = os.RemoveAll(dest)
+				err := os.RemoveAll(dest)
 				require.NoError(t, err, "Setup: can’t delete destination directory")
 				args = append(args, "--dest", dest)
 			}
@@ -145,13 +140,7 @@ func TestDocChapter(t *testing.T) {
 }
 
 func TestDocList(t *testing.T) {
-	orig := os.Getenv("GLAMOUR_STYLE")
-	err := os.Setenv("GLAMOUR_STYLE", "notty")
-	require.NoError(t, err, "Setup: can’t set GLAMOUR_STYLE env variable")
-	defer func() {
-		err := os.Setenv("GLAMOUR_STYLE", orig)
-		require.NoError(t, err, "Teardown: can’t restore GLAMOUR_STYLE env variable")
-	}()
+	testutils.Setenv(t, "GLAMOUR_STYLE", "notty")
 
 	tests := map[string]struct {
 		raw              bool

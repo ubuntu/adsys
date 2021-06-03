@@ -10,6 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 const (
@@ -115,11 +116,11 @@ func TestTranslations(t *testing.T) {
 			} else if tc.lcmessages == "-" {
 				tc.lcmessages = ""
 			}
-			switchEnv(t, "LC_MESSAGES", tc.lcmessages)
+			testutils.Setenv(t, "LC_MESSAGES", tc.lcmessages)
 			if tc.lang == "" {
 				tc.lang = "FR_fr"
 			}
-			switchEnv(t, "LANG", tc.lang)
+			testutils.Setenv(t, "LANG", tc.lang)
 			if tc.loc == "" {
 				tc.loc = defaultLoc
 			} else if tc.loc == "-" {
@@ -172,22 +173,6 @@ func compileMoFiles(t *testing.T, localeDir string) {
 			t.Fatalf("couldn't compile %q to %q: %v", po, mo, err)
 		}
 	}
-}
-
-// switchEnv set key varilable to val.
-// Older environment will be automatically purged when the test ends.
-func switchEnv(t *testing.T, key, value string) {
-	t.Helper()
-
-	orig := os.Getenv(key)
-	if err := os.Setenv(key, value); err != nil {
-		t.Fatalf("couldn't change environment %s=%s: %v", key, value, err)
-	}
-	t.Cleanup(func() {
-		if err := os.Setenv(key, orig); err != nil {
-			t.Fatalf("couldn't restore environment %s=%s: %v", key, orig, err)
-		}
-	})
 }
 
 // renameElem rename old file to new.

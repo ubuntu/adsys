@@ -770,13 +770,7 @@ func TestPolicyUpdate(t *testing.T) {
 				} else {
 					tc.krb5ccname = fmt.Sprintf("FILE:%s/%s", krb5dir, tc.krb5ccname)
 				}
-				orig := os.Getenv("KRB5CCNAME")
-				err := os.Setenv("KRB5CCNAME", tc.krb5ccname)
-				require.NoError(t, err, "Setup: could not set KRB5CCNAME environment name")
-				defer func() {
-					err := os.Setenv("KRB5CCNAME", orig)
-					require.NoError(t, err, "Teardown: could not restore KRB5CCNAME environment name")
-				}()
+				testutils.Setenv(t, "KRB5CCNAME", tc.krb5ccname)
 			}
 
 			conf := createConf(t, adsysDir)

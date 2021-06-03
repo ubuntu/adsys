@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestSetVerboseMode(t *testing.T) {
@@ -203,7 +204,7 @@ func TestInit(t *testing.T) {
 
 			prefix := "adsys_config_test"
 			if tc.withConfigEnv {
-				setEnv(t, strings.ToUpper(prefix)+"_VALUE", "envvalue")
+				testutils.Setenv(t, strings.ToUpper(prefix)+"_VALUE", "envvalue")
 			}
 
 			if tc.configFileContent != "" {
@@ -332,18 +333,5 @@ func chDir(t *testing.T, p string) {
 	t.Cleanup(func() {
 		err := os.Chdir(orig)
 		require.NoError(t, err, "Teardown: can’t restore current directory")
-	})
-}
-
-func setEnv(t *testing.T, k, v string) {
-	t.Helper()
-
-	orig := os.Getenv(k)
-
-	err := os.Setenv(k, v)
-	require.NoError(t, err, "Setup: can’t set environment for %s", k)
-	t.Cleanup(func() {
-		err := os.Setenv(k, orig)
-		require.NoError(t, err, "Teardown: can’t restore current environment for %s", k)
 	})
 }
