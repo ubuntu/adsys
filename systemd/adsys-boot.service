@@ -4,6 +4,8 @@ Description=Refresh ADSys GPO for machine on boot
 Before=systemd-user-sessions.service nss-user-lookup.target
 After=sssd.service
 Wants=sssd.service
+# Only start machine GPO download on boot (blocking) if we have AD configured
+ConditionPathExists=/etc/sssd/sssd.conf
 
 [Service]
 Type=oneshot
