@@ -30,13 +30,8 @@ func main() {
 			log.Fatal(err)
 		}
 		args := []string{"--shared", "-Wl,-soname,libpam_adsys.so"}
-		for _, flagType := range []string{"CPPFLAGS", "CFLAGS", "LDFLAGS"} {
-			for _, f := range strings.Split(os.Getenv(flagType), " ") {
-				if strings.TrimSpace(f) == "" {
-					continue
-				}
-				args = append(args, f)
-			}
+		for _, flagType := range []string{"CPPFLAGS", "CFLAGS"} {
+			args = appendFlagsToArgs(flagType, args)
 		}
 
 		_, curF, _, ok := runtime.Caller(0)
@@ -46,6 +41,7 @@ func main() {
 		dir := filepath.Dir(curF)
 
 		args = append(args, "-o", filepath.Join(destDir, "pam_adsys.so"), filepath.Join(dir, "pam_adsys.c"), "-lpam")
+		args = appendFlagsToArgs("LDFLAGS", args)
 		cmd := exec.Command("gcc", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -60,4 +56,14 @@ func main() {
 			os.Exit(1)
 		}
 	}
+}
+
+func appendFlagsToArgs(flagType string, args []string) []string {
+	for _, f := range strings.Split(os.Getenv(flagType), " ") {
+		if strings.TrimSpace(f) == "" {
+			continue
+		}
+		args = append(args, f)
+	}
+	return args
 }
