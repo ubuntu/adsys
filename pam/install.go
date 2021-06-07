@@ -45,7 +45,7 @@ func main() {
 		}
 		dir := filepath.Dir(curF)
 
-		args = append(args, "-lpam", "-o", filepath.Join(destDir, "pam_adsys.so"), filepath.Join(dir, "pam_adsys.c"))
+		args = append(args, "-o", filepath.Join(destDir, "pam_adsys.so"), filepath.Join(dir, "pam_adsys.c"), "-lpam")
 		cmd := exec.Command("gcc", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
