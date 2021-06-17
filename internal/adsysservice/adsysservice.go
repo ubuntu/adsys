@@ -116,10 +116,37 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		}
 	}
 
+	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
+	bus, err := dbus.SystemBusPrivate()
+	if err != nil {
+		return nil, err
+	}
+	if err = bus.Auth(nil); err != nil {
+		_ = bus.Close()
+		return nil, err
+	}
+	if err = bus.Hello(); err != nil {
+		_ = bus.Close()
+		return nil, err
+	}
+
 	url, domain, err = loadServerInfo(args.sssdConf, url, domain)
 	if err != nil {
 		return nil, err
 	}
+
+	// Try sssd discovered ad server url
+	if url == "" {
+		log.Debug(ctx, "AD server not specified in sssd.conf nor set manually to the user, try autodiscovering mode")
+		sssd := bus.Object("org.freedesktop.sssd.infopipe",
+			dbus.ObjectPath(fmt.Sprintf("/org/freedesktop/sssd/infopipe/Domains/%s", strings.ReplaceAll(domain, ".", "_2e"))))
+		if err := sssd.Call("org.freedesktop.sssd.infopipe.Domains.Domain.ActiveServer", 0, "AD").Store(&url); err != nil {
+			return nil, errors.New(i18n.G("failed to find active AD server address in sssd (sssd.conf or sssd discovery) and url is not provided"))
+		}
+	}
+
+	log.Debugf(ctx, "AD domain: %q, server: %q", domain, url)
+
 	if !strings.HasPrefix(url, "ldap://") {
 		url = fmt.Sprintf("ldap://%s", url)
 	}
@@ -135,20 +162,6 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	}
 	adc, err := ad.New(ctx, url, domain, adOptions...)
 	if err != nil {
-		return nil, err
-	}
-
-	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
-	bus, err := dbus.SystemBusPrivate()
-	if err != nil {
-		return nil, err
-	}
-	if err = bus.Auth(nil); err != nil {
-		_ = bus.Close()
-		return nil, err
-	}
-	if err = bus.Hello(); err != nil {
-		_ = bus.Close()
 		return nil, err
 	}
 
@@ -201,6 +214,10 @@ func loadServerInfo(sssdConf, url, domain string) (rurl string, rdomain string, 
 
 	cfg, err := ini.Load(sssdConf)
 	if err != nil {
+		// Allow autodiscovery for server if domain was manually set.
+		if domain != "" {
+			return "", domain, nil
+		}
 		return "", "", fmt.Errorf(i18n.G("can't read sssd.conf and no url or domain provided: %v"), err)
 	}
 	if domain == "" {
@@ -214,9 +231,6 @@ func loadServerInfo(sssdConf, url, domain string) (rurl string, rdomain string, 
 
 	if url == "" {
 		url = cfg.Section(fmt.Sprintf("domain/%s", domain)).Key("ad_server").String()
-		if url == "" {
-			return "", "", errors.New(i18n.G("failed to find server address in sssd.conf and url is not provided"))
-		}
 	}
 
 	if adDomain != "" {

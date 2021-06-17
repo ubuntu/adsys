@@ -23,19 +23,19 @@ func TestLoadServerInfo(t *testing.T) {
 	}{
 		"return directly url and domain if provided": {domain: "MyCustomDomain", url: "MyCustomURL", wantDomain: "MyCustomDomain", wantURL: "MyCustomURL"},
 
-		"return domain directly and url from sssd.conf": {domain: "MyDomain", wantDomain: "MyDomain", wantURL: "MyURL"},
-		"return url directly and domain from sssd.conf": {url: "MyURL", wantDomain: "MyDomain", wantURL: "MyURL"},
-		"return  url and domain from sssd.conf":         {wantDomain: "MyDomain", wantURL: "MyURL"},
+		"return domain directly and url from sssd.conf":            {domain: "MyDomain", wantDomain: "MyDomain", wantURL: "MyURL"},
+		"return url directly and domain from sssd.conf":            {url: "MyURL", wantDomain: "MyDomain", wantURL: "MyURL"},
+		"return  url and domain from sssd.conf":                    {wantDomain: "MyDomain", wantURL: "MyURL"},
+		"return domain if set directly and no url if no sssd.conf": {sssdconf: "/unexisting", domain: "MyDomain", wantDomain: "MyDomain", wantURL: ""},
 
 		"return url directly ad_domain from sssd.conf":                  {sssdconf: "addomain_differs_sssd.conf", url: "MyURL", wantDomain: "CustomADDomain", wantURL: "MyURL"},
 		"return ad_domain and url from sssd.conf":                       {sssdconf: "addomain_differs_sssd.conf", wantDomain: "CustomADDomain", wantURL: "MyURL"},
 		"return ad_domain and url by only providing our domain section": {sssdconf: "no_sssd_section_sssd.conf", domain: "MyDomain", wantDomain: "ADDomain", wantURL: "MyURL"},
+		"skip missing url in sssdconf":                                  {sssdconf: "no_adserver_sssd.conf", domain: "MyDomain", wantDomain: "MyDomain", wantURL: ""},
 
 		// Error cases
-		"error on missing url and no sssdconf":              {domain: "MyDomain", sssdconf: "/unexisting", wantErr: true},
 		"error on missing domain and no sssdconf":           {url: "MyURL", sssdconf: "/unexisting", wantErr: true},
 		"error on missing url/domain and no sssdconf":       {sssdconf: "/unexisting", wantErr: true},
-		"error on missing url in sssdconf":                  {sssdconf: "no_adserver_sssd.conf", domain: "MyDomain", wantErr: true},
 		"error when no sssd section and no domain provided": {sssdconf: "no_sssd_section_sssd.conf", url: "MyURL", wantErr: true},
 	}
 	for name, tc := range tests {
