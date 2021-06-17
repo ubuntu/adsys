@@ -137,7 +137,7 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:247
+#: internal/adsysservice/adsysservice.go:261
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
@@ -449,7 +449,7 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:196
+#: internal/adsysservice/adsysservice.go:209
 #, c-format
 msgid "can't load server info from %s"
 msgstr ""
@@ -462,7 +462,7 @@ msgstr ""
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:204
+#: internal/adsysservice/adsysservice.go:221
 msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
@@ -521,12 +521,12 @@ msgstr ""
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
-#: cmd/integration_tests/adsysctl_doc_test.go:235
+#: cmd/integration_tests/adsysctl_doc_test.go:224
 #, c-format
 msgid "could not find chapter starting with %s"
 msgstr ""
 
-#: cmd/integration_tests/adsysctl_doc_test.go:222
+#: cmd/integration_tests/adsysctl_doc_test.go:211
 #: internal/adsysservice/doc.go:37 internal/adsysservice/doc.go:92
 #: internal/adsysservice/doc.go:144
 msgid "could not list documentation directory: %v"
@@ -662,12 +662,14 @@ msgstr ""
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:209
-msgid "failed to find default domain in sssd.conf and domain is not provided"
+#: internal/adsysservice/adsysservice.go:144
+msgid ""
+"failed to find active AD server address in sssd (sssd.conf or sssd "
+"discovery) and url is not provided"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:218
-msgid "failed to find server address in sssd.conf and url is not provided"
+#: internal/adsysservice/adsysservice.go:226
+msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
 #: internal/policies/policies.go:166
