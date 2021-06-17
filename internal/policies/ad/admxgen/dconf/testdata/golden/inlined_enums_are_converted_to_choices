@@ -7,9 +7,9 @@
     meta: s
   default: '''HIGH'''
   choices:
-  - LOW
-  - MEDIUM
-  - HIGH
-  - MAXIMUM
+    - LOW
+    - MEDIUM
+    - HIGH
+    - MAXIMUM
   release: "20.04"
   type: dconf

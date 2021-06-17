@@ -7,9 +7,9 @@
     meta: s
   default: '''up'''
   choices:
-  - left
-  - right
-  - up
-  - down
+    - left
+    - right
+    - up
+    - down
   release: "20.04"
   type: dconf
