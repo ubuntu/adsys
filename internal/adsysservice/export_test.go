@@ -15,3 +15,6 @@ func WithSSSdConf(p string) func(o *options) error {
 		return nil
 	}
 }
+
+// Option type exported for tests
+type Option = option

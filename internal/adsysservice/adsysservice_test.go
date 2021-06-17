@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/godbus/dbus/v5"
+	"github.com/godbus/dbus/v5/introspect"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/authorizer"
@@ -18,10 +20,38 @@ func (mockAuthorizer) IsAllowedFromContext(context.Context, authorizer.Action) e
 	return nil
 }
 
+type sssd struct{}
+
+func (s sssd) ActiveServer(_ string) (string, *dbus.Error) {
+	return "my-discovered-url", nil
+}
+
 func TestNew(t *testing.T) {
 	t.Parallel()
 
+	const intro = `
+	<node>
+		<interface name="org.freedesktop.sssd.infopipe.Domains.Domain">
+			<method name="ActiveServer">
+				<arg direction="in" type="s"/>
+				<arg direction="out" type="s"/>
+			</method>
+		</interface>` + introspect.IntrospectDataString + `</node>`
+
+	conn := newDbusConn(t)
+	var sssdDomain sssd
+	conn.Export(sssdDomain, "/org/freedesktop/sssd/infopipe/Domains/fordiscovery_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
+	conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/fordiscovery_2ecom",
+		"org.freedesktop.DBus.Introspectable")
+	reply, err := conn.RequestName("org.freedesktop.sssd.infopipe", dbus.NameFlagDoNotQueue)
+	require.NoError(t, err, "Setup: Failed to aquire sssd name on local system bus")
+	if reply != dbus.RequestNameReplyPrimaryOwner {
+		t.Fatalf("Setup: Failed to aquire sssd name on local system bus: name is already taken")
+	}
+
 	tests := map[string]struct {
+		url                    string
+		domain                 string
 		authorizerDoneFail     error
 		AdNewFail              bool
 		existingAdsysDirs      bool
@@ -29,12 +59,16 @@ func TestNew(t *testing.T) {
 
 		wantNewErr bool
 	}{
-		"New and Done succeeds as expected, first run": {},
-		"Adsys directory can already exists":           {existingAdsysDirs: true},
+		"New and Done succeeds as expected, first run": {url: "my-ldap-url", domain: "example.com"},
+		"Adsys directory can already exists":           {url: "my-ldap-url", domain: "example.com", existingAdsysDirs: true},
+
+		// unexisting sssd with domain or existing sssd without ad_server is the same code path
+		"AD server in discovery mode": {readUnexistingSssdConf: true, domain: "fordiscovery.com"},
 
 		// Error cases
-		"Ad New fails prevents adsysservice creation":      {AdNewFail: true, existingAdsysDirs: true, wantNewErr: true},
-		"No url and domain while sssdconf does not exists": {readUnexistingSssdConf: true, wantNewErr: true},
+		"Ad New fails prevents adsysservice creation":               {url: "my-ldap-url", domain: "example.com", AdNewFail: true, existingAdsysDirs: true, wantNewErr: true},
+		"No url and domain while sssdconf does not exists":          {readUnexistingSssdConf: true, wantNewErr: true},
+		"No url can be found in discovery mode but we had a domain": {readUnexistingSssdConf: true, domain: "example.com", wantNewErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -62,21 +96,18 @@ func TestNew(t *testing.T) {
 				}()
 			}
 
-			var s *adsysservice.Service
-			var err error
-			if !tc.readUnexistingSssdConf {
-				s, err = adsysservice.New(context.Background(), "my-ldap-url", "example.com",
-					adsysservice.WithCacheDir(adsysCacheDir),
-					adsysservice.WithRunDir(adsysRunDir),
-					adsysservice.WithDconfDir(dconfDir),
-					adsysservice.WithSSSCacheDir(sssCacheDir),
-					adsysservice.WithMockAuthorizer(&auth),
-				)
-			} else {
-				s, err = adsysservice.New(context.Background(), "", "",
-					adsysservice.WithSSSdConf(filepath.Join(temp, "does-not-exists", "sssd.conf")))
+			options := []adsysservice.Option{
+				adsysservice.WithCacheDir(adsysCacheDir),
+				adsysservice.WithRunDir(adsysRunDir),
+				adsysservice.WithDconfDir(dconfDir),
+				adsysservice.WithSSSCacheDir(sssCacheDir),
+				adsysservice.WithMockAuthorizer(&auth),
+			}
+			if tc.readUnexistingSssdConf {
+				options = append(options, adsysservice.WithSSSdConf(filepath.Join(temp, "does-not-exists", "sssd.conf")))
 			}
 
+			s, err := adsysservice.New(context.Background(), tc.url, tc.domain, options...)
 			if tc.wantNewErr {
 				require.Error(t, err, "New should return an error but didn’t")
 				return
@@ -91,4 +122,23 @@ func TestNew(t *testing.T) {
 			require.NoError(t, err, "adsys run directory exists as expected")
 		})
 	}
+}
+
+// newDbusConn returns a system dbus connection which will be tore down when tests ends
+func newDbusConn(t *testing.T) *dbus.Conn {
+	t.Helper()
+
+	bus, err := dbus.SystemBusPrivate()
+	require.NoError(t, err, "Setup: can’t get a private system bus")
+
+	t.Cleanup(func() {
+		err = bus.Close()
+		require.NoError(t, err, "Teardown: can’t close system dbus connection")
+	})
+	err = bus.Auth(nil)
+	require.NoError(t, err, "Setup: can’t auth on private system bus")
+	err = bus.Hello()
+	require.NoError(t, err, "Setup: can’t send hello message on private system bus")
+
+	return bus
 }
