@@ -1,15 +1,15 @@
 - id: '{GPOId}'
   name: GPOName
   rules:
-      dconf:
+    dconf:
         - key: path/to/key1
           value: ValueOfKey1
           disabled: false
           meta: s
         - key: path/to/key2
           value: |
-              ValueOfKey2
-              On
-              Multilines
+            ValueOfKey2
+            On
+            Multilines
           disabled: false
           meta: s
