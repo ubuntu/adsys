@@ -20,10 +20,10 @@ func (mockAuthorizer) IsAllowedFromContext(context.Context, authorizer.Action) e
 	return nil
 }
 
-type sssd struct{}
+type sssd string
 
 func (s sssd) ActiveServer(_ string) (string, *dbus.Error) {
-	return "my-discovered-url", nil
+	return string(s), nil
 }
 
 func TestNew(t *testing.T) {
@@ -39,9 +39,13 @@ func TestNew(t *testing.T) {
 		</interface>` + introspect.IntrospectDataString + `</node>`
 
 	conn := newDbusConn(t)
-	var sssdDomain sssd
+	sssdDomain := sssd("my-discovered-url")
 	conn.Export(sssdDomain, "/org/freedesktop/sssd/infopipe/Domains/fordiscovery_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
 	conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/fordiscovery_2ecom",
+		"org.freedesktop.DBus.Introspectable")
+	sssdDomainWithEmptyURL := sssd("")
+	conn.Export(sssdDomainWithEmptyURL, "/org/freedesktop/sssd/infopipe/Domains/emptyurlfordiscovery_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
+	conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/emptyurlfordiscovery_2ecom",
 		"org.freedesktop.DBus.Introspectable")
 	reply, err := conn.RequestName("org.freedesktop.sssd.infopipe", dbus.NameFlagDoNotQueue)
 	require.NoError(t, err, "Setup: Failed to aquire sssd name on local system bus")
@@ -69,6 +73,7 @@ func TestNew(t *testing.T) {
 		"Ad New fails prevents adsysservice creation":               {url: "my-ldap-url", domain: "example.com", AdNewFail: true, existingAdsysDirs: true, wantNewErr: true},
 		"No url and domain while sssdconf does not exists":          {readUnexistingSssdConf: true, wantNewErr: true},
 		"No url can be found in discovery mode but we had a domain": {readUnexistingSssdConf: true, domain: "example.com", wantNewErr: true},
+		"Error on discover returns an empty URL":                    {readUnexistingSssdConf: true, domain: "emptyurlfordiscovery.com", wantNewErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
