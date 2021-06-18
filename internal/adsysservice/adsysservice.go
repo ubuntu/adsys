@@ -140,7 +140,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		log.Debug(ctx, "AD server not specified in sssd.conf nor set manually to the user, try autodiscovering mode")
 		sssd := bus.Object("org.freedesktop.sssd.infopipe",
 			dbus.ObjectPath(fmt.Sprintf("/org/freedesktop/sssd/infopipe/Domains/%s", strings.ReplaceAll(domain, ".", "_2e"))))
-		if err := sssd.Call("org.freedesktop.sssd.infopipe.Domains.Domain.ActiveServer", 0, "AD").Store(&url); err != nil {
+		if err := sssd.Call("org.freedesktop.sssd.infopipe.Domains.Domain.ActiveServer", 0, "AD").Store(&url); err != nil || url == "" {
 			return nil, errors.New(i18n.G("failed to find active AD server address in sssd (sssd.conf or sssd discovery) and url is not provided"))
 		}
 	}
