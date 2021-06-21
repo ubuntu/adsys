@@ -1,3 +1,49 @@
+adsys (0.6) impish; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Add a new status command, returning current user connected, mode, last
+    refresh time and applied configuration
+  * Add a new doc command, which allows listing the documentation or write a
+    specific chapter on the terminal or disk.
+  * Add a new debus hidden (system) command, which allows dumping
+    adsys-gpolist and (in the future) various multiple debugging tools for a
+    specific AD setup
+  * Advance CI completion for users, machines and other contextual strings
+    (requesting the service for available valid items, based on context).
+  * Hook up CI to update online documentation (on github) and local offline
+    one in two ways (updating the local doc will update the online one and
+    vice-versa)
+  * Write the whole documentation for setting up and using adsys
+  * Refactor configuration handling and const location
+  * Only start machine GPO download on boot (blocking) if we have AD configured
+  * Fix pam integration by setting correct linker property
+  * Fallback to sssd discovery active AD server
+  * Fix GDM dconf keys to use for screen customization
+  * New adsysservice to properly shutdown authorizer and move service dbus
+    handling
+  * Integrate gosec to CI and multiple fixes
+  * Serialize adsys-gpolist and admx/adml in binary
+  * Misc fixes in listing Active Directory GPO, multiple error cases
+    graceful handling and fix some Windows requirements like spec names.
+  * Small fixes and error message reformulation
+  * Update all dependencies to latest version and hook up Dependabot in CI
+  * Multiple CI enhancements
+  * Fix for admx generation, allowing pointing at keys not present in a
+    release if filtered out
+  * Tighten build and package depdencies.
+  * Tests:
+    - add more configuration for integration tests
+    - fix protobuf namespace conflicts
+    - multiple refactoring
+    - ensure local dbus are properly shutdown
+    - fix some racy tests but being more relax on times
+    - allow coverage for python code and subprocesses
+    - add many new tests, including integration tests
+    - replace wharthogs.biz domain by example.com. Thanks Paul Mars
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 21 Jun 2021 14:16:16 +0200
+
 adsys (0.5) hirsute; urgency=medium
 
   [ Jean-Baptiste Lallement ]
