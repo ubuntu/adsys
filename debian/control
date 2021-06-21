@@ -33,6 +33,5 @@ Depends: ${shlibs:Depends},
          samba-dsdb-modules,
          sssd,
          sssd-dbus,
-         krb5-config,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
