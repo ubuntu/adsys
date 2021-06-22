@@ -24,13 +24,6 @@ const (
 	// DefaultRunDir is the default path for adsys run directory
 	DefaultRunDir = "/run/adsys"
 
-	// DefaultSSSCacheDir is the default sssd cache dir
-	DefaultSSSCacheDir = "/var/lib/sss/db"
-	// DefaultSSSConf is the default sssd.conf location
-	DefaultSSSConf = "/etc/sssd/sssd.conf"
-	// DefaultDconfDir is the default dconf directory
-	DefaultDconfDir = "/etc/dconf"
-
 	// DefaultClientTimeout is the maximum default time in seconds between 2 server activities before the client returns and abort the request.
 	DefaultClientTimeout = 30
 
@@ -39,4 +32,19 @@ const (
 
 	// DistroID is the distro ID which can be overridden at build time
 	DistroID = "Ubuntu"
+
+	// SSSD related properties
+	// DefaultSSSCacheDir is the default sssd cache dir
+	DefaultSSSCacheDir = "/var/lib/sss/db"
+	// DefaultSSSConf is the default sssd.conf location
+	DefaultSSSConf = "/etc/sssd/sssd.conf"
+	// DefaultDconfDir is the default dconf directory
+	DefaultDconfDir = "/etc/dconf"
+
+	// SSSDDbusRegisteredName is the well-known name used on dbus
+	SSSDDbusRegisteredName = "org.freedesktop.sssd.infopipe"
+	// SSSDDbusBaseObjectPath is the path under which all domains are registered
+	SSSDDbusBaseObjectPath = "/org/freedesktop/sssd/infopipe/Domains"
+	// SSSDDbusInterface is the interface we are using for access dbus methods
+	SSSDDbusInterface = "org.freedesktop.sssd.infopipe.Domains.Domain"
 )

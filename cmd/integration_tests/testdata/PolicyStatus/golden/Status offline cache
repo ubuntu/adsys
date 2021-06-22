@@ -7,8 +7,8 @@ Connected users:
 Next Refresh: Tue May 25 14:55
 
 Active Directory:
-  Server: ldap://NT_STATUS_HOST_UNREACHABLE
-  Domain: example.com
+  Server: ldap://adc.example.com
+  Domain: offline
 
 SSS:
   Configuration: /etc/sssd/sssd.conf

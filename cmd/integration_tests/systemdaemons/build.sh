@@ -8,4 +8,4 @@ set -eu
 
 rootdir="$(realpath $(dirname $(realpath $0))/../../../)"
 cd ${rootdir}
-docker build -t docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1 -f cmd/adsysd/integration_tests/systemdaemons/Dockerfile .
+docker build -t docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1 -f cmd/integration_tests/systemdaemons/Dockerfile .

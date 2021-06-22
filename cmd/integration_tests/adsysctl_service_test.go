@@ -312,7 +312,7 @@ func TestServiceStatus(t *testing.T) {
 			if tc.isOffLine {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
-				content = bytes.Replace(content, []byte("ldap://adc.example.com"), []byte("ldap://NT_STATUS_HOST_UNREACHABLE"), 1)
+				content = bytes.Replace(content, []byte("ad_domain: example.com"), []byte("ad_domain: offline"), 1)
 				err = os.WriteFile(conf, content, 0644)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}

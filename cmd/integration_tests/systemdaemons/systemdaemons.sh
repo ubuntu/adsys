@@ -20,10 +20,12 @@ if [ "${polkit_mode}" != "default" ]; then
     /usr/share/polkit-1/actions.orig/com.ubuntu.adsys.policy > /usr/share/polkit-1/actions/com.ubuntu.adsys.policy
 fi
 
-# Handle systemd objects depending on the mode
+# Add dbus registername main objects
 python3 -m dbusmock --system org.freedesktop.systemd1 /org/freedesktop/systemd1 org.freedesktop.systemd1.Manager &
+python3 -m dbusmock --system org.freedesktop.sssd.infopipe /org/freedesktop/sssd/infopipe/Domains/example_2ecom org.freedesktop.sssd.infopipe.Domains.Domain &
 sleep 1
 
+# Handle systemd objects depending on the mode
 time=""
 case "${mode}" in
   "no_startup_time")
@@ -59,5 +61,12 @@ esac
 if [ -n "${time}" ]; then
     gdbus call --system -d org.freedesktop.systemd1 -o /org/freedesktop/systemd1/unit/adsys_2dgpo_2drefresh_2etimer  -m org.freedesktop.DBus.Mock.AddProperty org.freedesktop.systemd1.Timer NextElapseUSecMonotonic "${time}"
 fi
+
+# sssd online/offline report for online object
+gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/example_2ecom -m org.freedesktop.DBus.Mock.AddMethod  '' IsOnline '' 'b' 'ret = True'
+gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/example_2ecom -m org.freedesktop.DBus.Mock.AddObject /org/freedesktop/sssd/infopipe/Domains/offline org.freedesktop.sssd.infopipe.Domains.Domain "{}" "[]"
+gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/offline -m org.freedesktop.DBus.Mock.AddMethod  '' IsOnline '' 'b' 'ret = False'
+
+sleep 1
 
 /usr/lib/policykit-1/polkitd
