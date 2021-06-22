@@ -12,6 +12,8 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/godbus/dbus/v5"
+	"github.com/godbus/dbus/v5/introspect"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,6 +27,8 @@ var Update bool
 
 func TestFetchGPO(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
+
+	bus := GetSystemBus(t)
 
 	tests := map[string]struct {
 		gpos                   []string
@@ -187,7 +191,7 @@ func TestFetchGPO(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", bus,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 
 			require.NoError(t, err, "Setup: cannot create ad object")
@@ -268,6 +272,8 @@ func TestFetchGPO(t *testing.T) {
 func TestFetchGPOWithUnreadableFile(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
+	bus := GetSystemBus(t)
+
 	// Prepare GPO with unreadable file.
 	// Defer will work after all tests are done because we don’t run it in parallel
 	gpos := map[string]string{
@@ -298,7 +304,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", bus,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -330,6 +336,9 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 
 func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
+
+	bus := GetSystemBus(t)
+
 	tests := map[string]struct {
 		removeGPOCacheDir bool
 		roGPOCacheDir     bool
@@ -344,7 +353,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			dest, rundir := t.TempDir(), t.TempDir()
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", bus,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -366,10 +375,12 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
+	bus := GetSystemBus(t)
+
 	const policyPath = "SYSVOL/example.com/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "example.com",
+	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
 		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -413,10 +424,12 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 func TestParseGPOConcurrent(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
+	bus := GetSystemBus(t)
+
 	const policyPath = "SYSVOL/example.com/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "example.com",
+	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
 		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -450,7 +463,7 @@ func TestMain(m *testing.M) {
 	flag.BoolVar(&Update, "update", false, "update golden files")
 	flag.Parse()
 
-	// Don’t setup samba for mock helpers
+	// Don’t setup samba or sssd for mock helpers
 	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
 		debug := flag.Bool("verbose", false, "Print debug log level information within the test")
 		flag.Parse()
@@ -458,6 +471,7 @@ func TestMain(m *testing.M) {
 			logrus.StandardLogger().SetLevel(logrus.DebugLevel)
 		}
 
+		// Samba
 		var err error
 		brokenSmbDirShare, err = os.MkdirTemp("", "adsys_smbd_broken_share_")
 		if err != nil {
@@ -472,6 +486,52 @@ func TestMain(m *testing.M) {
 			}
 		}()
 		defer testutils.SetupSmb(SmbPort, "testdata/AD/SYSVOL", brokenSmbDirShare)()
+
+		// SSSD domains
+		defer testutils.StartLocalSystemBus()()
+
+		conn, err := dbus.SystemBusPrivate()
+		if err != nil {
+			log.Fatalf("Setup: can’t get a private system bus: %v", err)
+		}
+		defer func() {
+			if err = conn.Close(); err != nil {
+				log.Fatalf("Teardown: can’t close system dbus connection: %v", err)
+			}
+		}()
+		if err = conn.Auth(nil); err != nil {
+			log.Fatalf("Setup: can’t auth on private system bus: %v", err)
+		}
+		if err = conn.Hello(); err != nil {
+			log.Fatalf("Setup: can’t send hello message on private system bus: %v", err)
+		}
+
+		sssdOnline := sssd(true)
+		sssdOffline := sssd(false)
+		const intro = `
+	<node>
+		<interface name="org.freedesktop.sssd.infopipe.Domains.Domain">
+			<method name="Online">
+				<arg direction="out" type="b"/>
+			</method>
+		</interface>` + introspect.IntrospectDataString + `</node>`
+		conn.Export(sssdOnline, "/org/freedesktop/sssd/infopipe/Domains/example_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
+		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/example_2ecom",
+			"org.freedesktop.DBus.Introspectable")
+		conn.Export(sssdOnline, "/org/freedesktop/sssd/infopipe/Domains/localdomain", "org.freedesktop.sssd.infopipe.Domains.Domain")
+		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/localdomain",
+			"org.freedesktop.DBus.Introspectable")
+		conn.Export(sssdOffline, "/org/freedesktop/sssd/infopipe/Domains/offline", "org.freedesktop.sssd.infopipe.Domains.Domain")
+		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/offline",
+			"org.freedesktop.DBus.Introspectable")
+
+		reply, err := conn.RequestName("org.freedesktop.sssd.infopipe", dbus.NameFlagDoNotQueue)
+		if err != nil {
+			log.Fatalf("Setup: Failed to aquire sssd name on local system bus: %v", err)
+		}
+		if reply != dbus.RequestNameReplyPrimaryOwner {
+			log.Fatalf("Setup: Failed to aquire sssd name on local system bus: name is already taken")
+		}
 	}
 	m.Run()
 	testutils.MergeCoverages()
@@ -505,4 +565,23 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 	}
 
 	return r
+}
+
+type sssd bool
+
+func (s sssd) IsOnline() (bool, *dbus.Error) {
+	return bool(s), nil
+}
+
+// GetSystemBus helper functionality to get one system bus which automatically close on test shutdown
+func GetSystemBus(t *testing.T) *dbus.Conn {
+	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
+	bus, err := dbus.SystemBusPrivate()
+	require.NoError(t, err, "can’t get private system bus")
+	t.Cleanup(func() { _ = bus.Close() })
+	err = bus.Auth(nil)
+	require.NoError(t, err, "can’t auth on private system bus")
+	err = bus.Hello()
+	require.NoError(t, err, "can’t ping private system bus")
+	return bus
 }

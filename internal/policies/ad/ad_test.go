@@ -19,6 +19,8 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
+	bus := ad.GetSystemBus(t)
+
 	tests := map[string]struct {
 		cacheDirRO bool
 		runDirRO   bool
@@ -43,7 +45,7 @@ func TestNew(t *testing.T) {
 				require.NoError(t, os.Chmod(cacheDir, 0400), "Setup: can’t set cache directory to Read only")
 			}
 
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "localdomain",
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "localdomain", bus,
 				ad.WithRunDir(runDir),
 				ad.WithCacheDir(cacheDir),
 				ad.WithSSSCacheDir("testdata/sss/db"))
@@ -67,6 +69,8 @@ func TestGetPolicies(t *testing.T) {
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
+
+	bus := ad.GetSystemBus(t)
 
 	standardGPO := entry.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 		"dconf": {
@@ -468,7 +472,7 @@ func TestGetPolicies(t *testing.T) {
 			}
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com",
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir(sssCacheDir),
 				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs)),
@@ -499,6 +503,8 @@ func TestGetPolicies(t *testing.T) {
 func TestGetPoliciesOffline(t *testing.T) {
 	t.Parallel()
 
+	bus := ad.GetSystemBus(t)
+
 	gpos := []entry.GPO{
 		{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 			"dconf": {
@@ -518,16 +524,35 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 	tests := map[string]struct {
 		getFromCache bool
+		domain       string
+		gpoListArg   string
 
 		want    []entry.GPO
 		wantErr bool
 	}{
 		"Offline, get from cache": {
 			getFromCache: true,
+			domain:       "offline",
+			gpoListArg:   "standard",
 			want:         gpos,
+		},
+		"Offline, ensure we fetch from cache and not fetch GPO list": {
+			getFromCache: true,
+			domain:       "offline",
+			gpoListArg:   "-Exit2-", // this should not be used
+			want:         gpos,
+		},
+
+		"Error on SSSD reports online, but we are actually offline when fetching gpo list, even with a cache": {
+			getFromCache: true,
+			domain:       "example.com",
+			gpoListArg:   "-Exit2-",
+			wantErr:      true,
 		},
 		"Error offline with no cache": {
 			getFromCache: false,
+			domain:       "offline",
+			gpoListArg:   "standard",
 			wantErr:      true,
 		},
 	}
@@ -538,9 +563,9 @@ func TestGetPoliciesOffline(t *testing.T) {
 			t.Parallel()
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com",
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", tc.domain, bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-				ad.WithGPOListCmd(mockGPOListCmd(t, "-Exit2-")))
+				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArg)))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			objectName := "useroffline@EXAMPLE.COM"
@@ -567,6 +592,8 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 func TestGetPoliciesWorkflows(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
+
+	bus := ad.GetSystemBus(t)
 
 	gpoListArgs := "standard"
 	objectClass := ad.UserObject
@@ -628,7 +655,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com",
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir("testdata/sss/db"),
 				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
@@ -650,7 +677,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			// Restart: recreate ad object
 			if tc.restart {
-				adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com",
+				adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
 					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 					ad.WithSSSCacheDir("testdata/sss/db"),
 					ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
@@ -667,6 +694,8 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 func TestGetPoliciesConcurrently(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
+
+	bus := ad.GetSystemBus(t)
 
 	objectClass := ad.UserObject
 
@@ -752,7 +781,7 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			if mockObjectName1 == mockObjectName2 {
 				gpoListMeta = fmt.Sprintf("DEPENDS:%s@%s", mockObjectName1, tc.gpo1)
 			}
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com",
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir("testdata/sss/db"),
 				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListMeta)))
@@ -779,6 +808,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 
 func TestListUsersFromCache(t *testing.T) {
 	t.Parallel()
+
+	bus := ad.GetSystemBus(t)
 
 	tests := map[string]struct {
 		ccCachesToCreate []string
@@ -832,7 +863,7 @@ func TestListUsersFromCache(t *testing.T) {
 				}
 			}
 
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com",
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir))
 			require.NoError(t, err, "Setup: New should return no error")
 
