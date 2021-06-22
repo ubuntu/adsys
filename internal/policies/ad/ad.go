@@ -10,10 +10,12 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	// embed gpolist python binary
 	_ "embed"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -56,6 +58,8 @@ type AD struct {
 	gpoRulesCacheDir string
 	krb5CacheDir     string
 	sssCCName        string
+
+	sssdDbus dbus.BusObject
 
 	gpos map[string]*gpo
 	sync.RWMutex
@@ -106,7 +110,7 @@ func WithSSSCacheDir(cacheDir string) Option {
 var AdsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
-func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err error) {
+func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
 	versionID, err := adcommon.GetVersionID("/")
@@ -152,6 +156,9 @@ func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err e
 	// local machine sssd krb5 cache
 	sssCCName := filepath.Join(args.sssCacheDir, "ccache_"+strings.ToUpper(domain))
 
+	sssdDbus := bus.Object(consts.SSSDDbusRegisteredName,
+		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, strings.ReplaceAll(domain, ".", "_2e"))))
+
 	return &AD{
 		hostname:         hostname,
 		url:              url,
@@ -160,6 +167,7 @@ func New(ctx context.Context, url, domain string, opts ...Option) (ad *AD, err e
 		gpoRulesCacheDir: gpoRulesCacheDir,
 		krb5CacheDir:     krb5CacheDir,
 		sssCCName:        sssCCName,
+		sssdDbus:         sssdDbus,
 		gpos:             make(map[string]*gpo),
 		gpoListCmd:       args.gpoListCmd,
 	}, nil
@@ -195,10 +203,31 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		}
 	}
 
+	var online bool
+	if err := ad.sssdDbus.Call(consts.SSSDDbusInterface+".IsOnline", 0).Store(&online); err != nil {
+		return nil, fmt.Errorf(i18n.G("failed to retrieve offline state from SSSD: %v"), err)
+	}
+	ad.Lock()
+	ad.IsOffline = !online
+	ad.Unlock()
+
+	// If sssd returns that we are offline, returns the cache list of GPOs if present
+	if ad.IsOffline {
+		if r, err = entry.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
+			return nil, fmt.Errorf(i18n.G("machine is offline and GPO rules cache is unavailable: %v"), err)
+		}
+
+		log.Infof(ctx, "Can't reach AD: machine is offline and %q policies are applied using previous online update", objectName)
+		return r, nil
+	}
+
+	// Otherwise, try fetching the GPO list from LDAP
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
 	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, objectName)
+	cmdCtx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
 	// #nosec G204 - cmdArgs is under our control (python embedded script or mock for tests)
-	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
+	cmd := exec.CommandContext(cmdCtx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -208,27 +237,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	err = cmd.Run()
 	smbsafe.DoneExec()
 	if err != nil {
-		if cmd.ProcessState.ExitCode() != 2 {
-			return nil, fmt.Errorf(i18n.G("failed to retrieve the list of GPO: %v\n%s"), err, stderr.String())
-		}
-
-		// Exit status 2 is a network error (host of network unreadchable)
-		// In this case we assume an offline connection and try to load the GPOs from cache
-		// Otherwise we fail with an error.
-		ad.Lock()
-		ad.IsOffline = true
-		ad.Unlock()
-		if r, err = entry.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
-			return nil, fmt.Errorf(i18n.G("machine is offline and GPO rules cache is unavailable: %v"), err)
-		}
-
-		log.Infof(ctx, "Can't reach AD: machine is offline and %q policies are applied using previous online update", objectName)
-		return r, nil
+		return nil, fmt.Errorf(i18n.G("failed to retrieve the list of GPO (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, stderr.String())
 	}
 
-	ad.Lock()
-	ad.IsOffline = false
-	ad.Unlock()
 	gpos := make(map[string]string)
 	var orderedGPOs []gpo
 	scanner := bufio.NewScanner(&stdout)

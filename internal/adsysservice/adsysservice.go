@@ -161,7 +161,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if args.sssCacheDir != "" {
 		adOptions = append(adOptions, ad.WithSSSCacheDir(args.sssCacheDir))
 	}
-	adc, err := ad.New(ctx, url, domain, adOptions...)
+	adc, err := ad.New(ctx, url, domain, bus, adOptions...)
 	if err != nil {
 		return nil, err
 	}
