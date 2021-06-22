@@ -212,7 +212,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	ad.Unlock()
 
 	// If sssd returns that we are offline, returns the cache list of GPOs if present
-	if ad.IsOffline {
+	if !online {
 		if r, err = entry.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
 			return nil, fmt.Errorf(i18n.G("machine is offline and GPO rules cache is unavailable: %v"), err)
 		}
