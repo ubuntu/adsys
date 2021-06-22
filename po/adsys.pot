@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:351
+#: internal/policies/ad/ad.go:362
 msgid "%s :%v"
 msgstr ""
 
@@ -137,7 +137,7 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:261
+#: internal/adsysservice/adsysservice.go:262
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
@@ -350,7 +350,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/policies/ad/ad.go:110
+#: internal/policies/ad/ad.go:114
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -383,7 +383,7 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/ad/ad.go:287
+#: internal/policies/ad/ad.go:298
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -416,7 +416,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:294
+#: internal/policies/ad/ad.go:305
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -425,7 +425,7 @@ msgstr ""
 msgid "can't get cached GPO list from %s"
 msgstr ""
 
-#: internal/policies/ad/ad.go:174
+#: internal/policies/ad/ad.go:182
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -433,7 +433,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:262
+#: internal/policies/ad/ad.go:273
 msgid "can't list users from cache"
 msgstr ""
 
@@ -449,7 +449,7 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:209
+#: internal/adsysservice/adsysservice.go:210
 #, c-format
 msgid "can't load server info from %s"
 msgstr ""
@@ -462,7 +462,7 @@ msgstr ""
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:221
+#: internal/adsysservice/adsysservice.go:222
 msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
@@ -540,7 +540,7 @@ msgstr ""
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:106
+#: internal/adsysservice/adsysservice.go:107
 msgid "couldn't create adsys service"
 msgstr ""
 
@@ -662,13 +662,13 @@ msgstr ""
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:144
+#: internal/adsysservice/adsysservice.go:145
 msgid ""
 "failed to find active AD server address in sssd (sssd.conf or sssd "
 "discovery) and url is not provided"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:226
+#: internal/adsysservice/adsysservice.go:227
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
@@ -680,7 +680,7 @@ msgstr ""
 msgid "failed to marshal meta data"
 msgstr ""
 
-#: internal/policies/ad/ad.go:271
+#: internal/policies/ad/ad.go:282
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -696,13 +696,17 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:305
+#: internal/policies/ad/ad.go:316
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:212
+#: internal/policies/ad/ad.go:208
+msgid "failed to retrieve offline state from SSSD: %v"
+msgstr ""
+
+#: internal/policies/ad/ad.go:240
 msgid ""
-"failed to retrieve the list of GPO: %v\n"
+"failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
 msgstr ""
 
@@ -754,7 +758,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:222
+#: internal/policies/ad/ad.go:217
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
@@ -832,7 +836,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/policies/ad/ad.go:184
+#: internal/policies/ad/ad.go:192
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -897,6 +901,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/policies/ad/ad.go:179
+#: internal/policies/ad/ad.go:187
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
