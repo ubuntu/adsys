@@ -408,8 +408,8 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "old-data",
 			// clean generate dconf dbs to regenerate
 			clearDirs: []string{
-				"dconf/db/adsystestuser@example.com.d",
-				"dconf/profile/adsystestuser@example.com",
+				"dconf/db/adsystestuser@offline.d",
+				"dconf/profile/adsystestuser@offline",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -428,8 +428,8 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "old-data",
 			// clean gpos cache, but keep machine ones and user gpo_rules
 			clearDirs: []string{
-				"dconf/db/adsystestuser@example.com.d",
-				"dconf/profile/adsystestuser@example.com",
+				"dconf/db/adsystestuser@offline.d",
+				"dconf/profile/adsystestuser@offline",
 				"cache/gpo_cache/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
 				"cache/gpo_cache/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
 				"cache/gpo_cache/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
@@ -777,7 +777,7 @@ func TestPolicyUpdate(t *testing.T) {
 			if tc.isOffLine {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
-				content = bytes.Replace(content, []byte("ldap://adc.example.com"), []byte("ldap://NT_STATUS_HOST_UNREACHABLE"), 1)
+				content = bytes.Replace(content, []byte("ad_domain: example.com"), []byte("ad_domain: offline"), 1)
 				err = os.WriteFile(conf, content, 0644)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
