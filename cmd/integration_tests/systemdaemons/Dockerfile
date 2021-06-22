@@ -1,7 +1,7 @@
 FROM ubuntu
 
-COPY cmd/adsysd/integration_tests/systemdaemons/dbus.conf /
-COPY cmd/adsysd/integration_tests/systemdaemons/systemdaemons.sh /
+COPY cmd/integration_tests/systemdaemons/dbus.conf /
+COPY cmd/integration_tests/systemdaemons/systemdaemons.sh /
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN \
