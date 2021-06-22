@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/authorizer"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 type mockAuthorizer struct {
@@ -38,7 +39,7 @@ func TestNew(t *testing.T) {
 			</method>
 		</interface>` + introspect.IntrospectDataString + `</node>`
 
-	conn := newDbusConn(t)
+	conn := testutils.NewDbusConn(t)
 	sssdDomain := sssd("my-discovered-url")
 	conn.Export(sssdDomain, "/org/freedesktop/sssd/infopipe/Domains/fordiscovery_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
 	conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/fordiscovery_2ecom",
@@ -127,23 +128,4 @@ func TestNew(t *testing.T) {
 			require.NoError(t, err, "adsys run directory exists as expected")
 		})
 	}
-}
-
-// newDbusConn returns a system dbus connection which will be tore down when tests ends
-func newDbusConn(t *testing.T) *dbus.Conn {
-	t.Helper()
-
-	bus, err := dbus.SystemBusPrivate()
-	require.NoError(t, err, "Setup: can’t get a private system bus")
-
-	t.Cleanup(func() {
-		err = bus.Close()
-		require.NoError(t, err, "Teardown: can’t close system dbus connection")
-	})
-	err = bus.Auth(nil)
-	require.NoError(t, err, "Setup: can’t auth on private system bus")
-	err = bus.Hello()
-	require.NoError(t, err, "Setup: can’t send hello message on private system bus")
-
-	return bus
 }

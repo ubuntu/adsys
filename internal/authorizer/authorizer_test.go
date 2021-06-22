@@ -8,13 +8,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/ubuntu/adsys/internal/authorizer"
+	"github.com/ubuntu/adsys/internal/testutils"
 	"google.golang.org/grpc/peer"
 )
 
 func TestIsAllowedFromContext(t *testing.T) {
 	t.Parallel()
 
-	bus := authorizer.NewDbusConn(t)
+	bus := testutils.NewDbusConn(t)
 
 	var emptyAction authorizer.Action
 	simpleAction := authorizer.Action{
@@ -91,7 +92,7 @@ func TestIsAllowedFromContext(t *testing.T) {
 
 func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 	t.Parallel()
-	bus := authorizer.NewDbusConn(t)
+	bus := testutils.NewDbusConn(t)
 
 	a, err := authorizer.New(bus)
 	if err != nil {
@@ -104,7 +105,7 @@ func TestIsAllowedFromContextWithoutPeer(t *testing.T) {
 
 func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 	t.Parallel()
-	bus := authorizer.NewDbusConn(t)
+	bus := testutils.NewDbusConn(t)
 
 	a, err := authorizer.New(bus)
 	if err != nil {
@@ -122,7 +123,7 @@ func TestIsAllowedFromContextWithInvalidPeerCreds(t *testing.T) {
 
 func TestIsAllowedFromContextWithoutUserKey(t *testing.T) {
 	t.Parallel()
-	bus := authorizer.NewDbusConn(t)
+	bus := testutils.NewDbusConn(t)
 
 	myUserOtherAction := authorizer.Action{
 		ID:      "UserOtherActionID",

@@ -11,16 +11,14 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/godbus/dbus/v5"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestIsAllowed(t *testing.T) {
 	t.Parallel()
 
-	bus := NewDbusConn(t)
+	bus := testutils.NewDbusConn(t)
 
 	var emptyAction Action
 	simpleAction := Action{
@@ -167,25 +165,6 @@ func TestServerPeerCredsInvalidSocket(t *testing.T) {
 
 	s := serverPeerCreds{}
 	s.ServerHandshake(nil)
-}
-
-// NewDbusConn returns a system dbus connection which will be tore down when tests ends
-func NewDbusConn(t *testing.T) *dbus.Conn {
-	t.Helper()
-
-	bus, err := dbus.SystemBusPrivate()
-	require.NoError(t, err, "Setup: can’t get a private system bus")
-
-	t.Cleanup(func() {
-		err = bus.Close()
-		require.NoError(t, err, "Teardown: can’t close system dbus connection")
-	})
-	err = bus.Auth(nil)
-	require.NoError(t, err, "Setup: can’t auth on private system bus")
-	err = bus.Hello()
-	require.NoError(t, err, "Setup: can’t send hello message on private system bus")
-
-	return bus
 }
 
 func TestMain(m *testing.M) {
