@@ -2264,7 +2264,7 @@
     <policy name="UbuntuMachineGdmDconfComUbuntuLoginScreenBackgroundColor" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor)" explainText="$(string.UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundColor)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundColor)" key="Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-color" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"21.04":{"empty":"''","meta":"s"},"21.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"21.04":{"empty":"''","meta":"s"},"21.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor" valueName="all" />
         <boolean id="UbuntuOverrideElemMachine2110GdmDconfComUbuntuLoginScreenBackgroundColor" valueName="Override21.10">
@@ -2277,12 +2277,17 @@
           <falseValue><string>false</string></falseValue>
         </boolean>
         <text id="UbuntuElemMachine2104GdmDconfComUbuntuLoginScreenBackgroundColor" valueName="21.04" />
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundColor" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundColor" valueName="20.04" />
       </elements>
     </policy>
     <policy name="UbuntuMachineGdmDconfComUbuntuLoginScreenBackgroundPictureUri" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundPictureUri)" explainText="$(string.UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundPictureUri)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundPictureUri)" key="Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-picture-uri" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"21.04":{"empty":"''","meta":"s"},"21.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"21.04":{"empty":"''","meta":"s"},"21.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <text id="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="all" />
         <boolean id="UbuntuOverrideElemMachine2110GdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="Override21.10">
@@ -2295,12 +2300,17 @@
           <falseValue><string>false</string></falseValue>
         </boolean>
         <text id="UbuntuElemMachine2104GdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="21.04" />
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="20.04" />
       </elements>
     </policy>
     <policy name="UbuntuMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat)" explainText="$(string.UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat)" key="Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-repeat" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"21.04":{"empty":"''","meta":"s"},"21.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"21.04":{"empty":"''","meta":"s"},"21.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat0)">
@@ -2421,12 +2431,53 @@
             </value>
           </item>
         </enum>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat0)">
+            <value>
+              <string>default</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat1)">
+            <value>
+              <string>repeat</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat2)">
+            <value>
+              <string>repeat-x</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat3)">
+            <value>
+              <string>repeat-y</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat4)">
+            <value>
+              <string>no-repeat</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat5)">
+            <value>
+              <string>space</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundRepeat6)">
+            <value>
+              <string>round</string>
+            </value>
+          </item>
+        </enum>
       </elements>
     </policy>
     <policy name="UbuntuMachineGdmDconfComUbuntuLoginScreenBackgroundSize" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize)" explainText="$(string.UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundSize)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundSize)" key="Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-size" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"21.04":{"empty":"''","meta":"s"},"21.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"21.04":{"empty":"''","meta":"s"},"21.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize0)">
@@ -2497,6 +2548,32 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachine2104GdmDconfComUbuntuLoginScreenBackgroundSize3)">
+            <value>
+              <string>contain</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize0)">
+            <value>
+              <string>default</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize1)">
+            <value>
+              <string>auto</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize2)">
+            <value>
+              <string>cover</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize3)">
             <value>
               <string>contain</string>
             </value>
