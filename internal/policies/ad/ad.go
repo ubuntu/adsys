@@ -48,7 +48,7 @@ type gpo struct {
 
 // AD structure to manage call concurrency
 type AD struct {
-	IsOffline bool
+	isOffline bool
 
 	hostname string
 	url      string
@@ -208,7 +208,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return nil, fmt.Errorf(i18n.G("failed to retrieve offline state from SSSD: %v"), err)
 	}
 	ad.Lock()
-	ad.IsOffline = !online
+	ad.isOffline = !online
 	ad.Unlock()
 
 	// If sssd returns that we are offline, returns the cache list of GPOs if present
@@ -221,9 +221,30 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return r, nil
 	}
 
+	// We need an AD LDAP url to connect to
+	adServerURL, _ := ad.GetStatus()
+	if adServerURL == "" {
+		log.Debug(ctx, "Triggering autodiscovery of AD server triggered because sssd.conf or manual url not provided")
+		// Try to update from SSSD the current active AD server
+		msg := i18n.G("error while trying to look up AD server address on SSSD")
+		err := ad.sssdDbus.Call(consts.SSSDDbusInterface+".ActiveServer", 0, "AD").Store(&adServerURL)
+		if err != nil {
+			return nil, fmt.Errorf(i18n.G("%s: %v"), msg, err)
+		}
+		if adServerURL == "" {
+			return nil, fmt.Errorf(i18n.G("%s: no active server found"), msg)
+		}
+		if !strings.HasPrefix(adServerURL, "ldap://") {
+			adServerURL = fmt.Sprintf("ldap://%s", adServerURL)
+		}
+		ad.Lock()
+		ad.url = adServerURL
+		ad.Unlock()
+	}
+
 	// Otherwise, try fetching the GPO list from LDAP
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
-	cmdArgs := append(args, "--objectclass", string(objectClass), ad.url, objectName)
+	cmdArgs := append(args, "--objectclass", string(objectClass), adServerURL, objectName)
 	cmdCtx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 	// #nosec G204 - cmdArgs is under our control (python embedded script or mock for tests)
@@ -413,4 +434,11 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 	}
 
 	return r, nil
+}
+
+// GetStatus returns dynamic part of our AD instance like offline state and active server for AD ldap
+func (ad *AD) GetStatus() (adServerURL string, isOffline bool) {
+	ad.RLock()
+	defer ad.RUnlock()
+	return ad.url, ad.isOffline
 }

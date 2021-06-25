@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -50,7 +49,6 @@ type state struct {
 	sssCacheDir string
 	sssConf     string
 
-	adServer string
 	adDomain string
 }
 
@@ -135,21 +133,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if err != nil {
 		return nil, err
 	}
-
-	// Try sssd discovery ad server url
-	if url == "" {
-		log.Debug(ctx, "AD server not specified in sssd.conf nor set manually to the user, try autodiscovering mode")
-		url, err = discoverActiveADServer(ctx, domain, bus)
-		if err != nil {
-			return nil, fmt.Errorf(i18n.G("autodiscovery was triggered because sssd.conf or manual url not provided but failed with: %v"), err)
-		}
-	}
-
 	if url != "" && !strings.HasPrefix(url, "ldap://") {
 		url = fmt.Sprintf("ldap://%s", url)
 	}
-
-	log.Debugf(ctx, "AD domain: %q, server: %q", domain, url)
 
 	var adOptions []ad.Option
 	if args.cacheDir != "" {
@@ -165,6 +151,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf(ctx, "AD domain: %q, server from configuration: %q", domain, url)
 
 	if args.authorizer == nil {
 		args.authorizer, err = authorizer.New(bus)
@@ -198,7 +185,6 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 			dconfDir:    args.dconfDir,
 			runDir:      args.runDir,
 			sssCacheDir: args.sssCacheDir,
-			adServer:    url,
 			adDomain:    domain,
 		},
 		initSystemTime: initSysTime,
@@ -279,14 +265,4 @@ func initSystemTime(bus *dbus.Conn) *time.Time {
 
 	initSystemTime := time.Unix(int64(start)/1000000, 0)
 	return &initSystemTime
-}
-
-func discoverActiveADServer(ctx context.Context, domain string, bus *dbus.Conn) (string, error) {
-	var url string
-	sssd := bus.Object(consts.SSSDDbusRegisteredName,
-		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, strings.ReplaceAll(domain, ".", "_2e"))))
-	if err := sssd.Call(consts.SSSDDbusInterface+".ActiveServer", 0, "AD").Store(&url); err != nil {
-		return "", fmt.Errorf(i18n.G("error in looking up active AD server address by SSSD: %v"), err)
-	}
-	return url, nil
 }
