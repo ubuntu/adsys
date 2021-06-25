@@ -1,7 +1,7 @@
 [Unit]
 Description=ADSys daemon service
 After=adsysd.socket
-Requires=adsysd.socket
+PartOf=adsysd.socket
 
 [Service]
 Type=notify

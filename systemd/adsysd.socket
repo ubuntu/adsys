@@ -1,6 +1,5 @@
 [Unit]
 Description=Socket activation for ADSys daemon
-PartOf=adsysd.service
 
 [Socket]
 ListenStream=/run/adsysd.sock
