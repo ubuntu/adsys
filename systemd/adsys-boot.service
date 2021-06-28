@@ -11,6 +11,9 @@ ConditionPathExists=/etc/sssd/sssd.conf
 Type=oneshot
 # Only machine krb5 ticket is available at boot, so this will update the machine only.
 ExecStart=/sbin/adsysctl update --all
+# Restart trying to refresh policy on boot if failed (no cache and offline).
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target

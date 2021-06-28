@@ -506,22 +506,43 @@ func TestMain(m *testing.M) {
 			log.Fatalf("Setup: can’t send hello message on private system bus: %v", err)
 		}
 
-		sssdOnline := sssd(true)
-		sssdOffline := sssd(false)
+		sssdOnlineExample := sssd{
+			domain: "example.com",
+			online: true,
+		}
+		sssdOnlineLocalDomain := sssd{
+			domain: "locadomain",
+			online: true,
+		}
+		sssdEmptyServerDomain := sssd{
+			domain: "",
+			online: true,
+		}
+		sssdOfflineExample := sssd{
+			domain: "example.com",
+			online: false,
+		}
 		const intro = `
 	<node>
 		<interface name="org.freedesktop.sssd.infopipe.Domains.Domain">
-			<method name="Online">
+			<method name="ActiveServer">
+				<arg direction="in" type="s"/>
+				<arg direction="out" type="s"/>
+			</method>
+			<method name="IsOnline">
 				<arg direction="out" type="b"/>
 			</method>
 		</interface>` + introspect.IntrospectDataString + `</node>`
-		conn.Export(sssdOnline, "/org/freedesktop/sssd/infopipe/Domains/example_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
+		conn.Export(sssdOnlineExample, "/org/freedesktop/sssd/infopipe/Domains/example_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
 		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/example_2ecom",
 			"org.freedesktop.DBus.Introspectable")
-		conn.Export(sssdOnline, "/org/freedesktop/sssd/infopipe/Domains/localdomain", "org.freedesktop.sssd.infopipe.Domains.Domain")
+		conn.Export(sssdOnlineLocalDomain, "/org/freedesktop/sssd/infopipe/Domains/localdomain", "org.freedesktop.sssd.infopipe.Domains.Domain")
 		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/localdomain",
 			"org.freedesktop.DBus.Introspectable")
-		conn.Export(sssdOffline, "/org/freedesktop/sssd/infopipe/Domains/offline", "org.freedesktop.sssd.infopipe.Domains.Domain")
+		conn.Export(sssdEmptyServerDomain, "/org/freedesktop/sssd/infopipe/Domains/emptyserver", "org.freedesktop.sssd.infopipe.Domains.Domain")
+		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/emptyserver",
+			"org.freedesktop.DBus.Introspectable")
+		conn.Export(sssdOfflineExample, "/org/freedesktop/sssd/infopipe/Domains/offline", "org.freedesktop.sssd.infopipe.Domains.Domain")
 		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/offline",
 			"org.freedesktop.DBus.Introspectable")
 
@@ -567,10 +588,20 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 	return r
 }
 
-type sssd bool
+type sssd struct {
+	domain string
+	online bool
+}
+
+func (s sssd) ActiveServer(_ string) (string, *dbus.Error) {
+	if s.domain == "" {
+		return "", nil
+	}
+	return "myserver." + s.domain, nil
+}
 
 func (s sssd) IsOnline() (bool, *dbus.Error) {
-	return bool(s), nil
+	return s.online, nil
 }
 
 // GetSystemBus helper functionality to get one system bus which automatically close on test shutdown

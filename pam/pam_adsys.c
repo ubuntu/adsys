@@ -26,6 +26,7 @@
 #define _GNU_SOURCE
 
 #include <errno.h>
+#include <limits.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +43,8 @@
 #include <security/pam_modutil.h>
 #include <security/pam_ext.h>
 #include <security/_pam_macros.h>
+
+#define ADSYS_GPO_RULES_DIR "/var/cache/adsys/gpo_rules/%s"
 
 /*
  * Refresh the group policies of current user
@@ -61,7 +64,7 @@ static int update_policy(pam_handle_t * pamh, const char *username, int debug)
 	char **arggv;
 	arggv = calloc(6, sizeof(char *));
 	if (arggv == NULL) {
-		return PAM_SYSTEM_ERR;
+		return PAM_BUF_ERR;
 	}
 
 	arggv[0] = "/sbin/adsysctl";
@@ -111,7 +114,81 @@ static int update_policy(pam_handle_t * pamh, const char *username, int debug)
 					   username, krb5ccname, status);
 			}
 			free(arggv);
+			return PAM_AUTHINFO_UNAVAIL;
+		}
+		free(arggv);
+		return PAM_SUCCESS;
+
+	} else {		/* child */
+		if (debug) {
+			pam_syslog(pamh, LOG_DEBUG, "Calling %s ...", arggv[0]);
+		}
+
+		execv(arggv[0], arggv);
+		int i = errno;
+		pam_syslog(pamh, LOG_ERR, "execv(%s,...) failed: %m", arggv[0]);
+		_exit(i);
+	}
+
+	return PAM_SYSTEM_ERR;	/* will never be reached. */
+}
+
+/*
+ * Refresh the group policies of machine
+ */
+static int update_machine_policy(pam_handle_t * pamh, int debug)
+{
+	char **arggv;
+	arggv = calloc(5, sizeof(char *));
+	if (arggv == NULL) {
+		return PAM_BUF_ERR;
+	}
+
+	arggv[0] = "/sbin/adsysctl";
+	arggv[1] = "update";
+	arggv[2] = "-m";
+	arggv[4] = NULL;
+	if (debug) {
+		arggv[3] = "-vv";
+		arggv[4] = NULL;
+	}
+
+	pid_t pid = fork();
+	if (pid == -1) {
+		pam_syslog(pamh, LOG_ERR, "Failed to fork process");
+		return PAM_SYSTEM_ERR;
+	}
+
+	if (pid > 0) {		/* parent */
+		pid_t retval;
+		int status = 0;
+
+		while ((retval = waitpid(pid, &status, 0)) == -1
+		       && errno == EINTR) ;
+
+		if (retval == (pid_t) - 1) {
+			pam_syslog(pamh, LOG_ERR,
+				   "waitpid returns with -1: %m");
+			free(arggv);
 			return PAM_SYSTEM_ERR;
+		} else if (status != 0) {
+			if (WIFEXITED(status)) {
+				pam_syslog(pamh, LOG_ERR,
+					   "adsysctl update -m failed: exit code %d",
+					   WEXITSTATUS(status));
+			} else if (WIFSIGNALED(status)) {
+				pam_syslog(pamh, LOG_ERR,
+					   "adsysctl update -m failed: caught signal %d%s",
+					   WTERMSIG(status),
+					   WCOREDUMP(status) ? " (core dumped)"
+					   : "");
+			} else {
+				pam_syslog(pamh, LOG_ERR,
+					   "adsysctl update -m failed: unknown status 0x%x",
+					   status);
+			}
+			free(arggv);
+			return PAM_AUTHINFO_UNAVAIL;
 		}
 		free(arggv);
 		return PAM_SUCCESS;
@@ -152,18 +229,6 @@ static int set_dconf_profile(pam_handle_t * pamh, const char *username,
 PAM_EXTERN int
 pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, const char **argv)
 {
-	return PAM_IGNORE;
-}
-
-PAM_EXTERN int
-pam_sm_setcred(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
-	return PAM_IGNORE;
-}
-
-PAM_EXTERN int
-pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
 	int retval = PAM_SUCCESS;
 
 	int debug = 0;
@@ -178,7 +243,6 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 	}
 
 	const char *username;
-	// char *username = malloc(100);
 	if (pam_get_item(pamh, PAM_USER, (void *)&username) != PAM_SUCCESS) {
 		D(("pam_get_item failed for PAM_USER"));
 		return PAM_SYSTEM_ERR;	/* let pam_get_item() log the error */
@@ -203,12 +267,51 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 	if (strchr(username, '@') == NULL) {
 		return PAM_IGNORE;
 	}
+
+	/*
+	  trying to update machine policy first if no machine gpo cache (meaning adsysd boot service failed due to being offline for instance)
+	*/
+	char hostname[HOST_NAME_MAX + 1];
+	char cache_path[HOST_NAME_MAX + 1 + strlen(ADSYS_GPO_RULES_DIR) - 2];
+    if (gethostname(hostname, HOST_NAME_MAX + 1) < 0) {
+		pam_syslog(pamh, LOG_ERR, "Failed to get hostname");
+		return PAM_SYSTEM_ERR;
+    }
+	if (sprintf(cache_path, ADSYS_GPO_RULES_DIR, hostname) < 0) {
+		pam_syslog(pamh, LOG_ERR, "Failed to allocate cache_path");
+		return PAM_SYSTEM_ERR;
+	}
+	if (access(cache_path, F_OK) != 0) {
+		int r;
+		r = update_machine_policy(pamh, debug);
+		if (r != 0) {
+			return r;
+		}
+	}
+
 	return update_policy(pamh, username, debug);
 }
 
 PAM_EXTERN int
-pam_sm_close_session(pam_handle_t * pamh, int flags, int argc,
-		     const char **argv)
+pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const char **argv)
+{
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN int
+pam_sm_setcred(pam_handle_t * pamh, int flags, int argc, const char **argv)
+{
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN int
+pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
+{
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN int
+pam_sm_close_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 {
 	return PAM_SUCCESS;
 }

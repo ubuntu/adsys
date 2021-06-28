@@ -88,8 +88,13 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 	}
 
 	var offline string
-	if s.adc.IsOffline {
+	adServerURL, isOffline := s.adc.GetStatus()
+	if isOffline {
 		offline = fmt.Sprint(i18n.G("**Offline mode** using cached policies\n\n"))
+	}
+
+	if adServerURL == "" {
+		adServerURL = i18n.G("N/A")
 	}
 
 	timeLayout := "Mon Jan 2 15:04"
@@ -142,7 +147,7 @@ Daemon:
   Cache path: %s
   Run path: %s
   Dconf path: %s`), offline, updateMachine, updateUsers, nextRefresh,
-		state.adServer, state.adDomain,
+		adServerURL, state.adDomain,
 		state.sssConf, state.sssCacheDir,
 		timeout, socket, state.cacheDir, state.runDir, state.dconfDir)
 
