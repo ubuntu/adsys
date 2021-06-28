@@ -2,7 +2,6 @@ Name: ADSys authentication
 Default: yes
 Priority: 120
 
-Session-Type: Additional
-Session-Interactive-Only: yes
-Session:
+Auth-Type: Additional
+Auth:
        required        pam_adsys.so

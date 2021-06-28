@@ -64,7 +64,7 @@ static int update_policy(pam_handle_t * pamh, const char *username, int debug)
 	char **arggv;
 	arggv = calloc(6, sizeof(char *));
 	if (arggv == NULL) {
-		return PAM_SYSTEM_ERR;
+		return PAM_BUF_ERR;
 	}
 
 	arggv[0] = "/sbin/adsysctl";
@@ -114,7 +114,7 @@ static int update_policy(pam_handle_t * pamh, const char *username, int debug)
 					   username, krb5ccname, status);
 			}
 			free(arggv);
-			return PAM_SYSTEM_ERR;
+			return PAM_AUTHINFO_UNAVAIL;
 		}
 		free(arggv);
 		return PAM_SUCCESS;
@@ -141,7 +141,7 @@ static int update_machine_policy(pam_handle_t * pamh, int debug)
 	char **arggv;
 	arggv = calloc(5, sizeof(char *));
 	if (arggv == NULL) {
-		return PAM_SYSTEM_ERR;
+		return PAM_BUF_ERR;
 	}
 
 	arggv[0] = "/sbin/adsysctl";
@@ -188,7 +188,7 @@ static int update_machine_policy(pam_handle_t * pamh, int debug)
 					   status);
 			}
 			free(arggv);
-			return PAM_SYSTEM_ERR;
+			return PAM_AUTHINFO_UNAVAIL;
 		}
 		free(arggv);
 		return PAM_SUCCESS;
@@ -229,18 +229,6 @@ static int set_dconf_profile(pam_handle_t * pamh, const char *username,
 PAM_EXTERN int
 pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, const char **argv)
 {
-	return PAM_IGNORE;
-}
-
-PAM_EXTERN int
-pam_sm_setcred(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
-	return PAM_IGNORE;
-}
-
-PAM_EXTERN int
-pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
 	int retval = PAM_SUCCESS;
 
 	int debug = 0;
@@ -255,7 +243,6 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 	}
 
 	const char *username;
-	// char *username = malloc(100);
 	if (pam_get_item(pamh, PAM_USER, (void *)&username) != PAM_SUCCESS) {
 		D(("pam_get_item failed for PAM_USER"));
 		return PAM_SYSTEM_ERR;	/* let pam_get_item() log the error */
@@ -306,8 +293,25 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 }
 
 PAM_EXTERN int
-pam_sm_close_session(pam_handle_t * pamh, int flags, int argc,
-		     const char **argv)
+pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const char **argv)
+{
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN int
+pam_sm_setcred(pam_handle_t * pamh, int flags, int argc, const char **argv)
+{
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN int
+pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
+{
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN int
+pam_sm_close_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 {
 	return PAM_SUCCESS;
 }
