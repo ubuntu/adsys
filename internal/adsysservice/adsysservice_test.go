@@ -6,12 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/godbus/dbus/v5"
-	"github.com/godbus/dbus/v5/introspect"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/authorizer"
-	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 type mockAuthorizer struct {
@@ -21,38 +18,8 @@ func (mockAuthorizer) IsAllowedFromContext(context.Context, authorizer.Action) e
 	return nil
 }
 
-type sssd string
-
-func (s sssd) ActiveServer(_ string) (string, *dbus.Error) {
-	return string(s), nil
-}
-
 func TestNew(t *testing.T) {
 	t.Parallel()
-
-	const intro = `
-	<node>
-		<interface name="org.freedesktop.sssd.infopipe.Domains.Domain">
-			<method name="ActiveServer">
-				<arg direction="in" type="s"/>
-				<arg direction="out" type="s"/>
-			</method>
-		</interface>` + introspect.IntrospectDataString + `</node>`
-
-	conn := testutils.NewDbusConn(t)
-	sssdDomain := sssd("my-discovered-url")
-	conn.Export(sssdDomain, "/org/freedesktop/sssd/infopipe/Domains/fordiscovery_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
-	conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/fordiscovery_2ecom",
-		"org.freedesktop.DBus.Introspectable")
-	sssdDomainWithEmptyURL := sssd("")
-	conn.Export(sssdDomainWithEmptyURL, "/org/freedesktop/sssd/infopipe/Domains/emptyurlfordiscovery_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
-	conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/emptyurlfordiscovery_2ecom",
-		"org.freedesktop.DBus.Introspectable")
-	reply, err := conn.RequestName("org.freedesktop.sssd.infopipe", dbus.NameFlagDoNotQueue)
-	require.NoError(t, err, "Setup: Failed to aquire sssd name on local system bus")
-	if reply != dbus.RequestNameReplyPrimaryOwner {
-		t.Fatalf("Setup: Failed to aquire sssd name on local system bus: name is already taken")
-	}
 
 	tests := map[string]struct {
 		url                    string
@@ -67,14 +34,9 @@ func TestNew(t *testing.T) {
 		"New and Done succeeds as expected, first run": {url: "my-ldap-url", domain: "example.com"},
 		"Adsys directory can already exists":           {url: "my-ldap-url", domain: "example.com", existingAdsysDirs: true},
 
-		// unexisting sssd with domain or existing sssd without ad_server is the same code path
-		"AD server in discovery mode": {readUnexistingSssdConf: true, domain: "fordiscovery.com"},
-
 		// Error cases
-		"Ad New fails prevents adsysservice creation":               {url: "my-ldap-url", domain: "example.com", AdNewFail: true, existingAdsysDirs: true, wantNewErr: true},
-		"No url and domain while sssdconf does not exists":          {readUnexistingSssdConf: true, wantNewErr: true},
-		"No url can be found in discovery mode but we had a domain": {readUnexistingSssdConf: true, domain: "example.com", wantNewErr: true},
-		"Error on discover returns an empty URL":                    {readUnexistingSssdConf: true, domain: "emptyurlfordiscovery.com", wantNewErr: true},
+		"Ad New fails prevents adsysservice creation":      {url: "my-ldap-url", domain: "example.com", AdNewFail: true, existingAdsysDirs: true, wantNewErr: true},
+		"No url and domain while sssdconf does not exists": {readUnexistingSssdConf: true, wantNewErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
