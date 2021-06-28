@@ -25,7 +25,7 @@ require (
 	golang.org/x/text v0.3.6
 	google.golang.org/grpc v1.38.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
-	google.golang.org/protobuf v1.26.0
+	google.golang.org/protobuf v1.27.0
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	honnef.co/go/tools v0.2.0
