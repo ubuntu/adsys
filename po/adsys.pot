@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:362
+#: internal/policies/ad/ad.go:387
 msgid "%s :%v"
 msgstr ""
 
@@ -65,12 +65,12 @@ msgstr ""
 msgid "%s requires a valid subcommand"
 msgstr ""
 
-#: internal/adsysservice/service.go:119
+#: internal/adsysservice/service.go:124
 #, c-format
 msgid "%s, no gpo applied found"
 msgstr ""
 
-#: internal/adsysservice/service.go:104
+#: internal/adsysservice/service.go:109
 #, c-format
 msgid "%s, updated on %s"
 msgstr ""
@@ -80,12 +80,21 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
+#: internal/policies/ad/ad.go:236
+msgid "%s: %v"
+msgstr ""
+
 #: cmd/adsysd/client/policy.go:267
 #, c-format
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/adsysservice/service.go:92
+#: internal/policies/ad/ad.go:239
+#, c-format
+msgid "%s: no active server found"
+msgstr ""
+
+#: internal/adsysservice/service.go:93
 msgid ""
 "**Offline mode** using cached policies\n"
 "\n"
@@ -137,11 +146,11 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:262
+#: internal/adsysservice/adsysservice.go:245
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:111
+#: internal/adsysservice/service.go:116
 msgid "Can't get connected users"
 msgstr ""
 
@@ -149,7 +158,7 @@ msgstr ""
 msgid "Check if grpc request peer is authorized"
 msgstr ""
 
-#: internal/adsysservice/service.go:114
+#: internal/adsysservice/service.go:119
 msgid "Connected users:"
 msgstr ""
 
@@ -212,12 +221,16 @@ msgstr ""
 msgid "GetsockoptUcred() error: %s"
 msgstr ""
 
-#: internal/adsysservice/service.go:108
+#: internal/adsysservice/service.go:113
 msgid "Machine"
 msgstr ""
 
-#: internal/adsysservice/service.go:105
+#: internal/adsysservice/service.go:110
 msgid "Machine, no gpo applied found"
+msgstr ""
+
+#: internal/adsysservice/service.go:97
+msgid "N/A"
 msgstr ""
 
 #: internal/grpc/logstreamer/server.go:46
@@ -225,7 +238,7 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: internal/adsysservice/service.go:123
+#: internal/adsysservice/service.go:128
 msgid "None"
 msgstr ""
 
@@ -383,7 +396,7 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/ad/ad.go:298
+#: internal/policies/ad/ad.go:323
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -416,7 +429,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:305
+#: internal/policies/ad/ad.go:330
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -425,7 +438,7 @@ msgstr ""
 msgid "can't get cached GPO list from %s"
 msgstr ""
 
-#: internal/policies/ad/ad.go:182
+#: internal/policies/ad/ad.go:186
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -433,7 +446,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:273
+#: internal/policies/ad/ad.go:298
 msgid "can't list users from cache"
 msgstr ""
 
@@ -449,7 +462,7 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:210
+#: internal/adsysservice/adsysservice.go:193
 #, c-format
 msgid "can't load server info from %s"
 msgstr ""
@@ -462,7 +475,7 @@ msgstr ""
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:222
+#: internal/adsysservice/adsysservice.go:205
 msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
@@ -517,7 +530,7 @@ msgstr ""
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
-#: internal/adsysservice/service.go:207
+#: internal/adsysservice/service.go:212
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
@@ -540,7 +553,7 @@ msgstr ""
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:107
+#: internal/adsysservice/adsysservice.go:105
 msgid "couldn't create adsys service"
 msgstr ""
 
@@ -630,7 +643,7 @@ msgstr ""
 msgid "error while loading schemas"
 msgstr ""
 
-#: internal/adsysservice/service.go:194
+#: internal/adsysservice/service.go:199
 msgid "error while trying to determine next refresh time"
 msgstr ""
 
@@ -638,11 +651,16 @@ msgstr ""
 msgid "error while trying to display daemon output"
 msgstr ""
 
-#: internal/adsysservice/service.go:173
+#: internal/adsysservice/service.go:178
 msgid "error while trying to get the list of active users"
 msgstr ""
 
-#: internal/adsysservice/service.go:161
+#. Try to update from SSSD the current active AD server
+#: internal/policies/ad/ad.go:233
+msgid "error while trying to look up AD server address on SSSD"
+msgstr ""
+
+#: internal/adsysservice/service.go:166
 msgid "error while trying to stop daemon"
 msgstr ""
 
@@ -662,13 +680,7 @@ msgstr ""
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:145
-msgid ""
-"failed to find active AD server address in sssd (sssd.conf or sssd "
-"discovery) and url is not provided"
-msgstr ""
-
-#: internal/adsysservice/adsysservice.go:227
+#: internal/adsysservice/adsysservice.go:210
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
@@ -680,7 +692,7 @@ msgstr ""
 msgid "failed to marshal meta data"
 msgstr ""
 
-#: internal/policies/ad/ad.go:282
+#: internal/policies/ad/ad.go:307
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -696,15 +708,15 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:316
+#: internal/policies/ad/ad.go:341
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:208
+#: internal/policies/ad/ad.go:212
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:240
+#: internal/policies/ad/ad.go:265
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -736,7 +748,7 @@ msgid ""
 ". Please use the StreamClientInterceptor: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:211
+#: internal/adsysservice/service.go:216
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
@@ -758,7 +770,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:217
+#: internal/policies/ad/ad.go:221
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
@@ -788,7 +800,7 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/adsysservice/service.go:197
+#: internal/adsysservice/service.go:202
 msgid "no boot system time found"
 msgstr ""
 
@@ -836,7 +848,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/policies/ad/ad.go:192
+#: internal/policies/ad/ad.go:196
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -889,7 +901,7 @@ msgid "unexpected socket type"
 msgstr ""
 
 #: internal/adsysservice/service.go:80 internal/adsysservice/service.go:81
-#: internal/adsysservice/service.go:97
+#: internal/adsysservice/service.go:102
 msgid "unknown"
 msgstr ""
 
@@ -901,6 +913,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/policies/ad/ad.go:187
+#: internal/policies/ad/ad.go:191
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
