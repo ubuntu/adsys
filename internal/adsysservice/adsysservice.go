@@ -133,9 +133,6 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if err != nil {
 		return nil, err
 	}
-	if url != "" && !strings.HasPrefix(url, "ldap://") {
-		url = fmt.Sprintf("ldap://%s", url)
-	}
 
 	var adOptions []ad.Option
 	if args.cacheDir != "" {

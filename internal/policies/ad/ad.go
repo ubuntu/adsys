@@ -159,6 +159,10 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 	sssdDbus := bus.Object(consts.SSSDDbusRegisteredName,
 		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, strings.ReplaceAll(domain, ".", "_2e"))))
 
+	if url != "" && !strings.HasPrefix(url, "ldap://") {
+		url = fmt.Sprintf("ldap://%s", url)
+	}
+
 	return &AD{
 		hostname:         hostname,
 		url:              url,
