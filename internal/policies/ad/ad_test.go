@@ -517,7 +517,15 @@ func TestGetPolicies(t *testing.T) {
 			wantErr:            true,
 		},
 		*/
-
+		"Error on user without @ in name": {
+			gpoListArgs:        "standard",
+			objectName:         "bob",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want:               []entry.GPO{standardGPO},
+			wantServerURL:      "ldap://myserver.example.com",
+			wantErr:            true,
+		},
 		"Corrupted policy file": {
 			gpoListArgs:        "corrupted-policy",
 			objectName:         "bob@EXAMPLE.COM",
