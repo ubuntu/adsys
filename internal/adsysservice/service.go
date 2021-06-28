@@ -93,6 +93,10 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 		offline = fmt.Sprint(i18n.G("**Offline mode** using cached policies\n\n"))
 	}
 
+	if adServerURL == "" {
+		adServerURL = i18n.G("N/A")
+	}
+
 	timeLayout := "Mon Jan 2 15:04"
 
 	nextRefresh := i18n.G("unknown")
