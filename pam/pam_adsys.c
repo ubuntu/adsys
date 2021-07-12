@@ -114,7 +114,7 @@ static int update_policy(pam_handle_t * pamh, const char *username, int debug)
 					   username, krb5ccname, status);
 			}
 			free(arggv);
-			return PAM_AUTHINFO_UNAVAIL;
+			return PAM_CRED_ERR;
 		}
 		free(arggv);
 		return PAM_SUCCESS;
@@ -188,7 +188,7 @@ static int update_machine_policy(pam_handle_t * pamh, int debug)
 					   status);
 			}
 			free(arggv);
-			return PAM_AUTHINFO_UNAVAIL;
+			return PAM_CRED_ERR;
 		}
 		free(arggv);
 		return PAM_SUCCESS;
@@ -228,6 +228,18 @@ static int set_dconf_profile(pam_handle_t * pamh, const char *username,
 
 PAM_EXTERN int
 pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, const char **argv)
+{
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN int
+pam_sm_setcred(pam_handle_t * pamh, int flags, int argc, const char **argv)
+{
+	return PAM_IGNORE;
+}
+
+PAM_EXTERN int
+pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 {
 	int retval = PAM_SUCCESS;
 
@@ -279,7 +291,7 @@ pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, const char **argv)
     }
 	if (sprintf(cache_path, ADSYS_GPO_RULES_DIR, hostname) < 0) {
 		pam_syslog(pamh, LOG_ERR, "Failed to allocate cache_path");
-		return PAM_SYSTEM_ERR;
+		return PAM_BUF_ERR;
 	}
 	if (access(cache_path, F_OK) != 0) {
 		int r;
@@ -293,25 +305,8 @@ pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, const char **argv)
 }
 
 PAM_EXTERN int
-pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc, const char **argv)
-{
-	return PAM_IGNORE;
-}
-
-PAM_EXTERN int
-pam_sm_setcred(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
-	return PAM_IGNORE;
-}
-
-PAM_EXTERN int
-pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
-	return PAM_IGNORE;
-}
-
-PAM_EXTERN int
-pam_sm_close_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
+pam_sm_close_session(pam_handle_t * pamh, int flags, int argc,
+		     const char **argv)
 {
 	return PAM_SUCCESS;
 }
