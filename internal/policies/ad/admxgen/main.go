@@ -25,13 +25,6 @@ var admxTemplate string
 //go:embed adml.template
 var admlTemplate string
 
-/*
-Mode 1: pour tous les yaml dans desf sauf (category) generate 1 expanded policy file
-admxgen expand rep_in rep_out
-Mode 2: pour tous les expanded policy generes, generate adml/admx from category.yaml
-admxgen adm category.yaml rep_expanded(former rep_out) rep_out
-*/
-
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s [COMMAND] [ARGS] ...
