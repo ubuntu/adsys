@@ -98,6 +98,8 @@ func genManPages(cmds []cobra.Command, dir string) {
 	}
 
 	for _, cmd := range cmds {
+		// Run ExecuteC to install completion and help commands
+		_, _ = cmd.ExecuteC()
 		if err := genManTreeFromOpts(cmd, doc.GenManHeader{
 			Title: fmt.Sprintf("ADSys: %s", cmd.Name()),
 		}, out); err != nil {
@@ -209,10 +211,14 @@ func genManTreeFromOpts(cmd cobra.Command, header doc.GenManHeader, dir string) 
 
 func getCmdsAndHiddens(cmds []cobra.Command) (user []cobra.Command, hidden []cobra.Command) {
 	for _, cmd := range cmds {
+		// Run ExecuteC to install completion and help commands
+		_, _ = cmd.ExecuteC()
 		user = append(user, cmd)
 		user = append(user, collectSubCmds(cmd, false /* selectHidden */, false /* parentWasHidden */)...)
 	}
 	for _, cmd := range cmds {
+		// Run ExecuteC to install completion and help commands
+		_, _ = cmd.ExecuteC()
 		hidden = append(hidden, collectSubCmds(cmd, true /* selectHidden */, false /* parentWasHidden */)...)
 	}
 
