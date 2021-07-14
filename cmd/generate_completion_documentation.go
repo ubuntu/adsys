@@ -100,9 +100,13 @@ func genManPages(cmds []cobra.Command, dir string) {
 	for _, cmd := range cmds {
 		// Run ExecuteC to install completion and help commands
 		_, _ = cmd.ExecuteC()
-		if err := genManTreeFromOpts(cmd, doc.GenManHeader{
-			Title: fmt.Sprintf("ADSys: %s", cmd.Name()),
-		}, out); err != nil {
+		opts := doc.GenManTreeOptions{
+			Header: &doc.GenManHeader{
+				Title: fmt.Sprintf("ADSys: %s", cmd.Name()),
+			},
+			Path: out,
+		}
+		if err := genManTreeFromOpts(&cmd, opts); err != nil {
 			log.Fatalf("Couldn't generate man pages for %s: %v", cmd.Name(), err)
 		}
 	}
@@ -187,26 +191,38 @@ func mustWriteLine(w io.Writer, msg string) {
 // genManTreeFromOpts generates a man page for the command and all descendants.
 // The pages are written to the opts.Path directory.
 // This is a copy from cobra, but it will include Hidden commands.
-func genManTreeFromOpts(cmd cobra.Command, header doc.GenManHeader, dir string) error {
+func genManTreeFromOpts(cmd *cobra.Command, opts doc.GenManTreeOptions) error {
+	header := opts.Header
+	if header == nil {
+		header = &doc.GenManHeader{}
+	}
 	for _, c := range cmd.Commands() {
 		if (!c.IsAvailableCommand() && !c.Hidden) || c.IsAdditionalHelpTopicCommand() {
 			continue
 		}
-		if err := genManTreeFromOpts(*c, header, dir); err != nil {
+		if err := genManTreeFromOpts(c, opts); err != nil {
 			return err
 		}
 	}
-
 	section := "1"
-	basename := strings.ReplaceAll(cmd.CommandPath(), " ", "-")
-	filename := filepath.Join(dir, basename+"."+section)
+	if header.Section != "" {
+		section = header.Section
+	}
+
+	separator := "_"
+	if opts.CommandSeparator != "" {
+		separator = opts.CommandSeparator
+	}
+	basename := strings.Replace(cmd.CommandPath(), " ", separator, -1)
+	filename := filepath.Join(opts.Path, basename+"."+section)
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	return doc.GenMan(&cmd, &header, f)
+	headerCopy := *header
+	return doc.GenMan(cmd, &headerCopy, f)
 }
 
 func getCmdsAndHiddens(cmds []cobra.Command) (user []cobra.Command, hidden []cobra.Command) {
