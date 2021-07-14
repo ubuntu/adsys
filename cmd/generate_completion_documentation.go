@@ -46,7 +46,7 @@ func main() {
 			log.Fatalf(usage, os.Args[0])
 		}
 		dir := filepath.Join(generators.DestDirectory(os.Args[2]), "usr", "share")
-		genBashCompletions(commands, dir)
+		genCompletions(commands, dir)
 	case "man":
 		if len(os.Args) < 3 {
 			log.Fatalf(usage, os.Args[0])
@@ -68,20 +68,25 @@ func main() {
 	}
 }
 
-func genBashCompletions(cmds []cobra.Command, dir string) {
-	bashCompDir := filepath.Join(dir, "bash-completion")
-	if err := generators.CleanDirectory(bashCompDir); err != nil {
-		log.Fatalln(err)
-	}
-
-	out := filepath.Join(bashCompDir, "completions")
-	if err := os.MkdirAll(out, 0755); err != nil {
-		log.Fatalf("Couldn't create bash completion directory: %v", err)
+// genCompletions for bash and zsh directories
+func genCompletions(cmds []cobra.Command, dir string) {
+	bashCompDir := filepath.Join(dir, "bash-completion", "completions")
+	zshCompDir := filepath.Join(dir, "zsh", "site-functions")
+	for _, d := range []string{bashCompDir, zshCompDir} {
+		if err := generators.CleanDirectory(filepath.Dir(d)); err != nil {
+			log.Fatalln(err)
+		}
+		if err := os.MkdirAll(d, 0755); err != nil {
+			log.Fatalf("Couldn't create bash completion directory: %v", err)
+		}
 	}
 
 	for _, cmd := range cmds {
-		if err := cmd.GenBashCompletionFile(filepath.Join(out, cmd.Name())); err != nil {
+		if err := cmd.GenBashCompletionFileV2(filepath.Join(bashCompDir, cmd.Name()), true); err != nil {
 			log.Fatalf("Couldn't create bash completion for %s: %v", cmd.Name(), err)
+		}
+		if err := cmd.GenZshCompletionFile(filepath.Join(zshCompDir, cmd.Name())); err != nil {
+			log.Fatalf("Couldn't create zsh completion for %s: %v", cmd.Name(), err)
 		}
 	}
 }
