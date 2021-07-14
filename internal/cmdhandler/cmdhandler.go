@@ -2,7 +2,6 @@ package cmdhandler
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -40,30 +39,6 @@ func RegisterAlias(cmd, parent *cobra.Command) {
 	}
 	alias.Long = t
 	parent.AddCommand(&alias)
-}
-
-// InstallCompletionCmd adds a subcommand named "completion"
-func InstallCompletionCmd(rootCmd *cobra.Command) {
-	prog := rootCmd.Name()
-	var completionCmd = &cobra.Command{
-		Use:   "completion",
-		Short: i18n.G("Generates bash completion scripts"),
-		Long: fmt.Sprintf(i18n.G(`To load completion run
-
-. <(%s completion)
-
-To configure your bash shell to load completions for each session add to your ~/.bashrc or ~/.profile:
-
-. <(%s completion)
-`), prog, prog),
-		Args:              cobra.NoArgs,
-		ValidArgsFunction: NoValidArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// use upstream completion for now as we don’t have hidden subcommands
-			return rootCmd.GenBashCompletion(os.Stdout)
-		},
-	}
-	rootCmd.AddCommand(completionCmd)
 }
 
 // InstallVerboseFlag adds the -v and -vv options and returns the reference to it.
