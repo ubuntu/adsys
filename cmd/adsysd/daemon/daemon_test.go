@@ -28,7 +28,7 @@ func TestAppHelp(t *testing.T) {
 func TestAppCompletion(t *testing.T) {
 	a := daemon.New()
 
-	defer changeArgs("adsysd", "completion")()
+	defer changeArgs("adsysd", "completion", "bash")()
 	err := a.Run()
 	require.NoError(t, err, "Completion should not use socket and always be reachable")
 }
@@ -60,7 +60,7 @@ func TestAppVersion(t *testing.T) {
 func TestAppNoUsageError(t *testing.T) {
 	a := daemon.New()
 
-	defer changeArgs("adsysd", "completion")()
+	defer changeArgs("adsysd", "completion", "bash")()
 	a.Run()
 	isUsageError := a.UsageError()
 	require.False(t, isUsageError, "No usage error is reported as such")
