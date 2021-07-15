@@ -145,7 +145,6 @@ func New() *App {
 	decorate.LogOnError(a.viper.BindPFlag("ad_domain", a.rootCmd.PersistentFlags().Lookup("ad-domain")))
 
 	// subcommands
-	cmdhandler.InstallCompletionCmd(&a.rootCmd)
 	a.installVersion()
 
 	return &a

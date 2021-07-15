@@ -90,7 +90,6 @@ func New() *App {
 	decorate.LogOnError(a.viper.BindPFlag("client_timeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	// subcommands
-	cmdhandler.InstallCompletionCmd(&a.rootCmd)
 	a.installDoc()
 	a.installPolicy()
 	a.installService()

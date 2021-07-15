@@ -46,7 +46,7 @@ func main() {
 			log.Fatalf(usage, os.Args[0])
 		}
 		dir := filepath.Join(generators.DestDirectory(os.Args[2]), "usr", "share")
-		genBashCompletions(commands, dir)
+		genCompletions(commands, dir)
 	case "man":
 		if len(os.Args) < 3 {
 			log.Fatalf(usage, os.Args[0])
@@ -68,20 +68,25 @@ func main() {
 	}
 }
 
-func genBashCompletions(cmds []cobra.Command, dir string) {
-	bashCompDir := filepath.Join(dir, "bash-completion")
-	if err := generators.CleanDirectory(bashCompDir); err != nil {
-		log.Fatalln(err)
-	}
-
-	out := filepath.Join(bashCompDir, "completions")
-	if err := os.MkdirAll(out, 0755); err != nil {
-		log.Fatalf("Couldn't create bash completion directory: %v", err)
+// genCompletions for bash and zsh directories
+func genCompletions(cmds []cobra.Command, dir string) {
+	bashCompDir := filepath.Join(dir, "bash-completion", "completions")
+	zshCompDir := filepath.Join(dir, "zsh", "site-functions")
+	for _, d := range []string{bashCompDir, zshCompDir} {
+		if err := generators.CleanDirectory(filepath.Dir(d)); err != nil {
+			log.Fatalln(err)
+		}
+		if err := os.MkdirAll(d, 0755); err != nil {
+			log.Fatalf("Couldn't create bash completion directory: %v", err)
+		}
 	}
 
 	for _, cmd := range cmds {
-		if err := cmd.GenBashCompletionFile(filepath.Join(out, cmd.Name())); err != nil {
+		if err := cmd.GenBashCompletionFileV2(filepath.Join(bashCompDir, cmd.Name()), true); err != nil {
 			log.Fatalf("Couldn't create bash completion for %s: %v", cmd.Name(), err)
+		}
+		if err := cmd.GenZshCompletionFile(filepath.Join(zshCompDir, cmd.Name())); err != nil {
+			log.Fatalf("Couldn't create zsh completion for %s: %v", cmd.Name(), err)
 		}
 	}
 }
@@ -98,9 +103,15 @@ func genManPages(cmds []cobra.Command, dir string) {
 	}
 
 	for _, cmd := range cmds {
-		if err := genManTreeFromOpts(cmd, doc.GenManHeader{
-			Title: fmt.Sprintf("ADSys: %s", cmd.Name()),
-		}, out); err != nil {
+		// Run ExecuteC to install completion and help commands
+		_, _ = cmd.ExecuteC()
+		opts := doc.GenManTreeOptions{
+			Header: &doc.GenManHeader{
+				Title: fmt.Sprintf("ADSys: %s", cmd.Name()),
+			},
+			Path: out,
+		}
+		if err := genManTreeFromOpts(&cmd, opts); err != nil {
 			log.Fatalf("Couldn't generate man pages for %s: %v", cmd.Name(), err)
 		}
 	}
@@ -185,34 +196,50 @@ func mustWriteLine(w io.Writer, msg string) {
 // genManTreeFromOpts generates a man page for the command and all descendants.
 // The pages are written to the opts.Path directory.
 // This is a copy from cobra, but it will include Hidden commands.
-func genManTreeFromOpts(cmd cobra.Command, header doc.GenManHeader, dir string) error {
+func genManTreeFromOpts(cmd *cobra.Command, opts doc.GenManTreeOptions) error {
+	header := opts.Header
+	if header == nil {
+		header = &doc.GenManHeader{}
+	}
 	for _, c := range cmd.Commands() {
 		if (!c.IsAvailableCommand() && !c.Hidden) || c.IsAdditionalHelpTopicCommand() {
 			continue
 		}
-		if err := genManTreeFromOpts(*c, header, dir); err != nil {
+		if err := genManTreeFromOpts(c, opts); err != nil {
 			return err
 		}
 	}
-
 	section := "1"
-	basename := strings.ReplaceAll(cmd.CommandPath(), " ", "-")
-	filename := filepath.Join(dir, basename+"."+section)
+	if header.Section != "" {
+		section = header.Section
+	}
+
+	separator := "_"
+	if opts.CommandSeparator != "" {
+		separator = opts.CommandSeparator
+	}
+	basename := strings.Replace(cmd.CommandPath(), " ", separator, -1)
+	filename := filepath.Join(opts.Path, basename+"."+section)
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	return doc.GenMan(&cmd, &header, f)
+	headerCopy := *header
+	return doc.GenMan(cmd, &headerCopy, f)
 }
 
 func getCmdsAndHiddens(cmds []cobra.Command) (user []cobra.Command, hidden []cobra.Command) {
 	for _, cmd := range cmds {
+		// Run ExecuteC to install completion and help commands
+		_, _ = cmd.ExecuteC()
 		user = append(user, cmd)
 		user = append(user, collectSubCmds(cmd, false /* selectHidden */, false /* parentWasHidden */)...)
 	}
 	for _, cmd := range cmds {
+		// Run ExecuteC to install completion and help commands
+		_, _ = cmd.ExecuteC()
 		hidden = append(hidden, collectSubCmds(cmd, true /* selectHidden */, false /* parentWasHidden */)...)
 	}
 

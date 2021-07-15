@@ -30,7 +30,7 @@ func TestAppHelp(t *testing.T) {
 func TestAppCompletion(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "completion")()
+	defer changeArgs("adsysctl", "completion", "bash")()
 	err := a.Run()
 	require.NoError(t, err, "Completion should not use socket and always be reachable")
 }
@@ -38,7 +38,7 @@ func TestAppCompletion(t *testing.T) {
 func TestAppNoUsageError(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "completion")()
+	defer changeArgs("adsysctl", "completion", "bash")()
 	a.Run()
 	isUsageError := a.UsageError()
 	require.False(t, isUsageError, "No usage error is reported as such")
@@ -74,7 +74,7 @@ func TestAppCanQuitWhenExecute(t *testing.T) {
 func TestAppCanQuitAfterExecute(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "completion")()
+	defer changeArgs("adsysctl", "completion", "bash")()
 	a.Run()
 	a.Quit()
 }
@@ -106,7 +106,7 @@ func TestAppCanSigHupWhenExecute(t *testing.T) {
 func TestAppCanSigHupAfterExecute(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "completion")()
+	defer changeArgs("adsysctl", "completion", "bash")()
 	a.Run()
 	require.True(t, a.Hup(), "Hup returns true for client")
 }

@@ -81,12 +81,9 @@ func TestServiceStopWaitForHangingClient(t *testing.T) {
 	time.Sleep(time.Second)
 
 	// Stop without forcing: shouldn’t be able to stop it
-	// Don’t use the helper as we don’t need stdout (and cat will trigger the stdout capturer in daemon logs)
-	c := client.New()
-	restoreArgs := changeOsArgs(t, conf, "service", "stop")
-	err = c.Run()
-	restoreArgs()
-	require.NoError(t, err, "client should exit with no error (graceful stop requested)")
+	_, stopStop, err := startCmd(t, false, "adsysctl", "-c", conf, "service", "stop")
+	require.NoError(t, err, "stop should start successfully (graceful stop requested)")
+	defer stopStop()
 
 	// Let’s wait 5 seconds to ensure it hadn’t stopped
 	select {
@@ -128,12 +125,8 @@ func TestServiceStopForcedWithHangingClient(t *testing.T) {
 	time.Sleep(time.Second)
 
 	// Force stop it
-	// Don’t use the helper as we don’t need stdout (and cat will trigger the stdout capturer in daemon logs)
-	c := client.New()
-	restoreArgs := changeOsArgs(t, conf, "service", "stop", "-f")
-	err = c.Run()
-	restoreArgs()
-	require.NoError(t, err, "client should exit with no error")
+	_, _, err = startCmd(t, true, "adsysctl", "-c", conf, "service", "stop", "-f")
+	require.NoError(t, err, "force stop should be successful")
 
 	select {
 	case <-time.After(3 * time.Second):
