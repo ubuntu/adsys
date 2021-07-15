@@ -130,7 +130,7 @@ msgstr ""
 msgid "AD integration daemon"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:37
+#: internal/cmdhandler/cmdhandler.go:36
 msgid "Alias of %q"
 msgstr ""
 
@@ -210,10 +210,6 @@ msgstr ""
 
 #: cmd/adsysd/client/doc.go:54
 msgid "Format type (markdown, raw or html)."
-msgstr ""
-
-#: internal/cmdhandler/cmdhandler.go:50
-msgid "Generates bash completion scripts"
 msgstr ""
 
 #: internal/authorizer/servercreds.go:50
@@ -454,7 +450,7 @@ msgstr ""
 msgid "can't listen on new socket %q"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:224
+#: internal/policies/ad/admxgen/main.go:217
 msgid "can't load category definition"
 msgstr ""
 
@@ -668,7 +664,7 @@ msgstr ""
 msgid "error while updating policy"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:112
+#: internal/policies/ad/admxgen/main.go:105
 msgid "failed to access definition files: %w"
 msgstr ""
 
@@ -696,7 +692,7 @@ msgstr ""
 msgid "failed to read cache directory: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/main.go:117
+#: internal/policies/ad/admxgen/main.go:110
 msgid "failed to read list of definition files: %w"
 msgstr ""
 
@@ -760,7 +756,7 @@ msgstr ""
 msgid "invalid remote GPT.INI"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:71
+#: internal/cmdhandler/cmdhandler.go:46
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
@@ -864,7 +860,7 @@ msgstr ""
 msgid "show overridden rules in each GPOs."
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:78
+#: internal/cmdhandler/cmdhandler.go:53
 msgid ""
 "socket path to use between daemon and client. Can be overridden by systemd "
 "socket activation."
@@ -905,7 +901,7 @@ msgstr ""
 msgid "unknown"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:85
+#: internal/cmdhandler/cmdhandler.go:60
 msgid "use a specific configuration file"
 msgstr ""
 
