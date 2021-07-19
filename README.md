@@ -63,7 +63,7 @@ adsysctl applied [USER_NAME] [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
-#### adsysd completion
+#### adsysctl completion
 
 generate the autocompletion script for the specified shell
 
@@ -83,17 +83,13 @@ See each sub-command's help for details on how to use the generated script.
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
-#### adsysd completion bash
+#### adsysctl completion bash
 
 generate the autocompletion script for bash
 
@@ -118,7 +114,7 @@ You will need to start a new shell for this setup to take effect.
   
 
 ```
-adsysd completion bash
+adsysctl completion bash
 ```
 
 ##### Options
@@ -131,17 +127,13 @@ adsysd completion bash
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
-#### adsysd completion fish
+#### adsysctl completion fish
 
 generate the autocompletion script for fish
 
@@ -160,7 +152,7 @@ You will need to start a new shell for this setup to take effect.
 
 
 ```
-adsysd completion fish [flags]
+adsysctl completion fish [flags]
 ```
 
 ##### Options
@@ -173,17 +165,13 @@ adsysd completion fish [flags]
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
-#### adsysd completion powershell
+#### adsysctl completion powershell
 
 generate the autocompletion script for powershell
 
@@ -200,7 +188,7 @@ to your powershell profile.
 
 
 ```
-adsysd completion powershell [flags]
+adsysctl completion powershell [flags]
 ```
 
 ##### Options
@@ -213,17 +201,13 @@ adsysd completion powershell [flags]
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
-#### adsysd completion zsh
+#### adsysctl completion zsh
 
 generate the autocompletion script for zsh
 
@@ -238,16 +222,15 @@ to enable it.  You can execute the following once:
 $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
 To load completions for every new session, execute once:
-# Linux:
 $ adsysctl completion zsh > "${fpath[1]}/_adsysctl"
-# macOS:
+ or:
 $ adsysctl completion zsh > /usr/local/share/zsh/site-functions/_adsysctl
 
 You will need to start a new shell for this setup to take effect.
 
 
 ```
-adsysd completion zsh [flags]
+adsysctl completion zsh [flags]
 ```
 
 ##### Options
@@ -260,14 +243,10 @@ adsysd completion zsh [flags]
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysctl doc
@@ -739,9 +718,8 @@ to enable it.  You can execute the following once:
 $ echo "autoload -U compinit; compinit" >> ~/.zshrc
 
 To load completions for every new session, execute once:
-# Linux:
 $ adsysd completion zsh > "${fpath[1]}/_adsysd"
-# macOS:
+ or:
 $ adsysd completion zsh > /usr/local/share/zsh/site-functions/_adsysd
 
 You will need to start a new shell for this setup to take effect.
