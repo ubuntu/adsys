@@ -103,6 +103,7 @@ func genManPages(cmds []cobra.Command, dir string) {
 	}
 
 	for _, cmd := range cmds {
+		cmd := cmd
 		// Run ExecuteC to install completion and help commands
 		_, _ = cmd.ExecuteC()
 		opts := doc.GenManTreeOptions{
@@ -232,12 +233,15 @@ func genManTreeFromOpts(cmd *cobra.Command, opts doc.GenManTreeOptions) error {
 
 func getCmdsAndHiddens(cmds []cobra.Command) (user []cobra.Command, hidden []cobra.Command) {
 	for _, cmd := range cmds {
+		cmd := cmd
 		// Run ExecuteC to install completion and help commands
 		_, _ = cmd.ExecuteC()
 		user = append(user, cmd)
 		user = append(user, collectSubCmds(cmd, false /* selectHidden */, false /* parentWasHidden */)...)
 	}
+
 	for _, cmd := range cmds {
+		cmd := cmd
 		// Run ExecuteC to install completion and help commands
 		_, _ = cmd.ExecuteC()
 		hidden = append(hidden, collectSubCmds(cmd, true /* selectHidden */, false /* parentWasHidden */)...)
@@ -297,10 +301,19 @@ func filterCommandMarkdown(cmds []cobra.Command, w io.Writer) {
 		if skip {
 			continue
 		}
+
 		// Add 2 levels of subindentation
 		if strings.HasPrefix(l, "##") {
 			l = "##" + l
 		}
+
+		// Special case # Linux an # macOS in shell completion:
+		if strings.HasPrefix(l, "# Linux") {
+			continue
+		} else if strings.HasPrefix(l, "# macOS") {
+			l = " or:"
+		}
+
 		mustWriteLine(w, l)
 	}
 	if err := scanner.Err(); err != nil {
