@@ -1,3 +1,23 @@
+adsys (0.7) impish; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Depends on sssd offline status to try fetching the GPOs
+    - request to sssd in what status we are in
+    - if we are online, do the samba/ldap requests as we used to do, but
+      with a contextual timeout.
+  * Allow empty ad_server in sssd.conf.
+  * Fix dependencies between service and relax adsys-boot retrials.
+  * Pam to request machine update if no machine cache is available.a
+  * Print N/A when no Active Server was found.
+  * Refresh policy definition files
+  * Updates to latest release of viper, cobra, protobuf, grpc.
+  * Use cobra 2.0 completion.
+  * Adapt and add new tests to previous changes
+  * Reenable LTO optimization.
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 19 Jul 2021 13:01:07 +0200
+
 adsys (0.6) impish; urgency=medium
 
   [ Jean-Baptiste Lallement ]
