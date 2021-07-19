@@ -7,9 +7,6 @@ export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$(she
 # Install all content to embed
 export DH_GOLANG_INSTALL_ALL := 1
 
-# The package fails to build on duplicate symbols in the archive with LTO enabled
-export DEB_BUILD_MAINT_OPTIONS=optimize=-lto
-
 # Skip integration tests when building package: they need docker images.
 export ADSYS_SKIP_INTEGRATION_TESTS=1
 
