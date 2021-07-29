@@ -62,10 +62,18 @@ if [ -n "${time}" ]; then
     gdbus call --system -d org.freedesktop.systemd1 -o /org/freedesktop/systemd1/unit/adsys_2dgpo_2drefresh_2etimer  -m org.freedesktop.DBus.Mock.AddProperty org.freedesktop.systemd1.Timer NextElapseUSecMonotonic "${time}"
 fi
 
+# sssd additional domains
+gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/example_2ecom -m org.freedesktop.DBus.Mock.AddObject /org/freedesktop/sssd/infopipe/Domains/offline org.freedesktop.sssd.infopipe.Domains.Domain "{}" "[]"
+gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/example_2ecom -m org.freedesktop.DBus.Mock.AddObject /org/freedesktop/sssd/infopipe/Domains/online_no_active_server org.freedesktop.sssd.infopipe.Domains.Domain "{}" "[]"
+
 # sssd online/offline report for online object
 gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/example_2ecom -m org.freedesktop.DBus.Mock.AddMethod  '' IsOnline '' 'b' 'ret = True'
-gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/example_2ecom -m org.freedesktop.DBus.Mock.AddObject /org/freedesktop/sssd/infopipe/Domains/offline org.freedesktop.sssd.infopipe.Domains.Domain "{}" "[]"
 gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/offline -m org.freedesktop.DBus.Mock.AddMethod  '' IsOnline '' 'b' 'ret = False'
+gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/online_no_active_server -m org.freedesktop.DBus.Mock.AddMethod  '' IsOnline '' 'b' 'ret = True'
+
+# sssd active server reports
+gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/example_2ecom -m org.freedesktop.DBus.Mock.AddMethod '' ActiveServer 's' 's' 'ret = "adc.example.com"'
+gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/online_no_active_server -m org.freedesktop.DBus.Mock.AddMethod '' ActiveServer 's' 's' 'ret = ""'
 
 sleep 1
 

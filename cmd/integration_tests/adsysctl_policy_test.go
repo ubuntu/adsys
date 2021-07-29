@@ -387,6 +387,12 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 
+		// Dynamic AD server
+		"Current user, dynamic AD server": {
+			initState:             "localhost-uptodate",
+			dynamicADServerDomain: "example.com",
+		},
+
 		// no AD connection
 		"Host is offline, get from cache (no update)": {
 			dynamicADServerDomain: "offline",
