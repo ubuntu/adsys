@@ -502,6 +502,11 @@ func TestPolicyUpdate(t *testing.T) {
 		"Polkit denied updating self":      {systemAnswer: "no", initState: "localhost-uptodate", wantErr: true},
 		"Polkit denied updating other":     {systemAnswer: "no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
 		"Polkit denied updating machine":   {systemAnswer: "no", args: []string{"-m"}, wantErr: true},
+		"Error on dynamic AD returning nothing": {
+			initState:             "localhost-uptodate",
+			dynamicADServerDomain: "online_no_active_server",
+			wantErr:               true,
+		},
 		"Error on dconf apply failing": {
 			initState: "localhost-uptodate",
 			// this generates an error when checking that a machine dconf is present
