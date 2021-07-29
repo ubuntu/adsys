@@ -286,6 +286,8 @@ func TestServiceStatus(t *testing.T) {
 		"Status no user connected and no machine": {noCacheUsersMachine: true, systemAnswer: "yes"},
 		"Status is always authorized":             {systemAnswer: "no"},
 		"Status on user connected with no cache":  {krb5ccNoCache: true, systemAnswer: "yes"},
+		"Status with dynamic AD server":           {dynamicADServerDomain: "example.com", systemAnswer: "yes"},
+		"Status with empty dynamic AD server":     {dynamicADServerDomain: "online_no_active_server", systemAnswer: "yes"},
 
 		// Refresh time exception
 		"No startup time leads to unknown refresh time":           {systemAnswer: "no_startup_time"},
