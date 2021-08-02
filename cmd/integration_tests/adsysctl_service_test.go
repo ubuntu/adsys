@@ -3,6 +3,7 @@ package adsys_test
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -272,19 +273,21 @@ func TestServiceStatus(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get current user")
 
 	tests := map[string]struct {
-		systemAnswer        string
-		daemonNotStarted    bool
-		noCacheUsersMachine bool
-		krb5ccNoCache       bool
-		isOffLine           bool
+		systemAnswer          string
+		daemonNotStarted      bool
+		noCacheUsersMachine   bool
+		krb5ccNoCache         bool
+		dynamicADServerDomain string
 
 		wantErr bool
 	}{
 		"Status with users and machines":          {systemAnswer: "yes"},
-		"Status offline cache":                    {isOffLine: true, systemAnswer: "yes"},
+		"Status offline cache":                    {dynamicADServerDomain: "offline", systemAnswer: "yes"},
 		"Status no user connected and no machine": {noCacheUsersMachine: true, systemAnswer: "yes"},
 		"Status is always authorized":             {systemAnswer: "no"},
 		"Status on user connected with no cache":  {krb5ccNoCache: true, systemAnswer: "yes"},
+		"Status with dynamic AD server":           {dynamicADServerDomain: "example.com", systemAnswer: "yes"},
+		"Status with empty dynamic AD server":     {dynamicADServerDomain: "online_no_active_server", systemAnswer: "yes"},
 
 		// Refresh time exception
 		"No startup time leads to unknown refresh time":           {systemAnswer: "no_startup_time"},
@@ -302,16 +305,19 @@ func TestServiceStatus(t *testing.T) {
 			adsysDir := t.TempDir()
 			gpoRulesDir := filepath.Join(adsysDir, "cache", "gpo_rules")
 			conf := createConf(t, adsysDir)
-			if tc.isOffLine {
+			if tc.dynamicADServerDomain != "" {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
-				content = bytes.Replace(content, []byte("ad_domain: example.com"), []byte("ad_domain: offline"), 1)
+				content = bytes.Replace(content, []byte("ad_domain: example.com"), []byte(fmt.Sprintf("ad_domain: %s", tc.dynamicADServerDomain)), 1)
+				if tc.dynamicADServerDomain != "offline" {
+					content = bytes.Replace(content, []byte("ad_server: adc.example.com"), []byte(""), 1)
+				}
 				err = os.WriteFile(conf, content, 0644)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
 
 			// copy machine gpo rules for first update
-			if !tc.noCacheUsersMachine || tc.isOffLine {
+			if !tc.noCacheUsersMachine || tc.dynamicADServerDomain != "" {
 				err := os.MkdirAll(gpoRulesDir, 0700)
 				require.NoError(t, err, "Setup: couldn't create gpo_rules directory: %v", err)
 				err = shutil.CopyFile("testdata/PolicyApplied/gpo_rules/machine.yaml", filepath.Join(gpoRulesDir, hostname), false)
@@ -322,9 +328,10 @@ func TestServiceStatus(t *testing.T) {
 				defer runDaemon(t, conf)()
 			}
 
-			// Update will try to update the machine and will turn the daemon offline.
-			if tc.isOffLine {
-				_, err := runClient(t, conf, "policy", "update", "--all")
+			// Update will refresh the status of offline/online and active AD server
+			_, err := runClient(t, conf, "policy", "update", "--all")
+			// the other fetch will error out as there is no server
+			if tc.dynamicADServerDomain == "offline" {
 				require.NoError(t, err, "Setup: can't turn the daemon offline with first update")
 			}
 

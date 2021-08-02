@@ -200,7 +200,7 @@ socket: %s/socket
 cache_dir: %s/cache
 run_dir: %s/run
 service_timeout: 30
-ad_server: ldap://adc.example.com
+ad_server: adc.example.com
 ad_domain: example.com
 
 # Those are more for tests
