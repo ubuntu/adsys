@@ -28,5 +28,5 @@ require (
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	honnef.co/go/tools v0.2.0
+	honnef.co/go/tools v0.2.1
 )
