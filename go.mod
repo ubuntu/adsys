@@ -6,7 +6,7 @@ require (
 	github.com/charmbracelet/glamour v0.3.0
 	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 	github.com/fatih/color v1.12.0
-	github.com/fsnotify/fsnotify v1.4.9
+	github.com/fsnotify/fsnotify v1.5.1
 	github.com/godbus/dbus/v5 v5.0.4
 	github.com/golang/protobuf v1.5.2
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
@@ -21,7 +21,7 @@ require (
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
 	golang.org/x/net v0.0.0-20210508051633-16afe75a6701
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
-	golang.org/x/sys v0.0.0-20210510120138-977fb7262007
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
 	golang.org/x/text v0.3.7
 	google.golang.org/grpc v1.40.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
