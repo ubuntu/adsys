@@ -231,11 +231,8 @@ def main():
 
     accountname = args.accountname
 
-    # Computer objects are limited to 15 characters
     # Users don’t need @, as we already have the specific-domain ticket
-    if args.objectclass == ObjectClass.computer:
-        accountname = accountname[:15]
-    else:
+    if args.objectclass == ObjectClass.user:
         accountname = accountname.split('@')[0]
 
     try:
@@ -255,11 +252,22 @@ def main():
         print("Failed to open session: %s" % exc, file=sys.stderr)
         return ReturnCode.NOT_FOUND
 
-    try:
-        dn, object_sid = get_entity(samdb, accountname, args.objectclass)
-    except Exception as exc:
-        print("Searching for account failed with: %s" % exc, file=sys.stderr)
-        return ReturnCode.NOT_FOUND
+    accountnames = [accountname]
+    # Some AD limits computer names to 15 characters
+    if args.objectclass == ObjectClass.computer and len(accountname) > 15:
+        accountnames.append(accountname[:15])
+    i = 0
+    for accountname in accountnames:
+        i += 1
+        try:
+            dn, object_sid = get_entity(samdb, accountname, args.objectclass)
+            break
+        except Exception as exc:
+            print("Searching for account failed with: %s" % exc, file=sys.stderr)
+            # We still have some candidates, don’t error out right away
+            if i < len(accountnames):
+                continue
+            return ReturnCode.NOT_FOUND
 
     sids = get_all_groups(samdb, dn)
     sids.append(object_sid)

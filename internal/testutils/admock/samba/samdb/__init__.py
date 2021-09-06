@@ -45,7 +45,8 @@ class SamDB:
         # User/Machine search
         if "samAccountName" in expression:
             accountName = str(expression)[len("(&(|(samAccountName="):].split(")")[0]
-            if accountName == "nonexistent":
+            # Only the truncated name exists
+            if accountName == "nonexistent" or accountName == "hostnameWithTruncatedLongName":
                 return []
 
             objectClass = b"user"

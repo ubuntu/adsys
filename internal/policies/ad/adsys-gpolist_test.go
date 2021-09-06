@@ -107,7 +107,11 @@ func TestAdsysGPOList(t *testing.T) {
 		"No @ in user name returns the same thing": {
 			accountName: "UserAtRoot",
 		},
-		"Computers are truncated at 15 characters": {
+		"Computers truncated at 15 characters": {
+			accountName: "hostnameWithTruncatedLongName",
+			objectClass: "computer",
+		},
+		"Long computer name, not truncated": {
 			accountName: "hostnameWithLongName",
 			objectClass: "computer",
 		},
