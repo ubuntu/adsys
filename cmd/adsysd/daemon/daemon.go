@@ -42,9 +42,10 @@ type daemonConfig struct {
 	DconfDir    string `mapstructure:"dconf_dir"`
 	SSSCacheDir string `mapstructure:"sss_cache_dir"`
 
-	ServiceTimeout int    `mapstructure:"service_timeout"`
-	ADServer       string `mapstructure:"ad_server"`
-	ADDomain       string `mapstructure:"ad_domain"`
+	ServiceTimeout        int    `mapstructure:"service_timeout"`
+	ADServer              string `mapstructure:"ad_server"`
+	ADDomain              string `mapstructure:"ad_domain"`
+	ADDefaultDomainSuffix string `mapstructure:"ad_default_domain_suffix"`
 }
 
 // New registers commands and return a new App.
@@ -104,6 +105,7 @@ func New() *App {
 				adsysservice.WithRunDir(a.config.RunDir),
 				adsysservice.WithDconfDir(a.config.DconfDir),
 				adsysservice.WithSSSCacheDir(a.config.SSSCacheDir),
+				adsysservice.WithDefaultDomainSuffix(a.config.ADDefaultDomainSuffix),
 			)
 			if err != nil {
 				close(a.ready)
