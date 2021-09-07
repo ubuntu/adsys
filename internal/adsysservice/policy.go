@@ -30,13 +30,12 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 		return err
 	}
 
-	objectClass := ad.UserObject
-	if r.GetIsComputer() {
-		objectClass = ad.ComputerObject
-	}
-
 	if r.GetIsComputer() || r.GetAll() {
-		err = s.updatePolicyFor(stream.Context(), true, target, ad.ComputerObject, "")
+		hostname, err := os.Hostname()
+		if err != nil {
+			return err
+		}
+		err = s.updatePolicyFor(stream.Context(), true, hostname, ad.ComputerObject, "")
 
 		if r.GetAll() {
 			users, err := s.adc.ListActiveUsers(stream.Context())
