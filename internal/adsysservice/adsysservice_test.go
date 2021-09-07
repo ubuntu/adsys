@@ -70,6 +70,7 @@ func TestNew(t *testing.T) {
 				adsysservice.WithDconfDir(dconfDir),
 				adsysservice.WithSSSCacheDir(sssCacheDir),
 				adsysservice.WithMockAuthorizer(&auth),
+				adsysservice.WithDefaultDomainSuffix("mydomain.biz"),
 			}
 			if tc.readUnexistingSssdConf {
 				options = append(options, adsysservice.WithSSSdConf(filepath.Join(temp, "does-not-exists", "sssd.conf")))
