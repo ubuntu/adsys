@@ -50,8 +50,9 @@ type gpo struct {
 type AD struct {
 	isOffline bool
 
-	hostname string
-	url      string
+	hostname            string
+	url                 string
+	defaultDomainSuffix string
 
 	versionID        string
 	gpoCacheDir      string
@@ -69,12 +70,13 @@ type AD struct {
 }
 
 type options struct {
-	versionID       string
-	runDir          string
-	cacheDir        string
-	sssCacheDir     string
-	withoutKerberos bool
-	gpoListCmd      []string
+	versionID           string
+	runDir              string
+	cacheDir            string
+	sssCacheDir         string
+	defaultDomainSuffix string
+	withoutKerberos     bool
+	gpoListCmd          []string
 }
 
 // Option reprents an optional function to change AD behavior.
@@ -100,6 +102,14 @@ func WithRunDir(runDir string) Option {
 func WithSSSCacheDir(cacheDir string) Option {
 	return func(o *options) error {
 		o.sssCacheDir = cacheDir
+		return nil
+	}
+}
+
+// WithDefaultDomainSuffix specifies a default domain suffix we provide
+func WithDefaultDomainSuffix(defaultDomainSuffix string) Option {
+	return func(o *options) error {
+		o.defaultDomainSuffix = defaultDomainSuffix
 		return nil
 	}
 }
@@ -164,16 +174,17 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 	}
 
 	return &AD{
-		hostname:         hostname,
-		url:              url,
-		versionID:        args.versionID,
-		gpoCacheDir:      gpoCacheDir,
-		gpoRulesCacheDir: gpoRulesCacheDir,
-		krb5CacheDir:     krb5CacheDir,
-		sssCCName:        sssCCName,
-		sssdDbus:         sssdDbus,
-		gpos:             make(map[string]*gpo),
-		gpoListCmd:       args.gpoListCmd,
+		hostname:            hostname,
+		url:                 url,
+		defaultDomainSuffix: args.defaultDomainSuffix,
+		versionID:           args.versionID,
+		gpoCacheDir:         gpoCacheDir,
+		gpoRulesCacheDir:    gpoRulesCacheDir,
+		krb5CacheDir:        krb5CacheDir,
+		sssCCName:           sssCCName,
+		sssdDbus:            sssdDbus,
+		gpos:                make(map[string]*gpo),
+		gpoListCmd:          args.gpoListCmd,
 	}, nil
 }
 
@@ -445,4 +456,44 @@ func (ad *AD) GetStatus() (adServerURL string, isOffline bool) {
 	ad.RLock()
 	defer ad.RUnlock()
 	return ad.url, ad.isOffline
+}
+
+// NormalizeTargetName transform user or domain\user as user@domain.
+// If no domain is provided, we rely on having a default domain policy
+func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClass ObjectClass) (string, error) {
+	log.Debugf(ctx, "NormalizeTargetName for %q, type %q", target, objectClass)
+
+	if objectClass == ComputerObject {
+		return target, nil
+	}
+	// If we don’t know if this is a computer, try to ensure first this is not our hostname
+	// (or consider this without explicitely being specified)
+	if objectClass == "" && target == ad.hostname {
+		return target, nil
+	}
+
+	// Otherwise, consider it as a user and try to transform it
+	if strings.Contains(target, "@") {
+		return target, nil
+	}
+
+	var domainSuffix, baseUser string
+	switch c := strings.Split(target, `\`); len(c) {
+	case 2:
+		domainSuffix, baseUser = c[0], c[1]
+	case 1:
+		baseUser = c[0]
+	default:
+		return "", fmt.Errorf(i18n.G(`only one \ is permitted in domain\username. Got: %s`), target)
+	}
+	if domainSuffix == "" && ad.defaultDomainSuffix == "" {
+		return "", fmt.Errorf(i18n.G(`no domain provided for user %q and no default domain in sssd.conf`), target)
+	}
+	if domainSuffix == "" {
+		domainSuffix = ad.defaultDomainSuffix
+	}
+
+	target = fmt.Sprintf("%s@%s", baseUser, domainSuffix)
+	log.Debugf(ctx, "Target name normalized to %q", target)
+	return target, nil
 }
