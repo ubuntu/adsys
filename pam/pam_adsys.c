@@ -49,14 +49,8 @@
 /*
  * Refresh the group policies of current user
  */
-static int update_policy(pam_handle_t * pamh, const char *username, int debug)
+static int update_policy(pam_handle_t * pamh, const char *username, const char *krb5ccname, int debug)
 {
-	const char *krb5ccname = pam_getenv(pamh, "KRB5CCNAME");
-	if (krb5ccname == NULL) {
-		pam_syslog(pamh, LOG_ERR, "KRB5CCNAME is not set");
-		return PAM_ABORT;
-	}
-
 	if (memcmp(krb5ccname, (const char *)"FILE:", 5) == 0) {
 		krb5ccname += 5;
 	}
@@ -260,10 +254,13 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 		return PAM_SYSTEM_ERR;	/* let pam_get_item() log the error */
 	}
 
-	/* check if it is a local or remote use
-	 * is there a better/more reliable way?
+	/*
+	 * We consider that KRB5CCNAME is always set by SSSD for remote users
+	 * We do an exception for GDM which is handled by the machine's GPO
+	 * and we must set the DCONF_PROFILE environment variable.
 	 */
-	if (strchr(username, '@') == NULL && strcmp(username, "gdm") != 0) {
+	const char *krb5ccname = pam_getenv(pamh, "KRB5CCNAME");
+	if (krb5ccname == NULL && strcmp(username, "gdm") != 0) {
 		return PAM_IGNORE;
 	}
 
@@ -276,7 +273,7 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 	/*
 	  update user policy is only for AD users.
 	*/
-	if (strchr(username, '@') == NULL) {
+	if (strcmp(username, "gdm") == 0) {
 		return PAM_IGNORE;
 	}
 
@@ -301,7 +298,7 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 		}
 	}
 
-	return update_policy(pamh, username, debug);
+	return update_policy(pamh, username, krb5ccname, debug);
 }
 
 PAM_EXTERN int
