@@ -167,80 +167,10 @@ func TestPolicyApplied(t *testing.T) {
 func TestPolicyUpdate(t *testing.T) {
 	currentUser := "adsystestuser@example.com"
 
-	// Reexec ourself, with a mock passwd file
-	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		err := exec.Command("pkg-config", "--exists", "nss_wrapper").Run()
-		require.NoError(t, err, "libnss_wrapper is not installed on disk, either skip integration tests or install it")
-
-		testutils.PythonCoverageToGoFormat(t, "../../internal/policies/ad/adsys-gpolist", true)
-
-		var subArgs []string
-		// We are going to only reexec ourself: only take options (without -run)
-		// and redirect coverage file
-		var hasPolicyUpdateAsRun bool
-		for i, arg := range os.Args {
-			if i != 0 && !strings.HasPrefix(arg, "-") {
-				continue
-			}
-			if strings.HasPrefix(arg, "-test.run=") {
-				if !strings.HasPrefix(arg, "-test.run=TestPolicyUpdate") {
-					continue
-				}
-				hasPolicyUpdateAsRun = true
-			}
-			// Cover subprocess in a different file that we will merge when the test ends
-			if strings.HasPrefix(arg, "-test.coverprofile=") {
-				coverage := strings.TrimPrefix(arg, "-test.coverprofile=")
-				coverage = fmt.Sprintf("%s.testpolicyupdate", coverage)
-				arg = fmt.Sprintf("-test.coverprofile=%s", coverage)
-				testutils.AddCoverageFile(coverage)
-			}
-			subArgs = append(subArgs, arg)
-		}
-		if !hasPolicyUpdateAsRun {
-			subArgs = append(subArgs, "-test.run=TestPolicyUpdate")
-		}
-
-		cmd := exec.Command(subArgs[0], subArgs[1:]...)
-
-		admock, err := filepath.Abs("../../internal/testutils/admock")
-		require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
-
-		passwd := modifyAndAddUsers(t, currentUser, "UserIntegrationTest@example.com")
-
-		// Setup correct child environment, including LD_PRELOAD for nss mock
-		cmd.Env = append(os.Environ(),
-			"GO_WANT_HELPER_PROCESS=1",
-
-			// dbus addresses to be reset in child
-			fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_YES=%s", systemSockets["yes"]),
-			fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_NO=%s", systemSockets["no"]),
-
-			// mock for ad python samba code
-			fmt.Sprintf("PYTHONPATH=%s", admock),
-
-			// override user and host database
-			"LD_PRELOAD=libnss_wrapper.so",
-			fmt.Sprintf("NSS_WRAPPER_PASSWD=%s", passwd),
-			"NSS_WRAPPER_GROUP=/etc/group",
-		)
-
-		cmd.Stderr = os.Stderr
-		cmd.Stdout = os.Stdout
-		err = cmd.Run()
-		if err != nil {
-			t.Fail() // The real failure will be written by the child test process
-		}
-
+	// We setup and rerun in a subprocess because the test users must exist on the machine for the authorizer.
+	if setupSubprocessForTest(t, currentUser, "UserIntegrationTest@example.com") {
 		return
 	}
-
-	// Real test (in a subprocess, with coverage report when enabled in main one)
-
-	// Restore for subprocess the yes and no socket to connect to polkitd
-	systemSockets = make(map[string]string)
-	systemSockets["yes"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_YES")
-	systemSockets["no"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_NO")
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get current host")
@@ -915,4 +845,84 @@ func chdir(t *testing.T, dir string) {
 			t.Fatalf("Teardown: Can’t restore current directory: %v", err)
 		}
 	})
+}
+
+// setupSubprocessForTest prepares a subprocess with a mock passwd file for running the tests.
+// Returns false if we are already in the subprocess and should continue.
+// Returns true if we prepare the subprocess and reexec ourself.
+func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...string) bool {
+	t.Helper()
+
+	if os.Getenv("GO_WANT_HELPER_PROCESS") == "1" {
+		// Restore for subprocess the yes and no socket to connect to polkitd
+		systemSockets = make(map[string]string)
+		systemSockets["yes"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_YES")
+		systemSockets["no"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_NO")
+		return false
+	}
+
+	err := exec.Command("pkg-config", "--exists", "nss_wrapper").Run()
+	require.NoError(t, err, "libnss_wrapper is not installed on disk, either skip integration tests or install it")
+
+	testutils.PythonCoverageToGoFormat(t, "../../internal/policies/ad/adsys-gpolist", true)
+
+	var subArgs []string
+	// We are going to only reexec ourself: only take options (without -run)
+	// and redirect coverage file
+	var hasExplicitTestAsRunArg bool
+	for i, arg := range os.Args {
+		if i != 0 && !strings.HasPrefix(arg, "-") {
+			continue
+		}
+		if strings.HasPrefix(arg, "-test.run=") {
+			if !strings.HasPrefix(arg, fmt.Sprintf("-test.run=%s", t.Name())) {
+				continue
+			}
+			hasExplicitTestAsRunArg = true
+		}
+		// Cover subprocess in a different file that we will merge when the test ends
+		if strings.HasPrefix(arg, "-test.coverprofile=") {
+			coverage := strings.TrimPrefix(arg, "-test.coverprofile=")
+			coverage = fmt.Sprintf("%s.%s", coverage, strings.ToLower(t.Name()))
+			arg = fmt.Sprintf("-test.coverprofile=%s", coverage)
+			testutils.AddCoverageFile(coverage)
+		}
+		subArgs = append(subArgs, arg)
+	}
+	if !hasExplicitTestAsRunArg {
+		subArgs = append(subArgs, fmt.Sprintf("-test.run=%s", t.Name()))
+	}
+
+	cmd := exec.Command(subArgs[0], subArgs[1:]...)
+
+	admock, err := filepath.Abs("../../internal/testutils/admock")
+	require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
+
+	passwd := modifyAndAddUsers(t, currentUser, otherUsers...)
+
+	// Setup correct child environment, including LD_PRELOAD for nss mock
+	cmd.Env = append(os.Environ(),
+		"GO_WANT_HELPER_PROCESS=1",
+
+		// dbus addresses to be reset in child
+		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_YES=%s", systemSockets["yes"]),
+		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_NO=%s", systemSockets["no"]),
+
+		// mock for ad python samba code
+		fmt.Sprintf("PYTHONPATH=%s", admock),
+
+		// override user and host database
+		"LD_PRELOAD=libnss_wrapper.so",
+		fmt.Sprintf("NSS_WRAPPER_PASSWD=%s", passwd),
+		"NSS_WRAPPER_GROUP=/etc/group",
+	)
+
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	err = cmd.Run()
+	if err != nil {
+		t.Fail() // The real failure will be written by the child test process
+	}
+
+	return true
 }
