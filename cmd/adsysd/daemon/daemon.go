@@ -141,10 +141,12 @@ func New() *App {
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
 	decorate.LogOnError(a.viper.BindPFlag("service_timeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
-	a.rootCmd.PersistentFlags().StringP("ad-server", "S", "", i18n.G("URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."))
+	a.rootCmd.PersistentFlags().StringP("ad-server", "S", "", i18n.G("URL of the Active Directory server. This overrides parsing sssd.conf."))
 	decorate.LogOnError(a.viper.BindPFlag("ad_server", a.rootCmd.PersistentFlags().Lookup("ad-server")))
-	a.rootCmd.PersistentFlags().StringP("ad-domain", "D", "", i18n.G("AD domain to use. Empty to let ADSys parsing sssd.conf."))
+	a.rootCmd.PersistentFlags().StringP("ad-domain", "D", "", i18n.G("AD domain to use. This overrides parsing sssd.conf"))
 	decorate.LogOnError(a.viper.BindPFlag("ad_domain", a.rootCmd.PersistentFlags().Lookup("ad-domain")))
+	a.rootCmd.PersistentFlags().StringP("ad-default-domain-suffix", "", "", i18n.G("AD default domain suffix to use. This overrides parsing sssd.conf."))
+	decorate.LogOnError(a.viper.BindPFlag("ad_default_domain_suffix", a.rootCmd.PersistentFlags().Lookup("ad-default-domain-suffix")))
 
 	// subcommands
 	a.installVersion()
