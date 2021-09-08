@@ -88,11 +88,12 @@ func TestPolicyApplied(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get current hostname")
 
 	tests := map[string]struct {
-		args              []string
-		systemAnswer      string
-		daemonNotStarted  bool
-		userGPORules      string
-		noMachineGPORules bool
+		args                  []string
+		defaultADDomainSuffix string
+		systemAnswer          string
+		daemonNotStarted      bool
+		userGPORules          string
+		noMachineGPORules     bool
 
 		wantErr bool
 	}{
@@ -105,11 +106,17 @@ func TestPolicyApplied(t *testing.T) {
 		"Current user gpos no color":                     {args: []string{"--no-color"}, systemAnswer: "yes"},
 		"Detailed policy with overrides (all), no color": {args: []string{"--no-color", "--all"}, systemAnswer: "yes"},
 
+		// User options
+		`Current user with domain\username`:           {args: []string{`example.com\adsystestuser`}, systemAnswer: "yes"},
+		`Current user with default domain completion`: {args: []string{`adsystestuser`}, defaultADDomainSuffix: "example.com", systemAnswer: "yes"},
+
 		// Error cases
-		"Machine cache not available": {noMachineGPORules: true, systemAnswer: "yes", wantErr: true},
-		"User cache not available":    {userGPORules: "-", systemAnswer: "yes", wantErr: true},
-		"Applied denied":              {systemAnswer: "no", wantErr: true},
-		"Daemon not responding":       {daemonNotStarted: true, wantErr: true},
+		"Machine cache not available":                             {noMachineGPORules: true, systemAnswer: "yes", wantErr: true},
+		"User cache not available":                                {userGPORules: "-", systemAnswer: "yes", wantErr: true},
+		"Error on unexisting user":                                {args: []string{"doesnotexists@example.com"}, systemAnswer: "yes", wantErr: true},
+		"Error on user name without domain and no default domain": {args: []string{"doesnotexists"}, systemAnswer: "yes", wantErr: true},
+		"Applied denied":                                          {systemAnswer: "no", wantErr: true},
+		"Daemon not responding":                                   {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -135,6 +142,13 @@ func TestPolicyApplied(t *testing.T) {
 				require.NoError(t, err, "Setup: failed to copy user gporules cache")
 			}
 			conf := createConf(t, dir)
+			if tc.defaultADDomainSuffix != "" {
+				content, err := os.ReadFile(conf)
+				require.NoError(t, err, "Setup: can’t read configuration file")
+				content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
+				err = os.WriteFile(conf, content, 0644)
+				require.NoError(t, err, "Setup: can’t rewrite configuration file")
+			}
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
 			}
