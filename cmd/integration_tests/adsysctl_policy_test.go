@@ -207,6 +207,7 @@ func TestPolicyUpdate(t *testing.T) {
 		krb5ccNamesState      []krb5ccNamesWithState
 		clearDirs             []string // Removes already generated system files eg dconf db, apparmor profiles, ...
 		dynamicADServerDomain string
+		defaultADDomainSuffix string
 
 		wantErr bool
 	}{
@@ -444,6 +445,17 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 
+		// User options
+		`Current user with domain\username`: {
+			initState: "localhost-uptodate",
+			args:      []string{`example.com\adsystestuser`, "adsystestuser@example.com.krb5"},
+		},
+		`Current user with default domain completion`: {
+			initState:             "localhost-uptodate",
+			args:                  []string{`adsystestuser`, "adsystestuser@example.com.krb5"},
+			defaultADDomainSuffix: "example.com",
+		},
+
 		// Error cases
 		"User needs machine to be updated": {wantErr: true},
 		"Polkit denied updating self":      {systemAnswer: "no", initState: "localhost-uptodate", wantErr: true},
@@ -645,6 +657,16 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		"Error on unexisting user": {
+			initState: "localhost-uptodate",
+			args:      []string{"doesnotexists@example.com", "adsystestuser@example.com.krb5"},
+			wantErr:   true,
+		},
+		"Error on user name without domain and no default domain": {
+			initState: "localhost-uptodate",
+			args:      []string{"doesnotexists", "adsystestuser@example.com.krb5"},
+			wantErr:   true,
+		},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -732,12 +754,17 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 
 			conf := createConf(t, adsysDir)
-			if tc.dynamicADServerDomain != "" {
+			if tc.dynamicADServerDomain != "" || tc.defaultADDomainSuffix != "" {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
-				content = bytes.Replace(content, []byte("ad_domain: example.com"), []byte(fmt.Sprintf("ad_domain: %s", tc.dynamicADServerDomain)), 1)
-				if tc.dynamicADServerDomain != "offline" {
-					content = bytes.Replace(content, []byte("ad_server: adc.example.com"), []byte(""), 1)
+				if tc.dynamicADServerDomain != "" {
+					content = bytes.Replace(content, []byte("ad_domain: example.com"), []byte(fmt.Sprintf("ad_domain: %s", tc.dynamicADServerDomain)), 1)
+					if tc.dynamicADServerDomain != "offline" {
+						content = bytes.Replace(content, []byte("ad_server: adc.example.com"), []byte(""), 1)
+					}
+				}
+				if tc.defaultADDomainSuffix != "" {
+					content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
 				}
 				err = os.WriteFile(conf, content, 0644)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
