@@ -97,30 +97,33 @@ func TestPolicyApplied(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Current user applied gpos": {systemAnswer: "yes"},
-		"Other user applied gpos":   {args: []string{"UserIntegrationTest@example.com"}, userGPORules: "UserIntegrationTest@example.com", systemAnswer: "yes"},
-		"Machine only applied gpos": {args: []string{hostname}, systemAnswer: "yes"},
+		"Current user applied gpos": {},
+		"Other user applied gpos":   {args: []string{"UserIntegrationTest@example.com"}, userGPORules: "UserIntegrationTest@example.com"},
+		"Machine only applied gpos": {args: []string{hostname}},
 
-		"Detailed policy without override":               {args: []string{"--details"}, systemAnswer: "yes"},
-		"Detailed policy with overrides (all)":           {args: []string{"--all"}, systemAnswer: "yes"},
-		"Current user gpos no color":                     {args: []string{"--no-color"}, systemAnswer: "yes"},
-		"Detailed policy with overrides (all), no color": {args: []string{"--no-color", "--all"}, systemAnswer: "yes"},
+		"Detailed policy without override":               {args: []string{"--details"}},
+		"Detailed policy with overrides (all)":           {args: []string{"--all"}},
+		"Current user gpos no color":                     {args: []string{"--no-color"}},
+		"Detailed policy with overrides (all), no color": {args: []string{"--no-color", "--all"}},
 
 		// User options
-		`Current user with domain\username`:           {args: []string{`example.com\adsystestuser`}, systemAnswer: "yes"},
-		`Current user with default domain completion`: {args: []string{`adsystestuser`}, defaultADDomainSuffix: "example.com", systemAnswer: "yes"},
+		`Current user with domain\username`:           {args: []string{`example.com\adsystestuser`}},
+		`Current user with default domain completion`: {args: []string{`adsystestuser`}, defaultADDomainSuffix: "example.com"},
 
 		// Error cases
-		"Machine cache not available":                             {noMachineGPORules: true, systemAnswer: "yes", wantErr: true},
-		"User cache not available":                                {userGPORules: "-", systemAnswer: "yes", wantErr: true},
-		"Error on unexisting user":                                {args: []string{"doesnotexists@example.com"}, systemAnswer: "yes", wantErr: true},
-		"Error on user name without domain and no default domain": {args: []string{"doesnotexists"}, systemAnswer: "yes", wantErr: true},
+		"Machine cache not available":                             {noMachineGPORules: true, wantErr: true},
+		"User cache not available":                                {userGPORules: "-", wantErr: true},
+		"Error on unexisting user":                                {args: []string{"doesnotexists@example.com"}, wantErr: true},
+		"Error on user name without domain and no default domain": {args: []string{"doesnotexists"}, wantErr: true},
 		"Applied denied":                                          {systemAnswer: "no", wantErr: true},
 		"Daemon not responding":                                   {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			if tc.systemAnswer == "" {
+				tc.systemAnswer = "yes"
+			}
 			systemAnswer(t, tc.systemAnswer)
 
 			// Reset color that we disable on client when we request --no-color
