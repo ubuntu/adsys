@@ -10,11 +10,11 @@ Active Directory:
 
 SSS:
   Configuration: /etc/sssd/sssd.conf
-  Cache directory: /tmp/TestServiceStatus_XXXXXX/sss_cache
+  Cache directory: /tmp/sss_cache
 
 Daemon:
   Timeout after 30s
-  Listening on: /tmp/TestServiceStatus_XXXXXX/socket
-  Cache path: /tmp/TestServiceStatus_XXXXXX/cache
-  Run path: /tmp/TestServiceStatus_XXXXXX/run
-  Dconf path: /tmp/TestServiceStatus_XXXXXX/dconf
+  Listening on: /tmp/socket
+  Cache path: /tmp/cache
+  Run path: /tmp/run
+  Dconf path: /tmp/dconf
