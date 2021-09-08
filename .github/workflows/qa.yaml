@@ -12,13 +12,16 @@ jobs:
   quality:
     name: Code quality and mod files up to date
     runs-on: ubuntu-latest
-    container: ubuntu:latest
+    container: ubuntu:devel
     steps:
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
         run: |
+          rm /etc/dpkg/dpkg.cfg.d/*
+
           export DEBIAN_FRONTEND=noninteractive
           apt update
+          apt full-upgrade -y
           apt install -y ca-certificates git gcc libsmbclient-dev
       - uses: actions/checkout@v2
       - name: Setup go
