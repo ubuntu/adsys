@@ -77,11 +77,15 @@ func TestPolicyAdmx(t *testing.T) {
 }
 
 func TestPolicyApplied(t *testing.T) {
+	currentUser := "adsystestuser@example.com"
+
+	// We setup and rerun in a subprocess because the test users must exist on the machine for the authorizer.
+	if setupSubprocessForTest(t, currentUser, "UserIntegrationTest@example.com") {
+		return
+	}
+
 	hostname, err := os.Hostname()
-	require.NoError(t, err, "Setup: failed to get current user")
-	user, err := user.Current()
-	require.NoError(t, err, "Setup: failed to get current user")
-	currentUser := user.Username
+	require.NoError(t, err, "Setup: failed to get current hostname")
 
 	tests := map[string]struct {
 		args              []string
@@ -93,8 +97,7 @@ func TestPolicyApplied(t *testing.T) {
 		wantErr bool
 	}{
 		"Current user applied gpos": {systemAnswer: "yes"},
-		// we use user "root" here as another user because the test user must exist on the machine for the authorizer.
-		"Other user applied gpos":   {args: []string{"root"}, userGPORules: "root", systemAnswer: "yes"},
+		"Other user applied gpos":   {args: []string{"UserIntegrationTest@example.com"}, userGPORules: "UserIntegrationTest@example.com", systemAnswer: "yes"},
 		"Machine only applied gpos": {args: []string{hostname}, systemAnswer: "yes"},
 
 		"Detailed policy without override":               {args: []string{"--details"}, systemAnswer: "yes"},
