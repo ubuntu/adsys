@@ -12,7 +12,7 @@ jobs:
   quality:
     name: Code quality and mod files up to date
     runs-on: ubuntu-latest
-    container: ubuntu:devel
+    container: ubuntu:latest
     steps:
       # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies

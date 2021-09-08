@@ -328,8 +328,8 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 	}
 	defer client.Close()
 
-	// override for computer
-	if (isComputer || updateAll) && target == "" {
+	// get target for computer
+	if isComputer && target == "" {
 		hostname, err := os.Hostname()
 		if err != nil {
 			return err
@@ -342,7 +342,7 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 	}
 
 	// Update for current user
-	if target == "" {
+	if target == "" && !updateAll {
 		u, err := user.Current()
 		if err != nil {
 			return fmt.Errorf("failed to retrieve current user: %v", err)

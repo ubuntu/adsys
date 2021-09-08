@@ -994,6 +994,63 @@ func TestListUsersFromCache(t *testing.T) {
 	}
 }
 
+func TestNormalizeTargetName(t *testing.T) {
+	t.Parallel()
+
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get hostname")
+
+	bus := ad.GetSystemBus(t)
+
+	tests := map[string]struct {
+		target              string
+		objectClass         ad.ObjectClass
+		defaultDomainSuffix string
+
+		want    string
+		wantErr bool
+	}{
+		"One valid user":                          {target: "user@example.com", want: "user@example.com"},
+		`One valid user with domain\user`:         {target: `example.com\user`, want: "user@example.com"},
+		"One user without explicit domain suffix": {target: "user", defaultDomainSuffix: "example.com", want: "user@example.com"},
+
+		// User match computer names
+		"User name matching computer, setting as user": {target: hostname, objectClass: ad.UserObject, defaultDomainSuffix: "example.com",
+			want: hostname + "@example.com"},
+		"User name fqdn matching computer":  {target: hostname + "@example.com", want: hostname + "@example.com"},
+		"Computer name without objectClass": {target: hostname, want: hostname},
+
+		// Computer cases
+		"Computer is left as such":        {target: "computername", objectClass: ad.ComputerObject, want: "computername"},
+		"Computer with @ is left as such": {target: "computername@example.com", objectClass: ad.ComputerObject, want: "computername@example.com"},
+
+		// Error cases
+		`Error on multiple \ in name`:                        {target: `example.com\user\something`, wantErr: true},
+		`Error on no default domain suffix and no fqdn user`: {target: `user`, wantErr: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
+				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()),
+				ad.WithDefaultDomainSuffix(tc.defaultDomainSuffix))
+			require.NoError(t, err, "Setup: New should return no error")
+
+			got, err := adc.NormalizeTargetName(context.Background(), tc.target, tc.objectClass)
+			if tc.wantErr {
+				require.Error(t, err, "NormalizeTargetName should return an error and didn't")
+				return
+			}
+			require.NoError(t, err, "NormalizeTargetName should return no error")
+
+			assert.Equal(t, tc.want, got, "NormalizeTargetName should return the expected user")
+		})
+	}
+}
+
 func TestMockGPOList(t *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return

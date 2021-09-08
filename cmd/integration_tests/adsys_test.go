@@ -378,7 +378,7 @@ func runDaemons() (teardown func()) {
 	}
 
 	// give time for polkit containers to start
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	return func() {
 		defer func() {

@@ -53,12 +53,13 @@ type state struct {
 }
 
 type options struct {
-	cacheDir    string
-	runDir      string
-	dconfDir    string
-	sssCacheDir string
-	sssdConf    string
-	authorizer  authorizerer
+	cacheDir            string
+	runDir              string
+	dconfDir            string
+	sssCacheDir         string
+	sssdConf            string
+	defaultDomainSuffix string
+	authorizer          authorizerer
 }
 type option func(*options) error
 
@@ -98,6 +99,14 @@ func WithSSSCacheDir(p string) func(o *options) error {
 	}
 }
 
+// WithDefaultDomainSuffix specifies a personalized default domain suffix
+func WithDefaultDomainSuffix(d string) func(o *options) error {
+	return func(o *options) error {
+		o.defaultDomainSuffix = d
+		return nil
+	}
+}
+
 // New returns a new instance of an AD service.
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
@@ -129,7 +138,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		return nil, err
 	}
 
-	url, domain, err = loadServerInfo(args.sssdConf, url, domain)
+	url, domain, defaultDomainSuffix, err := loadServerInfo(args.sssdConf, url, domain, args.defaultDomainSuffix)
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +152,9 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	}
 	if args.sssCacheDir != "" {
 		adOptions = append(adOptions, ad.WithSSSCacheDir(args.sssCacheDir))
+	}
+	if defaultDomainSuffix != "" {
+		adOptions = append(adOptions, ad.WithDefaultDomainSuffix(defaultDomainSuffix))
 	}
 	adc, err := ad.New(ctx, url, domain, bus, adOptions...)
 	if err != nil {
@@ -189,25 +201,29 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	}, nil
 }
 
-func loadServerInfo(sssdConf, url, domain string) (rurl string, rdomain string, err error) {
+func loadServerInfo(sssdConf, url, domain, defaultDomainSuffix string) (rurl string, rdomain string, rdefaultDomainSuffix string, err error) {
 	defer decorate.OnError(&err, i18n.G("can't load server info from %s"), sssdConf)
 
-	if url != "" && domain != "" {
-		return url, domain, nil
+	if url != "" && domain != "" && defaultDomainSuffix != "" {
+		return url, domain, defaultDomainSuffix, nil
 	}
 
 	cfg, err := ini.Load(sssdConf)
 	if err != nil {
-		// Allow autodiscovery for server if domain was manually set.
+		// Return parameters to server if we have a domain.
+		// In case url is empty, we will try auto discovery.
 		if domain != "" {
-			return "", domain, nil
+			return url, domain, defaultDomainSuffix, nil
 		}
-		return "", "", fmt.Errorf(i18n.G("can't read sssd.conf and no url or domain provided: %v"), err)
+		return "", "", "", fmt.Errorf(i18n.G("can't read sssd.conf and no url or domain provided: %v"), err)
+	}
+	if defaultDomainSuffix == "" {
+		defaultDomainSuffix = cfg.Section("sssd").Key("default_domain_suffix").String()
 	}
 	if domain == "" {
 		domain = strings.Split(cfg.Section("sssd").Key("domains").String(), ",")[0]
 		if domain == "" {
-			return "", "", errors.New(i18n.G("failed to find default domain in sssd.conf and domain is not provided"))
+			return "", "", "", errors.New(i18n.G("failed to find default domain in sssd.conf and domain is not provided"))
 		}
 	}
 	// domain is either domain section provided by the user or read in sssd.conf
@@ -221,7 +237,7 @@ func loadServerInfo(sssdConf, url, domain string) (rurl string, rdomain string, 
 		domain = adDomain
 	}
 
-	return url, domain, nil
+	return url, domain, defaultDomainSuffix, nil
 }
 
 // RegisterGRPCServer registers our service with the new interceptor chains.
