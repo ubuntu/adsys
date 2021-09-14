@@ -363,8 +363,8 @@ func TestServiceStatus(t *testing.T) {
 			require.NoError(t, err, "client should exit with no error")
 
 			// Make paths suitable for golden recording and comparison
-			re := regexp.MustCompile(`_.*/`)
-			got = re.ReplaceAllString(got, "_XXXXXX/")
+			re := regexp.MustCompile(`/tmp/.*/`)
+			got = re.ReplaceAllString(got, "/tmp/")
 
 			re = regexp.MustCompile(`(updated on)([^\n]*)`)
 			got = re.ReplaceAllString(got, "$1 DDD MON D HH:MM")
