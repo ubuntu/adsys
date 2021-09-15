@@ -59,7 +59,7 @@ func run(a app) int {
 }
 
 func installSignalHandler(a app) func() {
-	c := make(chan os.Signal)
+	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := sync.WaitGroup{}
