@@ -34,6 +34,7 @@ const (
 	DistroID = "Ubuntu"
 
 	// SSSD related properties
+
 	// DefaultSSSCacheDir is the default sssd cache dir
 	DefaultSSSCacheDir = "/var/lib/sss/db"
 	// DefaultSSSConf is the default sssd.conf location

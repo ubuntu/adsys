@@ -137,7 +137,7 @@ func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest,
 	return nil
 }
 
-// DumpPolicies displays all applied policies for a given user.
+// GPOListScript returns the embedded GPO python list script.
 func (s *Service) GPOListScript(r *adsys.Empty, stream adsys.Service_GPOListScriptServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while getting gpo list script"))
 
