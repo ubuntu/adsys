@@ -21,34 +21,14 @@ jobs:
           apt update
           apt install -y ca-certificates git gcc libsmbclient-dev
       - uses: actions/checkout@v2
-      - name: Setup go
-        uses: actions/setup-go@v2
+      - name: Code formatting, vet, static checker Security…
+        uses: golangci/golangci-lint-action@v2
         with:
-          go-version: ${{ env.goversion }}
-      - name: Code formatting
-        run: |
-          FMT=`go fmt ./...`
-          echo "$FMT"
-          [ -z "$FMT" ]
-      - name: Go vet
-        run: go vet ./...
-        if: ${{ always() }}
-      - name: Install static checker
-        run: |
-          go install honnef.co/go/tools/cmd/staticcheck
-        if: ${{ always() }}
-      - name: Staticcheck
-        run: staticcheck ./...
-        if: ${{ always() }}
-      - name: Gosec Security Scanner
-        run: |
-          set -eu
-
-          # Run manually here due to GOROOT issue.
-          export PATH=$PATH:$(go env GOPATH)/bin
-          go get github.com/securego/gosec/cmd/gosec
-          gosec ./...
-        if: ${{ always() }}
+          # all non default additional linters we want
+          args: >
+            -E dupl -E gofmt  -E durationcheck -E errname -E errorlint -E exportloopref
+            -E forbidigo -E forcetypeassert -E gci -E godot -E ifshort -E gosec -E makezero -E misspell
+            -E thelper -E tparallel -E unconvert -E unparam -E wastedassign -E whitespace -E wrapcheck
       - name: Module files are up to date
         run: |
           set -eu

@@ -11,8 +11,6 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
 	github.com/mvo5/libsmbclient-go v0.0.0-20201002095607-f9fa2a5c1104
-	github.com/nbutton23/zxcvbn-go v0.0.0-20210217022336-fa2cb2858354 // indirect
-	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989
 	github.com/sirupsen/logrus v1.8.1
 	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
 	github.com/spf13/cobra v1.2.1
@@ -28,5 +26,4 @@ require (
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/ini.v1 v1.63.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	honnef.co/go/tools v0.2.1
 )
