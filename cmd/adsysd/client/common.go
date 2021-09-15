@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -18,7 +19,7 @@ func singleMsg(stream recver) (msg string, err error) {
 	for {
 		r, err := stream.Recv()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return "", err

@@ -582,7 +582,7 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("couldn't access path %q: %v", path, err)
+			return fmt.Errorf("couldn't access path %q: %w", path, err)
 		}
 
 		md5Val := ""

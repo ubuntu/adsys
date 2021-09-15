@@ -49,7 +49,7 @@ func testCoverageFile() string {
 func appendToFile(src, dst string) error {
 	f, err := os.Open(filepath.Clean(src))
 	if err != nil {
-		return fmt.Errorf("can't open python coverage file named: %v", err)
+		return fmt.Errorf("can't open python coverage file named: %w", err)
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -59,7 +59,7 @@ func appendToFile(src, dst string) error {
 
 	d, err := os.OpenFile(dst, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
-		return fmt.Errorf("can't open golang cover profile file: %v", err)
+		return fmt.Errorf("can't open golang cover profile file: %w", err)
 	}
 	defer func() {
 		if err := d.Close(); err != nil {
@@ -73,11 +73,11 @@ func appendToFile(src, dst string) error {
 			continue
 		}
 		if _, err := d.Write([]byte(scanner.Text() + "\n")); err != nil {
-			return fmt.Errorf("can't write to golang cover profile file: %v", err)
+			return fmt.Errorf("can't write to golang cover profile file: %w", err)
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error while scanning golang cover profile file: %v", err)
+		return fmt.Errorf("error while scanning golang cover profile file: %w", err)
 	}
 	return nil
 }

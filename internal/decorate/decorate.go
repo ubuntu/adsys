@@ -11,7 +11,7 @@ import (
 func OnError(err *error, format string, args ...interface{}) {
 	if *err != nil {
 		s := fmt.Sprintf(format, args...)
-		*err = fmt.Errorf("%s: %v", s, *err)
+		*err = fmt.Errorf("%s: %w", s, *err)
 	}
 }
 

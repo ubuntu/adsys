@@ -59,7 +59,7 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 				})
 			}
 			if err := errg.Wait(); err != nil {
-				return fmt.Errorf("one or more error for updating all users: %v", err)
+				return fmt.Errorf("one or more error for updating all users: %w", err)
 			}
 		}
 

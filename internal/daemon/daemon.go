@@ -170,7 +170,7 @@ func (d *Daemon) Listen() (err error) {
 	for {
 		log.Infof(context.Background(), i18n.G("Serving on %s"), lis.Addr().String())
 		if err := (d.grpcserver.Serve(lis)); err != nil {
-			return fmt.Errorf("unable to start GRPC server: %s", err)
+			return fmt.Errorf("unable to start GRPC server: %w", err)
 		}
 
 		// check if we need to reconnect using a new socket
