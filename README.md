@@ -532,15 +532,16 @@ adsysd COMMAND [flags]
 ##### Options
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-  -h, --help               help for adsysd
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-default-domain-suffix string   AD default domain suffix to use. This overrides parsing sssd.conf.
+  -D, --ad-domain string                  AD domain to use. This overrides parsing sssd.conf
+  -S, --ad-server string                  URL of the Active Directory server. This overrides parsing sssd.conf.
+      --cache-dir string                  directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
+  -c, --config string                     use a specific configuration file
+  -h, --help                              help for adsysd
+      --run-dir string                    directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                     socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int                       time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                     issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd completion
@@ -563,14 +564,15 @@ See each sub-command's help for details on how to use the generated script.
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-default-domain-suffix string   AD default domain suffix to use. This overrides parsing sssd.conf.
+  -D, --ad-domain string                  AD domain to use. This overrides parsing sssd.conf
+  -S, --ad-server string                  URL of the Active Directory server. This overrides parsing sssd.conf.
+      --cache-dir string                  directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
+  -c, --config string                     use a specific configuration file
+      --run-dir string                    directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                     socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int                       time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                     issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd completion bash
@@ -611,14 +613,15 @@ adsysd completion bash
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-default-domain-suffix string   AD default domain suffix to use. This overrides parsing sssd.conf.
+  -D, --ad-domain string                  AD domain to use. This overrides parsing sssd.conf
+  -S, --ad-server string                  URL of the Active Directory server. This overrides parsing sssd.conf.
+      --cache-dir string                  directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
+  -c, --config string                     use a specific configuration file
+      --run-dir string                    directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                     socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int                       time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                     issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd completion fish
@@ -653,14 +656,15 @@ adsysd completion fish [flags]
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-default-domain-suffix string   AD default domain suffix to use. This overrides parsing sssd.conf.
+  -D, --ad-domain string                  AD domain to use. This overrides parsing sssd.conf
+  -S, --ad-server string                  URL of the Active Directory server. This overrides parsing sssd.conf.
+      --cache-dir string                  directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
+  -c, --config string                     use a specific configuration file
+      --run-dir string                    directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                     socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int                       time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                     issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd completion powershell
@@ -693,14 +697,15 @@ adsysd completion powershell [flags]
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-default-domain-suffix string   AD default domain suffix to use. This overrides parsing sssd.conf.
+  -D, --ad-domain string                  AD domain to use. This overrides parsing sssd.conf
+  -S, --ad-server string                  URL of the Active Directory server. This overrides parsing sssd.conf.
+      --cache-dir string                  directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
+  -c, --config string                     use a specific configuration file
+      --run-dir string                    directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                     socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int                       time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                     issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd completion zsh
@@ -739,14 +744,15 @@ adsysd completion zsh [flags]
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-default-domain-suffix string   AD default domain suffix to use. This overrides parsing sssd.conf.
+  -D, --ad-domain string                  AD domain to use. This overrides parsing sssd.conf
+  -S, --ad-server string                  URL of the Active Directory server. This overrides parsing sssd.conf.
+      --cache-dir string                  directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
+  -c, --config string                     use a specific configuration file
+      --run-dir string                    directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                     socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int                       time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                     issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 #### adsysd version
@@ -766,14 +772,15 @@ adsysd version [flags]
 ##### Options inherited from parent commands
 
 ```
-  -D, --ad-domain string   AD domain to use. Empty to let ADSys parsing sssd.conf.
-  -S, --ad-server string   URL of the Active Directory server. Empty to let ADSys parsing sssd.conf.
-      --cache-dir string   directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string      use a specific configuration file
-      --run-dir string     directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string      socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-  -t, --timeout int        time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count      issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-default-domain-suffix string   AD default domain suffix to use. This overrides parsing sssd.conf.
+  -D, --ad-domain string                  AD domain to use. This overrides parsing sssd.conf
+  -S, --ad-server string                  URL of the Active Directory server. This overrides parsing sssd.conf.
+      --cache-dir string                  directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
+  -c, --config string                     use a specific configuration file
+      --run-dir string                    directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                     socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int                       time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                     issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### Hidden commands
