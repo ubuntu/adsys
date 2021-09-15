@@ -39,7 +39,7 @@ msgid ""
 "\"Disabled\"."
 msgstr ""
 
-#: internal/policies/ad/ad.go:387
+#: internal/policies/ad/ad.go:398
 msgid "%s :%v"
 msgstr ""
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/policies/ad/ad.go:236
+#: internal/policies/ad/ad.go:247
 msgid "%s: %v"
 msgstr ""
 
@@ -89,7 +89,7 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/policies/ad/ad.go:239
+#: internal/policies/ad/ad.go:250
 #, c-format
 msgid "%s: no active server found"
 msgstr ""
@@ -118,15 +118,19 @@ msgstr ""
 msgid "- error on %s: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:144
-msgid "AD domain to use. Empty to let ADSys parsing sssd.conf."
+#: cmd/adsysd/daemon/daemon.go:148
+msgid "AD default domain suffix to use. This overrides parsing sssd.conf."
+msgstr ""
+
+#: cmd/adsysd/daemon/daemon.go:146
+msgid "AD domain to use. This overrides parsing sssd.conf"
 msgstr ""
 
 #: cmd/adsysd/client/client.go:44
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:55
+#: cmd/adsysd/daemon/daemon.go:56
 msgid "AD integration daemon"
 msgstr ""
 
@@ -146,7 +150,7 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:245
+#: internal/adsysservice/adsysservice.go:261
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
@@ -308,9 +312,8 @@ msgstr ""
 msgid "Supported on %s %s"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:142
-msgid ""
-"URL of the Active Directory server. Empty to let ADSys parsing sssd.conf."
+#: cmd/adsysd/daemon/daemon.go:144
+msgid "URL of the Active Directory server. This overrides parsing sssd.conf."
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:92
@@ -359,7 +362,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/policies/ad/ad.go:114
+#: internal/policies/ad/ad.go:124
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -392,7 +395,7 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/ad/ad.go:323
+#: internal/policies/ad/ad.go:334
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -425,7 +428,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/policies/ad/ad.go:330
+#: internal/policies/ad/ad.go:341
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -434,7 +437,7 @@ msgstr ""
 msgid "can't get cached GPO list from %s"
 msgstr ""
 
-#: internal/policies/ad/ad.go:186
+#: internal/policies/ad/ad.go:197
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -442,7 +445,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/policies/ad/ad.go:298
+#: internal/policies/ad/ad.go:309
 msgid "can't list users from cache"
 msgstr ""
 
@@ -458,7 +461,7 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:193
+#: internal/adsysservice/adsysservice.go:205
 #, c-format
 msgid "can't load server info from %s"
 msgstr ""
@@ -471,7 +474,7 @@ msgstr ""
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:205
+#: internal/adsysservice/adsysservice.go:218
 msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
@@ -549,7 +552,7 @@ msgstr ""
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:105
+#: internal/adsysservice/adsysservice.go:114
 msgid "couldn't create adsys service"
 msgstr ""
 
@@ -573,11 +576,11 @@ msgstr ""
 msgid "dconf update failed: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:134
+#: cmd/adsysd/daemon/daemon.go:136
 msgid "directory where ADsys caches GPOs downloads and policies."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:136
+#: cmd/adsysd/daemon/daemon.go:138
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
@@ -607,11 +610,11 @@ msgstr ""
 msgid "error while checking signature"
 msgstr ""
 
-#: internal/adsysservice/policy.go:77
+#: internal/adsysservice/policy.go:85
 msgid "error while displaying applied policies"
 msgstr ""
 
-#: internal/adsysservice/policy.go:107
+#: internal/adsysservice/policy.go:119
 msgid "error while dumping policy definitions"
 msgstr ""
 
@@ -627,7 +630,7 @@ msgstr ""
 msgid "error while getting documentation"
 msgstr ""
 
-#: internal/adsysservice/policy.go:130
+#: internal/adsysservice/policy.go:142
 msgid "error while getting gpo list script"
 msgstr ""
 
@@ -652,7 +655,7 @@ msgid "error while trying to get the list of active users"
 msgstr ""
 
 #. Try to update from SSSD the current active AD server
-#: internal/policies/ad/ad.go:233
+#: internal/policies/ad/ad.go:244
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
@@ -676,7 +679,7 @@ msgstr ""
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:210
+#: internal/adsysservice/adsysservice.go:226
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
@@ -688,7 +691,7 @@ msgstr ""
 msgid "failed to marshal meta data"
 msgstr ""
 
-#: internal/policies/ad/ad.go:307
+#: internal/policies/ad/ad.go:318
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -704,15 +707,15 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/ad/ad.go:341
+#: internal/policies/ad/ad.go:352
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:212
+#: internal/policies/ad/ad.go:223
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:265
+#: internal/policies/ad/ad.go:276
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -766,7 +769,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/policies/ad/ad.go:221
+#: internal/policies/ad/ad.go:232
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
@@ -844,7 +847,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/policies/ad/ad.go:196
+#: internal/policies/ad/ad.go:207
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -882,7 +885,7 @@ msgid ""
 "no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:139
+#: cmd/adsysd/daemon/daemon.go:141
 msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
@@ -909,6 +912,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/policies/ad/ad.go:191
+#: internal/policies/ad/ad.go:202
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
