@@ -87,7 +87,8 @@ func TestChangeSocket(t *testing.T) {
 	require.Equal(t, d, grpcRegister.daemonsCalled[0], "GRPC registerer has the built in daemon as argument")
 
 	newSocket := filepath.Join(dir, "test2.sock")
-	d.UseSocket(newSocket)
+	err = d.UseSocket(newSocket)
+	require.NoError(t, err, "UseSocket should return no error")
 	time.Sleep(time.Millisecond * 10)
 
 	gotSocket := d.GetSocketAddr()
@@ -196,7 +197,8 @@ func TestUseSocketIgnoredWithSocketActivation(t *testing.T) {
 	require.Equal(t, sock, d.GetSocketAddr(), "Socket is the socket activated value")
 
 	require.Equal(t, 1, len(grpcRegister.daemonsCalled), "GRPC registerer has been called once")
-	d.UseSocket("/tmp/this/is/also/ignored")
+	err = d.UseSocket("/tmp/this/is/also/ignored")
+	require.NoError(t, err, "UsageSocket should return no error on invalid socket when in socket activation mode")
 	time.Sleep(time.Millisecond * 10)
 	require.Equal(t, sock, d.GetSocketAddr(), "Socket has not changed")
 

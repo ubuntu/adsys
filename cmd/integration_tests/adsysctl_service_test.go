@@ -2,7 +2,6 @@ package adsys_test
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -183,7 +182,7 @@ func TestServiceCat(t *testing.T) {
 			}
 
 			var outCat, outCat2 func() string
-			var stopCat, stopCat2 func() error
+			var stopCat, stopCat2 func()
 			if tc.coverCatClient {
 				// create cat client and control it, capturing stderr for logs
 
@@ -206,14 +205,13 @@ func TestServiceCat(t *testing.T) {
 				outCat = func() string {
 					return out.String()
 				}
-				stopCat = func() error {
+				stopCat = func() {
 					c.Quit()
 					<-done
 					logrus.StandardLogger().SetOutput(orig)
 					w.Close()
 					_, errCopy := io.Copy(&out, r)
 					require.NoError(t, errCopy, "Couldn’t copy stderr to buffer")
-					return errors.New("Mimic cat killing")
 				}
 			} else {
 
@@ -236,8 +234,7 @@ func TestServiceCat(t *testing.T) {
 				require.NoError(t, err, "version should run successfully")
 			}
 
-			err = stopCat()
-			require.Error(t, err, "cat has been killed")
+			stopCat()
 
 			if tc.wantErr {
 				assert.NotContains(t, outCat(), "New connection from client", "no internal logs from server are forwarded")
@@ -251,8 +248,7 @@ func TestServiceCat(t *testing.T) {
 			if tc.multipleCats {
 				// Give time for the server to forward first Cat closing
 				time.Sleep(time.Second)
-				err = stopCat2()
-				require.Error(t, err, "cat2 has been killed")
+				stopCat2()
 
 				assert.Contains(t, outCat2(), "New connection from client", "internal logs from server are forwarded")
 				assert.Contains(t, outCat2(), "New request /service/Cat", "debug logs for the other cat is forwarded")

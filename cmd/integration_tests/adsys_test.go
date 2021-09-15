@@ -465,7 +465,7 @@ func TestExecuteCommand(t *testing.T) {
 
 var testCmdName = os.Args[0]
 
-func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop func() error, err error) {
+func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop func(), err error) {
 	t.Helper()
 
 	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", testCmdName, "-test.run=TestExecuteCommand", "--"}
@@ -482,16 +482,15 @@ func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop 
 	if wait {
 		err := cmd.Wait()
 		cancel()
-		return func() string { return b.String() }, func() error { return nil }, err
+		return func() string { return b.String() }, func() {}, err
 	}
 
 	return func() string { return b.String() },
-		func() error {
+		func() {
 			if err := cmd.Process.Kill(); err != nil {
 				t.Fatal("Failed to kill process: ", err)
 			}
-			err := cmd.Wait()
+			_ = cmd.Wait()
 			cancel()
-			return err
 		}, err
 }

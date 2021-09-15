@@ -864,12 +864,14 @@ func modifyAndAddUsers(t *testing.T, new string, users ...string) (passwd string
 		if strings.HasPrefix(l, fmt.Sprintf("%s:", u.Username)) {
 			l = fmt.Sprintf("%s%s", new, strings.TrimPrefix(l, u.Username))
 		}
-		d.Write([]byte(l + "\n"))
+		_, err = d.Write([]byte(l + "\n"))
+		require.NoError(t, err, "Setup: can’t write to passwd temp file")
 	}
 	require.NoError(t, scanner.Err(), "Setup: can't write temporary passwd file")
 
 	for i, u := range users {
-		d.Write([]byte(fmt.Sprintf("%s:x:%d:%s::/nonexistent:/usr/bin/false", u, i+23450, group)))
+		_, err = d.Write([]byte(fmt.Sprintf("%s:x:%d:%s::/nonexistent:/usr/bin/false", u, i+23450, group)))
+		require.NoError(t, err, "Setup: can’t write to passwd temp file")
 	}
 
 	return dest

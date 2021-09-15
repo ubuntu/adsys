@@ -213,7 +213,11 @@ func downloadRecursive(client *libsmbclient.Client, url string, dest string) err
 	if err != nil {
 		return err
 	}
-	defer d.Closedir()
+	defer func() {
+		if err := d.Closedir(); err != nil {
+			log.Info(context.Background(), "Could not close directory:", err)
+		}
+	}()
 
 	if err := os.MkdirAll(dest, 0700); err != nil {
 		return fmt.Errorf("can't create %q", dest)

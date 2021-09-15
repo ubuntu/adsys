@@ -44,7 +44,8 @@ func TestAppVersion(t *testing.T) {
 	orig := os.Stdout
 	os.Stdout = w
 
-	a.Run()
+	err = a.Run()
+	require.NoError(t, err, "Run should exit with no error")
 
 	os.Stdout = orig
 	w.Close()
@@ -61,7 +62,8 @@ func TestAppNoUsageError(t *testing.T) {
 	a := daemon.New()
 
 	defer changeArgs("adsysd", "completion", "bash")()
-	a.Run()
+	err := a.Run()
+	require.NoError(t, err, "Run should return no error")
 	isUsageError := a.UsageError()
 	require.False(t, isUsageError, "No usage error is reported as such")
 }
@@ -70,7 +72,8 @@ func TestAppUsageError(t *testing.T) {
 	a := daemon.New()
 
 	defer changeArgs("adsys", "doesnotexist")()
-	a.Run()
+	err := a.Run()
+	require.Error(t, err, "Run itself should return an error")
 	isUsageError := a.UsageError()
 	require.True(t, isUsageError, "Usage error is reported as such")
 }
@@ -100,10 +103,11 @@ func TestAppRunFailsOnDaemonCreationAndQuit(t *testing.T) {
 	// directory
 	prepareEnv(t)
 	socket := os.Getenv("ADSYS_SOCKET")
-	os.MkdirAll(socket, 0755)
+	err := os.MkdirAll(socket, 0755)
+	require.NoError(t, err, "Setup: can't create socket directory to make service fails")
 
 	a := daemon.New()
-	err := a.Run()
+	err = a.Run()
 	require.Error(t, err, "Run should exit with an error")
 	a.Quit()
 }

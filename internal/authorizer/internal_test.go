@@ -164,7 +164,7 @@ func TestServerPeerCredsInvalidSocket(t *testing.T) {
 	t.Parallel()
 
 	s := serverPeerCreds{}
-	s.ServerHandshake(nil)
+	_, _, _ = s.ServerHandshake(nil)
 }
 
 func TestMain(m *testing.M) {
