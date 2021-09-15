@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+
+	// embed gpolist python binary
+	_ "embed"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,9 +14,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	// embed gpolist python binary
-	_ "embed"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/consts"
