@@ -2,7 +2,7 @@
 #export DH_VERBOSE = 1
 
 export GOCACHE=$(shell mktemp -d /tmp/gocache-XXXX)
-export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$(shell dpkg-parsechangelog -S Version) --mod=vendor
+export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$(shell dpkg-parsechangelog -S Version) --mod=vendor -buildmode=pie
 
 # Install all content to embed
 export DH_GOLANG_INSTALL_ALL := 1
