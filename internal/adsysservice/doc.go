@@ -28,10 +28,9 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 	onlineDocURL := doc.GetPackageURL()
 
 	var out string
-	chapter := r.GetChapter()
 	docDir := doc.Dir
 	// Get all documentation, separate file names with special characters
-	if chapter == "" {
+	if chapter := r.GetChapter(); chapter == "" {
 		fs, err := docDir.ReadDir(".")
 		if err != nil {
 			return fmt.Errorf(i18n.G("could not list documentation directory: %v"), err)
