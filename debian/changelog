@@ -1,3 +1,40 @@
+adsys (0.7.1) impish; urgency=medium
+
+  * Fix user login name when being prefixed by domain (domain\user) or using
+    default domain suffix.
+  * Relax commands to always normalize to user@domain even if a previous form
+    of entry is given
+  * Fix pam module to always be loaded for those.
+  * All users and machine update should not provide a target
+  * Relax rule for hostname length when > 15 characters. Try first real name
+    in AD and then fallback to 15 for NETBIOS compatibility if AD is configured
+    in such a way.
+  * Pull sss connection state dynamically, to switch between online and offline
+    mode.
+  * Misc smaller fixes in namings and entry permissive mode.
+  * Add and adapt unit and integration tests for all the above, including
+    docker test container.
+  * Fixes for incoming Golang 1.17 tests Name() behaviour change
+  * Make some integration tests more stable
+  * Refresh policy definition file
+  * Update vendored dependency via DEPENDABOT:
+    - github.com/fsnotify/fsnotify
+    - github.com/godbus/dbus
+    - golang.org/x/text
+    - google.golang.org/grpc
+    - gopkg.in/ini.v1
+    - honnef.co/go/tools
+  * CI:
+    - switch back to hirsute for QA code check, as impish docker images have
+      a broken libc.
+  * Packaging fixes:
+    - Ensure we always build with PIE
+    - Fix autopkgtests by not running them as root
+    - Ship NOTICE from a vendor dependency as being Apache2 licensed
+    - Modernize gbp.conf
+
+ -- Didier Roche <didrocks@ubuntu.com>  Wed, 15 Sep 2021 10:30:27 +0200
+
 adsys (0.7) impish; urgency=medium
 
   [ Jean-Baptiste Lallement ]
