@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -796,7 +795,7 @@ func TestPolicyUpdate(t *testing.T) {
 }
 
 func TestPolicyDebugGPOListScript(t *testing.T) {
-	gpolistSrc, err := ioutil.ReadFile("../../internal/policies/ad/adsys-gpolist")
+	gpolistSrc, err := os.ReadFile("../../internal/policies/ad/adsys-gpolist")
 	require.NoError(t, err, "Setup: failed to load source of adsys-gpolist")
 
 	tests := map[string]struct {
