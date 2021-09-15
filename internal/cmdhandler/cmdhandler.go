@@ -9,7 +9,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
-// NoCmd is a no-op command to just make it valid
+// NoCmd is a no-op command to just make it valid.
 func NoCmd(cmd *cobra.Command, args []string) error {
 	return nil
 }
@@ -30,7 +30,7 @@ func NoValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string
 }
 
 // RegisterAlias will register a given alias of a command.
-// README and manpage refers to them in each subsection (parents are differents, but only one is kept if we use the same object)
+// README and manpage refers to them in each subsection (parents are differents, but only one is kept if we use the same object).
 func RegisterAlias(cmd, parent *cobra.Command) {
 	alias := *cmd
 	t := fmt.Sprintf(i18n.G("Alias of %q"), cmd.CommandPath())

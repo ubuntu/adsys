@@ -25,7 +25,7 @@ func InstallOnlyMode() bool {
 }
 
 // DestDirectory returns the destination directory to generate to.
-// It will prefer the adsys install directory if available, or will return path otherwise
+// It will prefer the adsys install directory if available, or will return path otherwise.
 func DestDirectory(p string) string {
 	installDir := os.Getenv(installVar)
 	if installDir == "" {

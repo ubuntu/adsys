@@ -168,7 +168,7 @@ client_timeout: %d`, socket, tc.timeout)), 0644)
 }
 
 // createConf generates an adsys configuration in a temporary directory
-// It will use adsysDir for socket, cache and run dir if provided
+// It will use adsysDir for socket, cache and run dir if provided.
 func createConf(t *testing.T, adsysDir string) (conf string) {
 	t.Helper()
 

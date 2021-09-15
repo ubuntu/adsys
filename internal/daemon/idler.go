@@ -116,7 +116,7 @@ func (i *idler) sendOrTimeout(op operation) {
 	}
 }
 
-// Timeout returns current daemon idle timeout
+// Timeout returns current daemon idle timeout.
 func (i *idler) Timeout() time.Duration {
 	i.mu.Lock()
 	defer i.mu.Unlock()

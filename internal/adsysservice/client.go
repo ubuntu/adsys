@@ -14,13 +14,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-// AdSysClient is a wrapper around a grpc service client which can close the underlying connection
+// AdSysClient is a wrapper around a grpc service client which can close the underlying connection.
 type AdSysClient struct {
 	adsys.ServiceClient
 	conn *grpc.ClientConn
 }
 
-// NewClient connect to the socket and returns a new AdSysClient
+// NewClient connect to the socket and returns a new AdSysClient.
 func NewClient(socket string, timeout time.Duration) (c *AdSysClient, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create client for service"))
 
@@ -42,7 +42,7 @@ func NewClient(socket string, timeout time.Duration) (c *AdSysClient, err error)
 	}, nil
 }
 
-// Close ends the underlying connection
+// Close ends the underlying connection.
 func (c *AdSysClient) Close() {
 	decorate.LogFuncOnError(c.conn.Close)
 }

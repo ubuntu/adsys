@@ -1,6 +1,6 @@
 package adsysservice
 
-// WithMockAuthorizer specifies a personalized authorizer
+// WithMockAuthorizer specifies a personalized authorizer.
 func WithMockAuthorizer(auth authorizerer) func(o *options) error {
 	return func(o *options) error {
 		o.authorizer = auth
@@ -8,7 +8,7 @@ func WithMockAuthorizer(auth authorizerer) func(o *options) error {
 	}
 }
 
-// WithSSSdConf specifies a personalized sssd.conf
+// WithSSSdConf specifies a personalized sssd.conf.
 func WithSSSdConf(p string) func(o *options) error {
 	return func(o *options) error {
 		o.sssdConf = p
@@ -16,5 +16,5 @@ func WithSSSdConf(p string) func(o *options) error {
 	}
 }
 
-// Option type exported for tests
+// Option type exported for tests.
 type Option = option

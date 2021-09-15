@@ -9,30 +9,30 @@ import (
 )
 
 const (
-	// WidgetTypeText will use the text widget type
+	// WidgetTypeText will use the text widget type.
 	WidgetTypeText WidgetType = "text"
-	// WidgetTypeMultiText will use the multitext widget type
+	// WidgetTypeMultiText will use the multitext widget type.
 	WidgetTypeMultiText WidgetType = "multiText"
-	// WidgetTypeBool will use a checkbox
+	// WidgetTypeBool will use a checkbox.
 	WidgetTypeBool WidgetType = "boolean"
-	// WidgetTypeDecimal will use a decimal input
+	// WidgetTypeDecimal will use a decimal input.
 	WidgetTypeDecimal WidgetType = "decimal"
-	// WidgetTypeLongDecimal will use a unsigned int input
+	// WidgetTypeLongDecimal will use a unsigned int input.
 	WidgetTypeLongDecimal WidgetType = "longDecimal"
-	// WidgetTypeDropdownList will use the dropdown for selection between a fixed set of values
+	// WidgetTypeDropdownList will use the dropdown for selection between a fixed set of values.
 	WidgetTypeDropdownList WidgetType = "dropdownList"
 )
 
-// WidgetType is the type of the component that is displayed in the GPO settings dialog
+// WidgetType is the type of the component that is displayed in the GPO settings dialog.
 type WidgetType string
 
-// DecimalRange represents the range of an integer value
+// DecimalRange represents the range of an integer value.
 type DecimalRange struct {
 	Min string `yaml:",omitempty"`
 	Max string `yaml:",omitempty"`
 }
 
-// ExpandedPolicy is the result of inflating a policy of a given type to a generic one, having all needed elements for a given release
+// ExpandedPolicy is the result of inflating a policy of a given type to a generic one, having all needed elements for a given release.
 type ExpandedPolicy struct {
 	Key         string
 	DisplayName string
@@ -53,7 +53,7 @@ type ExpandedPolicy struct {
 	Type    string `yaml:",omitempty"` // dconf, install…
 }
 
-// GetDefaultForADM returns the default matching the policy elements default rules
+// GetDefaultForADM returns the default matching the policy elements default rules.
 func (p ExpandedPolicy) GetDefaultForADM() string {
 	switch p.ElementType {
 	case WidgetTypeDropdownList:
@@ -68,7 +68,7 @@ func (p ExpandedPolicy) GetDefaultForADM() string {
 	}
 }
 
-// ValidClass returns a valid, capitalized class. It will error out if it can’t match the input as valid class
+// ValidClass returns a valid, capitalized class. It will error out if it can’t match the input as valid class.
 func ValidClass(class string) (string, error) {
 	c := strings.Title(class)
 

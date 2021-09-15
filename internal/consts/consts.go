@@ -4,24 +4,24 @@ package consts
 import log "github.com/sirupsen/logrus"
 
 var (
-	// Version is the version of the executable
+	// Version is the version of the executable.
 	Version = "dev"
 )
 
 const (
-	// TEXTDOMAIN is the gettext domain for l10n
+	// TEXTDOMAIN is the gettext domain for l10n.
 	TEXTDOMAIN = "adsys"
 
-	// DefaultLogLevel is the default logging level selected without any option
+	// DefaultLogLevel is the default logging level selected without any option.
 	DefaultLogLevel = log.WarnLevel
 
-	// DefaultSocket is the default socket path
+	// DefaultSocket is the default socket path.
 	DefaultSocket = "/run/adsysd.sock"
 
-	// DefaultCacheDir is the default path for adsys system cache directory
+	// DefaultCacheDir is the default path for adsys system cache directory.
 	DefaultCacheDir = "/var/cache/adsys"
 
-	// DefaultRunDir is the default path for adsys run directory
+	// DefaultRunDir is the default path for adsys run directory.
 	DefaultRunDir = "/run/adsys"
 
 	// DefaultClientTimeout is the maximum default time in seconds between 2 server activities before the client returns and abort the request.
@@ -30,22 +30,22 @@ const (
 	// DefaultServiceTimeout is the default time in seconds without any active request before the service exits.
 	DefaultServiceTimeout = 120
 
-	// DistroID is the distro ID which can be overridden at build time
+	// DistroID is the distro ID which can be overridden at build time.
 	DistroID = "Ubuntu"
 
-	// SSSD related properties
+	// SSSD related properties.
 
-	// DefaultSSSCacheDir is the default sssd cache dir
+	// DefaultSSSCacheDir is the default sssd cache dir.
 	DefaultSSSCacheDir = "/var/lib/sss/db"
-	// DefaultSSSConf is the default sssd.conf location
+	// DefaultSSSConf is the default sssd.conf location.
 	DefaultSSSConf = "/etc/sssd/sssd.conf"
-	// DefaultDconfDir is the default dconf directory
+	// DefaultDconfDir is the default dconf directory.
 	DefaultDconfDir = "/etc/dconf"
 
-	// SSSDDbusRegisteredName is the well-known name used on dbus
+	// SSSDDbusRegisteredName is the well-known name used on dbus.
 	SSSDDbusRegisteredName = "org.freedesktop.sssd.infopipe"
-	// SSSDDbusBaseObjectPath is the path under which all domains are registered
+	// SSSDDbusBaseObjectPath is the path under which all domains are registered.
 	SSSDDbusBaseObjectPath = "/org/freedesktop/sssd/infopipe/Domains"
-	// SSSDDbusInterface is the interface we are using for access dbus methods
+	// SSSDDbusInterface is the interface we are using for access dbus methods.
 	SSSDDbusInterface = "org.freedesktop.sssd.infopipe.Domains.Domain"
 )

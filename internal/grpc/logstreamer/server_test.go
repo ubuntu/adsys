@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// TODO: create a real stream log so that SendMsg() does not fail but capture it somewhere
+// TODO: create a real stream log so that SendMsg() does not fail but capture it somewhere.
 type myStream struct {
 	sendMsgError error
 

@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"context"
 
-	// embed gpolist python binary
+	// embed gpolist python binary.
 	_ "embed"
 	"fmt"
 	"os"
@@ -26,13 +26,13 @@ import (
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
-// ObjectClass is the type of object in the directory. It can be a computer or a user
+// ObjectClass is the type of object in the directory. It can be a computer or a user.
 type ObjectClass string
 
 const (
-	// UserObject is a user representation in AD
+	// UserObject is a user representation in AD.
 	UserObject ObjectClass = "user"
-	// ComputerObject is a computer representation in AD
+	// ComputerObject is a computer representation in AD.
 	ComputerObject = "computer"
 )
 
@@ -46,7 +46,7 @@ type gpo struct {
 	testConcurrent bool
 }
 
-// AD structure to manage call concurrency
+// AD structure to manage call concurrency.
 type AD struct {
 	isOffline bool
 
@@ -82,7 +82,7 @@ type options struct {
 // Option reprents an optional function to change AD behavior.
 type Option func(*options) error
 
-// WithCacheDir specifies a personalized daemon cache directory
+// WithCacheDir specifies a personalized daemon cache directory.
 func WithCacheDir(cacheDir string) Option {
 	return func(o *options) error {
 		o.cacheDir = cacheDir
@@ -90,7 +90,7 @@ func WithCacheDir(cacheDir string) Option {
 	}
 }
 
-// WithRunDir specifies a personalized /run
+// WithRunDir specifies a personalized /run.
 func WithRunDir(runDir string) Option {
 	return func(o *options) error {
 		o.runDir = runDir
@@ -98,7 +98,7 @@ func WithRunDir(runDir string) Option {
 	}
 }
 
-// WithSSSCacheDir specifies which cache directory to use for SSS
+// WithSSSCacheDir specifies which cache directory to use for SSS.
 func WithSSSCacheDir(cacheDir string) Option {
 	return func(o *options) error {
 		o.sssCacheDir = cacheDir
@@ -106,7 +106,7 @@ func WithSSSCacheDir(cacheDir string) Option {
 	}
 }
 
-// WithDefaultDomainSuffix specifies a default domain suffix we provide
+// WithDefaultDomainSuffix specifies a default domain suffix we provide.
 func WithDefaultDomainSuffix(defaultDomainSuffix string) Option {
 	return func(o *options) error {
 		o.defaultDomainSuffix = defaultDomainSuffix
@@ -119,7 +119,7 @@ func WithDefaultDomainSuffix(defaultDomainSuffix string) Option {
 //go:embed adsys-gpolist
 var AdsysGpoListCode string
 
-// New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab
+// New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab.
 func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
@@ -304,7 +304,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	return r, nil
 }
 
-// ListActiveUsers return the list of active users on the system
+// ListActiveUsers return the list of active users on the system.
 func (ad *AD) ListActiveUsers(ctx context.Context) (users []string, err error) {
 	defer decorate.OnError(&err, i18n.G("can't list users from cache"))
 
@@ -451,7 +451,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 	return r, nil
 }
 
-// GetStatus returns dynamic part of our AD instance like offline state and active server for AD ldap
+// GetStatus returns dynamic part of our AD instance like offline state and active server for AD ldap.
 func (ad *AD) GetStatus() (adServerURL string, isOffline bool) {
 	ad.RLock()
 	defer ad.RUnlock()
@@ -459,7 +459,7 @@ func (ad *AD) GetStatus() (adServerURL string, isOffline bool) {
 }
 
 // NormalizeTargetName transform user or domain\user as user@domain.
-// If no domain is provided, we rely on having a default domain policy
+// If no domain is provided, we rely on having a default domain policy.
 func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClass ObjectClass) (string, error) {
 	log.Debugf(ctx, "NormalizeTargetName for %q, type %q", target, objectClass)
 

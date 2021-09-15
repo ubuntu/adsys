@@ -227,7 +227,7 @@ func policyFilePath(name string) string {
 	return filepath.Join("testdata", strings.ReplaceAll(strings.ReplaceAll(name, ",", "_"), " ", "_")+".pol")
 }
 
-// toUtf16 is a utility function to convert test data from string to utf16 data
+// toUtf16 is a utility function to convert test data from string to utf16 data.
 func toUtf16(t *testing.T, s string) []byte {
 	encoder := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewEncoder()
 	r, err := encoder.Bytes([]byte(s))

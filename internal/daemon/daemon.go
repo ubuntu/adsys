@@ -17,7 +17,7 @@ import (
 )
 
 // Daemon is a grpc daemon with systemd activation, configuration changes like dynamic
-// socket listening, idling timeout functionality…
+// socket listening, idling timeout functionality….
 type Daemon struct {
 	grpcserver         *grpc.Server
 	registerGRPCServer GRPCServerRegisterer
@@ -45,7 +45,7 @@ type options struct {
 
 type option func(*options) error
 
-// GRPCServerRegisterer is a function that the daemon will call everytime we want to build a new GRPC object
+// GRPCServerRegisterer is a function that the daemon will call everytime we want to build a new GRPC object.
 type GRPCServerRegisterer func(srv *Daemon) *grpc.Server
 
 // WithTimeout adds a timeout to the daemon. A 0 duration means no timeout.
@@ -151,7 +151,7 @@ func (d *Daemon) UseSocket(socket string) (err error) {
 // Listen serves on its unix socket path.
 // It handles systemd activation notification.
 // When the server stop listening, the socket is removed automatically.
-// Configuration can be reloaded and we will then listen on the new socket
+// Configuration can be reloaded and we will then listen on the new socket.
 func (d *Daemon) Listen() (err error) {
 	defer decorate.OnError(&err, i18n.G("can't serve"))
 

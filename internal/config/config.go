@@ -15,7 +15,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
-// SetVerboseMode change ErrorFormat and logs between very, middly and non verbose
+// SetVerboseMode change ErrorFormat and logs between very, middly and non verbose.
 func SetVerboseMode(level int) {
 	var reportCaller bool
 	switch level {

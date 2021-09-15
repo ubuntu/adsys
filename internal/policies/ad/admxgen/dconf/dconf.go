@@ -19,7 +19,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// Policy represents a policy entry used to generate an ADMX
+// Policy represents a policy entry used to generate an ADMX.
 type Policy struct {
 	ObjectPath string
 	Schema     string
@@ -32,7 +32,7 @@ type Policy struct {
 
 // handle per Releases
 
-// schemasPath is the path to the directory that contains dconf schemas and overrides
+// schemasPath is the path to the directory that contains dconf schemas and overrides.
 const schemasPath = "usr/share/glib-2.0/schemas/"
 
 var (
@@ -51,7 +51,7 @@ var (
 )
 
 // Generate creates a set of expanded policies from a list of policies and
-// dconf schemas available on the machine
+// dconf schemas available on the machine.
 func Generate(policies []Policy, release string, root, currentSessions string) (ep []common.ExpandedPolicy, err error) {
 	defer decorate.OnError(&err, i18n.G("can't generate dconf expanded policies"))
 

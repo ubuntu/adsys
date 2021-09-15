@@ -124,7 +124,7 @@ func TestAppGetRootCmd(t *testing.T) {
 
 // TODO: config change
 
-// changeArgs allows changing command line arguments and return a function to return it
+// changeArgs allows changing command line arguments and return a function to return it.
 func changeArgs(args ...string) func() {
 	orig := os.Args
 	os.Args = args

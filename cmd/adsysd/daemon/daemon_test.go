@@ -291,7 +291,7 @@ ad_domain: ldap://adc.example.com
 }
 
 // startDaemon prepares and start the daemon in the background. The done function should be called
-// to wait for the daemon to stop
+// to wait for the daemon to stop.
 func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
 	t.Helper()
 

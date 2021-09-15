@@ -8,7 +8,7 @@ import (
 
 // inspired by go-grpc-middleware
 
-// StreamServer allows chaining multiple streams server interceptor by returning an unique interceptor
+// StreamServer allows chaining multiple streams server interceptor by returning an unique interceptor.
 func StreamServer(interceptors ...grpc.StreamServerInterceptor) grpc.StreamServerInterceptor {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		chainer := func(currentInter grpc.StreamServerInterceptor, currentHandler grpc.StreamHandler) grpc.StreamHandler {

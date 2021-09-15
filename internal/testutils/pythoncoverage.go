@@ -3,7 +3,7 @@ package testutils
 import (
 	"bufio"
 
-	// blank embed import for python3-mock.in
+	// blank embed import for python3-mock.in.
 	_ "embed"
 	"fmt"
 	"os"
@@ -138,7 +138,7 @@ exec python3-coverage run -a %s $@
 	return true
 }
 
-// fqdnToPath allows to return the fqdn path for this file relative to go.mod
+// fqdnToPath allows to return the fqdn path for this file relative to go.mod.
 func fqdnToPath(t *testing.T, path string) string {
 	t.Helper()
 

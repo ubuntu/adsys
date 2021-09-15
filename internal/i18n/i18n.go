@@ -29,13 +29,13 @@ type i18n struct {
 var (
 	locale i18n
 
-	// G is the shorthand for Gettext
+	// G is the shorthand for Gettext.
 	G = func(msgid string) string { return msgid }
-	// NG is the shorthand for NGettext
+	// NG is the shorthand for NGettext.
 	NG = func(msgid string, msgidPlural string, n uint32) string { return msgid }
 )
 
-// InitI18nDomain calls bind + set locale to system values
+// InitI18nDomain calls bind + set locale to system values.
 func InitI18nDomain(domain string, options ...func(l *i18n)) {
 	locale = i18n{
 		domain:    domain,
@@ -54,7 +54,7 @@ func InitI18nDomain(domain string, options ...func(l *i18n)) {
 
 // langpackResolver tries to fetch locale mo file path.
 // It first checks for the real locale (e.g. de_DE) and then
-// tries to simplify the locale (e.g. de_DE -> de)
+// tries to simplify the locale (e.g. de_DE -> de).
 func langpackResolver(root string, locale string, domain string) string {
 	for _, locale := range []string{locale, strings.SplitN(locale, "_", 2)[0]} {
 		r := filepath.Join(locale, "LC_MESSAGES", fmt.Sprintf("%s.mo", domain))

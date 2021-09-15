@@ -119,7 +119,7 @@ type wrappedServerStream struct {
 	wrappedContext context.Context
 }
 
-// Context returns the wrapper's WrappedContext, overwriting the nested grpc.ServerStream.Context()
+// Context returns the wrapper's WrappedContext, overwriting the nested grpc.ServerStream.Context().
 func (w *wrappedServerStream) Context() context.Context {
 	return w.wrappedContext
 }

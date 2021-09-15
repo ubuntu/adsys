@@ -16,7 +16,7 @@ var (
 	onceCovFile      sync.Once
 )
 
-// AddCoverageFile append cov to the list of file to merge when calling MergeCoverages
+// AddCoverageFile append cov to the list of file to merge when calling MergeCoverages.
 func AddCoverageFile(cov string) {
 	onceCovFile.Do(func() {
 		goCoverProfile = testCoverageFile()
@@ -24,7 +24,7 @@ func AddCoverageFile(cov string) {
 	coveragesToMerge = append(coveragesToMerge, cov)
 }
 
-// MergeCoverages append all coverage files marked for merging to main Go Cover Profile
+// MergeCoverages append all coverage files marked for merging to main Go Cover Profile.
 func MergeCoverages() {
 	for _, cov := range coveragesToMerge {
 		if err := appendToFile(cov, goCoverProfile); err != nil {
@@ -45,7 +45,7 @@ func testCoverageFile() string {
 	return ""
 }
 
-// appendToFile appends src to the dst coverprofile file at the end
+// appendToFile appends src to the dst coverprofile file at the end.
 func appendToFile(src, dst string) error {
 	f, err := os.Open(filepath.Clean(src))
 	if err != nil {

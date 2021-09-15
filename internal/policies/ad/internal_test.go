@@ -574,7 +574,7 @@ func TestMain(m *testing.M) {
 	testutils.MergeCoverages()
 }
 
-// md5Tree build a recursive file list of dir and with their md5sum
+// md5Tree build a recursive file list of dir and with their md5sum.
 func md5Tree(t *testing.T, dir string) map[string]string {
 	t.Helper()
 
@@ -620,7 +620,7 @@ func (s sssd) IsOnline() (bool, *dbus.Error) {
 	return s.online, nil
 }
 
-// GetSystemBus helper functionality to get one system bus which automatically close on test shutdown
+// GetSystemBus helper functionality to get one system bus which automatically close on test shutdown.
 func GetSystemBus(t *testing.T) *dbus.Conn {
 	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
 	bus, err := dbus.SystemBusPrivate()

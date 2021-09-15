@@ -16,7 +16,7 @@ type loggedServerStream struct {
 
 // StreamServerInterceptor notifies the pingued object on each new and ended connections.
 // If the pingued object implements onNewConnectionner, it will have OnNewConnection called when the connection is established (can be used for logging for instance)
-// If the pingued object implements onDoneConnectionner, it will have OnDoneConnection called when the connection was handled by the server (can be used to reset an internal timeout for instance)
+// If the pingued object implements onDoneConnectionner, it will have OnDoneConnection called when the connection was handled by the server (can be used to reset an internal timeout for instance).
 func StreamServerInterceptor() func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		loggedss := loggedServerStream{

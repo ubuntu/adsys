@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Entry represents a key/value based policy (dconf, apparmor, ...) entry
+// Entry represents a key/value based policy (dconf, apparmor, ...) entry.
 type Entry struct {
 	// Key is the relative path to setting. Ex: Software/Ubuntu/User/dconf/wallpaper/path outside of GPO, and then
 	// wallpaper/path in "dconf" rule category.
@@ -24,11 +24,11 @@ type Entry struct {
 }
 
 const (
-	// GPORulesCacheBaseName is the base directory where we want to cache gpo rules
+	// GPORulesCacheBaseName is the base directory where we want to cache gpo rules.
 	GPORulesCacheBaseName = "gpo_rules"
 )
 
-// GPO is a representation of a GPO with rules we support
+// GPO is a representation of a GPO with rules we support.
 type GPO struct {
 	ID   string
 	Name string
@@ -74,7 +74,7 @@ func GetUniqueRules(gpos []GPO) map[string][]Entry {
 	return r
 }
 
-// FormatGPO write to w a formatted GPO. overridden entries are prepended with -
+// FormatGPO write to w a formatted GPO. overridden entries are prepended with -.
 func (g GPO) FormatGPO(w io.Writer, withRules, withOverridden bool, alreadyProcessedRules map[string]struct{}) map[string]struct{} {
 	fmt.Fprintf(w, "* %s (%s)\n", g.Name, g.ID)
 
@@ -120,7 +120,7 @@ func (g GPO) FormatGPO(w io.Writer, withRules, withOverridden bool, alreadyProce
 	return alreadyProcessedRules
 }
 
-// NewGPOs returns cached gpos list loaded from the p json file
+// NewGPOs returns cached gpos list loaded from the p json file.
 func NewGPOs(p string) (gpos []GPO, err error) {
 	defer decorate.OnError(&err, i18n.G("can't get cached GPO list from %s"), p)
 
@@ -135,7 +135,7 @@ func NewGPOs(p string) (gpos []GPO, err error) {
 	return gpos, nil
 }
 
-// SaveGPOs serializes in p the GPO list
+// SaveGPOs serializes in p the GPO list.
 func SaveGPOs(gpos []GPO, p string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save GPO list to %s"), p)
 

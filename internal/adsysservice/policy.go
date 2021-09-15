@@ -69,7 +69,7 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 	return s.updatePolicyFor(stream.Context(), r.GetIsComputer(), target, objectClass, r.Krb5Cc)
 }
 
-// updatePolicyFor updates the policy for a given object
+// updatePolicyFor updates the policy for a given object.
 func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target string, objectClass ad.ObjectClass, krb5cc string) error {
 	gpos, err := s.adc.GetPolicies(ctx, target, objectClass, krb5cc)
 	if err != nil {

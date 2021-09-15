@@ -35,7 +35,7 @@ type options struct {
 // Option reprents an optional function to change Policies behavior.
 type Option func(*options) error
 
-// WithCacheDir specifies a personalized daemon cache directory
+// WithCacheDir specifies a personalized daemon cache directory.
 func WithCacheDir(p string) Option {
 	return func(o *options) error {
 		o.cacheDir = p
@@ -43,7 +43,7 @@ func WithCacheDir(p string) Option {
 	}
 }
 
-// WithDconfDir specifies a personalized dconf directory
+// WithDconfDir specifies a personalized dconf directory.
 func WithDconfDir(p string) Option {
 	return func(o *options) error {
 		o.dconfDir = p
