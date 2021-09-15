@@ -467,7 +467,7 @@ func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClas
 		return target, nil
 	}
 	// If we don’t know if this is a computer, try to ensure first this is not our hostname
-	// (or consider this without explicitely being specified)
+	// (or consider this without explicitly being specified)
 	if objectClass == "" && target == ad.hostname {
 		return target, nil
 	}

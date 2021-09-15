@@ -548,10 +548,10 @@ func TestMain(m *testing.M) {
 
 		reply, err := conn.RequestName("org.freedesktop.sssd.infopipe", dbus.NameFlagDoNotQueue)
 		if err != nil {
-			log.Fatalf("Setup: Failed to aquire sssd name on local system bus: %v", err)
+			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: %v", err)
 		}
 		if reply != dbus.RequestNameReplyPrimaryOwner {
-			log.Fatalf("Setup: Failed to aquire sssd name on local system bus: name is already taken")
+			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: name is already taken")
 		}
 	}
 	m.Run()
