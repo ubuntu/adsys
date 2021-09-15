@@ -22,7 +22,7 @@ type dataType uint8
 
 /* From winNT.h */
 // We want it to be exhaustive even if not imported
-//nolint:deadcode
+//nolint:deadcode,varcheck
 const (
 	regNone              dataType = 0  /* no type */
 	regSz                dataType = 1  /* string type (ASCII) */
