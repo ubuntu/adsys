@@ -24,7 +24,7 @@ func TestOnErrorWithError(t *testing.T) {
 	t.Parallel()
 	err := errors.New("Some error")
 	decorate.OnError(&err, "My format with %s as argument", "arg")
-	require.EqualValues(t, errors.New("My format with arg as argument: Some error"), err, "Should annotate with error format")
+	require.Equal(t, errors.New("My format with arg as argument: Some error").Error(), err.Error(), "Should annotate with error format")
 }
 
 func TestLogOnErrorWithNoError(t *testing.T) {
