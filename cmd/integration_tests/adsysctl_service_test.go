@@ -308,7 +308,7 @@ func TestServiceStatus(t *testing.T) {
 				if tc.dynamicADServerDomain != "offline" {
 					content = bytes.Replace(content, []byte("ad_server: adc.example.com"), []byte(""), 1)
 				}
-				err = os.WriteFile(conf, content, 0644)
+				err = os.WriteFile(conf, content, 0600)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
 
@@ -374,7 +374,7 @@ func TestServiceStatus(t *testing.T) {
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(got), 0644)
+				err = os.WriteFile(goldPath, []byte(got), 0600)
 				require.NoError(t, err, "Cannot write golden file")
 			}
 			want, err := os.ReadFile(goldPath)

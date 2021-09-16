@@ -195,7 +195,7 @@ func TestInit(t *testing.T) {
 			if tc.withConfigFlagSet != "" {
 				p := filepath.Join(configDir, tc.withConfigFlagSet)
 				if tc.withConfigFlagSet != "DELETED.yaml" {
-					err = os.WriteFile(p, []byte("value: customconfigvalue"), 0755)
+					err = os.WriteFile(p, []byte("value: customconfigvalue"), 0600)
 					require.NoError(t, err, "Setup: failed to write custom config file")
 				}
 				err := cmd.PersistentFlags().Set("config", p)
@@ -211,7 +211,7 @@ func TestInit(t *testing.T) {
 				if tc.configFileContent == "-" {
 					tc.configFileContent = ""
 				}
-				err = os.WriteFile(filepath.Join(configDir, prefix+".yaml"), []byte(tc.configFileContent), 0755)
+				err = os.WriteFile(filepath.Join(configDir, prefix+".yaml"), []byte(tc.configFileContent), 0600)
 				require.NoError(t, err, "Setup: failed to write initial config file")
 			}
 
@@ -253,7 +253,7 @@ func TestInit(t *testing.T) {
 
 			// Refresh config file
 			if tc.changeConfigWith != "" {
-				err = os.WriteFile(filepath.Join(configDir, prefix+".yaml"), []byte(tc.changeConfigWith), 0755)
+				err = os.WriteFile(filepath.Join(configDir, prefix+".yaml"), []byte(tc.changeConfigWith), 0600)
 				require.NoError(t, err, "Setup: failed to write initial config file")
 				select {
 				case <-secondCallbackDone:

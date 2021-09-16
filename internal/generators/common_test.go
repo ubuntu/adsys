@@ -14,7 +14,7 @@ func TestCleanDirectory(t *testing.T) {
 	t.Parallel()
 
 	d := t.TempDir()
-	err := os.WriteFile(filepath.Join(d, "somefile"), []byte("some data in file"), 0750)
+	err := os.WriteFile(filepath.Join(d, "somefile"), []byte("some data in file"), 0600)
 	require.NoError(t, err, "Setup: couldn’t create existing data in directory")
 
 	err = generators.CleanDirectory(d)
@@ -46,7 +46,7 @@ func TestCleanDirectoryCantRemoveDirectory(t *testing.T) {
 	t.Parallel()
 
 	d := t.TempDir()
-	err := os.WriteFile(filepath.Join(d, "somefile"), []byte("some data in file"), 0750)
+	err := os.WriteFile(filepath.Join(d, "somefile"), []byte("some data in file"), 0600)
 	require.NoError(t, err, "Setup: couldn’t create existing data in directory")
 	err = os.Chmod(d, 0400)
 	require.NoError(t, err, "Setup: couldn’t make directory read only")

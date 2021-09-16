@@ -117,7 +117,7 @@ func TestAppRunFailsOnServiceCreationAndQuit(t *testing.T) {
 	// existing file
 	prepareEnv(t)
 	cachedir := os.Getenv("ADSYS_CACHE_DIR")
-	err := os.WriteFile(cachedir, []byte(""), 0644)
+	err := os.WriteFile(cachedir, []byte(""), 0600)
 	require.NoError(t, err, "Can't create cachedir file to make service fails")
 
 	a := daemon.New()
@@ -284,7 +284,7 @@ ad_domain: ldap://adc.example.com
 		filepath.Join(dir, "run"),
 		serviceTimeout))
 
-	err := os.WriteFile(configFile, data, 0700)
+	err := os.WriteFile(configFile, data, 0600)
 	require.NoError(t, err, "Setup: failed to write test config file")
 
 	return configFile

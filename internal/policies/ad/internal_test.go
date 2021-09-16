@@ -2,6 +2,8 @@ package ad
 
 import (
 	"context"
+
+	// #nosec: G501: we are using it only for comparing directory tree content in tests.
 	"crypto/md5"
 	"flag"
 	"fmt"
@@ -591,6 +593,7 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 			if err != nil {
 				return err
 			}
+			// #nosec: G401: we are using it only for comparing directory tree content in tests.
 			md5Val = fmt.Sprintf("%x", md5.Sum(d))
 		}
 		r[strings.TrimPrefix(path, dir)] = md5Val

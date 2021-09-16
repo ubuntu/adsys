@@ -143,7 +143,7 @@ func SaveGPOs(gpos []GPO, p string) (err error) {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(p, d, 0700); err != nil {
+	if err := os.WriteFile(p, d, 0600); err != nil {
 		return err
 	}
 

@@ -226,7 +226,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0644)
+		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0600)
 	}
 
 	// Read file to insert them at the end, removing duplicates
@@ -248,7 +248,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	}
 
 	// Otherwise, update the file.
-	if err := os.WriteFile(profilePath+".adsys.new", newContent, 0644); err != nil {
+	if err := os.WriteFile(profilePath+".adsys.new", newContent, 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {

@@ -157,10 +157,10 @@ func (a App) getPolicyDefinitions(format, distroID string) (err error) {
 
 	admx, adml := fmt.Sprintf("%s.admx", distroID), fmt.Sprintf("%s.adml", distroID)
 	log.Infof(context.Background(), "Saving %s and %s", admx, adml)
-	if err := os.WriteFile(admx, []byte(admxContent), 0755); err != nil {
+	if err := os.WriteFile(admx, []byte(admxContent), 0600); err != nil {
 		return err
 	}
-	if err := os.WriteFile(adml, []byte(admlContent), 0755); err != nil {
+	if err := os.WriteFile(adml, []byte(admlContent), 0600); err != nil {
 		return err
 	}
 
@@ -231,7 +231,7 @@ func (a *App) dumpGPOListScript() error {
 		return err
 	}
 
-	return os.WriteFile("adsys-gpolist", []byte(script), 0750)
+	return os.WriteFile("adsys-gpolist", []byte(script), 0600)
 }
 
 func colorizePolicies(policies string) (string, error) {

@@ -348,7 +348,7 @@ func TestFormatGPO(t *testing.T) {
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(out.String()), 0644)
+				err = os.WriteFile(goldPath, []byte(out.String()), 0600)
 				require.NoError(t, err, "Cannot write golden file")
 			}
 			want, err := os.ReadFile(goldPath)

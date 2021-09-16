@@ -78,7 +78,7 @@ func TestCommandsError(t *testing.T) {
 	time.Sleep(time.Second)
 	confFile := filepath.Join(dir, "adsys.yaml")
 	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
-socket: %s`, socket)), 0644)
+socket: %s`, socket)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
 	tests := map[string]struct {
@@ -150,7 +150,7 @@ func TestCommandsTimeouts(t *testing.T) {
 			confFile := filepath.Join(dir, "adsys.yaml")
 			err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
 socket: %s
-client_timeout: %d`, socket, tc.timeout)), 0644)
+client_timeout: %d`, socket, tc.timeout)), 0600)
 			require.NoError(t, err, "Setup: config file should be created")
 
 			_, err = runClient(t, confFile, "version")
@@ -194,7 +194,7 @@ ad_domain: example.com
 # Those are more for tests
 dconf_dir: %s/dconf
 sss_cache_dir: %s/sss_cache
-`, dir, dir, dir, dir, dir)), 0644)
+`, dir, dir, dir, dir, dir)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0755), "Setup: should create dconf dir")
@@ -343,6 +343,7 @@ func runDaemons() (teardown func()) {
 				log.Fatalf("Setup: can’t create %s socket directory: %v", answer, err)
 			}
 
+			// #nosec G204: we control the name in tests
 			cmd := exec.Command("docker",
 				"run", "--rm", "--pid", "host",
 				"--name", containerName+answer,
@@ -377,6 +378,7 @@ func runDaemons() (teardown func()) {
 		}()
 
 		for answer := range answers {
+			// #nosec G204: we control the args in tests
 			out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
 			if err != nil {
 				log.Fatalf("Teardown: can’t stop system daemons container: %v", string(out))
@@ -460,6 +462,7 @@ func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop 
 	cmdArgs = append(cmdArgs, args...)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	// #nosec G204: this is only for tests, under controlled args
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 
 	var b bytes.Buffer

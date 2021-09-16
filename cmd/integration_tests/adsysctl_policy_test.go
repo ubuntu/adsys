@@ -148,7 +148,7 @@ func TestPolicyApplied(t *testing.T) {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
 				content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
-				err = os.WriteFile(conf, content, 0644)
+				err = os.WriteFile(conf, content, 0600)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
 			if !tc.daemonNotStarted {
@@ -172,7 +172,7 @@ func TestPolicyApplied(t *testing.T) {
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(got), 0644)
+				err = os.WriteFile(goldPath, []byte(got), 0600)
 				require.NoError(t, err, "Cannot write golden file")
 			}
 			want, err := os.ReadFile(goldPath)
@@ -768,7 +768,7 @@ func TestPolicyUpdate(t *testing.T) {
 				if tc.defaultADDomainSuffix != "" {
 					content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
 				}
-				err = os.WriteFile(conf, content, 0644)
+				err = os.WriteFile(conf, content, 0600)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
 			defer runDaemon(t, conf)()
@@ -941,6 +941,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		subArgs = append(subArgs, fmt.Sprintf("-test.run=%s", t.Name()))
 	}
 
+	// #nosec G204: this is only for tests, under controlled args
 	cmd := exec.Command(subArgs[0], subArgs[1:]...)
 
 	admock, err := filepath.Abs("../../internal/testutils/admock")

@@ -219,6 +219,7 @@ func TestAdsysGPOList(t *testing.T) {
 				testutils.Setenv(t, "KRB5CCNAME", krb5ccname)
 			}
 
+			// #nosec G204: we control the command line name and only change it for tests
 			cmd := exec.Command(adsysGPOListcmd, "--objectclass", tc.objectClass, tc.url, tc.accountName)
 			got, err := cmd.CombinedOutput()
 			assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpostlist returns expected exit code")
@@ -233,7 +234,7 @@ func TestAdsysGPOList(t *testing.T) {
 			// Update golden file
 			if ad.Update {
 				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, got, 0644)
+				err = os.WriteFile(goldPath, got, 0600)
 				require.NoError(t, err, "Cannot write golden file")
 			}
 			want, err := os.ReadFile(goldPath)

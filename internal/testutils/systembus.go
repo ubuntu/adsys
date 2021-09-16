@@ -50,7 +50,7 @@ func StartLocalSystemBus() func() {
     <allow eavesdrop="true"/>
     <allow own="*"/>
   </policy>
-</busconfig>`), 0666)
+</busconfig>`), 0600)
 		if err != nil {
 			log.Fatalf("Setup: can’t create dbus configuration: %v", err)
 		}

@@ -161,7 +161,7 @@ func expand(src, dst, root, currentSession string) error {
 	if err := os.MkdirAll(dst, 0750); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filepath.Join(dst, release+".yaml"), data, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dst, release+".yaml"), data, 0600); err != nil {
 		return err
 	}
 
