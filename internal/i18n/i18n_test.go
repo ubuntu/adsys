@@ -48,8 +48,6 @@ msgstr "translated singular"
 )
 
 func TestTranslations(t *testing.T) {
-	t.Parallel()
-
 	defaultLocaleDir := filepath.Join(t.TempDir(), "locale")
 	compileMoFiles(t, defaultLocaleDir)
 

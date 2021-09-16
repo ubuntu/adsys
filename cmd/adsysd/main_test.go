@@ -38,8 +38,6 @@ func (a *myApp) Quit() {
 }
 
 func TestRun(t *testing.T) {
-	t.Parallel()
-
 	tests := map[string]struct {
 		runError         bool
 		usageErrorReturn bool
