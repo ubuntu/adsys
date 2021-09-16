@@ -77,7 +77,6 @@ func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target s
 	}
 
 	return s.policyManager.ApplyPolicy(ctx, target, isComputer, gpos)
-
 }
 
 // DumpPolicies displays all applied policies for a given user.

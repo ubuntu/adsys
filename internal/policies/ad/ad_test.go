@@ -44,7 +44,6 @@ func TestNew(t *testing.T) {
 
 			if tc.runDirRO {
 				require.NoError(t, os.Chmod(runDir, 0400), "Setup: can’t set run directory to Read only")
-
 			}
 			if tc.cacheDirRO {
 				require.NoError(t, os.Chmod(cacheDir, 0400), "Setup: can’t set cache directory to Read only")

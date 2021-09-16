@@ -241,7 +241,6 @@ func TestAdsysGPOList(t *testing.T) {
 			require.NoError(t, err, "Cannot load policy golden file")
 
 			require.Equal(t, string(want), string(got), "adsys-gpolist expected output")
-
 		})
 	}
 }

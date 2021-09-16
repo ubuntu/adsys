@@ -41,7 +41,6 @@ func newIdler(timeout time.Duration) idler {
 		timer:      time.NewTimer(timeout),
 		operations: make(chan operation),
 	}
-
 }
 
 func (i *idler) keepAlive(d *Daemon) {

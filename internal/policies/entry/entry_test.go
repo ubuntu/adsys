@@ -355,7 +355,6 @@ func TestFormatGPO(t *testing.T) {
 			require.NoError(t, err, "Cannot load policy golden file")
 
 			require.Equal(t, string(want), out.String(), "FormatGPO write expected output")
-
 		})
 	}
 }

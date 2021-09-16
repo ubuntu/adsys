@@ -240,6 +240,8 @@ func colorizePolicies(policies string) (string, error) {
 
 	bold := color.New(color.Bold)
 	for _, l := range strings.Split(strings.TrimSpace(policies), "\n") {
+		//nolint: whitespace
+		// We prefer to have one blank line as separator.
 		if e := strings.TrimPrefix(l, "***"); e != l {
 			// Policy entry
 			prefix := strings.TrimSpace(strings.Split(e, " ")[0])
@@ -285,6 +287,7 @@ func colorizePolicies(policies string) (string, error) {
 			gpoName := e[:i]
 			gpoID := e[i:]
 			out.Println(fmt.Sprintf("- %s%s", color.MagentaString(gpoName), gpoID))
+
 		} else {
 			// Machine or user
 			if !first {

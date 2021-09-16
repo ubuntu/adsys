@@ -160,10 +160,8 @@ func TestDumpPolicies(t *testing.T) {
 			require.NoError(t, err, "Cannot load policy golden file")
 
 			require.Equal(t, string(want), got, "DumpPolicies returned expected output")
-
 		})
 	}
-
 }
 
 func TestApplyPolicy(t *testing.T) {
@@ -271,7 +269,6 @@ func TestLastUpdateFor(t *testing.T) {
 			assert.True(t, got.Before(end), "expected got before end")
 		})
 	}
-
 }
 
 func TestMain(m *testing.M) {

@@ -220,7 +220,6 @@ func TestReadPolicy(t *testing.T) {
 			require.Equalf(t, tc.want, rules, "expected value from readPolicy doesn't match")
 		})
 	}
-
 }
 
 func policyFilePath(name string) string {

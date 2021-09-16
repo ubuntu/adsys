@@ -104,7 +104,6 @@ func TestDoneConnectionNotification(t *testing.T) {
 
 	assert.Equal(t, 1, handlerCalled, "handler was called first at pos 1")
 	assert.Equal(t, 2, pingued.doneConnectionCalledCount, "onDoneConnection was called after the handler at pos 2")
-
 }
 
 func TestErrorFromHandlerReturned(t *testing.T) {
