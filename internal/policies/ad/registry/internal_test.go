@@ -229,6 +229,8 @@ func policyFilePath(name string) string {
 
 // toUtf16 is a utility function to convert test data from string to utf16 data.
 func toUtf16(t *testing.T, s string) []byte {
+	t.Helper()
+
 	encoder := unicode.UTF16(unicode.LittleEndian, unicode.IgnoreBOM).NewEncoder()
 	r, err := encoder.Bytes([]byte(s))
 	require.NoError(t, err, "Setup: string converted to utf16 should not error out")

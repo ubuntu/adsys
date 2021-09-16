@@ -625,6 +625,8 @@ func (s sssd) IsOnline() (bool, *dbus.Error) {
 
 // GetSystemBus helper functionality to get one system bus which automatically close on test shutdown.
 func GetSystemBus(t *testing.T) *dbus.Conn {
+	t.Helper()
+
 	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
 	bus, err := dbus.SystemBusPrivate()
 	require.NoError(t, err, "can’t get private system bus")
