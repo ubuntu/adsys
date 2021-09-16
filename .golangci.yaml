@@ -8,15 +8,25 @@ linters:
     - errorlint
     - exportloopref
     - forbidigo
-# -E dupl -E gofmt  -E durationcheck -E errname -E errorlint -E exportloopref
-# -E forbidigo -E forcetypeassert -E gci -E godot -E ifshort -E gosec -E makezero -E misspell
-# -E thelper -E tparallel -E unconvert -E unparam -E wastedassign -E whitespace -E wrapcheck
+    - forcetypeassert
+    - gci
+    - godot
+    - ifshort
+    - gosec
+    - misspell
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - wastedassign
+    - whitespace
+    #- wrapcheck # To think properly about it
 
 # Get all linter issues, even if duplicated
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  fix: true
+  #fix: true # we don’t want that for CI
 
 linters-settings:
    # Forbid the usage of deprecated ioutil and debug prints

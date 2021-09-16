@@ -24,11 +24,7 @@ jobs:
       - name: Code formatting, vet, static checker Security…
         uses: golangci/golangci-lint-action@v2
         with:
-          # all non default additional linters we want
-          args: >
-            -E dupl -E gofmt  -E durationcheck -E errname -E errorlint -E exportloopref
-            -E forbidigo -E forcetypeassert -E gci -E godot -E ifshort -E gosec -E makezero -E misspell
-            -E thelper -E tparallel -E unconvert -E unparam -E wastedassign -E whitespace -E wrapcheck
+          config: .golangci.yaml
       - name: Module files are up to date
         run: |
           set -eu
