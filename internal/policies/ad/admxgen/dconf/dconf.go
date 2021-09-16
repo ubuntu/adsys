@@ -55,7 +55,7 @@ var (
 func Generate(policies []Policy, release string, root, currentSessions string) (ep []common.ExpandedPolicy, err error) {
 	defer decorate.OnError(&err, i18n.G("can't generate dconf expanded policies"))
 
-	s, d, err := loadSchemasFromDisk(filepath.Join(root, schemasPath), currentSessions)
+	s, d, err := loadSchemasFromDisk(filepath.Join(root, schemasPath))
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ type schemaList struct {
 	} `xml:"schema"`
 }
 
-func loadSchemasFromDisk(path string, currentSessions string) (entries map[string]schemaEntry, defaultsForPath map[string]string, err error) {
+func loadSchemasFromDisk(path string) (entries map[string]schemaEntry, defaultsForPath map[string]string, err error) {
 	defer decorate.OnError(&err, i18n.G("error while loading schemas"))
 
 	entries = make(map[string]schemaEntry)
