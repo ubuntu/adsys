@@ -4,11 +4,12 @@ go 1.16
 
 require (
 	github.com/charmbracelet/glamour v0.3.0
-	github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+	github.com/coreos/go-systemd v0.0.0-20190620071333-e64a0ec8b42a
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1
 	github.com/godbus/dbus/v5 v5.0.5
 	github.com/golang/protobuf v1.5.2
+	github.com/golangci/golangci-lint v1.42.1
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
 	github.com/mvo5/libsmbclient-go v0.0.0-20201002095607-f9fa2a5c1104
 	github.com/sirupsen/logrus v1.8.1
