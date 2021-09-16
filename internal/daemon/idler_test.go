@@ -19,7 +19,7 @@ func TestServerStartListenTimeout(t *testing.T) {
 	dir := t.TempDir()
 	grpcRegister := &grpcServiceRegister{}
 
-	timeout := time.Duration(10 * time.Millisecond)
+	timeout := 10 * time.Millisecond
 	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(timeout))
 	require.NoError(t, err, "New should return the daemon handler")
 
@@ -51,7 +51,7 @@ func TestServerDontTimeoutWithActiveRequest(t *testing.T) {
 	dir := t.TempDir()
 	grpcRegister := &grpcServiceRegister{}
 
-	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(time.Duration(10*time.Millisecond)))
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(10*time.Millisecond))
 	require.NoError(t, err, "New should return the daemon handler")
 
 	errs := make(chan error)
@@ -94,7 +94,7 @@ func TestServerDontTimeoutWithMultipleActiveRequests(t *testing.T) {
 	dir := t.TempDir()
 	grpcRegister := &grpcServiceRegister{}
 
-	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(time.Duration(10*time.Millisecond)))
+	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(10*time.Millisecond))
 	require.NoError(t, err, "New should return the daemon handler")
 
 	errs := make(chan error)
@@ -141,8 +141,8 @@ func TestServerChangeTimeout(t *testing.T) {
 
 	// initial timeout is 10 millisecond
 	start := time.Now()
-	currentTimeout := time.Duration(10 * time.Millisecond)
-	changedTimeout := time.Duration(50 * time.Millisecond)
+	currentTimeout := 10 * time.Millisecond
+	changedTimeout := 50 * time.Millisecond
 	d, err := daemon.New(grpcRegister.registerGRPCServer, filepath.Join(dir, "test.sock"), daemon.WithTimeout(currentTimeout))
 	require.NoError(t, err, "New should return the daemon handler")
 	require.Equal(t, currentTimeout, d.Timeout(), "Report expected timeout")
