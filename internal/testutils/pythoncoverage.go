@@ -65,7 +65,8 @@ func PythonCoverageToGoFormat(t *testing.T, include string, commandOnStdin bool)
 exec python3-coverage run -a %s $@
 `, realBinaryPath))
 	}
-	err = os.WriteFile(filepath.Join(tempdir, mockedFile), d, 0600)
+	// #nosec G306. We want this asset to be executable.
+	err = os.WriteFile(filepath.Join(tempdir, mockedFile), d, 0700)
 	require.NoError(t, err, "Setup: can’t create prefixed covered python mock")
 
 	t.Cleanup(func() {

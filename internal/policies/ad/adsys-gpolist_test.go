@@ -222,12 +222,12 @@ func TestAdsysGPOList(t *testing.T) {
 			// #nosec G204: we control the command line name and only change it for tests
 			cmd := exec.Command(adsysGPOListcmd, "--objectclass", tc.objectClass, tc.url, tc.accountName)
 			got, err := cmd.CombinedOutput()
-			assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpostlist returns expected exit code")
 			if tc.wantErr {
 				require.Error(t, err, "adsys-gpostlist should have failed but didn’t")
 				return
 			}
 			require.NoErrorf(t, err, "adsys-gpostlist should exit successfully: %v", string(got))
+			assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpostlist returns expected exit code")
 
 			// check collected output between FormatGPO calls
 			goldPath := filepath.Join("testdata", "adsys-gpolist", "golden", name)
