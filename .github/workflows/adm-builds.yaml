@@ -82,7 +82,7 @@ jobs:
 
   collect-releases:
     name: Collect supported keys on each releases
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     needs:
       - build-admxgen
       - supported-releases
