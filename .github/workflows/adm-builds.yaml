@@ -99,7 +99,8 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt update
-          apt -y install ubuntu-desktop
+          # Ignore installation error, we will remove the PR anyway if anything is missing
+          apt -y install ubuntu-desktop || true
       - name: Collect support keys
         run: |
           chmod 755 ./admxgen
