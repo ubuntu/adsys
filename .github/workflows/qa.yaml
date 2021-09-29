@@ -24,7 +24,7 @@ jobs:
       - name: Code formatting, vet, static checker Security…
         uses: golangci/golangci-lint-action@v2
         with:
-          config: .golangci-ci.yaml
+          args: "--config .golangci-ci.yaml"
       - name: Module files are up to date
         run: |
           set -eu
