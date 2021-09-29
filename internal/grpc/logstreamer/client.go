@@ -16,7 +16,7 @@ import (
 // StreamClientInterceptor allows to tag the client with an unique ID and request the server
 // to stream back to the client logs corresponding to that request to the given logger.
 // It will use ReportCaller value from logger to decide if we print the callstack (first frame outside
-// of that package)
+// of that package).
 func StreamClientInterceptor(logger *logrus.Logger) grpc.StreamClientInterceptor {
 	clientID := strconv.Itoa(os.Getpid())
 	localLoggerMu.RLock()
@@ -39,7 +39,7 @@ type logClientStream struct {
 	logger *logrus.Logger
 }
 
-// RecvMsg is used to intercept log messages from server before hitting the client
+// RecvMsg is used to intercept log messages from server before hitting the client.
 func (ss *logClientStream) RecvMsg(m interface{}) error {
 	for {
 		if err := ss.ClientStream.RecvMsg(m); err != nil {

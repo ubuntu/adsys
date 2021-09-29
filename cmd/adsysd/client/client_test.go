@@ -39,7 +39,8 @@ func TestAppNoUsageError(t *testing.T) {
 	a := client.New()
 
 	defer changeArgs("adsysctl", "completion", "bash")()
-	a.Run()
+	err := a.Run()
+	require.NoError(t, err, "Completion should not return an error")
 	isUsageError := a.UsageError()
 	require.False(t, isUsageError, "No usage error is reported as such")
 }
@@ -48,7 +49,8 @@ func TestAppUsageError(t *testing.T) {
 	a := client.New()
 
 	defer changeArgs("adsysctl", "doesnotexist")()
-	a.Run()
+	err := a.Run()
+	require.Error(t, err, "Run should return usage")
 	isUsageError := a.UsageError()
 	require.True(t, isUsageError, "Usage error is reported as such")
 }
@@ -75,7 +77,8 @@ func TestAppCanQuitAfterExecute(t *testing.T) {
 	a := client.New()
 
 	defer changeArgs("adsysctl", "completion", "bash")()
-	a.Run()
+	err := a.Run()
+	require.NoError(t, err, "Run should return no error")
 	a.Quit()
 }
 
@@ -107,7 +110,8 @@ func TestAppCanSigHupAfterExecute(t *testing.T) {
 	a := client.New()
 
 	defer changeArgs("adsysctl", "completion", "bash")()
-	a.Run()
+	err := a.Run()
+	require.NoError(t, err, "Run should return no error")
 	require.True(t, a.Hup(), "Hup returns true for client")
 }
 
@@ -120,7 +124,7 @@ func TestAppGetRootCmd(t *testing.T) {
 
 // TODO: config change
 
-// changeArgs allows changing command line arguments and return a function to return it
+// changeArgs allows changing command line arguments and return a function to return it.
 func changeArgs(args ...string) func() {
 	orig := os.Args
 	os.Args = args

@@ -14,7 +14,7 @@ func withGPOListCmd(cmd []string) Option {
 	}
 }
 
-// WithVersionID specifies a personalized release id
+// WithVersionID specifies a personalized release id.
 func WithVersionID(versionID string) Option {
 	return func(o *options) error {
 		o.versionID = versionID

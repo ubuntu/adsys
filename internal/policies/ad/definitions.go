@@ -10,7 +10,7 @@ import (
 	policydefinitions "github.com/ubuntu/adsys/policies"
 )
 
-// GetPolicyDefinitions returns admx and adml content for the given type t of policies
+// GetPolicyDefinitions returns admx and adml content for the given type t of policies.
 func GetPolicyDefinitions(ctx context.Context, format, distroID string) (admx string, adml string, err error) {
 	decorate.OnError(&err, i18n.G("can't get policy definition file"))
 

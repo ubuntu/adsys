@@ -111,7 +111,7 @@ var (
 	localLoggerMu = sync.RWMutex{}
 )
 
-// SetReportCaller set if we want to report caller to standard logger
+// SetReportCaller set if we want to report caller to standard logger.
 func SetReportCaller(reportCaller bool) {
 	localLogger := logrus.StandardLogger()
 

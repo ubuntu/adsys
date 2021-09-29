@@ -150,7 +150,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	}
 
 	if err := errg.Wait(); err != nil {
-		return fmt.Errorf("one or more error while fetching GPOs: %v", err)
+		return fmt.Errorf("one or more error while fetching GPOs: %w", err)
 	}
 
 	return nil
@@ -199,7 +199,7 @@ func getGPOVersion(r io.Reader) (version int, err error) {
 		if strings.HasPrefix(t, "Version=") {
 			version, err := strconv.Atoi(strings.TrimPrefix(t, "Version="))
 			if err != nil {
-				return 0, fmt.Errorf("version is not an int: %v", err)
+				return 0, fmt.Errorf("version is not an int: %w", err)
 			}
 			return version, nil
 		}
@@ -213,7 +213,11 @@ func downloadRecursive(client *libsmbclient.Client, url string, dest string) err
 	if err != nil {
 		return err
 	}
-	defer d.Closedir()
+	defer func() {
+		if err := d.Closedir(); err != nil {
+			log.Info(context.Background(), "Could not close directory:", err)
+		}
+	}()
 
 	if err := os.MkdirAll(dest, 0700); err != nil {
 		return fmt.Errorf("can't create %q", dest)
@@ -221,7 +225,7 @@ func downloadRecursive(client *libsmbclient.Client, url string, dest string) err
 
 	for {
 		dirent, err := d.Readdir()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {
@@ -248,7 +252,7 @@ func downloadRecursive(client *libsmbclient.Client, url string, dest string) err
 				return err
 			}
 
-			if err := os.WriteFile(entityDest, data, 0700); err != nil {
+			if err := os.WriteFile(entityDest, data, 0600); err != nil {
 				return err
 			}
 		} else if dirent.Type == libsmbclient.SmbcDir {

@@ -9,13 +9,13 @@ import (
 // This is taken from logrus
 
 var (
-	// qualified package name, cached at first use
+	// qualified package name, cached at first use.
 	thisPackage string
 
-	// Positions in the call stack when tracing to report the calling method
+	// Positions in the call stack when tracing to report the calling method.
 	minimumCallerDepth int
 
-	// Used for caller information initialisation
+	// Used for caller information initialisation.
 	callerInitOnce sync.Once
 )
 
@@ -24,7 +24,7 @@ const (
 	knownInternalFrames int = 2
 )
 
-// getCaller retrieves the name of the first non-logrus calling function
+// getCaller retrieves the name of the first non-logrus calling function.
 func getCaller() *runtime.Frame {
 	// cache this package's fully-qualified name
 	getPackageFunc := func() {

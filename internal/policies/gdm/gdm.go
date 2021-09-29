@@ -13,7 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// Manager prevents running multiple gdm update process in parallel while parsing policy in ApplyPolicy
+// Manager prevents running multiple gdm update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
 	mu    sync.RWMutex
 	dconf *dconf.Manager
@@ -24,7 +24,7 @@ type options struct {
 }
 type option func(*options) error
 
-// WithDconf specifies a personalized dconf manager
+// WithDconf specifies a personalized dconf manager.
 func WithDconf(m *dconf.Manager) func(o *options) error {
 	return func(o *options) error {
 		o.dconf = m
@@ -52,7 +52,7 @@ func New(opts ...option) (m *Manager, err error) {
 	}, nil
 }
 
-// ApplyPolicy generates a dconf computer or user policy based on a list of entries
+// ApplyPolicy generates a dconf computer or user policy based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, entries []entry.Entry) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't apply gdm policy"))
 

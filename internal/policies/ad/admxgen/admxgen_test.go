@@ -331,7 +331,7 @@ func wantFromGoldenFileYAML(t *testing.T, goldPath string, got interface{}, want
 		t.Logf("updating golden file %s", goldPath)
 		data, err := yaml.Marshal(got)
 		require.NoError(t, err, "Cannot marshal expanded policies to YAML")
-		err = os.WriteFile(goldPath, data, 0644)
+		err = os.WriteFile(goldPath, data, 0600)
 		require.NoError(t, err, "Cannot write golden file")
 	}
 
@@ -346,7 +346,7 @@ func wantFromGoldenFile(t *testing.T, goldPath string, got []byte) (want []byte)
 
 	if update {
 		t.Logf("updating golden file %s", goldPath)
-		err := os.WriteFile(goldPath, got, 0644)
+		err := os.WriteFile(goldPath, got, 0600)
 		require.NoError(t, err, "Cannot write golden file")
 	}
 

@@ -62,7 +62,7 @@ func SubcommandsRequiredWithSuggestions(cmd *cobra.Command, args []string) error
 }
 
 // suggestsByPrefixOrLd suggests a command by levenshtein distance or by prefix.
-// It returns an empty string if nothing was found
+// It returns an empty string if nothing was found.
 func suggestsByPrefixOrLd(typedName, candidate string, minDistance int) string {
 	levenshteinDistance := ld(typedName, candidate, true)
 	suggestByLevenshtein := levenshteinDistance <= minDistance
@@ -104,7 +104,6 @@ func ld(s, t string, ignoreCase bool) int {
 				d[i][j] = min + 1
 			}
 		}
-
 	}
 	return d[len(s)][len(t)]
 }

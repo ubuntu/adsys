@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
@@ -149,7 +148,7 @@ func TestPolicyApplied(t *testing.T) {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
 				content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
-				err = os.WriteFile(conf, content, 0644)
+				err = os.WriteFile(conf, content, 0600)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
 			if !tc.daemonNotStarted {
@@ -173,7 +172,7 @@ func TestPolicyApplied(t *testing.T) {
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(got), 0644)
+				err = os.WriteFile(goldPath, []byte(got), 0600)
 				require.NoError(t, err, "Cannot write golden file")
 			}
 			want, err := os.ReadFile(goldPath)
@@ -769,7 +768,7 @@ func TestPolicyUpdate(t *testing.T) {
 				if tc.defaultADDomainSuffix != "" {
 					content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
 				}
-				err = os.WriteFile(conf, content, 0644)
+				err = os.WriteFile(conf, content, 0600)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
 			defer runDaemon(t, conf)()
@@ -796,7 +795,7 @@ func TestPolicyUpdate(t *testing.T) {
 }
 
 func TestPolicyDebugGPOListScript(t *testing.T) {
-	gpolistSrc, err := ioutil.ReadFile("../../internal/policies/ad/adsys-gpolist")
+	gpolistSrc, err := os.ReadFile("../../internal/policies/ad/adsys-gpolist")
 	require.NoError(t, err, "Setup: failed to load source of adsys-gpolist")
 
 	tests := map[string]struct {
@@ -864,12 +863,14 @@ func modifyAndAddUsers(t *testing.T, new string, users ...string) (passwd string
 		if strings.HasPrefix(l, fmt.Sprintf("%s:", u.Username)) {
 			l = fmt.Sprintf("%s%s", new, strings.TrimPrefix(l, u.Username))
 		}
-		d.Write([]byte(l + "\n"))
+		_, err = d.Write([]byte(l + "\n"))
+		require.NoError(t, err, "Setup: can’t write to passwd temp file")
 	}
 	require.NoError(t, scanner.Err(), "Setup: can't write temporary passwd file")
 
 	for i, u := range users {
-		d.Write([]byte(fmt.Sprintf("%s:x:%d:%s::/nonexistent:/usr/bin/false", u, i+23450, group)))
+		_, err = d.Write([]byte(fmt.Sprintf("%s:x:%d:%s::/nonexistent:/usr/bin/false", u, i+23450, group)))
+		require.NoError(t, err, "Setup: can’t write to passwd temp file")
 	}
 
 	return dest
@@ -940,6 +941,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		subArgs = append(subArgs, fmt.Sprintf("-test.run=%s", t.Name()))
 	}
 
+	// #nosec G204: this is only for tests, under controlled args
 	cmd := exec.Command(subArgs[0], subArgs[1:]...)
 
 	admock, err := filepath.Abs("../../internal/testutils/admock")

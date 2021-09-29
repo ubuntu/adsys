@@ -67,7 +67,7 @@ type authorizerer interface {
 	IsAllowedFromContext(context.Context, authorizer.Action) error
 }
 
-// WithCacheDir specifies a personalized daemon cache directory
+// WithCacheDir specifies a personalized daemon cache directory.
 func WithCacheDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.cacheDir = p
@@ -75,7 +75,7 @@ func WithCacheDir(p string) func(o *options) error {
 	}
 }
 
-// WithRunDir specifies a personalized /run
+// WithRunDir specifies a personalized /run.
 func WithRunDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.runDir = p
@@ -83,7 +83,7 @@ func WithRunDir(p string) func(o *options) error {
 	}
 }
 
-// WithDconfDir specifies a personalized /etc/dconf
+// WithDconfDir specifies a personalized /etc/dconf.
 func WithDconfDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.dconfDir = p
@@ -91,7 +91,7 @@ func WithDconfDir(p string) func(o *options) error {
 	}
 }
 
-// WithSSSCacheDir specifies a personalized /
+// WithSSSCacheDir specifies a personalized /.
 func WithSSSCacheDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.sssCacheDir = p
@@ -99,7 +99,7 @@ func WithSSSCacheDir(p string) func(o *options) error {
 	}
 }
 
-// WithDefaultDomainSuffix specifies a personalized default domain suffix
+// WithDefaultDomainSuffix specifies a personalized default domain suffix.
 func WithDefaultDomainSuffix(d string) func(o *options) error {
 	return func(o *options) error {
 		o.defaultDomainSuffix = d
@@ -241,7 +241,7 @@ func loadServerInfo(sssdConf, url, domain, defaultDomainSuffix string) (rurl str
 }
 
 // RegisterGRPCServer registers our service with the new interceptor chains.
-// It will notify the daemon of any new connection
+// It will notify the daemon of any new connection.
 func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 	s.logger = logrus.StandardLogger()
 	srv := grpc.NewServer(grpc.StreamInterceptor(
@@ -262,7 +262,7 @@ func (s *Service) Quit(ctx context.Context) {
 	}
 }
 
-// initSystemTime returns systemd generator init system time
+// initSystemTime returns systemd generator init system time.
 func initSystemTime(bus *dbus.Conn) *time.Time {
 	systemd := bus.Object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
 	val, err := systemd.GetProperty("org.freedesktop.systemd1.Manager.GeneratorsStartTimestamp")

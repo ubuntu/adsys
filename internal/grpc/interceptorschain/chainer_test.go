@@ -107,6 +107,7 @@ func TestStreamClient(t *testing.T) {
 }
 
 func requireContextValue(t *testing.T, expected interface{}, ctx context.Context, key string, msg ...interface{}) {
+	t.Helper()
 	val := ctx.Value(keyCtxType(key))
 	require.NotNil(t, val, msg...)
 	require.Equal(t, expected, val, msg...)
@@ -119,7 +120,7 @@ type wrappedServerStream struct {
 	wrappedContext context.Context
 }
 
-// Context returns the wrapper's WrappedContext, overwriting the nested grpc.ServerStream.Context()
+// Context returns the wrapper's WrappedContext, overwriting the nested grpc.ServerStream.Context().
 func (w *wrappedServerStream) Context() context.Context {
 	return w.wrappedContext
 }

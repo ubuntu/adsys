@@ -59,7 +59,7 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 				})
 			}
 			if err := errg.Wait(); err != nil {
-				return fmt.Errorf("one or more error for updating all users: %v", err)
+				return fmt.Errorf("one or more error for updating all users: %w", err)
 			}
 		}
 
@@ -69,7 +69,7 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 	return s.updatePolicyFor(stream.Context(), r.GetIsComputer(), target, objectClass, r.Krb5Cc)
 }
 
-// updatePolicyFor updates the policy for a given object
+// updatePolicyFor updates the policy for a given object.
 func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target string, objectClass ad.ObjectClass, krb5cc string) error {
 	gpos, err := s.adc.GetPolicies(ctx, target, objectClass, krb5cc)
 	if err != nil {
@@ -77,7 +77,6 @@ func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target s
 	}
 
 	return s.policyManager.ApplyPolicy(ctx, target, isComputer, gpos)
-
 }
 
 // DumpPolicies displays all applied policies for a given user.

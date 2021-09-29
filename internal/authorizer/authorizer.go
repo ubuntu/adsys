@@ -71,7 +71,7 @@ func New(bus *dbus.Conn, options ...func(*Authorizer)) (auth *Authorizer, err er
 	return &a, nil
 }
 
-// Action is an polkit action
+// Action is an polkit action.
 type Action struct {
 	ID      string
 	SelfID  string
@@ -91,7 +91,7 @@ const (
 
 type onUserKey string
 
-// OnUserKey is the authorizer context key passing optional user name
+// OnUserKey is the authorizer context key passing optional user name.
 var OnUserKey onUserKey = "UserName"
 
 type authSubject struct {
@@ -106,7 +106,7 @@ type authResult struct {
 }
 
 // IsAllowedFromContext returns nil if the user is allowed to perform an operation.
-// The pid and uid are extracted from peerCredsInfo grpc context
+// The pid and uid are extracted from peerCredsInfo grpc context.
 func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (err error) {
 	log.Debug(ctx, i18n.G("Check if grpc request peer is authorized"))
 
@@ -144,7 +144,7 @@ func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (er
 
 // isAllowed returns nil if the user is allowed to perform an operation.
 // ActionUID is only used for ActionUserWrite which will be converted to corresponding polkit action
-// (self or others)
+// (self or others).
 func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid uint32, actionUID uint32) error {
 	if uid == 0 {
 		log.Debug(ctx, i18n.G("Authorized as being administrator"))

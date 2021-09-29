@@ -161,7 +161,7 @@ func expand(src, dst, root, currentSession string) error {
 	if err := os.MkdirAll(dst, 0750); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filepath.Join(dst, release+".yaml"), data, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dst, release+".yaml"), data, 0600); err != nil {
 		return err
 	}
 
@@ -186,7 +186,7 @@ func admx(categoryDefinition, src, dst string, autoDetectReleases, allowMissingK
 		supportedReleases = nil
 		files, err := os.ReadDir(src)
 		if err != nil {
-			return fmt.Errorf("can't read source directory: %v", err)
+			return fmt.Errorf("can't read source directory: %w", err)
 		}
 		for _, f := range files {
 			if !strings.HasSuffix(f.Name(), ".yaml") {
@@ -237,7 +237,7 @@ func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy
 		}
 		err = yaml.Unmarshal(d, &p)
 		if err != nil {
-			return nil, nilCategoryFileStruct, fmt.Errorf("trying to load %s: %v", f, err)
+			return nil, nilCategoryFileStruct, fmt.Errorf("trying to load %s: %w", f, err)
 		}
 		policies = append(policies, p...)
 	}
@@ -250,7 +250,7 @@ func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy
 	}
 	err = yaml.Unmarshal(catsDef, &catfs)
 	if err != nil {
-		return nil, nilCategoryFileStruct, fmt.Errorf("trying to load %s: %v", categoryDefinition, err)
+		return nil, nilCategoryFileStruct, fmt.Errorf("trying to load %s: %w", categoryDefinition, err)
 	}
 
 	return policies, catfs, nil

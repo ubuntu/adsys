@@ -100,7 +100,7 @@ func treeContent(t *testing.T, dir string, ignoreHeaders []byte) (map[string]str
 	return r, nil
 }
 
-// ignoreDconfDB is a utility function that returns the list of binary dconf db files to ignore during copy with shutils.CopyTree
+// ignoreDconfDB is a utility function that returns the list of binary dconf db files to ignore during copy with shutils.CopyTree.
 func ignoreDconfDB(src string, entries []os.FileInfo) []string {
 	var r []string
 	for _, e := range entries {

@@ -41,7 +41,6 @@ func newIdler(timeout time.Duration) idler {
 		timer:      time.NewTimer(timeout),
 		operations: make(chan operation),
 	}
-
 }
 
 func (i *idler) keepAlive(d *Daemon) {
@@ -116,7 +115,7 @@ func (i *idler) sendOrTimeout(op operation) {
 	}
 }
 
-// Timeout returns current daemon idle timeout
+// Timeout returns current daemon idle timeout.
 func (i *idler) Timeout() time.Duration {
 	i.mu.Lock()
 	defer i.mu.Unlock()

@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
-
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/testutils"
@@ -154,17 +153,15 @@ func TestDumpPolicies(t *testing.T) {
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(got), 0644)
+				err = os.WriteFile(goldPath, []byte(got), 0600)
 				require.NoError(t, err, "Cannot write golden file")
 			}
 			want, err := os.ReadFile(goldPath)
 			require.NoError(t, err, "Cannot load policy golden file")
 
 			require.Equal(t, string(want), got, "DumpPolicies returned expected output")
-
 		})
 	}
-
 }
 
 func TestApplyPolicy(t *testing.T) {
@@ -272,7 +269,6 @@ func TestLastUpdateFor(t *testing.T) {
 			assert.True(t, got.Before(end), "expected got before end")
 		})
 	}
-
 }
 
 func TestMain(m *testing.M) {

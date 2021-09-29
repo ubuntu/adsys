@@ -15,7 +15,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
-// SetVerboseMode change ErrorFormat and logs between very, middly and non verbose
+// SetVerboseMode change ErrorFormat and logs between very, middly and non verbose.
 func SetVerboseMode(level int) {
 	var reportCaller bool
 	switch level {
@@ -42,7 +42,7 @@ func Init(name string, rootCmd cobra.Command, vip *viper.Viper, configChanged fu
 	// Get cmdline flag for verbosity to configure logger until we have everything parsed.
 	v, err := rootCmd.PersistentFlags().GetCount("verbose")
 	if err != nil {
-		return fmt.Errorf("internal error: no persistent verbose flag installed on rootCmd: %v", err)
+		return fmt.Errorf("internal error: no persistent verbose flag installed on rootCmd: %w", err)
 	}
 
 	SetVerboseMode(v)
@@ -61,7 +61,7 @@ func Init(name string, rootCmd cobra.Command, vip *viper.Viper, configChanged fu
 		if errors.As(err, &e) {
 			log.Infof(context.Background(), "No configuration file: %v.\nWe will only use the defaults, env variables or flags.", e)
 		} else {
-			return fmt.Errorf("invalid configuration file: %v", err)
+			return fmt.Errorf("invalid configuration file: %w", err)
 		}
 	} else {
 		log.Infof(context.Background(), "Using configuration file: %v", vip.ConfigFileUsed())
@@ -90,7 +90,7 @@ func Init(name string, rootCmd cobra.Command, vip *viper.Viper, configChanged fu
 // LoadConfig takes c and unmarshall current configuration to it.
 func LoadConfig(c interface{}, viper *viper.Viper) error {
 	if err := viper.Unmarshal(&c); err != nil {
-		return fmt.Errorf("unable to decode configuration into struct: %v", err)
+		return fmt.Errorf("unable to decode configuration into struct: %w", err)
 	}
 	return nil
 }

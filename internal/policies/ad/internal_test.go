@@ -2,6 +2,8 @@ package ad
 
 import (
 	"context"
+
+	// #nosec: G501: we are using it only for comparing directory tree content in tests.
 	"crypto/md5"
 	"flag"
 	"fmt"
@@ -533,18 +535,34 @@ func TestMain(m *testing.M) {
 				<arg direction="out" type="b"/>
 			</method>
 		</interface>` + introspect.IntrospectDataString + `</node>`
-		conn.Export(sssdOnlineExample, "/org/freedesktop/sssd/infopipe/Domains/example_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain")
-		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/example_2ecom",
-			"org.freedesktop.DBus.Introspectable")
-		conn.Export(sssdOnlineLocalDomain, "/org/freedesktop/sssd/infopipe/Domains/localdomain", "org.freedesktop.sssd.infopipe.Domains.Domain")
-		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/localdomain",
-			"org.freedesktop.DBus.Introspectable")
-		conn.Export(sssdEmptyServerDomain, "/org/freedesktop/sssd/infopipe/Domains/emptyserver", "org.freedesktop.sssd.infopipe.Domains.Domain")
-		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/emptyserver",
-			"org.freedesktop.DBus.Introspectable")
-		conn.Export(sssdOfflineExample, "/org/freedesktop/sssd/infopipe/Domains/offline", "org.freedesktop.sssd.infopipe.Domains.Domain")
-		conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/offline",
-			"org.freedesktop.DBus.Introspectable")
+		if err := conn.Export(sssdOnlineExample, "/org/freedesktop/sssd/infopipe/Domains/example_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain"); err != nil {
+			log.Fatalf("Setup: could not export example_2ecom: %v", err)
+		}
+		if err := conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/example_2ecom",
+			"org.freedesktop.DBus.Introspectable"); err != nil {
+			log.Fatalf("Setup: could not export introspectable for example_2ecom: %v", err)
+		}
+		if err := conn.Export(sssdOnlineLocalDomain, "/org/freedesktop/sssd/infopipe/Domains/localdomain", "org.freedesktop.sssd.infopipe.Domains.Domain"); err != nil {
+			log.Fatalf("Setup: could not export localdomain: %v", err)
+		}
+		if err := conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/localdomain",
+			"org.freedesktop.DBus.Introspectable"); err != nil {
+			log.Fatalf("Setup: could not export introspectable for localdomain: %v", err)
+		}
+		if err := conn.Export(sssdEmptyServerDomain, "/org/freedesktop/sssd/infopipe/Domains/emptyserver", "org.freedesktop.sssd.infopipe.Domains.Domain"); err != nil {
+			log.Fatalf("Setup: could not export emptyserver: %v", err)
+		}
+		if err := conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/emptyserver",
+			"org.freedesktop.DBus.Introspectable"); err != nil {
+			log.Fatalf("Setup: could not export introspectable for emptyserver: %v", err)
+		}
+		if err := conn.Export(sssdOfflineExample, "/org/freedesktop/sssd/infopipe/Domains/offline", "org.freedesktop.sssd.infopipe.Domains.Domain"); err != nil {
+			log.Fatalf("Setup: could not export offline: %v", err)
+		}
+		if err := conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/offline",
+			"org.freedesktop.DBus.Introspectable"); err != nil {
+			log.Fatalf("Setup: could not export introspectable for offline: %v", err)
+		}
 
 		reply, err := conn.RequestName("org.freedesktop.sssd.infopipe", dbus.NameFlagDoNotQueue)
 		if err != nil {
@@ -558,7 +576,7 @@ func TestMain(m *testing.M) {
 	testutils.MergeCoverages()
 }
 
-// md5Tree build a recursive file list of dir and with their md5sum
+// md5Tree build a recursive file list of dir and with their md5sum.
 func md5Tree(t *testing.T, dir string) map[string]string {
 	t.Helper()
 
@@ -566,7 +584,7 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("couldn't access path %q: %v", path, err)
+			return fmt.Errorf("couldn't access path %q: %w", path, err)
 		}
 
 		md5Val := ""
@@ -575,6 +593,7 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 			if err != nil {
 				return err
 			}
+			// #nosec: G401: we are using it only for comparing directory tree content in tests.
 			md5Val = fmt.Sprintf("%x", md5.Sum(d))
 		}
 		r[strings.TrimPrefix(path, dir)] = md5Val
@@ -604,8 +623,10 @@ func (s sssd) IsOnline() (bool, *dbus.Error) {
 	return s.online, nil
 }
 
-// GetSystemBus helper functionality to get one system bus which automatically close on test shutdown
+// GetSystemBus helper functionality to get one system bus which automatically close on test shutdown.
 func GetSystemBus(t *testing.T) *dbus.Conn {
+	t.Helper()
+
 	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
 	bus, err := dbus.SystemBusPrivate()
 	require.NoError(t, err, "can’t get private system bus")

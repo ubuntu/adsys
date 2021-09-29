@@ -38,8 +38,6 @@ func (a *myApp) Quit() {
 }
 
 func TestRun(t *testing.T) {
-	t.Parallel()
-
 	tests := map[string]struct {
 		runError         bool
 		usageErrorReturn bool
@@ -85,7 +83,8 @@ func TestRun(t *testing.T) {
 			case syscall.SIGINT:
 				fallthrough
 			case syscall.SIGTERM:
-				syscall.Kill(syscall.Getpid(), tc.sendSig)
+				err := syscall.Kill(syscall.Getpid(), tc.sendSig)
+				require.NoError(t, err, "Teardown: kill should return no error")
 				select {
 				case <-time.After(50 * time.Millisecond):
 					exited = false
@@ -94,7 +93,8 @@ func TestRun(t *testing.T) {
 				}
 				require.Equal(t, true, exited, "Expect to exit on SIGINT and SIGTERM")
 			case syscall.SIGHUP:
-				syscall.Kill(syscall.Getpid(), syscall.SIGHUP)
+				err := syscall.Kill(syscall.Getpid(), syscall.SIGHUP)
+				require.NoError(t, err, "Teardown: kill should return no error")
 				select {
 				case <-time.After(50 * time.Millisecond):
 					exited = false

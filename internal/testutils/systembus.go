@@ -24,7 +24,7 @@ var (
 	savedDbusSystemAddress string
 )
 
-// StartLocalSystemBus allows to start and set environment variable to a local bus, preventing polluting system ones
+// StartLocalSystemBus allows to start and set environment variable to a local bus, preventing polluting system ones.
 func StartLocalSystemBus() func() {
 	sdbusMU.Lock()
 	defer sdbusMU.Unlock()
@@ -50,7 +50,7 @@ func StartLocalSystemBus() func() {
     <allow eavesdrop="true"/>
     <allow own="*"/>
   </policy>
-</busconfig>`), 0666)
+</busconfig>`), 0600)
 		if err != nil {
 			log.Fatalf("Setup: can’t create dbus configuration: %v", err)
 		}
@@ -106,7 +106,7 @@ func StartLocalSystemBus() func() {
 	}
 }
 
-// NewDbusConn returns a system dbus connection which will be tore down when tests ends
+// NewDbusConn returns a system dbus connection which will be tore down when tests ends.
 func NewDbusConn(t *testing.T) *dbus.Conn {
 	t.Helper()
 

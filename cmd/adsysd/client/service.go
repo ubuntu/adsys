@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -68,7 +69,7 @@ func (a *App) serviceCat() error {
 	for {
 		msg, err := stream.Recv()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return err
@@ -114,7 +115,7 @@ func (a *App) serviceStop(force bool) error {
 		return err
 	}
 
-	if _, err := stream.Recv(); err != nil && err != io.EOF {
+	if _, err := stream.Recv(); err != nil && !errors.Is(err, io.EOF) {
 		// Ignore "transport is closing" error if force (i.e immediately drop all connections) was used.
 		if force && status.Code(err) == codes.Unavailable {
 			return nil

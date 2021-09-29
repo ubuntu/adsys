@@ -44,7 +44,8 @@ func TestAppVersion(t *testing.T) {
 	orig := os.Stdout
 	os.Stdout = w
 
-	a.Run()
+	err = a.Run()
+	require.NoError(t, err, "Run should exit with no error")
 
 	os.Stdout = orig
 	w.Close()
@@ -61,7 +62,8 @@ func TestAppNoUsageError(t *testing.T) {
 	a := daemon.New()
 
 	defer changeArgs("adsysd", "completion", "bash")()
-	a.Run()
+	err := a.Run()
+	require.NoError(t, err, "Run should return no error")
 	isUsageError := a.UsageError()
 	require.False(t, isUsageError, "No usage error is reported as such")
 }
@@ -70,7 +72,8 @@ func TestAppUsageError(t *testing.T) {
 	a := daemon.New()
 
 	defer changeArgs("adsys", "doesnotexist")()
-	a.Run()
+	err := a.Run()
+	require.Error(t, err, "Run itself should return an error")
 	isUsageError := a.UsageError()
 	require.True(t, isUsageError, "Usage error is reported as such")
 }
@@ -100,10 +103,11 @@ func TestAppRunFailsOnDaemonCreationAndQuit(t *testing.T) {
 	// directory
 	prepareEnv(t)
 	socket := os.Getenv("ADSYS_SOCKET")
-	os.MkdirAll(socket, 0755)
+	err := os.MkdirAll(socket, 0755)
+	require.NoError(t, err, "Setup: can't create socket directory to make service fails")
 
 	a := daemon.New()
-	err := a.Run()
+	err = a.Run()
 	require.Error(t, err, "Run should exit with an error")
 	a.Quit()
 }
@@ -113,7 +117,7 @@ func TestAppRunFailsOnServiceCreationAndQuit(t *testing.T) {
 	// existing file
 	prepareEnv(t)
 	cachedir := os.Getenv("ADSYS_CACHE_DIR")
-	err := os.WriteFile(cachedir, []byte(""), 0644)
+	err := os.WriteFile(cachedir, []byte(""), 0600)
 	require.NoError(t, err, "Can't create cachedir file to make service fails")
 
 	a := daemon.New()
@@ -280,14 +284,14 @@ ad_domain: ldap://adc.example.com
 		filepath.Join(dir, "run"),
 		serviceTimeout))
 
-	err := os.WriteFile(configFile, data, 0700)
+	err := os.WriteFile(configFile, data, 0600)
 	require.NoError(t, err, "Setup: failed to write test config file")
 
 	return configFile
 }
 
 // startDaemon prepares and start the daemon in the background. The done function should be called
-// to wait for the daemon to stop
+// to wait for the daemon to stop.
 func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
 	t.Helper()
 

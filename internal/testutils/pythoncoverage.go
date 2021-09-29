@@ -2,7 +2,8 @@ package testutils
 
 import (
 	"bufio"
-	// blank embed import for python3-mock.in
+
+	// blank embed import for python3-mock.in.
 	_ "embed"
 	"fmt"
 	"os"
@@ -64,6 +65,7 @@ func PythonCoverageToGoFormat(t *testing.T, include string, commandOnStdin bool)
 exec python3-coverage run -a %s $@
 `, realBinaryPath))
 	}
+	// #nosec G306. We want this asset to be executable.
 	err = os.WriteFile(filepath.Join(tempdir, mockedFile), d, 0700)
 	require.NoError(t, err, "Setup: can’t create prefixed covered python mock")
 
@@ -137,7 +139,7 @@ exec python3-coverage run -a %s $@
 	return true
 }
 
-// fqdnToPath allows to return the fqdn path for this file relative to go.mod
+// fqdnToPath allows to return the fqdn path for this file relative to go.mod.
 func fqdnToPath(t *testing.T, path string) string {
 	t.Helper()
 

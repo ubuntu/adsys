@@ -194,7 +194,7 @@ func (s *Service) ListActiveUsers(r *adsys.Empty, stream adsys.Service_ListActiv
 	return nil
 }
 
-// nextRefreshTime returns next adsys schedule refresh call
+// nextRefreshTime returns next adsys schedule refresh call.
 func (s Service) nextRefreshTime() (next *time.Time, err error) {
 	defer decorate.OnError(&err, i18n.G("error while trying to determine next refresh time"))
 

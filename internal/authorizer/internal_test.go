@@ -119,13 +119,13 @@ func TestServerPeerCredsHandshake(t *testing.T) {
 		defer wg.Done()
 		unixAddr, err := net.ResolveUnixAddr("unix", socket)
 		if err != nil {
-			goroutineErr = fmt.Errorf("Couldn't resolve client socket address: %v", err)
+			goroutineErr = fmt.Errorf("Couldn't resolve client socket address: %w", err)
 			log.Print(goroutineErr)
 			return
 		}
 		conn, err := net.DialUnix("unix", nil, unixAddr)
 		if err != nil {
-			goroutineErr = fmt.Errorf("Couldn't contact unix socket: %v", err)
+			goroutineErr = fmt.Errorf("Couldn't contact unix socket: %w", err)
 			log.Print(goroutineErr)
 			return
 		}
@@ -164,7 +164,7 @@ func TestServerPeerCredsInvalidSocket(t *testing.T) {
 	t.Parallel()
 
 	s := serverPeerCreds{}
-	s.ServerHandshake(nil)
+	_, _, _ = s.ServerHandshake(nil)
 }
 
 func TestMain(m *testing.M) {

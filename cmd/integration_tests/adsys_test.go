@@ -78,7 +78,7 @@ func TestCommandsError(t *testing.T) {
 	time.Sleep(time.Second)
 	confFile := filepath.Join(dir, "adsys.yaml")
 	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
-socket: %s`, socket)), 0644)
+socket: %s`, socket)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
 	tests := map[string]struct {
@@ -121,66 +121,54 @@ func (server *timeoutOnVersionServer) Version(_ *adsys.Empty, s adsys.Service_Ve
 	return nil
 }
 
-func TestCommandsTimeout(t *testing.T) {
-	// We only implement one command to test the client timeout functionality
-	timeoutServer := timeoutOnVersionServer{callbackHandled: make(chan struct{})}
-	srv := grpc.NewServer(authorizer.WithUnixPeerCreds())
-	adsys.RegisterServiceServer(srv, &timeoutServer)
+func TestCommandsTimeouts(t *testing.T) {
+	tests := map[string]struct {
+		timeout     int
+		wantTimeout bool
+	}{
+		"Should timeout":  {timeout: 1, wantTimeout: true},
+		"0 is no timeout": {timeout: 0},
+	}
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			// We only implement one command to test the client timeout functionality
+			timeoutServer := timeoutOnVersionServer{callbackHandled: make(chan struct{})}
+			srv := grpc.NewServer(authorizer.WithUnixPeerCreds())
+			adsys.RegisterServiceServer(srv, &timeoutServer)
 
-	dir := t.TempDir()
-	socket := filepath.Join(dir, "socket")
-	go func() {
-		lis, err := net.Listen("unix", socket)
-		require.NoError(t, err, "Setup: Listen on unix socket failed")
-		err = srv.Serve(lis)
-		require.NoError(t, err, "Setup: Serving GRPC on unix socket failed")
-	}()
-	defer srv.Stop()
-	time.Sleep(time.Second)
-	confFile := filepath.Join(dir, "adsys.yaml")
-	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
+			dir := t.TempDir()
+			socket := filepath.Join(dir, "socket")
+			go func() {
+				lis, err := net.Listen("unix", socket)
+				require.NoError(t, err, "Setup: Listen on unix socket failed")
+				err = srv.Serve(lis)
+				require.NoError(t, err, "Setup: Serving GRPC on unix socket failed")
+			}()
+			defer srv.Stop()
+			time.Sleep(time.Second)
+			confFile := filepath.Join(dir, "adsys.yaml")
+			err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
 socket: %s
-client_timeout: 1`, socket)), 0644)
-	require.NoError(t, err, "Setup: config file should be created")
+client_timeout: %d`, socket, tc.timeout)), 0600)
+			require.NoError(t, err, "Setup: config file should be created")
 
-	_, err = runClient(t, confFile, "version")
-	require.Error(t, err, "command should fail due to timeout")
-
-	<-timeoutServer.callbackHandled
-	require.True(t, timeoutServer.clientCancelled, "server should have got timeout request")
-}
-
-func TestCommands0IsNoTimeout(t *testing.T) {
-	// We only implement one command to test the client timeout functionality
-	timeoutServer := timeoutOnVersionServer{callbackHandled: make(chan struct{})}
-	srv := grpc.NewServer(authorizer.WithUnixPeerCreds())
-	adsys.RegisterServiceServer(srv, &timeoutServer)
-
-	dir := t.TempDir()
-	socket := filepath.Join(dir, "socket")
-	go func() {
-		lis, err := net.Listen("unix", socket)
-		require.NoError(t, err, "Setup: Listen on unix socket failed")
-		err = srv.Serve(lis)
-		require.NoError(t, err, "Setup: Serving GRPC on unix socket failed")
-	}()
-	defer srv.Stop()
-	time.Sleep(time.Second)
-	confFile := filepath.Join(dir, "adsys.yaml")
-	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
-socket: %s
-client_timeout: 0`, socket)), 0644)
-	require.NoError(t, err, "Setup: config file should be created")
-
-	_, err = runClient(t, confFile, "version")
-	require.NoError(t, err, "command should not fail as there is no timeout")
-
-	<-timeoutServer.callbackHandled
-	require.False(t, timeoutServer.clientCancelled, "server should have not got a timeout request")
+			_, err = runClient(t, confFile, "version")
+			if tc.wantTimeout {
+				require.Error(t, err, "command should fail due to timeout")
+				<-timeoutServer.callbackHandled
+				require.True(t, timeoutServer.clientCancelled, "server should have got timeout request")
+			} else {
+				require.NoError(t, err, "command should not fail as there is no timeout")
+				<-timeoutServer.callbackHandled
+				require.False(t, timeoutServer.clientCancelled, "server should have not got a timeout request")
+			}
+		})
+	}
 }
 
 // createConf generates an adsys configuration in a temporary directory
-// It will use adsysDir for socket, cache and run dir if provided
+// It will use adsysDir for socket, cache and run dir if provided.
 func createConf(t *testing.T, adsysDir string) (conf string) {
 	t.Helper()
 
@@ -206,7 +194,7 @@ ad_domain: example.com
 # Those are more for tests
 dconf_dir: %s/dconf
 sss_cache_dir: %s/sss_cache
-`, dir, dir, dir, dir, dir)), 0644)
+`, dir, dir, dir, dir, dir)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0755), "Setup: should create dconf dir")
@@ -355,6 +343,7 @@ func runDaemons() (teardown func()) {
 				log.Fatalf("Setup: can’t create %s socket directory: %v", answer, err)
 			}
 
+			// #nosec G204: we control the name in tests
 			cmd := exec.Command("docker",
 				"run", "--rm", "--pid", "host",
 				"--name", containerName+answer,
@@ -389,6 +378,7 @@ func runDaemons() (teardown func()) {
 		}()
 
 		for answer := range answers {
+			// #nosec G204: we control the args in tests
 			out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
 			if err != nil {
 				log.Fatalf("Teardown: can’t stop system daemons container: %v", string(out))
@@ -465,13 +455,14 @@ func TestExecuteCommand(t *testing.T) {
 
 var testCmdName = os.Args[0]
 
-func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop func() error, err error) {
+func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop func(), err error) {
 	t.Helper()
 
 	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", testCmdName, "-test.run=TestExecuteCommand", "--"}
 	cmdArgs = append(cmdArgs, args...)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	// #nosec G204: this is only for tests, under controlled args
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 
 	var b bytes.Buffer
@@ -482,16 +473,15 @@ func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop 
 	if wait {
 		err := cmd.Wait()
 		cancel()
-		return func() string { return b.String() }, func() error { return nil }, err
+		return func() string { return b.String() }, func() {}, err
 	}
 
 	return func() string { return b.String() },
-		func() error {
+		func() {
 			if err := cmd.Process.Kill(); err != nil {
 				t.Fatal("Failed to kill process: ", err)
 			}
-			err := cmd.Wait()
+			_ = cmd.Wait()
 			cancel()
-			return err
 		}, err
 }

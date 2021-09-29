@@ -12,12 +12,12 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-// WithUnixPeerCreds returns the credentials of the caller
+// WithUnixPeerCreds returns the credentials of the caller.
 func WithUnixPeerCreds() grpc.ServerOption {
 	return grpc.Creds(serverPeerCreds{})
 }
 
-// serverPeerCreds encapsulates a TransportCredentials which extracts uid and pid of caller via Unix Socket SO_PEERCRED
+// serverPeerCreds encapsulates a TransportCredentials which extracts uid and pid of caller via Unix Socket SO_PEERCRED.
 type serverPeerCreds struct{}
 
 func (serverPeerCreds) ServerHandshake(conn net.Conn) (n net.Conn, c credentials.AuthInfo, err error) {

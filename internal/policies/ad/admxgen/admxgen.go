@@ -311,7 +311,7 @@ type policyForADMX struct {
 	ParentCategory string
 }
 
-// GetOrderedPolicyElements returns all the policy elements order by release in decreasing order
+// GetOrderedPolicyElements returns all the policy elements order by release in decreasing order.
 func (p policyForADMX) GetOrderedPolicyElements() []common.ExpandedPolicy {
 	var policies []common.ExpandedPolicy
 
@@ -339,7 +339,7 @@ func (p policyForADMX) GetOrderedPolicyElements() []common.ExpandedPolicy {
 	return policies
 }
 
-// Make a Regex to say we only want letters and numbers
+// Make a Regex to say we only want letters and numbers.
 var re = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 func (g generator) toID(key string, s ...string) string {

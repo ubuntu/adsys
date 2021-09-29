@@ -17,7 +17,7 @@ import (
 )
 
 // GetDoc returns a chapter documentation from server
-// If chapter is empty, all documentation documentation is outputted, with a separator between them
+// If chapter is empty, all documentation documentation is outputted, with a separator between them.
 func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while getting documentation"))
 
@@ -28,10 +28,9 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 	onlineDocURL := doc.GetPackageURL()
 
 	var out string
-	chapter := r.GetChapter()
 	docDir := doc.Dir
 	// Get all documentation, separate file names with special characters
-	if chapter == "" {
+	if chapter := r.GetChapter(); chapter == "" {
 		fs, err := docDir.ReadDir(".")
 		if err != nil {
 			return fmt.Errorf(i18n.G("could not list documentation directory: %v"), err)
@@ -79,7 +78,7 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 	return nil
 }
 
-// ListDoc returns a list of all documentation from server
+// ListDoc returns a list of all documentation from server.
 func (s *Service) ListDoc(r *adsys.ListDocRequest, stream adsys.Service_ListDocServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while listing documentation"))
 
@@ -128,7 +127,7 @@ func (s *Service) ListDoc(r *adsys.ListDocRequest, stream adsys.Service_ListDocS
 	return nil
 }
 
-// fileNameToDocumentChapter strips prefix (before first dash) and suffix of documentation files
+// fileNameToDocumentChapter strips prefix (before first dash) and suffix of documentation files.
 func fileNameToDocumentChapter(name string) string {
 	parts := strings.SplitN(name, "-", 2)
 	if len(parts) > 1 {
@@ -137,7 +136,7 @@ func fileNameToDocumentChapter(name string) string {
 	return strings.TrimSuffix(name, ".md")
 }
 
-// documentChapterToFileName returns the first file matching the name of a chapter
+// documentChapterToFileName returns the first file matching the name of a chapter.
 func documentChapterToFileName(dir embed.FS, chapter string) (string, error) {
 	fs, err := dir.ReadDir(".")
 	if err != nil {

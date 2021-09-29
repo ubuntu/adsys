@@ -16,7 +16,7 @@ var (
 	onceCovFile      sync.Once
 )
 
-// AddCoverageFile append cov to the list of file to merge when calling MergeCoverages
+// AddCoverageFile append cov to the list of file to merge when calling MergeCoverages.
 func AddCoverageFile(cov string) {
 	onceCovFile.Do(func() {
 		goCoverProfile = testCoverageFile()
@@ -24,7 +24,7 @@ func AddCoverageFile(cov string) {
 	coveragesToMerge = append(coveragesToMerge, cov)
 }
 
-// MergeCoverages append all coverage files marked for merging to main Go Cover Profile
+// MergeCoverages append all coverage files marked for merging to main Go Cover Profile.
 func MergeCoverages() {
 	for _, cov := range coveragesToMerge {
 		if err := appendToFile(cov, goCoverProfile); err != nil {
@@ -45,11 +45,11 @@ func testCoverageFile() string {
 	return ""
 }
 
-// appendToFile appends src to the dst coverprofile file at the end
+// appendToFile appends src to the dst coverprofile file at the end.
 func appendToFile(src, dst string) error {
 	f, err := os.Open(filepath.Clean(src))
 	if err != nil {
-		return fmt.Errorf("can't open python coverage file named: %v", err)
+		return fmt.Errorf("can't open python coverage file named: %w", err)
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
@@ -59,7 +59,7 @@ func appendToFile(src, dst string) error {
 
 	d, err := os.OpenFile(dst, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
-		return fmt.Errorf("can't open golang cover profile file: %v", err)
+		return fmt.Errorf("can't open golang cover profile file: %w", err)
 	}
 	defer func() {
 		if err := d.Close(); err != nil {
@@ -73,11 +73,11 @@ func appendToFile(src, dst string) error {
 			continue
 		}
 		if _, err := d.Write([]byte(scanner.Text() + "\n")); err != nil {
-			return fmt.Errorf("can't write to golang cover profile file: %v", err)
+			return fmt.Errorf("can't write to golang cover profile file: %w", err)
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error while scanning golang cover profile file: %v", err)
+		return fmt.Errorf("error while scanning golang cover profile file: %w", err)
 	}
 	return nil
 }

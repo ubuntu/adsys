@@ -144,7 +144,7 @@ func (a App) getPolicyDefinitions(format, distroID string) (err error) {
 	for {
 		r, err := stream.Recv()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 			return err
@@ -157,10 +157,10 @@ func (a App) getPolicyDefinitions(format, distroID string) (err error) {
 
 	admx, adml := fmt.Sprintf("%s.admx", distroID), fmt.Sprintf("%s.adml", distroID)
 	log.Infof(context.Background(), "Saving %s and %s", admx, adml)
-	if err := os.WriteFile(admx, []byte(admxContent), 0755); err != nil {
+	if err := os.WriteFile(admx, []byte(admxContent), 0600); err != nil {
 		return err
 	}
-	if err := os.WriteFile(adml, []byte(admlContent), 0755); err != nil {
+	if err := os.WriteFile(adml, []byte(admlContent), 0600); err != nil {
 		return err
 	}
 
@@ -183,7 +183,7 @@ func (a *App) dumpPolicies(target string, showDetails, showOverridden, nocolor b
 	if target == "" {
 		u, err := user.Current()
 		if err != nil {
-			return fmt.Errorf("failed to retrieve current user: %v", err)
+			return fmt.Errorf("failed to retrieve current user: %w", err)
 		}
 		target = u.Username
 	}
@@ -231,7 +231,7 @@ func (a *App) dumpGPOListScript() error {
 		return err
 	}
 
-	return os.WriteFile("adsys-gpolist", []byte(script), 0750)
+	return os.WriteFile("adsys-gpolist", []byte(script), 0600)
 }
 
 func colorizePolicies(policies string) (string, error) {
@@ -240,6 +240,8 @@ func colorizePolicies(policies string) (string, error) {
 
 	bold := color.New(color.Bold)
 	for _, l := range strings.Split(strings.TrimSpace(policies), "\n") {
+		//nolint: whitespace
+		// We prefer to have one blank line as separator.
 		if e := strings.TrimPrefix(l, "***"); e != l {
 			// Policy entry
 			prefix := strings.TrimSpace(strings.Split(e, " ")[0])
@@ -285,6 +287,7 @@ func colorizePolicies(policies string) (string, error) {
 			gpoName := e[:i]
 			gpoID := e[i:]
 			out.Println(fmt.Sprintf("- %s%s", color.MagentaString(gpoName), gpoID))
+
 		} else {
 			// Machine or user
 			if !first {
@@ -345,7 +348,7 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 	if target == "" && !updateAll {
 		u, err := user.Current()
 		if err != nil {
-			return fmt.Errorf("failed to retrieve current user: %v", err)
+			return fmt.Errorf("failed to retrieve current user: %w", err)
 		}
 		target = u.Username
 		krb5cc = strings.TrimPrefix(os.Getenv("KRB5CCNAME"), "FILE:")
@@ -360,7 +363,7 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 		return err
 	}
 
-	if _, err := stream.Recv(); err != nil && err != io.EOF {
+	if _, err := stream.Recv(); err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 

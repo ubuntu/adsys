@@ -219,28 +219,28 @@ func TestAdsysGPOList(t *testing.T) {
 				testutils.Setenv(t, "KRB5CCNAME", krb5ccname)
 			}
 
+			// #nosec G204: we control the command line name and only change it for tests
 			cmd := exec.Command(adsysGPOListcmd, "--objectclass", tc.objectClass, tc.url, tc.accountName)
 			got, err := cmd.CombinedOutput()
-			assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpostlist returns expected exit code")
 			if tc.wantErr {
 				require.Error(t, err, "adsys-gpostlist should have failed but didn’t")
 				return
 			}
 			require.NoErrorf(t, err, "adsys-gpostlist should exit successfully: %v", string(got))
+			assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpostlist returns expected exit code")
 
 			// check collected output between FormatGPO calls
 			goldPath := filepath.Join("testdata", "adsys-gpolist", "golden", name)
 			// Update golden file
 			if ad.Update {
 				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, got, 0644)
+				err = os.WriteFile(goldPath, got, 0600)
 				require.NoError(t, err, "Cannot write golden file")
 			}
 			want, err := os.ReadFile(goldPath)
 			require.NoError(t, err, "Cannot load policy golden file")
 
 			require.Equal(t, string(want), string(got), "adsys-gpolist expected output")
-
 		})
 	}
 }

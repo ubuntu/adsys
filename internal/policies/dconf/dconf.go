@@ -43,19 +43,19 @@ import (
 		 configuration for that setting.
 */
 
-// Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy
+// Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
 	dconfMu sync.RWMutex
 
 	dconfDir string
 }
 
-// NewWithDconfDir creates a manager with a specific dconf directory
+// NewWithDconfDir creates a manager with a specific dconf directory.
 func NewWithDconfDir(dir string) *Manager {
 	return &Manager{dconfDir: dir}
 }
 
-// ApplyPolicy generates a dconf computer or user policy based on a list of entries
+// ApplyPolicy generates a dconf computer or user policy based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't apply dconf policy to %s"), objectName)
 
@@ -226,7 +226,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 		if !os.IsNotExist(err) {
 			return err
 		}
-		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0644)
+		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0600)
 	}
 
 	// Read file to insert them at the end, removing duplicates
@@ -248,7 +248,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	}
 
 	// Otherwise, update the file.
-	if err := os.WriteFile(profilePath+".adsys.new", newContent, 0644); err != nil {
+	if err := os.WriteFile(profilePath+".adsys.new", newContent, 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {
@@ -267,7 +267,7 @@ func dconfNeedsUpdate(path string) bool {
 	return false
 }
 
-// normalizeValue simplify user entry by handling common mistakes on key types
+// normalizeValue simplify user entry by handling common mistakes on key types.
 func normalizeValue(keyType, value string) string {
 	value = strings.TrimSpace(value)
 	switch keyType {
@@ -304,7 +304,7 @@ func quoteValue(s string) string {
 // The following is accepted, is case insensitive and spaces are trimmed:
 // y|yes|n|no
 // true|false
-// on|On|ON|off
+// on|On|ON|off.
 func normalizeBoolean(v string) string {
 	lv := strings.ReplaceAll(strings.ReplaceAll(strings.TrimSpace(strings.ToLower(v)), `"`, ""), "'", "")
 	switch lv {
@@ -316,7 +316,7 @@ func normalizeBoolean(v string) string {
 	return v
 }
 
-// quoteASVariant returns a variant array of string properly quoted and separated
+// quoteASVariant returns a variant array of string properly quoted and separated.
 func quoteASVariant(v string) string {
 	v = strings.TrimRight(strings.TrimLeft(v, " ["), " ]")
 
@@ -358,7 +358,7 @@ func quoteASVariant(v string) string {
 	return fmt.Sprintf("[%s]", strings.Join(r, ", "))
 }
 
-// normalizeAIVariant returns a variant array of int with proper separator
+// normalizeAIVariant returns a variant array of int with proper separator.
 func normalizeAIVariant(v string) string {
 	v = strings.TrimRight(strings.TrimLeft(v, " ["), " ]")
 
@@ -399,7 +399,7 @@ func splitOnNonEscaped(v, sep string) []string {
 	return tokens
 }
 
-// checkSignature returns an error if the value doesn't match the expected variant signature
+// checkSignature returns an error if the value doesn't match the expected variant signature.
 func checkSignature(meta, value string) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while checking signature"))
 
