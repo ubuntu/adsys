@@ -6,7 +6,7 @@ on:
   pull_request:
 
 env:
-  goversion: '1.16'
+  goversion: '1.17'
 
 jobs:
   quality:
