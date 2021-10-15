@@ -23,6 +23,7 @@ linters:
     #- gosec
     - ifshort
     - misspell
+    - revive
     #- thelper
     #- tparallel
     #- unconvert
@@ -33,6 +34,7 @@ linters:
 
 # Get all linter issues, even if duplicated
 issues:
+  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
   fix: true # we want this in IDE.
