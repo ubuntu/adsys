@@ -37,7 +37,18 @@ issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude:
+  # EXC0001 errcheck: most errors are in defer calls, which are safe to ignore and idiomatic Go (would be good to only ignore defer ones though)
+  - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print(f|ln)?|os\.(Un)?Setenv). is not checked'
+  # EXC0008 gosec: duplicated of errcheck
+  - (G104|G307)
+  # EXC0010 gosec: False positive is triggered by 'src, err := ioutil.ReadFile(filename)'
+  - Potential file inclusion via variable
   fix: true # we want this in IDE.
+
+nolintlint:
+  require-explanation: true
+  require-specific: true
 
 linters-settings:
    # Forbid the usage of deprecated ioutil and debug prints
