@@ -703,7 +703,7 @@ func TestPolicyUpdate(t *testing.T) {
 			// Ticket creation for mock.
 			krb5dir := t.TempDir()
 			krb5ccDir := filepath.Join(adsysDir, "run", "krb5cc")
-			err := os.MkdirAll(krb5ccDir, 0755)
+			err := os.MkdirAll(krb5ccDir, 0750)
 			require.NoError(t, err, "Setup: could not create ticket directory")
 			if tc.krb5ccNamesState == nil {
 				tc.krb5ccNamesState = []krb5ccNamesWithState{
@@ -719,7 +719,7 @@ func TestPolicyUpdate(t *testing.T) {
 				krb5currentDir := krb5dir
 				if krb5.machine {
 					krb5currentDir = filepath.Join(adsysDir, "sss_cache")
-					err := os.MkdirAll(krb5currentDir, 0755)
+					err := os.MkdirAll(krb5currentDir, 0750)
 					require.NoError(t, err, "Setup: could not create machine sss cache")
 				}
 				if krb5.src != "" {

@@ -80,7 +80,7 @@ type Action struct {
 
 var (
 	// ActionAlwaysAllowed is a no-op bypassing any user or dbus checks.
-	ActionAlwaysAllowed Action = Action{ID: "always-allowed"}
+	ActionAlwaysAllowed = Action{ID: "always-allowed"}
 )
 
 type polkitCheckFlags uint32

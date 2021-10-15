@@ -54,6 +54,7 @@ func TestCleanDirectoryCantRemoveDirectory(t *testing.T) {
 	err = generators.CleanDirectory(d)
 	require.Error(t, err, "CleanDirectory should error out")
 
+	// nolint:gosec //false positive, this is a directory
 	err = os.Chmod(d, 0700)
 	require.NoError(t, err, "Teardown: chmod directory for cleanup")
 }

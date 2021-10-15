@@ -583,7 +583,7 @@ func TestGetPolicies(t *testing.T) {
 			if tc.turnKrb5CCRO {
 				require.NoError(t, os.Chmod(adc.Krb5CacheDir(), 0400), "Setup: can’t set krb5 origin cache directory read only")
 				defer func() {
-					if err := os.Chmod(adc.Krb5CacheDir(), 0700); err != nil {
+					if err := os.Chmod(adc.Krb5CacheDir(), 0600); err != nil {
 						t.Logf("Teardown: couldn’t restore permission on %s: %v", adc.Krb5CacheDir(), err)
 					}
 				}()

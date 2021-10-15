@@ -197,7 +197,7 @@ sss_cache_dir: %s/sss_cache
 `, dir, dir, dir, dir, dir)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0755), "Setup: should create dconf dir")
+	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0750), "Setup: should create dconf dir")
 
 	return confFile
 }
@@ -339,7 +339,7 @@ func runDaemons() (teardown func()) {
 		go func() {
 			defer wg.Done()
 
-			if err := os.MkdirAll(socketDir, 0755); err != nil {
+			if err := os.MkdirAll(socketDir, 0750); err != nil {
 				log.Fatalf("Setup: can’t create %s socket directory: %v", answer, err)
 			}
 
