@@ -123,7 +123,7 @@ func TestDumpPolicies(t *testing.T) {
 			m, err := policies.New(policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0755)
+			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
 			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
 
 			if tc.cacheUser != "" {
@@ -194,7 +194,7 @@ func TestApplyPolicy(t *testing.T) {
 				policies.WithDconfDir(dconfDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0755)
+			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
 			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
 
 			err = m.ApplyPolicy(context.Background(), "hostname", true, gpos)
@@ -244,7 +244,7 @@ func TestLastUpdateFor(t *testing.T) {
 			m, err := policies.New(policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0755)
+			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
 			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
 
 			start := time.Now()

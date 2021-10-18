@@ -103,7 +103,7 @@ func TestAppRunFailsOnDaemonCreationAndQuit(t *testing.T) {
 	// directory
 	prepareEnv(t)
 	socket := os.Getenv("ADSYS_SOCKET")
-	err := os.MkdirAll(socket, 0755)
+	err := os.MkdirAll(socket, 0750)
 	require.NoError(t, err, "Setup: can't create socket directory to make service fails")
 
 	a := daemon.New()
