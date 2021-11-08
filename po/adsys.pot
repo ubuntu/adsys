@@ -84,7 +84,7 @@ msgstr ""
 msgid "%s: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:267
+#: cmd/adsysd/client/policy.go:269
 #, c-format
 msgid "%s: Locked to system default"
 msgstr ""
@@ -110,7 +110,7 @@ msgstr ""
 msgid "- Default: %s"
 msgstr ""
 
-#: internal/adsysservice/doc.go:111
+#: internal/adsysservice/doc.go:110
 msgid "- can't read content -"
 msgstr ""
 
@@ -262,11 +262,11 @@ msgstr ""
 msgid "Print last applied GPOs for current or given user/machine"
 msgstr ""
 
-#: cmd/adsysd/client/service.go:27
+#: cmd/adsysd/client/service.go:28
 msgid "Print service logs"
 msgstr ""
 
-#: cmd/adsysd/client/service.go:36
+#: cmd/adsysd/client/service.go:37
 msgid "Print service status"
 msgstr ""
 
@@ -278,7 +278,7 @@ msgstr ""
 msgid "Ready state sent to systemd"
 msgstr ""
 
-#: cmd/adsysd/client/service.go:46
+#: cmd/adsysd/client/service.go:47
 msgid "Requests to stop the service once all connections are done"
 msgstr ""
 
@@ -290,7 +290,7 @@ msgstr ""
 msgid "Returns version of service and exits"
 msgstr ""
 
-#: cmd/adsysd/client/service.go:19
+#: cmd/adsysd/client/service.go:20
 msgid "Service management"
 msgstr ""
 
@@ -403,11 +403,6 @@ msgstr ""
 msgid "can't determine start time of client process"
 msgstr ""
 
-#: internal/grpc/unixsocket/unixsocket.go:14
-#, c-format
-msgid "can't dial to %s"
-msgstr ""
-
 #: internal/policies/ad/download.go:102
 msgid "can't download GPO %q"
 msgstr ""
@@ -470,7 +465,7 @@ msgstr ""
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:44
+#: internal/policies/ad/registry/registry.go:46
 msgid "can't parse policy"
 msgstr ""
 
@@ -539,12 +534,12 @@ msgid "could not find chapter starting with %s"
 msgstr ""
 
 #: cmd/integration_tests/adsysctl_doc_test.go:211
-#: internal/adsysservice/doc.go:37 internal/adsysservice/doc.go:92
-#: internal/adsysservice/doc.go:144
+#: internal/adsysservice/doc.go:36 internal/adsysservice/doc.go:91
+#: internal/adsysservice/doc.go:143
 msgid "could not list documentation directory: %v"
 msgstr ""
 
-#: internal/adsysservice/doc.go:68
+#: internal/adsysservice/doc.go:67
 msgid "could not read chapter %q: %v"
 msgstr ""
 
@@ -610,11 +605,11 @@ msgstr ""
 msgid "error while checking signature"
 msgstr ""
 
-#: internal/adsysservice/policy.go:85
+#: internal/adsysservice/policy.go:84
 msgid "error while displaying applied policies"
 msgstr ""
 
-#: internal/adsysservice/policy.go:119
+#: internal/adsysservice/policy.go:118
 msgid "error while dumping policy definitions"
 msgstr ""
 
@@ -630,11 +625,11 @@ msgstr ""
 msgid "error while getting documentation"
 msgstr ""
 
-#: internal/adsysservice/policy.go:142
+#: internal/adsysservice/policy.go:141
 msgid "error while getting gpo list script"
 msgstr ""
 
-#: internal/adsysservice/doc.go:84
+#: internal/adsysservice/doc.go:83
 msgid "error while listing documentation"
 msgstr ""
 
@@ -721,7 +716,7 @@ msgid ""
 "%s"
 msgstr ""
 
-#: cmd/adsysd/client/service.go:51
+#: cmd/adsysd/client/service.go:52
 msgid "force will shut it down immediately and drop existing connections."
 msgstr ""
 
@@ -733,7 +728,7 @@ msgstr ""
 msgid "invalid class %q"
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:79
+#: internal/policies/ad/registry/registry.go:81
 msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
@@ -751,7 +746,7 @@ msgstr ""
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:141
+#: internal/policies/ad/registry/registry.go:143
 msgid "invalid policy"
 msgstr ""
 
@@ -773,7 +768,7 @@ msgstr ""
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:319
+#: cmd/adsysd/client/policy.go:322
 msgid "machine or user arguments cannot be used with update all"
 msgstr ""
 
@@ -803,11 +798,11 @@ msgstr ""
 msgid "no boot system time found"
 msgstr ""
 
-#: internal/adsysservice/doc.go:62
+#: internal/adsysservice/doc.go:61
 msgid "no chapter %q found in documentation"
 msgstr ""
 
-#: internal/adsysservice/doc.go:168
+#: internal/adsysservice/doc.go:167
 msgid "no file found matching chapter %q"
 msgstr ""
 
@@ -908,7 +903,7 @@ msgstr ""
 msgid "use a specific configuration file"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:322
+#: cmd/adsysd/client/policy.go:325
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
