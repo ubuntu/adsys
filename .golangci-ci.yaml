@@ -28,6 +28,10 @@ linters:
     - whitespace
     ##- wrapcheck # To think properly about it
 
+run:
+  # Most of the time, it’s taking less than 20s, but some builders are slower, so takes 2m
+  timeout: 2m
+
 # Get all linter issues, even if duplicated
 issues:
   exclude-use-default: false
