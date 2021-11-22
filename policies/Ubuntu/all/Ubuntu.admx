@@ -1203,14 +1203,9 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\wm\keybindings\panel-main-menu" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"21.04":{"empty":"[]","meta":"as"},"21.10":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"21.04":{"empty":"[]","meta":"as"},"21.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" valueName="all" />
-        <boolean id="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" valueName="Override22.04">
-          <trueValue><string>true</string></trueValue>
-          <falseValue><string>false</string></falseValue>
-        </boolean>
-        <multiText id="UbuntuElemUser2204DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" valueName="22.04" />
         <boolean id="UbuntuOverrideElemUser2110DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" valueName="Override21.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
