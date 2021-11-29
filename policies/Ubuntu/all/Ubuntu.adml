@@ -20,11 +20,14 @@
       <string id="UbuntuDisplayLoginScreen">Login Screen</string>
       <string id="UbuntuDisplayAuthentication">Authentication</string>
       <string id="UbuntuDisplayInterface">Interface</string>
+      <string id="UbuntuDisplayClientManagement">Client management</string>
+      <string id="UbuntuDisplayPrivilegeAuthorization">Privilege Authorization</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
 
 - Type: dconf
 - Key: /org/gnome/desktop/interface/toolkit-accessibility
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -38,6 +41,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/a11y/applications/screen-keyboard-enabled
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -51,6 +55,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/a11y/applications/screen-magnifier-enabled
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -64,6 +69,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/a11y/applications/screen-reader-enabled
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -77,6 +83,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/background/picture-uri
 - Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -90,6 +97,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/background/picture-options
 - Default: &#39;zoom&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -141,6 +149,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Default for 21.04: [ &#39;ubiquity.desktop&#39;, &#39;firefox.desktop&#39;, &#39;thunderbird.desktop&#39;, &#39;org.gnome.Nautilus.desktop&#39;, &#39;rhythmbox.desktop&#39;, &#39;libreoffice-writer.desktop&#39;, &#39;snap-store_ubuntu-software.desktop&#39;, &#39;yelp.desktop&#39; ]
 - Default for 21.10: [ &#39;ubuntu-desktop-installer_ubuntu-desktop-installer.desktop&#39;, &#39;ubiquity.desktop&#39;, &#39;firefox_firefox.desktop&#39;, &#39;thunderbird.desktop&#39;, &#39;org.gnome.Nautilus.desktop&#39;, &#39;rhythmbox.desktop&#39;, &#39;libreoffice-writer.desktop&#39;, &#39;snap-store_ubuntu-software.desktop&#39;, &#39;yelp.desktop&#39; ]
 - Default for 22.04: [ &#39;ubuntu-desktop-installer_ubuntu-desktop-installer.desktop&#39;, &#39;ubiquity.desktop&#39;, &#39;firefox_firefox.desktop&#39;, &#39;thunderbird.desktop&#39;, &#39;org.gnome.Nautilus.desktop&#39;, &#39;rhythmbox.desktop&#39;, &#39;libreoffice-writer.desktop&#39;, &#39;snap-store_ubuntu-software.desktop&#39;, &#39;yelp.desktop&#39; ]
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -154,6 +163,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/background/show-desktop-icons
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -167,6 +177,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/shell/extensions/dash-to-dock/show-show-apps-button
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -180,6 +191,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/interface/clock-format
 - Default: &#39;24h&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -203,6 +215,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/interface/clock-show-date
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -216,6 +229,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/interface/clock-show-weekday
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -229,6 +243,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/notifications/show-banners
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -242,6 +257,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/disable-command-line
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -255,6 +271,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/disable-log-out
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -268,6 +285,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/disable-user-switching
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -281,6 +299,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/disable-printing
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -294,6 +313,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/disable-print-setup
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -307,6 +327,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/disable-save-to-disk
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -320,6 +341,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/user-administration-disabled
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -333,6 +355,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/settings-daemon/plugins/media-keys/control-center
 - Default: [&#39;&#39;]
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -346,6 +369,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/settings-daemon/plugins/media-keys/terminal
 - Default: [&#39;&lt;Primary&gt;&lt;Alt&gt;t&#39;]
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -359,6 +383,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/shell/keybindings/toggle-overview
 - Default: [&#34;&lt;Super&gt;s&#34;]
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -372,6 +397,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/shell/keybindings/toggle-application-view
 - Default: [&#34;&lt;Super&gt;a&#34;]
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -385,11 +411,12 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/wm/keybindings/panel-main-menu
 - Default: [&#39;&lt;Alt&gt;F1&#39;]
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
-      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
-      <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">DEPRECATED: This key is deprecated and ignored.</string>
+      <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">DEPRECATED: This key is deprecated and ignored.</string>
       <string id="UbuntuDisplayUser2110DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
@@ -398,6 +425,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/mutter/overlay-key
 - Default: &#39;Super_L&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -411,6 +439,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/screensaver/picture-uri
 - Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -424,6 +453,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/screensaver/picture-options
 - Default: &#39;zoom&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -472,6 +502,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/notifications/show-in-lock-screen
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -485,6 +516,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/disable-lock-screen
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -498,6 +530,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/media-handling/automount
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -511,6 +544,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/disable-restart-buttons
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -524,6 +558,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/notifications/show-in-lock-screen
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -537,6 +572,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/notifications/show-banners
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -550,6 +586,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/interface/toolkit-accessibility
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -563,6 +600,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/disable-user-list
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -576,6 +614,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/enable-password-authentication
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -589,6 +628,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/enable-fingerprint-authentication
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -602,6 +642,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/enable-smartcard-authentication
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -615,6 +656,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/allowed-failures
 - Default: 3
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -628,6 +670,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/interface/clock-format
 - Default: &#39;24h&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -651,6 +694,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/interface/clock-show-date
 - Default: true
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -664,6 +708,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/desktop/interface/clock-show-weekday
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -677,6 +722,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/banner-message-enable
 - Default: false
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -690,6 +736,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/banner-message-text
 - Default: &#39;&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -703,6 +750,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /org/gnome/login-screen/logo
 - Default: &#39;/usr/share/plymouth/ubuntu-logo.png&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -716,6 +764,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /com/ubuntu/login-screen/background-color
 - Default: &#39;&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -729,6 +778,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /com/ubuntu/login-screen/background-picture-uri
 - Default: &#39;&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -742,6 +792,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /com/ubuntu/login-screen/background-repeat
 - Default: &#39;default&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -790,6 +841,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Type: dconf
 - Key: /com/ubuntu/login-screen/background-size
 - Default: &#39;default&#39;
+
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
 Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
@@ -818,6 +870,33 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
       <string id="UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize1">auto</string>
       <string id="UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize2">cover</string>
       <string id="UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize3">contain</string>
+      <string id="UbuntuExplainTextMachinePrivilegeClientAdmins">Define users and groups from AD allowed to administer client machines.
+It must be of the form user@domain or %group@domain. One per line.
+
+
+- Type: privilege
+- Key: /client-admins
+
+Note: -
+ * Enabled: This allows defining Active Directory groups and users with administrative privileges in the box entry.
+ * Disabled: This disallows any Active Directory group or user to become an administrator of the client even if it is defined in a parent GPO of the hierarchy tree.
+
+
+</string>
+      <string id="UbuntuDisplayMachineAllPrivilegeClientAdmins">Client administrators</string>
+      <string id="UbuntuExplainTextMachinePrivilegeAllowLocalAdmins">This allows or prevents client machine to have local users gaining administrators privilege on the machine.
+
+
+- Type: privilege
+- Key: /allow-local-admins
+
+Note: -
+ * Enabled: This leaves the default rules for the “sudo” and “admin” rule intact.
+ * Disabled: This denies root privileges to the predefined administrator groups (sudo and admin).
+
+
+</string>
+      <string id="UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins">Allow local administrators</string>
     </stringTable>
 
     <presentationTable>
@@ -1222,7 +1301,7 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
         <multiTextBox refId="UbuntuElemUser2004DconfOrgGnomeShellKeybindingsToggleApplicationView" defaultHeight="5" />
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">
-        <text>Show the activities overview</text>
+        <text>DEPRECATED: This key is deprecated and ignored.</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultChecked="false">Override value for 22.04:</checkBox>
@@ -1705,6 +1784,12 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize" defaultChecked="false">Override value for 20.04:</checkBox>
         <dropdownList refId="UbuntuElemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize" noSort="true" defaultItem="0"></dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachinePrivilegeClientAdmins">
+        <text>Client administrators</text>
+        <multiTextBox refId="UbuntuElemMachineAllPrivilegeClientAdmins" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationMachinePrivilegeAllowLocalAdmins">
       </presentation>
     </presentationTable>
 
