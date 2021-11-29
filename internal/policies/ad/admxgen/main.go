@@ -137,7 +137,11 @@ func expand(src, dst, root, currentSession string) error {
 				}
 				expandedPoliciesStream <- ep
 			default:
-				return fmt.Errorf("unsupported policy type: %s", t)
+				var policies []common.ExpandedPolicy
+				if err = yaml.Unmarshal(data, &policies); err != nil {
+					return err
+				}
+				expandedPoliciesStream <- policies
 			}
 
 			return nil
