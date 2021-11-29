@@ -143,6 +143,9 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"double":               {},
 		"double with range":    {},
 
+		// No type on children means no children elements
+		"no children elements": {},
+
 		// Multiple releases
 		"multiple releases for one key":                             {},
 		"multiple releases with different widgettype":               {},

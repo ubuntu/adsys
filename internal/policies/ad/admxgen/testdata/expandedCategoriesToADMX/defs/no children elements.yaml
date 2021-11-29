@@ -1,0 +1,23 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-no-options
+    explaintext: |-
+      description
+
+      - Type: privilege
+      - Key: /no-options
+
+    meta: '{"all":{"empty":"''''","meta":""}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /no-options
+        displayname: summary
+        explaintext: description
+        meta:
+          empty: ''''''
+          meta: "s"
+        default: ""
+        release: "all"
+        type: privilege
