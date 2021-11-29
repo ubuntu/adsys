@@ -103,3 +103,12 @@ categories:
             - "/com/ubuntu/login-screen/background-picture-uri"
             - "/com/ubuntu/login-screen/background-repeat"
             - "/com/ubuntu/login-screen/background-size"
+
+    - displayname: "Client management"
+      defaultpolicyclass: "Machine"
+      children:
+      - displayname: "Privilege Authorization"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/client-admins"
+          - "/allow-local-admins"
