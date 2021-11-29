@@ -23,5 +23,6 @@
           meta: "ai"
           empty: "[]"
         default: '[1, 2]'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "20.04"
         type: dconf

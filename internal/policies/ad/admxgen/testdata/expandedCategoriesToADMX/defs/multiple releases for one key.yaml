@@ -23,6 +23,7 @@
           meta: "s"
           empty: ''''''
         default: '''Default Value'''
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "20.04"
         type: dconf
       "20.04":
@@ -34,6 +35,7 @@
           meta: "s"
           empty: ''''''
         default: '''Default Value'''
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "20.04"
         type: dconf
       "18.04":
@@ -45,5 +47,6 @@
           meta: "s"
           empty: ''''''
         default: '''Default Value'''
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "18.04"
         type: dconf

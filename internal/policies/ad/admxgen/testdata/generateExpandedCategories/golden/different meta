@@ -8,6 +8,7 @@
         - Type: dconf
         - Key: /org/gnome/desktop/policy-common
         - Default: 'Default Value common'
+
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
         Supported on Ubuntu 20.04, 21.10
@@ -23,6 +24,7 @@
                 empty: ''''''
                 meta: s
             default: '''Default Value common'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             release: "20.04"
             type: dconf
         "21.10":
@@ -34,6 +36,7 @@
                 empty: '[]'
                 meta: as
             default: '''Default Value common'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             release: "21.10"
             type: dconf
         all:
@@ -45,5 +48,6 @@
                 empty: '[]'
                 meta: as
             default: '''Default Value common'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             release: "21.10"
             type: dconf

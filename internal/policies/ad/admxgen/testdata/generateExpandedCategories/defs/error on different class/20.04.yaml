@@ -7,5 +7,6 @@
     empty: ''''''
   class: "class-20.04"
   default: '''Default Value common'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   release: "20.04"
   type: "dconf"

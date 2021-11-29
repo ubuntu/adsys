@@ -23,5 +23,6 @@
           empty: "0"
           meta: u
         default: "123.456"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "20.04"
         type: dconf
