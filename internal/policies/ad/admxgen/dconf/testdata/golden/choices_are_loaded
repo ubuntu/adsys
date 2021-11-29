@@ -6,6 +6,7 @@
     empty: ''''''
     meta: s
   default: '''choice 2'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   choices:
     - choice 1
     - choice 2
