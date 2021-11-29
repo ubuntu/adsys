@@ -322,6 +322,19 @@ type policyForADMX struct {
 	ParentCategory string
 }
 
+// HasOptions returns if any policy element has an element type, and so, we need to show an option.
+func (p policyForADMX) HasOptions() bool {
+	var hasElementType bool
+	for _, ep := range p.ReleasesElements {
+		if ep.ElementType == "" {
+			continue
+		}
+		hasElementType = true
+	}
+
+	return hasElementType
+}
+
 // GetOrderedPolicyElements returns all the policy elements order by release in decreasing order.
 func (p policyForADMX) GetOrderedPolicyElements() []common.ExpandedPolicy {
 	var policies []common.ExpandedPolicy
