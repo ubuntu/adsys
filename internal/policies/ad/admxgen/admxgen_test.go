@@ -34,8 +34,9 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"different defaults":            {},
 		"available on one release only": {},
 		// last one wins
-		"different explain text": {},
-		"different display name": {},
+		"different explain text":     {},
+		"different display name":     {},
+		"applicable to all releases": {},
 
 		// Cases with multiple categories
 		"nested categories":                                              {},
