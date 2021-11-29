@@ -126,9 +126,15 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		first := true
 		for _, release := range g.supportedReleases {
 			p, ok := indexedPolicies[key][release]
-			// if it doesn’t exist for this release, skip
 			if !ok {
-				continue
+				// is it a release-specific-less key?
+				p, ok = indexedPolicies[key][""]
+				// it doesn’t exist for this release and is release specific, skip
+				if !ok {
+					continue
+				}
+				// consider it for the "all" release
+				release = "all"
 			}
 
 			// we have one policy at least on this release
@@ -148,7 +154,9 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 
 			metas[release] = p.Meta
 			if supportedOn == "" {
-				supportedOn = fmt.Sprintf(i18n.G("Supported on %s %s"), g.distroID, release)
+				if release != "all" {
+					supportedOn = fmt.Sprintf(i18n.G("Supported on %s %s"), g.distroID, release)
+				}
 			} else {
 				supportedOn = fmt.Sprintf("%s, %s", supportedOn, release)
 			}
