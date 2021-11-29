@@ -46,6 +46,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"with prefix": {},
 
 		// Optional content
+		"no note": {},
 		"range":   {},
 		"choices": {},
 
