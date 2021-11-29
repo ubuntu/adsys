@@ -198,7 +198,9 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			explainText = fmt.Sprintf("%s\n%s", explainText, fmt.Sprintf(i18n.G("- Default: %s"), defaultString))
 		}
 
-		explainText = fmt.Sprintf(i18n.G("%s\nNote: default system value is used for \"Not Configured\" and enforced if \"Disabled\"."), explainText)
+		if releasesElements["all"].Note != "" {
+			explainText = fmt.Sprintf(i18n.G("%s\n\nNote: %s"), explainText, releasesElements["all"].Note)
+		}
 		explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
 
 		// prepare meta for the whole policy
