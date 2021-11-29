@@ -34,8 +34,9 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"different defaults":            {},
 		"available on one release only": {},
 		// last one wins
-		"different explain text": {},
-		"different display name": {},
+		"different explain text":     {},
+		"different display name":     {},
+		"applicable to all releases": {},
 
 		// Cases with multiple categories
 		"nested categories":                                              {},
@@ -46,8 +47,10 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"with prefix": {},
 
 		// Optional content
-		"range":   {},
-		"choices": {},
+		"no defaults": {},
+		"no note":     {},
+		"range":       {},
+		"choices":     {},
 
 		"default policy class is capitalized": {},
 
@@ -140,6 +143,9 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"double":               {},
 		"double with range":    {},
 
+		// No type on children means no children elements
+		"no children elements": {},
+
 		// Multiple releases
 		"multiple releases for one key":                             {},
 		"multiple releases with different widgettype":               {},
@@ -208,7 +214,8 @@ func TestMainExpand(t *testing.T) {
 
 		wantErr bool
 	}{
-		"dconf": {root: "simple"},
+		"dconf":           {root: "simple"},
+		"expanded policy": {root: "simple"},
 
 		"ignore categories and non yaml files": {root: "simple"},
 

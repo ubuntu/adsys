@@ -25,6 +25,7 @@
           meta: "s"
           empty: ''''''
         default: 'Choice 3'
+        note: default system value is used  for "Not Configured" and enforced if "Disabled".
         release: "20.04"
         type: dconf
         choices:
@@ -41,6 +42,7 @@
           meta: "s"
           empty: ''''''
         default: 'Choice 3'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "20.04"
         type: dconf
         choices:
@@ -57,6 +59,7 @@
           meta: "s"
           empty: ''''''
         default: 'Choice 2'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "18.04"
         type: dconf
         choices:
@@ -73,6 +76,7 @@
           meta: "s"
           empty: ''''''
         default: 'Unmatched default'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "16.04"
         type: dconf
         choices:

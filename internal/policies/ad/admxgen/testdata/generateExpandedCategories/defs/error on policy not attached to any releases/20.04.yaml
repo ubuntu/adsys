@@ -7,6 +7,7 @@
     empty: ''''''
   class: ""
   default: '''Default Value'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   release: "20.04"
   type: "dconf"
 - key: /org/gnome/desktop/policy-not-attached
@@ -18,5 +19,6 @@
     empty: ''''''
   class: ""
   default: '''Default Value'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   release: "other-release"
   type: "dconf"

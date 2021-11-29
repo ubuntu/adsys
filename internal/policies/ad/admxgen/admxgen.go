@@ -126,9 +126,15 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		first := true
 		for _, release := range g.supportedReleases {
 			p, ok := indexedPolicies[key][release]
-			// if it doesn’t exist for this release, skip
 			if !ok {
-				continue
+				// is it a release-specific-less key?
+				p, ok = indexedPolicies[key][""]
+				// it doesn’t exist for this release and is release specific, skip
+				if !ok {
+					continue
+				}
+				// consider it for the "all" release
+				release = "all"
 			}
 
 			// we have one policy at least on this release
@@ -148,7 +154,9 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 
 			metas[release] = p.Meta
 			if supportedOn == "" {
-				supportedOn = fmt.Sprintf(i18n.G("Supported on %s %s"), g.distroID, release)
+				if release != "all" {
+					supportedOn = fmt.Sprintf(i18n.G("Supported on %s %s"), g.distroID, release)
+				}
 			} else {
 				supportedOn = fmt.Sprintf("%s, %s", supportedOn, release)
 			}
@@ -194,11 +202,14 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		// defaultVal is already ordered per release as we iterated previously
 		if differentDefaultsBetweenReleases {
 			explainText = fmt.Sprintf("%s\n%s", explainText, strings.Join(defaults, "\n"))
-		} else {
+		} else if defaultString != "" {
+			// All defaults are the same and not empty
 			explainText = fmt.Sprintf("%s\n%s", explainText, fmt.Sprintf(i18n.G("- Default: %s"), defaultString))
 		}
 
-		explainText = fmt.Sprintf(i18n.G("%s\nNote: default system value is used for \"Not Configured\" and enforced if \"Disabled\"."), explainText)
+		if releasesElements["all"].Note != "" {
+			explainText = fmt.Sprintf(i18n.G("%s\n\nNote: %s"), explainText, releasesElements["all"].Note)
+		}
 		explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
 
 		// prepare meta for the whole policy
@@ -309,6 +320,19 @@ type categoryForADMX struct {
 type policyForADMX struct {
 	mergedPolicy
 	ParentCategory string
+}
+
+// HasOptions returns if any policy element has an element type, and so, we need to show an option.
+func (p policyForADMX) HasOptions() bool {
+	var hasElementType bool
+	for _, ep := range p.ReleasesElements {
+		if ep.ElementType == "" {
+			continue
+		}
+		hasElementType = true
+	}
+
+	return hasElementType
 }
 
 // GetOrderedPolicyElements returns all the policy elements order by release in decreasing order.

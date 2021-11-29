@@ -41,6 +41,7 @@ type ExpandedPolicy struct {
 	Meta        map[string]string
 	Class       string `yaml:",omitempty"`
 	Default     string
+	Note        string `yaml:",omitempty"`
 
 	// optional
 	Choices []string `yaml:",omitempty"`

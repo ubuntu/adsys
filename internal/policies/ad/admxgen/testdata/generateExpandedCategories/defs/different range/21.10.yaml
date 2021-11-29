@@ -7,6 +7,7 @@
     empty: "0"
   class: ""
   default: '''Default Value'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   rangevalues:
     min: "234"
     max: "456"

@@ -8,6 +8,7 @@
         - Type: dconf
         - Key: /org/gnome/desktop/policy-common
         - Default: 'Default Value'
+
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
         Supported on Ubuntu 20.04, 21.10
@@ -23,6 +24,7 @@
                 empty: "0"
                 meta: i
             default: '''Default Value'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             rangevalues:
                 min: "-123"
                 max: "456"
@@ -37,6 +39,7 @@
                 empty: "0"
                 meta: i
             default: '''Default Value'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             rangevalues:
                 min: "234"
                 max: "456"
@@ -51,6 +54,7 @@
                 empty: "0"
                 meta: i
             default: '''Default Value'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             rangevalues:
                 min: "234"
                 max: "456"

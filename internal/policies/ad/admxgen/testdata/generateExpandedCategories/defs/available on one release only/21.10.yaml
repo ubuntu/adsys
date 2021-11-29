@@ -7,6 +7,7 @@
     empty: ''''''
   class: ""
   default: '''Default Value common'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   release: "21.10"
   type: "dconf"
 
@@ -19,5 +20,6 @@
     empty: ''''''
   class: ""
   default: '''Default Value policy-only-21.10'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   release: "21.10"
   type: "dconf"

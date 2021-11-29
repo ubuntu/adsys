@@ -6,6 +6,7 @@
     empty: ''''''
     meta: s
   default: '''up'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   choices:
     - left
     - right

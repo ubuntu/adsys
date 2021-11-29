@@ -9,6 +9,7 @@
         - Key: /org/gnome/desktop/policy-choices
         - Default for 20.04: unmatched default
         - Default for 21.10: choice 2
+
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
         Supported on Ubuntu 20.04, 21.10
@@ -24,6 +25,7 @@
                 empty: ''''''
                 meta: s
             default: unmatched default
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             choices:
                 - choice 1
                 - choice 2
@@ -40,6 +42,7 @@
                 empty: ''''''
                 meta: s
             default: choice 2
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             choices:
                 - choice 1
                 - choice 2
@@ -55,6 +58,7 @@
                 empty: ''''''
                 meta: s
             default: choice 2
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
             choices:
                 - choice 1
                 - choice 2

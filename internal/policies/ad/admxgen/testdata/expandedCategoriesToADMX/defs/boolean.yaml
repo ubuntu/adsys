@@ -23,5 +23,6 @@
           meta: "b"
           empty: "false"
         default: 'true'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         release: "20.04"
         type: dconf

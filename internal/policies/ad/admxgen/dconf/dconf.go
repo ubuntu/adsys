@@ -121,6 +121,7 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			Class:       class,
 			Release:     release,
 			Default:     defaultVal,
+			Note:        i18n.G(`default system value is used for "Not Configured" and enforced if "Disabled".`),
 			Type:        "dconf",
 			RangeValues: s.RangeValues,
 			Choices:     s.Choices,

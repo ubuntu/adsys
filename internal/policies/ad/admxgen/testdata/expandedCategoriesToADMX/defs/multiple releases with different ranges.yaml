@@ -25,6 +25,7 @@
           empty: "0"
           meta: "i"
         default: "20"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         rangevalues:
           min: "-20.000000"
           max: "20.000000"
@@ -39,6 +40,7 @@
           empty: "0"
           meta: "i"
         default: "20"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         rangevalues:
           min: "-20.000000"
           max: "20.000000"
@@ -53,6 +55,7 @@
           empty: "0"
           meta: "i"
         default: "18"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         rangevalues:
           min: "-18.000000"
           max: "18.000000"

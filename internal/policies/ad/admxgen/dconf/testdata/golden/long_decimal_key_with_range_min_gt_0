@@ -6,6 +6,7 @@
     empty: "0"
     meta: u
   default: "42"
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   rangevalues:
     min: "5"
   release: "20.04"

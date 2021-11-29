@@ -1,0 +1,11 @@
+- key: /org/gnome/desktop/policy-no-defaults
+  displayname: summary
+  explaintext: description
+  elementtype: text
+  meta:
+    meta: "s"
+    empty: ''''''
+  class: ""
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: "dconf"

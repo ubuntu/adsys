@@ -7,5 +7,6 @@
     empty: ''''''
   class: "class-21.10"
   default: '''Default Value common'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
   release: "21.10"
   type: "dconf"

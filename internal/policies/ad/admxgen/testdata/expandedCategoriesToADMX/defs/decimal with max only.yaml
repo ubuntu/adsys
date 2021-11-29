@@ -23,6 +23,7 @@
           empty: "0"
           meta: i
         default: "42"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
         rangevalues:
           max: "15000.000000"
         release: "20.04"
