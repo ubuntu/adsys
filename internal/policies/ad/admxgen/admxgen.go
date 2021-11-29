@@ -202,7 +202,8 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		// defaultVal is already ordered per release as we iterated previously
 		if differentDefaultsBetweenReleases {
 			explainText = fmt.Sprintf("%s\n%s", explainText, strings.Join(defaults, "\n"))
-		} else {
+		} else if defaultString != "" {
+			// All defaults are the same and not empty
 			explainText = fmt.Sprintf("%s\n%s", explainText, fmt.Sprintf(i18n.G("- Default: %s"), defaultString))
 		}
 
