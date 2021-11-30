@@ -114,6 +114,16 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		unattachedPolicies[p.Key] = struct{}{}
 	}
 
+	// Check that configuration is correct: all policies have a release or all are empty
+	for _, p := range indexedPolicies {
+		if _, ok := p[""]; !ok {
+			continue
+		}
+		if len(p) > 1 {
+			return nil, fmt.Errorf("policy %s has multiple release values while specifying to be release independent (no release element)", p[""].Key)
+		}
+	}
+
 	mergedPolicies := make(map[string]mergedPolicy)
 	for key := range indexedPolicies {
 		// supportedReleases is ordered with latest being newest.
