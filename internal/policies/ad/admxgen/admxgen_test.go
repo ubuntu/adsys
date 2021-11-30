@@ -26,6 +26,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		wantErr                bool
 	}{
 		"simple":       {},
+		"basic":        {},
 		"two policies": {},
 		"use policy class instead of category default": {},
 
@@ -129,6 +130,9 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"multiple categories": {},
 		"other distro":        {distroID: "Debian"},
 
+		// Basic keys: no options means a key with no children and no types on it
+		"basic key": {},
+
 		// Types
 		"boolean":               {},
 		"decimal":               {},
@@ -143,9 +147,6 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"choices with default": {},
 		"double":               {},
 		"double with range":    {},
-
-		// No type on children means no children elements
-		"no children elements": {},
 
 		// Multiple releases
 		"multiple releases for one key":                             {},

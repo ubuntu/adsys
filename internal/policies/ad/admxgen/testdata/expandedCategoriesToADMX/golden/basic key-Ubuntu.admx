@@ -14,10 +14,9 @@
   </categories>
 
   <policies>
-    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyNoOptions" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyNoOptions)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyNoOptions)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyNoOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-no-options" valueName="metaValues">
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyNoOptions" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyNoOptions)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyNoOptions)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyNoOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-no-options" valueName="basic">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"all":{"empty":"''","meta":""}}</string></enabledValue>
     </policy>
   </policies>
 
