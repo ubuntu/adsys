@@ -50,6 +50,12 @@
     <category name="UbuntuInterface" displayName="$(string.UbuntuDisplayInterface)">
       <parentCategory ref="UbuntuLoginScreen" />
     </category>
+    <category name="UbuntuClientManagement" displayName="$(string.UbuntuDisplayClientManagement)">
+      <parentCategory ref="UbuntuUbuntu" />
+    </category>
+    <category name="UbuntuPrivilegeAuthorization" displayName="$(string.UbuntuDisplayPrivilegeAuthorization)">
+      <parentCategory ref="UbuntuClientManagement" />
+    </category>
   </categories>
 
   <policies>
@@ -2652,6 +2658,19 @@
           </item>
         </enum>
       </elements>
+    </policy>
+    <policy name="UbuntuMachinePrivilegeClientAdmins" class="Machine" displayName="$(string.UbuntuDisplayMachineAllPrivilegeClientAdmins)" explainText="$(string.UbuntuExplainTextMachinePrivilegeClientAdmins)" presentation="$(presentation.UbuntuPresentationMachinePrivilegeClientAdmins)" key="Software\Policies\Ubuntu\privilege\client-admins" valueName="metaValues">
+      <parentCategory ref="UbuntuPrivilegeAuthorization" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"all":{}}</string></enabledValue>
+      <elements>
+        <multiText id="UbuntuElemMachineAllPrivilegeClientAdmins" valueName="all" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachinePrivilegeAllowLocalAdmins" class="Machine" displayName="$(string.UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins)" explainText="$(string.UbuntuExplainTextMachinePrivilegeAllowLocalAdmins)" presentation="$(presentation.UbuntuPresentationMachinePrivilegeAllowLocalAdmins)" key="Software\Policies\Ubuntu\privilege\allow-local-admins" valueName="metaValues">
+      <parentCategory ref="UbuntuPrivilegeAuthorization" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"all":{}}</string></enabledValue>
     </policy>
   </policies>
 
