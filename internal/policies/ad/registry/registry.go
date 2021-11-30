@@ -38,7 +38,8 @@ const (
 )
 
 const (
-	policyContainerName = "metaValues"
+	policyContainerName      = "metaValues"
+	policyWithNoChildrenName = "basic"
 )
 
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
@@ -66,7 +67,8 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 		if disabled {
 			e.key = strings.TrimPrefix(e.key, "**del.")
 		}
-		if e.key == policyContainerName {
+		switch e.key {
+		case policyContainerName:
 			metaValues = make(map[string]meta)
 			disabledContainer = disabled
 			if disabledContainer {
@@ -81,7 +83,14 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 				return nil, fmt.Errorf(i18n.G("invalid default value for %s\\%s container: %v"), e.path, e.key, err)
 			}
 			continue
-		} else {
+		case policyWithNoChildrenName:
+			// this is not a container but a single key.
+			// Force it to be an "all" key, without inheritance, reset metaValues.
+			e.key = "all"
+			metaValues = map[string]meta{
+				e.key: {Default: ""},
+			}
+		default:
 			// propagate disabled value from container to all children elements
 			if disabledContainer {
 				disabled = true

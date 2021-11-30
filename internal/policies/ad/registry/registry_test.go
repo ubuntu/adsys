@@ -61,6 +61,23 @@ func TestDecodePolicy(t *testing.T) {
 				},
 			}},
 
+		// basic type: no container, no children
+		"basic type, enabled": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
+					Value:    "1",
+					Disabled: false,
+				},
+			}},
+		"basic type, disabled": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
+					Disabled: true,
+				},
+			}},
+
 		// Container and options test cases
 		"container with default elements override empty option values": {
 			want: []entry.Entry{

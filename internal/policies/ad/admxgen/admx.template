@@ -18,11 +18,11 @@
   <policies>
   {{- range .Policies}}
     {{- $policy := .}}
-    <policy name="{{toID .Key .Class}}" class="{{.Class}}" displayName="$(string.{{toID .Key "Display" .Class "All"}})" explainText="$(string.{{toID .Key "ExplainText" .Class}})" presentation="$(presentation.{{toID .Key "Presentation" .Class}})" key="{{.Key}}" valueName="metaValues">
+    <policy name="{{toID .Key .Class}}" class="{{.Class}}" displayName="$(string.{{toID .Key "Display" .Class "All"}})" explainText="$(string.{{toID .Key "ExplainText" .Class}})" presentation="$(presentation.{{toID .Key "Presentation" .Class}})" key="{{.Key}}" valueName="{{if .HasOptions}}metaValues{{else}}basic{{end}}">
       <parentCategory ref="{{.ParentCategory}}" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{{.Meta}}</string></enabledValue>
       {{- if .HasOptions}}
+      <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
       {{- range .GetOrderedPolicyElements}}
       {{- if ne .Release "all"}}

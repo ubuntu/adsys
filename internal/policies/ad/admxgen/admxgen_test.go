@@ -26,6 +26,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		wantErr                bool
 	}{
 		"simple":       {},
+		"basic":        {},
 		"two policies": {},
 		"use policy class instead of category default": {},
 
@@ -63,15 +64,16 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"allow policy referenced but not available in any releases": {allowMissingKeys: true},
 
 		// Error cases
-		"error on one policy not used":                 {wantErr: true},
-		"error on unexisting policy referenced":        {allowMissingKeys: false, wantErr: true},
-		"error on different policy type":               {wantErr: true},
-		"error on different class":                     {wantErr: true},
-		"error on missing release":                     {wantErr: true},
-		"error on nested category":                     {wantErr: true},
-		"error on invalid default policy class":        {wantErr: true},
-		"error on empty default policy class":          {wantErr: true},
-		"error on policy not attached to any releases": {wantErr: true},
+		"error on one policy not used":                                               {wantErr: true},
+		"error on unexisting policy referenced":                                      {allowMissingKeys: false, wantErr: true},
+		"error on different policy type":                                             {wantErr: true},
+		"error on different class":                                                   {wantErr: true},
+		"error on missing release":                                                   {wantErr: true},
+		"error on nested category":                                                   {wantErr: true},
+		"error on invalid default policy class":                                      {wantErr: true},
+		"error on empty default policy class":                                        {wantErr: true},
+		"error on policy not attached to any releases":                               {wantErr: true},
+		"error on key independent of any release key but with one release specified": {wantErr: true},
 
 		"policy directory doesn't exist":    {wantErrLoadDefinitions: true},
 		"category definition doesn't exist": {wantErrLoadDefinitions: true},
@@ -128,6 +130,9 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"multiple categories": {},
 		"other distro":        {distroID: "Debian"},
 
+		// Basic keys: no options means a key with no children and no types on it
+		"basic key": {},
+
 		// Types
 		"boolean":               {},
 		"decimal":               {},
@@ -142,9 +147,6 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"choices with default": {},
 		"double":               {},
 		"double with range":    {},
-
-		// No type on children means no children elements
-		"no children elements": {},
 
 		// Multiple releases
 		"multiple releases for one key":                             {},
