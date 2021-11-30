@@ -708,10 +708,9 @@
         <multiText id="UbuntuElemMachineAllPrivilegeClientAdmins" valueName="all" />
       </elements>
     </policy>
-    <policy name="UbuntuMachinePrivilegeAllowLocalAdmins" class="Machine" displayName="$(string.UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins)" explainText="$(string.UbuntuExplainTextMachinePrivilegeAllowLocalAdmins)" presentation="$(presentation.UbuntuPresentationMachinePrivilegeAllowLocalAdmins)" key="Software\Policies\Ubuntu\privilege\allow-local-admins" valueName="metaValues">
+    <policy name="UbuntuMachinePrivilegeAllowLocalAdmins" class="Machine" displayName="$(string.UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins)" explainText="$(string.UbuntuExplainTextMachinePrivilegeAllowLocalAdmins)" presentation="$(presentation.UbuntuPresentationMachinePrivilegeAllowLocalAdmins)" key="Software\Policies\Ubuntu\privilege\allow-local-admins" valueName="basic">
       <parentCategory ref="UbuntuPrivilegeAuthorization" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"all":{}}</string></enabledValue>
     </policy>
   </policies>
 
