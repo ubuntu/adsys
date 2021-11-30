@@ -387,9 +387,8 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
 - Default: [&#39;&lt;Alt&gt;F1&#39;]
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
+Supported on Ubuntu 20.04, 21.04, 21.10</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
-      <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuDisplayUser2110DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuDisplayUser2104DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
@@ -1224,10 +1223,6 @@ Supported on Ubuntu 20.04, 21.04, 21.10, 22.04</string>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">
         <text>Show the activities overview</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultHeight="5" />
-        <text/>
-        <checkBox refId="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultChecked="false">Override value for 22.04:</checkBox>
-        
-        <multiTextBox refId="UbuntuElemUser2204DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2110DconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultChecked="false">Override value for 21.10:</checkBox>
         

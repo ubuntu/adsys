@@ -65,6 +65,11 @@ func TestGenerate(t *testing.T) {
 		"Invalid override files are skipped": {root: "broken_override"},
 		"Valid class should be capitalized":  {root: "simple"},
 
+		"Description starting with deprecated is ignored":                         {root: "deprecated_keys"},
+		"Description starting with deprecated mixed case is ignored":              {root: "deprecated_keys"},
+		"Description starting with obsolete is ignored":                           {root: "deprecated_keys"},
+		"Description containing deprecated without starting by it is not ignored": {root: "deprecated_keys"},
+
 		// Error cases
 		"Unsupported key type": {root: "exotic_type", wantErr: true},
 		"Enum does not exist":  {root: "nonexistent_enum", wantErr: true},

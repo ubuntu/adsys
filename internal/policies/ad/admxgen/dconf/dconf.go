@@ -83,6 +83,12 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			continue
 		}
 
+		summ := strings.ToLower(s.Summary)
+		if strings.HasPrefix(summ, "deprecate") || strings.HasPrefix(summ, "obsolete") {
+			log.Warningf("dconf key %q:%q is deprecated. Ignoring", s.Schema, s.ObjectPath)
+			continue
+		}
+
 		// consider :SESSION
 		var defaultVal string
 		var found bool

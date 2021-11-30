@@ -1,0 +1,20 @@
+- key: /com/ubuntu/with-deprecated/simple-text-property
+  displayname: simple-text-property summary
+  explaintext: simple-text-property description
+  elementtype: text
+  meta:
+    empty: ''''''
+    meta: s
+  default: '''simple-text-property Default Value'''
+  release: "20.04"
+  type: dconf
+- key: /com/ubuntu/with-deprecated/deprecated-in-middle
+  displayname: Summary for deprecated content
+  explaintext: deprecated-in-middle description
+  elementtype: text
+  meta:
+    empty: ''''''
+    meta: s
+  default: '''deprecated-in-middle Default Value'''
+  release: "20.04"
+  type: dconf
