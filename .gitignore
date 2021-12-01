@@ -28,6 +28,6 @@ debian/debhelper-build-stamp
 debian/files
 
 # Local testing
-adsysd
-adsysctl
-adsys.yaml
+/adsysd
+/adsysctl
+/adsys.yaml

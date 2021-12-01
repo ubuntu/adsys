@@ -910,7 +910,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	}
 
 	err := exec.Command("pkg-config", "--exists", "nss_wrapper").Run()
-	require.NoError(t, err, "libnss_wrapper is not installed on disk, either skip integration tests or install it")
+	require.NoError(t, err, "libnss-wrapper is not installed on disk, either skip integration tests or install it")
 
 	testutils.PythonCoverageToGoFormat(t, "../../internal/policies/ad/adsys-gpolist", true)
 
