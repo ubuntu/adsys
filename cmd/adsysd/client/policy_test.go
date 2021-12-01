@@ -14,6 +14,7 @@ func TestColorizePolicies(t *testing.T) {
 ** dconf:
 *** path/to/key1: ValueOfKey1
 *** path/to/key2: ValueOfKey2
+***+ path/to/systemdefault
 ** scripts:
 ***+ path/to/key3
 * GPOName2 ({GPOId2})
