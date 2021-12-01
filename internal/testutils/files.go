@@ -13,6 +13,24 @@ import (
 	"github.com/termie/go-shutil"
 )
 
+// MakeReadOnly makes dest read only and restore permission on cleanup.
+func MakeReadOnly(t *testing.T, dest string) {
+	t.Helper()
+
+	// Get current dest permissions
+	fi, err := os.Stat(dest)
+	require.NoError(t, err, "Cannot stat %s", dest)
+	mode := fi.Mode()
+
+	err = os.Chmod(dest, 0444)
+	require.NoError(t, err)
+
+	t.Cleanup(func() {
+		err := os.Chmod(dest, mode)
+		require.NoError(t, err)
+	})
+}
+
 // CompareTreesWithFiltering allows comparing a goldPath directory to p. Those can be updated via the dedicated flag.
 //  It will filter dconf database and not commit it in the new golden directory.
 func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
