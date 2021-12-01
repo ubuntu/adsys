@@ -6,6 +6,9 @@ Policies from machine configuration:
         - dconf/org/gnome/desktop/interface/clock-format: 24h
         - dconf/org/gnome/desktop/interface/clock-show-date: false
         - dconf/org/gnome/desktop/interface/clock-show-weekday: true
+    - privilege:
+        - allow-local-admins: Disabled
+        - client-admins: bob@example.com,%mygroup@example2.com
 - Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})
 
 Policies from user configuration:
