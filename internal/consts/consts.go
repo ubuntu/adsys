@@ -41,6 +41,10 @@ const (
 	DefaultSSSConf = "/etc/sssd/sssd.conf"
 	// DefaultDconfDir is the default dconf directory.
 	DefaultDconfDir = "/etc/dconf"
+	// DefaultDconfDir is the default directory for sudoers configuration.
+	DefaultSudoersDir = "/etc/sudoers.d"
+	// DefaultPolicyKitDir is the default directory for policykit configuration and rules.
+	DefaultPolicyKitDir = "/etc/polkit-1"
 
 	// SSSDDbusRegisteredName is the well-known name used on dbus.
 	SSSDDbusRegisteredName = "org.freedesktop.sssd.infopipe"
