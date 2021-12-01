@@ -128,7 +128,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			}
 
 			var polkitElem []string
-			for _, e := range splitAndNormalizeUsersAndGroups(entry.Value) {
+			for _, e := range splitAndNormalizeUsersAndGroups(ctx, entry.Value) {
 				contentSudo += fmt.Sprintf("\"%s\"	ALL=(ALL:ALL) ALL\n", e)
 				polkitID := fmt.Sprintf("unix-user:%s", e)
 				if strings.HasPrefix(e, "%") {
@@ -173,12 +173,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 // splitAndNormalizeUsersAndGroups allow splitting on lines and ,.
 // We remove any invalid characters and empty elements.
 // All will have the form of user@domain.
-func splitAndNormalizeUsersAndGroups(v string) []string {
+func splitAndNormalizeUsersAndGroups(ctx context.Context, v string) []string {
 	var elems []string
 	elems = append(elems, strings.Split(v, "\n")...)
 	v = strings.Join(elems, ",")
 	elems = nil
 	for _, e := range strings.Split(v, ",") {
+		initialValue := e
 		// Invalid chars in Windows user names: '/[]:|<>+=;,?*%"
 		isgroup := strings.HasPrefix(e, "%")
 		for _, c := range []string{"/", "[", "]", ":", "|", "<", ">", "=", ";", "?", "*", "%"} {
@@ -198,6 +199,9 @@ func splitAndNormalizeUsersAndGroups(v string) []string {
 		e = strings.TrimSpace(e)
 		if e == "" {
 			continue
+		}
+		if e != initialValue {
+			log.Warningf(ctx, "Changed user or group %q to %q: Invalid characters or domain\\user format", initialValue, e)
 		}
 		elems = append(elems, e)
 	}

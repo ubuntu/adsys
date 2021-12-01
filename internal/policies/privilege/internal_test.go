@@ -1,6 +1,7 @@
 package privilege
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -55,7 +56,7 @@ func TestSplitAndNormalizeUsersAndGroups(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := splitAndNormalizeUsersAndGroups(tc.input)
+			got := splitAndNormalizeUsersAndGroups(context.Background(), tc.input)
 			assert.Equal(t, tc.want, got, "splitAndNormalizeUsersAndGroups returned expected value")
 		})
 	}
