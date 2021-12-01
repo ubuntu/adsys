@@ -239,6 +239,7 @@ func colorizePolicies(policies string) (string, error) {
 	var out stringsBuilderWithError
 
 	bold := color.New(color.Bold)
+	var currentPoliciesType string
 	for _, l := range strings.Split(strings.TrimSpace(policies), "\n") {
 		//nolint: whitespace
 		// We prefer to have one blank line as separator.
@@ -246,17 +247,17 @@ func colorizePolicies(policies string) (string, error) {
 			// Policy entry
 			prefix := strings.TrimSpace(strings.Split(e, " ")[0])
 
-			var overridden, systemDefault bool
+			var overridden, disabledKey bool
 			switch prefix {
 			case "-":
 				overridden = true
 				e = e[2:]
 			case "+":
-				systemDefault = true
+				disabledKey = true
 				e = e[2:]
 			case "-+":
 				overridden = true
-				systemDefault = true
+				disabledKey = true
 				e = e[3:]
 			default:
 				if len(e) > 0 {
@@ -265,8 +266,12 @@ func colorizePolicies(policies string) (string, error) {
 			}
 
 			indent := "        - "
-			if systemDefault {
-				e = fmt.Sprintf(i18n.G("%s: Locked to system default"), e)
+			if disabledKey {
+				if currentPoliciesType == "dconf" {
+					e = fmt.Sprintf(i18n.G("%s: Locked to system default"), e)
+				} else {
+					e = fmt.Sprintf(i18n.G("%s: Disabled"), e)
+				}
 			}
 			if overridden {
 				e = color.HiBlackString("%s%s", indent, e)
@@ -278,6 +283,7 @@ func colorizePolicies(policies string) (string, error) {
 		} else if e := strings.TrimPrefix(l, "**"); e != l {
 			// Type of policy
 			e = strings.TrimSpace(e)
+			currentPoliciesType = strings.TrimSuffix(e, ":")
 			out.Println(fmt.Sprintf("    - %s", bold.Sprint(e)))
 
 		} else if e := strings.TrimPrefix(l, "*"); e != l {
