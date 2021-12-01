@@ -39,8 +39,10 @@ type daemonConfig struct {
 	CacheDir string `mapstructure:"cache_dir"`
 	RunDir   string `mapstructure:"run_dir"`
 
-	DconfDir    string `mapstructure:"dconf_dir"`
-	SSSCacheDir string `mapstructure:"sss_cache_dir"`
+	DconfDir     string `mapstructure:"dconf_dir"`
+	SudoersDir   string `mapstructure:"sudoers_dir"`
+	PolicyKitDir string `mapstructure:"policykit_dir"`
+	SSSCacheDir  string `mapstructure:"sss_cache_dir"`
 
 	ServiceTimeout        int    `mapstructure:"service_timeout"`
 	ADServer              string `mapstructure:"ad_server"`
@@ -104,6 +106,8 @@ func New() *App {
 				adsysservice.WithCacheDir(a.config.CacheDir),
 				adsysservice.WithRunDir(a.config.RunDir),
 				adsysservice.WithDconfDir(a.config.DconfDir),
+				adsysservice.WithSudoersDir(a.config.SudoersDir),
+				adsysservice.WithPolicyKitDir(a.config.PolicyKitDir),
 				adsysservice.WithSSSCacheDir(a.config.SSSCacheDir),
 				adsysservice.WithDefaultDomainSuffix(a.config.ADDefaultDomainSuffix),
 			)

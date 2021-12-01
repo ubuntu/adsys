@@ -193,11 +193,15 @@ ad_domain: example.com
 
 # Those are more for tests
 dconf_dir: %s/dconf
+sudoers_dir: %s/sudoers.d
+policykit_dir: %s/polkit-1
 sss_cache_dir: %s/sss_cache
-`, dir, dir, dir, dir, dir)), 0600)
+`, dir, dir, dir, dir, dir, dir, dir)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0750), "Setup: should create dconf dir")
+	require.NoError(t, os.MkdirAll(filepath.Join(dir, "sudoers.d"), 0750), "Setup: should create sudoers dir")
+	require.NoError(t, os.MkdirAll(filepath.Join(dir, "polkit-1"), 0750), "Setup: should create policykit dir")
 
 	return confFile
 }
