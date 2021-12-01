@@ -18,3 +18,5 @@ Daemon:
   Cache path: /tmp/cache
   Run path: /tmp/run
   Dconf path: /tmp/dconf
+  Sudoers path: /tmp/sudoers.d
+  PolicyKit path: /tmp/polkit-1
