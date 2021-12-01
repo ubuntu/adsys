@@ -43,11 +43,13 @@ type Service struct {
 }
 
 type state struct {
-	cacheDir    string
-	runDir      string
-	dconfDir    string
-	sssCacheDir string
-	sssConf     string
+	cacheDir     string
+	runDir       string
+	dconfDir     string
+	sudoersDir   string
+	policyKitDir string
+	sssCacheDir  string
+	sssConf      string
 
 	adDomain string
 }
@@ -56,6 +58,8 @@ type options struct {
 	cacheDir            string
 	runDir              string
 	dconfDir            string
+	sudoersDir          string
+	policyKitDir        string
 	sssCacheDir         string
 	sssdConf            string
 	defaultDomainSuffix string
@@ -87,6 +91,22 @@ func WithRunDir(p string) func(o *options) error {
 func WithDconfDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.dconfDir = p
+		return nil
+	}
+}
+
+// WithSudoersDir specifies a personalized sudoers directory.
+func WithSudoersDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.sudoersDir = p
+		return nil
+	}
+}
+
+// WithPolicyKitDir specifies a personalized policykit directory.
+func WithPolicyKitDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.policyKitDir = p
 		return nil
 	}
 }
@@ -177,6 +197,12 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if args.dconfDir != "" {
 		policyOptions = append(policyOptions, policies.WithDconfDir(args.dconfDir))
 	}
+	if args.sudoersDir != "" {
+		policyOptions = append(policyOptions, policies.WithSudoersDir(args.sudoersDir))
+	}
+	if args.policyKitDir != "" {
+		policyOptions = append(policyOptions, policies.WithPolicyKitDir(args.policyKitDir))
+	}
 	m, err := policies.New(policyOptions...)
 	if err != nil {
 		return nil, err
@@ -190,11 +216,13 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		policyManager: m,
 		authorizer:    args.authorizer,
 		state: state{
-			cacheDir:    args.cacheDir,
-			dconfDir:    args.dconfDir,
-			runDir:      args.runDir,
-			sssCacheDir: args.sssCacheDir,
-			adDomain:    domain,
+			cacheDir:     args.cacheDir,
+			dconfDir:     args.dconfDir,
+			sudoersDir:   args.sudoersDir,
+			policyKitDir: args.policyKitDir,
+			runDir:       args.runDir,
+			sssCacheDir:  args.sssCacheDir,
+			adDomain:     domain,
 		},
 		initSystemTime: initSysTime,
 		bus:            bus,
