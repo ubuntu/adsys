@@ -10,6 +10,7 @@ User / dconf background picture-options & uri; favorite-apps / background overri
 
 -----------------------------
 GDM / dconf: clock-format, clock-show-date, clock-show-weekday / override clock-format 20.04
+privilege: allow-local-admins disabled, client-admins
 {C4F393CA-AD9A-4595-AEBC-3FA6EE484285}/Machine/Registry.pol
 
 User / dconf: favorite-apps / no override
