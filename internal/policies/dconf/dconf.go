@@ -66,7 +66,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	m.dconfMu.RLock()
 
-	log.Debugf(ctx, "ApplyPolicy dconf policy to %s", objectName)
+	log.Debugf(ctx, "Applying dconf policy to %s", objectName)
 
 	if isComputer {
 		objectName = "machine"
