@@ -200,8 +200,7 @@ sss_cache_dir: %s/sss_cache
 	require.NoError(t, err, "Setup: config file should be created")
 
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0750), "Setup: should create dconf dir")
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "sudoers.d"), 0750), "Setup: should create sudoers dir")
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "polkit-1"), 0750), "Setup: should create policykit dir")
+	// Don’t create empty dirs for sudo and polkit: todo: same for dconf?
 
 	return confFile
 }
