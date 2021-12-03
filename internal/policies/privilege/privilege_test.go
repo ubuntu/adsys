@@ -58,15 +58,12 @@ func TestApplyPolicy(t *testing.T) {
 		"not a computer": {notComputer: true, existingSudoersDir: "existing-other-files", existingPolkitDir: "existing-other-files"},
 
 		// Error cases
-		"error on writing to sudoers file":                           {makeReadOnly: "sudoers.d/", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error on writing to polkit directory creation":              {makeReadOnly: "polkit-1", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error on writing to polkit conf file":                       {makeReadOnly: "polkit-1/localauthority.conf.d", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error on writing to polkit rule directory":                  {makeReadOnly: "polkit-1/localauthority", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error on writing to polkit rule file":                       {makeReadOnly: "polkit-1/localauthority/90-mandatory.d", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error on creating sudoers and polkit base directory":        {makeReadOnly: ".", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error if can’t rename to destination for sudoers file":      {destIsDir: "sudoers.d/99-adsys-privilege-enforcement", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error if can’t rename to destination for polkit conf file":  {destIsDir: "polkit-1/localauthority.conf.d/99-adsys-privilege-enforcement.conf", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error if can’t rename to destination for polkit rules file": {destIsDir: "polkit-1/localauthority/90-mandatory.d/99-adsys-privilege-enforcement.pkla", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"error on writing to sudoers file":                          {makeReadOnly: "sudoers.d/", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"error on writing to polkit directory creation":             {makeReadOnly: "polkit-1", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"error on writing to polkit conf file":                      {makeReadOnly: "polkit-1/localauthority.conf.d", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"error on creating sudoers and polkit base directory":       {makeReadOnly: ".", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"error if can’t rename to destination for sudoers file":     {destIsDir: "sudoers.d/99-adsys-privilege-enforcement", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"error if can’t rename to destination for polkit conf file": {destIsDir: "polkit-1/localauthority.conf.d/99-adsys-privilege-enforcement.conf", entries: defaultLocalAdminDisabledRule, wantErr: true},
 	}
 
 	for name, tc := range tests {

@@ -1,7 +1,0 @@
-[Allow AD users and groups to escalate privilege]
-Identity=unix-user:alice@domain;unix-user:bob@domain2;unix-group:mygroup@domain;unix-user:cosmic carole@domain
-Action=*
-ResultAny=auth_admin
-ResultInactive=auth_admin
-ResultActive=auth_admin_keep
-
