@@ -73,6 +73,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
 
 	// Create our temp files and parent directories
+	// nolint:gosec // G301 match distribution permission
 	if err := os.MkdirAll(filepath.Dir(sudoersConf), 0755); err != nil {
 		return err
 	}
@@ -81,9 +82,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return err
 	}
 	defer sudoersF.Close()
+	// nolint:gosec // G301 match distribution permission
 	if err := os.MkdirAll(filepath.Dir(policyKitConf), 0755); err != nil {
 		return err
 	}
+	// nolint:gosec // G301 match distribution permission
 	policyKitConfF, err := os.OpenFile(policyKitConf+".new", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err

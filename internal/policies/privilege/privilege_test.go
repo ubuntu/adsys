@@ -100,7 +100,7 @@ func TestApplyPolicy(t *testing.T) {
 
 			// Fake destination unwritable file
 			if tc.destIsDir != "" {
-				require.NoError(t, os.MkdirAll(filepath.Join(tempEtc, tc.destIsDir), 0755), "Setup: can't create fake unwritable file")
+				require.NoError(t, os.MkdirAll(filepath.Join(tempEtc, tc.destIsDir), 0750), "Setup: can't create fake unwritable file")
 			}
 
 			m := privilege.NewWithDirs(sudoersDir, policyKitDir)

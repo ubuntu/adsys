@@ -770,11 +770,11 @@ func TestPolicyUpdate(t *testing.T) {
 			// Some tests will need some initial state assets
 			for _, k := range tc.clearDirs {
 				err := os.RemoveAll(filepath.Join(adsysDir, k))
-				require.NoError(t, err, "Remove generate assets db")
+				require.NoError(t, err, "Setup: could not remove generate assets db")
 			}
 			// Some tests will need read only dirs to create failures
 			for _, k := range tc.readOnlyDirs {
-				os.MkdirAll(filepath.Join(adsysDir, k), 0750)
+				require.NoError(t, os.MkdirAll(filepath.Join(adsysDir, k), 0750), "Setup: could not create read only dir")
 				testutils.MakeReadOnly(t, filepath.Join(adsysDir, k))
 			}
 
