@@ -65,7 +65,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 	sudoersConf := filepath.Join(sudoersDir, "99-adsys-privilege-enforcement")
 	policyKitConf := filepath.Join(policyKitDir, "localauthority.conf.d", "99-adsys-privilege-enforcement.conf")
-	policyKitRules := filepath.Join(policyKitDir, "localauthority", "90-mandatory.d", "99-adsys-privilege-enforcement.pkla")
 
 	m.privilegeMu.RLock()
 	defer m.privilegeMu.RUnlock()
@@ -92,19 +91,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return err
 	}
 	defer policyKitConfF.Close()
-	if err := os.MkdirAll(filepath.Dir(policyKitRules), 0700); err != nil {
-		return err
-	}
-	policyKitRulesF, err := os.OpenFile(policyKitRules+".new", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		return err
-	}
-	defer policyKitRulesF.Close()
 
 	// Parse our rules and write to temp files
 	var headerWritten bool
 	for _, entry := range entries {
-		var contentSudo, contentPolicyKitConf, contentPolicyKitRules string
+		var contentSudo, contentPolicyKitConf string
 
 		if !headerWritten {
 			h := `# This file is managed by adsys.
@@ -112,7 +103,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 # Any changes will be overwritten.
 
 `
-			contentSudo, contentPolicyKitConf, contentPolicyKitRules = h, h, h
+			contentSudo, contentPolicyKitConf = h, h
 			headerWritten = true
 		}
 
@@ -124,7 +115,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			contentSudo += "%admin	ALL=(ALL) !ALL\n"
 			contentSudo += "%sudo	ALL=(ALL:ALL) !ALL\n"
 			contentPolicyKitConf += "[Configuration]\nAdminIdentities=unix-group:sudo;unix-group:admin\n"
-			contentPolicyKitRules += "[Deny sudoers to escalate privilege]\nIdentity=unix-group:sudo\nAction=*\nResultAny=no\nResultInactive=no\nResultActive=no\n"
 		case "client-admins":
 			if entry.Disabled {
 				continue
@@ -144,7 +134,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			}
 			polkitUsersGroups := strings.Join(polkitElem, ";")
 			contentPolicyKitConf += fmt.Sprintf("[Configuration]\nAdminIdentities=%s\n", polkitUsersGroups)
-			contentPolicyKitRules += fmt.Sprintf("[Allow AD users and groups to escalate privilege]\nIdentity=%s\nAction=*\nResultAny=auth_admin\nResultInactive=auth_admin\nResultActive=auth_admin_keep\n", polkitUsersGroups)
 		}
 
 		// Write to our files
@@ -154,9 +143,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		if _, err := policyKitConfF.WriteString(contentPolicyKitConf + "\n"); err != nil {
 			return err
 		}
-		if _, err := policyKitRulesF.WriteString(contentPolicyKitRules + "\n"); err != nil {
-			return err
-		}
 	}
 
 	// Move temp files to their final destination
@@ -164,9 +150,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return err
 	}
 	if err := os.Rename(policyKitConf+".new", policyKitConf); err != nil {
-		return err
-	}
-	if err := os.Rename(policyKitRules+".new", policyKitRules); err != nil {
 		return err
 	}
 
