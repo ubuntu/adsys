@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
@@ -13,6 +14,7 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"gopkg.in/ini.v1"
 )
 
 /*
@@ -29,6 +31,8 @@ import (
 
 	Both are installed in /etc.
 */
+
+const adsysBaseConfName = "99-adsys-privilege-enforcement"
 
 // Manager prevents running multiple privilege update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
@@ -193,4 +197,41 @@ func splitAndNormalizeUsersAndGroups(ctx context.Context, v string) []string {
 	}
 
 	return elems
+}
+
+// getSystemPolkitAdminIdentities returns the list of configured system polkit admins as a string.
+// It lists /etc/polkit-1/localauthority.conf.d and take the highest file in ascii order to match
+// from the [configuration] section AdminIdentities value.
+func getSystemPolkitAdminIdentities(ctx context.Context, policyKitDir string) (adminIdentities string, err error) {
+	defer decorate.OnError(&err, i18n.G("can't get existing system polkit administrators in %s"), policyKitDir)
+
+	polkitConfFiles, err := filepath.Glob(filepath.Join(policyKitDir, "localauthority.conf.d", "*.conf"))
+	if err != nil {
+		return "", err
+	}
+	sort.Strings(polkitConfFiles)
+	for _, p := range polkitConfFiles {
+		fi, err := os.Stat(p)
+		if err != nil {
+			return "", err
+		}
+		if fi.IsDir() {
+			log.Warningf(ctx, i18n.G("%s is a directory. Ignoring."), p)
+			continue
+		}
+
+		// Ignore ourself
+		if filepath.Base(p) == adsysBaseConfName+".conf" {
+			continue
+		}
+
+		cfg, err := ini.LoadSources(ini.LoadOptions{IgnoreInlineComment: true}, p)
+		if err != nil {
+			return "", err
+		}
+
+		adminIdentities = cfg.Section("Configuration").Key("AdminIdentities").String()
+	}
+
+	return adminIdentities, nil
 }
