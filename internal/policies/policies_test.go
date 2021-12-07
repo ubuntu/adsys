@@ -170,13 +170,15 @@ func TestApplyPolicy(t *testing.T) {
 	tests := map[string]struct {
 		gposFile              string
 		secondCallWithNoRules bool
+		makeDirReadOnly       string
 
 		wantErr bool
 	}{
 		"succeed": {gposFile: "all_entry_types.gpos"},
 		"second call with no rules deletes everything": {gposFile: "all_entry_types.gpos", secondCallWithNoRules: true},
 
-		"dconf apply policy fails": {gposFile: "dconf_failing.gpos", wantErr: true},
+		"dconf apply policy fails":     {gposFile: "dconf_failing.gpos", wantErr: true},
+		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", gposFile: "all_entry_types.gpos", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -190,12 +192,23 @@ func TestApplyPolicy(t *testing.T) {
 			fakeRootDir := t.TempDir()
 			cacheDir := filepath.Join(fakeRootDir, "var", "cache", "adsys")
 			dconfDir := filepath.Join(fakeRootDir, "etc", "dconf")
-			m, err := policies.New(policies.WithCacheDir(cacheDir),
-				policies.WithDconfDir(dconfDir))
+			policyKitDir := filepath.Join(fakeRootDir, "etc", "polkit-1")
+			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
+			m, err := policies.New(
+				policies.WithCacheDir(cacheDir),
+				policies.WithDconfDir(dconfDir),
+				policies.WithPolicyKitDir(policyKitDir),
+				policies.WithSudoersDir(sudoersDir),
+			)
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
 			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
+
+			if tc.makeDirReadOnly != "" {
+				require.NoError(t, os.MkdirAll(filepath.Join(fakeRootDir, tc.makeDirReadOnly), 0750), "Setup: can not create directory")
+				testutils.MakeReadOnly(t, filepath.Join(fakeRootDir, tc.makeDirReadOnly))
+			}
 
 			err = m.ApplyPolicy(context.Background(), "hostname", true, gpos)
 			if tc.wantErr {

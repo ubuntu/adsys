@@ -47,6 +47,8 @@ func TestNew(t *testing.T) {
 			adsysCacheDir := filepath.Join(temp, "cache")
 			adsysRunDir := filepath.Join(temp, "run")
 			dconfDir := filepath.Join(temp, "dconf")
+			sudoersDir := filepath.Join(temp, "sudoers.d")
+			policyKitDir := filepath.Join(temp, "polkit-1")
 			sssCacheDir := filepath.Join(temp, "sss")
 			if tc.existingAdsysDirs {
 				require.NoError(t, os.MkdirAll(adsysCacheDir, 0700), "Setup: could not create adsys cache directory")
@@ -68,6 +70,8 @@ func TestNew(t *testing.T) {
 				adsysservice.WithCacheDir(adsysCacheDir),
 				adsysservice.WithRunDir(adsysRunDir),
 				adsysservice.WithDconfDir(dconfDir),
+				adsysservice.WithSudoersDir(sudoersDir),
+				adsysservice.WithPolicyKitDir(policyKitDir),
 				adsysservice.WithSSSCacheDir(sssCacheDir),
 				adsysservice.WithMockAuthorizer(&auth),
 				adsysservice.WithDefaultDomainSuffix("mydomain.biz"),

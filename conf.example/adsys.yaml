@@ -9,6 +9,8 @@ ad_domain: ldap://adc.example.com
 cache_dir: /tmp/adsysd/cache
 run_dir: /tmp/adsysd/run
 dconf_dir: /etc/dconf
+sudoers_dir: /etc/sudoers.d
+policykit_dir: /etc/polkit-1
 sss_cache_dir: /var/lib/sss/db
 
 # Client only configuration

@@ -10,7 +10,7 @@
           value: "false"
           disabled: false
           meta: b
-        - key: org/gnome/shell/old/old-data
+        - key: dconf/org/gnome/shell/old/old-data
           value: something
           disabled: false
           meta: s
@@ -18,6 +18,15 @@
           value: "true"
           disabled: false
           meta: b
+      privilege:
+        - key: allow-local-admins
+          value: ""
+          disabled: false
+          meta: ""
+        - key: client-admins
+          value: "carole cosmic@example.com"
+          disabled: false
+          meta: ""
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy
   rules: {}

@@ -13,3 +13,16 @@
             Multilines
           disabled: false
           meta: s
+    privilege:
+        - key: allow-local-admins
+          value: ""
+          disabled: false
+          meta: ""
+        - key: client-admins
+          value: |
+            alice@domain
+            bob@domain2
+            %mygroup@domain
+            cosmic carole@domain
+          disabled: false
+          meta: ""

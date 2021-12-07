@@ -11,3 +11,12 @@
         On
         Multilines
       meta: s
+    privilege:
+    - key: allow-local-admins
+      disabled: false
+    - key: client-admins
+      value: |
+        alice@domain
+        bob@domain2
+        %mygroup@domain
+        cosmic carole@domain

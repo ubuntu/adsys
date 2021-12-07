@@ -26,7 +26,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-const dockerSystemDaemonsImage = "docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1"
+const dockerSystemDaemonsImage = "ghcr.io/ubuntu/adsys/systemdaemons:0.1"
 
 var update bool
 
@@ -193,11 +193,14 @@ ad_domain: example.com
 
 # Those are more for tests
 dconf_dir: %s/dconf
+sudoers_dir: %s/sudoers.d
+policykit_dir: %s/polkit-1
 sss_cache_dir: %s/sss_cache
-`, dir, dir, dir, dir, dir)), 0600)
+`, dir, dir, dir, dir, dir, dir, dir)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0750), "Setup: should create dconf dir")
+	// Don’t create empty dirs for sudo and polkit: todo: same for dconf?
 
 	return confFile
 }

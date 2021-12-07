@@ -15,6 +15,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/policies/gdm"
+	"github.com/ubuntu/adsys/internal/policies/privilege"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -22,14 +23,17 @@ import (
 type Manager struct {
 	gpoRulesCacheDir string
 
-	dconf *dconf.Manager
-	gdm   *gdm.Manager
+	dconf     *dconf.Manager
+	privilege *privilege.Manager
+	gdm       *gdm.Manager
 }
 
 type options struct {
-	cacheDir string
-	dconfDir string
-	gdm      *gdm.Manager
+	cacheDir     string
+	dconfDir     string
+	sudoersDir   string
+	policyKitDir string
+	gdm          *gdm.Manager
 }
 
 // Option reprents an optional function to change Policies behavior.
@@ -47,6 +51,22 @@ func WithCacheDir(p string) Option {
 func WithDconfDir(p string) Option {
 	return func(o *options) error {
 		o.dconfDir = p
+		return nil
+	}
+}
+
+// WithSudoersDir specifies a personalized sudoers directory.
+func WithSudoersDir(p string) Option {
+	return func(o *options) error {
+		o.sudoersDir = p
+		return nil
+	}
+}
+
+// WithPolicyKitDir specifies a personalized policykit directory.
+func WithPolicyKitDir(p string) Option {
+	return func(o *options) error {
+		o.policyKitDir = p
 		return nil
 	}
 }
@@ -72,6 +92,9 @@ func New(opts ...Option) (m *Manager, err error) {
 		dconfManager = dconf.NewWithDconfDir(args.dconfDir)
 	}
 
+	// privilege manager
+	privilegeManager := privilege.NewWithDirs(args.sudoersDir, args.policyKitDir)
+
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {
 		if args.gdm, err = gdm.New(gdm.WithDconf(dconfManager)); err != nil {
@@ -87,8 +110,9 @@ func New(opts ...Option) (m *Manager, err error) {
 	return &Manager{
 		gpoRulesCacheDir: gpoRulesCacheDir,
 
-		dconf: dconfManager,
-		gdm:   args.gdm,
+		dconf:     dconfManager,
+		privilege: privilegeManager,
+		gdm:       args.gdm,
 	}, nil
 }
 
@@ -102,6 +126,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	rules := entry.GetUniqueRules(gpos)
 	var g errgroup.Group
 	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
+	g.Go(func() error { return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"]) })
 
 	// TODO g.Go(func() error { return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"]) })
 	// TODO g.Go(func() error { return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"]) })

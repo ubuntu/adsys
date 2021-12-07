@@ -208,6 +208,7 @@ func TestPolicyUpdate(t *testing.T) {
 		krb5ccname            string
 		krb5ccNamesState      []krb5ccNamesWithState
 		clearDirs             []string // Removes already generated system files eg dconf db, apparmor profiles, ...
+		readOnlyDirs          []string
 		dynamicADServerDomain string
 		defaultADDomainSuffix string
 
@@ -344,7 +345,7 @@ func TestPolicyUpdate(t *testing.T) {
 		},
 
 		// no AD connection
-		"Host is offline, get from cache (no update)": {
+		"Host is offline, get user from cache (no update)": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
 			krb5ccNamesState: []krb5ccNamesWithState{
@@ -359,13 +360,13 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			},
 		},
-		"Host is offline, regenerate from old data": {
+		"Host is offline, regenerate user from old data": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
-			// clean generate dconf dbs to regenerate
+			// clean generate dconf dbs and privilege files to regenerate
 			clearDirs: []string{
-				"dconf/db/adsystestuser@offline.d",
-				"dconf/profile/adsystestuser@offline",
+				"dconf/db/adsystestuser@example.com.d",
+				"dconf/profile/adsystestuser@example.com",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -379,13 +380,13 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			},
 		},
-		"Host is offline, gpos cache is cleared, with gpo_rules cache": {
+		"Host is offline, user gpos cache is cleared, with gpo_rules cache": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
 			// clean gpos cache, but keep machine ones and user gpo_rules
 			clearDirs: []string{
-				"dconf/db/adsystestuser@offline.d",
-				"dconf/profile/adsystestuser@offline",
+				"dconf/db/adsystestuser@example.com.d",
+				"dconf/profile/adsystestuser@example.com",
 				"cache/gpo_cache/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
 				"cache/gpo_cache/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
 				"cache/gpo_cache/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
@@ -395,6 +396,59 @@ func TestPolicyUpdate(t *testing.T) {
 					src:          currentUser + ".krb5",
 					adsysSymlink: currentUser,
 				},
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+		"Host is offline, get machine from cache (no update)": {
+			args:                  []string{"-m"},
+			dynamicADServerDomain: "offline",
+			initState:             "old-data",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+		"Host is offline, regenerate machine from old data": {
+			args:                  []string{"-m"},
+			dynamicADServerDomain: "offline",
+			initState:             "old-data",
+			// clean generate dconf dbs and privilege files to regenerate
+			clearDirs: []string{
+				"dconf/db/machine.d",
+				"dconf/profile/gdm",
+				"sudoers.d",
+				"polkit-1",
+			},
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
+		"Host is offline, mach gpos cache is cleared, with gpo_rules cache": {
+			args:                  []string{"-m"},
+			dynamicADServerDomain: "offline",
+			initState:             "old-data",
+			// clean gpos cache, but keep machine ones and user gpo_rules
+			clearDirs: []string{
+				"dconf/db/machine.d",
+				"dconf/profile/gdm",
+				"sudoers.d",
+				"polkit-1",
+				"cache/gpo_cache/{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}",
+				"cache/gpo_cache/{B8D10A86-0B78-4899-91AF-6F0124ECEB48}",
+				"cache/gpo_cache/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
+			},
+			krb5ccNamesState: []krb5ccNamesWithState{
 				{
 					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
@@ -476,6 +530,23 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		"Error on privilege apply failing": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState: "localhost-uptodate",
+			// this generates an error when parent directories are not writable
+			readOnlyDirs: []string{
+				"sudoers.d",
+				"polkit-1",
+			},
+			wantErr: true,
+		},
 		"Error on host is offline, without gpo_rules": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
@@ -483,6 +554,8 @@ func TestPolicyUpdate(t *testing.T) {
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
+				"sudoers.d",
+				"polkit-1",
 				"cache/gpo_rules/adsystestuser@example.com",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
@@ -697,7 +770,12 @@ func TestPolicyUpdate(t *testing.T) {
 			// Some tests will need some initial state assets
 			for _, k := range tc.clearDirs {
 				err := os.RemoveAll(filepath.Join(adsysDir, k))
-				require.NoError(t, err, "Remove generate assets db")
+				require.NoError(t, err, "Setup: could not remove generate assets db")
+			}
+			// Some tests will need read only dirs to create failures
+			for _, k := range tc.readOnlyDirs {
+				require.NoError(t, os.MkdirAll(filepath.Join(adsysDir, k), 0750), "Setup: could not create read only dir")
+				testutils.MakeReadOnly(t, filepath.Join(adsysDir, k))
 			}
 
 			// Ticket creation for mock.
@@ -790,6 +868,8 @@ func TestPolicyUpdate(t *testing.T) {
 			require.NoError(t, err, "client should exit with no error")
 
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "dconf"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "sudoers.d"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "polkit-1"), update)
 		})
 	}
 }
@@ -910,7 +990,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	}
 
 	err := exec.Command("pkg-config", "--exists", "nss_wrapper").Run()
-	require.NoError(t, err, "libnss_wrapper is not installed on disk, either skip integration tests or install it")
+	require.NoError(t, err, "libnss-wrapper is not installed on disk, either skip integration tests or install it")
 
 	testutils.PythonCoverageToGoFormat(t, "../../internal/policies/ad/adsys-gpolist", true)
 
