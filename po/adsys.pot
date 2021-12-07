@@ -31,7 +31,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:211
+#: internal/policies/ad/admxgen/admxgen.go:221
 #, c-format
 msgid ""
 "%s\n"
@@ -43,7 +43,12 @@ msgstr ""
 msgid "%s :%v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:247
+#: internal/policies/privilege/privilege.go:240
+#, c-format
+msgid "%s is a directory. Ignoring."
+msgstr ""
+
+#: internal/policies/ad/admxgen/dconf/dconf.go:253
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
@@ -55,7 +60,7 @@ msgstr ""
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:246
+#: internal/policies/ad/admxgen/admxgen.go:256
 #, c-format
 msgid "%s needs a default policy class"
 msgstr ""
@@ -65,12 +70,12 @@ msgstr ""
 msgid "%s requires a valid subcommand"
 msgstr ""
 
-#: internal/adsysservice/service.go:124
+#: internal/adsysservice/service.go:130
 #, c-format
 msgid "%s, no gpo applied found"
 msgstr ""
 
-#: internal/adsysservice/service.go:109
+#: internal/adsysservice/service.go:115
 #, c-format
 msgid "%s, updated on %s"
 msgstr ""
@@ -84,7 +89,12 @@ msgstr ""
 msgid "%s: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:269
+#: cmd/adsysd/client/policy.go:273
+#, c-format
+msgid "%s: Disabled"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:271
 #, c-format
 msgid "%s: Locked to system default"
 msgstr ""
@@ -94,19 +104,19 @@ msgstr ""
 msgid "%s: no active server found"
 msgstr ""
 
-#: internal/adsysservice/service.go:93
+#: internal/adsysservice/service.go:99
 msgid ""
 "**Offline mode** using cached policies\n"
 "\n"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:171
+#: internal/policies/ad/admxgen/admxgen.go:181
 #, c-format
 msgid "- Default for %s: %s"
 msgstr ""
 
 #. All defaults are the same and not empty
-#: internal/policies/ad/admxgen/admxgen.go:207
+#: internal/policies/ad/admxgen/admxgen.go:217
 #, c-format
 msgid "- Default: %s"
 msgstr ""
@@ -119,11 +129,11 @@ msgstr ""
 msgid "- error on %s: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:148
+#: cmd/adsysd/daemon/daemon.go:152
 msgid "AD default domain suffix to use. This overrides parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:146
+#: cmd/adsysd/daemon/daemon.go:150
 msgid "AD domain to use. This overrides parsing sssd.conf"
 msgstr ""
 
@@ -131,7 +141,7 @@ msgstr ""
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:56
+#: cmd/adsysd/daemon/daemon.go:58
 msgid "AD integration daemon"
 msgstr ""
 
@@ -151,11 +161,11 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:261
+#: internal/adsysservice/adsysservice.go:289
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:116
+#: internal/adsysservice/service.go:122
 msgid "Can't get connected users"
 msgstr ""
 
@@ -163,7 +173,7 @@ msgstr ""
 msgid "Check if grpc request peer is authorized"
 msgstr ""
 
-#: internal/adsysservice/service.go:119
+#: internal/adsysservice/service.go:125
 msgid "Connected users:"
 msgstr ""
 
@@ -222,15 +232,15 @@ msgstr ""
 msgid "GetsockoptUcred() error: %s"
 msgstr ""
 
-#: internal/adsysservice/service.go:113
+#: internal/adsysservice/service.go:119
 msgid "Machine"
 msgstr ""
 
-#: internal/adsysservice/service.go:110
+#: internal/adsysservice/service.go:116
 msgid "Machine, no gpo applied found"
 msgstr ""
 
-#: internal/adsysservice/service.go:97
+#: internal/adsysservice/service.go:103
 msgid "N/A"
 msgstr ""
 
@@ -239,19 +249,19 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: internal/adsysservice/service.go:128
+#: internal/adsysservice/service.go:134
 msgid "None"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:124
+#: internal/policies/ad/admxgen/dconf/dconf.go:130
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/policies.go:141
+#: internal/policies/policies.go:166
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/policies.go:149
+#: internal/policies/policies.go:174
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -312,12 +322,12 @@ msgstr ""
 msgid "Stopping daemon requested."
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:158
+#: internal/policies/ad/admxgen/admxgen.go:168
 #, c-format
 msgid "Supported on %s %s"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:144
+#: cmd/adsysd/daemon/daemon.go:148
 msgid "URL of the Active Directory server. This overrides parsing sssd.conf."
 msgstr ""
 
@@ -358,6 +368,11 @@ msgstr ""
 msgid "can't apply gdm policy"
 msgstr ""
 
+#: internal/policies/privilege/privilege.go:55
+#, c-format
+msgid "can't apply privilege policy to %s"
+msgstr ""
+
 #: internal/policies/ad/download.go:160
 #, c-format
 msgid "can't check if %s needs refreshing"
@@ -375,12 +390,12 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/policies.go:56
+#: internal/policies/policies.go:76
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:408
-#: internal/policies/ad/admxgen/admxgen.go:421
+#: internal/policies/ad/admxgen/admxgen.go:418
+#: internal/policies/ad/admxgen/admxgen.go:431
 msgid "can't create admx file: %v"
 msgstr ""
 
@@ -392,7 +407,7 @@ msgstr ""
 msgid "can't create daemon"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:397
+#: internal/policies/ad/admxgen/admxgen.go:407
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
@@ -416,7 +431,7 @@ msgstr ""
 msgid "can't download all gpos"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:380
+#: internal/policies/ad/admxgen/admxgen.go:390
 msgid "can't generate ADMX files"
 msgstr ""
 
@@ -435,6 +450,11 @@ msgstr ""
 #: internal/policies/entry/entry.go:125
 #, c-format
 msgid "can't get cached GPO list from %s"
+msgstr ""
+
+#: internal/policies/privilege/privilege.go:227
+#, c-format
+msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
 #: internal/policies/ad/ad.go:197
@@ -461,7 +481,7 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:205
+#: internal/adsysservice/adsysservice.go:233
 #, c-format
 msgid "can't load server info from %s"
 msgstr ""
@@ -470,11 +490,11 @@ msgstr ""
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:46
+#: internal/policies/ad/registry/registry.go:47
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:218
+#: internal/adsysservice/adsysservice.go:246
 msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
@@ -513,11 +533,11 @@ msgstr ""
 msgid "cannot get versionID"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:236
+#: internal/policies/ad/admxgen/dconf/dconf.go:242
 msgid "cannot open file: %w"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:242
+#: internal/policies/ad/admxgen/dconf/dconf.go:248
 msgid "cannot read schema data: %w"
 msgstr ""
 
@@ -529,7 +549,7 @@ msgstr ""
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
-#: internal/adsysservice/service.go:212
+#: internal/adsysservice/service.go:221
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
@@ -552,7 +572,7 @@ msgstr ""
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:114
+#: internal/adsysservice/adsysservice.go:134
 msgid "couldn't create adsys service"
 msgstr ""
 
@@ -576,11 +596,11 @@ msgstr ""
 msgid "dconf update failed: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:136
+#: cmd/adsysd/daemon/daemon.go:140
 msgid "directory where ADsys caches GPOs downloads and policies."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:138
+#: cmd/adsysd/daemon/daemon.go:142
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
@@ -596,7 +616,7 @@ msgstr ""
 msgid "empty signature for %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:317
+#: internal/policies/ad/admxgen/dconf/dconf.go:323
 #, c-format
 msgid "enum id %s referenced by %s doesn't exist in list of enums"
 msgstr ""
@@ -638,11 +658,11 @@ msgstr ""
 msgid "error while listing documentation"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:221
+#: internal/policies/ad/admxgen/dconf/dconf.go:227
 msgid "error while loading schemas"
 msgstr ""
 
-#: internal/adsysservice/service.go:199
+#: internal/adsysservice/service.go:208
 msgid "error while trying to determine next refresh time"
 msgstr ""
 
@@ -650,7 +670,7 @@ msgstr ""
 msgid "error while trying to display daemon output"
 msgstr ""
 
-#: internal/adsysservice/service.go:178
+#: internal/adsysservice/service.go:187
 msgid "error while trying to get the list of active users"
 msgstr ""
 
@@ -659,7 +679,7 @@ msgstr ""
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
-#: internal/adsysservice/service.go:166
+#: internal/adsysservice/service.go:175
 msgid "error while trying to stop daemon"
 msgstr ""
 
@@ -671,23 +691,23 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/policies.go:98
+#: internal/policies/policies.go:122
 msgid "failed to apply policy to %q"
 msgstr ""
 
-#: internal/policies/policies.go:126
+#: internal/policies/policies.go:151
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:226
+#: internal/adsysservice/adsysservice.go:254
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/policies/policies.go:166
+#: internal/policies/policies.go:191
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:218
+#: internal/policies/ad/admxgen/admxgen.go:228
 msgid "failed to marshal meta data"
 msgstr ""
 
@@ -699,11 +719,11 @@ msgstr ""
 msgid "failed to read list of definition files: %w"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:230
+#: internal/policies/ad/admxgen/dconf/dconf.go:236
 msgid "failed to read list of schemas: %w"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:327
+#: internal/policies/ad/admxgen/dconf/dconf.go:333
 msgid "failed to read overrides files: %w"
 msgstr ""
 
@@ -725,7 +745,7 @@ msgstr ""
 msgid "force will shut it down immediately and drop existing connections."
 msgstr ""
 
-#: internal/policies/policies.go:180
+#: internal/policies/policies.go:205
 msgid "gpo was not applied for %q: %v"
 msgstr ""
 
@@ -733,7 +753,7 @@ msgstr ""
 msgid "invalid class %q"
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:81
+#: internal/policies/ad/registry/registry.go:83
 msgid "invalid default value for %s\\%s container: %v"
 msgstr ""
 
@@ -747,11 +767,11 @@ msgid ""
 ". Please use the StreamClientInterceptor: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:216
+#: internal/adsysservice/service.go:225
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
-#: internal/policies/ad/registry/registry.go:143
+#: internal/policies/ad/registry/registry.go:152
 msgid "invalid policy"
 msgstr ""
 
@@ -773,7 +793,7 @@ msgstr ""
 msgid "machine is offline and GPO rules cache is unavailable: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:322
+#: cmd/adsysd/client/policy.go:328
 msgid "machine or user arguments cannot be used with update all"
 msgstr ""
 
@@ -781,12 +801,12 @@ msgstr ""
 msgid "machine updates the policy of the computer."
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:153
+#: internal/policies/ad/admxgen/dconf/dconf.go:159
 #, c-format
 msgid "min value for long decimal is not a valid float: %s"
 msgstr ""
 
-#: internal/policies/ad/admxgen/dconf/dconf.go:157
+#: internal/policies/ad/admxgen/dconf/dconf.go:163
 msgid "min value for long decimal is not a valid float: %v"
 msgstr ""
 
@@ -799,7 +819,7 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/adsysservice/service.go:202
+#: internal/adsysservice/service.go:211
 msgid "no boot system time found"
 msgstr ""
 
@@ -811,7 +831,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/policies.go:144 internal/policies/policies.go:155
+#: internal/policies/policies.go:169 internal/policies/policies.go:180
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -835,7 +855,7 @@ msgstr ""
 msgid "permission denied"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:261
+#: internal/policies/ad/admxgen/admxgen.go:271
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
@@ -869,13 +889,13 @@ msgid ""
 "socket activation."
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:236
+#: internal/policies/ad/admxgen/admxgen.go:246
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
 msgstr ""
 
-#: internal/policies/ad/admxgen/admxgen.go:307
+#: internal/policies/ad/admxgen/admxgen.go:317
 msgid "the following policies have not been assigned to a category: %v"
 msgstr ""
 
@@ -885,7 +905,7 @@ msgid ""
 "no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:141
+#: cmd/adsysd/daemon/daemon.go:145
 msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
@@ -899,8 +919,8 @@ msgstr ""
 msgid "unexpected socket type"
 msgstr ""
 
-#: internal/adsysservice/service.go:80 internal/adsysservice/service.go:81
-#: internal/adsysservice/service.go:102
+#: internal/adsysservice/service.go:86 internal/adsysservice/service.go:87
+#: internal/adsysservice/service.go:108
 msgid "unknown"
 msgstr ""
 
@@ -908,7 +928,7 @@ msgstr ""
 msgid "use a specific configuration file"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:325
+#: cmd/adsysd/client/policy.go:331
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
