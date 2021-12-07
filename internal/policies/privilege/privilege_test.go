@@ -32,8 +32,8 @@ func TestApplyPolicy(t *testing.T) {
 		wantErr bool
 	}{
 		// local admin cases
-		"disallow local admins": {entries: []entry.Entry{{Key: "allow-local-admins", Disabled: true}}},
-		"allow local admins":    {entries: []entry.Entry{{Key: "allow-local-admins", Disabled: false}}},
+		"disallow local admins":                            {entries: []entry.Entry{{Key: "allow-local-admins", Disabled: true}}},
+		"allow local admins with no other rules is a noop": {entries: []entry.Entry{{Key: "allow-local-admins", Disabled: false}}},
 
 		// client admins from AD
 		"set client user admins":                       {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com"}}},
@@ -47,6 +47,29 @@ func TestApplyPolicy(t *testing.T) {
 		"disallow local admins and set client admins": {entries: []entry.Entry{
 			{Key: "allow-local-admins", Disabled: true},
 			{Key: "client-admins", Value: "alice@domain.com"}}},
+		"disallow local admins with previous local admin conf and set client admins": {
+			existingPolkitDir: "existing-previous-local-admins-multi",
+			entries: []entry.Entry{
+				{Key: "allow-local-admins", Disabled: true},
+				{Key: "client-admins", Value: "alice@domain.com"}}},
+		"allow local admins without previous local admin conf and set client admins": {entries: []entry.Entry{
+			{Key: "allow-local-admins", Disabled: false},
+			{Key: "client-admins", Value: "alice@domain.com"}}},
+		"allow local admins with previous local admin conf (simple) and set client admins": {
+			existingPolkitDir: "existing-previous-local-admins-one",
+			entries: []entry.Entry{
+				{Key: "allow-local-admins", Disabled: false},
+				{Key: "client-admins", Value: "alice@domain.com"}}},
+		"allow local admins with previous local admin conf and set client admins": {
+			existingPolkitDir: "existing-previous-local-admins-multi",
+			entries: []entry.Entry{
+				{Key: "allow-local-admins", Disabled: false},
+				{Key: "client-admins", Value: "alice@domain.com"}}},
+		"allow local admins with previous local admin conf (with adsys file) and set client admins": {
+			existingPolkitDir: "existing-previous-local-admins-with-adsys-file",
+			entries: []entry.Entry{
+				{Key: "allow-local-admins", Disabled: false},
+				{Key: "client-admins", Value: "alice@domain.com"}}},
 
 		// Overwrite existing files
 		"overwrite existing sudoers file":      {existingSudoersDir: "existing-files", entries: defaultLocalAdminDisabledRule},
