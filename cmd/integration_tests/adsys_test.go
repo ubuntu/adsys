@@ -331,6 +331,7 @@ func runDaemons() (teardown func()) {
 		"invalid_startup_time":     filepath.Join(dir, "invalidstartuptime"),
 		"no_nextrefresh_time":      filepath.Join(dir, "nonextrefreshtime"),
 		"invalid_nextrefresh_time": filepath.Join(dir, "invalidnextrefreshtime"),
+		"subcription_disabled":     filepath.Join(dir, "subscriptiondisabled"),
 	}
 	systemSockets = make(map[string]string)
 
