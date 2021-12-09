@@ -1,6 +1,8 @@
 package policies
 
 import (
+	"context"
+
 	"github.com/ubuntu/adsys/internal/policies/gdm"
 )
 
@@ -10,4 +12,9 @@ func WithGDM(m *gdm.Manager) Option {
 		o.gdm = m
 		return nil
 	}
+}
+
+// GetSubcriptionState forces a refresh of a subscription state. Exported for tests only.
+func (m *Manager) GetSubcriptionState(ctx context.Context) (subscriptionEnabled bool) {
+	return m.getSubcriptionState(ctx)
 }

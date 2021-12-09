@@ -178,16 +178,24 @@ func TestApplyPolicy(t *testing.T) {
 
 	bus := testutils.NewDbusConn(t)
 
+	subscriptionDbus := bus.Object(consts.SubcriptionDbusRegisteredName,
+		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
 
 	tests := map[string]struct {
-		gposFile              string
-		secondCallWithNoRules bool
-		makeDirReadOnly       string
+		gposFile                     string
+		secondCallWithNoRules        bool
+		makeDirReadOnly              string
+		isNotSubscribed              bool
+		secondCallWithNoSubscription bool
 
 		wantErr bool
 	}{
 		"succeed": {gposFile: "all_entry_types.gpos"},
 		"second call with no rules deletes everything": {gposFile: "all_entry_types.gpos", secondCallWithNoRules: true},
+
+		// no subscription filterings
+		"no subscription is only dconf content":                                       {gposFile: "all_entry_types.gpos", isNotSubscribed: true},
+		"second call with no subscription should remove everything but dconf content": {gposFile: "all_entry_types.gpos", secondCallWithNoSubscription: true},
 
 		"dconf apply policy fails":     {gposFile: "dconf_failing.gpos", wantErr: true},
 		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", gposFile: "all_entry_types.gpos", wantErr: true},
@@ -196,7 +204,8 @@ func TestApplyPolicy(t *testing.T) {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+			// We change the dbus returned values to simulate a subscription
+			//t.Parallel()
 
 			gpos, err := entry.NewGPOs(filepath.Join("testdata", tc.gposFile))
 			require.NoError(t, err, "Setup: can not load gpo list")
@@ -206,6 +215,16 @@ func TestApplyPolicy(t *testing.T) {
 			dconfDir := filepath.Join(fakeRootDir, "etc", "dconf")
 			policyKitDir := filepath.Join(fakeRootDir, "etc", "polkit-1")
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
+
+			status := "enabled"
+			if tc.isNotSubscribed {
+				status = "disabled"
+			}
+			require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", status), "Setup: can not set subscription status to %q", status)
+			defer func() {
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
+			}()
+
 			m, err := policies.New(bus,
 				policies.WithCacheDir(cacheDir),
 				policies.WithDconfDir(dconfDir),
@@ -229,8 +248,16 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy should return no error but got one")
 
+			var runSecondCall bool
 			if tc.secondCallWithNoRules {
-				err = m.ApplyPolicy(context.Background(), "hostname", true, nil)
+				runSecondCall = true
+				gpos = nil
+			} else if tc.secondCallWithNoSubscription {
+				runSecondCall = true
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", "disabled"), "Setup: can not set subscription status for second call to disabled")
+			}
+			if runSecondCall {
+				err = m.ApplyPolicy(context.Background(), "hostname", true, gpos)
 				require.NoError(t, err, "ApplyPolicy should return no error but got one")
 			}
 
@@ -298,6 +325,47 @@ func TestLastUpdateFor(t *testing.T) {
 	}
 }
 
+func TestGetStatus(t *testing.T) {
+	//t.Parallel()
+
+	bus := testutils.NewDbusConn(t)
+	subscriptionDbus := bus.Object(consts.SubcriptionDbusRegisteredName,
+		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
+
+	tests := map[string]struct {
+		status string
+
+		want bool
+	}{
+		"returns enablement status (enabled)":  {status: "enabled", want: true},
+		"returns enablement status (disabled)": {status: "somethingelse", want: false},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			// We change the dbus returned values to simulate a subscription
+			//t.Parallel()
+
+			require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", tc.status), "Setup: can not set subscription status to %q", tc.status)
+			defer func() {
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
+			}()
+
+			cacheDir := t.TempDir()
+			m, err := policies.New(bus, policies.WithCacheDir(cacheDir))
+			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
+
+			// force a refresh
+			_ = m.GetSubcriptionState(context.Background())
+
+			got := m.GetStatus()
+			assert.Equal(t, tc.want, got, "GetStatus should return %q but got %q", tc.want, got)
+		})
+	}
+}
+
 func TestMain(m *testing.M) {
 	flag.BoolVar(&update, "update", false, "update golden files")
 	flag.Parse()
@@ -307,6 +375,60 @@ func TestMain(m *testing.M) {
 
 		// Ubuntu Advantage
 		defer testutils.StartLocalSystemBus()()
+
+		conn, err := dbus.SystemBusPrivate()
+		if err != nil {
+			log.Fatalf("Setup: can’t get a private system bus: %v", err)
+		}
+		defer func() {
+			if err = conn.Close(); err != nil {
+				log.Fatalf("Teardown: can’t close system dbus connection: %v", err)
+			}
+		}()
+		if err = conn.Auth(nil); err != nil {
+			log.Fatalf("Setup: can’t auth on private system bus: %v", err)
+		}
+		if err = conn.Hello(); err != nil {
+			log.Fatalf("Setup: can’t send hello message on private system bus: %v", err)
+		}
+
+		intro := fmt.Sprintf(`
+		<node>
+			<interface name="%s">
+				<property name='Status' type='s' access="readwrite"/>
+			</interface>%s%s</node>`, consts.SubcriptionDbusInterface, introspect.IntrospectDataString, prop.IntrospectDataString)
+		ua := struct{}{}
+		if err := conn.Export(ua, consts.SubcriptionDbusObjectPath, consts.SubcriptionDbusInterface); err != nil {
+			log.Fatalf("Setup: could not export subscription object: %v", err)
+		}
+
+		propsSpec := map[string]map[string]*prop.Prop{
+			consts.SubcriptionDbusInterface: {
+				"Status": {
+					Value:    "",
+					Writable: true,
+					Emit:     prop.EmitTrue,
+					Callback: func(c *prop.Change) *dbus.Error { return nil },
+				},
+			},
+		}
+		_, err = prop.Export(conn, consts.SubcriptionDbusObjectPath, propsSpec)
+		if err != nil {
+			log.Fatalf("Setup: could not export property for subscription object: %v", err)
+		}
+
+		if err := conn.Export(introspect.Introspectable(intro), consts.SubcriptionDbusObjectPath,
+			"org.freedesktop.DBus.Introspectable"); err != nil {
+			log.Fatalf("Setup: could not export introspectable subscription object: %v", err)
+		}
+
+		reply, err := conn.RequestName(consts.SubcriptionDbusRegisteredName, dbus.NameFlagDoNotQueue)
+		if err != nil {
+			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: %v", err)
+		}
+		if reply != dbus.RequestNameReplyPrimaryOwner {
+			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: name is already taken")
+		}
 
 	}
 
