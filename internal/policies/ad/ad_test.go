@@ -14,12 +14,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/policies/ad"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	bus := ad.GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
 		cacheDirRO      bool
@@ -77,7 +78,7 @@ func TestGetPolicies(t *testing.T) {
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
 
-	bus := ad.GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	standardGPO := entry.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 		"dconf": {
@@ -609,7 +610,7 @@ func TestGetPolicies(t *testing.T) {
 func TestGetPoliciesOffline(t *testing.T) {
 	t.Parallel()
 
-	bus := ad.GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	gpos := []entry.GPO{
 		{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
@@ -701,7 +702,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 func TestGetPoliciesWorkflows(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := ad.GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	gpoListArgs := "standard"
 	objectClass := ad.UserObject
@@ -803,7 +804,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 func TestGetPoliciesConcurrently(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := ad.GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	objectClass := ad.UserObject
 
@@ -917,7 +918,7 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 func TestListUsersFromCache(t *testing.T) {
 	t.Parallel()
 
-	bus := ad.GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
 		ccCachesToCreate []string
@@ -999,7 +1000,7 @@ func TestNormalizeTargetName(t *testing.T) {
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
 
-	bus := ad.GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
 		target              string

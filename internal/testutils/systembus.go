@@ -106,7 +106,7 @@ func StartLocalSystemBus() func() {
 	}
 }
 
-// NewDbusConn returns a system dbus connection which will be tore down when tests ends.
+// NewDbusConn returns a system dbus connection which automatically close on test shutdown.
 func NewDbusConn(t *testing.T) *dbus.Conn {
 	t.Helper()
 
