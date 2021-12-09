@@ -3,14 +3,21 @@ package policies_test
 import (
 	"context"
 	"flag"
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/godbus/dbus/v5"
+	"github.com/godbus/dbus/v5/introspect"
+	"github.com/godbus/dbus/v5/prop"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/testutils"
@@ -20,6 +27,8 @@ var update bool
 
 func TestDumpPolicies(t *testing.T) {
 	t.Parallel()
+
+	bus := testutils.NewDbusConn(t)
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
@@ -120,7 +129,7 @@ func TestDumpPolicies(t *testing.T) {
 			t.Parallel()
 
 			cacheDir := t.TempDir()
-			m, err := policies.New(policies.WithCacheDir(cacheDir))
+			m, err := policies.New(bus, policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
@@ -165,7 +174,10 @@ func TestDumpPolicies(t *testing.T) {
 }
 
 func TestApplyPolicy(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
+
+	bus := testutils.NewDbusConn(t)
+
 
 	tests := map[string]struct {
 		gposFile              string
@@ -194,7 +206,7 @@ func TestApplyPolicy(t *testing.T) {
 			dconfDir := filepath.Join(fakeRootDir, "etc", "dconf")
 			policyKitDir := filepath.Join(fakeRootDir, "etc", "polkit-1")
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
-			m, err := policies.New(
+			m, err := policies.New(bus,
 				policies.WithCacheDir(cacheDir),
 				policies.WithDconfDir(dconfDir),
 				policies.WithPolicyKitDir(policyKitDir),
@@ -230,6 +242,8 @@ func TestApplyPolicy(t *testing.T) {
 func TestLastUpdateFor(t *testing.T) {
 	t.Parallel()
 
+	bus := testutils.NewDbusConn(t)
+
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
 
@@ -254,7 +268,7 @@ func TestLastUpdateFor(t *testing.T) {
 			t.Parallel()
 
 			cacheDir := t.TempDir()
-			m, err := policies.New(policies.WithCacheDir(cacheDir))
+			m, err := policies.New(bus, policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
@@ -287,6 +301,14 @@ func TestLastUpdateFor(t *testing.T) {
 func TestMain(m *testing.M) {
 	flag.BoolVar(&update, "update", false, "update golden files")
 	flag.Parse()
+
+	// Don’t setup samba or sssd for mock helpers
+	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
+
+		// Ubuntu Advantage
+		defer testutils.StartLocalSystemBus()()
+
+	}
 
 	m.Run()
 }
