@@ -52,4 +52,11 @@ const (
 	SSSDDbusBaseObjectPath = "/org/freedesktop/sssd/infopipe/Domains"
 	// SSSDDbusInterface is the interface we are using for access dbus methods.
 	SSSDDbusInterface = "org.freedesktop.sssd.infopipe.Domains.Domain"
+
+	// SubcriptionDbusRegisteredName is the well-known name of UA on dbus.
+	SubcriptionDbusRegisteredName = "com.canonical.UbuntuAdvantage"
+	// SubcriptionDbusObjectPath  is the path under which our AD service is registered.
+	SubcriptionDbusObjectPath = "/com/canonical/UbuntuAdvantage/Services/esm_2dinfra"
+	// SubcriptionDbusInterface is the interface we are using for access dbus properties.
+	SubcriptionDbusInterface = "com.canonical.UbuntuAdvantage.Service"
 )

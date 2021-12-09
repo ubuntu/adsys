@@ -6,8 +6,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -26,6 +28,11 @@ type Manager struct {
 	dconf     *dconf.Manager
 	privilege *privilege.Manager
 	gdm       *gdm.Manager
+
+	subcriptionDbus dbus.BusObject
+
+	sync.RWMutex
+	subscriptionEnabled bool
 }
 
 type options struct {
@@ -72,7 +79,7 @@ func WithPolicyKitDir(p string) Option {
 }
 
 // New returns a new manager with all default policy handlers.
-func New(opts ...Option) (m *Manager, err error) {
+func New(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
 
 	// defaults
@@ -107,12 +114,17 @@ func New(opts ...Option) (m *Manager, err error) {
 		return nil, err
 	}
 
+	subscriptionDbus := bus.Object(consts.SubcriptionDbusRegisteredName,
+		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
+
 	return &Manager{
 		gpoRulesCacheDir: gpoRulesCacheDir,
 
 		dconf:     dconfManager,
 		privilege: privilegeManager,
 		gdm:       args.gdm,
+
+		subcriptionDbus: subscriptionDbus,
 	}, nil
 }
 
@@ -126,9 +138,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	rules := entry.GetUniqueRules(gpos)
 	var g errgroup.Group
 	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
-	g.Go(func() error { return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"]) })
 
-	// TODO g.Go(func() error { return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"]) })
+	if !m.getSubcriptionState(ctx) {
+		filterRules(ctx, rules)
+	}
+
+	g.Go(func() error { return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"]) })
+	// TODO g.Go(func() error { return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["script"]) })
 	// TODO g.Go(func() error { return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"]) })
 	if err := g.Wait(); err != nil {
 		return err
@@ -205,4 +221,55 @@ func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachin
 		return time.Time{}, fmt.Errorf(i18n.G("gpo was not applied for %q: %v"), objectName, err)
 	}
 	return info.ModTime(), nil
+}
+
+// getSubcriptionState refresh subscription status from Ubuntu Advantage and return it.
+func (m *Manager) getSubcriptionState(ctx context.Context) (subscriptionEnabled bool) {
+	log.Debug(ctx, "Refresh subscription state")
+
+	defer func() {
+		m.Lock()
+		m.subscriptionEnabled = subscriptionEnabled
+		m.Unlock()
+
+		if subscriptionEnabled {
+			log.Debug(ctx, "Ubuntu advantage is enabled for GPO restrictions")
+			return
+		}
+
+		log.Debug(ctx, "Ubuntu advantage is not enabled for GPO restrictions")
+	}()
+
+	// Check if the device is entitled to the Pro policy
+	prop, err := m.subcriptionDbus.GetProperty(consts.SubcriptionDbusInterface + ".Status")
+	if err != nil {
+		log.Warningf(ctx, "no dbus connection to Ubuntu Advantage. Considering device as not enabled: %v", err)
+		return false
+	}
+	enabled, ok := prop.Value().(string)
+	if !ok {
+		log.Warningf(ctx, "dbus returned an improper value from Ubuntu Advantage. Considering device as not enabled: %v", prop.Value())
+		return false
+	}
+
+	if enabled != "enabled" {
+		return false
+	}
+
+	return true
+}
+
+// filterRules allow to filter any rules that is not eligible for the current device.
+func filterRules(ctx context.Context, rules map[string][]entry.Entry) {
+	log.Debug(ctx, "Filtering Rules")
+
+	rules["privilege"] = nil
+	//rules["script"] = nil
+}
+
+// GetStatus returns dynamic part of our manager instance like subscription status.
+func (m *Manager) GetStatus() (subscriptionEnabled bool) {
+	m.RLock()
+	defer m.RUnlock()
+	return m.subscriptionEnabled
 }

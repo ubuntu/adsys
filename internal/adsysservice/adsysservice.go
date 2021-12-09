@@ -203,7 +203,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if args.policyKitDir != "" {
 		policyOptions = append(policyOptions, policies.WithPolicyKitDir(args.policyKitDir))
 	}
-	m, err := policies.New(policyOptions...)
+	m, err := policies.New(bus, policyOptions...)
 	if err != nil {
 		return nil, err
 	}
