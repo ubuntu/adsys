@@ -512,6 +512,18 @@ func TestPolicyUpdate(t *testing.T) {
 			defaultADDomainSuffix: "example.com",
 		},
 
+		// subscriptions
+		"No subscription means dconf only": {
+			systemAnswer: "subcription_disabled",
+			args:         []string{"-m"},
+			krb5ccname:   "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			}},
+
 		// Error cases
 		"User needs machine to be updated": {wantErr: true},
 		"Polkit denied updating self":      {systemAnswer: "no", initState: "localhost-uptodate", wantErr: true},
@@ -986,6 +998,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		systemSockets = make(map[string]string)
 		systemSockets["yes"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_YES")
 		systemSockets["no"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_NO")
+		systemSockets["subcription_disabled"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_SUBCRIPTION_DISABLED")
 		return false
 	}
 
@@ -1034,8 +1047,10 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		"GO_WANT_HELPER_PROCESS=1",
 
 		// dbus addresses to be reset in child
+		// TODO: we should do this based on the key without hardcoding them
 		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_YES=%s", systemSockets["yes"]),
 		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_NO=%s", systemSockets["no"]),
+		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_SUBCRIPTION_DISABLED=%s", systemSockets["subcription_disabled"]),
 
 		// mock for ad python samba code
 		fmt.Sprintf("PYTHONPATH=%s", admock),
