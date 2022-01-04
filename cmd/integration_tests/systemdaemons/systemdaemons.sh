@@ -23,7 +23,7 @@ fi
 # Add dbus registername main objects
 python3 -m dbusmock --system org.freedesktop.systemd1 /org/freedesktop/systemd1 org.freedesktop.systemd1.Manager &
 python3 -m dbusmock --system org.freedesktop.sssd.infopipe /org/freedesktop/sssd/infopipe/Domains/example_2ecom org.freedesktop.sssd.infopipe.Domains.Domain &
-sleep 1
+sleep 3
 
 # Handle systemd objects depending on the mode
 time=""
