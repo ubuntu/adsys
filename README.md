@@ -65,10 +65,9 @@ adsysctl applied [USER_NAME] [flags]
 
 #### adsysctl completion
 
-generate the autocompletion script for the specified shell
+Generate the autocompletion script for the specified shell
 
 ##### Synopsis
-
 
 Generate the autocompletion script for adsysctl for the specified shell.
 See each sub-command's help for details on how to use the generated script.
@@ -91,10 +90,9 @@ See each sub-command's help for details on how to use the generated script.
 
 #### adsysctl completion bash
 
-generate the autocompletion script for bash
+Generate the autocompletion script for bash
 
 ##### Synopsis
-
 
 Generate the autocompletion script for the bash shell.
 
@@ -102,16 +100,21 @@ This script depends on the 'bash-completion' package.
 If it is not installed already, you can install it via your OS's package manager.
 
 To load completions in your current shell session:
-$ source <(adsysctl completion bash)
+
+	source <(adsysctl completion bash)
 
 To load completions for every new session, execute once:
-Linux:
-  $ adsysctl completion bash > /etc/bash_completion.d/adsysctl
-MacOS:
-  $ adsysctl completion bash > /usr/local/etc/bash_completion.d/adsysctl
+
+###### Linux:
+
+	adsysctl completion bash > /etc/bash_completion.d/adsysctl
+
+###### macOS:
+
+	adsysctl completion bash > /usr/local/etc/bash_completion.d/adsysctl
 
 You will need to start a new shell for this setup to take effect.
-  
+
 
 ```
 adsysctl completion bash
@@ -135,18 +138,19 @@ adsysctl completion bash
 
 #### adsysctl completion fish
 
-generate the autocompletion script for fish
+Generate the autocompletion script for fish
 
 ##### Synopsis
-
 
 Generate the autocompletion script for the fish shell.
 
 To load completions in your current shell session:
-$ adsysctl completion fish | source
+
+	adsysctl completion fish | source
 
 To load completions for every new session, execute once:
-$ adsysctl completion fish > ~/.config/fish/completions/adsysctl.fish
+
+	adsysctl completion fish > ~/.config/fish/completions/adsysctl.fish
 
 You will need to start a new shell for this setup to take effect.
 
@@ -173,15 +177,15 @@ adsysctl completion fish [flags]
 
 #### adsysctl completion powershell
 
-generate the autocompletion script for powershell
+Generate the autocompletion script for powershell
 
 ##### Synopsis
-
 
 Generate the autocompletion script for powershell.
 
 To load completions in your current shell session:
-PS C:\> adsysctl completion powershell | Out-String | Invoke-Expression
+
+	adsysctl completion powershell | Out-String | Invoke-Expression
 
 To load completions for every new session, add the output of the above command
 to your powershell profile.
@@ -209,22 +213,26 @@ adsysctl completion powershell [flags]
 
 #### adsysctl completion zsh
 
-generate the autocompletion script for zsh
+Generate the autocompletion script for zsh
 
 ##### Synopsis
-
 
 Generate the autocompletion script for the zsh shell.
 
 If shell completion is not already enabled in your environment you will need
 to enable it.  You can execute the following once:
 
-$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
 To load completions for every new session, execute once:
-$ adsysctl completion zsh > "${fpath[1]}/_adsysctl"
- or:
-$ adsysctl completion zsh > /usr/local/share/zsh/site-functions/_adsysctl
+
+###### Linux:
+
+	adsysctl completion zsh > "${fpath[1]}/_adsysctl"
+
+###### macOS:
+
+	adsysctl completion zsh > /usr/local/share/zsh/site-functions/_adsysctl
 
 You will need to start a new shell for this setup to take effect.
 
@@ -546,10 +554,9 @@ adsysd COMMAND [flags]
 
 #### adsysd completion
 
-generate the autocompletion script for the specified shell
+Generate the autocompletion script for the specified shell
 
 ##### Synopsis
-
 
 Generate the autocompletion script for adsysd for the specified shell.
 See each sub-command's help for details on how to use the generated script.
@@ -577,10 +584,9 @@ See each sub-command's help for details on how to use the generated script.
 
 #### adsysd completion bash
 
-generate the autocompletion script for bash
+Generate the autocompletion script for bash
 
 ##### Synopsis
-
 
 Generate the autocompletion script for the bash shell.
 
@@ -588,16 +594,21 @@ This script depends on the 'bash-completion' package.
 If it is not installed already, you can install it via your OS's package manager.
 
 To load completions in your current shell session:
-$ source <(adsysd completion bash)
+
+	source <(adsysd completion bash)
 
 To load completions for every new session, execute once:
-Linux:
-  $ adsysd completion bash > /etc/bash_completion.d/adsysd
-MacOS:
-  $ adsysd completion bash > /usr/local/etc/bash_completion.d/adsysd
+
+###### Linux:
+
+	adsysd completion bash > /etc/bash_completion.d/adsysd
+
+###### macOS:
+
+	adsysd completion bash > /usr/local/etc/bash_completion.d/adsysd
 
 You will need to start a new shell for this setup to take effect.
-  
+
 
 ```
 adsysd completion bash
@@ -626,18 +637,19 @@ adsysd completion bash
 
 #### adsysd completion fish
 
-generate the autocompletion script for fish
+Generate the autocompletion script for fish
 
 ##### Synopsis
-
 
 Generate the autocompletion script for the fish shell.
 
 To load completions in your current shell session:
-$ adsysd completion fish | source
+
+	adsysd completion fish | source
 
 To load completions for every new session, execute once:
-$ adsysd completion fish > ~/.config/fish/completions/adsysd.fish
+
+	adsysd completion fish > ~/.config/fish/completions/adsysd.fish
 
 You will need to start a new shell for this setup to take effect.
 
@@ -669,15 +681,15 @@ adsysd completion fish [flags]
 
 #### adsysd completion powershell
 
-generate the autocompletion script for powershell
+Generate the autocompletion script for powershell
 
 ##### Synopsis
-
 
 Generate the autocompletion script for powershell.
 
 To load completions in your current shell session:
-PS C:\> adsysd completion powershell | Out-String | Invoke-Expression
+
+	adsysd completion powershell | Out-String | Invoke-Expression
 
 To load completions for every new session, add the output of the above command
 to your powershell profile.
@@ -710,22 +722,26 @@ adsysd completion powershell [flags]
 
 #### adsysd completion zsh
 
-generate the autocompletion script for zsh
+Generate the autocompletion script for zsh
 
 ##### Synopsis
-
 
 Generate the autocompletion script for the zsh shell.
 
 If shell completion is not already enabled in your environment you will need
 to enable it.  You can execute the following once:
 
-$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
 To load completions for every new session, execute once:
-$ adsysd completion zsh > "${fpath[1]}/_adsysd"
- or:
-$ adsysd completion zsh > /usr/local/share/zsh/site-functions/_adsysd
+
+###### Linux:
+
+	adsysd completion zsh > "${fpath[1]}/_adsysd"
+
+###### macOS:
+
+	adsysd completion zsh > /usr/local/share/zsh/site-functions/_adsysd
 
 You will need to start a new shell for this setup to take effect.
 
