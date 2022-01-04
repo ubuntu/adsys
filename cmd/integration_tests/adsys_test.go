@@ -35,6 +35,7 @@ func TestMain(m *testing.M) {
 		fmt.Println("Integration tests skipped as requested")
 		return
 	}
+
 	// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
 	// We only start samba on non helper process
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
@@ -360,7 +361,7 @@ func runDaemons() (teardown func()) {
 			out, _ := cmd.CombinedOutput()
 			// Docker stop -t 0 will kill it anyway the container with exit code 143
 			if cmd.ProcessState.ExitCode() > 0 && cmd.ProcessState.ExitCode() != 143 {
-				log.Fatalf("Error running system daemons %s container: %v", answer, string(out))
+				log.Fatalf("Error running system daemons container named %q:\n%v", answer, string(out))
 			}
 		}()
 	}
@@ -370,7 +371,7 @@ func runDaemons() (teardown func()) {
 	}
 
 	// give time for polkit containers to start
-	time.Sleep(10 * time.Second)
+	time.Sleep(20 * time.Second)
 
 	return func() {
 		defer func() {
