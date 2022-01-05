@@ -109,7 +109,6 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 // addEmptyMarker adds to any empty directory, fileForEmptyDir to it.
 // That allows git to commit it.
 func addEmptyMarker(p string) error {
-
 	err := filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err

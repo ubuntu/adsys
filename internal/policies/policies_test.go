@@ -372,7 +372,6 @@ func TestMain(m *testing.M) {
 
 	// Don’t setup samba or sssd for mock helpers
 	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
-
 		// Ubuntu Advantage
 		defer testutils.StartLocalSystemBus()()
 
@@ -429,7 +428,6 @@ func TestMain(m *testing.M) {
 		if reply != dbus.RequestNameReplyPrimaryOwner {
 			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: name is already taken")
 		}
-
 	}
 
 	m.Run()
