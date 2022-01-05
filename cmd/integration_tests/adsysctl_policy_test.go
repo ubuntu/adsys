@@ -994,11 +994,10 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	t.Helper()
 
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "1" {
-		// Restore for subprocess the yes and no socket to connect to polkitd
-		systemSockets = make(map[string]string)
-		systemSockets["yes"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_YES")
-		systemSockets["no"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_NO")
-		systemSockets["subcription_disabled"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_SUBCRIPTION_DISABLED")
+		// Restore for subprocess the socket to connect to system daemons
+		for _, mode := range systemAnswersModes {
+			systemSockets[mode] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_" + strings.ToUpper(mode))
+		}
 		return false
 	}
 
@@ -1046,12 +1045,6 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	cmd.Env = append(os.Environ(),
 		"GO_WANT_HELPER_PROCESS=1",
 
-		// dbus addresses to be reset in child
-		// TODO: we should do this based on the key without hardcoding them
-		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_YES=%s", systemSockets["yes"]),
-		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_NO=%s", systemSockets["no"]),
-		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_SUBCRIPTION_DISABLED=%s", systemSockets["subcription_disabled"]),
-
 		// mock for ad python samba code
 		fmt.Sprintf("PYTHONPATH=%s", admock),
 
@@ -1060,6 +1053,10 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		fmt.Sprintf("NSS_WRAPPER_PASSWD=%s", passwd),
 		"NSS_WRAPPER_GROUP=/etc/group",
 	)
+	// dbus addresses to be reset in child
+	for _, mode := range systemAnswersModes {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_%s=%s", strings.ToUpper(mode), systemSockets[mode]))
+	}
 
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
