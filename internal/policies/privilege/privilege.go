@@ -75,6 +75,17 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
 
+	// We don’t create empty files if there is no entries. Still remove any previous version.
+	if len(entries) == 0 {
+		if err := os.Remove(sudoersConf); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		if err := os.Remove(policyKitConf); err != nil && !os.IsNotExist(err) {
+			return err
+		}
+		return nil
+	}
+
 	// Create our temp files and parent directories
 	// nolint:gosec // G301 match distribution permission
 	if err := os.MkdirAll(filepath.Dir(sudoersConf), 0755); err != nil {

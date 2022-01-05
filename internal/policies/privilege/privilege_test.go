@@ -72,10 +72,11 @@ func TestApplyPolicy(t *testing.T) {
 				{Key: "client-admins", Value: "alice@domain.com"}}},
 
 		// Overwrite existing files
-		"overwrite existing sudoers file":      {existingSudoersDir: "existing-files", entries: defaultLocalAdminDisabledRule},
-		"overwrite existing polkit file":       {existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule},
-		"no rules still overwrite those files": {existingSudoersDir: "existing-files", existingPolkitDir: "existing-files"},
-		"don't overwrite other existing files": {existingSudoersDir: "existing-other-files", existingPolkitDir: "existing-other-files", entries: defaultLocalAdminDisabledRule},
+		"no rules and no existing history means no files": {},
+		"overwrite existing sudoers file":                 {existingSudoersDir: "existing-files", entries: defaultLocalAdminDisabledRule},
+		"overwrite existing polkit file":                  {existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule},
+		"no rules still overwrite those files":            {existingSudoersDir: "existing-files", existingPolkitDir: "existing-files"},
+		"don't overwrite other existing files":            {existingSudoersDir: "existing-other-files", existingPolkitDir: "existing-other-files", entries: defaultLocalAdminDisabledRule},
 
 		// Not a computer, don’t do anything (even not create new files)
 		"not a computer": {notComputer: true, existingSudoersDir: "existing-other-files", existingPolkitDir: "existing-other-files"},
