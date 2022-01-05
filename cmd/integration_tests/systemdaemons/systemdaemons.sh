@@ -23,6 +23,7 @@ fi
 # Add dbus registername main objects
 python3 -m dbusmock --system org.freedesktop.systemd1 /org/freedesktop/systemd1 org.freedesktop.systemd1.Manager &
 python3 -m dbusmock --system org.freedesktop.sssd.infopipe /org/freedesktop/sssd/infopipe/Domains/example_2ecom org.freedesktop.sssd.infopipe.Domains.Domain &
+python3 -m dbusmock --system com.canonical.UbuntuAdvantage /com/canonical/UbuntuAdvantage/Services/esm_2dinfra com.canonical.UbuntuAdvantage.Service &
 sleep 3
 
 # Handle systemd objects depending on the mode
@@ -74,6 +75,19 @@ gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/in
 # sssd active server reports
 gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/example_2ecom -m org.freedesktop.DBus.Mock.AddMethod '' ActiveServer 's' 's' 'ret = "adc.example.com"'
 gdbus call --system -d org.freedesktop.sssd.infopipe -o /org/freedesktop/sssd/infopipe/Domains/online_no_active_server -m org.freedesktop.DBus.Mock.AddMethod '' ActiveServer 's' 's' 'ret = ""'
+
+# Ubuntu Advantage subcription state
+case "${mode}" in
+  "subcription_disabled")
+    status="<string 'disabled'>"
+    ;;
+
+  *)
+    status="<string 'enabled'>"
+    ;;
+esac
+
+gdbus call --system -d com.canonical.UbuntuAdvantage -o /com/canonical/UbuntuAdvantage/Services/esm_2dinfra -m org.freedesktop.DBus.Mock.AddProperty com.canonical.UbuntuAdvantage.Service Status "${status}"
 
 sleep 1
 

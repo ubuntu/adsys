@@ -294,7 +294,16 @@ func changeOsArgs(t *testing.T, conf string, args ...string) (restore func()) {
 }
 
 var (
-	systemSockets map[string]string
+	systemSockets      = make(map[string]string)
+	systemAnswersModes = []string{
+		"yes",
+		"no",
+		"no_startup_time",
+		"invalid_startup_time",
+		"no_nextrefresh_time",
+		"invalid_nextrefresh_time",
+		"subcription_disabled",
+	}
 )
 
 // runDaemons is a helper to start polkit, mock systemd and a system dbus session in multile containers:
@@ -324,15 +333,10 @@ func runDaemons() (teardown func()) {
 		log.Fatalf("Setup: failed to create temporary directory: %v", err)
 	}
 
-	answers := map[string]string{
-		"yes":                      filepath.Join(dir, "yes"),
-		"no":                       filepath.Join(dir, "no"),
-		"no_startup_time":          filepath.Join(dir, "nostartuptime"),
-		"invalid_startup_time":     filepath.Join(dir, "invalidstartuptime"),
-		"no_nextrefresh_time":      filepath.Join(dir, "nonextrefreshtime"),
-		"invalid_nextrefresh_time": filepath.Join(dir, "invalidnextrefreshtime"),
+	answers := make(map[string]string)
+	for _, mode := range systemAnswersModes {
+		answers[mode] = filepath.Join(dir, mode)
 	}
-	systemSockets = make(map[string]string)
 
 	var wg sync.WaitGroup
 	for answer, socketDir := range answers {

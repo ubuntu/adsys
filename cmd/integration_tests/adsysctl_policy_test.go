@@ -512,6 +512,18 @@ func TestPolicyUpdate(t *testing.T) {
 			defaultADDomainSuffix: "example.com",
 		},
 
+		// subscriptions
+		"No subscription means dconf only": {
+			systemAnswer: "subcription_disabled",
+			args:         []string{"-m"},
+			krb5ccname:   "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			}},
+
 		// Error cases
 		"User needs machine to be updated": {wantErr: true},
 		"Polkit denied updating self":      {systemAnswer: "no", initState: "localhost-uptodate", wantErr: true},
@@ -982,10 +994,10 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	t.Helper()
 
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "1" {
-		// Restore for subprocess the yes and no socket to connect to polkitd
-		systemSockets = make(map[string]string)
-		systemSockets["yes"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_YES")
-		systemSockets["no"] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_NO")
+		// Restore for subprocess the socket to connect to system daemons
+		for _, mode := range systemAnswersModes {
+			systemSockets[mode] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_" + strings.ToUpper(mode))
+		}
 		return false
 	}
 
@@ -1033,10 +1045,6 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	cmd.Env = append(os.Environ(),
 		"GO_WANT_HELPER_PROCESS=1",
 
-		// dbus addresses to be reset in child
-		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_YES=%s", systemSockets["yes"]),
-		fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_NO=%s", systemSockets["no"]),
-
 		// mock for ad python samba code
 		fmt.Sprintf("PYTHONPATH=%s", admock),
 
@@ -1045,6 +1053,10 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		fmt.Sprintf("NSS_WRAPPER_PASSWD=%s", passwd),
 		"NSS_WRAPPER_GROUP=/etc/group",
 	)
+	// dbus addresses to be reset in child
+	for _, mode := range systemAnswersModes {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_%s=%s", strings.ToUpper(mode), systemSockets[mode]))
+	}
 
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout

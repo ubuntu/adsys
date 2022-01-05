@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -30,7 +31,7 @@ var Update bool
 func TestFetchGPO(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
 		gpos                   []string
@@ -274,7 +275,7 @@ func TestFetchGPO(t *testing.T) {
 func TestFetchGPOWithUnreadableFile(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	// Prepare GPO with unreadable file.
 	// Defer will work after all tests are done because we don’t run it in parallel
@@ -339,7 +340,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
 		removeGPOCacheDir bool
@@ -377,7 +378,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	const policyPath = "SYSVOL/example.com/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
@@ -426,7 +427,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 func TestParseGPOConcurrent(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := GetSystemBus(t)
+	bus := testutils.NewDbusConn(t)
 
 	const policyPath = "SYSVOL/example.com/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
@@ -524,9 +525,9 @@ func TestMain(m *testing.M) {
 			domain: "example.com",
 			online: false,
 		}
-		const intro = `
+		intro := fmt.Sprintf(`
 	<node>
-		<interface name="org.freedesktop.sssd.infopipe.Domains.Domain">
+		<interface name="%s">
 			<method name="ActiveServer">
 				<arg direction="in" type="s"/>
 				<arg direction="out" type="s"/>
@@ -534,37 +535,37 @@ func TestMain(m *testing.M) {
 			<method name="IsOnline">
 				<arg direction="out" type="b"/>
 			</method>
-		</interface>` + introspect.IntrospectDataString + `</node>`
-		if err := conn.Export(sssdOnlineExample, "/org/freedesktop/sssd/infopipe/Domains/example_2ecom", "org.freedesktop.sssd.infopipe.Domains.Domain"); err != nil {
+		</interface>̀%s</node>`, consts.SSSDDbusInterface, introspect.IntrospectDataString)
+		if err := conn.Export(sssdOnlineExample, consts.SSSDDbusBaseObjectPath+"/example_2ecom", consts.SSSDDbusInterface); err != nil {
 			log.Fatalf("Setup: could not export example_2ecom: %v", err)
 		}
-		if err := conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/example_2ecom",
+		if err := conn.Export(introspect.Introspectable(intro), consts.SSSDDbusBaseObjectPath+"/example_2ecom",
 			"org.freedesktop.DBus.Introspectable"); err != nil {
 			log.Fatalf("Setup: could not export introspectable for example_2ecom: %v", err)
 		}
-		if err := conn.Export(sssdOnlineLocalDomain, "/org/freedesktop/sssd/infopipe/Domains/localdomain", "org.freedesktop.sssd.infopipe.Domains.Domain"); err != nil {
+		if err := conn.Export(sssdOnlineLocalDomain, consts.SSSDDbusBaseObjectPath+"/localdomain", consts.SSSDDbusInterface); err != nil {
 			log.Fatalf("Setup: could not export localdomain: %v", err)
 		}
-		if err := conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/localdomain",
+		if err := conn.Export(introspect.Introspectable(intro), consts.SSSDDbusBaseObjectPath+"/localdomain",
 			"org.freedesktop.DBus.Introspectable"); err != nil {
 			log.Fatalf("Setup: could not export introspectable for localdomain: %v", err)
 		}
-		if err := conn.Export(sssdEmptyServerDomain, "/org/freedesktop/sssd/infopipe/Domains/emptyserver", "org.freedesktop.sssd.infopipe.Domains.Domain"); err != nil {
+		if err := conn.Export(sssdEmptyServerDomain, consts.SSSDDbusBaseObjectPath+"/emptyserver", consts.SSSDDbusInterface); err != nil {
 			log.Fatalf("Setup: could not export emptyserver: %v", err)
 		}
-		if err := conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/emptyserver",
+		if err := conn.Export(introspect.Introspectable(intro), consts.SSSDDbusBaseObjectPath+"/emptyserver",
 			"org.freedesktop.DBus.Introspectable"); err != nil {
 			log.Fatalf("Setup: could not export introspectable for emptyserver: %v", err)
 		}
-		if err := conn.Export(sssdOfflineExample, "/org/freedesktop/sssd/infopipe/Domains/offline", "org.freedesktop.sssd.infopipe.Domains.Domain"); err != nil {
+		if err := conn.Export(sssdOfflineExample, consts.SSSDDbusBaseObjectPath+"/offline", consts.SSSDDbusInterface); err != nil {
 			log.Fatalf("Setup: could not export offline: %v", err)
 		}
-		if err := conn.Export(introspect.Introspectable(intro), "/org/freedesktop/sssd/infopipe/Domains/offline",
+		if err := conn.Export(introspect.Introspectable(intro), consts.SSSDDbusBaseObjectPath+"/offline",
 			"org.freedesktop.DBus.Introspectable"); err != nil {
 			log.Fatalf("Setup: could not export introspectable for offline: %v", err)
 		}
 
-		reply, err := conn.RequestName("org.freedesktop.sssd.infopipe", dbus.NameFlagDoNotQueue)
+		reply, err := conn.RequestName(consts.SSSDDbusRegisteredName, dbus.NameFlagDoNotQueue)
 		if err != nil {
 			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: %v", err)
 		}
@@ -621,19 +622,4 @@ func (s sssd) ActiveServer(_ string) (string, *dbus.Error) {
 
 func (s sssd) IsOnline() (bool, *dbus.Error) {
 	return s.online, nil
-}
-
-// GetSystemBus helper functionality to get one system bus which automatically close on test shutdown.
-func GetSystemBus(t *testing.T) *dbus.Conn {
-	t.Helper()
-
-	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)
-	bus, err := dbus.SystemBusPrivate()
-	require.NoError(t, err, "can’t get private system bus")
-	t.Cleanup(func() { _ = bus.Close() })
-	err = bus.Auth(nil)
-	require.NoError(t, err, "can’t auth on private system bus")
-	err = bus.Hello()
-	require.NoError(t, err, "can’t ping private system bus")
-	return bus
 }
