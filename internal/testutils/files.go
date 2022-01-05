@@ -31,6 +31,8 @@ func MakeReadOnly(t *testing.T, dest string) {
 	})
 }
 
+const fileForEmptyDir = ".empty"
+
 // CompareTreesWithFiltering allows comparing a goldPath directory to p. Those can be updated via the dedicated flag.
 // It will filter dconf database and not commit it in the new golden directory.
 func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
@@ -52,6 +54,7 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 				p, goldPath,
 				&shutil.CopyTreeOptions{Symlinks: true, Ignore: ignoreDconfDB, CopyFunction: shutil.Copy}),
 			"Can’t update golden directory")
+		require.NoError(t, addEmptyMarker(goldPath), "Cannot create empty file in empty directories")
 	}
 
 	var err error
@@ -103,6 +106,36 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 	}
 }
 
+// addEmptyMarker adds to any empty directory, fileForEmptyDir to it.
+// That allows git to commit it.
+func addEmptyMarker(p string) error {
+
+	err := filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() {
+			return nil
+		}
+
+		entries, err := os.ReadDir(path)
+		if err != nil {
+			return err
+		}
+		if len(entries) == 0 {
+			f, err := os.Create(filepath.Join(path, fileForEmptyDir))
+			if err != nil {
+				return err
+			}
+			f.Close()
+		}
+		return nil
+	})
+
+	return err
+}
+
 // treeContent builds a recursive file list of dir with their content
 // It can ignore files starting with ignoreHeaders.
 func treeContent(t *testing.T, dir string, ignoreHeaders []byte) (map[string]string, error) {
@@ -113,6 +146,11 @@ func treeContent(t *testing.T, dir string, ignoreHeaders []byte) (map[string]str
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
+		}
+
+		// Ignore markers for empty directories
+		if filepath.Base(path) == fileForEmptyDir {
+			return nil
 		}
 
 		content := ""
