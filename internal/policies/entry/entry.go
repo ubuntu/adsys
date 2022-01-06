@@ -29,6 +29,11 @@ type Entry struct {
 const (
 	// StrategyOverride is the default strategy.
 	StrategyOverride = "override"
+	// StrategyAppend is the strategy to append a value to an existing one.
+	// append means from a GPO standpoint that the further GPO value is listed before closest GPO
+	// (and then, enforced GPO in reverse order).
+	StrategyAppend = "append"
+	// This can be extended to support prepend but it is implemented yet as there is no real world cases.
 )
 
 const (
@@ -59,10 +64,37 @@ func GetUniqueRules(gpos []GPO) map[string][]Entry {
 				dedup[t] = make(map[string]Entry)
 			}
 			for _, e := range entries {
-				if _, exists := seen[t+e.Key]; exists {
-					continue
+				switch e.Strategy {
+				case StrategyAppend:
+					// We skip disabled keys as we only append enabled one.
+					if e.Disabled {
+						continue
+					}
+					var keyAlreadySeen bool
+					// If there is an existing value, prepend new value to it. We are analyzing GPOs in reverse order (closest first).
+					if _, exists := seen[t+e.Key]; exists {
+						keyAlreadySeen = true
+						// We have seen a closest key which is an override. We don’t append furthest append values.
+						if dedup[t][e.Key].Strategy != StrategyAppend {
+							continue
+						}
+						e.Value = e.Value + "\n" + dedup[t][e.Key].Value
+						// Keep closest meta value.
+						e.Meta = dedup[t][e.Key].Meta
+					}
+					dedup[t][e.Key] = e
+					if keyAlreadySeen {
+						continue
+					}
+
+				default:
+					// override case
+					if _, exists := seen[t+e.Key]; exists {
+						continue
+					}
+					dedup[t][e.Key] = e
 				}
-				dedup[t][e.Key] = e
+
 				keys[t] = append(keys[t], e.Key)
 				seen[t+e.Key] = struct{}{}
 			}
