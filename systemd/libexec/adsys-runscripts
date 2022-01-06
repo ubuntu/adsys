@@ -1,0 +1,31 @@
+#!/bin/sh
+set -eu
+
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <script-directory>"
+  exit 1
+fi
+
+scriptdir="$(readlink -f "$1")"
+if [ ! -d "${scriptdir}" ]; then
+  echo "Error: ${scriptdir} is not a directory"
+  exit 1
+fi
+
+# List in ascii order all the executable in the directory $1 and execute them
+for script in $(ls -d "${scriptdir}"/* | sort -V); do
+    if [ ! -x "${script}" ]; then
+        continue
+    fi
+    echo "Executing ${script}"
+    ${script}
+done
+
+# On user logoff: clean the script directory, be ready for a new version set by adsys
+case ${scriptdir} in
+  */users/*/logoff)
+    rm -r ${scriptdir}/..
+esac
+
+# Notification that we are ready to systemd
+systemd-notify --ready
