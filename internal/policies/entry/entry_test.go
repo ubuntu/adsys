@@ -243,6 +243,128 @@ func TestGetUniqueRules(t *testing.T) {
 					{Key: "C", Value: "oneValueC"},
 				},
 			}},
+
+		// append/prepend cases
+		"Append policy entry, one GPO": {
+			gpos: []entry.GPO{
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend},
+				},
+			}},
+		"Append policy entry, one GPO, disabled key is ignored": {
+			gpos: []entry.GPO{
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend, Disabled: true},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": nil,
+			}},
+		"Append policy entry, multiple GPOs": {
+			gpos: []entry.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "furthest value\nclosest value", Strategy: entry.StrategyAppend},
+				},
+			}},
+		"Append policy entry, multiple GPOs, disabled key is ignored, first": {
+			gpos: []entry.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend, Disabled: true},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
+				},
+			}},
+		"Append policy entry, multiple GPOs, disabled key is ignored, second": {
+			gpos: []entry.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend, Disabled: true},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+				},
+			}},
+		"Append policy entry, closest meta wins": {
+			gpos: []entry.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Meta: "closest meta", Strategy: entry.StrategyAppend},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Meta: "furthest meta", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "furthest value\nclosest value", Meta: "closest meta", Strategy: entry.StrategyAppend},
+				},
+			}},
+
+		// Mix append and override: closest win
+		"Mix meta on GPOs, furthest policy entry is append, closest is override": {
+			gpos: []entry.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value"},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "closest value"},
+				},
+			}},
+		"Mix meta on GPOs, closest policy entry is append, furthest override is ignored": {
+			gpos: []entry.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value"},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+				},
+			}},
 	}
 
 	for name, tc := range tests {
