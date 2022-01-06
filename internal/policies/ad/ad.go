@@ -190,9 +190,11 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 
 // GetPolicies returns all policy entries, stacked in order of priority.GetPolicies
 // It lists them, check state in global local cache and then redownload if any new version is available.
-// It users the given krb5 ticket reference to authenticate to AD.
+// It uses the given krb5 ticket reference to authenticate to AD.
 // userKrb5CCName has no impact for computer object and is ignored. If empty, we will expect to find one cached
 // ticket <krb5CCDir>/<objectName>.
+// The GPOs are returned from the highest priority in the hierarchy, with enforcement in reverse order
+// to the lowest priority.
 func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (r []entry.GPO, err error) {
 	defer decorate.OnError(&err, i18n.G("can't get policies for %q"), objectName)
 
