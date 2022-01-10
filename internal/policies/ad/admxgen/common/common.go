@@ -34,14 +34,16 @@ type DecimalRange struct {
 
 // ExpandedPolicy is the result of inflating a policy of a given type to a generic one, having all needed elements for a given release.
 type ExpandedPolicy struct {
-	Key         string
-	DisplayName string
-	ExplainText string
-	ElementType WidgetType
-	Meta        map[string]string
-	Class       string `yaml:",omitempty"`
-	Default     string
-	Note        string `yaml:",omitempty"`
+	Key          string
+	DisplayName  string
+	ExplainText  string
+	ElementType  WidgetType
+	Meta         map[string]string
+	MetaEnabled  map[string]string
+	MetaDisabled map[string]string
+	Class        string `yaml:",omitempty"`
+	Default      string
+	Note         string `yaml:",omitempty"`
 
 	// optional
 	Choices []string `yaml:",omitempty"`
