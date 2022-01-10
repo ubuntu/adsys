@@ -163,6 +163,11 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"multiple releases with different ranges":                   {},
 		"multiple releases with all widgets and different defaults": {},
 
+		// meta cases
+		"no meta enabled":  {},
+		"no meta disabled": {},
+		"no meta at all":   {},
+
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},
 	}
