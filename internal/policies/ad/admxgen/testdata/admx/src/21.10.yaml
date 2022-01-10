@@ -5,6 +5,11 @@
   meta:
     meta: "s"
     empty: "''''"
+  metaenabled:
+    meta: "i"
+    empty: "0"
+  metadisabled:
+    meta: "other"
   class: ""
   default: simple-text-property Default Value
   note: default system value is used for "Not Configured" and enforced if "Disabled".
