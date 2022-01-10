@@ -42,6 +42,11 @@ const (
 	policyWithNoChildrenName = "basic"
 )
 
+type meta struct {
+	Empty string
+	Meta  string
+}
+
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
 func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 	defer decorate.OnError(&err, i18n.G("can't parse policy"))
@@ -51,10 +56,6 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 		return nil, err
 	}
 
-	type meta struct {
-		Default string
-		Meta    string
-	}
 	var metaValues map[string]meta
 
 	// translate to strings based on type
@@ -69,27 +70,29 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 		}
 		switch e.key {
 		case policyContainerName:
-			metaValues = make(map[string]meta)
 			disabledContainer = disabled
-			if disabledContainer {
-				continue
-			}
-			// load meta values (including defaults) for options
-			v, err := decodeUtf16(e.data)
+
+			metaValues, err = getMetaValues(e.data, fmt.Sprintf("%s\\%s", e.path, e.key))
 			if err != nil {
 				return nil, err
 			}
-			if err := json.Unmarshal([]byte(v), &metaValues); err != nil {
-				return nil, fmt.Errorf(i18n.G("invalid default value for %s\\%s container: %v"), e.path, e.key, err)
-			}
 			continue
+
 		case policyWithNoChildrenName:
-			// this is not a container but a single key.
-			// Force it to be an "all" key, without inheritance, reset metaValues.
-			e.key = "all"
-			metaValues = map[string]meta{
-				e.key: {Default: ""},
+			// This is not a container but a single key.
+
+			// Get metavalues for the single key (withg "all: {}")
+			metaValues, err = getMetaValues(e.data, fmt.Sprintf("%s\\%s", e.path, e.key))
+			if err != nil {
+				return nil, err
 			}
+
+			// Force it to be considered as an "all" key to apply to every releases
+			e.key = "all"
+
+			// Reset data to empty as it was the meta content before.
+			e.data = []byte{}
+
 		default:
 			// propagate disabled value from container to all children elements
 			if disabledContainer {
@@ -98,7 +101,7 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 		}
 		e.path = strings.ReplaceAll(e.path, `\`, `/`)
 
-		// if the key is enabled, load value (or replace with defaultValues for empty results)
+		// if the key is enabled, load value (or replace with default values for empty results)
 		if !disabled {
 			switch t := e.dType; t {
 			case regSz, regMultiSz:
@@ -107,7 +110,7 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 					return nil, err
 				}
 				if res == "" {
-					res = metaValues[e.key].Default
+					res = metaValues[e.key].Empty
 				}
 				// lines separators for multi lines textbox are \x00
 				if t == regMultiSz {
@@ -258,4 +261,24 @@ func decodeUtf16(b []byte) (string, error) {
 		ints = ints[:len(ints)-1]
 	}
 	return string(utf16.Decode(ints)), nil
+}
+
+// getMetaValues returns meta values (including empty value) for options.
+func getMetaValues(data []byte, keypath string) (metaValues map[string]meta, err error) {
+	defer decorate.OnError(&err, i18n.G("can't decode meta value for %s: %v"), keypath, err)
+
+	metaValues = make(map[string]meta)
+	v, err := decodeUtf16(data)
+	if err != nil {
+		return nil, err
+	}
+	// Return empty dictionary for empty content
+	if v == "" {
+		return metaValues, nil
+	}
+	if err := json.Unmarshal([]byte(v), &metaValues); err != nil {
+		return nil, err
+	}
+
+	return metaValues, nil
 }
