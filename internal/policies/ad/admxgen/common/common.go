@@ -38,10 +38,10 @@ type ExpandedPolicy struct {
 	DisplayName  string
 	ExplainText  string
 	ElementType  WidgetType
-	Meta         map[string]string
-	MetaEnabled  map[string]string
-	MetaDisabled map[string]string
-	Class        string `yaml:",omitempty"`
+	Meta         map[string]string `yaml:",omitempty"`
+	MetaEnabled  map[string]string `yaml:",omitempty"`
+	MetaDisabled map[string]string `yaml:",omitempty"`
+	Class        string            `yaml:",omitempty"`
 	Default      string
 	Note         string `yaml:",omitempty"`
 
