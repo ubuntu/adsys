@@ -174,7 +174,14 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 				p.MetaDisabled = p.Meta
 			}
 			metasEnabled[release] = p.MetaEnabled
+			// ensure we don’t serialize nil object to null but {}
+			if metasEnabled[release] == nil {
+				metasEnabled[release] = make(map[string]string)
+			}
 			metasDisabled[release] = p.MetaDisabled
+			if metasDisabled[release] == nil {
+				metasDisabled[release] = make(map[string]string)
+			}
 
 			if supportedOn == "" {
 				if release != "all" {
@@ -237,9 +244,16 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
 
 		// prepare meta for the whole policy
+		// ensure we don’t serialize nil object to null but {}
+		if metasEnabled["all"] == nil {
+			metasEnabled["all"] = make(map[string]string)
+		}
 		metaEnabled, err := json.Marshal(metasEnabled)
 		if err != nil {
 			return nil, errors.New(i18n.G("failed to marshal enabled meta data"))
+		}
+		if metasDisabled["all"] == nil {
+			metasDisabled["all"] = make(map[string]string)
 		}
 		metaDisabled, err := json.Marshal(metasDisabled)
 		if err != nil {

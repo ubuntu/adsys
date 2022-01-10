@@ -63,6 +63,14 @@ func TestGenerateExpandedCategories(t *testing.T) {
 
 		"allow policy referenced but not available in any releases": {allowMissingKeys: true},
 
+		// meta cases
+		"no meta enabled":                    {},
+		"no meta disabled":                   {},
+		"meta entry only":                    {},
+		"no meta at all":                     {},
+		"meta is overridden by enabled key":  {},
+		"meta is overridden by disabled key": {},
+
 		// Error cases
 		"error on one policy not used":                                               {wantErr: true},
 		"error on unexisting policy referenced":                                      {allowMissingKeys: false, wantErr: true},
