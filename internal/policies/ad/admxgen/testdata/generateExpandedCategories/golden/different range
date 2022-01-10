@@ -12,7 +12,8 @@
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
         Supported on Ubuntu 20.04, 21.10
-      meta: '{"20.04":{"empty":"0","meta":"i"},"21.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}'
+      metaenabled: '{"20.04":{"empty":"0","meta":"i"},"21.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}'
+      metadisabled: '{"20.04":{"meta":"i"},"21.10":{"meta":"i"},"all":{"meta":"i"}}'
       class: Machine
       releaseselements:
         "20.04":
@@ -20,8 +21,10 @@
             displayname: summary
             explaintext: description
             elementtype: decimal
-            meta:
+            metaenabled:
                 empty: "0"
+                meta: i
+            metadisabled:
                 meta: i
             default: '''Default Value'''
             note: default system value is used for "Not Configured" and enforced if "Disabled".
@@ -35,8 +38,10 @@
             displayname: summary
             explaintext: description
             elementtype: decimal
-            meta:
+            metaenabled:
                 empty: "0"
+                meta: i
+            metadisabled:
                 meta: i
             default: '''Default Value'''
             note: default system value is used for "Not Configured" and enforced if "Disabled".
@@ -50,8 +55,10 @@
             displayname: summary
             explaintext: description
             elementtype: decimal
-            meta:
+            metaenabled:
                 empty: "0"
+                meta: i
+            metadisabled:
                 meta: i
             default: '''Default Value'''
             note: default system value is used for "Not Configured" and enforced if "Disabled".

@@ -2,9 +2,11 @@
   displayname: summary common
   explaintext: description common
   elementtype: text
-  meta:
+  metaenabled:
     meta: "as"
     empty: "[]"
+  metadisabled:
+    meta: "as"
   class: ""
   default: '''Default Value common'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".
