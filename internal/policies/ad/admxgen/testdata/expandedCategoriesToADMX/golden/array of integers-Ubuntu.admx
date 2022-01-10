@@ -18,6 +18,7 @@
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"empty":"[]","meta":"ai"},"all":{"empty":"[]","meta":"ai"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"ai"},"all":{"meta":"ai"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyArrayDecimal" valueName="all" />
       </elements>

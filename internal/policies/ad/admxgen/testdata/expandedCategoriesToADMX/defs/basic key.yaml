@@ -8,7 +8,8 @@
       - Type: privilege
       - Key: /no-options
 
-    meta: '{"all":{"empty":"''''","meta":""}}'
+    metaenabled: '{"all":{"meta":"some enabled value"}}'
+    metadisabled: '{"all":{"meta":"some disabled value"}}'
     class: Machine
     releaseselements:
       all:

@@ -11,7 +11,8 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Debian sid
-    meta: '{"sid":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+    metaenabled: '{"sid":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+    metadisabled: '{"sid":{"meta":"s"},"all":{"meta":"s"}}'
     class: Machine
     releaseselements:
       all:

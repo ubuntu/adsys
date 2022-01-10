@@ -18,6 +18,7 @@
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},{"18.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"i"},{"18.04":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
       <elements>
         <decimal id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" valueName="all" minValue="-20.000000" maxValue="20.000000" />
         <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeDesktopPolicySimple" valueName="Override20.04">

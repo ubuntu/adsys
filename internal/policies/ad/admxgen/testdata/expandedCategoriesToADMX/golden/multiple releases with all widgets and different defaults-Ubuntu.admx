@@ -18,6 +18,7 @@
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"textrelease":{"meta": "s", "empty": "''"}, "multitextrelease":{"meta": "as", "empty": "[]"}, "longdecimalrelease":{"meta": "u", "empty": "0"}, "dropdownlistrelease":{"meta": "s", "empty": "''"}, "decimalrelease":{"meta": "i", "empty": "0"}, "booleanrelease":{"meta": "b", "empty": "false"}, "all":{"meta": "s", "empty": "''"}}</string></enabledValue>
+      <disabledValue><string>{"textrelease":{"meta": "s"}, "multitextrelease":{"meta": "as"}, "longdecimalrelease":{"meta": "u"}, "dropdownlistrelease":{"meta": "s"}, "decimalrelease":{"meta": "i"}, "booleanrelease":{"meta": "b"}, "all":{"meta": "s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" valueName="all" />
         <boolean id="UbuntuOverrideElemMachineTextreleaseDconfOrgGnomeDesktopPolicySimple" valueName="Overridetextrelease">
