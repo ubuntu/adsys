@@ -2,8 +2,10 @@
   displayname: double-property summary
   explaintext: double-property description
   elementtype: text
-  meta:
+  metaenabled:
     empty: "0.0"
+    meta: d
+  metadisabled:
     meta: d
   default: "42.0"
   note: default system value is used for "Not Configured" and enforced if "Disabled".

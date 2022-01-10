@@ -2,8 +2,10 @@
   displayname: array-string-property summary
   explaintext: array-string-property description
   elementtype: multiText
-  meta:
+  metaenabled:
     empty: '[]'
+    meta: as
+  metadisabled:
     meta: as
   default: '[''Value1'', ''Value2'']'
   note: default system value is used for "Not Configured" and enforced if "Disabled".

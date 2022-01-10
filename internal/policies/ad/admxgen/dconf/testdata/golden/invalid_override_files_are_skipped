@@ -2,8 +2,10 @@
   displayname: simple-text-property summary
   explaintext: simple-text-property description
   elementtype: text
-  meta:
+  metaenabled:
     empty: ''''''
+    meta: s
+  metadisabled:
     meta: s
   default: '''This override still works'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".

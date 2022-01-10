@@ -2,8 +2,10 @@
   displayname: decimal-property-with-range summary
   explaintext: decimal-property-with-range description
   elementtype: decimal
-  meta:
+  metaenabled:
     empty: "0"
+    meta: i
+  metadisabled:
     meta: i
   default: "42"
   note: default system value is used for "Not Configured" and enforced if "Disabled".

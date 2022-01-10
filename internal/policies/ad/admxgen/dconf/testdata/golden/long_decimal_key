@@ -2,8 +2,10 @@
   displayname: decimal-property summary
   explaintext: decimal-property description
   elementtype: longDecimal
-  meta:
+  metaenabled:
     empty: "0"
+    meta: u
+  metadisabled:
     meta: u
   default: "42"
   note: default system value is used for "Not Configured" and enforced if "Disabled".

@@ -2,8 +2,10 @@
   displayname: enum-otherfile-property summary
   explaintext: enum-otherfile-property description
   elementtype: dropdownList
-  meta:
+  metaenabled:
     empty: ''''''
+    meta: s
+  metadisabled:
     meta: s
   default: '''up'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".

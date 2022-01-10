@@ -2,8 +2,10 @@
   displayname: array-decimal-property summary
   explaintext: array-decimal-property description
   elementtype: multiText
-  meta:
+  metaenabled:
     empty: '[]'
+    meta: ai
+  metadisabled:
     meta: ai
   default: '[1, 2]'
   note: default system value is used for "Not Configured" and enforced if "Disabled".
