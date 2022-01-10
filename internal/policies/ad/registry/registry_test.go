@@ -66,15 +66,18 @@ func TestDecodePolicy(t *testing.T) {
 			want: []entry.Entry{
 				{
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
-					Value:    "1",
+					Value:    "",
 					Disabled: false,
+					Meta:     "foo",
 				},
 			}},
 		"basic type, disabled": {
 			want: []entry.Entry{
 				{
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
+					Value:    "",
 					Disabled: true,
+					Meta:     "foo",
 				},
 			}},
 
