@@ -43,8 +43,9 @@ const (
 )
 
 type meta struct {
-	Empty string
-	Meta  string
+	Empty    string
+	Meta     string
+	Strategy string
 }
 
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
@@ -144,6 +145,7 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 			Value:    res,
 			Disabled: disabled,
 			Meta:     metaValues[e.key].Meta,
+			Strategy: metaValues[e.key].Strategy,
 		})
 	}
 

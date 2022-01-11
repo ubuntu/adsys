@@ -13,7 +13,7 @@ User
 * On login pam_sss sets KRB5CCNAME
 Client passes KRB5CCNAME to daemon
 Daemon verifies that it matches the uid of the caller
-Creates a symlink in /run/adsys/krb5cc/UID -> /tmp/krb5cc_…
+Creates a symlink in /run/adsys/krb5cc/username -> /tmp/krb5cc_…
 <download call for user>:
 
 * On refresh:

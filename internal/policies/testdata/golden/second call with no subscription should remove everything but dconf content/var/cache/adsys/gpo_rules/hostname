@@ -17,7 +17,6 @@
         - key: allow-local-admins
           value: ""
           disabled: false
-          meta: ""
         - key: client-admins
           value: |
             alice@domain
@@ -25,4 +24,3 @@
             %mygroup@domain
             cosmic carole@domain
           disabled: false
-          meta: ""

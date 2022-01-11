@@ -98,6 +98,15 @@ func TestDecodePolicy(t *testing.T) {
 					Meta:     "foo",
 				},
 			}},
+		"basic type with strategy": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
+					Value:    "",
+					Meta:     "foo",
+					Strategy: "override",
+				},
+			}},
 		"basic type is ignored for meta of wrong type": {
 			want: nil},
 
@@ -128,6 +137,14 @@ func TestDecodePolicy(t *testing.T) {
 				{
 					Key:   `Software/Container/Child`,
 					Value: "2",
+				},
+			}},
+		"container strategy is reflected on child": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Container/Child`,
+					Value:    "MyValue",
+					Strategy: "override",
 				},
 			}},
 		// This ignores child value because container is disabled

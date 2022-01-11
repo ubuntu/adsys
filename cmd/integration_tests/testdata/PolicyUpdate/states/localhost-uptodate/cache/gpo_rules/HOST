@@ -18,11 +18,9 @@
         - key: allow-local-admins
           value: ""
           disabled: true
-          meta: ""
         - key: client-admins
           value: "bob@example.com\n%mygroup@example2.com"
           disabled: false
-          meta: ""
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy
   rules: {}

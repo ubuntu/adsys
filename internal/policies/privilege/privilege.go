@@ -27,16 +27,16 @@ import (
 
 	We are modifying 2 files:
 	- one for sudo, named 99-adsys-privilege-enforcement in sudoers.d
-	- one under 99-adsys-privilege-enforcement.conf and 90-mandatory.d/99-adsys-privilege-enforcement.pkla for policykit
+	- one under 99-adsys-privilege-enforcement.conf for policykit
 
-	Both are installed in /etc.
+	Both are installed under respective /etc directories.
 */
 
 const adsysBaseConfName = "99-adsys-privilege-enforcement"
 
 // Manager prevents running multiple privilege update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
-	privilegeMu sync.RWMutex
+	privilegeMu sync.Mutex
 
 	sudoersDir   string
 	policyKitDir string
@@ -70,8 +70,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	sudoersConf := filepath.Join(sudoersDir, adsysBaseConfName)
 	policyKitConf := filepath.Join(policyKitDir, "localauthority.conf.d", adsysBaseConfName+".conf")
 
-	m.privilegeMu.RLock()
-	defer m.privilegeMu.RUnlock()
+	m.privilegeMu.Lock()
+	defer m.privilegeMu.Unlock()
 
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
 
