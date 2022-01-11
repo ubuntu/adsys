@@ -20,10 +20,10 @@ type Entry struct {
 	Key      string
 	Value    string
 	Disabled bool
-	Meta     string
+	Meta     string `yaml:",omitempty"`
 	// Strategy are overlay rules for the same keys between multiple GPOs.
 	// Default (empty or unknown value) means "override".
-	Strategy string
+	Strategy string `yaml:",omitempty"`
 }
 
 const (

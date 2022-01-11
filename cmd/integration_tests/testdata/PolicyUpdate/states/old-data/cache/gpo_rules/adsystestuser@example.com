@@ -20,7 +20,6 @@
         - key: org/gnome/desktop/media-handling/automount
           value: ""
           disabled: true
-          meta: ""
 - id: '{75545F76-DEC2-4ADA-B7B8-D5209FD48727}'
   name: GPO for Integration Test User
   rules:
