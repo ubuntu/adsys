@@ -21,7 +21,15 @@ type Entry struct {
 	Value    string
 	Disabled bool
 	Meta     string
+	// Strategy are overlay rules for the same keys between multiple GPOs.
+	// Default (empty or unknown value) means "override".
+	Strategy string
 }
+
+const (
+	// StrategyOverride is the default strategy.
+	StrategyOverride = "override"
+)
 
 const (
 	// GPORulesCacheBaseName is the base directory where we want to cache gpo rules.
