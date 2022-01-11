@@ -17,13 +17,20 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu textrelease, multitextrelease, longdecimalrelease, dropdownlistrelease, decimalrelease, booleanrelease
-    meta: '{"textrelease":{"meta": "s", "empty": "''''"},
+    metaenabled: '{"textrelease":{"meta": "s", "empty": "''''"},
             "multitextrelease":{"meta": "as", "empty": "[]"},
             "longdecimalrelease":{"meta": "u", "empty": "0"},
             "dropdownlistrelease":{"meta": "s", "empty": "''''"},
             "decimalrelease":{"meta": "i", "empty": "0"},
             "booleanrelease":{"meta": "b", "empty": "false"},
             "all":{"meta": "s", "empty": "''''"}}'
+    metadisabled: '{"textrelease":{"meta": "s"},
+            "multitextrelease":{"meta": "as"},
+            "longdecimalrelease":{"meta": "u"},
+            "dropdownlistrelease":{"meta": "s"},
+            "decimalrelease":{"meta": "i"},
+            "booleanrelease":{"meta": "b"},
+            "all":{"meta": "s"}}'
     class: Machine
     releaseselements:
       all:

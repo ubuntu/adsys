@@ -77,8 +77,10 @@ type mergedPolicy struct {
 	Key string
 	// Merge of all explainText, defaults, supportedOn
 	ExplainText string
-	// Merge of all metas
-	Meta string
+	// Merge of all metas for enabled key
+	MetaEnabled string
+	// Merge of all metas for disabled key
+	MetaDisabled string
 	// Single class convenience (all ExpandedPolicy should match)
 	Class string
 
@@ -131,7 +133,8 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		var supportedOn, class, highestRelease, defaultString, typePol string
 		var defaults []string
 		var differentDefaultsBetweenReleases bool
-		metas := make(map[string]map[string]string)
+		metasEnabled := make(map[string]map[string]string)
+		metasDisabled := make(map[string]map[string]string)
 		releasesElements := make(map[string]common.ExpandedPolicy)
 		first := true
 		for _, release := range g.supportedReleases {
@@ -162,7 +165,24 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			class = p.Class
 			typePol = p.Type
 
-			metas[release] = p.Meta
+			// Handle metas
+
+			if len(p.MetaEnabled) == 0 {
+				p.MetaEnabled = p.Meta
+			}
+			if len(p.MetaDisabled) == 0 {
+				p.MetaDisabled = p.Meta
+			}
+			metasEnabled[release] = p.MetaEnabled
+			// ensure we don’t serialize nil object to null but {}
+			if metasEnabled[release] == nil {
+				metasEnabled[release] = make(map[string]string)
+			}
+			metasDisabled[release] = p.MetaDisabled
+			if metasDisabled[release] == nil {
+				metasDisabled[release] = make(map[string]string)
+			}
+
 			if supportedOn == "" {
 				if release != "all" {
 					supportedOn = fmt.Sprintf(i18n.G("Supported on %s %s"), g.distroID, release)
@@ -195,7 +215,8 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 
 		// assign "all" elements and default to highest release description
 		releasesElements["all"] = releasesElements[highestRelease]
-		metas["all"] = releasesElements["all"].Meta
+		metasEnabled["all"] = releasesElements["all"].MetaEnabled
+		metasDisabled["all"] = releasesElements["all"].MetaDisabled
 		explainText := releasesElements["all"].ExplainText
 
 		// Keep only all if there is one supported release on this key
@@ -223,15 +244,27 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
 
 		// prepare meta for the whole policy
-		meta, err := json.Marshal(metas)
+		// ensure we don’t serialize nil object to null but {}
+		if metasEnabled["all"] == nil {
+			metasEnabled["all"] = make(map[string]string)
+		}
+		metaEnabled, err := json.Marshal(metasEnabled)
 		if err != nil {
-			return nil, errors.New(i18n.G("failed to marshal meta data"))
+			return nil, errors.New(i18n.G("failed to marshal enabled meta data"))
+		}
+		if metasDisabled["all"] == nil {
+			metasDisabled["all"] = make(map[string]string)
+		}
+		metaDisabled, err := json.Marshal(metasDisabled)
+		if err != nil {
+			return nil, errors.New(i18n.G("failed to marshal disabled meta data"))
 		}
 
 		mergedPolicies[key] = mergedPolicy{
 			Key:              fmt.Sprintf(`%s\%s\%s`, keyPrefix, typePol, strings.ReplaceAll(strings.TrimPrefix(key, "/"), "/", `\`)),
 			Class:            class,
-			Meta:             string(meta),
+			MetaEnabled:      string(metaEnabled),
+			MetaDisabled:     string(metaDisabled),
 			ExplainText:      explainText,
 			ReleasesElements: releasesElements,
 		}

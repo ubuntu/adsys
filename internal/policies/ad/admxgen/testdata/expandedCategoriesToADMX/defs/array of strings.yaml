@@ -11,7 +11,8 @@
       Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
       Supported on Ubuntu 20.04
-    meta: '{"20.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}'
+    metaenabled: '{"20.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}'
+    metadisabled: '{"20.04":{"meta":"as"},"all":{"meta":"as"}}'
     class: Machine
     releaseselements:
       all:

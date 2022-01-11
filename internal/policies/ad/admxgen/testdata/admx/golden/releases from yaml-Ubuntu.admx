@@ -17,7 +17,8 @@
     <policy name="UbuntuMachineDconfComUbuntuSimpleSimpleTextProperty" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfComUbuntuSimpleSimpleTextProperty)" explainText="$(string.UbuntuExplainTextMachineDconfComUbuntuSimpleSimpleTextProperty)" presentation="$(presentation.UbuntuPresentationMachineDconfComUbuntuSimpleSimpleTextProperty)" key="Software\Policies\Ubuntu\dconf\com\ubuntu\simple\simple-text-property" valueName="metaValues">
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''''","meta":"s"},"21.10":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}</string></enabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''''","meta":"s"},"21.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"empty":"''''","meta":"s"},"21.10":{"meta":"other"},"all":{"meta":"other"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfComUbuntuSimpleSimpleTextProperty" valueName="all" />
         <boolean id="UbuntuOverrideElemMachine2110DconfComUbuntuSimpleSimpleTextProperty" valueName="Override21.10">

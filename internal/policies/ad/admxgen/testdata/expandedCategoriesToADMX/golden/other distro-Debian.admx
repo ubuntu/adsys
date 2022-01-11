@@ -18,6 +18,7 @@
       <parentCategory ref="DebianCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"sid":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"sid":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="DebianElemMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" valueName="all" />
       </elements>

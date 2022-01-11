@@ -18,6 +18,7 @@
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"empty":"0","meta":"u"},"all":{"empty":"0","meta":"u"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"u"},"all":{"meta":"u"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyDouble" valueName="all" />
       </elements>

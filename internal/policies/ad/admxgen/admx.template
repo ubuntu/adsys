@@ -21,8 +21,13 @@
     <policy name="{{toID .Key .Class}}" class="{{.Class}}" displayName="$(string.{{toID .Key "Display" .Class "All"}})" explainText="$(string.{{toID .Key "ExplainText" .Class}})" presentation="$(presentation.{{toID .Key "Presentation" .Class}})" key="{{.Key}}" valueName="{{if .HasOptions}}metaValues{{else}}basic{{end}}">
       <parentCategory ref="{{.ParentCategory}}" />
       <supportedOn ref="Ubuntu" />
+      {{- if .MetaEnabled}}
+      <enabledValue><string>{{.MetaEnabled}}</string></enabledValue>
+      {{- end}}
+      {{- if .MetaDisabled}}
+      <disabledValue><string>{{.MetaDisabled}}</string></disabledValue>
+      {{- end}}
       {{- if .HasOptions}}
-      <enabledValue><string>{{.Meta}}</string></enabledValue>
       <elements>
       {{- range .GetOrderedPolicyElements}}
       {{- if ne .Release "all"}}

@@ -21,6 +21,7 @@
       <parentCategory ref="UbuntuCategory1DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyMultiple1" valueName="all" />
       </elements>
@@ -29,6 +30,7 @@
       <parentCategory ref="UbuntuCategory2DisplayName" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyMultiple2" valueName="all" />
       </elements>

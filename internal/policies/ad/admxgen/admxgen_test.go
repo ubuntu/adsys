@@ -63,6 +63,14 @@ func TestGenerateExpandedCategories(t *testing.T) {
 
 		"allow policy referenced but not available in any releases": {allowMissingKeys: true},
 
+		// meta cases
+		"no meta enabled":                    {},
+		"no meta disabled":                   {},
+		"meta entry only":                    {},
+		"no meta at all":                     {},
+		"meta is overridden by enabled key":  {},
+		"meta is overridden by disabled key": {},
+
 		// Error cases
 		"error on one policy not used":                                               {wantErr: true},
 		"error on unexisting policy referenced":                                      {allowMissingKeys: false, wantErr: true},
@@ -155,6 +163,11 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"multiple releases with different ranges":                   {},
 		"multiple releases with all widgets and different defaults": {},
 
+		// meta cases
+		"no meta enabled":  {},
+		"no meta disabled": {},
+		"no meta at all":   {},
+
 		// Error Cases
 		"error on destination creation": {destIsFile: true, wantErr: true},
 	}
@@ -216,8 +229,9 @@ func TestMainExpand(t *testing.T) {
 
 		wantErr bool
 	}{
-		"dconf":           {root: "simple"},
-		"expanded policy": {root: "simple"},
+		"dconf":                     {root: "simple"},
+		"expanded policy":           {root: "simple"},
+		"expanded policy with meta": {root: "simple"},
 
 		"ignore categories and non yaml files": {root: "simple"},
 

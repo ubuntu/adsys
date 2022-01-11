@@ -2,8 +2,10 @@
   displayname: enum-inline-property summary
   explaintext: enum-inline-property description
   elementtype: dropdownList
-  meta:
+  metaenabled:
     empty: ''''''
+    meta: s
+  metadisabled:
     meta: s
   default: '''HIGH'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".

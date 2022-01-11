@@ -2,8 +2,10 @@
   displayname: choices-property summary
   explaintext: choices-property description
   elementtype: dropdownList
-  meta:
+  metaenabled:
     empty: ''''''
+    meta: s
+  metadisabled:
     meta: s
   default: '''choice 2'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".

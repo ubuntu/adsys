@@ -2,9 +2,11 @@
   displayname: summary
   explaintext: description
   elementtype: text
-  meta:
+  metaenabled:
     meta: "s"
     empty: ''''''
+  metadisabled:
+    meta: "s"
   class: ""
   note: default system value is used for "Not Configured" and enforced if "Disabled".
   release: "20.04"

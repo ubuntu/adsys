@@ -4,7 +4,6 @@
     Define users and groups from AD allowed to administer client machines.
     It must be of the form user@domain or %group@domain. One per line.
   elementtype: multiText
-  meta: {}
   default: ""
   note: |
     -

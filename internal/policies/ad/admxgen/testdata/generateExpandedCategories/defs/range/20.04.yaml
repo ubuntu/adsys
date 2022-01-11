@@ -2,9 +2,11 @@
   displayname: summary
   explaintext: description
   elementtype: decimal
-  meta:
+  metaenabled:
     meta: "i"
     empty: "0"
+  metadisabled:
+    meta: "i"
   class: ""
   default: '''Default Value'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".

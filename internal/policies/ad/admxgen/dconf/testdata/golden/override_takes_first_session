@@ -2,8 +2,10 @@
   displayname: simple-text-property-overridden-ubuntu-gnome summary
   explaintext: simple-text-property-overridden-ubuntu-gnome description
   elementtype: text
-  meta:
+  metaenabled:
     empty: ''''''
+    meta: s
+  metadisabled:
     meta: s
   default: '''Overridden simple-text-property-overridden-ubuntu-gnome Value For Ubuntu Session'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".

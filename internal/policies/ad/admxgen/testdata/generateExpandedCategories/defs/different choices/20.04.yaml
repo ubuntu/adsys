@@ -2,9 +2,11 @@
   displayname: summary
   explaintext: description
   elementtype: dropdownList
-  meta:
+  metaenabled:
     meta: "s"
     empty: ''''''
+  metadisabled:
+    meta: "s"
   class: ""
   default: 'unmatched default'
   note: default system value is used for "Not Configured" and enforced if "Disabled".

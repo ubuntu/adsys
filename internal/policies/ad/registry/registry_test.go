@@ -66,17 +66,40 @@ func TestDecodePolicy(t *testing.T) {
 			want: []entry.Entry{
 				{
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
-					Value:    "1",
+					Value:    "",
 					Disabled: false,
+					Meta:     "foo",
 				},
 			}},
 		"basic type, disabled": {
 			want: []entry.Entry{
 				{
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
+					Value:    "",
 					Disabled: true,
+					Meta:     "foo",
 				},
 			}},
+		"basic type with empty default has value filed in": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
+					Value:    "Default Value",
+					Disabled: false,
+					Meta:     "foo",
+				},
+			}},
+		"basic type with empty default is not taken into account for disabled keys": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
+					Value:    "",
+					Disabled: true,
+					Meta:     "foo",
+				},
+			}},
+		"basic type is ignored for meta of wrong type": {
+			want: nil},
 
 		// Container and options test cases
 		"container with default elements override empty option values": {
@@ -141,6 +164,23 @@ func TestDecodePolicy(t *testing.T) {
 					Meta:  "containerMetaValueForChild",
 				},
 			}},
+		"container without metavalues": {
+			want: []entry.Entry{
+				{
+					Key:   `Software/Container/Child`,
+					Value: "MyValue",
+					Meta:  "",
+				},
+			}},
+		"policy container is ignored for meta of wrong type": {
+			want: []entry.Entry{
+				{
+					Key:   `Software/Container/Child`,
+					Value: "MyValue",
+					Meta:  "",
+				},
+			}},
+
 		"one container with 2 children don’t mix their default values": {
 			want: []entry.Entry{
 				{
@@ -172,6 +212,27 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "",
 				},
 			}},
+		"two containers don’t mix their default values even when second has none": {
+			want: []entry.Entry{
+				{
+					Key:   `Software/Container1/Child1`,
+					Value: "container1DefaultValueForChild1",
+				},
+				{
+					Key:   `Software/Container1/Child2`,
+					Value: "container1DefaultValueForChild2",
+				},
+				{
+					Key: `Software/Container2/Child1`,
+					// No empty value inherited from Container 1, as Container 2 meta is nil
+					Value: "",
+				},
+				{
+					Key: `Software/Container2/Child2`,
+					// we didn't set default values for Child2 on Container2: keep empty (no leftover for Child1)
+					Value: "",
+				},
+			}},
 		"one container with 2 children don’t mix their meta values": {
 			want: []entry.Entry{
 				{
@@ -181,6 +242,25 @@ func TestDecodePolicy(t *testing.T) {
 				{
 					Key:  `Software/Container1/Child2`,
 					Meta: "container1MetaValueForChild2",
+				},
+			}},
+		"two containers don’t mix their meta values, even if second has none": {
+			want: []entry.Entry{
+				{
+					Key:  `Software/Container1/Child1`,
+					Meta: "foo",
+				},
+				{
+					Key:  `Software/Container1/Child2`,
+					Meta: "bar",
+				},
+				{
+					Key:  `Software/Container2/Child1`,
+					Meta: "",
+				},
+				{
+					Key:  `Software/Container2/Child2`,
+					Meta: "",
 				},
 			}},
 

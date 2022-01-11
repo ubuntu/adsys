@@ -2,9 +2,11 @@
   displayname: summary
   explaintext: description
   elementtype: text
-  meta:
+  metaenabled:
     meta: "s"
     empty: ''''''
+  metadisabled:
+    meta: "s"
   class: ""
   default: '''Default Value'''
   release: "20.04"

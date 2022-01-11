@@ -2,8 +2,10 @@
   displayname: simple-text-property summary
   explaintext: simple-text-property description
   elementtype: text
-  meta:
+  metaenabled:
     empty: ''''''
+    meta: s
+  metadisabled:
     meta: s
   default: '''simple-text-property Default Value'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".
@@ -13,8 +15,10 @@
   displayname: Summary for deprecated content
   explaintext: deprecated-in-middle description
   elementtype: text
-  meta:
+  metaenabled:
     empty: ''''''
+    meta: s
+  metadisabled:
     meta: s
   default: '''deprecated-in-middle Default Value'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".
