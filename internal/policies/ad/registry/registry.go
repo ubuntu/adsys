@@ -72,6 +72,11 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 		case policyContainerName:
 			disabledContainer = disabled
 
+			// our supported policyContainerName is only of string type. Discard others which are from other policies
+			if e.dType != regSz {
+				continue
+			}
+
 			metaValues, err = getMetaValues(e.data, fmt.Sprintf("%s\\%s", e.path, e.key))
 			if err != nil {
 				return nil, err
@@ -80,6 +85,12 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 
 		case policyWithNoChildrenName:
 			// This is not a container but a single key.
+
+			// our supported policyWithNoChildrenName is only of string type. Discard others which are from other policies
+			if e.dType != regSz {
+				metaValues = make(map[string]meta)
+				continue
+			}
 
 			// Get metavalues for the single key (withg "all: {}")
 			metaValues, err = getMetaValues(e.data, fmt.Sprintf("%s\\%s", e.path, e.key))

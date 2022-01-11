@@ -98,6 +98,8 @@ func TestDecodePolicy(t *testing.T) {
 					Meta:     "foo",
 				},
 			}},
+		"basic type is ignored for meta of wrong type": {
+			want: nil},
 
 		// Container and options test cases
 		"container with default elements override empty option values": {
@@ -163,6 +165,14 @@ func TestDecodePolicy(t *testing.T) {
 				},
 			}},
 		"container without metavalues": {
+			want: []entry.Entry{
+				{
+					Key:   `Software/Container/Child`,
+					Value: "MyValue",
+					Meta:  "",
+				},
+			}},
+		"policy container is ignored for meta of wrong type": {
 			want: []entry.Entry{
 				{
 					Key:   `Software/Container/Child`,
