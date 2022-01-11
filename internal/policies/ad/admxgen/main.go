@@ -27,12 +27,12 @@ var admlTemplate string
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, `Usage: %s [COMMAND] [ARGS] ...
+		fmt.Fprintf(os.Stderr, `Usage: %s [FLAGS] [COMMAND] [ARGS] ...
 Generate ADMX and intermediary working files from a list of policy definition
 files
 
 Commands:
-  expand SOURCE DEST [-root PATH] [-current-session SESSION_NAME]
+  [-root PATH] [-current-session SESSION_NAME] expand SOURCE DEST
 	Generates an intermediary policy definition file into DEST directory from
 	all the policy definition files in SOURCE directory, using the correct
 	decoder.
@@ -42,7 +42,7 @@ Commands:
 	-current-session is the current session to consider for dconf per-session
 	overrides. Default to "".
 
-  admx [-auto-detect-releases] [-allow-missing-keys] CATEGORIES_DEF.yaml SOURCE DEST
+  [-auto-detect-releases] [-allow-missing-keys] admx CATEGORIES_DEF.yaml SOURCE DEST
 	Collects all intermediary policy definition files in SOURCE directory to
 	create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml.
 	-auto-detect-releases will override supportedreleases in categories definition
