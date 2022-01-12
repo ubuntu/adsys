@@ -18,6 +18,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/policies/gdm"
 	"github.com/ubuntu/adsys/internal/policies/privilege"
+	"github.com/ubuntu/adsys/internal/policies/scripts"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -27,6 +28,7 @@ type Manager struct {
 
 	dconf     *dconf.Manager
 	privilege *privilege.Manager
+	scripts   *scripts.Manager
 	gdm       *gdm.Manager
 
 	subscriptionDbus dbus.BusObject
@@ -40,6 +42,7 @@ type options struct {
 	dconfDir     string
 	sudoersDir   string
 	policyKitDir string
+	runDir       string
 	gdm          *gdm.Manager
 }
 
@@ -78,6 +81,14 @@ func WithPolicyKitDir(p string) Option {
 	}
 }
 
+// WithRunDir specifies a personalized run directory.
+func WithRunDir(p string) Option {
+	return func(o *options) error {
+		o.runDir = p
+		return nil
+	}
+}
+
 // NewManager returns a new manager with all default policy handlers.
 func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
@@ -85,6 +96,7 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	// defaults
 	args := options{
 		cacheDir: consts.DefaultCacheDir,
+		runDir:   consts.DefaultRunDir,
 		gdm:      nil,
 	}
 	// applied options (including dconf manager used by gdm)
@@ -101,6 +113,9 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 
 	// privilege manager
 	privilegeManager := privilege.NewWithDirs(args.sudoersDir, args.policyKitDir)
+
+	// scripts manager
+	scriptsManager := scripts.New(args.cacheDir, args.runDir)
 
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {
@@ -122,6 +137,7 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 
 		dconf:     dconfManager,
 		privilege: privilegeManager,
+		scripts:   scriptsManager,
 		gdm:       args.gdm,
 
 		subscriptionDbus: subscriptionDbus,
@@ -144,7 +160,7 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	}
 
 	g.Go(func() error { return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"]) })
-	// TODO g.Go(func() error { return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["script"]) })
+	g.Go(func() error { return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"]) })
 	// TODO g.Go(func() error { return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"]) })
 	if err := g.Wait(); err != nil {
 		return err
@@ -264,7 +280,7 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) {
 	log.Debug(ctx, "Filtering Rules")
 
 	rules["privilege"] = nil
-	//rules["script"] = nil
+	rules["script"] = nil
 }
 
 // GetStatus returns dynamic part of our manager instance like subscription status.

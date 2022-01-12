@@ -33,6 +33,12 @@ const (
 	// DistroID is the distro ID which can be overridden at build time.
 	DistroID = "Ubuntu"
 
+	// StartupScriptsMachineBaseDir is the base directory for machine startup scripts.
+	StartupScriptsMachineBaseDir = "startup"
+
+	// AdysMachineScriptsServiceName is the machine script systemd service.
+	AdysMachineScriptsServiceName = "adsys-machine-scripts.service"
+
 	// SSSD related properties.
 
 	// DefaultSSSCacheDir is the default sssd cache dir.
