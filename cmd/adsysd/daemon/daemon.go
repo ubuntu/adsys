@@ -154,6 +154,7 @@ func New() *App {
 
 	// subcommands
 	a.installVersion()
+	a.installRunScripts()
 
 	return &a
 }

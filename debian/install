@@ -5,4 +5,3 @@ systemd/*.service lib/systemd/system/
 systemd/*.socket lib/systemd/system/
 systemd/*.timer lib/systemd/system/
 systemd/user/*.service lib/systemd/user/
-systemd/libexec usr/
