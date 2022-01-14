@@ -3,7 +3,7 @@ module github.com/ubuntu/adsys
 go 1.16
 
 require (
-	github.com/charmbracelet/glamour v0.3.0
+	github.com/charmbracelet/glamour v0.4.0
 	github.com/coreos/go-systemd v0.0.0-20190620071333-e64a0ec8b42a
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1
@@ -28,6 +28,3 @@ require (
 	gopkg.in/ini.v1 v1.66.2
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
-
-// security update
-require github.com/microcosm-cc/bluemonday v1.0.16 // indirect
