@@ -129,18 +129,18 @@ func TestPolicyApplied(t *testing.T) {
 			color.NoColor = false
 
 			dir := t.TempDir()
-			dstDir := filepath.Join(dir, "cache", "gpo_rules")
+			dstDir := filepath.Join(dir, "cache", "policies")
 			err := os.MkdirAll(dstDir, 0700)
-			require.NoError(t, err, "setup failed: couldn't create gpo_rules directory: %v", err)
+			require.NoError(t, err, "setup failed: couldn't create policies directory: %v", err)
 			if !tc.noMachineGPORules {
-				err := shutil.CopyFile("testdata/PolicyApplied/gpo_rules/machine.yaml", filepath.Join(dstDir, hostname), false)
+				err := shutil.CopyFile("testdata/PolicyApplied/policies/machine.yaml", filepath.Join(dstDir, hostname), false)
 				require.NoError(t, err, "Setup: failed to copy machine gporules cache")
 			}
 			if tc.userGPORules != "-" {
 				if tc.userGPORules == "" {
 					tc.userGPORules = currentUser
 				}
-				err := shutil.CopyFile("testdata/PolicyApplied/gpo_rules/user.yaml", filepath.Join(dstDir, tc.userGPORules), false)
+				err := shutil.CopyFile("testdata/PolicyApplied/policies/user.yaml", filepath.Join(dstDir, tc.userGPORules), false)
 				require.NoError(t, err, "Setup: failed to copy user gporules cache")
 			}
 			conf := createConf(t, dir)
@@ -380,10 +380,10 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			},
 		},
-		"Host is offline, user gpos cache is cleared, with gpo_rules cache": {
+		"Host is offline, user gpos cache is cleared, with policies cache": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
-			// clean gpos cache, but keep machine ones and user gpo_rules
+			// clean gpos cache, but keep machine ones and user policies
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
@@ -434,11 +434,11 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			},
 		},
-		"Host is offline, mach gpos cache is cleared, with gpo_rules cache": {
+		"Host is offline, mach gpos cache is cleared, with policies cache": {
 			args:                  []string{"-m"},
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
-			// clean gpos cache, but keep machine ones and user gpo_rules
+			// clean gpos cache, but keep machine ones and user policies
 			clearDirs: []string{
 				"dconf/db/machine.d",
 				"dconf/profile/gdm",
@@ -559,7 +559,7 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		"Error on host is offline, without gpo_rules": {
+		"Error on host is offline, without policies": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
 			// clean gpos rules, but gpo_cache
@@ -568,7 +568,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"dconf/profile/adsystestuser@example.com",
 				"sudoers.d",
 				"polkit-1",
-				"cache/gpo_rules/adsystestuser@example.com",
+				"cache/policies/adsystestuser@example.com",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{

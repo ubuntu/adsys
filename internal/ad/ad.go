@@ -57,7 +57,7 @@ type AD struct {
 
 	versionID        string
 	gpoCacheDir      string
-	gpoRulesCacheDir string
+	policiesCacheDir string
 	krb5CacheDir     string
 	sssCCName        string
 
@@ -152,8 +152,8 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 	if err := os.MkdirAll(gpoCacheDir, 0700); err != nil {
 		return nil, err
 	}
-	gpoRulesCacheDir := filepath.Join(args.cacheDir, policies.GPORulesCacheBaseName)
-	if err := os.MkdirAll(gpoRulesCacheDir, 0700); err != nil {
+	policiesCacheDir := filepath.Join(args.cacheDir, policies.PoliciesCacheBaseName)
+	if err := os.MkdirAll(policiesCacheDir, 0700); err != nil {
 		return nil, err
 	}
 
@@ -180,7 +180,7 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 		defaultDomainSuffix: args.defaultDomainSuffix,
 		versionID:           args.versionID,
 		gpoCacheDir:         gpoCacheDir,
-		gpoRulesCacheDir:    gpoRulesCacheDir,
+		policiesCacheDir:    policiesCacheDir,
 		krb5CacheDir:        krb5CacheDir,
 		sssCCName:           sssCCName,
 		sssdDbus:            sssdDbus,
@@ -196,18 +196,18 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 // ticket <krb5CCDir>/<objectName>.
 // The GPOs are returned from the highest priority in the hierarchy, with enforcement in reverse order
 // to the lowest priority.
-func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (r []policies.GPO, err error) {
+func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (pols policies.Policies, err error) {
 	defer decorate.OnError(&err, i18n.G("can't get policies for %q"), objectName)
 
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
 
 	if objectClass == UserObject && !strings.Contains(objectName, "@") {
-		return nil, fmt.Errorf(i18n.G("user name %q should be of the form %s@DOMAIN"), objectName, objectName)
+		return pols, fmt.Errorf(i18n.G("user name %q should be of the form %s@DOMAIN"), objectName, objectName)
 	}
 
 	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
 	if objectClass == ComputerObject && objectName != ad.hostname {
-		return nil, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
+		return pols, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
 	}
 	// Create a ccache symlink on first fetch for futur calls (on refresh for instance)
 	if userKrb5CCName != "" || objectClass == ComputerObject {
@@ -217,13 +217,13 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 			src = ad.sssCCName
 		}
 		if err := ad.ensureKrb5CCName(src, krb5CCPath); err != nil {
-			return nil, err
+			return pols, err
 		}
 	}
 
 	var online bool
 	if err := ad.sssdDbus.Call(consts.SSSDDbusInterface+".IsOnline", 0).Store(&online); err != nil {
-		return nil, fmt.Errorf(i18n.G("failed to retrieve offline state from SSSD: %v"), err)
+		return pols, fmt.Errorf(i18n.G("failed to retrieve offline state from SSSD: %v"), err)
 	}
 	ad.Lock()
 	ad.isOffline = !online
@@ -231,12 +231,13 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 
 	// If sssd returns that we are offline, returns the cache list of GPOs if present
 	if !online {
-		if r, err = policies.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
-			return nil, fmt.Errorf(i18n.G("machine is offline and GPO rules cache is unavailable: %v"), err)
+		var cachedPolicies policies.Policies
+		if cachedPolicies, err = policies.NewFromCache(filepath.Join(ad.policiesCacheDir, objectName)); err != nil {
+			return cachedPolicies, fmt.Errorf(i18n.G("machine is offline and policies cache is unavailable: %v"), err)
 		}
 
 		log.Infof(ctx, "Can't reach AD: machine is offline and %q policies are applied using previous online update", objectName)
-		return r, nil
+		return cachedPolicies, nil
 	}
 
 	// We need an AD LDAP url to connect to
@@ -247,10 +248,10 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		msg := i18n.G("error while trying to look up AD server address on SSSD")
 		err := ad.sssdDbus.Call(consts.SSSDDbusInterface+".ActiveServer", 0, "AD").Store(&adServerURL)
 		if err != nil {
-			return nil, fmt.Errorf(i18n.G("%s: %v"), msg, err)
+			return pols, fmt.Errorf(i18n.G("%s: %v"), msg, err)
 		}
 		if adServerURL == "" {
-			return nil, fmt.Errorf(i18n.G("%s: no active server found"), msg)
+			return pols, fmt.Errorf(i18n.G("%s: no active server found"), msg)
 		}
 		if !strings.HasPrefix(adServerURL, "ldap://") {
 			adServerURL = fmt.Sprintf("ldap://%s", adServerURL)
@@ -276,7 +277,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	err = cmd.Run()
 	smbsafe.DoneExec()
 	if err != nil {
-		return nil, fmt.Errorf(i18n.G("failed to retrieve the list of GPO (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, stderr.String())
+		return pols, fmt.Errorf(i18n.G("failed to retrieve the list of GPO (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, stderr.String())
 	}
 
 	gpos := make(map[string]string)
@@ -291,20 +292,20 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		orderedGPOs = append(orderedGPOs, gpo{name: gpoName, url: gpoURL})
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, err
+		return pols, err
 	}
 
 	if err = ad.fetch(ctx, krb5CCPath, gpos); err != nil {
-		return nil, err
+		return pols, err
 	}
 
 	// Parse policies
-	r, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
+	pols, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
 	if err != nil {
-		return nil, err
+		return pols, err
 	}
 
-	return r, nil
+	return pols, nil
 }
 
 // ListActiveUsers return the list of active users on the system.
@@ -362,19 +363,19 @@ func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) 
 	return nil
 }
 
-func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) ([]policies.GPO, error) {
-	var r []policies.GPO
+func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) (policies.Policies, error) {
+	r := policies.Policies{}
 
 	keyFilterPrefix := fmt.Sprintf("%s/%s/", adcommon.KeyPrefix, consts.DistroID)
 
 	for _, g := range gpos {
 		name, url := g.name, g.url
-		gpoRules := policies.GPO{
+		gpoWithRules := policies.GPO{
 			ID:    filepath.Base(url),
 			Name:  name,
 			Rules: make(map[string][]entry.Entry),
 		}
-		r = append(r, gpoRules)
+		r.GPOs = append(r.GPOs, gpoWithRules)
 		if err := func() error {
 			ad.RLock()
 			ad.gpos[name].mu.RLock()
@@ -419,7 +420,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 				if releaseID == "all" {
 					currentKey = pol.Key
 					overrideEnabled = false
-					gpoRules.Rules[keyType] = append(gpoRules.Rules[keyType], pol)
+					gpoWithRules.Rules[keyType] = append(gpoWithRules.Rules[keyType], pol)
 					continue
 				}
 
@@ -440,14 +441,14 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 
 				// Matching enabled override
 				// Replace value with the override content
-				iLast := len(gpoRules.Rules[keyType]) - 1
-				p := gpoRules.Rules[keyType][iLast]
+				iLast := len(gpoWithRules.Rules[keyType]) - 1
+				p := gpoWithRules.Rules[keyType][iLast]
 				p.Value = pol.Value
-				gpoRules.Rules[keyType][iLast] = p
+				gpoWithRules.Rules[keyType][iLast] = p
 			}
 			return nil
 		}(); err != nil {
-			return nil, err
+			return r, err
 		}
 	}
 

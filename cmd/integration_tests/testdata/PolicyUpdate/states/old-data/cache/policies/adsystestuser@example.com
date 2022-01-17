@@ -1,3 +1,4 @@
+gpos:
 - id: '{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}'
   name: GPO1 for current User
   rules:

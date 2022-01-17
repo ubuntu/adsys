@@ -71,12 +71,12 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 
 // updatePolicyFor updates the policy for a given object.
 func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target string, objectClass ad.ObjectClass, krb5cc string) error {
-	gpos, err := s.adc.GetPolicies(ctx, target, objectClass, krb5cc)
+	pols, err := s.adc.GetPolicies(ctx, target, objectClass, krb5cc)
 	if err != nil {
 		return err
 	}
 
-	return s.policyManager.ApplyPolicy(ctx, target, isComputer, gpos)
+	return s.policyManager.ApplyPolicies(ctx, target, isComputer, pols)
 }
 
 // DumpPolicies displays all applied policies for a given user.

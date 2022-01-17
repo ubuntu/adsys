@@ -1,6 +1,12 @@
+gpos:
 - id: '{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}'
-  name: GPO for current machine
+  name: MainOffice Policy
   rules:
+      dconf:
+        - key: org/gnome/shell/common-key
+          value: "machine value"
+          disabled: false
+          meta: s
       gdm:
         - key: dconf/org/gnome/desktop/interface/clock-format
           value: 24h
@@ -10,10 +16,6 @@
           value: "false"
           disabled: false
           meta: b
-        - key: dconf/org/gnome/shell/old/old-data
-          value: something
-          disabled: false
-          meta: s
         - key: dconf/org/gnome/desktop/interface/clock-show-weekday
           value: "true"
           disabled: false
@@ -21,9 +23,9 @@
       privilege:
         - key: allow-local-admins
           value: ""
-          disabled: false
+          disabled: true
         - key: client-admins
-          value: "carole cosmic@example.com"
+          value: "bob@example.com,%mygroup@example2.com"
           disabled: false
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy

@@ -297,7 +297,7 @@ func TestServiceStatus(t *testing.T) {
 			systemAnswer(t, tc.systemAnswer)
 
 			adsysDir := t.TempDir()
-			gpoRulesDir := filepath.Join(adsysDir, "cache", "gpo_rules")
+			gpoRulesDir := filepath.Join(adsysDir, "cache", "policies")
 			conf := createConf(t, adsysDir)
 			if tc.dynamicADServerDomain != "" {
 				content, err := os.ReadFile(conf)
@@ -313,8 +313,8 @@ func TestServiceStatus(t *testing.T) {
 			// copy machine gpo rules for first update
 			if !tc.noCacheUsersMachine || tc.dynamicADServerDomain != "" {
 				err := os.MkdirAll(gpoRulesDir, 0700)
-				require.NoError(t, err, "Setup: couldn't create gpo_rules directory: %v", err)
-				err = shutil.CopyFile("testdata/PolicyApplied/gpo_rules/machine.yaml", filepath.Join(gpoRulesDir, hostname), false)
+				require.NoError(t, err, "Setup: couldn't create policies directory: %v", err)
+				err = shutil.CopyFile("testdata/PolicyApplied/policies/machine.yaml", filepath.Join(gpoRulesDir, hostname), false)
 				require.NoError(t, err, "Setup: failed to copy machine gporules cache")
 			}
 

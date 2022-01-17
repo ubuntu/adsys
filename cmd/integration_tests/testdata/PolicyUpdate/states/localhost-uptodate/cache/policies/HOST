@@ -1,11 +1,7 @@
+gpos:
 - id: '{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}'
-  name: MainOffice Policy
+  name: GPO for current machine
   rules:
-      dconf:
-        - key: org/gnome/shell/common-key
-          value: "machine value"
-          disabled: false
-          meta: s
       gdm:
         - key: dconf/org/gnome/desktop/interface/clock-format
           value: 24h
@@ -24,7 +20,7 @@
           value: ""
           disabled: true
         - key: client-admins
-          value: "bob@example.com,%mygroup@example2.com"
+          value: "bob@example.com\n%mygroup@example2.com"
           disabled: false
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy

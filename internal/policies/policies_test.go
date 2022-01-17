@@ -19,10 +19,406 @@ import (
 	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 var update bool
+
+func TestGetUniqueRules(t *testing.T) {
+	t.Parallel()
+
+	standardGPO := policies.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+		"dconf": {
+			{Key: "A", Value: "standardA"},
+			{Key: "B", Value: "standardB"},
+			{Key: "C", Value: "standardC"},
+		}}}
+
+	tests := map[string]struct {
+		gpos []policies.GPO
+
+		want map[string][]entry.Entry
+	}{
+		"One GPO": {
+			gpos: []policies.GPO{standardGPO},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "standardC"},
+				},
+			}},
+		"Order key ascii": {
+			gpos: []policies.GPO{{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "Z", Value: "standardZ"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "standardC"},
+				}}}},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "standardC"},
+					{Key: "Z", Value: "standardZ"},
+				},
+			}},
+
+		// Multiple domains cases
+		"Multiple domains, same GPOs": {
+			gpos: []policies.GPO{
+				{ID: "gpomultidomain", Name: "gpomultidomain-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "B", Value: "standardB"},
+						{Key: "C", Value: "standardC"},
+					},
+					"otherdomain": {
+						{Key: "Key1", Value: "otherdomainKey1"},
+						{Key: "Key2", Value: "otherdomainKey2"},
+					}}}},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "standardC"},
+				},
+				"otherdomain": {
+					{Key: "Key1", Value: "otherdomainKey1"},
+					{Key: "Key2", Value: "otherdomainKey2"},
+				},
+			}},
+		"Multiple domains, different GPOs": {
+			gpos: []policies.GPO{standardGPO,
+				{ID: "gpo2", Name: "gpo2-name", Rules: map[string][]entry.Entry{
+					"otherdomain": {
+						{Key: "Key1", Value: "otherdomainKey1"},
+						{Key: "Key2", Value: "otherdomainKey2"},
+					}}}},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "standardC"},
+				},
+				"otherdomain": {
+					{Key: "Key1", Value: "otherdomainKey1"},
+					{Key: "Key2", Value: "otherdomainKey2"},
+				},
+			}},
+		"Same key in different domains are kept separated": {
+			gpos: []policies.GPO{
+				{ID: "gpoDomain1", Name: "gpoDomain1-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "Common", Value: "commonValueDconf"},
+					},
+					"otherdomain": {
+						{Key: "Common", Value: "commonValueOtherDomain"},
+					}}}},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "Common", Value: "commonValueDconf"},
+				},
+				"otherdomain": {
+					{Key: "Common", Value: "commonValueOtherDomain"},
+				},
+			}},
+
+		// Override cases
+		// This is ordered for each type by key ascii order
+		"Two policies, with overrides": {
+			gpos: []policies.GPO{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "B", Value: "standardB"},
+						// this value will be overridden with the higher one
+						{Key: "C", Value: "standardC"},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "oneValueC"},
+				},
+			}},
+		"Two policies, with reversed overrides": {
+			gpos: []policies.GPO{
+				standardGPO,
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						// this value will be overridden with the higher one
+						{Key: "C", Value: "oneValueC"},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "standardC"},
+				},
+			}},
+		"Two policies, no overrides": {
+			gpos: []policies.GPO{
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "userOnlyA"},
+						{Key: "B", Value: "userOnlyB"},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "userOnlyA"},
+					{Key: "B", Value: "userOnlyB"},
+					{Key: "C", Value: "oneValueC"},
+				},
+			}},
+		"Two policies, no overrides, reversed": {
+			gpos: []policies.GPO{
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "userOnlyA"},
+						{Key: "B", Value: "userOnlyB"},
+					}}},
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "userOnlyA"},
+					{Key: "B", Value: "userOnlyB"},
+					{Key: "C", Value: "oneValueC"},
+				},
+			}},
+
+		"Disabled value overrides non disabled one": {
+			gpos: []policies.GPO{
+				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "", Disabled: true},
+					}}},
+				standardGPO,
+			},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Disabled: true},
+				},
+			}},
+		"Disabled value is overridden": {
+			gpos: []policies.GPO{
+				standardGPO,
+				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "", Disabled: true},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "standardC"},
+				},
+			}},
+
+		"More policies, with multiple overrides": {
+			gpos: []policies.GPO{
+				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "userOnlyA"},
+						{Key: "B", Value: "userOnlyB"},
+					}}},
+				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "C", Value: "oneValueC"},
+					}}},
+				standardGPO,
+			},
+			want: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "userOnlyA"},
+					{Key: "B", Value: "userOnlyB"},
+					{Key: "C", Value: "oneValueC"},
+				},
+			}},
+
+		// append/prepend cases
+		"Append policy entry, one GPO": {
+			gpos: []policies.GPO{
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend},
+				},
+			}},
+		"Append policy entry, one GPO, disabled key is ignored": {
+			gpos: []policies.GPO{
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend, Disabled: true},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": nil,
+			}},
+		"Append policy entry, multiple GPOs": {
+			gpos: []policies.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "furthest value\nclosest value", Strategy: entry.StrategyAppend},
+				},
+			}},
+		"Append policy entry, multiple GPOs, disabled key is ignored, first": {
+			gpos: []policies.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend, Disabled: true},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
+				},
+			}},
+		"Append policy entry, multiple GPOs, disabled key is ignored, second": {
+			gpos: []policies.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend, Disabled: true},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+				},
+			}},
+		"Append policy entry, closest meta wins": {
+			gpos: []policies.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Meta: "closest meta", Strategy: entry.StrategyAppend},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Meta: "furthest meta", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "furthest value\nclosest value", Meta: "closest meta", Strategy: entry.StrategyAppend},
+				},
+			}},
+
+		// Mix append and override: closest win
+		"Mix meta on GPOs, furthest policy entry is append, closest is override": {
+			gpos: []policies.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value"},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "closest value"},
+				},
+			}},
+		"Mix meta on GPOs, closest policy entry is append, furthest override is ignored": {
+			gpos: []policies.GPO{
+				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+					}}},
+				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
+					"domain": {
+						{Key: "A", Value: "furthest value"},
+					}}},
+			},
+			want: map[string][]entry.Entry{
+				"domain": {
+					{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
+				},
+			}},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			pols := policies.Policies{
+				GPOs: tc.gpos,
+			}
+			got := pols.GetUniqueRules()
+			require.Equal(t, tc.want, got, "GetUniqueRules returns expected policy entries with correct overrides")
+		})
+	}
+}
+
+func TestCachePolicies(t *testing.T) {
+	pols := policies.Policies{
+		GPOs: []policies.GPO{
+			{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "C", Value: "oneValueC"},
+				}}},
+			{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA", Meta: "My meta"},
+					{Key: "B", Value: "standardB", Disabled: true},
+					// this value will be overridden with the higher one
+					{Key: "C", Value: "standardC"},
+				}}},
+		},
+	}
+
+	p := filepath.Join(t.TempDir(), "policies-cache")
+	err := pols.Save(p)
+	require.NoError(t, err, "Save policies without error")
+
+	got, err := policies.NewFromCache(p)
+	require.NoError(t, err, "Got policies without error")
+
+	require.Equal(t, pols, got, "Reloaded policies after caching should be the same")
+}
 
 func TestDumpPolicies(t *testing.T) {
 	t.Parallel()
@@ -128,22 +524,22 @@ func TestDumpPolicies(t *testing.T) {
 			t.Parallel()
 
 			cacheDir := t.TempDir()
-			m, err := policies.New(bus, policies.WithCacheDir(cacheDir))
+			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, policies.GPORulesCacheBaseName), 0750)
-			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
+			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
+			require.NoError(t, err, "Setup: cant not create policies cache directory")
 
 			if tc.cacheUser != "" {
-				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheUser), filepath.Join(cacheDir, policies.GPORulesCacheBaseName, "user"), false)
+				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheUser), filepath.Join(cacheDir, policies.PoliciesCacheBaseName, "user"), false)
 				require.NoError(t, err, "Setup: couldn’t copy user cache")
 			}
 			if tc.cacheMachine == "" {
-				f, err := os.Create(filepath.Join(cacheDir, policies.GPORulesCacheBaseName, hostname))
+				f, err := os.Create(filepath.Join(cacheDir, policies.PoliciesCacheBaseName, hostname))
 				require.NoError(t, err, "Setup: failed to create empty machine cache file")
 				f.Close()
 			} else if tc.cacheMachine != "-" {
-				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheMachine), filepath.Join(cacheDir, policies.GPORulesCacheBaseName, hostname), false)
+				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheMachine), filepath.Join(cacheDir, policies.PoliciesCacheBaseName, hostname), false)
 				require.NoError(t, err, "Setup: couldn’t copy machine cache")
 			}
 
@@ -172,7 +568,7 @@ func TestDumpPolicies(t *testing.T) {
 	}
 }
 
-func TestApplyPolicy(t *testing.T) {
+func TestApplyPolicies(t *testing.T) {
 	//t.Parallel()
 
 	bus := testutils.NewDbusConn(t)
@@ -181,7 +577,7 @@ func TestApplyPolicy(t *testing.T) {
 		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
 
 	tests := map[string]struct {
-		gposFile                     string
+		policiesFile                 string
 		secondCallWithNoRules        bool
 		makeDirReadOnly              string
 		isNotSubscribed              bool
@@ -189,15 +585,15 @@ func TestApplyPolicy(t *testing.T) {
 
 		wantErr bool
 	}{
-		"succeed": {gposFile: "all_entry_types.gpos"},
-		"second call with no rules deletes everything": {gposFile: "all_entry_types.gpos", secondCallWithNoRules: true},
+		"succeed": {policiesFile: "all_entry_types.policies"},
+		"second call with no rules deletes everything": {policiesFile: "all_entry_types.policies", secondCallWithNoRules: true},
 
 		// no subscription filterings
-		"no subscription is only dconf content":                                       {gposFile: "all_entry_types.gpos", isNotSubscribed: true},
-		"second call with no subscription should remove everything but dconf content": {gposFile: "all_entry_types.gpos", secondCallWithNoSubscription: true},
+		"no subscription is only dconf content":                                       {policiesFile: "all_entry_types.policies", isNotSubscribed: true},
+		"second call with no subscription should remove everything but dconf content": {policiesFile: "all_entry_types.policies", secondCallWithNoSubscription: true},
 
-		"dconf apply policy fails":     {gposFile: "dconf_failing.gpos", wantErr: true},
-		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", gposFile: "all_entry_types.gpos", wantErr: true},
+		"dconf apply policy fails":     {policiesFile: "dconf_failing.policies", wantErr: true},
+		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", policiesFile: "all_entry_types.policies", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -206,8 +602,8 @@ func TestApplyPolicy(t *testing.T) {
 			// We change the dbus returned values to simulate a subscription
 			//t.Parallel()
 
-			gpos, err := policies.NewGPOs(filepath.Join("testdata", tc.gposFile))
-			require.NoError(t, err, "Setup: can not load gpo list")
+			pols, err := policies.NewFromCache(filepath.Join("testdata", tc.policiesFile))
+			require.NoError(t, err, "Setup: can not load policies list")
 
 			fakeRootDir := t.TempDir()
 			cacheDir := filepath.Join(fakeRootDir, "var", "cache", "adsys")
@@ -224,7 +620,7 @@ func TestApplyPolicy(t *testing.T) {
 				require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
 			}()
 
-			m, err := policies.New(bus,
+			m, err := policies.NewManager(bus,
 				policies.WithCacheDir(cacheDir),
 				policies.WithDconfDir(dconfDir),
 				policies.WithPolicyKitDir(policyKitDir),
@@ -232,15 +628,15 @@ func TestApplyPolicy(t *testing.T) {
 			)
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, policies.GPORulesCacheBaseName), 0750)
-			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
+			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
+			require.NoError(t, err, "Setup: cant not create policies cache directory")
 
 			if tc.makeDirReadOnly != "" {
 				require.NoError(t, os.MkdirAll(filepath.Join(fakeRootDir, tc.makeDirReadOnly), 0750), "Setup: can not create directory")
 				testutils.MakeReadOnly(t, filepath.Join(fakeRootDir, tc.makeDirReadOnly))
 			}
 
-			err = m.ApplyPolicy(context.Background(), "hostname", true, gpos)
+			err = m.ApplyPolicies(context.Background(), "hostname", true, pols)
 			if tc.wantErr {
 				require.Error(t, err, "ApplyPolicy should return an error but got none")
 				return
@@ -250,13 +646,13 @@ func TestApplyPolicy(t *testing.T) {
 			var runSecondCall bool
 			if tc.secondCallWithNoRules {
 				runSecondCall = true
-				gpos = nil
+				pols = policies.Policies{}
 			} else if tc.secondCallWithNoSubscription {
 				runSecondCall = true
 				require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", "disabled"), "Setup: can not set subscription status for second call to disabled")
 			}
 			if runSecondCall {
-				err = m.ApplyPolicy(context.Background(), "hostname", true, gpos)
+				err = m.ApplyPolicies(context.Background(), "hostname", true, pols)
 				require.NoError(t, err, "ApplyPolicy should return no error but got one")
 			}
 
@@ -294,19 +690,19 @@ func TestLastUpdateFor(t *testing.T) {
 			t.Parallel()
 
 			cacheDir := t.TempDir()
-			m, err := policies.New(bus, policies.WithCacheDir(cacheDir))
+			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, policies.GPORulesCacheBaseName), 0750)
-			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
+			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
+			require.NoError(t, err, "Setup: cant not create policies cache directory")
 
 			start := time.Now()
 			// Starts and ends are monotic, while os.Stat is wall clock, we have to wait for measuring difference…
 			time.Sleep(100 * time.Millisecond)
-			f, err := os.Create(filepath.Join(cacheDir, policies.GPORulesCacheBaseName, "user"))
+			f, err := os.Create(filepath.Join(cacheDir, policies.PoliciesCacheBaseName, "user"))
 			require.NoError(t, err, "Setup: couldn’t copy user cache")
 			f.Close()
-			f, err = os.Create(filepath.Join(cacheDir, policies.GPORulesCacheBaseName, hostname))
+			f, err = os.Create(filepath.Join(cacheDir, policies.PoliciesCacheBaseName, hostname))
 			require.NoError(t, err, "Setup: couldn’t copy user cache")
 			f.Close()
 
@@ -353,7 +749,7 @@ func TestGetStatus(t *testing.T) {
 			}()
 
 			cacheDir := t.TempDir()
-			m, err := policies.New(bus, policies.WithCacheDir(cacheDir))
+			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			// force a refresh

@@ -3,8 +3,10 @@ package policies
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -24,7 +26,7 @@ import (
 
 // Manager handles all managers for various policy handlers.
 type Manager struct {
-	gpoRulesCacheDir string
+	policiesCacheDir string
 
 	dconf     *dconf.Manager
 	privilege *privilege.Manager
@@ -79,8 +81,8 @@ func WithPolicyKitDir(p string) Option {
 	}
 }
 
-// New returns a new manager with all default policy handlers.
-func New(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
+// NewManager returns a new manager with all default policy handlers.
+func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
 
 	// defaults
@@ -110,8 +112,8 @@ func New(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		}
 	}
 
-	gpoRulesCacheDir := filepath.Join(args.cacheDir, GPORulesCacheBaseName)
-	if err := os.MkdirAll(gpoRulesCacheDir, 0700); err != nil {
+	policiesCacheDir := filepath.Join(args.cacheDir, PoliciesCacheBaseName)
+	if err := os.MkdirAll(policiesCacheDir, 0700); err != nil {
 		return nil, err
 	}
 
@@ -119,7 +121,7 @@ func New(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
 
 	return &Manager{
-		gpoRulesCacheDir: gpoRulesCacheDir,
+		policiesCacheDir: policiesCacheDir,
 
 		dconf:     dconfManager,
 		privilege: privilegeManager,
@@ -129,26 +131,32 @@ func New(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	}, nil
 }
 
-// NewGPOs returns cached gpos list loaded from the p json file.
-func NewGPOs(p string) (gpos []GPO, err error) {
-	defer decorate.OnError(&err, i18n.G("can't get cached GPO list from %s"), p)
+// Policies is the list of GPOs applied to a particular object, with the global data cache.
+type Policies struct {
+	GPOs []GPO
+	Data io.ReaderAt `yaml:"-"`
+}
+
+// NewFromCache returns cached policies loaded from the p json file.
+func NewFromCache(p string) (pols Policies, err error) {
+	defer decorate.OnError(&err, i18n.G("can't get cached policies from %s"), p)
 
 	d, err := os.ReadFile(p)
 	if err != nil {
-		return nil, err
+		return pols, err
 	}
 
-	if err := yaml.Unmarshal(d, &gpos); err != nil {
-		return nil, err
+	if err := yaml.Unmarshal(d, &pols); err != nil {
+		return pols, err
 	}
-	return gpos, nil
+	return pols, nil
 }
 
-// SaveGPOs serializes in p the GPO list.
-func SaveGPOs(gpos []GPO, p string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't save GPO list to %s"), p)
+// Save serializes in p the policies.
+func (pols *Policies) Save(p string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't save policies to %s"), p)
 
-	d, err := yaml.Marshal(gpos)
+	d, err := yaml.Marshal(pols)
 	if err != nil {
 		return err
 	}
@@ -159,14 +167,79 @@ func SaveGPOs(gpos []GPO, p string) (err error) {
 	return nil
 }
 
-// ApplyPolicy generates a computer or user policy based on a list of entries
+// GetUniqueRules return order rules, with one entry per key for a given type.
+// Returned file is a map of type to its entries.
+func (pols Policies) GetUniqueRules() map[string][]entry.Entry {
+	r := make(map[string][]entry.Entry)
+	keys := make(map[string][]string)
+
+	// Dedup entries, first GPO wins for a given type + key
+	dedup := make(map[string]map[string]entry.Entry)
+	seen := make(map[string]struct{})
+	for _, gpo := range pols.GPOs {
+		for t, entries := range gpo.Rules {
+			if dedup[t] == nil {
+				dedup[t] = make(map[string]entry.Entry)
+			}
+			for _, e := range entries {
+				switch e.Strategy {
+				case entry.StrategyAppend:
+					// We skip disabled keys as we only append enabled one.
+					if e.Disabled {
+						continue
+					}
+					var keyAlreadySeen bool
+					// If there is an existing value, prepend new value to it. We are analyzing GPOs in reverse order (closest first).
+					if _, exists := seen[t+e.Key]; exists {
+						keyAlreadySeen = true
+						// We have seen a closest key which is an override. We don’t append furthest append values.
+						if dedup[t][e.Key].Strategy != entry.StrategyAppend {
+							continue
+						}
+						e.Value = e.Value + "\n" + dedup[t][e.Key].Value
+						// Keep closest meta value.
+						e.Meta = dedup[t][e.Key].Meta
+					}
+					dedup[t][e.Key] = e
+					if keyAlreadySeen {
+						continue
+					}
+
+				default:
+					// override case
+					if _, exists := seen[t+e.Key]; exists {
+						continue
+					}
+					dedup[t][e.Key] = e
+				}
+
+				keys[t] = append(keys[t], e.Key)
+				seen[t+e.Key] = struct{}{}
+			}
+		}
+	}
+
+	// For each t, order entries by ascii order
+	for t := range dedup {
+		var entries []entry.Entry
+		sort.Strings(keys[t])
+		for _, k := range keys[t] {
+			entries = append(entries, dedup[t][k])
+		}
+		r[t] = entries
+	}
+
+	return r
+}
+
+// ApplyPolicies generates a computer or user policy based on a list of entries
 // retrieved from a directory service.
-func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, gpos []GPO) (err error) {
+func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComputer bool, pols Policies) (err error) {
 	defer decorate.OnError(&err, i18n.G("failed to apply policy to %q"), objectName)
 
 	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
 
-	rules := GetUniqueRules(gpos)
+	rules := pols.GetUniqueRules()
 	var g errgroup.Group
 	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
 
@@ -188,8 +261,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		}
 	}
 
-	// Write cache GPO results
-	return SaveGPOs(gpos, filepath.Join(m.gpoRulesCacheDir, objectName))
+	// Write cache Policies
+	return pols.Save(filepath.Join(m.policiesCacheDir, objectName))
 }
 
 // DumpPolicies displays the currently applied policies and rules (since last update) for objectName.
@@ -211,23 +284,23 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 	var alreadyProcessedRules map[string]struct{}
 	if objectName != hostname {
 		fmt.Fprintln(&out, i18n.G("Policies from machine configuration:"))
-		gposHost, err := NewGPOs(filepath.Join(m.gpoRulesCacheDir, hostname))
+		policiesHost, err := NewFromCache(filepath.Join(m.policiesCacheDir, hostname))
 		if err != nil {
 			return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), hostname, err)
 		}
-		for _, g := range gposHost {
-			alreadyProcessedRules = g.FormatGPO(&out, withRules, withOverridden, alreadyProcessedRules)
+		for _, g := range policiesHost.GPOs {
+			alreadyProcessedRules = g.Format(&out, withRules, withOverridden, alreadyProcessedRules)
 		}
 		fmt.Fprintln(&out, i18n.G("Policies from user configuration:"))
 	}
 
 	// Load target policies
-	gposTarget, err := NewGPOs(filepath.Join(m.gpoRulesCacheDir, objectName))
+	policiesTarget, err := NewFromCache(filepath.Join(m.policiesCacheDir, objectName))
 	if err != nil {
 		return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), objectName, err)
 	}
-	for _, g := range gposTarget {
-		alreadyProcessedRules = g.FormatGPO(&out, withRules, withOverridden, alreadyProcessedRules)
+	for _, g := range policiesTarget.GPOs {
+		alreadyProcessedRules = g.Format(&out, withRules, withOverridden, alreadyProcessedRules)
 	}
 
 	return out.String(), nil
@@ -247,9 +320,9 @@ func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachin
 		objectName = hostname
 	}
 
-	info, err := os.Stat(filepath.Join(m.gpoRulesCacheDir, objectName))
+	info, err := os.Stat(filepath.Join(m.policiesCacheDir, objectName))
 	if err != nil {
-		return time.Time{}, fmt.Errorf(i18n.G("gpo was not applied for %q: %v"), objectName, err)
+		return time.Time{}, fmt.Errorf(i18n.G("policies were not applied for %q: %v"), objectName, err)
 	}
 	return info.ModTime(), nil
 }

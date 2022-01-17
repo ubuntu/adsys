@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Ubuntu policy</displayName>
+  <description>This is the Ubuntu policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="UbuntuDisplayUbuntu">Ubuntu</string>
+      <string id="UbuntuDisplayDesktop">Desktop</string>
+      <string id="UbuntuDisplayAccessibility">Accessibility</string>
+      <string id="UbuntuDisplayBackground">Background</string>
+      <string id="UbuntuDisplayShell">Shell</string>
+      <string id="UbuntuDisplayClock">Clock</string>
+      <string id="UbuntuDisplayNotifications">Notifications</string>
+      <string id="UbuntuDisplayLockDown">LockDown</string>
+      <string id="UbuntuDisplayKeyboardShortcuts">Keyboard shortcuts</string>
+      <string id="UbuntuDisplayScreensaver">Screensaver</string>
+      <string id="UbuntuDisplayPeripherals">Peripherals</string>
+      <string id="UbuntuDisplayLoginScreen">Login Screen</string>
+      <string id="UbuntuDisplayAuthentication">Authentication</string>
+      <string id="UbuntuDisplayInterface">Interface</string>
+      <string id="UbuntuDisplayClientManagement">Client management</string>
+      <string id="UbuntuDisplayPrivilegeAuthorization">Privilege Authorization</string>
+      <string id="UbuntuDisplayComputerScripts">Computer Scripts</string>
+      <string id="UbuntuDisplaySessionManagement">Session management</string>
+      <string id="UbuntuDisplayUserScripts">User Scripts</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/toolkit-accessibility
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">Whether the on-screen keyboard is turned on.
+
+- Type: dconf
+- Key: /org/gnome/desktop/a11y/applications/screen-keyboard-enabled
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Whether the screen magnifier is turned on.
+
+- Type: dconf
+- Key: /org/gnome/desktop/a11y/applications/screen-magnifier-enabled
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Whether the screen reader is turned on.
+
+- Type: dconf
+- Key: /org/gnome/desktop/a11y/applications/screen-reader-enabled
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs.
+
+- Type: dconf
+- Key: /org/gnome/desktop/background/picture-uri
+- Default: &#39;file:///usr/share/backgrounds/gnome/adwaita-timed.xml&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureOptions">Determines how the image set by wallpaper_filename is rendered. Possible values are “none”, “wallpaper”, “centered”, “scaled”, “stretched”, “zoom”, “spanned”.
+
+- Type: dconf
+- Key: /org/gnome/desktop/background/picture-options
+- Default: &#39;zoom&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureOptions">Picture Options</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions0">none</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions1">wallpaper</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions2">centered</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions3">scaled</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions4">stretched</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions5">zoom</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions6">spanned</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons">If set to true, then file manager will draw the icons on the desktop.
+
+- Type: dconf
+- Key: /org/gnome/desktop/background/show-desktop-icons
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-format
+- Default: &#39;24h&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockShowDate">If true, display date in the clock, in addition to time.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-show-date
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockShowWeekday">If true, display weekday in the clock, in addition to time.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-show-weekday
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopNotificationsShowBanners">Whether notification banners are visible for application notifications.
+
+- Type: dconf
+- Key: /org/gnome/desktop/notifications/show-banners
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableCommandLine">Prevent the user from accessing the terminal or specifying a command line to be executed. For example, this would disable access to the panel’s “Run Application” dialog.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/disable-command-line
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableLogOut">Prevent the user from logging out.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/disable-log-out
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableUserSwitching">Prevent the user from switching to another account while his session is active.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/disable-user-switching
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisablePrinting">Prevent the user from printing. For example, this would disable access to all applications’ “Print” dialogs.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/disable-printing
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisablePrintSetup">Prevent the user from modifying print settings. For example, this would disable access to all applications’ “Print Setup” dialogs.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/disable-print-setup
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk">Prevent the user from saving files to disk. For example, this would disable access to all applications’ “Save as” dialogs.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/disable-save-to-disk
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Stop the user from modifying user accounts. By default, we allow adding and removing users, as well as changing other users settings.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/user-administration-disabled
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">
+
+- Type: dconf
+- Key: /org/gnome/desktop/wm/keybindings/panel-main-menu
+- Default: [&#39;&lt;Alt&gt;F1&#39;]
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopScreensaverPictureUri">URI to use for the background image. Note that the backend only supports local (file://) URIs.
+
+- Type: dconf
+- Key: /org/gnome/desktop/screensaver/picture-uri
+- Default: &#39;file:///usr/share/backgrounds/gnome/adwaita-timed.xml&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopScreensaverPictureOptions">Determines how the image set by wallpaper_filename is rendered. Possible values are “none”, “wallpaper”, “centered”, “scaled”, “stretched”, “zoom”, “spanned”.
+
+- Type: dconf
+- Key: /org/gnome/desktop/screensaver/picture-options
+- Default: &#39;zoom&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureOptions">Picture Options</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions0">none</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions1">wallpaper</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions2">centered</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions3">scaled</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions4">stretched</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions5">zoom</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions6">spanned</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopNotificationsShowInLockScreen">Whether notifications are shown in the lock screen or not.
+
+- Type: dconf
+- Key: /org/gnome/desktop/notifications/show-in-lock-screen
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableLockScreen">Prevent the user to lock his screen.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/disable-lock-screen
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopMediaHandlingAutomount">If set to true, then Nautilus will automatically mount media such as user-visible hard disks and removable media on start-up and media insertion.
+
+- Type: dconf
+- Key: /org/gnome/desktop/media-handling/automount
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Whether notifications are shown in the lock screen or not.
+
+- Type: dconf
+- Key: /org/gnome/desktop/notifications/show-in-lock-screen
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners">Whether notification banners are visible for application notifications.
+
+- Type: dconf
+- Key: /org/gnome/desktop/notifications/show-banners
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/toolkit-accessibility
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-format
+- Default: &#39;24h&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
+      <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
+      <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate">If true, display date in the clock, in addition to time.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-show-date
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
+      <string id="UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">If true, display weekday in the clock, in addition to time.
+
+- Type: dconf
+- Key: /org/gnome/desktop/interface/clock-show-weekday
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
+      <string id="UbuntuExplainTextMachinePrivilegeClientAdmins">Define users and groups from AD allowed to administer client machines.
+It must be of the form user@domain or %group@domain. One per line.
+
+
+- Type: privilege
+- Key: /client-admins
+
+Note: -
+ * Enabled: This allows defining Active Directory groups and users with administrative privileges in the box entry.
+ * Disabled: This disallows any Active Directory group or user to become an administrator of the client even if it is defined in a parent GPO of the hierarchy tree.
+
+
+</string>
+      <string id="UbuntuDisplayMachineAllPrivilegeClientAdmins">Client administrators</string>
+      <string id="UbuntuExplainTextMachinePrivilegeAllowLocalAdmins">This allows or prevents client machine to have local users gaining administrators privilege on the machine.
+
+
+- Type: privilege
+- Key: /allow-local-admins
+
+Note: -
+ * Enabled: This leaves the default rules for the “sudo” and “admin” rule intact.
+ * Disabled: This denies root privileges to the predefined administrator groups (sudo and admin).
+
+
+</string>
+      <string id="UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins">Allow local administrators</string>
+      <string id="UbuntuExplainTextMachineScriptsStartup">Define scripts that are executed on machine boot, once the GPO is downloaded.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /startup
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at startup time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per boot, and refreshed only on new boot of the machine.
+
+
+</string>
+      <string id="UbuntuDisplayMachineAllScriptsStartup">Startup scripts</string>
+      <string id="UbuntuExplainTextMachineScriptsShutdown">Define scripts that are executed on machine poweroff.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /shutdown
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at shutdown time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per boot, and refreshed only on new boot of the machine.
+
+
+</string>
+      <string id="UbuntuDisplayMachineAllScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuExplainTextUserScriptsLogon">Define scripts that are executed the first time an user logon until it exits from all sessions.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /logon
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at user logon time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per session, and refreshed only on new session creation.
+
+
+</string>
+      <string id="UbuntuDisplayUserAllScriptsLogon">Logon scripts</string>
+      <string id="UbuntuExplainTextUserScriptsLogoff">Define scripts that are executed when the user exits from last session.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /logoff
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at user logoff time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per session, and refreshed only on new session creation.
+
+
+</string>
+      <string id="UbuntuDisplayUserAllScriptsLogoff">Logoff scripts</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">On-screen keyboard</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Screen magnifier</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Screen reader</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureUri">
+        <textBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureUri">
+          <label>Picture URI</label>
+          <defaultValue></defaultValue>
+        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureOptions">
+        <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions" noSort="true" defaultItem="">Picture Options</dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="false">Have file manager handle the desktop</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockFormat">
+        <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="">Whether the clock displays in 24h or 12h format</dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowDate">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Show date in clock</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowWeekday">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowBanners">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Show notification banners</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableCommandLine">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Disable command line</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLogOut">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Disable log out</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableUserSwitching">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Disable user switching</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrinting">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Disable printing</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrintSetup">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Disable print setup</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Disable saving files to disk</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">
+        <text>Show the activities overview</text>
+        <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopScreensaverPictureUri">
+        <textBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopScreensaverPictureUri">
+          <label>Picture URI</label>
+          <defaultValue></defaultValue>
+        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopScreensaverPictureOptions">
+        <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions" noSort="true" defaultItem="">Picture Options</dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowInLockScreen">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Show notifications in the lock screen</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLockScreen">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Disable lock screen</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopMediaHandlingAutomount">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Whether to automatically mount media</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Show notifications in the lock screen</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Show notification banners</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">
+        <dropdownList refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="">Whether the clock displays in 24h or 12h format</dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Show date in clock</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">
+        <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachinePrivilegeClientAdmins">
+        <text>Client administrators</text>
+        <multiTextBox refId="UbuntuElemMachineAllPrivilegeClientAdmins" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationMachinePrivilegeAllowLocalAdmins">
+      </presentation>
+      <presentation id="UbuntuPresentationMachineScriptsStartup">
+        <text>Startup scripts</text>
+        <multiTextBox refId="UbuntuElemMachineAllScriptsStartup" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationMachineScriptsShutdown">
+        <text>Shutdown scripts</text>
+        <multiTextBox refId="UbuntuElemMachineAllScriptsShutdown" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationUserScriptsLogon">
+        <text>Logon scripts</text>
+        <multiTextBox refId="UbuntuElemUserAllScriptsLogon" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationUserScriptsLogoff">
+        <text>Logoff scripts</text>
+        <multiTextBox refId="UbuntuElemUserAllScriptsLogoff" defaultHeight="5" />
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>

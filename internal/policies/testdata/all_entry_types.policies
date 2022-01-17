@@ -1,3 +1,4 @@
+gpos:
 - id: '{GPOId}'
   name: GPOName
   rules:

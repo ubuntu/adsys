@@ -1,0 +1,27 @@
+gpos:
+    - id: '{GPOId}'
+      name: GPOName
+      rules:
+        dconf:
+            - key: path/to/key1
+              value: ValueOfKey1
+              disabled: false
+              meta: s
+            - key: path/to/key2
+              value: |
+                ValueOfKey2
+                On
+                Multilines
+              disabled: false
+              meta: s
+        privilege:
+            - key: allow-local-admins
+              value: ""
+              disabled: false
+            - key: client-admins
+              value: |
+                alice@domain
+                bob@domain2
+                %mygroup@domain
+                cosmic carole@domain
+              disabled: false

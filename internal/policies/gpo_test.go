@@ -1,6 +1,7 @@
 package policies_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,400 +9,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/policies"
-	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
-func TestGetUniqueRules(t *testing.T) {
-	t.Parallel()
-
-	standardGPO := policies.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-		"dconf": {
-			{Key: "A", Value: "standardA"},
-			{Key: "B", Value: "standardB"},
-			{Key: "C", Value: "standardC"},
-		}}}
-
-	tests := map[string]struct {
-		gpos []policies.GPO
-
-		want map[string][]entry.Entry
-	}{
-		"One GPO": {
-			gpos: []policies.GPO{standardGPO},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Value: "standardC"},
-				},
-			}},
-		"Order key ascii": {
-			gpos: []policies.GPO{{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "Z", Value: "standardZ"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Value: "standardC"},
-				}}}},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Value: "standardC"},
-					{Key: "Z", Value: "standardZ"},
-				},
-			}},
-
-		// Multiple domains cases
-		"Multiple domains, same GPOs": {
-			gpos: []policies.GPO{
-				{ID: "gpomultidomain", Name: "gpomultidomain-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "standardA"},
-						{Key: "B", Value: "standardB"},
-						{Key: "C", Value: "standardC"},
-					},
-					"otherdomain": {
-						{Key: "Key1", Value: "otherdomainKey1"},
-						{Key: "Key2", Value: "otherdomainKey2"},
-					}}}},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Value: "standardC"},
-				},
-				"otherdomain": {
-					{Key: "Key1", Value: "otherdomainKey1"},
-					{Key: "Key2", Value: "otherdomainKey2"},
-				},
-			}},
-		"Multiple domains, different GPOs": {
-			gpos: []policies.GPO{standardGPO,
-				{ID: "gpo2", Name: "gpo2-name", Rules: map[string][]entry.Entry{
-					"otherdomain": {
-						{Key: "Key1", Value: "otherdomainKey1"},
-						{Key: "Key2", Value: "otherdomainKey2"},
-					}}}},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Value: "standardC"},
-				},
-				"otherdomain": {
-					{Key: "Key1", Value: "otherdomainKey1"},
-					{Key: "Key2", Value: "otherdomainKey2"},
-				},
-			}},
-		"Same key in different domains are kept separated": {
-			gpos: []policies.GPO{
-				{ID: "gpoDomain1", Name: "gpoDomain1-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "Common", Value: "commonValueDconf"},
-					},
-					"otherdomain": {
-						{Key: "Common", Value: "commonValueOtherDomain"},
-					}}}},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "Common", Value: "commonValueDconf"},
-				},
-				"otherdomain": {
-					{Key: "Common", Value: "commonValueOtherDomain"},
-				},
-			}},
-
-		// Override cases
-		// This is ordered for each type by key ascii order
-		"Two policies, with overrides": {
-			gpos: []policies.GPO{
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "C", Value: "oneValueC"},
-					}}},
-				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "standardA"},
-						{Key: "B", Value: "standardB"},
-						// this value will be overridden with the higher one
-						{Key: "C", Value: "standardC"},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Value: "oneValueC"},
-				},
-			}},
-		"Two policies, with reversed overrides": {
-			gpos: []policies.GPO{
-				standardGPO,
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						// this value will be overridden with the higher one
-						{Key: "C", Value: "oneValueC"},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Value: "standardC"},
-				},
-			}},
-		"Two policies, no overrides": {
-			gpos: []policies.GPO{
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "C", Value: "oneValueC"},
-					}}},
-				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "userOnlyA"},
-						{Key: "B", Value: "userOnlyB"},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "userOnlyA"},
-					{Key: "B", Value: "userOnlyB"},
-					{Key: "C", Value: "oneValueC"},
-				},
-			}},
-		"Two policies, no overrides, reversed": {
-			gpos: []policies.GPO{
-				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "userOnlyA"},
-						{Key: "B", Value: "userOnlyB"},
-					}}},
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "C", Value: "oneValueC"},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "userOnlyA"},
-					{Key: "B", Value: "userOnlyB"},
-					{Key: "C", Value: "oneValueC"},
-				},
-			}},
-
-		"Disabled value overrides non disabled one": {
-			gpos: []policies.GPO{
-				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "C", Value: "", Disabled: true},
-					}}},
-				standardGPO,
-			},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Disabled: true},
-				},
-			}},
-		"Disabled value is overridden": {
-			gpos: []policies.GPO{
-				standardGPO,
-				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "C", Value: "", Disabled: true},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA"},
-					{Key: "B", Value: "standardB"},
-					{Key: "C", Value: "standardC"},
-				},
-			}},
-
-		"More policies, with multiple overrides": {
-			gpos: []policies.GPO{
-				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "userOnlyA"},
-						{Key: "B", Value: "userOnlyB"},
-					}}},
-				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "C", Value: "oneValueC"},
-					}}},
-				standardGPO,
-			},
-			want: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "userOnlyA"},
-					{Key: "B", Value: "userOnlyB"},
-					{Key: "C", Value: "oneValueC"},
-				},
-			}},
-
-		// append/prepend cases
-		"Append policy entry, one GPO": {
-			gpos: []policies.GPO{
-				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"domain": {
-					{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend},
-				},
-			}},
-		"Append policy entry, one GPO, disabled key is ignored": {
-			gpos: []policies.GPO{
-				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend, Disabled: true},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"domain": nil,
-			}},
-		"Append policy entry, multiple GPOs": {
-			gpos: []policies.GPO{
-				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
-					}}},
-				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"domain": {
-					{Key: "A", Value: "furthest value\nclosest value", Strategy: entry.StrategyAppend},
-				},
-			}},
-		"Append policy entry, multiple GPOs, disabled key is ignored, first": {
-			gpos: []policies.GPO{
-				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend, Disabled: true},
-					}}},
-				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"domain": {
-					{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
-				},
-			}},
-		"Append policy entry, multiple GPOs, disabled key is ignored, second": {
-			gpos: []policies.GPO{
-				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
-					}}},
-				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend, Disabled: true},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"domain": {
-					{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
-				},
-			}},
-		"Append policy entry, closest meta wins": {
-			gpos: []policies.GPO{
-				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "closest value", Meta: "closest meta", Strategy: entry.StrategyAppend},
-					}}},
-				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "furthest value", Meta: "furthest meta", Strategy: entry.StrategyAppend},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"domain": {
-					{Key: "A", Value: "furthest value\nclosest value", Meta: "closest meta", Strategy: entry.StrategyAppend},
-				},
-			}},
-
-		// Mix append and override: closest win
-		"Mix meta on GPOs, furthest policy entry is append, closest is override": {
-			gpos: []policies.GPO{
-				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "closest value"},
-					}}},
-				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "furthest value", Strategy: entry.StrategyAppend},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"domain": {
-					{Key: "A", Value: "closest value"},
-				},
-			}},
-		"Mix meta on GPOs, closest policy entry is append, furthest override is ignored": {
-			gpos: []policies.GPO{
-				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
-					}}},
-				{ID: "furthest", Name: "furthest-name", Rules: map[string][]entry.Entry{
-					"domain": {
-						{Key: "A", Value: "furthest value"},
-					}}},
-			},
-			want: map[string][]entry.Entry{
-				"domain": {
-					{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
-				},
-			}},
-	}
-
-	for name, tc := range tests {
-		tc := tc
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got := policies.GetUniqueRules(tc.gpos)
-			require.Equal(t, tc.want, got, "GetUniqueRules returns expected policy entries with correct overrides")
-		})
-	}
-}
-
-func TestCacheGPOList(t *testing.T) {
-	gpos := []policies.GPO{
-		{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-			"dconf": {
-				{Key: "C", Value: "oneValueC"},
-			}}},
-		{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-			"dconf": {
-				{Key: "A", Value: "standardA", Meta: "My meta"},
-				{Key: "B", Value: "standardB", Disabled: true},
-				// this value will be overridden with the higher one
-				{Key: "C", Value: "standardC"},
-			}}},
-	}
-
-	p := filepath.Join(t.TempDir(), "gpos-list-cache")
-	err := policies.SaveGPOs(gpos, p)
-	require.NoError(t, err, "Save GPO without error")
-
-	got, err := policies.NewGPOs(p)
-	require.NoError(t, err, "Got GPOs without error")
-
-	require.Equal(t, gpos, got, "Reloaded GPOs after caching should be the same")
-}
-
-func TestFormatGPO(t *testing.T) {
+func TestFormat(t *testing.T) {
 	t.Parallel()
 
 	defaultProcessedRules := map[string]struct{}{
@@ -453,18 +63,19 @@ func TestFormatGPO(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			gpos, err := policies.NewGPOs("testdata/gpos.cache")
-			require.NoError(t, err, "Got GPOs without error")
+			pols, err := policies.NewFromCache("testdata/policies.cache")
+			fmt.Println(pols)
+			require.NoError(t, err, "Got policies without error")
 
 			var out strings.Builder
 
-			got := gpos[0].FormatGPO(&out, tc.withRules, tc.withOverridden, tc.alreadyProcessedRules)
+			got := pols.GPOs[0].Format(&out, tc.withRules, tc.withOverridden, tc.alreadyProcessedRules)
 
-			// check cache between FormatGPO calls
-			require.Equal(t, tc.wantAlreadyProcessedRules, got, "FormatGPO returns expected alreadyProcessedRules cache")
+			// check cache between Format calls
+			require.Equal(t, tc.wantAlreadyProcessedRules, got, "Format returns expected alreadyProcessedRules cache")
 
-			// check collected output between FormatGPO calls
-			goldPath := filepath.Join("testdata", "golden", "formatgpo", name)
+			// check collected output between Format calls
+			goldPath := filepath.Join("testdata", "golden", "format", name)
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
@@ -474,7 +85,7 @@ func TestFormatGPO(t *testing.T) {
 			want, err := os.ReadFile(goldPath)
 			require.NoError(t, err, "Cannot load policy golden file")
 
-			require.Equal(t, string(want), out.String(), "FormatGPO write expected output")
+			require.Equal(t, string(want), out.String(), "Format write expected output")
 		})
 	}
 }

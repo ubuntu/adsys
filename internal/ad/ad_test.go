@@ -121,7 +121,7 @@ func TestGetPolicies(t *testing.T) {
 		dontCreateOriginalKrb5CCName bool
 		turnKrb5CCRO                 bool
 
-		want          []policies.GPO
+		want          policies.Policies
 		wantServerURL string
 		wantErr       bool
 	}{
@@ -130,7 +130,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               []policies.GPO{standardGPO},
+			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
 			wantServerURL:      "ldap://myserver.example.com",
 		},
 		"Standard policy, computer object": {
@@ -138,13 +138,13 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "", // ignored for machine
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "standardA"},
 						{Key: "D", Value: "standardD"},
 						{Key: "E", Value: "standardE"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -153,12 +153,12 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
 						{Key: "B", Value: "userOnlyB"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -167,7 +167,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "",
-			want:               []policies.GPO{{ID: "user-only", Name: "user-only-name", Rules: make(map[string][]entry.Entry)}},
+			want:               policies.Policies{GPOs: []policies.GPO{{ID: "user-only", Name: "user-only-name", Rules: make(map[string][]entry.Entry)}}},
 			wantServerURL:      "ldap://myserver.example.com",
 		},
 		"Computer only policy, user object, policy is empty": {
@@ -175,7 +175,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               []policies.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)}},
+			want:               policies.Policies{GPOs: []policies.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)}}},
 			wantServerURL:      "ldap://myserver.example.com",
 		},
 		"Computer ignored CCBaseName": {
@@ -183,13 +183,13 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "somethingtotallyarbitrary", // ignored for machine
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "standardA"},
 						{Key: "D", Value: "standardD"},
 						{Key: "E", Value: "standardE"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -201,10 +201,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{{ID: "multiple-releases-one-enabled", Name: "multiple-releases-one-enabled-name", Rules: map[string][]entry.Entry{
+			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases-one-enabled", Name: "multiple-releases-one-enabled-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "21.04Value"},
-				}}},
+				}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -214,10 +214,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{{ID: "multiple-releases-one-disabled", Name: "multiple-releases-one-disabled-name", Rules: map[string][]entry.Entry{
+			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases-one-disabled", Name: "multiple-releases-one-disabled-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "AllValue"},
-				}}},
+				}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -227,10 +227,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
+			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "21.04Value"},
-				}}},
+				}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -240,10 +240,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
+			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "AllValue"},
-				}}},
+				}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -253,10 +253,10 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
+			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "AllValue"},
-				}}},
+				}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -269,7 +269,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "multiple-domains", Name: "multiple-domains-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "standardA"},
@@ -277,7 +277,7 @@ func TestGetPolicies(t *testing.T) {
 					},
 					"other": {
 						{Key: "B", Value: "standardB"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -286,7 +286,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "other-domain", Name: "other-domain-name", Rules: map[string][]entry.Entry{
 					"other": {
 						{Key: "C", Value: "otherC"},
@@ -294,7 +294,7 @@ func TestGetPolicies(t *testing.T) {
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -304,7 +304,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
@@ -315,7 +315,7 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "B", Value: "standardB"},
 						// this value will be overridden with the higher one
 						{Key: "C", Value: "standardC"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -324,13 +324,13 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				standardGPO,
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						// this value will be overridden with the higher one
 						{Key: "C", Value: "oneValueC"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -339,7 +339,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
@@ -348,7 +348,7 @@ func TestGetPolicies(t *testing.T) {
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
 						{Key: "B", Value: "userOnlyB"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -357,7 +357,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
@@ -366,7 +366,7 @@ func TestGetPolicies(t *testing.T) {
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
-					}}},
+					}}}},
 			},
 			wantServerURL: "ldap://myserver.example.com",
 		},
@@ -375,8 +375,8 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)},
-				standardGPO},
+			want: policies.Policies{GPOs: []policies.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)},
+				standardGPO}},
 			wantServerURL: "ldap://myserver.example.com",
 		},
 
@@ -385,13 +385,13 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "", Disabled: true},
 					}}},
 				standardGPO,
-			},
+			}},
 			wantServerURL: "ldap://myserver.example.com",
 		},
 		"Disabled value is overridden": {
@@ -399,13 +399,13 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				standardGPO,
 				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "", Disabled: true},
 					}}},
-			},
+			}},
 			wantServerURL: "ldap://myserver.example.com",
 		},
 
@@ -414,7 +414,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
@@ -425,7 +425,7 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "C", Value: "oneValueC"},
 					}}},
 				standardGPO,
-			},
+			}},
 			wantServerURL: "ldap://myserver.example.com",
 		},
 		"Object domain is stripped": {
@@ -433,7 +433,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@example.com",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               []policies.GPO{standardGPO},
+			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
 			wantServerURL:      "ldap://myserver.example.com",
 		},
 		"Filter non Ubuntu keys": {
@@ -441,13 +441,13 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@EXAMPLE.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want: []policies.GPO{
+			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "filtered", Name: "filtered-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "standardA"},
 						{Key: "C", Value: "standardC"},
 					}}},
-			},
+			}},
 			wantServerURL: "ldap://myserver.example.com",
 		},
 
@@ -457,7 +457,7 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			staticServerURL:    "ldap://myotherserver.example.com",
-			want:               []policies.GPO{standardGPO},
+			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
 			wantServerURL:      "ldap://myotherserver.example.com",
 		},
 
@@ -523,7 +523,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               []policies.GPO{standardGPO},
+			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
 			wantServerURL:      "ldap://myserver.example.com",
 			wantErr:            true,
 		},
@@ -613,42 +613,44 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 	bus := testutils.NewDbusConn(t)
 
-	gpos := []policies.GPO{
-		{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
-			"dconf": {
-				{Key: "A", Value: "userOnlyA"},
-				{Key: "B", Value: "userOnlyB"},
-			}}},
-		{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-			"dconf": {
-				{Key: "C", Value: "oneValueC"},
-			}}},
-		{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-			"dconf": {
-				{Key: "A", Value: "standardA"},
-				{Key: "B", Value: "standardB"},
-				{Key: "C", Value: "standardC"},
-			}}}}
+	pols := policies.Policies{
+		GPOs: []policies.GPO{
+			{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "userOnlyA"},
+					{Key: "B", Value: "userOnlyB"},
+				}}},
+			{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "C", Value: "oneValueC"},
+				}}},
+			{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA"},
+					{Key: "B", Value: "standardB"},
+					{Key: "C", Value: "standardC"},
+				}}}},
+	}
 
 	tests := map[string]struct {
 		getFromCache bool
 		domain       string
 		gpoListArg   string
 
-		want    []policies.GPO
+		want    policies.Policies
 		wantErr bool
 	}{
 		"Offline, get from cache": {
 			getFromCache: true,
 			domain:       "offline",
 			gpoListArg:   "standard",
-			want:         gpos,
+			want:         pols,
 		},
 		"Offline, ensure we fetch from cache and not fetch GPO list": {
 			getFromCache: true,
 			domain:       "offline",
 			gpoListArg:   "-Exit2-", // this should not be used
-			want:         gpos,
+			want:         pols,
 		},
 
 		"Error on SSSD reports online, but we are actually offline when fetching gpo list, even with a cache": {
@@ -681,8 +683,8 @@ func TestGetPoliciesOffline(t *testing.T) {
 			krb5CCName := setKrb5CC(t, objectName)
 
 			if tc.getFromCache {
-				err := policies.SaveGPOs(tc.want, filepath.Join(adc.GpoRulesCacheDir(), objectName))
-				require.NoError(t, err, "Setup: cannot create gpo cache rule file for user")
+				err := tc.want.Save(filepath.Join(adc.PoliciesCacheDir(), objectName))
+				require.NoError(t, err, "Setup: cannot create policy cache file for user")
 			}
 
 			entries, err := adc.GetPolicies(context.Background(), objectName, ad.UserObject, krb5CCName)
@@ -708,12 +710,12 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 	gpoListArgs := "standard"
 	objectClass := ad.UserObject
 
-	standardGPO := policies.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+	standardPolicies := policies.Policies{GPOs: []policies.GPO{{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 		"dconf": {
 			{Key: "A", Value: "standardA"},
 			{Key: "B", Value: "standardB"},
 			{Key: "C", Value: "standardC"},
-		}}}
+		}}}}}
 
 	tests := map[string]struct {
 		objectName1         string
@@ -722,7 +724,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		userKrb5CCBaseName2 string
 		restart             bool
 
-		want    []policies.GPO
+		want    policies.Policies
 		wantErr bool
 	}{
 		"Second call is a refresh (without Krb5CCName specified)": {
@@ -730,7 +732,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob@EXAMPLE.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "EMPTY",
-			want:                []policies.GPO{standardGPO},
+			want:                standardPolicies,
 		},
 		"Second call after service restarted": {
 			restart:             true,
@@ -738,21 +740,21 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob@EXAMPLE.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "", // We did’t RENEW the ticket
-			want:                []policies.GPO{standardGPO},
+			want:                standardPolicies,
 		},
 		"Second call with different user": {
 			objectName1:         "bob@EXAMPLE.COM",
 			objectName2:         "sponge@EXAMPLE.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "sponge",
-			want:                []policies.GPO{standardGPO},
+			want:                standardPolicies,
 		},
 		"Second call after a relogin": {
 			objectName1:         "bob@EXAMPLE.COM",
 			objectName2:         "bob@EXAMPLE.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "bobNew",
-			want:                []policies.GPO{standardGPO},
+			want:                standardPolicies,
 		},
 	}
 
@@ -809,12 +811,12 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 
 	objectClass := ad.UserObject
 
-	standardGPO := policies.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+	standardPolicies := policies.Policies{GPOs: []policies.GPO{{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 		"dconf": {
 			{Key: "A", Value: "standardA"},
 			{Key: "B", Value: "standardB"},
 			{Key: "C", Value: "standardC"},
-		}}}
+		}}}}}
 
 	tests := map[string]struct {
 		objectName1 string
@@ -822,8 +824,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		gpo1        string
 		gpo2        string
 
-		want1   []policies.GPO
-		want2   []policies.GPO
+		want1   policies.Policies
+		want2   policies.Policies
 		wantErr bool
 	}{
 		"Same user, same GPO": {
@@ -831,8 +833,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			objectName2: "bob@EXAMPLE.COM",
 			gpo1:        "standard",
 			gpo2:        "standard",
-			want1:       []policies.GPO{standardGPO},
-			want2:       []policies.GPO{standardGPO},
+			want1:       standardPolicies,
+			want2:       standardPolicies,
 		},
 		// We can’t run this test currently as the mock will always return the same value for bob (both gpos):
 		// both calls are identical.
@@ -841,31 +843,31 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		objectName2: "bob@EXAMPLE.COM",
 		gpo1:        "standard",
 		gpo2:        "one-value",
-		want1: []policies.GPO{standardGPO},
-		want2: []policies.GPO{{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+		want1: standardPolicies,
+			want2: policies.Policies{GPOs: []policies.GPO{{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "C", Value: "oneValueC"},
 				}}},
-			}},*/
+			}}},*/
 		"Different users, same GPO": {
 			objectName1: "bob@EXAMPLE.COM",
 			objectName2: "sponge@EXAMPLE.COM",
 			gpo1:        "standard",
 			gpo2:        "standard",
-			want1:       []policies.GPO{standardGPO},
-			want2:       []policies.GPO{standardGPO},
+			want1:       standardPolicies,
+			want2:       standardPolicies,
 		},
 		"Different users, different GPO": {
 			objectName1: "bob@EXAMPLE.COM",
 			objectName2: "sponge@EXAMPLE.COM",
 			gpo1:        "standard",
 			gpo2:        "one-value",
-			want1:       []policies.GPO{standardGPO},
-			want2: []policies.GPO{{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+			want1:       standardPolicies,
+			want2: policies.Policies{GPOs: []policies.GPO{{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "C", Value: "oneValueC"},
 				}}},
-			}},
+			}}},
 	}
 
 	for name, tc := range tests {
@@ -903,13 +905,13 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 				defer wg.Done()
 				got1, err := adc.GetPolicies(context.Background(), tc.objectName1, objectClass, krb5CCName1)
 				require.NoError(t, err, "GetPolicies should return no error")
-				assert.Equal(t, tc.want1, got1, "Got expected GPO policies")
+				assert.Equal(t, tc.want1, got1, "Got expected policies")
 			}()
 			go func() {
 				defer wg.Done()
 				got2, err := adc.GetPolicies(context.Background(), tc.objectName2, objectClass, krb5CCName2)
 				require.NoError(t, err, "GetPolicies should return no error")
-				assert.Equal(t, tc.want2, got2, "Got expected GPO policies")
+				assert.Equal(t, tc.want2, got2, "Got expected policies")
 			}()
 			wg.Wait()
 		})
