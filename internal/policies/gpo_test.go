@@ -1,22 +1,20 @@
-package entry_test
+package policies_test
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
-
-var update bool
 
 func TestGetUniqueRules(t *testing.T) {
 	t.Parallel()
 
-	standardGPO := entry.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+	standardGPO := policies.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 		"dconf": {
 			{Key: "A", Value: "standardA"},
 			{Key: "B", Value: "standardB"},
@@ -24,12 +22,12 @@ func TestGetUniqueRules(t *testing.T) {
 		}}}
 
 	tests := map[string]struct {
-		gpos []entry.GPO
+		gpos []policies.GPO
 
 		want map[string][]entry.Entry
 	}{
 		"One GPO": {
-			gpos: []entry.GPO{standardGPO},
+			gpos: []policies.GPO{standardGPO},
 			want: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
@@ -38,7 +36,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Order key ascii": {
-			gpos: []entry.GPO{{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+			gpos: []policies.GPO{{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 				"dconf": {
 					{Key: "A", Value: "standardA"},
 					{Key: "Z", Value: "standardZ"},
@@ -56,7 +54,7 @@ func TestGetUniqueRules(t *testing.T) {
 
 		// Multiple domains cases
 		"Multiple domains, same GPOs": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "gpomultidomain", Name: "gpomultidomain-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "standardA"},
@@ -79,7 +77,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Multiple domains, different GPOs": {
-			gpos: []entry.GPO{standardGPO,
+			gpos: []policies.GPO{standardGPO,
 				{ID: "gpo2", Name: "gpo2-name", Rules: map[string][]entry.Entry{
 					"otherdomain": {
 						{Key: "Key1", Value: "otherdomainKey1"},
@@ -97,7 +95,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Same key in different domains are kept separated": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "gpoDomain1", Name: "gpoDomain1-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "Common", Value: "commonValueDconf"},
@@ -117,7 +115,7 @@ func TestGetUniqueRules(t *testing.T) {
 		// Override cases
 		// This is ordered for each type by key ascii order
 		"Two policies, with overrides": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
@@ -138,7 +136,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Two policies, with reversed overrides": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				standardGPO,
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
@@ -154,7 +152,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Two policies, no overrides": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
@@ -173,7 +171,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Two policies, no overrides, reversed": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
@@ -193,7 +191,7 @@ func TestGetUniqueRules(t *testing.T) {
 			}},
 
 		"Disabled value overrides non disabled one": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "", Disabled: true},
@@ -208,7 +206,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Disabled value is overridden": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				standardGPO,
 				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
@@ -224,7 +222,7 @@ func TestGetUniqueRules(t *testing.T) {
 			}},
 
 		"More policies, with multiple overrides": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "user-only", Name: "user-only-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "A", Value: "userOnlyA"},
@@ -246,7 +244,7 @@ func TestGetUniqueRules(t *testing.T) {
 
 		// append/prepend cases
 		"Append policy entry, one GPO": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 					"domain": {
 						{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend},
@@ -258,7 +256,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Append policy entry, one GPO, disabled key is ignored": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
 					"domain": {
 						{Key: "A", Value: "standardA", Strategy: entry.StrategyAppend, Disabled: true},
@@ -268,7 +266,7 @@ func TestGetUniqueRules(t *testing.T) {
 				"domain": nil,
 			}},
 		"Append policy entry, multiple GPOs": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
 					"domain": {
 						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
@@ -284,7 +282,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Append policy entry, multiple GPOs, disabled key is ignored, first": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
 					"domain": {
 						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend, Disabled: true},
@@ -300,7 +298,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Append policy entry, multiple GPOs, disabled key is ignored, second": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
 					"domain": {
 						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
@@ -316,7 +314,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Append policy entry, closest meta wins": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
 					"domain": {
 						{Key: "A", Value: "closest value", Meta: "closest meta", Strategy: entry.StrategyAppend},
@@ -334,7 +332,7 @@ func TestGetUniqueRules(t *testing.T) {
 
 		// Mix append and override: closest win
 		"Mix meta on GPOs, furthest policy entry is append, closest is override": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
 					"domain": {
 						{Key: "A", Value: "closest value"},
@@ -350,7 +348,7 @@ func TestGetUniqueRules(t *testing.T) {
 				},
 			}},
 		"Mix meta on GPOs, closest policy entry is append, furthest override is ignored": {
-			gpos: []entry.GPO{
+			gpos: []policies.GPO{
 				{ID: "closest", Name: "closest-name", Rules: map[string][]entry.Entry{
 					"domain": {
 						{Key: "A", Value: "closest value", Strategy: entry.StrategyAppend},
@@ -372,14 +370,14 @@ func TestGetUniqueRules(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := entry.GetUniqueRules(tc.gpos)
+			got := policies.GetUniqueRules(tc.gpos)
 			require.Equal(t, tc.want, got, "GetUniqueRules returns expected policy entries with correct overrides")
 		})
 	}
 }
 
 func TestCacheGPOList(t *testing.T) {
-	gpos := []entry.GPO{
+	gpos := []policies.GPO{
 		{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 			"dconf": {
 				{Key: "C", Value: "oneValueC"},
@@ -394,10 +392,10 @@ func TestCacheGPOList(t *testing.T) {
 	}
 
 	p := filepath.Join(t.TempDir(), "gpos-list-cache")
-	err := entry.SaveGPOs(gpos, p)
+	err := policies.SaveGPOs(gpos, p)
 	require.NoError(t, err, "Save GPO without error")
 
-	got, err := entry.NewGPOs(p)
+	got, err := policies.NewGPOs(p)
 	require.NoError(t, err, "Got GPOs without error")
 
 	require.Equal(t, gpos, got, "Reloaded GPOs after caching should be the same")
@@ -455,7 +453,7 @@ func TestFormatGPO(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			gpos, err := entry.NewGPOs("testdata/gpos.cache")
+			gpos, err := policies.NewGPOs("testdata/gpos.cache")
 			require.NoError(t, err, "Got GPOs without error")
 
 			var out strings.Builder
@@ -466,7 +464,7 @@ func TestFormatGPO(t *testing.T) {
 			require.Equal(t, tc.wantAlreadyProcessedRules, got, "FormatGPO returns expected alreadyProcessedRules cache")
 
 			// check collected output between FormatGPO calls
-			goldPath := filepath.Join("testdata", "golden", name)
+			goldPath := filepath.Join("testdata", "golden", "formatgpo", name)
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
@@ -479,11 +477,4 @@ func TestFormatGPO(t *testing.T) {
 			require.Equal(t, string(want), out.String(), "FormatGPO write expected output")
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
-	flag.Parse()
-
-	m.Run()
 }

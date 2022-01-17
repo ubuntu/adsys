@@ -22,6 +22,7 @@ import (
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
@@ -151,7 +152,7 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 	if err := os.MkdirAll(gpoCacheDir, 0700); err != nil {
 		return nil, err
 	}
-	gpoRulesCacheDir := filepath.Join(args.cacheDir, entry.GPORulesCacheBaseName)
+	gpoRulesCacheDir := filepath.Join(args.cacheDir, policies.GPORulesCacheBaseName)
 	if err := os.MkdirAll(gpoRulesCacheDir, 0700); err != nil {
 		return nil, err
 	}
@@ -195,7 +196,7 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 // ticket <krb5CCDir>/<objectName>.
 // The GPOs are returned from the highest priority in the hierarchy, with enforcement in reverse order
 // to the lowest priority.
-func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (r []entry.GPO, err error) {
+func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (r []policies.GPO, err error) {
 	defer decorate.OnError(&err, i18n.G("can't get policies for %q"), objectName)
 
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
@@ -230,7 +231,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 
 	// If sssd returns that we are offline, returns the cache list of GPOs if present
 	if !online {
-		if r, err = entry.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
+		if r, err = policies.NewGPOs(filepath.Join(ad.gpoRulesCacheDir, objectName)); err != nil {
 			return nil, fmt.Errorf(i18n.G("machine is offline and GPO rules cache is unavailable: %v"), err)
 		}
 
@@ -361,14 +362,14 @@ func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) 
 	return nil
 }
 
-func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) ([]entry.GPO, error) {
-	var r []entry.GPO
+func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) ([]policies.GPO, error) {
+	var r []policies.GPO
 
 	keyFilterPrefix := fmt.Sprintf("%s/%s/", adcommon.KeyPrefix, consts.DistroID)
 
 	for _, g := range gpos {
 		name, url := g.name, g.url
-		gpoRules := entry.GPO{
+		gpoRules := policies.GPO{
 			ID:    filepath.Base(url),
 			Name:  name,
 			Rules: make(map[string][]entry.Entry),

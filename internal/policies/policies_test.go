@@ -19,7 +19,6 @@ import (
 	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/policies"
-	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -132,19 +131,19 @@ func TestDumpPolicies(t *testing.T) {
 			m, err := policies.New(bus, policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
+			err = os.MkdirAll(filepath.Join(cacheDir, policies.GPORulesCacheBaseName), 0750)
 			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
 
 			if tc.cacheUser != "" {
-				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheUser), filepath.Join(cacheDir, entry.GPORulesCacheBaseName, "user"), false)
+				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheUser), filepath.Join(cacheDir, policies.GPORulesCacheBaseName, "user"), false)
 				require.NoError(t, err, "Setup: couldn’t copy user cache")
 			}
 			if tc.cacheMachine == "" {
-				f, err := os.Create(filepath.Join(cacheDir, entry.GPORulesCacheBaseName, hostname))
+				f, err := os.Create(filepath.Join(cacheDir, policies.GPORulesCacheBaseName, hostname))
 				require.NoError(t, err, "Setup: failed to create empty machine cache file")
 				f.Close()
 			} else if tc.cacheMachine != "-" {
-				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheMachine), filepath.Join(cacheDir, entry.GPORulesCacheBaseName, hostname), false)
+				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheMachine), filepath.Join(cacheDir, policies.GPORulesCacheBaseName, hostname), false)
 				require.NoError(t, err, "Setup: couldn’t copy machine cache")
 			}
 
@@ -158,7 +157,7 @@ func TestDumpPolicies(t *testing.T) {
 			}
 			require.NoError(t, err, "DumpPolicies should return no error but got one")
 
-			goldPath := filepath.Join("testdata", "golden", name)
+			goldPath := filepath.Join("testdata", "golden", "dumppolicies", name)
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
@@ -207,7 +206,7 @@ func TestApplyPolicy(t *testing.T) {
 			// We change the dbus returned values to simulate a subscription
 			//t.Parallel()
 
-			gpos, err := entry.NewGPOs(filepath.Join("testdata", tc.gposFile))
+			gpos, err := policies.NewGPOs(filepath.Join("testdata", tc.gposFile))
 			require.NoError(t, err, "Setup: can not load gpo list")
 
 			fakeRootDir := t.TempDir()
@@ -233,7 +232,7 @@ func TestApplyPolicy(t *testing.T) {
 			)
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
+			err = os.MkdirAll(filepath.Join(cacheDir, policies.GPORulesCacheBaseName), 0750)
 			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
 
 			if tc.makeDirReadOnly != "" {
@@ -261,7 +260,7 @@ func TestApplyPolicy(t *testing.T) {
 				require.NoError(t, err, "ApplyPolicy should return no error but got one")
 			}
 
-			testutils.CompareTreesWithFiltering(t, fakeRootDir, filepath.Join("testdata", "golden", name), update)
+			testutils.CompareTreesWithFiltering(t, fakeRootDir, filepath.Join("testdata", "golden", "applypolicy", name), update)
 		})
 	}
 }
@@ -298,16 +297,16 @@ func TestLastUpdateFor(t *testing.T) {
 			m, err := policies.New(bus, policies.WithCacheDir(cacheDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			err = os.MkdirAll(filepath.Join(cacheDir, entry.GPORulesCacheBaseName), 0750)
+			err = os.MkdirAll(filepath.Join(cacheDir, policies.GPORulesCacheBaseName), 0750)
 			require.NoError(t, err, "Setup: cant not create gpo rule cache directory")
 
 			start := time.Now()
 			// Starts and ends are monotic, while os.Stat is wall clock, we have to wait for measuring difference…
 			time.Sleep(100 * time.Millisecond)
-			f, err := os.Create(filepath.Join(cacheDir, entry.GPORulesCacheBaseName, "user"))
+			f, err := os.Create(filepath.Join(cacheDir, policies.GPORulesCacheBaseName, "user"))
 			require.NoError(t, err, "Setup: couldn’t copy user cache")
 			f.Close()
-			f, err = os.Create(filepath.Join(cacheDir, entry.GPORulesCacheBaseName, hostname))
+			f, err = os.Create(filepath.Join(cacheDir, policies.GPORulesCacheBaseName, hostname))
 			require.NoError(t, err, "Setup: couldn’t copy user cache")
 			f.Close()
 

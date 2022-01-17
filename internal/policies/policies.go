@@ -19,6 +19,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/gdm"
 	"github.com/ubuntu/adsys/internal/policies/privilege"
 	"golang.org/x/sync/errgroup"
+	"gopkg.in/yaml.v3"
 )
 
 // Manager handles all managers for various policy handlers.
@@ -109,7 +110,7 @@ func New(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		}
 	}
 
-	gpoRulesCacheDir := filepath.Join(args.cacheDir, entry.GPORulesCacheBaseName)
+	gpoRulesCacheDir := filepath.Join(args.cacheDir, GPORulesCacheBaseName)
 	if err := os.MkdirAll(gpoRulesCacheDir, 0700); err != nil {
 		return nil, err
 	}
@@ -128,14 +129,44 @@ func New(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	}, nil
 }
 
+// NewGPOs returns cached gpos list loaded from the p json file.
+func NewGPOs(p string) (gpos []GPO, err error) {
+	defer decorate.OnError(&err, i18n.G("can't get cached GPO list from %s"), p)
+
+	d, err := os.ReadFile(p)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := yaml.Unmarshal(d, &gpos); err != nil {
+		return nil, err
+	}
+	return gpos, nil
+}
+
+// SaveGPOs serializes in p the GPO list.
+func SaveGPOs(gpos []GPO, p string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't save GPO list to %s"), p)
+
+	d, err := yaml.Marshal(gpos)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(p, d, 0600); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ApplyPolicy generates a computer or user policy based on a list of entries
 // retrieved from a directory service.
-func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, gpos []entry.GPO) (err error) {
+func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, gpos []GPO) (err error) {
 	defer decorate.OnError(&err, i18n.G("failed to apply policy to %q"), objectName)
 
 	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
 
-	rules := entry.GetUniqueRules(gpos)
+	rules := GetUniqueRules(gpos)
 	var g errgroup.Group
 	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
 
@@ -158,7 +189,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	// Write cache GPO results
-	return entry.SaveGPOs(gpos, filepath.Join(m.gpoRulesCacheDir, objectName))
+	return SaveGPOs(gpos, filepath.Join(m.gpoRulesCacheDir, objectName))
 }
 
 // DumpPolicies displays the currently applied policies and rules (since last update) for objectName.
@@ -180,7 +211,7 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 	var alreadyProcessedRules map[string]struct{}
 	if objectName != hostname {
 		fmt.Fprintln(&out, i18n.G("Policies from machine configuration:"))
-		gposHost, err := entry.NewGPOs(filepath.Join(m.gpoRulesCacheDir, hostname))
+		gposHost, err := NewGPOs(filepath.Join(m.gpoRulesCacheDir, hostname))
 		if err != nil {
 			return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), hostname, err)
 		}
@@ -191,7 +222,7 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 	}
 
 	// Load target policies
-	gposTarget, err := entry.NewGPOs(filepath.Join(m.gpoRulesCacheDir, objectName))
+	gposTarget, err := NewGPOs(filepath.Join(m.gpoRulesCacheDir, objectName))
 	if err != nil {
 		return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), objectName, err)
 	}
