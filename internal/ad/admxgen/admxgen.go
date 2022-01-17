@@ -48,11 +48,11 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
+	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
-	adcommon "github.com/ubuntu/adsys/internal/policies/ad/common"
 )
 
 // expandedCategories generation

@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
-	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/dconf"
+	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
+	"github.com/ubuntu/adsys/internal/ad/admxgen/dconf"
 	"gopkg.in/yaml.v3"
 )
 

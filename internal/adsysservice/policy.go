@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"github.com/ubuntu/adsys"
+	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/adsysservice/actions"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/policies/ad"
 	"golang.org/x/sync/errgroup"
 )
 

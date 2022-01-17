@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	adcommon "github.com/ubuntu/adsys/internal/policies/ad/common"
+	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 )
 
 func TestGetVersionID(t *testing.T) {

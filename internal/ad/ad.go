@@ -16,12 +16,12 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	adcommon "github.com/ubuntu/adsys/internal/ad/common"
+	"github.com/ubuntu/adsys/internal/ad/registry"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
-	adcommon "github.com/ubuntu/adsys/internal/policies/ad/common"
-	"github.com/ubuntu/adsys/internal/policies/ad/registry"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )

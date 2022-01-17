@@ -13,9 +13,9 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/policies/ad/admxgen/common"
 	"gopkg.in/ini.v1"
 )
 

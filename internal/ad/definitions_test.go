@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/policies/ad"
+	"github.com/ubuntu/adsys/internal/ad"
 )
 
 func TestGetPolicyDefinitions(t *testing.T) {
@@ -22,8 +22,8 @@ func TestGetPolicyDefinitions(t *testing.T) {
 	}{
 		"Load ADMX and ADML": {
 			format:   "lts-only",
-			wantADMX: "../../../policies/Ubuntu/lts-only/Ubuntu.admx",
-			wantADML: "../../../policies/Ubuntu/lts-only/Ubuntu.adml",
+			wantADMX: "../../policies/Ubuntu/lts-only/Ubuntu.admx",
+			wantADML: "../../policies/Ubuntu/lts-only/Ubuntu.adml",
 		},
 
 		"ADMX and ADML does not exist for this format": {

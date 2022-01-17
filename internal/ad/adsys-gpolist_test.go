@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/policies/ad"
+	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -21,7 +21,7 @@ func TestAdsysGPOList(t *testing.T) {
 	}
 
 	// Setup samba mock
-	p, err := filepath.Abs("../../testutils/admock")
+	p, err := filepath.Abs("../testutils/admock")
 	require.NoError(t, err, "Setup: Failed to get current absolute path for mock")
 	testutils.Setenv(t, "PYTHONPATH", p)
 
