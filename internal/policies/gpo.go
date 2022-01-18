@@ -10,11 +10,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
-const (
-	// PoliciesCacheBaseName is the base directory where we want to cache policies.
-	PoliciesCacheBaseName = "policies"
-)
-
 // GPO is a representation of a GPO with rules we support.
 type GPO struct {
 	ID   string
