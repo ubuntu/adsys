@@ -44,7 +44,7 @@
 #include <security/pam_ext.h>
 #include <security/_pam_macros.h>
 
-#define ADSYS_GPO_RULES_DIR "/var/cache/adsys/gpo_rules/%s"
+#define ADSYS_POLICIES_DIR "/var/cache/adsys/policies/%s"
 
 /*
  * Refresh the group policies of current user
@@ -281,12 +281,12 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 	  trying to update machine policy first if no machine gpo cache (meaning adsysd boot service failed due to being offline for instance)
 	*/
 	char hostname[HOST_NAME_MAX + 1];
-	char cache_path[HOST_NAME_MAX + 1 + strlen(ADSYS_GPO_RULES_DIR) - 2];
+	char cache_path[HOST_NAME_MAX + 1 + strlen(ADSYS_POLICIES_DIR) - 2];
     if (gethostname(hostname, HOST_NAME_MAX + 1) < 0) {
 		pam_syslog(pamh, LOG_ERR, "Failed to get hostname");
 		return PAM_SYSTEM_ERR;
     }
-	if (sprintf(cache_path, ADSYS_GPO_RULES_DIR, hostname) < 0) {
+	if (sprintf(cache_path, ADSYS_POLICIES_DIR, hostname) < 0) {
 		pam_syslog(pamh, LOG_ERR, "Failed to allocate cache_path");
 		return PAM_BUF_ERR;
 	}

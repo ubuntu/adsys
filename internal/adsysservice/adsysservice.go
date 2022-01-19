@@ -10,6 +10,7 @@ import (
 	"github.com/godbus/dbus/v5"
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
+	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/daemon"
@@ -20,7 +21,6 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
-	"github.com/ubuntu/adsys/internal/policies/ad"
 	"google.golang.org/grpc"
 	"gopkg.in/ini.v1"
 )
@@ -203,7 +203,7 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if args.policyKitDir != "" {
 		policyOptions = append(policyOptions, policies.WithPolicyKitDir(args.policyKitDir))
 	}
-	m, err := policies.New(bus, policyOptions...)
+	m, err := policies.NewManager(bus, policyOptions...)
 	if err != nil {
 		return nil, err
 	}

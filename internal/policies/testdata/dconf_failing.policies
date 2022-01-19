@@ -1,0 +1,14 @@
+gpos:
+- id: '{GPOId}'
+  name: GPOName
+  rules:
+    dconf:
+    - key: path/to/key1
+      value: ValueOfKey1
+      meta: xxx
+    - key: path/to/key2
+      value: |
+        ValueOfKey2
+        On
+        Multilines
+      meta: s
