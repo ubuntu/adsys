@@ -39,7 +39,7 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:398
+#: internal/ad/ad.go:402
 msgid "%s :%v"
 msgstr ""
 
@@ -85,7 +85,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:247
+#: internal/ad/ad.go:251
 msgid "%s: %v"
 msgstr ""
 
@@ -99,7 +99,7 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/ad/ad.go:250
+#: internal/ad/ad.go:254
 #, c-format
 msgid "%s: no active server found"
 msgstr ""
@@ -257,11 +257,11 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/policies.go:182
+#: internal/policies/manager.go:182
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/policies.go:190
+#: internal/policies/manager.go:190
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -382,7 +382,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/ad/ad.go:124
+#: internal/ad/ad.go:125
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -390,12 +390,11 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/policies.go:83
+#: internal/policies/manager.go:83
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:451
-#: internal/ad/admxgen/admxgen.go:464
+#: internal/ad/admxgen/admxgen.go:451 internal/ad/admxgen/admxgen.go:464
 msgid "can't create admx file: %v"
 msgstr ""
 
@@ -415,11 +414,11 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/ad/ad.go:334
+#: internal/ad/ad.go:338
 msgid "can't create symlink for caching"
 msgstr ""
 
-#: internal/ad/registry/registry.go:279
+#: internal/ad/registry/registry.go:281
 msgid "can't decode meta value for %s: %v"
 msgstr ""
 
@@ -447,13 +446,13 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:341
+#: internal/ad/ad.go:345
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/entry/entry.go:125
+#: internal/policies/policies.go:27
 #, c-format
-msgid "can't get cached GPO list from %s"
+msgid "can't get cached policies from %s"
 msgstr ""
 
 #: internal/policies/privilege/privilege.go:238
@@ -461,7 +460,7 @@ msgstr ""
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:197
+#: internal/ad/ad.go:200
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -469,7 +468,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/ad/ad.go:309
+#: internal/ad/ad.go:313
 msgid "can't list users from cache"
 msgstr ""
 
@@ -494,7 +493,7 @@ msgstr ""
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/ad/registry/registry.go:52
+#: internal/ad/registry/registry.go:53
 msgid "can't parse policy"
 msgstr ""
 
@@ -511,9 +510,9 @@ msgstr ""
 msgid "can't save %s"
 msgstr ""
 
-#: internal/policies/entry/entry.go:140
+#: internal/policies/policies.go:42
 #, c-format
-msgid "can't save GPO list to %s"
+msgid "can't save policies to %s"
 msgstr ""
 
 #: internal/grpc/logstreamer/log.go:170
@@ -679,7 +678,7 @@ msgid "error while trying to get the list of active users"
 msgstr ""
 
 #. Try to update from SSSD the current active AD server
-#: internal/ad/ad.go:244
+#: internal/ad/ad.go:248
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
@@ -695,11 +694,11 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/policies.go:134
+#: internal/policies/manager.go:134
 msgid "failed to apply policy to %q"
 msgstr ""
 
-#: internal/policies/policies.go:167
+#: internal/policies/manager.go:167
 msgid "failed to dump policies for %q"
 msgstr ""
 
@@ -707,7 +706,7 @@ msgstr ""
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/policies/policies.go:207
+#: internal/policies/manager.go:207
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -719,7 +718,7 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/ad/ad.go:318
+#: internal/ad/ad.go:322
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -735,15 +734,15 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:352
+#: internal/ad/ad.go:356
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/ad/ad.go:223
+#: internal/ad/ad.go:226
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/ad/ad.go:276
+#: internal/ad/ad.go:280
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -751,10 +750,6 @@ msgstr ""
 
 #: cmd/adsysd/client/service.go:52
 msgid "force will shut it down immediately and drop existing connections."
-msgstr ""
-
-#: internal/policies/policies.go:221
-msgid "gpo was not applied for %q: %v"
 msgstr ""
 
 #: internal/ad/admxgen/common/common.go:79
@@ -775,7 +770,7 @@ msgstr ""
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
-#: internal/ad/registry/registry.go:166
+#: internal/ad/registry/registry.go:168
 msgid "invalid policy"
 msgstr ""
 
@@ -793,8 +788,8 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:232
-msgid "machine is offline and GPO rules cache is unavailable: %v"
+#: internal/ad/ad.go:236
+msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:328
@@ -835,7 +830,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/policies.go:185 internal/policies/policies.go:196
+#: internal/policies/manager.go:185 internal/policies/manager.go:196
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -859,6 +854,10 @@ msgstr ""
 msgid "permission denied"
 msgstr ""
 
+#: internal/policies/manager.go:221
+msgid "policies were not applied for %q: %v"
+msgstr ""
+
 #: internal/ad/admxgen/admxgen.go:304
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
@@ -871,7 +870,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:207
+#: internal/ad/ad.go:210
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -936,6 +935,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:202
+#: internal/ad/ad.go:205
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
