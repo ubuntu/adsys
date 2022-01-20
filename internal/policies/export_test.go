@@ -18,3 +18,8 @@ func WithGDM(m *gdm.Manager) Option {
 func (m *Manager) GetSubcriptionState(ctx context.Context) (subscriptionEnabled bool) {
 	return m.getSubcriptionState(ctx)
 }
+
+// SetLoadedFromCache allows to reset the loadedFromCache state when we did load it for setup.
+func (pols *Policies) SetLoadedFromCache(loadedFromCache bool) {
+	pols.loadedFromCache = loadedFromCache
+}

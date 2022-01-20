@@ -1,6 +1,7 @@
 package policies_test
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -410,7 +411,7 @@ func TestCachePolicies(t *testing.T) {
 	err := pols.Save(p)
 	require.NoError(t, err, "Save policies without error")
 
-	got, err := policies.NewFromCache(p)
+	got, err := policies.NewFromCache(context.Background(), p)
 	require.NoError(t, err, "Got policies without error")
 
 	require.Equal(t, pols, got, "Reloaded policies after caching should be the same")

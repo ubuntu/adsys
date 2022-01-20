@@ -1,7 +1,7 @@
 package policies_test
 
 import (
-	"fmt"
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -63,8 +63,7 @@ func TestFormat(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			pols, err := policies.NewFromCache("testdata/policies.cache")
-			fmt.Println(pols)
+			pols, err := policies.NewFromCache(context.Background(), "testdata/cache/policies/simple")
 			require.NoError(t, err, "Got policies without error")
 
 			var out strings.Builder
