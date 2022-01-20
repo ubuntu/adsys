@@ -23,6 +23,8 @@ import (
 var update bool
 
 func TestNewFromCache(t *testing.T) {
+	t.Parallel()
+
 	tests := map[string]struct {
 		cacheDir string
 

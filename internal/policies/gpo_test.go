@@ -65,6 +65,7 @@ func TestFormat(t *testing.T) {
 
 			pols, err := policies.NewFromCache(context.Background(), "testdata/cache/policies/simple")
 			require.NoError(t, err, "Got policies without error")
+			defer pols.Close()
 
 			var out strings.Builder
 

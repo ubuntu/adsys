@@ -118,6 +118,7 @@ func (pols *Policies) Save(p string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save policies to %s"), p)
 
 	// Already from local cache, no need to save.
+	// TODO: maybe record the directory where we loaded from and compare? (Saving to another path)
 	if pols.loadedFromCache {
 		return nil
 	}
