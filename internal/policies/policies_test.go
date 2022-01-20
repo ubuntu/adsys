@@ -22,6 +22,86 @@ import (
 
 var update bool
 
+func TestNewFromCache(t *testing.T) {
+	tests := map[string]struct {
+		cacheDir string
+
+		wantErr bool
+	}{
+		"gpos only": {
+			cacheDir: "simple",
+		},
+		"with assets": {
+			cacheDir: "with_assets",
+		},
+
+		// error cases
+		"error on invalid policies cache": {
+			cacheDir: "invalid_policies_cache",
+			wantErr:  true,
+		},
+		"error on invalid assets db": {
+			cacheDir: "invalid_assets_db",
+			wantErr:  true,
+		},
+		"error on no policies cache": {
+			cacheDir: "doesnotexists",
+			wantErr:  true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			name := name
+			t.Parallel()
+
+			got, err := policies.NewFromCache(context.Background(), filepath.Join("testdata", "cache", "policies", tc.cacheDir))
+			if tc.wantErr {
+				require.Error(t, err, "NewFromCache should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "NewFromCache should return no error but got one")
+			defer got.Close()
+
+			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "newfromcache", name))
+		})
+	}
+}
+
+func TestCachePolicies(t *testing.T) {
+	t.Parallel()
+
+	pols := policies.Policies{
+		GPOs: []policies.GPO{
+			{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "C", Value: "oneValueC"},
+				}}},
+			{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA", Meta: "My meta"},
+					{Key: "B", Value: "standardB", Disabled: true},
+					// this value will be overridden with the higher one
+					{Key: "C", Value: "standardC"},
+				}}},
+		},
+	}
+
+	p := filepath.Join(t.TempDir(), "policies-cache")
+	err := pols.Save(p)
+	require.NoError(t, err, "Save policies without error")
+
+	got, err := policies.NewFromCache(context.Background(), p)
+	require.NoError(t, err, "Got policies without error")
+	defer got.Close()
+
+	require.Equal(t, pols, got, "Reloaded policies after caching should be the same")
+
+	err = pols.Save(p)
+	require.NoError(t, err, "Second save on policies without error")
+}
+
 func TestGetUniqueRules(t *testing.T) {
 	t.Parallel()
 
@@ -390,31 +470,31 @@ func TestGetUniqueRules(t *testing.T) {
 	}
 }
 
-func TestCachePolicies(t *testing.T) {
-	pols := policies.Policies{
-		GPOs: []policies.GPO{
-			{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "C", Value: "oneValueC"},
-				}}},
-			{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA", Meta: "My meta"},
-					{Key: "B", Value: "standardB", Disabled: true},
-					// this value will be overridden with the higher one
-					{Key: "C", Value: "standardC"},
-				}}},
-		},
+// equalPoliciesToGolden compares the policies to the given file.
+func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string) {
+	t.Helper()
+
+	// Save policies and deserialize assets to compare them with golden.
+	compareDir := t.TempDir()
+	got.SetLoadedFromCache(false) // force save
+	err := got.Save(filepath.Join(compareDir, "policies"))
+	require.NoError(t, err, "Teardown: saving gpo should work")
+	if got.HasAssets() {
+		os.MkdirAll(filepath.Join(compareDir, "assets"), 0700)
+		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets"))
+		require.NoError(t, err, "Teardown: deserializing assets should work")
 	}
 
-	p := filepath.Join(t.TempDir(), "policies-cache")
-	err := pols.Save(p)
-	require.NoError(t, err, "Save policies without error")
+	// print content of compareDir directory
+	err = filepath.Walk(compareDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	require.NoError(t, err, "Teardown: printing directory should work")
 
-	got, err := policies.NewFromCache(context.Background(), p)
-	require.NoError(t, err, "Got policies without error")
-
-	require.Equal(t, pols, got, "Reloaded policies after caching should be the same")
+	testutils.CompareTreesWithFiltering(t, compareDir, golden, update)
 }
 
 func TestMain(m *testing.M) {

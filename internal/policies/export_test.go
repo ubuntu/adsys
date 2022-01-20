@@ -23,3 +23,7 @@ func (m *Manager) GetSubcriptionState(ctx context.Context) (subscriptionEnabled 
 func (pols *Policies) SetLoadedFromCache(loadedFromCache bool) {
 	pols.loadedFromCache = loadedFromCache
 }
+
+func (pols Policies) HasAssets() bool {
+	return pols.assets != nil
+}
