@@ -18,7 +18,8 @@ require (
 	github.com/spf13/viper v1.10.1
 	github.com/stretchr/testify v1.7.0
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
-	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
+	golang.org/x/exp v0.0.0-20220114162006-9d54fb35363c
+	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486
 	golang.org/x/text v0.3.7

@@ -180,7 +180,7 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 	var alreadyProcessedRules map[string]struct{}
 	if objectName != hostname {
 		fmt.Fprintln(&out, i18n.G("Policies from machine configuration:"))
-		policiesHost, err := NewFromCache(filepath.Join(m.policiesCacheDir, hostname))
+		policiesHost, err := NewFromCache(ctx, filepath.Join(m.policiesCacheDir, hostname))
 		if err != nil {
 			return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), hostname, err)
 		}
@@ -191,7 +191,7 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 	}
 
 	// Load target policies
-	policiesTarget, err := NewFromCache(filepath.Join(m.policiesCacheDir, objectName))
+	policiesTarget, err := NewFromCache(ctx, filepath.Join(m.policiesCacheDir, objectName))
 	if err != nil {
 		return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), objectName, err)
 	}
