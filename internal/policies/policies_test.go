@@ -22,6 +22,68 @@ import (
 
 var update bool
 
+func TestNew(t *testing.T) {
+	t.Parallel()
+
+	gpos := []policies.GPO{
+		{ID: "{GPOId}", Name: "GPOName", Rules: map[string][]entry.Entry{
+			"dconf": {
+				entry.Entry{Key: "path/to/key1", Value: "ValueOfKey1", Meta: "s"},
+				entry.Entry{Key: "path/to/key2", Value: "ValueOfKey2\nOn\nMultilines\n", Meta: "s"},
+			},
+			"scripts": {
+				entry.Entry{Key: "path/to/key3", Disabled: true},
+			},
+		}},
+	}
+
+	tests := map[string]struct {
+		gpos     []policies.GPO
+		assetsDB string
+
+		wantErr bool
+	}{
+		"gpos only": {
+			gpos: gpos,
+		},
+		"with assets": {
+			gpos:     gpos,
+			assetsDB: "testdata/cache/policies/with_assets/assets.db",
+		},
+		"no gpos": {
+			gpos: nil,
+		},
+
+		// error cases
+		"error on invalid assets db": {
+			assetsDB: "testdata/cache/policies/invalid_assets_db/assets.db",
+			wantErr:  true,
+		},
+		"error on assets db does not exists": {
+			assetsDB: "testdata/cache/policies/doesnotexists/assets.db",
+			wantErr:  true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			name := name
+			t.Parallel()
+
+			got, err := policies.New(context.Background(), tc.gpos, tc.assetsDB)
+			if tc.wantErr {
+				require.Error(t, err, "New should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "New should return no error but got one")
+			defer got.Close()
+
+			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "new", name))
+		})
+	}
+}
+
 func TestNewFromCache(t *testing.T) {
 	t.Parallel()
 
