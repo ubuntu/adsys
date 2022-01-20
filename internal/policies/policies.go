@@ -1,11 +1,15 @@
 package policies
 
 import (
+	"archive/zip"
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -22,10 +26,15 @@ const (
 	policiesAssetsFileName = "assets.db"
 )
 
+type assetsFromMMAP struct {
+	*zip.Reader
+	filemmap *mmap.ReaderAt
+}
+
 // Policies is the list of GPOs applied to a particular object, with the global data cache.
 type Policies struct {
 	GPOs   []GPO
-	Assets io.ReaderAt `yaml:"-"`
+	assets *assetsFromMMAP `yaml:"-"`
 	// loadedFromCache indicate if the Assets are loaded from cache or point to another part of memory
 	loadedFromCache bool `yaml:"-"`
 }
@@ -46,7 +55,7 @@ func New(ctx context.Context, gpos []GPO, assetsDBPath string) (pols Policies, e
 
 	return Policies{
 		GPOs:   gpos,
-		Assets: assets,
+		assets: assets,
 	}, nil
 }
 
@@ -77,14 +86,14 @@ func NewFromCache(ctx context.Context, p string) (pols Policies, err error) {
 	if err != nil {
 		return pols, err
 	}
-	pols.Assets = assets
+	pols.assets = assets
 
 	return pols, nil
 }
 
 // openAssetsInMemory opens assetsDB into memory.
 // It’s up to the caller to close the opened file.
-func openAssetsInMemory(assetsDB string) (assets io.ReaderAt, err error) {
+func openAssetsInMemory(assetsDB string) (assets *assetsFromMMAP, err error) {
 	defer decorate.OnError(&err, "can't open assets in memory")
 
 	f, err := mmap.Open(assetsDB)
@@ -92,7 +101,15 @@ func openAssetsInMemory(assetsDB string) (assets io.ReaderAt, err error) {
 		return nil, err
 	}
 
-	return f, nil
+	r, err := zip.NewReader(f, int64(f.Len()))
+	if err != nil {
+		return nil, fmt.Errorf(i18n.G("invalid zip db archive: %w"), err)
+	}
+
+	return &assetsFromMMAP{
+		Reader:   r,
+		filemmap: f,
+	}, nil
 }
 
 // Save serializes in p policies.
@@ -119,7 +136,7 @@ func (pols *Policies) Save(p string) (err error) {
 	}
 
 	assetPath := filepath.Join(p, policiesAssetsFileName)
-	if pols.Assets == nil {
+	if pols.assets == nil {
 		// delete assetPath and ignore if it doesn't exist
 		if err := os.Remove(assetPath); err != nil && !os.IsNotExist(err) {
 			return err
@@ -129,7 +146,7 @@ func (pols *Policies) Save(p string) (err error) {
 	}
 
 	// Save assets to user cache and reload it
-	dr := &readerAtToReader{ReaderAt: pols.Assets}
+	dr := &readerAtToReader{ReaderAt: pols.assets.filemmap}
 	f, err := os.Create(assetPath)
 	if err != nil {
 		return err
@@ -142,14 +159,30 @@ func (pols *Policies) Save(p string) (err error) {
 	if err := f.Close(); err != nil {
 		return err
 	}
+	// Close previous mmaped file
+	if err := pols.Close(); err != nil {
+		return err
+	}
 
 	// redirect from cache
-	pols.Assets, err = openAssetsInMemory(assetPath)
+	pols.assets, err = openAssetsInMemory(assetPath)
 	if err != nil {
 		return err
 	}
 	pols.loadedFromCache = true
 
+	return nil
+}
+
+// Close closes underlying mmaped file.
+func (pols *Policies) Close() (err error) {
+	if pols.assets == nil {
+		return nil
+	}
+	if err := pols.assets.filemmap.Close(); err != nil {
+		return err
+	}
+	pols.assets = nil
 	return nil
 }
 
@@ -166,6 +199,75 @@ func (r *readerAtToReader) Read(p []byte) (n int, err error) {
 	r.pos += int64(n)
 
 	return n, err
+}
+
+// SaveAssetsTo creates in dest the assets using relative src path.
+// Directories will recursively project its content.
+// If there is no asset attached and src is not "." then it returns an error.
+// dest should exists.
+func (pols *Policies) SaveAssetsTo(ctx context.Context, src, dest string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't save assets to %s"), dest)
+
+	log.Debugf(ctx, "export assets %q to %q", src, dest)
+
+	if pols.assets == nil {
+		return errors.New(i18n.G("no assets attached"))
+	}
+
+	return pols.saveAssetsRecursively(src, dest)
+}
+
+func (pols *Policies) saveAssetsRecursively(src, dest string) (err error) {
+	// zip doesn’t like final /, even when listing them return it.
+	src = strings.TrimSuffix(src, "/")
+
+	dstPath := filepath.Join(dest, src)
+
+	f, err := pols.assets.Open(src)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	fi, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	if fi.IsDir() {
+		if err := os.MkdirAll(dstPath, 0700); err != nil {
+			return err
+		}
+
+		// Remove any "." to match directory content
+		src = strings.TrimLeft(src, "./")
+
+		// Recursively list matching files and directory in that directory
+		for _, zipF := range pols.assets.File {
+			// add a final / to match directory content
+			if src != "" {
+				src = src + "/"
+			}
+			if !strings.HasPrefix(zipF.Name, src) || zipF.Name == src {
+				continue
+			}
+			if err := pols.saveAssetsRecursively(zipF.Name, dest); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	outF, err := os.OpenFile(filepath.Join(dest, src), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fi.Mode())
+	if err != nil {
+		return err
+	}
+	defer outF.Close()
+
+	if _, err = io.Copy(outF, f); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // GetUniqueRules return order rules, with one entry per key for a given type.
