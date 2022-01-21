@@ -192,27 +192,29 @@ func (r *readerAtToReader) Read(p []byte) (n int, err error) {
 
 // SaveAssetsTo creates in dest the assets using relative src path.
 // Directories will recursively project its content.
-// If there is no asset attached and src is not "." then it returns an error.
+// If there is no asset attached and relSrc is not "." then it returns an error.
 // dest should exists.
-func (pols *Policies) SaveAssetsTo(ctx context.Context, src, dest string) (err error) {
+func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save assets to %s"), dest)
 
-	log.Debugf(ctx, "export assets %q to %q", src, dest)
+	log.Debugf(ctx, "export assets %q to %q", relSrc, dest)
 
 	if pols.assets == nil {
 		return errors.New(i18n.G("no assets attached"))
 	}
 
-	return pols.saveAssetsRecursively(src, dest)
+	baseDir := filepath.Dir(relSrc)
+
+	return pols.saveAssetsRecursively(relSrc, dest, baseDir)
 }
 
-func (pols *Policies) saveAssetsRecursively(src, dest string) (err error) {
+func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string) (err error) {
 	// zip doesn’t like final /, even when listing them return it.
-	src = strings.TrimSuffix(src, "/")
+	relSrc = strings.TrimSuffix(relSrc, "/")
 
-	dstPath := filepath.Join(dest, src)
+	dstPath := filepath.Join(dest, strings.TrimPrefix(relSrc, baseDir))
 
-	f, err := pols.assets.Open(src)
+	f, err := pols.assets.Open(relSrc)
 	if err != nil {
 		return err
 	}
@@ -227,18 +229,18 @@ func (pols *Policies) saveAssetsRecursively(src, dest string) (err error) {
 		}
 
 		// Remove any "." to match directory content
-		src = strings.TrimLeft(src, "./")
+		relSrc = strings.TrimLeft(relSrc, "./")
 
 		// Recursively list matching files and directory in that directory
 		for _, zipF := range pols.assets.File {
 			// add a final / to match directory content
-			if src != "" {
-				src = src + "/"
+			if relSrc != "" && !strings.HasSuffix(relSrc, "/") {
+				relSrc = relSrc + "/"
 			}
-			if !strings.HasPrefix(zipF.Name, src) || zipF.Name == src {
+			if !strings.HasPrefix(zipF.Name, relSrc) || zipF.Name == relSrc {
 				continue
 			}
-			if err := pols.saveAssetsRecursively(zipF.Name, dest); err != nil {
+			if err := pols.saveAssetsRecursively(zipF.Name, dest, baseDir); err != nil {
 				return err
 			}
 		}
@@ -246,7 +248,7 @@ func (pols *Policies) saveAssetsRecursively(src, dest string) (err error) {
 		return nil
 	}
 
-	outF, err := os.OpenFile(filepath.Join(dest, src), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fi.Mode())
+	outF, err := os.OpenFile(dstPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, fi.Mode())
 	if err != nil {
 		return err
 	}
