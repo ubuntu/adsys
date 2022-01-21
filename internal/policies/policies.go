@@ -263,6 +263,71 @@ func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string) (err e
 	return nil
 }
 
+// CompressAssets allow compressing all assets from SYSVOL in a single zip file.
+func CompressAssets(ctx context.Context, p string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't compress assets from %s"), p)
+
+	log.Debugf(ctx, "compress assets from %q", p)
+
+	// Create a new file for mmapped file
+	if err := os.RemoveAll(p + ".db"); err != nil {
+		return err
+	}
+	f, err := os.Create(p + ".db")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	zw := zip.NewWriter(f)
+	defer zw.Close()
+
+	// Ensure p ends with a /
+	p = strings.TrimSuffix(p, "/") + "/"
+
+	err = filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			// Ensure path ends with a /
+			path = strings.TrimSuffix(path, "/") + "/"
+		}
+
+		fh, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+
+		// Reset name to relative path from base and compression
+		fh.Name = strings.TrimPrefix(path, p)
+		fh.Method = zip.Deflate
+
+		fZip, err := zw.CreateHeader(fh)
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		// Copy file content
+		srcF, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer srcF.Close()
+		if _, err = io.Copy(fZip, f); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return err
+}
+
 // GetUniqueRules return order rules, with one entry per key for a given type.
 // Returned file is a map of type to its entries.
 func (pols Policies) GetUniqueRules() map[string][]entry.Entry {
