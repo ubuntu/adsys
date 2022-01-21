@@ -71,8 +71,8 @@ func TestNew(t *testing.T) {
 
 	for name, tc := range tests {
 		tc := tc
+		name := name
 		t.Run(name, func(t *testing.T) {
-			name := name
 			t.Parallel()
 
 			got, err := policies.New(context.Background(), tc.gpos, tc.assetsDB)
@@ -120,8 +120,8 @@ func TestNewFromCache(t *testing.T) {
 
 	for name, tc := range tests {
 		tc := tc
+		name := name
 		t.Run(name, func(t *testing.T) {
-			name := name
 			t.Parallel()
 
 			got, err := policies.NewFromCache(context.Background(), filepath.Join("testdata", "cache", "policies", tc.cacheDir))
@@ -202,8 +202,8 @@ func TestSave(t *testing.T) {
 
 	for name, tc := range tests {
 		tc := tc
+		name := name
 		t.Run(name, func(t *testing.T) {
-			name := name
 			t.Parallel()
 			src := filepath.Join("testdata", "cache", "policies", tc.cacheSrc)
 			dest := t.TempDir()
@@ -353,8 +353,8 @@ func TestSaveAssetsTo(t *testing.T) {
 
 	for name, tc := range tests {
 		tc := tc
+		name := name
 		t.Run(name, func(t *testing.T) {
-			name := name
 			t.Parallel()
 			src := filepath.Join("testdata", "cache", "policies", tc.cacheSrc)
 			dest := t.TempDir()
