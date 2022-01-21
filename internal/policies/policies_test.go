@@ -2,13 +2,16 @@ package policies_test
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
@@ -378,6 +381,96 @@ func TestSaveAssetsTo(t *testing.T) {
 			require.NoError(t, err, "SaveAssetsTo should return no error but got one")
 
 			testutils.CompareTreesWithFiltering(t, dest, filepath.Join("testdata", "golden", "saveassetsto", name), update)
+		})
+	}
+}
+
+func TestCompressAssets(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		src string
+
+		readOnly string
+
+		wantErr bool
+	}{
+		"no db": {
+			src: "assets no db",
+		},
+		"existing db": {
+			src: "assets with db",
+		},
+
+		// error cases
+		/*
+			This fails on RemoveAll(), so same than the case below
+			"error on can’t create new db": {
+				src:      "assets no db",
+				readOnly: ".",
+				wantErr:  true,
+			},*/
+		"error on can’t remove existing db": {
+			src:      "assets with db",
+			readOnly: ".",
+			wantErr:  true,
+		},
+		"error on non existing directory": {
+			src:     "",
+			wantErr: true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			p := t.TempDir()
+			require.NoError(t, os.RemoveAll(p), "Setup: can’t remove destination directory before copy")
+
+			// Copy src to a temporary dir as we will create the db in the same dir
+			assetsDir := filepath.Join(p, "assets")
+			if tc.src != "" {
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "cache", "gpo_cache", tc.src),
+						p,
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: can’t copy assets directory")
+
+				// We need a fixed modification and creation time on our assets to have reproducible test
+				// on zip modification time stored for content.
+				fixedTime := time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC)
+				err := filepath.WalkDir(p, func(path string, d os.DirEntry, err error) error {
+					return os.Chtimes(path, fixedTime, fixedTime)
+				})
+				require.NoError(t, err, "Setup: can’t set fixed time for assets")
+			}
+
+			// Make some files/dirs read only
+			if tc.readOnly != "" {
+				// check if readOnly already exists, otherwise create a file
+				dest := filepath.Join(p, tc.readOnly)
+				if _, err := os.Stat(dest); errors.Is(err, fs.ErrNotExist) {
+					err := os.WriteFile(dest, []byte(""), 0400)
+					require.NoError(t, err, "Setup: can’t create readOnly file")
+				}
+				testutils.MakeReadOnly(t, dest)
+			}
+
+			err := policies.CompressAssets(context.Background(), assetsDir)
+			if tc.wantErr {
+				require.Error(t, err, "CompressAssets should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "CompressAssets should return no error but got one")
+
+			// Remove uncompressed assets dir for golden
+			require.NoError(t, os.RemoveAll(assetsDir), "Teardown: can’t remove assets directory")
+
+			testutils.CompareTreesWithFiltering(t, p, filepath.Join("testdata", "golden", "compressassets", name), update)
 		})
 	}
 }
