@@ -38,6 +38,8 @@ type Policies struct {
 }
 
 // New returns new policies with GPOs and assets loaded from DB.
+// We pass directly the compressed DB and don’t save immediately in cache as we will do it
+// once the gpos are all treated.
 func New(ctx context.Context, gpos []GPO, assetsDBPath string) (pols Policies, err error) {
 	defer decorate.OnError(&err, i18n.G("can't created new policies"))
 
