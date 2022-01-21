@@ -291,6 +291,97 @@ func TestCachePolicies(t *testing.T) {
 	require.NoError(t, err, "Second save on policies without error")
 }
 
+func TestSaveAssetsTo(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		relSrc string
+
+		cacheSrc     string
+		readOnlyDest string
+
+		wantErr bool
+	}{
+		"all": {
+			relSrc:   ".",
+			cacheSrc: "with_assets",
+		},
+		"sub directory": {
+			relSrc:   "scripts",
+			cacheSrc: "with_assets",
+		},
+		"sub directory ending with slash": {
+			relSrc:   "scripts/",
+			cacheSrc: "with_assets",
+		},
+		"file": {
+			relSrc:   "scripts/script-simple.sh",
+			cacheSrc: "with_assets",
+		},
+
+		// error cases
+		"error on unexisting relSrc in cache": {
+			relSrc:   "doesnotexists",
+			cacheSrc: "with_assets",
+			wantErr:  true,
+		},
+		"error on empty relSrc": {
+			relSrc:   "",
+			cacheSrc: "with_assets",
+			wantErr:  true,
+		},
+		"error on no assets": {
+			cacheSrc: "one_gpo",
+			wantErr:  true,
+		},
+		"error on read only dest": {
+			relSrc:       ".",
+			cacheSrc:     "with_assets",
+			readOnlyDest: ".",
+			wantErr:      true,
+		},
+		"error on file read only existing in dest": {
+			relSrc:       ".",
+			cacheSrc:     "with_assets",
+			readOnlyDest: "scripts/script-simple.sh",
+			wantErr:      true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			name := name
+			t.Parallel()
+			src := filepath.Join("testdata", "cache", "policies", tc.cacheSrc)
+			dest := t.TempDir()
+
+			if tc.readOnlyDest != "" {
+				if tc.readOnlyDest != "." {
+					// we simulate unwritable dest by making the targeted file a directory
+					err := os.MkdirAll(filepath.Join(dest, tc.readOnlyDest), 0700)
+					require.NoError(t, err, "Setup: can’t mock readOnlyDest file")
+
+				}
+				testutils.MakeReadOnly(t, filepath.Join(dest, tc.readOnlyDest))
+			}
+
+			pols, err := policies.NewFromCache(context.Background(), src)
+			require.NoError(t, err, "Setup: NewFromCache should return no error but got one")
+			defer pols.Close()
+
+			err = pols.SaveAssetsTo(context.Background(), tc.relSrc, dest)
+			if tc.wantErr {
+				require.Error(t, err, "SaveAssetsTo should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "SaveAssetsTo should return no error but got one")
+
+			testutils.CompareTreesWithFiltering(t, dest, filepath.Join("testdata", "golden", "saveassetsto", name), update)
+		})
+	}
+}
+
 func TestGetUniqueRules(t *testing.T) {
 	t.Parallel()
 
