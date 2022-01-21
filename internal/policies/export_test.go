@@ -19,11 +19,6 @@ func (m *Manager) GetSubcriptionState(ctx context.Context) (subscriptionEnabled 
 	return m.getSubcriptionState(ctx)
 }
 
-// SetLoadedFromCache allows to reset the loadedFromCache state when we did load it for setup.
-func (pols *Policies) SetLoadedFromCache(loadedFromCache bool) {
-	pols.loadedFromCache = loadedFromCache
-}
-
 func (pols Policies) HasAssets() bool {
 	return pols.assets != nil
 }

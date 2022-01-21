@@ -540,7 +540,6 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string) {
 
 	// Save policies and deserialize assets to compare them with golden.
 	compareDir := t.TempDir()
-	got.SetLoadedFromCache(false) // force save
 	err := got.Save(filepath.Join(compareDir, "policies"))
 	require.NoError(t, err, "Teardown: saving gpo should work")
 	if got.HasAssets() {

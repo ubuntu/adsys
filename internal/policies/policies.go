@@ -35,8 +35,6 @@ type assetsFromMMAP struct {
 type Policies struct {
 	GPOs   []GPO
 	assets *assetsFromMMAP `yaml:"-"`
-	// loadedFromCache indicate if the Assets are loaded from cache or point to another part of memory
-	loadedFromCache bool `yaml:"-"`
 }
 
 // New returns new policies with GPOs and assets loaded from DB.
@@ -73,8 +71,6 @@ func NewFromCache(ctx context.Context, p string) (pols Policies, err error) {
 	if err := yaml.Unmarshal(d, &pols); err != nil {
 		return pols, err
 	}
-
-	pols.loadedFromCache = true
 
 	// assets are optionals
 	if _, err := os.Stat(filepath.Join(p, policiesAssetsFileName)); err != nil && os.IsNotExist(err) {
@@ -117,12 +113,6 @@ func openAssetsInMemory(assetsDB string) (assets *assetsFromMMAP, err error) {
 func (pols *Policies) Save(p string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save policies to %s"), p)
 
-	// Already from local cache, no need to save.
-	// TODO: maybe record the directory where we loaded from and compare? (Saving to another path)
-	if pols.loadedFromCache {
-		return nil
-	}
-
 	if err := os.MkdirAll(p, 0700); err != nil {
 		return err
 	}
@@ -142,7 +132,6 @@ func (pols *Policies) Save(p string) (err error) {
 		if err := os.Remove(assetPath); err != nil && !os.IsNotExist(err) {
 			return err
 		}
-		pols.loadedFromCache = true
 		return nil
 	}
 
@@ -170,7 +159,6 @@ func (pols *Policies) Save(p string) (err error) {
 	if err != nil {
 		return err
 	}
-	pols.loadedFromCache = true
 
 	return nil
 }

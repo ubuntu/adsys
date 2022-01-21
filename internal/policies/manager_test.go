@@ -53,7 +53,6 @@ func TestApplyPolicies(t *testing.T) {
 			pols, err := policies.NewFromCache(context.Background(), filepath.Join("testdata", "cache", "policies", tc.policiesDir))
 			require.NoError(t, err, "Setup: can not load policies list")
 			defer pols.Close()
-			pols.SetLoadedFromCache(false) // reset them as if they were fresh policies.
 
 			fakeRootDir := t.TempDir()
 			cacheDir := filepath.Join(fakeRootDir, "var", "cache", "adsys")
