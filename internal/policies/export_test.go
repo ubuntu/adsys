@@ -6,6 +6,10 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/gdm"
 )
 
+const (
+	PoliciesAssetsFileName = policiesAssetsFileName
+)
+
 // WithGDM specifies a personalized gdm manager.
 func WithGDM(m *gdm.Manager) Option {
 	return func(o *options) error {
