@@ -133,23 +133,31 @@ func TestPolicyApplied(t *testing.T) {
 			err := os.MkdirAll(dstDir, 0700)
 			require.NoError(t, err, "setup failed: couldn't create policies directory: %v", err)
 			if !tc.noMachineGPORules {
-				err := shutil.CopyFile("testdata/PolicyApplied/policies/machine.yaml", filepath.Join(dstDir, hostname), false)
-				require.NoError(t, err, "Setup: failed to copy machine gporules cache")
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "PolicyApplied", "policies", "machine"),
+						filepath.Join(dstDir, hostname),
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: failed to copy machine policies cache")
 			}
 			if tc.userGPORules != "-" {
 				if tc.userGPORules == "" {
 					tc.userGPORules = currentUser
 				}
-				err := shutil.CopyFile("testdata/PolicyApplied/policies/user.yaml", filepath.Join(dstDir, tc.userGPORules), false)
-				require.NoError(t, err, "Setup: failed to copy user gporules cache")
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "PolicyApplied", "policies", "user"),
+						filepath.Join(dstDir, tc.userGPORules),
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: failed to copy user policies cache")
 			}
 			conf := createConf(t, dir)
 			if tc.defaultADDomainSuffix != "" {
 				content, err := os.ReadFile(conf)
-				require.NoError(t, err, "Setup: can’t read configuration file")
+				require.NoError(t, err, "Setup: can't read configuration file")
 				content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
 				err = os.WriteFile(conf, content, 0600)
-				require.NoError(t, err, "Setup: can’t rewrite configuration file")
+				require.NoError(t, err, "Setup: can't rewrite configuration file")
 			}
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
@@ -770,15 +778,15 @@ func TestPolicyUpdate(t *testing.T) {
 				// Copytree dest directory should not exists
 				err = os.Remove(adsysDir)
 				require.NoError(t, err, "Setup: could not remove adsysDir")
-				copyRenameHost := func(src, dst string, followSymlinks bool) (string, error) {
-					if filepath.Base(src) == "HOST" {
-						dst = filepath.Join(filepath.Dir(dst), hostname)
-					}
-					return shutil.Copy(src, dst, followSymlinks)
-				}
-				err := shutil.CopyTree(filepath.Join("testdata", "PolicyUpdate", "states", tc.initState), adsysDir, &shutil.CopyTreeOptions{CopyFunction: copyRenameHost})
+				err := shutil.CopyTree(filepath.Join("testdata", "PolicyUpdate", "states", tc.initState), adsysDir, &shutil.CopyTreeOptions{CopyFunction: shutil.Copy})
 				require.NoError(t, err, "Setup: could not copy initial state")
+				// rename HOST directory in destination:
+				// CopyTree does not use its CopyFunction for directories.
+				src := filepath.Join(adsysDir, "cache", "policies", "HOST")
+				dst := strings.ReplaceAll(src, "HOST", hostname)
+				require.NoError(t, os.Rename(src, dst), "Setup: can't renamed HOST directory to current hostname")
 			}
+
 			// Some tests will need some initial state assets
 			for _, k := range tc.clearDirs {
 				err := os.RemoveAll(filepath.Join(adsysDir, k))
