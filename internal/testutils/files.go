@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"bytes"
+	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -44,7 +45,7 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 		require.NoError(t, os.RemoveAll(goldPath), "Cannot remove target golden directory")
 
 		// check the source directory exists before trying to copy it
-		if _, err := os.Stat(p); os.IsNotExist(err) {
+		if _, err := os.Stat(p); errors.Is(err, fs.ErrNotExist) {
 			return
 		}
 
@@ -76,7 +77,7 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 	assert.Equal(t, goldContent, gotContent, "got and expected content differs")
 
 	// No more verification on p if it doesn’t exists
-	if _, err := os.Stat(p); os.IsNotExist(err) {
+	if _, err := os.Stat(p); errors.Is(err, fs.ErrNotExist) {
 		return
 	}
 

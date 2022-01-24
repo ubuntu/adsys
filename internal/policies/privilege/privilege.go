@@ -2,7 +2,9 @@ package privilege
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -77,10 +79,10 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// We don’t create empty files if there is no entries. Still remove any previous version.
 	if len(entries) == 0 {
-		if err := os.Remove(sudoersConf); err != nil && !os.IsNotExist(err) {
+		if err := os.Remove(sudoersConf); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
-		if err := os.Remove(policyKitConf); err != nil && !os.IsNotExist(err) {
+		if err := os.Remove(policyKitConf); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil

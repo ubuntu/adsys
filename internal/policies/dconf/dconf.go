@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -223,7 +224,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	// Read existing content and create file if doesn’t exists
 	content, err := os.ReadFile(profilePath)
 	if err != nil {
-		if !os.IsNotExist(err) {
+		if !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0600)
@@ -260,7 +261,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 // dconfNeedsUpdate will notify if we need to run dconf update for that binary database.
 // For now, it only checks its existence.
 func dconfNeedsUpdate(path string) bool {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
 		return true
 	}
 
