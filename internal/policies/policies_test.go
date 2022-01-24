@@ -83,7 +83,7 @@ func TestNew(t *testing.T) {
 			require.NoError(t, err, "New should return no error but got one")
 			defer got.Close()
 
-			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "new", name))
+			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "new", name), update)
 		})
 	}
 }
@@ -132,7 +132,7 @@ func TestNewFromCache(t *testing.T) {
 			require.NoError(t, err, "NewFromCache should return no error but got one")
 			defer got.Close()
 
-			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "newfromcache", name))
+			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "newfromcache", name), update)
 		})
 	}
 }
@@ -844,27 +844,21 @@ func TestGetUniqueRules(t *testing.T) {
 }
 
 // equalPoliciesToGolden compares the policies to the given file.
-func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string) {
+func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, update bool) {
 	t.Helper()
 
 	// Save policies and deserialize assets to compare them with golden.
 	compareDir := t.TempDir()
-	err := got.Save(filepath.Join(compareDir, "policies"))
+	err := got.Save(compareDir)
 	require.NoError(t, err, "Teardown: saving gpo should work")
 	if got.HasAssets() {
-		os.MkdirAll(filepath.Join(compareDir, "assets"), 0700)
-		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets"))
+		os.MkdirAll(filepath.Join(compareDir, "assets.db.uncompressed"), 0700)
+		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"))
 		require.NoError(t, err, "Teardown: deserializing assets should work")
+		// Remove database that are different from machine to machine.
+		err = os.RemoveAll(filepath.Join(compareDir, "assets.db"))
+		require.NoError(t, err, "Teardown: cleaning up assets db file")
 	}
-
-	// print content of compareDir directory
-	err = filepath.Walk(compareDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	require.NoError(t, err, "Teardown: printing directory should work")
 
 	testutils.CompareTreesWithFiltering(t, compareDir, golden, update)
 }
