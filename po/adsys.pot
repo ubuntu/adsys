@@ -378,6 +378,11 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
+#: internal/policies/policies.go:268
+#, c-format
+msgid "can't compress assets from %s"
+msgstr ""
+
 #: cmd/adsysd/client/doc.go:135
 msgid "can't create %q"
 msgstr ""
@@ -418,6 +423,10 @@ msgstr ""
 msgid "can't create symlink for caching"
 msgstr ""
 
+#: internal/policies/policies.go:44
+msgid "can't created new policies"
+msgstr ""
+
 #: internal/ad/registry/registry.go:281
 msgid "can't decode meta value for %s: %v"
 msgstr ""
@@ -450,7 +459,7 @@ msgstr ""
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/policies.go:27
+#: internal/policies/policies.go:64
 #, c-format
 msgid "can't get cached policies from %s"
 msgstr ""
@@ -510,7 +519,12 @@ msgstr ""
 msgid "can't save %s"
 msgstr ""
 
-#: internal/policies/policies.go:42
+#: internal/policies/policies.go:200
+#, c-format
+msgid "can't save assets to %s"
+msgstr ""
+
+#: internal/policies/policies.go:116
 #, c-format
 msgid "can't save policies to %s"
 msgstr ""
@@ -778,6 +792,10 @@ msgstr ""
 msgid "invalid remote GPT.INI"
 msgstr ""
 
+#: internal/policies/policies.go:104
+msgid "invalid zip db archive: %w"
+msgstr ""
+
 #: internal/cmdhandler/cmdhandler.go:46
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
@@ -816,6 +834,10 @@ msgstr ""
 #: internal/grpc/logstreamer/server.go:116
 #, c-format
 msgid "missing metadata %s for incoming request"
+msgstr ""
+
+#: internal/policies/policies.go:205
+msgid "no assets attached"
 msgstr ""
 
 #: internal/adsysservice/service.go:211
