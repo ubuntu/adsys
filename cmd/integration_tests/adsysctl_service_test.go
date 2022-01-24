@@ -297,7 +297,7 @@ func TestServiceStatus(t *testing.T) {
 			systemAnswer(t, tc.systemAnswer)
 
 			adsysDir := t.TempDir()
-			gpoRulesDir := filepath.Join(adsysDir, "cache", "policies")
+			cachedPoliciesDir := filepath.Join(adsysDir, "cache", "policies")
 			conf := createConf(t, adsysDir)
 			if tc.dynamicADServerDomain != "" {
 				content, err := os.ReadFile(conf)
@@ -312,10 +312,14 @@ func TestServiceStatus(t *testing.T) {
 
 			// copy machine gpo rules for first update
 			if !tc.noCacheUsersMachine || tc.dynamicADServerDomain != "" {
-				err := os.MkdirAll(gpoRulesDir, 0700)
+				err := os.MkdirAll(cachedPoliciesDir, 0700)
 				require.NoError(t, err, "Setup: couldn't create policies directory: %v", err)
-				err = shutil.CopyFile("testdata/PolicyApplied/policies/machine.yaml", filepath.Join(gpoRulesDir, hostname), false)
-				require.NoError(t, err, "Setup: failed to copy machine gporules cache")
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "PolicyApplied", "policies", "machine"),
+						filepath.Join(cachedPoliciesDir, hostname),
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: failed to copy machine policies cache")
 			}
 
 			if !tc.daemonNotStarted {
@@ -338,14 +342,14 @@ func TestServiceStatus(t *testing.T) {
 					f, err := os.Create(filepath.Join(krb5UserDir, user))
 					require.NoError(t, err, "Setup: could not create krb5 cache dir for %s: %v", user, err)
 					f.Close()
-					f, err = os.Create(filepath.Join(gpoRulesDir, user))
+					f, err = os.Create(filepath.Join(cachedPoliciesDir, user))
 					require.NoError(t, err, "Setup: could not create gpo cache dir for %s: %v", user, err)
 					f.Close()
 				}
 				// TODO: change modification time? (golden)
 			}
 			if tc.krb5ccNoCache {
-				err := os.RemoveAll(gpoRulesDir)
+				err := os.RemoveAll(cachedPoliciesDir)
 				require.NoError(t, err, "Setup: can’t delete gpo rules cache directory")
 			}
 
