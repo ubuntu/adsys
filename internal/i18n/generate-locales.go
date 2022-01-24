@@ -5,6 +5,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
@@ -95,12 +96,12 @@ func updatePo(potfile, localeDir string) error {
 	// Create pot file
 	var files []string
 	root := filepath.Dir(localeDir)
-	err := filepath.Walk(root, func(p string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(root, func(p string, de fs.DirEntry, err error) error {
 		if err != nil {
 			return fmt.Errorf("fail to access %q: %v", p, err)
 		}
 		// Only deal with files
-		if info.IsDir() {
+		if de.IsDir() {
 			return nil
 		}
 

@@ -7,6 +7,7 @@ import (
 	"crypto/md5"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -583,13 +584,13 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 
 	r := make(map[string]string)
 
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.WalkDir(dir, func(path string, de fs.DirEntry, err error) error {
 		if err != nil {
 			return fmt.Errorf("couldn't access path %q: %w", path, err)
 		}
 
 		md5Val := ""
-		if !info.IsDir() {
+		if !de.IsDir() {
 			d, err := os.ReadFile(path)
 			if err != nil {
 				return err
