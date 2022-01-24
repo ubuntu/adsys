@@ -25,7 +25,7 @@ func TestApplyPolicies(t *testing.T) {
 		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
 
 	tests := map[string]struct {
-		policiesFile                 string
+		policiesDir                  string
 		secondCallWithNoRules        bool
 		makeDirReadOnly              string
 		isNotSubscribed              bool
@@ -33,15 +33,15 @@ func TestApplyPolicies(t *testing.T) {
 
 		wantErr bool
 	}{
-		"succeed": {policiesFile: "all_entry_types.policies"},
-		"second call with no rules deletes everything": {policiesFile: "all_entry_types.policies", secondCallWithNoRules: true},
+		"succeed": {policiesDir: "all_entry_types"},
+		"second call with no rules deletes everything": {policiesDir: "all_entry_types", secondCallWithNoRules: true},
 
 		// no subscription filterings
-		"no subscription is only dconf content":                                       {policiesFile: "all_entry_types.policies", isNotSubscribed: true},
-		"second call with no subscription should remove everything but dconf content": {policiesFile: "all_entry_types.policies", secondCallWithNoSubscription: true},
+		"no subscription is only dconf content":                                       {policiesDir: "all_entry_types", isNotSubscribed: true},
+		"second call with no subscription should remove everything but dconf content": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true},
 
-		"dconf apply policy fails":     {policiesFile: "dconf_failing.policies", wantErr: true},
-		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", policiesFile: "all_entry_types.policies", wantErr: true},
+		"dconf apply policy fails":     {policiesDir: "dconf_failing", wantErr: true},
+		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -50,8 +50,9 @@ func TestApplyPolicies(t *testing.T) {
 			// We change the dbus returned values to simulate a subscription
 			//t.Parallel()
 
-			pols, err := policies.NewFromCache(filepath.Join("testdata", tc.policiesFile))
+			pols, err := policies.NewFromCache(context.Background(), filepath.Join("testdata", "cache", "policies", tc.policiesDir))
 			require.NoError(t, err, "Setup: can not load policies list")
+			defer pols.Close()
 
 			fakeRootDir := t.TempDir()
 			cacheDir := filepath.Join(fakeRootDir, "var", "cache", "adsys")
@@ -118,81 +119,81 @@ func TestDumpPolicies(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get hostname")
 
 	tests := map[string]struct {
-		cacheUser      string
-		cacheMachine   string
-		target         string
-		withRules      bool
-		withOverridden bool
+		cachePoliciesUser  string
+		cachePolicyMachine string
+		target             string
+		withRules          bool
+		withOverridden     bool
 
 		wantErr bool
 	}{
 		"One GPO User": {
-			cacheUser: "one_gpo",
+			cachePoliciesUser: "one_gpo",
 		},
 		"One GPO Machine": {
-			cacheMachine: "one_gpo",
-			target:       hostname,
+			cachePolicyMachine: "one_gpo",
+			target:             hostname,
 		},
 		"One GPO User + Machine": {
-			cacheUser:    "one_gpo",
-			cacheMachine: "one_gpo_other",
+			cachePoliciesUser:  "one_gpo",
+			cachePolicyMachine: "one_gpo_other",
 		},
 		"Multiple GPOs": {
-			cacheUser: "two_gpos_no_override",
+			cachePoliciesUser: "two_gpos_no_override",
 		},
 
 		// Show rules
 		"One GPO with rules": {
-			cacheUser: "one_gpo",
-			withRules: true,
+			cachePoliciesUser: "one_gpo",
+			withRules:         true,
 		},
 		"Machine only GPO with rules": {
-			cacheMachine: "one_gpo",
-			target:       hostname,
-			withRules:    true,
+			cachePolicyMachine: "one_gpo",
+			target:             hostname,
+			withRules:          true,
 		},
 		"Multiple GPOs with rules, no override": {
-			cacheUser: "two_gpos_no_override",
-			withRules: true,
+			cachePoliciesUser: "two_gpos_no_override",
+			withRules:         true,
 		},
 		"Multiple GPOs with rules, override hidden": {
-			cacheUser: "two_gpos_with_overrides",
-			withRules: true,
+			cachePoliciesUser: "two_gpos_with_overrides",
+			withRules:         true,
 		},
 		"Multiple GPOs with rules, override, shown": {
-			cacheUser:      "two_gpos_with_overrides",
-			withRules:      true,
-			withOverridden: true,
+			cachePoliciesUser: "two_gpos_with_overrides",
+			withRules:         true,
+			withOverridden:    true,
 		},
 
 		// machine and user GPO with overrides between machine and user
 		"Overrides between machine and user GPOs, hidden": {
-			cacheUser:    "one_gpo",
-			cacheMachine: "two_gpos_override_one_gpo",
-			withRules:    true,
+			cachePoliciesUser:  "one_gpo",
+			cachePolicyMachine: "two_gpos_override_one_gpo",
+			withRules:          true,
 		},
 		"Overrides between machine and user GPOs, shown": {
-			cacheUser:      "one_gpo",
-			cacheMachine:   "two_gpos_override_one_gpo",
-			withRules:      true,
-			withOverridden: true,
+			cachePoliciesUser:  "one_gpo",
+			cachePolicyMachine: "two_gpos_override_one_gpo",
+			withRules:          true,
+			withOverridden:     true,
 		},
 
 		// Edge cases
 		"Same GPO Machine and User": {
-			cacheUser:    "one_gpo",
-			cacheMachine: "one_gpo",
+			cachePoliciesUser:  "one_gpo",
+			cachePolicyMachine: "one_gpo",
 		},
 		"Same GPO Machine and User with rules": {
-			cacheUser:    "one_gpo",
-			cacheMachine: "one_gpo",
-			withRules:    true,
+			cachePoliciesUser:  "one_gpo",
+			cachePolicyMachine: "one_gpo",
+			withRules:          true,
 		},
 		"Same GPO Machine and User with rules and overrides": {
-			cacheUser:      "one_gpo",
-			cacheMachine:   "one_gpo",
-			withRules:      true,
-			withOverridden: true,
+			cachePoliciesUser:  "one_gpo",
+			cachePolicyMachine: "one_gpo",
+			withRules:          true,
+			withOverridden:     true,
 		},
 
 		// Error cases
@@ -200,9 +201,9 @@ func TestDumpPolicies(t *testing.T) {
 			wantErr: true,
 		},
 		"Error on missing machine cache when targeting user": {
-			cacheUser:    "one_gpo",
-			cacheMachine: "-",
-			wantErr:      true,
+			cachePoliciesUser:  "one_gpo",
+			cachePolicyMachine: "-",
+			wantErr:            true,
 		},
 	}
 
@@ -219,17 +220,20 @@ func TestDumpPolicies(t *testing.T) {
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
 			require.NoError(t, err, "Setup: cant not create policies cache directory")
 
-			if tc.cacheUser != "" {
-				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheUser), filepath.Join(cacheDir, policies.PoliciesCacheBaseName, "user"), false)
-				require.NoError(t, err, "Setup: couldn’t copy user cache")
+			if tc.cachePoliciesUser != "" {
+				err := shutil.CopyTree(filepath.Join("testdata", "cache", "policies", tc.cachePoliciesUser), filepath.Join(cacheDir, policies.PoliciesCacheBaseName, "user"), nil)
+				require.NoError(t, err, "Setup: couldn’t copy user policies cache")
 			}
-			if tc.cacheMachine == "" {
-				f, err := os.Create(filepath.Join(cacheDir, policies.PoliciesCacheBaseName, hostname))
-				require.NoError(t, err, "Setup: failed to create empty machine cache file")
+			if tc.cachePolicyMachine == "" {
+				machinePolicyCache := filepath.Join(cacheDir, policies.PoliciesCacheBaseName, hostname)
+				err = os.MkdirAll(machinePolicyCache, 0750)
+				require.NoError(t, err, "Setup: cant not create machine policies cache directory")
+				f, err := os.Create(filepath.Join(machinePolicyCache, "policies"))
+				require.NoError(t, err, "Setup: failed to create empty machine policies cache")
 				f.Close()
-			} else if tc.cacheMachine != "-" {
-				err := shutil.CopyFile(filepath.Join("testdata", "cache", tc.cacheMachine), filepath.Join(cacheDir, policies.PoliciesCacheBaseName, hostname), false)
-				require.NoError(t, err, "Setup: couldn’t copy machine cache")
+			} else if tc.cachePolicyMachine != "-" {
+				err := shutil.CopyTree(filepath.Join("testdata", "cache", "policies", tc.cachePolicyMachine), filepath.Join(cacheDir, policies.PoliciesCacheBaseName, hostname), nil)
+				require.NoError(t, err, "Setup: couldn’t copy machine policies cache")
 			}
 
 			if tc.target == "" {

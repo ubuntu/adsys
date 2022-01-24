@@ -1,18 +1,23 @@
 package policies_test
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
 	"github.com/godbus/dbus/v5/prop"
 	"github.com/stretchr/testify/require"
+	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -20,6 +25,463 @@ import (
 )
 
 var update bool
+
+func TestNew(t *testing.T) {
+	t.Parallel()
+
+	gpos := []policies.GPO{
+		{ID: "{GPOId}", Name: "GPOName", Rules: map[string][]entry.Entry{
+			"dconf": {
+				entry.Entry{Key: "path/to/key1", Value: "ValueOfKey1", Meta: "s"},
+				entry.Entry{Key: "path/to/key2", Value: "ValueOfKey2\nOn\nMultilines\n", Meta: "s"},
+			},
+			"scripts": {
+				entry.Entry{Key: "path/to/key3", Disabled: true},
+			},
+		}},
+	}
+
+	tests := map[string]struct {
+		gpos     []policies.GPO
+		assetsDB string
+
+		wantErr bool
+	}{
+		"gpos only": {
+			gpos: gpos,
+		},
+		"with assets": {
+			gpos:     gpos,
+			assetsDB: "testdata/cache/policies/with_assets/assets.db",
+		},
+		"no gpos": {
+			gpos: nil,
+		},
+
+		// error cases
+		"error on invalid assets db": {
+			assetsDB: "testdata/cache/policies/invalid_assets_db/assets.db",
+			wantErr:  true,
+		},
+		"error on assets db does not exists": {
+			assetsDB: "testdata/cache/policies/doesnotexists/assets.db",
+			wantErr:  true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := policies.New(context.Background(), tc.gpos, tc.assetsDB)
+			if tc.wantErr {
+				require.Error(t, err, "New should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "New should return no error but got one")
+			defer got.Close()
+
+			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "new", name), update)
+		})
+	}
+}
+
+func TestNewFromCache(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		cacheDir string
+
+		wantErr bool
+	}{
+		"gpos only": {
+			cacheDir: "simple",
+		},
+		"with assets": {
+			cacheDir: "with_assets",
+		},
+
+		// error cases
+		"error on invalid policies cache": {
+			cacheDir: "invalid_policies_cache",
+			wantErr:  true,
+		},
+		"error on invalid assets db": {
+			cacheDir: "invalid_assets_db",
+			wantErr:  true,
+		},
+		"error on no policies cache": {
+			cacheDir: "doesnotexists",
+			wantErr:  true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := policies.NewFromCache(context.Background(), filepath.Join("testdata", "cache", "policies", tc.cacheDir))
+			if tc.wantErr {
+				require.Error(t, err, "NewFromCache should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "NewFromCache should return no error but got one")
+			defer got.Close()
+
+			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "newfromcache", name), update)
+		})
+	}
+}
+
+func TestSave(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		cacheSrc string
+
+		transformDest   string
+		initialCacheDir string
+
+		wantErr bool
+	}{
+		"gpos only": {
+			cacheSrc: "simple",
+		},
+		"with assets": {
+			cacheSrc: "with_assets",
+		},
+
+		// refresh existing directory
+		"existing policies cache is refreshed": {
+			cacheSrc:        "one_gpo",
+			initialCacheDir: "one_gpo_other",
+		},
+		"existing assets cache is refreshed": {
+			cacheSrc:        "with_assets",
+			initialCacheDir: "with_assets_other",
+		},
+		"existing cache with assets, new cache with no assets": {
+			cacheSrc:        "one_gpo",
+			initialCacheDir: "with_assets",
+		},
+
+		// edge cases
+		"destdir does not exists": {
+			cacheSrc:      "one_gpo",
+			transformDest: "destdir does not exists",
+		},
+
+		// error cases
+		"error on can’t write to policies base dir": {
+			cacheSrc:      "with_assets",
+			transformDest: "read only policies base directory",
+			wantErr:       true,
+		},
+		"error on can’t write to dest dir": {
+			cacheSrc:      "with_assets",
+			transformDest: "read only destination directory",
+			wantErr:       true,
+		},
+		"error on can’t remove existing assets": {
+			cacheSrc:        "one_gpo",
+			initialCacheDir: "with_assets_other",
+			transformDest:   "unremovable asset",
+			wantErr:         true,
+		},
+		"error on can’t refresh existing assets": {
+			cacheSrc:        "with_assets",
+			initialCacheDir: "with_assets_other",
+			transformDest:   "read only asset file",
+			wantErr:         true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			src := filepath.Join("testdata", "cache", "policies", tc.cacheSrc)
+			dest := t.TempDir()
+
+			if tc.initialCacheDir != "" {
+				require.NoError(t, os.RemoveAll(dest), "Setup: can’t remove destination directory before copy")
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "cache", "policies", tc.initialCacheDir),
+						dest,
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: can't create initial cache directory")
+			}
+
+			pols, err := policies.NewFromCache(context.Background(), src)
+			require.NoError(t, err, "Setup: NewFromCache should return no error but got one")
+			defer pols.Close()
+
+			switch tc.transformDest {
+			case "destdir does not exists":
+				require.NoError(t, os.RemoveAll(dest), "Setup: can’t remove destination directory")
+			case "read only policies base directory":
+				// make dest a subdirectory and mark RO parent one
+				dest = filepath.Join(dest, "dest")
+				testutils.MakeReadOnly(t, filepath.Dir(dest))
+			case "read only destination directory":
+				testutils.MakeReadOnly(t, dest)
+			case "read only asset file":
+				testutils.MakeReadOnly(t, filepath.Join(dest, policies.PoliciesAssetsFileName))
+			case "unremovable asset":
+				// To mock unremovable asset file (making it read only is not enough), create instead a non empty
+				// directory. If we make the parent directory read only, then policies save will first fail.
+				p := filepath.Join(dest, policies.PoliciesAssetsFileName)
+				require.NoError(t, os.RemoveAll(p), "Setup: can’t remove assets file")
+				// This is any random non empty directory
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "cache", "policies", tc.initialCacheDir),
+						p,
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: can't mock unremovable assets file")
+			}
+
+			err = pols.Save(dest)
+			if tc.wantErr {
+				require.Error(t, err, "Save should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "Save should return no error but got one")
+
+			testutils.CompareTreesWithFiltering(t, dest, filepath.Join("testdata", "golden", "save", name), update)
+			// compare that assets compressed db corresponds to source.
+			testutils.CompareTreesWithFiltering(t, filepath.Join(dest, policies.PoliciesAssetsFileName), filepath.Join(src, policies.PoliciesAssetsFileName), false)
+		})
+	}
+}
+
+func TestCachePolicies(t *testing.T) {
+	t.Parallel()
+
+	pols := policies.Policies{
+		GPOs: []policies.GPO{
+			{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "C", Value: "oneValueC"},
+				}}},
+			{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+				"dconf": {
+					{Key: "A", Value: "standardA", Meta: "My meta"},
+					{Key: "B", Value: "standardB", Disabled: true},
+					// this value will be overridden with the higher one
+					{Key: "C", Value: "standardC"},
+				}}},
+		},
+	}
+
+	p := filepath.Join(t.TempDir(), "policies-cache")
+	err := pols.Save(p)
+	require.NoError(t, err, "Save policies without error")
+
+	got, err := policies.NewFromCache(context.Background(), p)
+	require.NoError(t, err, "Got policies without error")
+	defer got.Close()
+
+	require.Equal(t, pols, got, "Reloaded policies after caching should be the same")
+
+	err = pols.Save(p)
+	require.NoError(t, err, "Second save on policies without error")
+}
+
+func TestSaveAssetsTo(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		relSrc string
+
+		cacheSrc     string
+		readOnlyDest string
+
+		wantErr bool
+	}{
+		"all": {
+			relSrc:   ".",
+			cacheSrc: "with_assets",
+		},
+		"sub directory": {
+			relSrc:   "scripts",
+			cacheSrc: "with_assets",
+		},
+		"sub directory ending with slash": {
+			relSrc:   "scripts/",
+			cacheSrc: "with_assets",
+		},
+		"file": {
+			relSrc:   "scripts/script-simple.sh",
+			cacheSrc: "with_assets",
+		},
+
+		// error cases
+		"error on unexisting relSrc in cache": {
+			relSrc:   "doesnotexists",
+			cacheSrc: "with_assets",
+			wantErr:  true,
+		},
+		"error on empty relSrc": {
+			relSrc:   "",
+			cacheSrc: "with_assets",
+			wantErr:  true,
+		},
+		"error on no assets": {
+			cacheSrc: "one_gpo",
+			wantErr:  true,
+		},
+		"error on read only dest": {
+			relSrc:       ".",
+			cacheSrc:     "with_assets",
+			readOnlyDest: ".",
+			wantErr:      true,
+		},
+		"error on file read only existing in dest": {
+			relSrc:       ".",
+			cacheSrc:     "with_assets",
+			readOnlyDest: "scripts/script-simple.sh",
+			wantErr:      true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			src := filepath.Join("testdata", "cache", "policies", tc.cacheSrc)
+			dest := t.TempDir()
+
+			if tc.readOnlyDest != "" {
+				if tc.readOnlyDest != "." {
+					// we simulate unwritable dest by making the targeted file a directory
+					err := os.MkdirAll(filepath.Join(dest, tc.readOnlyDest), 0700)
+					require.NoError(t, err, "Setup: can’t mock readOnlyDest file")
+				}
+				testutils.MakeReadOnly(t, filepath.Join(dest, tc.readOnlyDest))
+			}
+
+			pols, err := policies.NewFromCache(context.Background(), src)
+			require.NoError(t, err, "Setup: NewFromCache should return no error but got one")
+			defer pols.Close()
+
+			err = pols.SaveAssetsTo(context.Background(), tc.relSrc, dest)
+			if tc.wantErr {
+				require.Error(t, err, "SaveAssetsTo should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "SaveAssetsTo should return no error but got one")
+
+			testutils.CompareTreesWithFiltering(t, dest, filepath.Join("testdata", "golden", "saveassetsto", name), update)
+		})
+	}
+}
+
+func TestCompressAssets(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		src string
+
+		readOnly string
+
+		wantErr bool
+	}{
+		"no db": {
+			src: "assets no db",
+		},
+		"existing db": {
+			src: "assets with db",
+		},
+
+		// error cases
+		/*
+			This fails on RemoveAll(), so same than the case below
+			"error on can’t create new db": {
+				src:      "assets no db",
+				readOnly: ".",
+				wantErr:  true,
+			},*/
+		"error on can’t remove existing db": {
+			src:      "assets with db",
+			readOnly: ".",
+			wantErr:  true,
+		},
+		"error on non existing directory": {
+			src:     "",
+			wantErr: true,
+		},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			p := t.TempDir()
+			require.NoError(t, os.RemoveAll(p), "Setup: can’t remove destination directory before copy")
+
+			// Copy src to a temporary dir as we will create the db in the same dir
+			assetsDir := filepath.Join(p, "assets")
+			if tc.src != "" {
+				require.NoError(t,
+					shutil.CopyTree(
+						filepath.Join("testdata", "cache", "gpo_cache", tc.src),
+						p,
+						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+					"Setup: can’t copy assets directory")
+
+				// We need a fixed modification and creation time on our assets to have reproducible test
+				// on zip modification time stored for content.
+				fixedTime := time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC)
+				err := filepath.WalkDir(p, func(path string, d os.DirEntry, err error) error {
+					return os.Chtimes(path, fixedTime, fixedTime)
+				})
+				require.NoError(t, err, "Setup: can’t set fixed time for assets")
+			}
+
+			// Make some files/dirs read only
+			if tc.readOnly != "" {
+				// check if readOnly already exists, otherwise create a file
+				dest := filepath.Join(p, tc.readOnly)
+				if _, err := os.Stat(dest); errors.Is(err, fs.ErrNotExist) {
+					err := os.WriteFile(dest, []byte(""), 0400)
+					require.NoError(t, err, "Setup: can’t create readOnly file")
+				}
+				testutils.MakeReadOnly(t, dest)
+			}
+
+			err := policies.CompressAssets(context.Background(), assetsDir)
+			if tc.wantErr {
+				require.Error(t, err, "CompressAssets should return an error but got none")
+				return
+			}
+			require.NoError(t, err, "CompressAssets should return no error but got one")
+
+			// Remove uncompressed assets dir for golden
+			require.NoError(t, os.RemoveAll(assetsDir), "Teardown: can’t remove assets directory")
+
+			// Unfortunately, compression seems to be machine dependent, so we can’t compare the zip
+			// Also, we need an empty "policies" file for NewFromCache
+			err = os.WriteFile(filepath.Join(p, policies.PoliciesFileName), nil, 0600)
+			require.NoError(t, err, "Teardown: Can’t create empty policy cache file")
+
+			got, err := policies.NewFromCache(context.Background(), p)
+			require.NoError(t, err, "Teardown: NewFromCache should return no error but got one")
+			defer got.Close()
+
+			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "compressassets", name), update)
+		})
+	}
+}
 
 func TestGetUniqueRules(t *testing.T) {
 	t.Parallel()
@@ -377,6 +839,7 @@ func TestGetUniqueRules(t *testing.T) {
 
 	for name, tc := range tests {
 		tc := tc
+		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -389,31 +852,25 @@ func TestGetUniqueRules(t *testing.T) {
 	}
 }
 
-func TestCachePolicies(t *testing.T) {
-	pols := policies.Policies{
-		GPOs: []policies.GPO{
-			{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "C", Value: "oneValueC"},
-				}}},
-			{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-				"dconf": {
-					{Key: "A", Value: "standardA", Meta: "My meta"},
-					{Key: "B", Value: "standardB", Disabled: true},
-					// this value will be overridden with the higher one
-					{Key: "C", Value: "standardC"},
-				}}},
-		},
+// equalPoliciesToGolden compares the policies to the given file.
+func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, update bool) {
+	t.Helper()
+
+	// Save policies and deserialize assets to compare them with golden.
+	compareDir := t.TempDir()
+	err := got.Save(compareDir)
+	require.NoError(t, err, "Teardown: saving gpo should work")
+	if got.HasAssets() {
+		err = os.MkdirAll(filepath.Join(compareDir, "assets.db.uncompressed"), 0700)
+		require.NoError(t, err, "Teardown: can't create uncompressed assets directory")
+		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"))
+		require.NoError(t, err, "Teardown: deserializing assets should work")
+		// Remove database that are different from machine to machine.
+		err = os.RemoveAll(filepath.Join(compareDir, "assets.db"))
+		require.NoError(t, err, "Teardown: cleaning up assets db file")
 	}
 
-	p := filepath.Join(t.TempDir(), "policies-cache")
-	err := pols.Save(p)
-	require.NoError(t, err, "Save policies without error")
-
-	got, err := policies.NewFromCache(p)
-	require.NoError(t, err, "Got policies without error")
-
-	require.Equal(t, pols, got, "Reloaded policies after caching should be the same")
+	testutils.CompareTreesWithFiltering(t, compareDir, golden, update)
 }
 
 func TestMain(m *testing.M) {
