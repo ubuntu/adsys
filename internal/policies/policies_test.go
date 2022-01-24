@@ -470,7 +470,27 @@ func TestCompressAssets(t *testing.T) {
 			// Remove uncompressed assets dir for golden
 			require.NoError(t, os.RemoveAll(assetsDir), "Teardown: can’t remove assets directory")
 
-			testutils.CompareTreesWithFiltering(t, p, filepath.Join("testdata", "golden", "compressassets", name), update)
+			// Unfortunately, compression seems to be machine dependent, so we can’t compare the zip
+			// Also, we need an empty "policies" file for NewFromCache
+			err = os.WriteFile(filepath.Join(p, policies.PoliciesFileName), nil, 0600)
+			require.NoError(t, err, "Teardown: Can’t create empty policy cache file")
+
+			// list content of p
+			filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
+				fmt.Println(path)
+				return nil
+			})
+
+			got, err := policies.NewFromCache(context.Background(), p)
+			require.NoError(t, err, "Teardown: NewFromCache should return no error but got one")
+			defer got.Close()
+
+			filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
+				fmt.Println(path)
+				return nil
+			})
+
+			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "compressassets", name), update)
 		})
 	}
 }

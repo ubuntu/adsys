@@ -8,6 +8,7 @@ import (
 
 const (
 	PoliciesAssetsFileName = policiesAssetsFileName
+	PoliciesFileName       = policiesFileName
 )
 
 // WithGDM specifies a personalized gdm manager.
