@@ -364,7 +364,6 @@ func TestSaveAssetsTo(t *testing.T) {
 					// we simulate unwritable dest by making the targeted file a directory
 					err := os.MkdirAll(filepath.Join(dest, tc.readOnlyDest), 0700)
 					require.NoError(t, err, "Setup: can’t mock readOnlyDest file")
-
 				}
 				testutils.MakeReadOnly(t, filepath.Join(dest, tc.readOnlyDest))
 			}
@@ -475,20 +474,9 @@ func TestCompressAssets(t *testing.T) {
 			err = os.WriteFile(filepath.Join(p, policies.PoliciesFileName), nil, 0600)
 			require.NoError(t, err, "Teardown: Can’t create empty policy cache file")
 
-			// list content of p
-			filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
-				fmt.Println(path)
-				return nil
-			})
-
 			got, err := policies.NewFromCache(context.Background(), p)
 			require.NoError(t, err, "Teardown: NewFromCache should return no error but got one")
 			defer got.Close()
-
-			filepath.Walk(p, func(path string, info fs.FileInfo, err error) error {
-				fmt.Println(path)
-				return nil
-			})
 
 			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "compressassets", name), update)
 		})
@@ -851,6 +839,7 @@ func TestGetUniqueRules(t *testing.T) {
 
 	for name, tc := range tests {
 		tc := tc
+		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -872,7 +861,8 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, u
 	err := got.Save(compareDir)
 	require.NoError(t, err, "Teardown: saving gpo should work")
 	if got.HasAssets() {
-		os.MkdirAll(filepath.Join(compareDir, "assets.db.uncompressed"), 0700)
+		err = os.MkdirAll(filepath.Join(compareDir, "assets.db.uncompressed"), 0700)
+		require.NoError(t, err, "Teardown: can't create uncompressed assets directory")
 		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"))
 		require.NoError(t, err, "Teardown: deserializing assets should work")
 		// Remove database that are different from machine to machine.
