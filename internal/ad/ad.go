@@ -7,7 +7,9 @@ import (
 
 	// embed gpolist python binary.
 	_ "embed"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -388,9 +390,9 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 				class = "Machine"
 			}
 			f, err := os.Open(filepath.Join(ad.gpoCacheDir, filepath.Base(url), class, "Registry.pol"))
-			if err != nil && os.IsExist(err) {
+			if errors.Is(err, fs.ErrExist) {
 				return err
-			} else if err != nil && os.IsNotExist(err) {
+			} else if errors.Is(err, fs.ErrNotExist) {
 				log.Debugf(ctx, "Policy %q doesn't have any policy for class %q %s", name, objectClass, err)
 				return nil
 			}

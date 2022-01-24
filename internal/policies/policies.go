@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -75,7 +76,7 @@ func NewFromCache(ctx context.Context, p string) (pols Policies, err error) {
 	}
 
 	// assets are optionals
-	if _, err := os.Stat(filepath.Join(p, policiesAssetsFileName)); err != nil && os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(p, policiesAssetsFileName)); errors.Is(err, fs.ErrNotExist) {
 		return pols, nil
 	}
 
@@ -131,7 +132,7 @@ func (pols *Policies) Save(p string) (err error) {
 	assetPath := filepath.Join(p, policiesAssetsFileName)
 	if pols.assets == nil {
 		// delete assetPath and ignore if it doesn't exist
-		if err := os.Remove(assetPath); err != nil && !os.IsNotExist(err) {
+		if err := os.Remove(assetPath); !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil
