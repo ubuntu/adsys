@@ -13,10 +13,9 @@ import (
 )
 
 // SetupSmb starts a local smbd process on specified part, serving sysvolDir.
-// brokenSmbDir is optional. It is used to specify an unreachable directory or a directory with broken content.
-func SetupSmb(port int, sysvolDir, brokenSmbDir string) func() {
+func SetupSmb(port int, sysvolDir string) func() {
 	smbPort := port
-	dir, cleanup := mkSmbDir(smbPort, sysvolDir, brokenSmbDir)
+	dir, cleanup := mkSmbDirWithConf(smbPort, sysvolDir)
 
 	// #nosec:G204 - we control the directory we run smbd on (on tests)
 	cmd := exec.Command("smbd", "-FS", "-s", filepath.Join(dir, "smbd.conf"))
@@ -69,16 +68,12 @@ private dir = {{.Tempdir}}/intern
 ncalrpc dir = {{.Tempdir}}/intern
 
 [SYSVOL]
-path = {{.Cwd}}/{{.SysvolRoot}}
-guest ok = yes
-
-[broken]
-path = {{.BrokenRoot}}
+path = {{.SysvolRoot}}
 guest ok = yes
 `
 )
 
-func mkSmbDir(smbPort int, sysvolDir, brokenSmbDir string) (string, func()) {
+func mkSmbDirWithConf(smbPort int, sysvolDir string) (string, func()) {
 	dir, err := os.MkdirTemp("", "adsys_smbd_")
 	if err != nil {
 		log.Fatalf("Setup: failed to create temporary smb directory: %v", err)
@@ -88,7 +83,6 @@ func mkSmbDir(smbPort int, sysvolDir, brokenSmbDir string) (string, func()) {
 		Cwd        string
 		SmbPort    int
 		SysvolRoot string
-		BrokenRoot string
 	}
 	t, err := template.New("smb-conf").Parse(smbConfTemplate)
 	if err != nil {
@@ -109,7 +103,7 @@ func mkSmbDir(smbPort int, sysvolDir, brokenSmbDir string) (string, func()) {
 	if err != nil {
 		log.Fatalf("Setup: can’t determine current work directory: %v", err)
 	}
-	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: smbPort, SysvolRoot: sysvolDir, BrokenRoot: brokenSmbDir}); err != nil {
+	if err := t.Execute(f, smbConfVars{Tempdir: dir, Cwd: cwd, SmbPort: smbPort, SysvolRoot: sysvolDir}); err != nil {
 		log.Fatalf("Setup: failed to create smb.conf: %v", err)
 	}
 	if err := os.Setenv("ADSYS_TESTS_SMB_PORT", fmt.Sprintf("%d", smbPort)); err != nil {

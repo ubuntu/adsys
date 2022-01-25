@@ -24,6 +24,7 @@ func TestAdsysGPOList(t *testing.T) {
 	p, err := filepath.Abs("../testutils/admock")
 	require.NoError(t, err, "Setup: Failed to get current absolute path for mock")
 	testutils.Setenv(t, "PYTHONPATH", p)
+	testutils.Setenv(t, "ADSYS_TESTS_MOCK_SMBDOMAIN", "gpoonly.com")
 
 	tests := map[string]struct {
 		url             string
@@ -35,14 +36,14 @@ func TestAdsysGPOList(t *testing.T) {
 		wantReturnCode int
 	}{
 		"Return one gpo": {
-			accountName: "UserAtRoot@EXAMPLE.COM",
+			accountName: "UserAtRoot@GPOONLY.COM",
 		},
 
 		"Return hierarchy": {
-			accountName: "RnDUser@EXAMPLE.COM",
+			accountName: "RnDUser@GPOONLY.COM",
 		},
 		"Multiple GPOs in same OU": {
-			accountName: "RnDUserDep1@EXAMPLE.COM",
+			accountName: "RnDUserDep1@GPOONLY.COM",
 		},
 
 		"Machine GPOs": {
@@ -51,11 +52,11 @@ func TestAdsysGPOList(t *testing.T) {
 		},
 
 		"Disabled GPOs": {
-			accountName: "RnDUserDep3@EXAMPLE.COM",
+			accountName: "RnDUserDep3@GPOONLY.COM",
 		},
 
 		"No GPO on OU": {
-			accountName: "UserNoGPO@EXAMPLE.COM",
+			accountName: "UserNoGPO@GPOONLY.COM",
 		},
 
 		// Filtering cases
@@ -64,42 +65,42 @@ func TestAdsysGPOList(t *testing.T) {
 			objectClass: "computer",
 		},
 		"Filter machine only GPOs": {
-			accountName: "RnDUserDep7@EXAMPLE.COM",
+			accountName: "RnDUserDep7@GPOONLY.COM",
 		},
 
 		// Forced GPOs and inheritance handling
 		"Forced GPO are first by reverse order": {
-			accountName: "RndUserSubDep2ForcedPolicy@EXAMPLE.COM",
+			accountName: "RndUserSubDep2ForcedPolicy@GPOONLY.COM",
 		},
 		"Block inheritance": {
-			accountName: "RnDUserWithBlockedInheritance@EXAMPLE.COM",
+			accountName: "RnDUserWithBlockedInheritance@GPOONLY.COM",
 		},
 		"Forced GPO and blocked inheritance": {
-			accountName: "RnDUserWithBlockedInheritanceAndForcedPolicies@EXAMPLE.COM",
+			accountName: "RnDUserWithBlockedInheritanceAndForcedPolicies@GPOONLY.COM",
 		},
 
 		// Access cases
 		"Security descriptor missing ignores GPO": { // AD is doing that for windows client
-			accountName: "RnDUserDep4@EXAMPLE.COM",
+			accountName: "RnDUserDep4@GPOONLY.COM",
 		},
 		"Fail on security descriptor access failure": {
-			accountName:    "RnDUserDep5@EXAMPLE.COM",
+			accountName:    "RnDUserDep5@GPOONLY.COM",
 			wantReturnCode: 3,
 			wantErr:        true,
 		},
 		"Security descriptor access denied ignores GPO": {
-			accountName: "RnDUserDep6@EXAMPLE.COM",
+			accountName: "RnDUserDep6@GPOONLY.COM",
 		},
 		"Security descriptor accepted is for another user": {
-			accountName: "RnDUserDep8@EXAMPLE.COM",
+			accountName: "RnDUserDep8@GPOONLY.COM",
 		},
 
 		"No gPOptions fallbacks to 0": {
-			accountName: "UserNogPOptions@EXAMPLE.COM",
+			accountName: "UserNogPOptions@GPOONLY.COM",
 		},
 
 		"KRB5CCNAME without FILE: is supported by the samba bindings": {
-			accountName:     "UserAtRoot@EXAMPLE.COM",
+			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "invalidenvformat",
 		},
 
@@ -119,31 +120,31 @@ func TestAdsysGPOList(t *testing.T) {
 		// Error cases
 		"Fail on no network": {
 			url:            "ldap://NT_STATUS_NETWORK_UNREACHABLE",
-			accountName:    "UserAtRoot@EXAMPLE.COM",
+			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Fail on unreachable ldap host": {
 			url:            "ldap://NT_STATUS_HOST_UNREACHABLE",
-			accountName:    "UserAtRoot@EXAMPLE.COM",
+			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Fail on ldap connection refused": {
 			url:            "ldap://NT_STATUS_CONNECTION_REFUSED",
-			accountName:    "UserAtRoot@EXAMPLE.COM",
+			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Fail on machine with no ldap": {
 			url:            "ldap://NT_STATUS_OBJECT_NAME_NOT_FOUND",
-			accountName:    "UserAtRoot@EXAMPLE.COM",
+			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 
 		"Fail on non existent account": {
-			accountName:    "nonexistent@EXAMPLE.COM",
+			accountName:    "nonexistent@GPOONLY.COM",
 			wantReturnCode: 1,
 			wantErr:        true,
 		},
@@ -154,31 +155,31 @@ func TestAdsysGPOList(t *testing.T) {
 			wantErr:        true,
 		},
 		"Fail on computer requested but found user": {
-			accountName:    "UserAtRoot@EXAMPLE.COM",
+			accountName:    "UserAtRoot@GPOONLY.COM",
 			objectClass:    "computer",
 			wantReturnCode: 1,
 			wantErr:        true,
 		},
 		"Fail invalid GPO link": {
-			accountName:    "UserInvalidLink@EXAMPLE.COM",
+			accountName:    "UserInvalidLink@GPOONLY.COM",
 			wantReturnCode: 3,
 			wantErr:        true,
 		},
 
 		"Fail on KRB5CCNAME unset": {
-			accountName:     "UserAtRoot@EXAMPLE.COM",
+			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "unset",
 			wantReturnCode:  1,
 			wantErr:         true,
 		},
 		"Fail on invalid ticket": {
-			accountName:     "UserAtRoot@EXAMPLE.COM",
+			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "invalid",
 			wantReturnCode:  1,
 			wantErr:         true,
 		},
 		"Fail on dangling ticket symlink": {
-			accountName:     "UserAtRoot@EXAMPLE.COM",
+			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "dangling",
 			wantReturnCode:  1,
 			wantErr:         true,

@@ -40,7 +40,11 @@ func TestMain(m *testing.M) {
 	// We only start samba on non helper process
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		defer runDaemons()()
-		defer testutils.SetupSmb(1446, "testdata/PolicyUpdate/AD/SYSVOL", "")()
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Fatalf("Setup: cant't get current working directory: %v", err)
+		}
+		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/PolicyUpdate/AD/SYSVOL"))()
 	}
 
 	flag.BoolVar(&update, "update", false, "update golden files")

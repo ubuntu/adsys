@@ -25,8 +25,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-const policyPath = "SYSVOL/localdomain/Policies"
-
 var Update bool
 
 func TestFetchGPO(t *testing.T) {
@@ -195,7 +193,7 @@ func TestFetchGPO(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", bus,
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "fakegpo.com", bus,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 
 			require.NoError(t, err, "Setup: cannot create ad object")
@@ -204,7 +202,7 @@ func TestFetchGPO(t *testing.T) {
 			for n, src := range tc.existingGpos {
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "AD", policyPath, src),
+						filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", src),
 						filepath.Join(adc.gpoCacheDir, n),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't copy initial gpo directory")
@@ -213,7 +211,7 @@ func TestFetchGPO(t *testing.T) {
 			gpos := make(map[string]string)
 			for _, n := range tc.gpos {
 				// differentiate the gpo name from the url base path
-				gpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
+				gpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/%s", SmbPort, n)
 			}
 
 			if tc.concurrentGposDownload == nil {
@@ -227,7 +225,7 @@ func TestFetchGPO(t *testing.T) {
 				concurrentGpos := make(map[string]string)
 				for _, n := range tc.concurrentGposDownload {
 					// differentiate the gpo name from the url base path
-					concurrentGpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/%s/%s", SmbPort, policyPath, n)
+					concurrentGpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/%s", SmbPort, n)
 				}
 
 				wg := sync.WaitGroup{}
@@ -264,7 +262,7 @@ func TestFetchGPO(t *testing.T) {
 
 			// Diff on each gpo dir content
 			for _, f := range files {
-				goldPath := filepath.Join("testdata", "AD", policyPath, tc.want[f.Name()])
+				goldPath := filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", tc.want[f.Name()])
 				gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, f.Name()))
 				goldTree := md5Tree(t, goldPath)
 				assert.Equalf(t, goldTree, gpoTree, "expected and after fetch GPO %q does not match", f.Name())
@@ -281,18 +279,8 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 	// Prepare GPO with unreadable file.
 	// Defer will work after all tests are done because we don’t run it in parallel
 	gpos := map[string]string{
-		"gpo1-name": fmt.Sprintf("smb://localhost:%d/broken/%s/%s", SmbPort, policyPath, "gpo1"),
+		"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/broken.com/Policies/%s", SmbPort, "gpo1"),
 	}
-	require.NoError(t,
-		shutil.CopyTree(
-			filepath.Join("testdata", "AD", policyPath, "gpo1"),
-			filepath.Join(brokenSmbDirShare, policyPath, "gpo1"),
-			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
-		"Setup: can't copy initial gpo directory")
-	require.NoError(t,
-		os.Chmod(filepath.Join(brokenSmbDirShare, policyPath, "gpo1/User/Gpo1File1"), 0200),
-		"Setup: can't change permission on gpo file")
-	t.Cleanup(func() { os.RemoveAll(filepath.Join(brokenSmbDirShare, policyPath, "gpo1")) })
 
 	tests := map[string]struct {
 		withExistingGPO bool
@@ -308,14 +296,14 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", bus,
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "fakegpo.com", bus,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.withExistingGPO {
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "AD", policyPath, "old_version"),
+						filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", "old_version"),
 						filepath.Join(adc.gpoCacheDir, "gpo1"),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't copy initial gpo directory")
@@ -330,7 +318,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 			}
 
 			// Diff on each gpo dir content
-			goldPath := filepath.Join("testdata", "AD", policyPath, "old_version")
+			goldPath := filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", "old_version")
 			gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, "gpo1"))
 			goldTree := md5Tree(t, goldPath)
 			assert.Equalf(t, goldTree, gpoTree, "expected and after fetch GPO %q does not match", "gpo1")
@@ -357,7 +345,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			dest, rundir := t.TempDir(), t.TempDir()
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "localdomain", bus,
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "fakegpo.com", bus,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -368,7 +356,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 				require.NoError(t, os.Chmod(adc.gpoCacheDir, 0400), "Setup: can’t set gpoCacheDir to Read only")
 			}
 
-			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/%s/gpo1", SmbPort, policyPath)})
+			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/gpo1", SmbPort)})
 
 			require.NotNil(t, err, "fetch should return an error but didn't")
 			assert.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "gpo1"), "gpo1 shouldn't be downloaded")
@@ -381,24 +369,23 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 
 	bus := testutils.NewDbusConn(t)
 
-	const policyPath = "SYSVOL/example.com/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
+	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
 		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
 	// ensure the GPO is already downloaded with an older version to force redownload
 	require.NoError(t,
 		shutil.CopyTree(
-			filepath.Join("testdata", "AD", policyPath, "standard-old"),
+			filepath.Join("testdata", "AD", "SYSVOL", "gpoonly.com", "Policies", "standard-old"),
 			filepath.Join(adc.gpoCacheDir, "standard"),
 			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 		"Setup: can't copy initial gpo directory")
 	// create the lock made by fetch which is always called before parseGPOs in the public API
 	adc.gpos["standard-name"] = &gpo{
 		name: "standard-name",
-		url:  fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
+		url:  fmt.Sprintf("smb://localhost:%d/SYSVOL/gpoonly.com/Policies/standard", SmbPort),
 		mu:   &sync.RWMutex{},
 	}
 
@@ -430,16 +417,15 @@ func TestParseGPOConcurrent(t *testing.T) {
 
 	bus := testutils.NewDbusConn(t)
 
-	const policyPath = "SYSVOL/example.com/Policies"
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
+	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
 		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 	require.NoError(t, err, "Setup: cannot create ad object")
 
 	// Fetch the GPO to set it up
 	gpos := map[string]string{
-		"standard-name": fmt.Sprintf("smb://localhost:%d/%s/standard", SmbPort, policyPath),
+		"standard-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/gpoonly.com/Policies/standard", SmbPort),
 	}
 	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
 	err = adc.fetch(context.Background(), "", gpos)
@@ -461,72 +447,70 @@ func TestParseGPOConcurrent(t *testing.T) {
 
 const SmbPort = 1445
 
-var brokenSmbDirShare string
-
 func TestMain(m *testing.M) {
 	flag.BoolVar(&Update, "update", false, "update golden files")
 	flag.Parse()
 
 	// Don’t setup samba or sssd for mock helpers
-	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
-		debug := flag.Bool("verbose", false, "Print debug log level information within the test")
-		flag.Parse()
-		if *debug {
-			logrus.StandardLogger().SetLevel(logrus.DebugLevel)
-		}
+	if strings.Contains(strings.Join(os.Args, " "), "TestMock") {
+		m.Run()
+		testutils.MergeCoverages()
+		return
+	}
 
-		// Samba
-		var err error
-		brokenSmbDirShare, err = os.MkdirTemp("", "adsys_smbd_broken_share_")
-		if err != nil {
-			log.Fatalf("Setup: failed to create temporary broken smb share directory: %v", err)
-		}
-		if err = os.MkdirAll(filepath.Join(brokenSmbDirShare, policyPath), 0700); err != nil {
-			log.Fatalf("Setup: failed to created temporary broken smb share AD structure: %v", err)
-		}
-		defer func() {
-			if err := os.RemoveAll(brokenSmbDirShare); err != nil {
-				log.Fatalf("Teardown: failed to remove broken smb directory: %v", err)
-			}
-		}()
-		defer testutils.SetupSmb(SmbPort, "testdata/AD/SYSVOL", brokenSmbDirShare)()
+	debug := flag.Bool("verbose", false, "Print debug log level information within the test")
+	flag.Parse()
+	if *debug {
+		logrus.StandardLogger().SetLevel(logrus.DebugLevel)
+	}
 
-		// SSSD domains
-		defer testutils.StartLocalSystemBus()()
+	// Samba
+	// Prepare sysvol
+	sysvolDir, err := os.MkdirTemp("", "adsys_tests_smbd_sysvol_")
+	if err != nil {
+		log.Fatalf("Setup: failed to create temporary sysvol for smb: %v", err)
+	}
+	// Copy content from our testdata
+	if err := os.RemoveAll(sysvolDir); err != nil {
+		log.Fatalf("Setup: failed to remove temporary sysvol for smb before copy: %v", err)
+	}
+	if err := shutil.CopyTree(
+		filepath.Join("testdata", "AD", "SYSVOL"),
+		sysvolDir,
+		&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}); err != nil {
+		log.Fatalf("Setup: failed to copy sysvol to temporary directory for smb: %v", err)
+	}
+	defer func() {
+		if err := os.RemoveAll(sysvolDir); err != nil {
+			log.Fatalf("Teardown: failed to cleanup temporary sysvol directory for smb: %v", err)
+		}
+	}()
+	// change permission on our broken directory
+	if err := os.Chmod(filepath.Join(sysvolDir, "broken.com", "Policies/gpo1/User/Gpo1File1"), 0200); err != nil {
+		log.Fatalf("Setup: can't change permission on gpo file to simulate broken GPO: %v", err)
+	}
+	defer testutils.SetupSmb(SmbPort, sysvolDir)()
 
-		conn, err := dbus.SystemBusPrivate()
-		if err != nil {
-			log.Fatalf("Setup: can’t get a private system bus: %v", err)
-		}
-		defer func() {
-			if err = conn.Close(); err != nil {
-				log.Fatalf("Teardown: can’t close system dbus connection: %v", err)
-			}
-		}()
-		if err = conn.Auth(nil); err != nil {
-			log.Fatalf("Setup: can’t auth on private system bus: %v", err)
-		}
-		if err = conn.Hello(); err != nil {
-			log.Fatalf("Setup: can’t send hello message on private system bus: %v", err)
-		}
+	// export SSSD domains
+	defer testutils.StartLocalSystemBus()()
 
-		sssdOnlineExample := sssd{
-			domain: "example.com",
-			online: true,
+	conn, err := dbus.SystemBusPrivate()
+	if err != nil {
+		log.Fatalf("Setup: can't get a private system bus: %v", err)
+	}
+	defer func() {
+		if err = conn.Close(); err != nil {
+			log.Fatalf("Teardown: can't close system dbus connection: %v", err)
 		}
-		sssdOnlineLocalDomain := sssd{
-			domain: "locadomain",
-			online: true,
-		}
-		sssdEmptyServerDomain := sssd{
-			domain: "",
-			online: true,
-		}
-		sssdOfflineExample := sssd{
-			domain: "example.com",
-			online: false,
-		}
-		intro := fmt.Sprintf(`
+	}()
+	if err = conn.Auth(nil); err != nil {
+		log.Fatalf("Setup: can't auth on private system bus: %v", err)
+	}
+	if err = conn.Hello(); err != nil {
+		log.Fatalf("Setup: can't send hello message on private system bus: %v", err)
+	}
+
+	intro := fmt.Sprintf(`
 	<node>
 		<interface name="%s">
 			<method name="ActiveServer">
@@ -537,43 +521,45 @@ func TestMain(m *testing.M) {
 				<arg direction="out" type="b"/>
 			</method>
 		</interface>̀%s</node>`, consts.SSSDDbusInterface, introspect.IntrospectDataString)
-		if err := conn.Export(sssdOnlineExample, consts.SSSDDbusBaseObjectPath+"/example_2ecom", consts.SSSDDbusInterface); err != nil {
-			log.Fatalf("Setup: could not export example_2ecom: %v", err)
-		}
-		if err := conn.Export(introspect.Introspectable(intro), consts.SSSDDbusBaseObjectPath+"/example_2ecom",
-			"org.freedesktop.DBus.Introspectable"); err != nil {
-			log.Fatalf("Setup: could not export introspectable for example_2ecom: %v", err)
-		}
-		if err := conn.Export(sssdOnlineLocalDomain, consts.SSSDDbusBaseObjectPath+"/localdomain", consts.SSSDDbusInterface); err != nil {
-			log.Fatalf("Setup: could not export localdomain: %v", err)
-		}
-		if err := conn.Export(introspect.Introspectable(intro), consts.SSSDDbusBaseObjectPath+"/localdomain",
-			"org.freedesktop.DBus.Introspectable"); err != nil {
-			log.Fatalf("Setup: could not export introspectable for localdomain: %v", err)
-		}
-		if err := conn.Export(sssdEmptyServerDomain, consts.SSSDDbusBaseObjectPath+"/emptyserver", consts.SSSDDbusInterface); err != nil {
-			log.Fatalf("Setup: could not export emptyserver: %v", err)
-		}
-		if err := conn.Export(introspect.Introspectable(intro), consts.SSSDDbusBaseObjectPath+"/emptyserver",
-			"org.freedesktop.DBus.Introspectable"); err != nil {
-			log.Fatalf("Setup: could not export introspectable for emptyserver: %v", err)
-		}
-		if err := conn.Export(sssdOfflineExample, consts.SSSDDbusBaseObjectPath+"/offline", consts.SSSDDbusInterface); err != nil {
-			log.Fatalf("Setup: could not export offline: %v", err)
-		}
-		if err := conn.Export(introspect.Introspectable(intro), consts.SSSDDbusBaseObjectPath+"/offline",
-			"org.freedesktop.DBus.Introspectable"); err != nil {
-			log.Fatalf("Setup: could not export introspectable for offline: %v", err)
-		}
 
-		reply, err := conn.RequestName(consts.SSSDDbusRegisteredName, dbus.NameFlagDoNotQueue)
-		if err != nil {
-			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: %v", err)
+	for _, s := range []sssd{
+		{
+			endpoint: "gpoonly_2ecom",
+			domain:   "gpoonly.com",
+			online:   true,
+		},
+		{
+			endpoint: "offline",
+			domain:   "gpoonly.com",
+			online:   false,
+		},
+		{
+			endpoint: "fakegpo_2ecom",
+			domain:   "fakegpo.com",
+			online:   true,
+		},
+		{
+			endpoint: "emptyserver",
+			domain:   "",
+			online:   true,
+		},
+	} {
+		if err := conn.Export(s, dbus.ObjectPath(consts.SSSDDbusBaseObjectPath+"/"+s.endpoint), consts.SSSDDbusInterface); err != nil {
+			log.Fatalf("Setup: could not export %s %v", s.endpoint, err)
 		}
-		if reply != dbus.RequestNameReplyPrimaryOwner {
-			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: name is already taken")
+		if err := conn.Export(introspect.Introspectable(intro), dbus.ObjectPath(consts.SSSDDbusBaseObjectPath+"/"+s.endpoint),
+			"org.freedesktop.DBus.Introspectable"); err != nil {
+			log.Fatalf("Setup: could not export introspectable for %s: %v", s.endpoint, err)
 		}
 	}
+	reply, err := conn.RequestName(consts.SSSDDbusRegisteredName, dbus.NameFlagDoNotQueue)
+	if err != nil {
+		log.Fatalf("Setup: Failed to acquire sssd name on local system bus: %v", err)
+	}
+	if reply != dbus.RequestNameReplyPrimaryOwner {
+		log.Fatalf("Setup: Failed to acquire sssd name on local system bus: name is already taken")
+	}
+
 	m.Run()
 	testutils.MergeCoverages()
 }
@@ -610,8 +596,9 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 }
 
 type sssd struct {
-	domain string
-	online bool
+	endpoint string
+	domain   string
+	online   bool
 }
 
 func (s sssd) ActiveServer(_ string) (string, *dbus.Error) {

@@ -1,4 +1,4 @@
-RnDDep1 GPO1	smb://localhost:1445/SYSVOL/example.com/Policies/RnDDep1_GPO1
-RnDDep1 GPO2	smb://localhost:1445/SYSVOL/example.com/Policies/RnDDep1_GPO2
-RnD GPO	smb://localhost:1445/SYSVOL/example.com/Policies/RnD_GPO
-Default Domain Policy	smb://localhost:1445/SYSVOL/example.com/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}
+RnDDep1 GPO1	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/RnDDep1_GPO1
+RnDDep1 GPO2	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/RnDDep1_GPO2
+RnD GPO	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/RnD_GPO
+Default Domain Policy	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}
