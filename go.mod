@@ -3,7 +3,7 @@ module github.com/ubuntu/adsys
 go 1.16
 
 require (
-	github.com/charmbracelet/glamour v0.4.0
+	github.com/charmbracelet/glamour v0.5.0
 	github.com/coreos/go-systemd v0.0.0-20190620071333-e64a0ec8b42a
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1
