@@ -33,8 +33,8 @@ func TestNew(t *testing.T) {
 
 		wantErr bool
 	}{
-		"create one AD object will create all necessary cache dirs": {staticServerURL: "ldap://my-static-server.example.com:1636/", wantServerURL: "ldap://my-static-server.example.com:1636/"},
-		"static server is always prefixed with ldap":                {staticServerURL: "my-static-server.example.com:1636/", wantServerURL: "ldap://my-static-server.example.com:1636/"},
+		"create one AD object will create all necessary cache dirs": {staticServerURL: "ldap://my-static-server.gpoonly.com:1636/", wantServerURL: "ldap://my-static-server.gpoonly.com:1636/"},
+		"static server is always prefixed with ldap":                {staticServerURL: "my-static-server.gpoonly.com:1636/", wantServerURL: "ldap://my-static-server.gpoonly.com:1636/"},
 		"not provided static server URL is blank":                   {staticServerURL: "", wantServerURL: ""},
 
 		"failed to create KRB5 cache directory": {runDirRO: true, wantErr: true},
@@ -53,7 +53,7 @@ func TestNew(t *testing.T) {
 				require.NoError(t, os.Chmod(cacheDir, 0400), "Setup: can’t set cache directory to Read only")
 			}
 
-			adc, err := ad.New(context.Background(), tc.staticServerURL, "localdomain", bus,
+			adc, err := ad.New(context.Background(), tc.staticServerURL, "gpoonly.com", bus,
 				ad.WithRunDir(runDir),
 				ad.WithCacheDir(cacheDir),
 				ad.WithSSSCacheDir("testdata/sss/db"))
@@ -129,11 +129,11 @@ func TestGetPolicies(t *testing.T) {
 	}{
 		"Standard policy, user object": {
 			gpoListArgs:        "standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
-			wantServerURL:      "ldap://myserver.example.com",
+			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 		"Standard policy, computer object": {
 			gpoListArgs:        "standard",
@@ -148,11 +148,11 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "E", Value: "standardE"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"User only policy, user object": {
 			gpoListArgs:        "user-only",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -162,7 +162,7 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "B", Value: "userOnlyB"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"User only policy, computer object, policy is empty": {
 			gpoListArgs:        "user-only",
@@ -170,15 +170,15 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "",
 			want:               policies.Policies{GPOs: []policies.GPO{{ID: "user-only", Name: "user-only-name", Rules: make(map[string][]entry.Entry)}}},
-			wantServerURL:      "ldap://myserver.example.com",
+			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 		"Computer only policy, user object, policy is empty": {
 			gpoListArgs:        "machine-only",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want:               policies.Policies{GPOs: []policies.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)}}},
-			wantServerURL:      "ldap://myserver.example.com",
+			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 		"Computer ignored CCBaseName": {
 			gpoListArgs:        "standard",
@@ -193,14 +193,14 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "E", Value: "standardE"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 
 		// Multi releases cases
 		"Enabled override": {
 			versionID:          "21.04",
 			gpoListArgs:        "multiple-releases-one-enabled",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases-one-enabled", Name: "multiple-releases-one-enabled-name", Rules: map[string][]entry.Entry{
@@ -208,12 +208,12 @@ func TestGetPolicies(t *testing.T) {
 					{Key: "A", Value: "21.04Value"},
 				}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Disabled override": {
 			versionID:          "21.04",
 			gpoListArgs:        "multiple-releases-one-disabled",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases-one-disabled", Name: "multiple-releases-one-disabled-name", Rules: map[string][]entry.Entry{
@@ -221,12 +221,12 @@ func TestGetPolicies(t *testing.T) {
 					{Key: "A", Value: "AllValue"},
 				}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Enabled override for matching release, other releases override ignored": {
 			versionID:          "21.04",
 			gpoListArgs:        "multiple-releases",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
@@ -234,12 +234,12 @@ func TestGetPolicies(t *testing.T) {
 					{Key: "A", Value: "21.04Value"},
 				}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Disable override for matching release, other releases override ignored": {
 			versionID:          "20.04",
 			gpoListArgs:        "multiple-releases",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
@@ -247,12 +247,12 @@ func TestGetPolicies(t *testing.T) {
 					{Key: "A", Value: "AllValue"},
 				}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"No override for this release, takes default value": {
 			versionID:          "not in pol file",
 			gpoListArgs:        "multiple-releases",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{{ID: "multiple-releases", Name: "multiple-releases-name", Rules: map[string][]entry.Entry{
@@ -260,7 +260,7 @@ func TestGetPolicies(t *testing.T) {
 					{Key: "A", Value: "AllValue"},
 				}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 
 		// No override option for this release
@@ -268,7 +268,7 @@ func TestGetPolicies(t *testing.T) {
 		// Multi domain cases
 		"Multiple domains, same GPO": {
 			gpoListArgs:        "multiple-domains",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -281,11 +281,11 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "B", Value: "standardB"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Same key in different domains are kept separated": {
 			gpoListArgs:        "other-domain_one-value",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -298,12 +298,12 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "C", Value: "oneValueC"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 
 		"Two policies, with overrides": {
 			gpoListArgs:        "one-value_standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -319,11 +319,11 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "C", Value: "standardC"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Two policies, with reversed overrides": {
 			gpoListArgs:        "standard_one-value",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -334,11 +334,11 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "C", Value: "oneValueC"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Two policies, no overrides": {
 			gpoListArgs:        "one-value_user-only",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -352,11 +352,11 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "B", Value: "userOnlyB"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Two policies, no overrides, reversed": {
 			gpoListArgs:        "user-only_one-value",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -370,21 +370,21 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "C", Value: "oneValueC"},
 					}}}},
 			},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Two policies, no overrides, one is not the same object type, machine ones are empty when parsing user": {
 			gpoListArgs:        "machine-only_standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)},
 				standardGPO}},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 
 		"Disabled value overrides non disabled one": {
 			gpoListArgs:        "disabled-value_standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -394,11 +394,11 @@ func TestGetPolicies(t *testing.T) {
 					}}},
 				standardGPO,
 			}},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Disabled value is overridden": {
 			gpoListArgs:        "standard_disabled-value",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -408,12 +408,12 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "C", Value: "", Disabled: true},
 					}}},
 			}},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 
 		"More policies, with multiple overrides": {
 			gpoListArgs:        "user-only_one-value_standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -428,19 +428,19 @@ func TestGetPolicies(t *testing.T) {
 					}}},
 				standardGPO,
 			}},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 		"Object domain is stripped": {
 			gpoListArgs:        "standard",
-			objectName:         "bob@example.com",
+			objectName:         "bob@gpoonly.com",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
-			wantServerURL:      "ldap://myserver.example.com",
+			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 		"Filter non Ubuntu keys": {
 			gpoListArgs:        "filtered",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
@@ -450,17 +450,17 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "C", Value: "standardC"},
 					}}},
 			}},
-			wantServerURL: "ldap://myserver.example.com",
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 
 		"No discovery for statistically configured domain controller": {
 			gpoListArgs:        "standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			staticServerURL:    "ldap://myotherserver.example.com",
+			staticServerURL:    "ldap://myotherserver.gpoonly.com",
 			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
-			wantServerURL:      "ldap://myotherserver.example.com",
+			wantServerURL:      "ldap://myotherserver.gpoonly.com",
 		},
 
 		// Error cases
@@ -473,14 +473,14 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"Without previous call, needs userKrb5CCBaseName": {
 			gpoListArgs:        "standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "",
 			wantErr:            true,
 		},
 		"Unexisting CC original file for user": {
 			gpoListArgs:                  "standard",
-			objectName:                   "bob@EXAMPLE.COM",
+			objectName:                   "bob@GPOONLY.COM",
 			objectClass:                  ad.UserObject,
 			userKrb5CCBaseName:           "kbr5cc_adsys_tests_bob",
 			dontCreateOriginalKrb5CCName: true,
@@ -495,7 +495,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"No Active Directory server returned by sssd fails without static configuration": {
 			gpoListArgs:        "standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			domain:             "emptyserver",
@@ -503,7 +503,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 		"SSSD dbus (IsOnline) call failed": {
 			gpoListArgs:        "standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			domain:             "unexistingdbusobjectdomain",
@@ -513,7 +513,7 @@ func TestGetPolicies(t *testing.T) {
 		// This affects testing only.
 		/*"SSSD ActiveServer call failed": {
 			gpoListArgs:        "standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			domain:             "sssdactiveservercallfail",
@@ -526,26 +526,26 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
-			wantServerURL:      "ldap://myserver.example.com",
+			wantServerURL:      "ldap://myserver.gpoonly.com",
 			wantErr:            true,
 		},
 		"Corrupted policy file": {
 			gpoListArgs:        "corrupted-policy",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			wantErr:            true,
 		},
 		"Policy can’t be downloaded": {
 			gpoListArgs:        "no-gpt-ini",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			wantErr:            true,
 		},
 		"Symlinks can’t be created": {
 			gpoListArgs:        "standard",
-			objectName:         "bob@EXAMPLE.COM",
+			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			turnKrb5CCRO:       true,
@@ -573,7 +573,7 @@ func TestGetPolicies(t *testing.T) {
 			}
 
 			if tc.domain == "" {
-				tc.domain = "example.com"
+				tc.domain = "gpoonly.com"
 			}
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
@@ -657,7 +657,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 		"Error on SSSD reports online, but we are actually offline when fetching gpo list, even with a cache": {
 			getFromCache: true,
-			domain:       "example.com",
+			domain:       "gpoonly.com",
 			gpoListArg:   "-Exit2-",
 			wantErr:      true,
 		},
@@ -680,7 +680,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArg)))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
-			objectName := "useroffline@EXAMPLE.COM"
+			objectName := "useroffline@GPOONLY.COM"
 
 			krb5CCName := setKrb5CC(t, objectName)
 
@@ -730,30 +730,30 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		wantErr bool
 	}{
 		"Second call is a refresh (without Krb5CCName specified)": {
-			objectName1:         "bob@EXAMPLE.COM",
-			objectName2:         "bob@EXAMPLE.COM",
+			objectName1:         "bob@GPOONLY.COM",
+			objectName2:         "bob@GPOONLY.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "EMPTY",
 			want:                standardPolicies,
 		},
 		"Second call after service restarted": {
 			restart:             true,
-			objectName1:         "bob@EXAMPLE.COM",
-			objectName2:         "bob@EXAMPLE.COM",
+			objectName1:         "bob@GPOONLY.COM",
+			objectName2:         "bob@GPOONLY.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "", // We did’t RENEW the ticket
 			want:                standardPolicies,
 		},
 		"Second call with different user": {
-			objectName1:         "bob@EXAMPLE.COM",
-			objectName2:         "sponge@EXAMPLE.COM",
+			objectName1:         "bob@GPOONLY.COM",
+			objectName2:         "sponge@GPOONLY.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "sponge",
 			want:                standardPolicies,
 		},
 		"Second call after a relogin": {
-			objectName1:         "bob@EXAMPLE.COM",
-			objectName2:         "bob@EXAMPLE.COM",
+			objectName1:         "bob@GPOONLY.COM",
+			objectName2:         "bob@GPOONLY.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "bobNew",
 			want:                standardPolicies,
@@ -769,7 +769,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir("testdata/sss/db"),
 				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
@@ -791,7 +791,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			// Restart: recreate ad object
 			if tc.restart {
-				adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
+				adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
 					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 					ad.WithSSSCacheDir("testdata/sss/db"),
 					ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs)))
@@ -831,8 +831,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		wantErr bool
 	}{
 		"Same user, same GPO": {
-			objectName1: "bob@EXAMPLE.COM",
-			objectName2: "bob@EXAMPLE.COM",
+			objectName1: "bob@GPOONLY.COM",
+			objectName2: "bob@GPOONLY.COM",
 			gpo1:        "standard",
 			gpo2:        "standard",
 			want1:       standardPolicies,
@@ -841,8 +841,8 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 		// We can’t run this test currently as the mock will always return the same value for bob (both gpos):
 		// both calls are identical.
 		/*"Same user, different GPOs": {
-		objectName1: "bob@EXAMPLE.COM",
-		objectName2: "bob@EXAMPLE.COM",
+		objectName1: "bob@GPOONLY.COM",
+		objectName2: "bob@GPOONLY.COM",
 		gpo1:        "standard",
 		gpo2:        "one-value",
 		want1: standardPolicies,
@@ -852,16 +852,16 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 				}}},
 			}}},*/
 		"Different users, same GPO": {
-			objectName1: "bob@EXAMPLE.COM",
-			objectName2: "sponge@EXAMPLE.COM",
+			objectName1: "bob@GPOONLY.COM",
+			objectName2: "sponge@GPOONLY.COM",
 			gpo1:        "standard",
 			gpo2:        "standard",
 			want1:       standardPolicies,
 			want2:       standardPolicies,
 		},
 		"Different users, different GPO": {
-			objectName1: "bob@EXAMPLE.COM",
-			objectName2: "sponge@EXAMPLE.COM",
+			objectName1: "bob@GPOONLY.COM",
+			objectName2: "sponge@GPOONLY.COM",
 			gpo1:        "standard",
 			gpo2:        "one-value",
 			want1:       standardPolicies,
@@ -895,7 +895,7 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			if mockObjectName1 == mockObjectName2 {
 				gpoListMeta = fmt.Sprintf("DEPENDS:%s@%s", mockObjectName1, tc.gpo1)
 			}
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir("testdata/sss/db"),
 				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListMeta)))
@@ -933,20 +933,20 @@ func TestListUsersFromCache(t *testing.T) {
 		wantErr bool
 	}{
 		"One user": {
-			ccCachesToCreate: []string{"bob@EXAMPLE.COM"},
-			want:             []string{"bob@EXAMPLE.COM"},
+			ccCachesToCreate: []string{"bob@GPOONLY.COM"},
+			want:             []string{"bob@GPOONLY.COM"},
 		},
 		"Two users": {
-			ccCachesToCreate: []string{"bob@EXAMPLE.COM", "sponge@OTHERDOMAIN.BIZ"},
-			want:             []string{"bob@EXAMPLE.COM", "sponge@OTHERDOMAIN.BIZ"},
+			ccCachesToCreate: []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
+			want:             []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
 		},
 		"None": {
 			ccCachesToCreate: []string{},
 			want:             nil,
 		},
 		"Machines are ignored": {
-			ccCachesToCreate: []string{"bob@EXAMPLE.COM", "sponge@OTHERDOMAIN.BIZ", "myMachine"},
-			want:             []string{"bob@EXAMPLE.COM", "sponge@OTHERDOMAIN.BIZ"},
+			ccCachesToCreate: []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ", "myMachine"},
+			want:             []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
 		},
 		"Machine Only": {
 			ccCachesToCreate: []string{"myMachine"},
@@ -977,7 +977,7 @@ func TestListUsersFromCache(t *testing.T) {
 				}
 			}
 
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir))
 			require.NoError(t, err, "Setup: New should return no error")
 
@@ -1015,22 +1015,22 @@ func TestNormalizeTargetName(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		"One valid user":                          {target: "user@example.com", want: "user@example.com"},
-		`One valid user with domain\user`:         {target: `example.com\user`, want: "user@example.com"},
-		"One user without explicit domain suffix": {target: "user", defaultDomainSuffix: "example.com", want: "user@example.com"},
+		"One valid user":                          {target: "user@gpoonly.com", want: "user@gpoonly.com"},
+		`One valid user with domain\user`:         {target: `gpoonly.com\user`, want: "user@gpoonly.com"},
+		"One user without explicit domain suffix": {target: "user", defaultDomainSuffix: "gpoonly.com", want: "user@gpoonly.com"},
 
 		// User match computer names
-		"User name matching computer, setting as user": {target: hostname, objectClass: ad.UserObject, defaultDomainSuffix: "example.com",
-			want: hostname + "@example.com"},
-		"User name fqdn matching computer":  {target: hostname + "@example.com", want: hostname + "@example.com"},
+		"User name matching computer, setting as user": {target: hostname, objectClass: ad.UserObject, defaultDomainSuffix: "gpoonly.com",
+			want: hostname + "@gpoonly.com"},
+		"User name fqdn matching computer":  {target: hostname + "@gpoonly.com", want: hostname + "@gpoonly.com"},
 		"Computer name without objectClass": {target: hostname, want: hostname},
 
 		// Computer cases
 		"Computer is left as such":        {target: "computername", objectClass: ad.ComputerObject, want: "computername"},
-		"Computer with @ is left as such": {target: "computername@example.com", objectClass: ad.ComputerObject, want: "computername@example.com"},
+		"Computer with @ is left as such": {target: "computername@gpoonly.com", objectClass: ad.ComputerObject, want: "computername@gpoonly.com"},
 
 		// Error cases
-		`Error on multiple \ in name`:                        {target: `example.com\user\something`, wantErr: true},
+		`Error on multiple \ in name`:                        {target: `gpoonly.com\user\something`, wantErr: true},
 		`Error on no default domain suffix and no fqdn user`: {target: `user`, wantErr: true},
 	}
 
@@ -1039,7 +1039,7 @@ func TestNormalizeTargetName(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "example.com", bus,
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
 				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()),
 				ad.WithDefaultDomainSuffix(tc.defaultDomainSuffix))
 			require.NoError(t, err, "Setup: New should return no error")
@@ -1109,7 +1109,7 @@ func TestMockGPOList(t *testing.T) {
 	}
 
 	for _, gpo := range gpos {
-		fmt.Fprintf(os.Stdout, "%s-name\tsmb://localhost:%d/SYSVOL/example.com/Policies/%s\n", gpo, ad.SmbPort, gpo)
+		fmt.Fprintf(os.Stdout, "%s-name\tsmb://localhost:%d/SYSVOL/gpoonly.com/Policies/%s\n", gpo, ad.SmbPort, gpo)
 	}
 }
 
