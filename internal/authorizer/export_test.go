@@ -28,7 +28,12 @@ type DbusMock struct {
 func (d *DbusMock) Call(method string, flags dbus.Flags, args ...interface{}) *dbus.Call {
 	var errPolkit error
 
-	d.actionRequested = Action{ID: args[1].(string)}
+	content, ok := args[1].(string)
+	if !ok {
+		panic("Expected string as second argument")
+	}
+
+	d.actionRequested = Action{ID: content}
 
 	if d.WantPolkitError {
 		errPolkit = errors.New("Polkit error")
