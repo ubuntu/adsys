@@ -27,6 +27,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
+	"golang.org/x/sync/errgroup"
 )
 
 // ObjectClass is the type of object in the directory. It can be a computer or a user.
@@ -67,6 +68,7 @@ type AD struct {
 
 	gpos map[string]*gpo
 	sync.RWMutex
+	assetsMu sync.Mutex
 
 	withoutKerberos bool
 	gpoListCmd      []string
@@ -282,6 +284,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return pols, fmt.Errorf(i18n.G("failed to retrieve the list of GPO (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, stderr.String())
 	}
 
+	var assetsURL string
+	var refreshedAssets bool
 	gpos := make(map[string]string)
 	var orderedGPOs []gpo
 	scanner := bufio.NewScanner(&stdout)
@@ -292,22 +296,64 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		log.Debugf(ctx, "GPO %q for %q available at %q", gpoName, objectName, gpoURL)
 		gpos[gpoName] = gpoURL
 		orderedGPOs = append(orderedGPOs, gpo{name: gpoName, url: gpoURL})
+		// We will only ask to fetch assets when downloading computer policies
+		// (no way to have a timestamp to avoid unnecessary downloads).
+		if objectClass == ComputerObject {
+			assetsURL = filepath.Join(filepath.Dir(gpoURL), consts.DistroID)
+			refreshedAssets = true
+		}
 	}
 	if err := scanner.Err(); err != nil {
 		return pols, err
 	}
 
-	if err = ad.fetch(ctx, krb5CCPath, gpos); err != nil {
+	if err = ad.fetch(ctx, krb5CCPath, gpos, assetsURL); err != nil {
 		return pols, err
 	}
 
+	var errg errgroup.Group
 	// Parse policies
-	pols, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
-	if err != nil {
-		return pols, err
+	var gposRules []policies.GPO
+	errg.Go(func() (err error) {
+		gposRules, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
+		return err
+	})
+
+	// Compress assets
+	var assetsDbPath string
+	assetsSrc := filepath.Join(ad.gpoCacheDir, "assets")
+	errg.Go(func() (err error) {
+		// Only compress assets if we have fetched them.
+		if !refreshedAssets {
+			return nil
+		}
+		// check assetsSrc exists and is a directory
+		fi, err := os.Stat(assetsSrc)
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		} else if err != nil {
+			return err
+		}
+
+		if !fi.IsDir() {
+			return fmt.Errorf(i18n.G("%q downloaded from SYSVOL is not a directory"), assetsSrc)
+		}
+
+		// Cache it as a single zip file
+		if err := policies.CompressAssets(ctx, assetsSrc); err != nil {
+			return err
+		}
+
+		assetsDbPath = filepath.Join(assetsSrc + ".db")
+
+		return nil
+	})
+
+	if err := errg.Wait(); err != nil {
+		return pols, fmt.Errorf("one or more error while parsing downloaded elements: %w", err)
 	}
 
-	return pols, nil
+	return policies.New(ctx, gposRules, assetsDbPath)
 }
 
 // ListActiveUsers return the list of active users on the system.
@@ -365,9 +411,7 @@ func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) 
 	return nil
 }
 
-func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) (policies.Policies, error) {
-	r := policies.Policies{}
-
+func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) (r []policies.GPO, err error) {
 	keyFilterPrefix := fmt.Sprintf("%s/%s/", adcommon.KeyPrefix, consts.DistroID)
 
 	for _, g := range gpos {
@@ -377,13 +421,15 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			Name:  name,
 			Rules: make(map[string][]entry.Entry),
 		}
-		r.GPOs = append(r.GPOs, gpoWithRules)
+		r = append(r, gpoWithRules)
 		if err := func() error {
 			ad.RLock()
 			ad.gpos[name].mu.RLock()
 			defer ad.gpos[name].mu.RUnlock()
 			_ = ad.gpos[name].testConcurrent
 			ad.RUnlock()
+
+			log.Debugf(ctx, "Parsing GPO %q", name)
 
 			class := "User"
 			if objectClass == ComputerObject {
