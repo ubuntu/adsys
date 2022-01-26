@@ -123,9 +123,10 @@ func TestGetPolicies(t *testing.T) {
 		dontCreateOriginalKrb5CCName bool
 		turnKrb5CCRO                 bool
 
-		want          policies.Policies
-		wantServerURL string
-		wantErr       bool
+		want             policies.Policies
+		wantAssetsEquals string
+		wantServerURL    string
+		wantErr          bool
 	}{
 		"Standard policy, user object": {
 			gpoListArgs:        []string{"gpoonly.com", "bob:standard"},
@@ -598,9 +599,22 @@ func TestGetPolicies(t *testing.T) {
 				require.NotNil(t, err, "GetPolicies should have errored out")
 				return
 			}
-
 			require.NoError(t, err, "GetPolicies should return no error")
-			require.Equal(t, tc.want, entries, "GetPolicies returns expected gpo entries in correct order")
+
+			// Compare GPOs
+			require.Equal(t, tc.want.GPOs, entries.GPOs, "GetPolicies returns expected GPO entries in correct order")
+
+			// Compare assets
+			uncompressedAssets := t.TempDir()
+			err = entries.SaveAssetsTo(context.Background(), ".", uncompressedAssets)
+			if tc.wantAssetsEquals == "" {
+				require.Error(t, err, "policies should have no assets to uncompress")
+			} else {
+				require.NoError(t, err, "SaveAssetsTo should return no error.")
+				testutils.CompareTreesWithFiltering(t, uncompressedAssets, tc.wantAssetsEquals, false)
+			}
+
+			// Compare server URL
 			serverURL, isOffline := adc.GetStatus()
 			assert.False(t, isOffline, "We report that we are online")
 			if tc.staticServerURL == "" {
@@ -695,7 +709,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 			}
 
 			require.NoError(t, err, "GetPolicies should return no error")
-			require.Equal(t, tc.want, entries, "GetPolicies returns expected gpo entries in correct order")
+			require.Equal(t, tc.want.GPOs, entries.GPOs, "GetPolicies returns expected gpo entries in correct order")
 			serverURL, isOffline := adc.GetStatus()
 			assert.True(t, isOffline, "We report that we are offline")
 			assert.Empty(t, serverURL, "Server URL has not been fetched in offline mode")
@@ -777,7 +791,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			// First call
 			entries, err := adc.GetPolicies(context.Background(), tc.objectName1, objectClass, krb5CCName)
 			require.NoError(t, err, "GetPolicies should return no error")
-			require.Equal(t, tc.want, entries, "GetPolicies returns expected policy entries with correct overrides")
+			require.Equal(t, tc.want.GPOs, entries.GPOs, "GetPolicies returns expected GPO entries with correct overrides")
 
 			// Recreate the ticket if needed or reset it to empty for refresh
 			if tc.userKrb5CCBaseName2 != "" {
@@ -800,7 +814,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			// Second call
 			entries, err = adc.GetPolicies(context.Background(), tc.objectName2, objectClass, krb5CCName)
 			require.NoError(t, err, "GetPolicies should return no error")
-			require.Equal(t, tc.want, entries, "GetPolicies returns expected policy entries with correct overrides")
+			require.Equal(t, tc.want.GPOs, entries.GPOs, "GetPolicies returns expected GPO entries with correct overrides")
 		})
 	}
 }
