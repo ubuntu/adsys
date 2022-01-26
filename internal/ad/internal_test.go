@@ -33,9 +33,10 @@ func TestFetchGPO(t *testing.T) {
 	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
+		adDomain               string
 		gpos                   []string
 		concurrentGposDownload []string
-		existingGpos           map[string]string
+		existing               map[string]string
 
 		want    map[string]string
 		wantErr bool
@@ -53,13 +54,13 @@ func TestFetchGPO(t *testing.T) {
 		},
 
 		"gpo already up to date": {
-			gpos:         []string{"gpo1"},
-			existingGpos: map[string]string{"gpo1": "gpo1"},
-			want:         map[string]string{"gpo1": "gpo1"},
+			gpos:     []string{"gpo1"},
+			existing: map[string]string{"gpo1": "gpo1"},
+			want:     map[string]string{"gpo1": "gpo1"},
 		},
 		"two gpos, one already up to date, one new": {
-			gpos:         []string{"gpo1", "gpo2"},
-			existingGpos: map[string]string{"gpo1": "gpo1"},
+			gpos:     []string{"gpo1", "gpo2"},
+			existing: map[string]string{"gpo1": "gpo1"},
 			want: map[string]string{
 				"gpo1": "gpo1",
 				"gpo2": "gpo2",
@@ -67,13 +68,13 @@ func TestFetchGPO(t *testing.T) {
 		},
 
 		"gpo is refreshed": {
-			gpos:         []string{"gpo1"},
-			existingGpos: map[string]string{"gpo1": "old_version"},
-			want:         map[string]string{"gpo1": "gpo1"},
+			gpos:     []string{"gpo1"},
+			existing: map[string]string{"gpo1": "old_version"},
+			want:     map[string]string{"gpo1": "gpo1"},
 		},
 		"two gpos, one already up to date, one should be refreshed": {
 			gpos: []string{"gpo1", "gpo2"},
-			existingGpos: map[string]string{
+			existing: map[string]string{
 				"gpo2": "gpo2",
 				"gpo1": "old_version",
 			},
@@ -83,8 +84,8 @@ func TestFetchGPO(t *testing.T) {
 			},
 		},
 		"two gpos, one should be refreshed, one new": {
-			gpos:         []string{"gpo1", "gpo2"},
-			existingGpos: map[string]string{"gpo1": "old_version"},
+			gpos:     []string{"gpo1", "gpo2"},
+			existing: map[string]string{"gpo1": "old_version"},
 			want: map[string]string{
 				"gpo1": "gpo1",
 				"gpo2": "gpo2",
@@ -92,13 +93,13 @@ func TestFetchGPO(t *testing.T) {
 		},
 
 		"local gpo is more recent than AD one": {
-			gpos:         []string{"gpo2"},
-			existingGpos: map[string]string{"gpo2": "new_version"},
-			want:         map[string]string{"gpo2": "new_version"},
+			gpos:     []string{"gpo2"},
+			existing: map[string]string{"gpo2": "new_version"},
+			want:     map[string]string{"gpo2": "new_version"},
 		},
 		"two gpos, one more recent, one up to date": {
 			gpos: []string{"gpo2", "gpo1"},
-			existingGpos: map[string]string{
+			existing: map[string]string{
 				"gpo2": "new_version",
 				"gpo1": "gpo1",
 			},
@@ -109,7 +110,7 @@ func TestFetchGPO(t *testing.T) {
 		},
 		"two gpos, one more recent, one should be refreshed": {
 			gpos: []string{"gpo2", "gpo1"},
-			existingGpos: map[string]string{
+			existing: map[string]string{
 				"gpo2": "new_version",
 				"gpo1": "old_version",
 			},
@@ -119,8 +120,8 @@ func TestFetchGPO(t *testing.T) {
 			},
 		},
 		"two gpos, one more recent, one new": {
-			gpos:         []string{"gpo2", "gpo1"},
-			existingGpos: map[string]string{"gpo2": "new_version"},
+			gpos:     []string{"gpo2", "gpo1"},
+			existing: map[string]string{"gpo2": "new_version"},
 			want: map[string]string{
 				"gpo2": "new_version",
 				"gpo1": "gpo1",
@@ -129,7 +130,7 @@ func TestFetchGPO(t *testing.T) {
 
 		"keep existing gpos intact": {
 			gpos: []string{"gpo1"},
-			existingGpos: map[string]string{
+			existing: map[string]string{
 				"gpo1": "gpo1",
 				"gpo2": "gpo2",
 			},
@@ -140,19 +141,19 @@ func TestFetchGPO(t *testing.T) {
 		},
 
 		"Local gpo redownloaded on missing GPT.INI": {
-			gpos:         []string{"gpo1"},
-			existingGpos: map[string]string{"gpo1": "missing_gpt_ini"},
-			want:         map[string]string{"gpo1": "gpo1"},
+			gpos:     []string{"gpo1"},
+			existing: map[string]string{"gpo1": "missing_gpt_ini"},
+			want:     map[string]string{"gpo1": "gpo1"},
 		},
 		"Local gpo redownloaded on NaN version in GPT.INI": {
-			gpos:         []string{"gpo1"},
-			existingGpos: map[string]string{"gpo1": "gpt_ini_version_NaN"},
-			want:         map[string]string{"gpo1": "gpo1"},
+			gpos:     []string{"gpo1"},
+			existing: map[string]string{"gpo1": "gpt_ini_version_NaN"},
+			want:     map[string]string{"gpo1": "gpo1"},
 		},
 		"Local gpo redownloaded on version entry missing in GPT.INI": {
-			gpos:         []string{"gpo1"},
-			existingGpos: map[string]string{"gpo1": "gpt_ini_version_missing"},
-			want:         map[string]string{"gpo1": "gpo1"},
+			gpos:     []string{"gpo1"},
+			existing: map[string]string{"gpo1": "gpt_ini_version_missing"},
+			want:     map[string]string{"gpo1": "gpo1"},
 		},
 
 		// Concurrent downloads
@@ -193,29 +194,39 @@ func TestFetchGPO(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "fakegpo.com", bus,
+			if tc.adDomain == "" {
+				tc.adDomain = "fakegpo.com"
+			}
+
+			adc, err := New(context.Background(), "ldap://UNUSED:1636/", tc.adDomain, bus,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			// prepare by copying GPOs if any
-			for n, src := range tc.existingGpos {
+			for n, src := range tc.existing {
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", src),
+						filepath.Join("testdata", "AD", "SYSVOL", tc.adDomain, "Policies", src),
 						filepath.Join(adc.gpoCacheDir, n),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't copy initial gpo directory")
 			}
 
+			smbBaseURL := fmt.Sprintf("smb://localhost:%d/SYSVOL/%s/Policies/", SmbPort, tc.adDomain)
 			gpos := make(map[string]string)
 			for _, n := range tc.gpos {
 				// differentiate the gpo name from the url base path
-				gpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/%s", SmbPort, n)
+				gpos[n+"-name"] = smbBaseURL + n
+			}
+
+			var assetsURL string
+			if tc.assetsURL != "" {
+				assetsURL = smbBaseURL + tc.assetsURL
 			}
 
 			if tc.concurrentGposDownload == nil {
-				err = adc.fetch(context.Background(), "", gpos)
+				err = adc.fetch(context.Background(), "", gpos, assetsURL)
 				if tc.wantErr {
 					require.NotNil(t, err, "fetch should return an error but didn't")
 				} else {
@@ -225,14 +236,14 @@ func TestFetchGPO(t *testing.T) {
 				concurrentGpos := make(map[string]string)
 				for _, n := range tc.concurrentGposDownload {
 					// differentiate the gpo name from the url base path
-					concurrentGpos[n+"-name"] = fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/%s", SmbPort, n)
+					concurrentGpos[n+"-name"] = smbBaseURL + n
 				}
 
 				wg := sync.WaitGroup{}
 				wg.Add(2)
 				go func() {
 					defer wg.Done()
-					err := adc.fetch(context.Background(), "", gpos)
+					err := adc.fetch(context.Background(), "", gpos, assetsURL)
 					if tc.wantErr {
 						require.NotNil(t, err, "fetch should return an error but didn't")
 					} else {
@@ -241,7 +252,7 @@ func TestFetchGPO(t *testing.T) {
 				}()
 				go func() {
 					defer wg.Done()
-					err := adc.fetch(context.Background(), "", concurrentGpos)
+					err := adc.fetch(context.Background(), "", concurrentGpos, assetsURL)
 					if tc.wantErr {
 						require.NotNil(t, err, "fetch should return an error but didn't")
 					} else {
@@ -252,20 +263,20 @@ func TestFetchGPO(t *testing.T) {
 			}
 
 			// Ensure that only wanted GPOs are cached
-			files, err := os.ReadDir(adc.gpoCacheDir)
+			cacheRootFiles, err := os.ReadDir(adc.gpoCacheDir)
 			require.NoError(t, err, "coudn't read destination directory")
-			for _, f := range files {
+			for _, f := range cacheRootFiles {
 				_, ok := tc.want[f.Name()]
 				assert.Truef(t, ok, "fetched file %s which is not in want list", f.Name())
 			}
-			assert.Len(t, files, len(tc.want), "unexpected number of elements in downloaded policy")
+			assert.Len(t, cacheRootFiles, len(tc.want), "unexpected number of elements in downloaded policy or assets")
 
-			// Diff on each gpo dir content
-			for _, f := range files {
-				goldPath := filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", tc.want[f.Name()])
+			// Diff on each gpo/assets dir content
+			for _, f := range cacheRootFiles {
+				goldPath := filepath.Join("testdata", "AD", "SYSVOL", tc.adDomain, "Policies", tc.want[f.Name()])
 				gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, f.Name()))
 				goldTree := md5Tree(t, goldPath)
-				assert.Equalf(t, goldTree, gpoTree, "expected and after fetch GPO %q does not match", f.Name())
+				assert.Equalf(t, goldTree, gpoTree, "expected and after fetch for %q does not match", f.Name())
 			}
 		})
 	}
@@ -309,7 +320,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 					"Setup: can't copy initial gpo directory")
 			}
 
-			err = adc.fetch(context.Background(), "", gpos)
+			err = adc.fetch(context.Background(), "", gpos, "")
 			require.NotNil(t, err, "fetch should return an error but didn't")
 
 			if !tc.withExistingGPO {
@@ -356,7 +367,7 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 				require.NoError(t, os.Chmod(adc.gpoCacheDir, 0400), "Setup: can’t set gpoCacheDir to Read only")
 			}
 
-			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/gpo1", SmbPort)})
+			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/gpo1", SmbPort)}, "")
 
 			require.NotNil(t, err, "fetch should return an error but didn't")
 			assert.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "gpo1"), "gpo1 shouldn't be downloaded")
@@ -400,7 +411,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
-		err := adc.fetch(context.Background(), "", gpos)
+		err := adc.fetch(context.Background(), "", gpos, "")
 		require.NoError(t, err, "fetch returned an error but shouldn't")
 	}()
 	go func() {
@@ -428,7 +439,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 		"standard-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/gpoonly.com/Policies/standard", SmbPort),
 	}
 	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
-	err = adc.fetch(context.Background(), "", gpos)
+	err = adc.fetch(context.Background(), "", gpos, "")
 	require.NoError(t, err, "Setup: couldn’t do initial GPO fetch as returned an error but shouldn't")
 
 	// concurrent parsing of GPO
