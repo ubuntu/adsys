@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -299,7 +300,12 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		// We will only ask to fetch assets when downloading computer policies
 		// (no way to have a timestamp to avoid unnecessary downloads).
 		if objectClass == ComputerObject {
-			assetsURL = filepath.Join(filepath.Dir(gpoURL), consts.DistroID)
+			u, err := url.Parse(gpoURL)
+			if err != nil {
+				return pols, err
+			}
+			u.Path = filepath.Join(filepath.Dir(u.Path), consts.DistroID)
+			assetsURL = u.String()
 			refreshedAssets = true
 		}
 	}
