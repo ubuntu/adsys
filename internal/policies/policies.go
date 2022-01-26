@@ -319,7 +319,7 @@ func CompressAssets(ctx context.Context, p string) (err error) {
 			return err
 		}
 		defer srcF.Close()
-		if _, err = io.Copy(fZip, f); err != nil {
+		if _, err = io.Copy(fZip, srcF); err != nil {
 			return err
 		}
 
