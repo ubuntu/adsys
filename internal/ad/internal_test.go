@@ -304,19 +304,18 @@ func TestFetchGPO(t *testing.T) {
 			// Ensure that only wanted GPOs are cached
 			cacheRootFiles, err := os.ReadDir(adc.gpoCacheDir)
 			require.NoError(t, err, "coudn't read destination directory")
-			for _, f := range cacheRootFiles {
-				_, ok := tc.want[f.Name()]
-				assert.Truef(t, ok, "fetched file %s which is not in want list", f.Name())
-			}
-			assert.Len(t, cacheRootFiles, len(tc.want), "unexpected number of elements in downloaded policy or assets")
 
 			// Diff on each gpo/assets dir content
 			for _, f := range cacheRootFiles {
+				_, ok := tc.want[f.Name()]
+				assert.Truef(t, ok, "fetched file %s which is not in want list", f.Name())
+
 				goldPath := filepath.Join("testdata", "AD", "SYSVOL", tc.adDomain, "Policies", tc.want[f.Name()])
 				gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, f.Name()))
 				goldTree := md5Tree(t, goldPath)
 				assert.Equalf(t, goldTree, gpoTree, "expected and after fetch for %q does not match", f.Name())
 			}
+			assert.Len(t, cacheRootFiles, len(tc.want), "unexpected number of elements in downloaded policy or assets")
 		})
 	}
 }
