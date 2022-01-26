@@ -35,6 +35,7 @@ func TestFetchGPO(t *testing.T) {
 	tests := map[string]struct {
 		adDomain               string
 		gpos                   []string
+		assetsURL              string
 		concurrentGposDownload []string
 		existing               map[string]string
 
@@ -154,6 +155,44 @@ func TestFetchGPO(t *testing.T) {
 			gpos:     []string{"gpo1"},
 			existing: map[string]string{"gpo1": "gpt_ini_version_missing"},
 			want:     map[string]string{"gpo1": "gpo1"},
+		},
+
+		// Assets cases
+		"assets only are downloaded": {
+			adDomain:  "assetsonly.com",
+			assetsURL: "Distro",
+			want:      map[string]string{"assets": "Distro"},
+		},
+		"assets root directory not present on SYSVOL issues a warning only": {
+			adDomain:  "gpoonly.com",
+			assetsURL: "Distro",
+			want:      nil,
+		},
+		"assets are updated to latest version": {
+			adDomain:  "assetsonly.com",
+			assetsURL: "Distro",
+			existing:  map[string]string{"assets": "Distroold"},
+			want:      map[string]string{"assets": "Distro"},
+		},
+		"existing assets are kept if no assetsURL provided": {
+			adDomain:  "assetsonly.com",
+			assetsURL: "",
+			existing:  map[string]string{"assets": "Distro"},
+			want:      map[string]string{"assets": "Distro"},
+		},
+		"existing assets are removed if not present on SYSVOL": {
+			adDomain:  "fakegpo.com",
+			assetsURL: "Distro",
+			existing:  map[string]string{"assets": "gpo1"},
+			want:      nil,
+		},
+
+		// Mix
+		"gpos and assets": {
+			adDomain:  "assetsandfakegpo.com",
+			gpos:      []string{"gpo1"},
+			assetsURL: "Distro",
+			want:      map[string]string{"assets": "Distro", "gpo1": "gpo1"},
 		},
 
 		// Concurrent downloads
