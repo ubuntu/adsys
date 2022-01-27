@@ -21,6 +21,10 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
+#: internal/ad/ad.go:347
+msgid "%q downloaded from SYSVOL is not a directory"
+msgstr ""
+
 #: cmd/adsysd/client/version.go:44
 #, c-format
 msgid "%s\t\t%s"
@@ -39,11 +43,11 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:402
+#: internal/ad/ad.go:456
 msgid "%s :%v"
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:251
+#: internal/policies/privilege/privilege.go:253
 #, c-format
 msgid "%s is a directory. Ignoring."
 msgstr ""
@@ -52,7 +56,7 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:412
+#: internal/policies/dconf/dconf.go:413
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -85,7 +89,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:251
+#: internal/ad/ad.go:256
 msgid "%s: %v"
 msgstr ""
 
@@ -99,7 +103,7 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/ad/ad.go:254
+#: internal/ad/ad.go:259
 #, c-format
 msgid "%s: no active server found"
 msgstr ""
@@ -125,7 +129,7 @@ msgstr ""
 msgid "- can't read content -"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:112
+#: internal/policies/dconf/dconf.go:113
 msgid "- error on %s: %v"
 msgstr ""
 
@@ -187,7 +191,7 @@ msgstr ""
 msgid "Control() error: %s"
 msgstr ""
 
-#: internal/ad/download.go:133
+#: internal/ad/download.go:257
 msgid "Could not clean up temporary directory:"
 msgstr ""
 
@@ -209,6 +213,11 @@ msgstr ""
 
 #: cmd/adsysd/client/doc.go:24
 msgid "Documentation"
+msgstr ""
+
+#: internal/ad/download.go:307
+#, c-format
+msgid "Downloading %s"
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:33
@@ -359,7 +368,7 @@ msgstr ""
 msgid "call to polkit failed: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:60
+#: internal/policies/dconf/dconf.go:61
 #, c-format
 msgid "can't apply dconf policy to %s"
 msgstr ""
@@ -368,17 +377,17 @@ msgstr ""
 msgid "can't apply gdm policy"
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:55
+#: internal/policies/privilege/privilege.go:57
 #, c-format
 msgid "can't apply privilege policy to %s"
 msgstr ""
 
-#: internal/ad/download.go:160
+#: internal/ad/download.go:150
 #, c-format
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/policies.go:268
+#: internal/policies/policies.go:269
 #, c-format
 msgid "can't compress assets from %s"
 msgstr ""
@@ -387,7 +396,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/ad/ad.go:125
+#: internal/ad/ad.go:130
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -419,11 +428,11 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/ad/ad.go:338
+#: internal/ad/ad.go:394
 msgid "can't create symlink for caching"
 msgstr ""
 
-#: internal/policies/policies.go:44
+#: internal/policies/policies.go:45
 msgid "can't created new policies"
 msgstr ""
 
@@ -439,8 +448,12 @@ msgstr ""
 msgid "can't download GPO %q"
 msgstr ""
 
-#: internal/ad/download.go:62
+#: internal/ad/download.go:64
 msgid "can't download all gpos"
+msgstr ""
+
+#: internal/ad/download.go:131
+msgid "can't download data directory"
 msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:423
@@ -455,21 +468,21 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:345
+#: internal/ad/ad.go:401
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/policies.go:64
+#: internal/policies/policies.go:65
 #, c-format
 msgid "can't get cached policies from %s"
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:238
+#: internal/policies/privilege/privilege.go:240
 #, c-format
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:200
+#: internal/ad/ad.go:205
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -477,7 +490,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/ad/ad.go:313
+#: internal/ad/ad.go:369
 msgid "can't list users from cache"
 msgstr ""
 
@@ -498,7 +511,7 @@ msgstr ""
 msgid "can't load server info from %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:416
+#: internal/policies/dconf/dconf.go:417
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
@@ -514,17 +527,17 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:195
+#: internal/policies/dconf/dconf.go:196
 #, c-format
 msgid "can't save %s"
 msgstr ""
 
-#: internal/policies/policies.go:200
+#: internal/policies/policies.go:201
 #, c-format
 msgid "can't save assets to %s"
 msgstr ""
 
-#: internal/policies/policies.go:116
+#: internal/policies/policies.go:117
 #, c-format
 msgid "can't save policies to %s"
 msgstr ""
@@ -537,7 +550,7 @@ msgstr ""
 msgid "can't serve"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:215
+#: internal/policies/dconf/dconf.go:216
 #, c-format
 msgid "can't update user profile %s"
 msgstr ""
@@ -564,6 +577,10 @@ msgstr ""
 
 #: internal/authorizer/authorizer.go:121
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
+msgstr ""
+
+#: internal/ad/download.go:247
+msgid "could not close directory: %v"
 msgstr ""
 
 #: internal/adsysservice/service.go:221
@@ -609,7 +626,7 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:187
+#: internal/policies/dconf/dconf.go:188
 msgid "dconf update failed: %v"
 msgstr ""
 
@@ -629,7 +646,11 @@ msgstr ""
 msgid "don't display colorized version."
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:407
+#: internal/ad/download.go:205
+msgid "download %q failed"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:408
 msgid "empty signature for %v"
 msgstr ""
 
@@ -643,7 +664,7 @@ msgstr ""
 msgid "error opening raw connection: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:404
+#: internal/policies/dconf/dconf.go:405
 msgid "error while checking signature"
 msgstr ""
 
@@ -692,7 +713,7 @@ msgid "error while trying to get the list of active users"
 msgstr ""
 
 #. Try to update from SSSD the current active AD server
-#: internal/ad/ad.go:248
+#: internal/ad/ad.go:253
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
@@ -732,7 +753,7 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/ad/ad.go:322
+#: internal/ad/ad.go:378
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -748,15 +769,15 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:356
+#: internal/ad/ad.go:412
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/ad/ad.go:226
+#: internal/ad/ad.go:231
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/ad/ad.go:280
+#: internal/ad/ad.go:285
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -788,11 +809,11 @@ msgstr ""
 msgid "invalid policy"
 msgstr ""
 
-#: internal/ad/download.go:194
+#: internal/ad/download.go:184
 msgid "invalid remote GPT.INI"
 msgstr ""
 
-#: internal/policies/policies.go:104
+#: internal/policies/policies.go:105
 msgid "invalid zip db archive: %w"
 msgstr ""
 
@@ -800,13 +821,13 @@ msgstr ""
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:81
+#: internal/policies/dconf/dconf.go:82
 msgid ""
 "machine dconf database is required before generating a policy for an user. "
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:236
+#: internal/ad/ad.go:241
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -836,7 +857,7 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/policies/policies.go:205
+#: internal/policies/policies.go:206
 msgid "no assets attached"
 msgstr ""
 
@@ -892,7 +913,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:210
+#: internal/ad/ad.go:215
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -957,6 +978,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:205
+#: internal/ad/ad.go:210
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
