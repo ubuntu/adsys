@@ -64,8 +64,8 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	defer decorate.OnError(&err, i18n.G("can't download all gpos"))
 
 	// protect env variable and map creation
-	ad.Lock()
-	defer ad.Unlock()
+	ad.fetchMu.Lock()
+	defer ad.fetchMu.Unlock()
 
 	// Set kerberos ticket.
 	const krb5TicketEnv = "KRB5CCNAME"
@@ -136,8 +136,6 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 		destDir := filepath.Join(ad.gpoCacheDir, "assets")
 		log.Infof(ctx, "Downloading assets to %q", destDir)
 
-		ad.assetsMu.Lock()
-		defer ad.assetsMu.Unlock()
 		return download(ctx, client, assetsURL, destDir, true)
 	})
 

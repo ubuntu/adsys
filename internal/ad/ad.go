@@ -69,7 +69,7 @@ type AD struct {
 
 	gpos map[string]*gpo
 	sync.RWMutex
-	assetsMu sync.Mutex
+	fetchMu sync.Mutex
 
 	withoutKerberos bool
 	gpoListCmd      []string
@@ -313,6 +313,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return pols, err
 	}
 
+	ad.Lock()
+	defer ad.Unlock()
 	if err = ad.fetch(ctx, krb5CCPath, gpos, assetsURL); err != nil {
 		return pols, err
 	}
@@ -429,11 +431,9 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 		}
 		r = append(r, gpoWithRules)
 		if err := func() error {
-			ad.RLock()
 			ad.gpos[name].mu.RLock()
 			defer ad.gpos[name].mu.RUnlock()
 			_ = ad.gpos[name].testConcurrent
-			ad.RUnlock()
 
 			log.Debugf(ctx, "Parsing GPO %q", name)
 
