@@ -871,8 +871,6 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, u
 	err := got.Save(compareDir)
 	require.NoError(t, err, "Teardown: saving gpo should work")
 	if got.HasAssets() {
-		err = os.MkdirAll(filepath.Join(compareDir, "assets.db.uncompressed"), 0700)
-		require.NoError(t, err, "Teardown: can't create uncompressed assets directory")
 		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"))
 		require.NoError(t, err, "Teardown: deserializing assets should work")
 		// Remove database that are different from machine to machine.
