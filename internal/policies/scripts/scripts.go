@@ -62,7 +62,7 @@ func WithRunDir(p string) Option {
 }
 
 // New creates a manager with a specific scripts directory.
-func New(cacheDir, runDir string, opts ...Option) *Manager {
+func New(runDir string, opts ...Option) *Manager {
 	// defaults
 	args := options{
 		userLookup:   user.Lookup,
@@ -148,10 +148,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// Dump assets to scripts/ subdirectory. If no assets is present while entries != nil, we want to return an error.
 	dest := filepath.Join(scriptsPath, executableDir)
-	if err := createDirectoryWithUIDGid(dest, uid, gid); err != nil {
-		return err
-	}
-	if err := assetsDumper(ctx, "scripts/", scriptsPath); err != nil {
+	if err := assetsDumper(ctx, "scripts/", dest); err != nil {
 		return err
 	}
 	// Fix ownership of scripts/ subdirectory and its contents
@@ -178,8 +175,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 			// check that the script exists and make it executable
 			scriptFilePath := filepath.Join(scriptsPath, executableDir, script)
-			if _, err := os.Stat(scriptFilePath); errors.Is(err, os.ErrNotExist) {
+			info, err := os.Stat(scriptFilePath)
+			if errors.Is(err, os.ErrNotExist) {
 				return fmt.Errorf(i18n.G("script %q doesn't exist in SYSVOL scripts/ subdirectory"), script)
+			}
+			if info.IsDir() {
+				return fmt.Errorf(i18n.G("script %q is a directory and not a file to execute"), script)
 			}
 			if err := os.Chmod(scriptFilePath, 0550); err != nil {
 				return fmt.Errorf(i18n.G("can't change mode of script %qto %o: %v"), scriptFilePath, 0550, err)
@@ -228,6 +229,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return nil
 	}
 
+	// Check that there are a startup directory and only execute if there is one.
+	if _, err = os.Stat(filepath.Join(scriptsPath, "startup")); errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+
 	log.Info(ctx, "Running machine startup scripts")
 	cmdArgs := m.systemctlCmd
 	cmdArgs = append(cmdArgs, "start", consts.AdysMachineScriptsServiceName)
@@ -239,19 +245,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf("failed to run machine scripts: %w\n%s", err, string(out))
 	}
 
-	return nil
-}
-
-// createDirectoryWithUIDGid creates a directory with the given uid and gid if not 0.
-func createDirectoryWithUIDGid(p string, uid, gid int) error {
-	if err := os.MkdirAll(p, 0700); err != nil {
-		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), p, err)
-	}
-	if uid != 0 {
-		if err := os.Chown(p, uid, gid); err != nil {
-			return fmt.Errorf(i18n.G("can't change owner of script directory %q to user %d: %v"), p, uid, err)
-		}
-	}
 	return nil
 }
 
@@ -276,6 +269,14 @@ func RunScripts(ctx context.Context, order string) (err error) {
 		return err
 	}
 	defer f.Close()
+	info, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	if info.IsDir() {
+		return fmt.Errorf(i18n.G("%q is a directory and not a file"), order)
+	}
+
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		script := filepath.Join(scriptsDir, scanner.Text())
