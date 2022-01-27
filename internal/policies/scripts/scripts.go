@@ -1,18 +1,19 @@
 package scripts
 
 import (
+	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -28,22 +29,23 @@ import (
 	We rely on systemd units to manage them and only control the execution of the machine startup one.
 */
 
-const readyFlag = ".ready"
+const (
+	readyFlag     = ".ready"
+	executableDir = "scripts"
+)
 
 // Manager prevents running multiple scripts update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
 	scriptsMu map[string]*sync.Mutex // mutex is per destination directory (user1/user2/computer)
 	muMu      sync.Mutex             // protect scriptsMu
 
-	runDir       string
-	gpoScriptDir string
+	runDir string
 
 	systemctlCmd []string
 	userLookup   func(string) (*user.User, error)
 }
 
 type options struct {
-	cacheDir     string
 	runDir       string
 	userLookup   func(string) (*user.User, error)
 	systemctlCmd []string
@@ -51,6 +53,13 @@ type options struct {
 
 // Option reprents an optional function to change scripts manager.
 type Option func(*options)
+
+// WithRunDir specifies a personalized run directory.
+func WithRunDir(p string) Option {
+	return func(o *options) {
+		o.runDir = p
+	}
+}
 
 // New creates a manager with a specific scripts directory.
 func New(cacheDir, runDir string, opts ...Option) *Manager {
@@ -66,15 +75,17 @@ func New(cacheDir, runDir string, opts ...Option) *Manager {
 
 	return &Manager{
 		scriptsMu:    make(map[string]*sync.Mutex),
-		gpoScriptDir: filepath.Join(cacheDir, "gpo_cache", "scripts"),
 		runDir:       runDir,
 		userLookup:   args.userLookup,
 		systemctlCmd: args.systemctlCmd,
 	}
 }
 
+// AssetsDumper is a function which uncompress policies assets to a directory.
+type AssetsDumper func(ctx context.Context, relSrc, dest string) (err error)
+
 // ApplyPolicy generates a privilege policy based on a list of entries.
-func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
+func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry, assetsDumper AssetsDumper) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't apply scripts policy to %s"), objectName)
 
 	log.Debugf(ctx, "Applying scripts policy to %s", objectName)
@@ -96,28 +107,28 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		objectDir = filepath.Join("users", user.Uid)
 	}
 
-	scriptsDir := filepath.Join(m.runDir, objectDir, "scripts")
+	scriptsPath := filepath.Join(m.runDir, objectDir, executableDir)
 
 	// Mutex is per user1, user2, computer
 	m.muMu.Lock()
 	// if mutex does not exist for this destination, creates it
-	if _, exists := m.scriptsMu[scriptsDir]; !exists {
-		m.scriptsMu[scriptsDir] = &sync.Mutex{}
+	if _, exists := m.scriptsMu[scriptsPath]; !exists {
+		m.scriptsMu[scriptsPath] = &sync.Mutex{}
 	}
 	m.muMu.Unlock()
-	m.scriptsMu[scriptsDir].Lock()
-	defer m.scriptsMu[scriptsDir].Unlock()
+	m.scriptsMu[scriptsPath].Lock()
+	defer m.scriptsMu[scriptsPath].Unlock()
 
 	// If exists: there is a "session" in progress:*
 	// - machine already booted and startup scripts executed
 	// - user session in progress and login scripts executed
 	// Do nothing, we have potential next versions in cache, we will use them on next apply at session start if all sessions are closed.
-	if _, err := os.Stat(filepath.Join(scriptsDir, readyFlag)); err == nil {
-		log.Infof(ctx, "%q already exists, a session is already running, ignoring.", scriptsDir)
+	if _, err := os.Stat(filepath.Join(scriptsPath, readyFlag)); err == nil {
+		log.Infof(ctx, "%q already exists, a session is already running, ignoring.", scriptsPath)
 		return nil
 	}
 
-	if err := os.RemoveAll(scriptsDir); err != nil {
+	if err := os.RemoveAll(scriptsPath); err != nil {
 		return err
 	}
 
@@ -126,47 +137,86 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	// create scriptsDir directory and chown it to uid:gid of the user
-	if err := os.MkdirAll(scriptsDir, 0700); err != nil {
-		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), scriptsDir, err)
+	if err := os.MkdirAll(scriptsPath, 0700); err != nil {
+		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), scriptsPath, err)
 	}
 	if !isComputer {
-		if err := os.Chown(scriptsDir, uid, gid); err != nil {
-			return fmt.Errorf(i18n.G("can't change owner of script directory %q to user %s: %v"), scriptsDir, objectName, err)
+		if err := os.Chown(scriptsPath, uid, gid); err != nil {
+			return fmt.Errorf(i18n.G("can't change owner of script directory %q to user %s: %v"), scriptsPath, objectName, err)
 		}
 	}
 
-	// create scripts files, index them in each destDir directory
-	i := make(map[string]int)
-	for _, e := range entries {
-		destDir := filepath.Join(scriptsDir, filepath.Base(e.Key))
-		if err := createDirectoryWithUIDGid(destDir, uid, gid); err != nil {
+	// Dump assets to scripts/ subdirectory. If no assets is present while entries != nil, we want to return an error.
+	dest := filepath.Join(scriptsPath, executableDir)
+	if err := createDirectoryWithUIDGid(dest, uid, gid); err != nil {
+		return err
+	}
+	if err := assetsDumper(ctx, "scripts/", scriptsPath); err != nil {
+		return err
+	}
+	// Fix ownership of scripts/ subdirectory and its contents
+	if !isComputer {
+		if err := filepath.WalkDir(dest, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			return os.Chown(path, uid, gid)
+		}); err != nil {
 			return err
 		}
+	}
 
+	// create order files, check that the scripts existings in the destination
+	orderFilesContent := make(map[string][]string)
+	for _, e := range entries {
+		lifecycle := filepath.Base(e.Key)
 		for _, script := range strings.Split(e.Value, "\n") {
 			script = strings.TrimSpace(script)
 			if script == "" {
 				continue
 			}
 
-			dest := filepath.Join(destDir, fmt.Sprintf("%02d_%s", i[destDir], filepath.Base(script)))
-			if err := shutil.CopyFile(filepath.Join(m.gpoScriptDir, script), dest, true); err != nil {
-				return fmt.Errorf(i18n.G("can't copy script %q to %q: %v"), script, dest, err)
+			// check that the script exists and make it executable
+			scriptFilePath := filepath.Join(scriptsPath, executableDir, script)
+			if _, err := os.Stat(scriptFilePath); errors.Is(err, os.ErrNotExist) {
+				return fmt.Errorf(i18n.G("script %q doesn't exist in SYSVOL scripts/ subdirectory"), script)
 			}
-			if !isComputer {
-				if err := os.Chown(dest, uid, gid); err != nil {
-					return fmt.Errorf(i18n.G("can't change owner of script %q to user %d: %v"), script, uid, err)
-				}
-			}
-			if os.Chmod(dest, 0550) != nil {
-				return fmt.Errorf(i18n.G("can't change mode of script %q to %o: %v"), dest, 0550, err)
+			if err := os.Chmod(scriptFilePath, 0550); err != nil {
+				return fmt.Errorf(i18n.G("can't change mode of script %qto %o: %v"), scriptFilePath, 0550, err)
 			}
 
-			i[destDir]++
+			// append it to the list of our scripts
+			orderFilesContent[lifecycle] = append(orderFilesContent[lifecycle], filepath.Join(executableDir, script))
 		}
 	}
 
-	f, err := os.Create(filepath.Join(scriptsDir, readyFlag))
+	for lifecycle, scripts := range orderFilesContent {
+		orderFilePath := filepath.Join(scriptsPath, lifecycle)
+
+		f, err := os.Create(orderFilePath)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		for _, script := range scripts {
+			if _, err := f.WriteString(script + "\n"); err != nil {
+				return err
+			}
+		}
+		// Commit file on disk before preparing the ready flag
+		if err := f.Close(); err != nil {
+			return err
+		}
+		if !isComputer {
+			if err := os.Chown(orderFilePath, uid, gid); err != nil {
+				return fmt.Errorf(i18n.G("can't change owner of order file %q to user %s: %v"), orderFilePath, objectName, err)
+			}
+		}
+	}
+
+	// Create ready flag
+	f, err := os.Create(filepath.Join(scriptsPath, readyFlag))
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create ready file for scripts: %v"), err)
 	}
@@ -181,11 +231,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	log.Info(ctx, "Running machine startup scripts")
 	cmdArgs := m.systemctlCmd
 	cmdArgs = append(cmdArgs, "start", consts.AdysMachineScriptsServiceName)
+	// #nosec G204 - We are in control of the arguments
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	smbsafe.WaitExec()
 	defer smbsafe.DoneExec()
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to run machine scripts: %v\n%s", err, string(out))
+		return fmt.Errorf("failed to run machine scripts: %w\n%s", err, string(out))
 	}
 
 	return nil
@@ -205,57 +256,40 @@ func createDirectoryWithUIDGid(p string, uid, gid int) error {
 }
 
 // RunScripts executes all scripts in directory if ready and not already executed.
-func RunScripts(ctx context.Context, path string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't run scripts in %s"), path)
+func RunScripts(ctx context.Context, order string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't run scripts listed in %s"), order)
 
-	log.Infof(ctx, "Calling RunScripts on %q", path)
+	log.Infof(ctx, "Calling RunScripts on %q", order)
 
-	// Check that we are in a directory
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-	if !fileInfo.IsDir() {
-		return fmt.Errorf(i18n.G("%q is not a directory"), path)
-	}
+	baseDir := filepath.Dir(order)
 
 	// Ensure we are ready to execute
-	if _, err := os.Stat(filepath.Join(filepath.Dir(path), readyFlag)); err != nil {
-		return fmt.Errorf(i18n.G("%q is not ready to execute scripts"), path)
+	if _, err := os.Stat(filepath.Join(baseDir, readyFlag)); err != nil {
+		return fmt.Errorf(i18n.G("%q is not ready to execute scripts"), order)
 	}
 
-	// List in version order all the executables in the directory and execute them
-	scripts, err := os.ReadDir(path)
+	scriptsDir := filepath.Join(filepath.Dir(order), executableDir)
+
+	// Read from the order file the order of scripts to run
+	f, err := os.Open(order)
 	if err != nil {
 		return err
 	}
-
-	// Sort scripts in numeric order
-	sort.Slice(scripts, func(i, j int) bool {
-		a, err := strconv.Atoi(strings.Split(scripts[i].Name(), "_")[0])
-		if err != nil {
-			log.Warningf(ctx, "%q doesn’t have the required DD_name format: %v\n", filepath.Join(path, scripts[i].Name()), err)
-			return false
-		}
-		b, err := strconv.Atoi(strings.Split(scripts[j].Name(), "_")[0])
-		if err != nil {
-			log.Warningf(ctx, "%q doesn’t have the required DD_name format: %v\n", filepath.Join(path, scripts[j].Name()), err)
-			return true
-		}
-
-		return a < b
-	})
-
-	// No need for smbsafe here: this process will never execute smb.
-	for _, script := range scripts {
-		if out, err := exec.CommandContext(ctx, filepath.Join(path, script.Name())).CombinedOutput(); err != nil {
-			log.Warningf(ctx, "%q failed to run: %v\n%v", script.Name(), err, string(out))
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		script := filepath.Join(scriptsDir, scanner.Text())
+		// #nosec G204 - this variable is coming from concatenation of an order file.
+		// Permissions are restricted to the owner of the order file, which is the one executing
+		// this script.
+		if out, err := exec.CommandContext(ctx, script).CombinedOutput(); err != nil {
+			log.Warningf(ctx, "%q failed to run: %v\n%v", script, err, string(out))
 		}
 	}
 
 	// Delete users script directory once all logoff scripts are executed
-	if !strings.Contains(path, "/users/") || !strings.HasSuffix(path, "/logoff") {
+	if !strings.Contains(order, "/users/") || !strings.HasSuffix(order, "/logoff") {
 		return nil
 	}
-	return os.RemoveAll(filepath.Dir(path))
+	return os.RemoveAll(baseDir)
 }

@@ -160,7 +160,9 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	}
 
 	g.Go(func() error { return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"]) })
-	g.Go(func() error { return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"]) })
+	g.Go(func() error {
+		return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"], pols.SaveAssetsTo)
+	})
 	// TODO g.Go(func() error { return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"]) })
 	if err := g.Wait(); err != nil {
 		return err
