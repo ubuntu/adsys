@@ -302,6 +302,7 @@ func TestSaveAssetsTo(t *testing.T) {
 
 		cacheSrc     string
 		readOnlyDest string
+		destExists   bool
 
 		wantErr bool
 	}{
@@ -349,6 +350,12 @@ func TestSaveAssetsTo(t *testing.T) {
 			readOnlyDest: "scripts/script-simple.sh",
 			wantErr:      true,
 		},
+		"error on dest already exists": {
+			relSrc:     ".",
+			cacheSrc:   "with_assets",
+			destExists: true,
+			wantErr:    true,
+		},
 	}
 
 	for name, tc := range tests {
@@ -366,6 +373,9 @@ func TestSaveAssetsTo(t *testing.T) {
 					require.NoError(t, err, "Setup: can’t mock readOnlyDest file")
 				}
 				testutils.MakeReadOnly(t, filepath.Join(dest, tc.readOnlyDest))
+			} else if !tc.destExists {
+				// we simulate unexisting dest by removing it
+				require.NoError(t, os.RemoveAll(dest), "Setup: can't mock unexisting dest")
 			}
 
 			pols, err := policies.NewFromCache(context.Background(), src)

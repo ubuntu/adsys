@@ -196,7 +196,7 @@ func (r *readerAtToReader) Read(p []byte) (n int, err error) {
 // SaveAssetsTo creates in dest the assets using relative src path.
 // Directories will recursively project its content.
 // If there is no asset attached and relSrc is not "." then it returns an error.
-// dest should exists.
+// The destination directory or file should not exists.
 func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save assets to %s"), dest)
 
@@ -206,8 +206,12 @@ func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string) (er
 		return errors.New(i18n.G("no assets attached"))
 	}
 
-	baseDir := filepath.Dir(relSrc)
+	// error out if dest exists
+	if _, err := os.Stat(dest); !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf(i18n.G("destination %q already exists"), dest)
+	}
 
+	baseDir := strings.TrimSuffix(relSrc, "/")
 	return pols.saveAssetsRecursively(relSrc, dest, baseDir)
 }
 
