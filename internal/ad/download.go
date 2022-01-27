@@ -122,7 +122,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			defer g.mu.Unlock()
 			g.testConcurrent = true
 
-			return download(ctx, client, g.url, dest)
+			return download(ctx, client, g.url, dest, false)
 		})
 	}
 
@@ -136,23 +136,9 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 		destDir := filepath.Join(ad.gpoCacheDir, "assets")
 		log.Infof(ctx, "Downloading assets to %q", destDir)
 
-		smbsafe.WaitSmb()
-		defer smbsafe.DoneSmb()
-		d, err := client.Opendir(assetsURL)
-		if err != nil {
-			log.Warningf(ctx, "no assets present on server as %q", assetsURL)
-			if err := os.RemoveAll(destDir); err != nil {
-				return err
-			}
-			return nil
-		}
-		if err := d.Closedir(); err != nil {
-			return fmt.Errorf(i18n.G("could not close directory: %v"), err)
-		}
-
 		ad.assetsMu.Lock()
 		defer ad.assetsMu.Unlock()
-		return download(ctx, client, assetsURL, destDir)
+		return download(ctx, client, assetsURL, destDir, true)
 	})
 
 	if err := errg.Wait(); err != nil {
@@ -215,8 +201,53 @@ func getGPOVersion(r io.Reader) (version int, err error) {
 }
 
 // download will dl in a temporary directory and only commit it if fully downloaded without any errors.
-func download(ctx context.Context, client *libsmbclient.Client, url, dest string) (err error) {
+// If url is a file, it will download it.
+// missingOk allows to not error out on url not present on server.
+func download(ctx context.Context, client *libsmbclient.Client, url, dest string, missingOK bool) (err error) {
 	defer decorate.OnError(&err, i18n.G("download %q failed"), url)
+
+	smbsafe.WaitSmb()
+	defer smbsafe.DoneSmb()
+
+	// Check if we have a file or a directory
+	d, errOpenDir := client.Opendir(url)
+	if errOpenDir != nil {
+		f, errOpenFile := client.Open(url, 0, 0)
+		if errOpenFile != nil {
+			if err := os.RemoveAll(dest); err != nil {
+				return err
+			}
+
+			if missingOK {
+				log.Warningf(ctx, "%s not present on server", url)
+				return nil
+			}
+			return errOpenDir
+		}
+		defer f.Close()
+
+		// Download the file directly to dest
+		pf := &f
+		data, err := io.ReadAll(pf)
+		if err != nil {
+			return err
+		}
+		g, err := os.CreateTemp(filepath.Dir(dest), fmt.Sprintf("%s.*", filepath.Base(dest)))
+		if err != nil {
+			return err
+		}
+		defer g.Close()
+		if _, err := g.Write(data); err != nil {
+			return err
+		}
+		g.Close()
+		return os.Rename(g.Name(), dest)
+	}
+
+	// It is a directory: recursive download
+	if err := d.Closedir(); err != nil {
+		return fmt.Errorf(i18n.G("could not close directory: %v"), err)
+	}
 
 	tmpdest, err := os.MkdirTemp(filepath.Dir(dest), fmt.Sprintf("%s.*", filepath.Base(dest)))
 	if err != nil {
