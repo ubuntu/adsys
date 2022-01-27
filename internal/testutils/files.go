@@ -45,17 +45,26 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 		require.NoError(t, os.RemoveAll(goldPath), "Cannot remove target golden directory")
 
 		// check the source directory exists before trying to copy it
-		if _, err := os.Stat(p); errors.Is(err, fs.ErrNotExist) {
+		info, err := os.Stat(p)
+		if errors.Is(err, fs.ErrNotExist) {
 			return
 		}
+		require.NoErrorf(t, err, "Error on checking %q", p)
 
-		// Filter dconf generated DB files that are machine dependent
-		require.NoError(t,
-			shutil.CopyTree(
-				p, goldPath,
-				&shutil.CopyTreeOptions{Symlinks: true, Ignore: ignoreDconfDB, CopyFunction: shutil.Copy}),
-			"Can’t update golden directory")
-		require.NoError(t, addEmptyMarker(goldPath), "Cannot create empty file in empty directories")
+		if !info.IsDir() {
+			// copy file
+			data, err := os.ReadFile(p)
+			require.NoError(t, err, "Cannot read new generated file file %s", p)
+			require.NoError(t, os.WriteFile(goldPath, data, info.Mode()), "Cannot write golden file")
+		} else {
+			// Filter dconf generated DB files that are machine dependent
+			require.NoError(t,
+				shutil.CopyTree(
+					p, goldPath,
+					&shutil.CopyTreeOptions{Symlinks: true, Ignore: ignoreDconfDB, CopyFunction: shutil.Copy}),
+				"Can’t update golden directory")
+			require.NoError(t, addEmptyMarker(goldPath), "Cannot create empty file in empty directories")
+		}
 	}
 
 	var err error
