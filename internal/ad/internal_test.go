@@ -186,6 +186,11 @@ func TestFetchGPO(t *testing.T) {
 			existing:  map[string]string{"assets": "gpo1"},
 			want:      nil,
 		},
+		"assets is a file": {
+			adDomain:  "assetsdirisfile.com",
+			assetsURL: "Ubuntu",
+			want:      map[string]string{"assets": "Ubuntu"},
+		},
 
 		// Mix
 		"gpos and assets": {
