@@ -583,8 +583,23 @@ func TestMain(m *testing.M) {
 			online:   true,
 		},
 		{
+			endpoint: "assetsandgpo_2ecom",
+			domain:   "assetsandgpo.com",
+			online:   true,
+		},
+		{
+			endpoint: "assetsonly_2ecom",
+			domain:   "assetsonly.com",
+			online:   true,
+		},
+		{
+			endpoint: "assetsdirisfile_2ecom",
+			domain:   "assetsdirisfile.com",
+			online:   true,
+		},
+		{
 			endpoint: "offline",
-			domain:   "gpoonly.com",
+			domain:   "offline.com",
 			online:   false,
 		},
 		{
