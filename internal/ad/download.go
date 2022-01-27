@@ -55,17 +55,17 @@ import (
 
 /*
 fetch downloads a list of gpos from a url for a given kerberosTicket and stores the downloaded files in dest.
+In addition, assetsURL is always refreshed if not empty.
 Each gpo entry must be a gpo, with a name, url of the form: smb://<server>/SYSVOL/<AD domain>/<GPO_ID> and mutex.
 If krb5Ticket is empty, no authentication is done on samba.
+This should not be called concurrently.
 */
-func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]string) (err error) {
+func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]string, assetsURL string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't download all gpos"))
 
-	dest := ad.gpoCacheDir
-
 	// protect env variable and map creation
-	ad.Lock()
-	defer ad.Unlock()
+	ad.fetchMu.Lock()
+	defer ad.fetchMu.Unlock()
 
 	// Set kerberos ticket.
 	const krb5TicketEnv = "KRB5CCNAME"
@@ -106,7 +106,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 
 			log.Debugf(ctx, "Analyzing GPO %q", g.name)
 
-			dest := filepath.Join(dest, filepath.Base(g.url))
+			dest := filepath.Join(ad.gpoCacheDir, filepath.Base(g.url))
 
 			// Look at GPO version and compare with the one on AD to decide if we redownload or not
 			shouldDownload, err := gpoNeedsDownload(ctx, client, g, dest)
@@ -122,32 +122,22 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 			defer g.mu.Unlock()
 			g.testConcurrent = true
 
-			// Download GPO in a temporary directory and only commit it if fully downloaded without any errors
-			tmpdest, err := os.MkdirTemp("", "adsys_gpo_*")
-			if err != nil {
-				return err
-			}
-			// Always to try remove temporary directory, so that in case of any failures, it’s not left behind
-			defer func() {
-				if err := os.RemoveAll(tmpdest); err != nil {
-					log.Info(ctx, i18n.G("Could not clean up temporary directory:"), err)
-				}
-			}()
-			if err := downloadRecursive(client, g.url, tmpdest); err != nil {
-				return err
-			}
-			// Remove previous GPO
-			if err := os.RemoveAll(dest); err != nil {
-				return err
-			}
-			// Rename temporary directory to final location
-			if err := os.Rename(tmpdest, dest); err != nil {
-				return err
-			}
-
-			return nil
+			return download(ctx, client, g.url, dest, false)
 		})
 	}
+
+	// Also, refresh data assets. We are protected by ad main mutex.
+	errg.Go(func() (err error) {
+		defer decorate.OnError(&err, i18n.G("can't download data directory"))
+
+		if assetsURL == "" {
+			return nil
+		}
+		destDir := filepath.Join(ad.gpoCacheDir, "assets")
+		log.Infof(ctx, "Downloading assets to %q", destDir)
+
+		return download(ctx, client, assetsURL, destDir, true)
+	})
 
 	if err := errg.Wait(); err != nil {
 		return fmt.Errorf("one or more error while fetching GPOs: %w", err)
@@ -208,14 +198,87 @@ func getGPOVersion(r io.Reader) (version int, err error) {
 	return 0, errors.New("version not found")
 }
 
-func downloadRecursive(client *libsmbclient.Client, url string, dest string) error {
+// download will dl in a temporary directory and only commit it if fully downloaded without any errors.
+// If url is a file, it will download it.
+// missingOk allows to not error out on url not present on server.
+func download(ctx context.Context, client *libsmbclient.Client, url, dest string, missingOK bool) (err error) {
+	defer decorate.OnError(&err, i18n.G("download %q failed"), url)
+
+	smbsafe.WaitSmb()
+	defer smbsafe.DoneSmb()
+
+	// Check if we have a file or a directory
+	d, errOpenDir := client.Opendir(url)
+	if errOpenDir != nil {
+		f, errOpenFile := client.Open(url, 0, 0)
+		if errOpenFile != nil {
+			if err := os.RemoveAll(dest); err != nil {
+				return err
+			}
+
+			if missingOK {
+				log.Warningf(ctx, "%s not present on server", url)
+				return nil
+			}
+			return errOpenDir
+		}
+		defer f.Close()
+
+		// Download the file directly to dest
+		pf := &f
+		data, err := io.ReadAll(pf)
+		if err != nil {
+			return err
+		}
+		g, err := os.CreateTemp(filepath.Dir(dest), fmt.Sprintf("%s.*", filepath.Base(dest)))
+		if err != nil {
+			return err
+		}
+		defer g.Close()
+		if _, err := g.Write(data); err != nil {
+			return err
+		}
+		g.Close()
+		return os.Rename(g.Name(), dest)
+	}
+
+	// It is a directory: recursive download
+	if err := d.Closedir(); err != nil {
+		return fmt.Errorf(i18n.G("could not close directory: %v"), err)
+	}
+
+	tmpdest, err := os.MkdirTemp(filepath.Dir(dest), fmt.Sprintf("%s.*", filepath.Base(dest)))
+	if err != nil {
+		return err
+	}
+	// Always to try remove temporary directory, so that in case of any failures, it’s not left behind
+	defer func() {
+		if err := os.RemoveAll(tmpdest); err != nil {
+			log.Info(ctx, i18n.G("Could not clean up temporary directory:"), err)
+		}
+	}()
+	if err := downloadRecursive(ctx, client, url, tmpdest); err != nil {
+		return err
+	}
+	// Remove previous download content
+	if err := os.RemoveAll(dest); err != nil {
+		return err
+	}
+	// Rename temporary directory to final location
+	if err := os.Rename(tmpdest, dest); err != nil {
+		return err
+	}
+	return nil
+}
+
+func downloadRecursive(ctx context.Context, client *libsmbclient.Client, url, dest string) error {
 	d, err := client.Opendir(url)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err := d.Closedir(); err != nil {
-			log.Info(context.Background(), "Could not close directory:", err)
+			log.Info(ctx, "Could not close directory:", err)
 		}
 	}()
 
@@ -239,7 +302,9 @@ func downloadRecursive(client *libsmbclient.Client, url string, dest string) err
 		entityURL := url + "/" + dirent.Name
 		entityDest := filepath.Join(dest, dirent.Name)
 
-		if dirent.Type == libsmbclient.SmbcFile {
+		switch dirent.Type {
+		case libsmbclient.SmbcFile:
+			log.Debugf(ctx, i18n.G("Downloading %s"), entityURL)
 			f, err := client.Open(entityURL, 0, 0)
 			if err != nil {
 				return err
@@ -255,12 +320,12 @@ func downloadRecursive(client *libsmbclient.Client, url string, dest string) err
 			if err := os.WriteFile(entityDest, data, 0600); err != nil {
 				return err
 			}
-		} else if dirent.Type == libsmbclient.SmbcDir {
-			err := downloadRecursive(client, entityURL, entityDest)
+		case libsmbclient.SmbcDir:
+			err := downloadRecursive(ctx, client, entityURL, entityDest)
 			if err != nil {
 				return err
 			}
-		} else {
+		default:
 			return fmt.Errorf("unsupported type %q for entry %s", dirent.Type, dirent.Name)
 		}
 	}
