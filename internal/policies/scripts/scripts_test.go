@@ -31,6 +31,7 @@ func TestApplyPolicy(t *testing.T) {
 		entries  []entry.Entry
 		computer bool
 
+		saveAssetsError     bool
 		userReturnedUID     string
 		userReturnedGID     string
 		systemctlShouldFail bool
@@ -52,8 +53,8 @@ func TestApplyPolicy(t *testing.T) {
 		"empty entries are discared":         {entries: []entry.Entry{{Key: "s", Value: "script3.sh\n\nscript1.sh"}}},
 
 		// computer cases
-		"computer, no systemctl with other directory than start":       {computer: true, entries: defaultSingleScript},
-		"start script for computer runs systemctl (systemctl success)": {computer: true, systemctlShouldFail: false, entries: []entry.Entry{{Key: "start", Value: "script1.sh"}}},
+		"computer, no systemctl with other directory than startup":       {computer: true, systemctlShouldFail: true, entries: defaultSingleScript},
+		"startup script for computer runs systemctl (systemctl success)": {computer: true, systemctlShouldFail: false, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}},
 
 		// Destination already exists. Using computer to be uid independent
 		"destination is already ready, no change":     {destAlreadyExists: "already ready", computer: true, entries: defaultSingleScript},
@@ -61,9 +62,10 @@ func TestApplyPolicy(t *testing.T) {
 		"no entries update existing non ready folder": {destAlreadyExists: "not ready", computer: true},
 
 		// Error cases
-		"error on subfolder listed":        {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
-		"error on script does not exist":   {entries: []entry.Entry{{Key: "s", Value: "doestnotexists"}}, wantErr: true},
-		"error on run directory Read Only": {makeReadOnly: true, entries: defaultSingleScript, wantErr: true},
+		"error on subfolder listed":            {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
+		"error on script does not exist":       {entries: []entry.Entry{{Key: "s", Value: "doestnotexists"}}, wantErr: true},
+		"error on run directory Read Only":     {makeReadOnly: true, entries: defaultSingleScript, wantErr: true},
+		"error on save assets dumping failing": {entries: defaultSingleScript, saveAssetsError: true, wantErr: true},
 
 		// User error cases only
 		"error on invalid UID":                               {userReturnedUID: "invalid", entries: defaultSingleScript, wantErr: true},
@@ -72,8 +74,8 @@ func TestApplyPolicy(t *testing.T) {
 		"user lookup failing does not impact machine update": {computer: true, userReturnedUID: "userLookupError", entries: defaultSingleScript, wantErr: false},
 
 		// Machine error cases only
-		"start script for computer run systemctl (systemctl failed)": {computer: true, systemctlShouldFail: true, entries: []entry.Entry{{Key: "start", Value: "script1.sh"}}, wantErr: true},
-		"systemctl failing does not impact user scripts update":      {computer: false, systemctlShouldFail: true, entries: []entry.Entry{{Key: "start", Value: "script1.sh"}}, wantErr: false},
+		"start script for computer runs systemctl (systemctl failed)": {computer: true, systemctlShouldFail: true, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}, wantErr: true},
+		"systemctl failing does not impact user scripts update":       {computer: false, systemctlShouldFail: true, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}, wantErr: false},
 	}
 
 	for name, tc := range tests {
@@ -117,11 +119,13 @@ func TestApplyPolicy(t *testing.T) {
 				systemctlCmd = append(systemctlCmd, "-Exit1-")
 			}
 
-			m := scripts.New(filepath.Join("testdata", "ApplyPolicy"), runDir,
+			sat := sat{err: tc.saveAssetsError}
+
+			m := scripts.New(runDir,
 				scripts.WithSystemCtlCmd(systemctlCmd),
 				scripts.WithUserLookup(userLookup),
 			)
-			err := m.ApplyPolicy(context.Background(), "ubuntu", tc.computer, tc.entries)
+			err := m.ApplyPolicy(context.Background(), "ubuntu", tc.computer, tc.entries, sat.mockSaveAssetsTo)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")
 				return
@@ -247,6 +251,21 @@ func TestMockSystemCtl(t *testing.T) {
 		fmt.Println("EXIT 1 requested in mock")
 		os.Exit(1)
 	}
+}
+
+type sat struct {
+	err bool
+}
+
+// mockSaveAssetsTo returns a static mock directory with scripts.
+func (s sat) mockSaveAssetsTo(ctx context.Context, relSrc, dest string) (err error) {
+	if s.err {
+		return errors.New("mockSaveAssetsTo error")
+	}
+	if relSrc != "scripts/" {
+		return fmt.Errorf("mockSaveAssetsTo: unexpected relSrc: %q", relSrc)
+	}
+	return shutil.CopyTree("testdata/sysvol-scripts", dest, nil)
 }
 
 func mockSystemCtlCmd(t *testing.T, args ...string) []string {

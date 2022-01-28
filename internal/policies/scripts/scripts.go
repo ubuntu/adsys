@@ -46,20 +46,12 @@ type Manager struct {
 }
 
 type options struct {
-	runDir       string
 	userLookup   func(string) (*user.User, error)
 	systemctlCmd []string
 }
 
 // Option reprents an optional function to change scripts manager.
 type Option func(*options)
-
-// WithRunDir specifies a personalized run directory.
-func WithRunDir(p string) Option {
-	return func(o *options) {
-		o.runDir = p
-	}
-}
 
 // New creates a manager with a specific scripts directory.
 func New(runDir string, opts ...Option) *Manager {
