@@ -168,7 +168,8 @@ func TestRunScripts(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		stageDir string
+		stageDir          string
+		allowOrderMissing bool
 
 		wantDirRemoved bool
 		wantErr        bool
@@ -181,10 +182,12 @@ func TestRunScripts(t *testing.T) {
 
 		"script directory is cleaned up after user logoff": {stageDir: "logoff", wantDirRemoved: true},
 
+		"allow order file missing": {allowOrderMissing: true},
+
 		// Error cases
-		"error on script directory not existing": {wantErr: true},
-		"error on not ready for execution":       {wantErr: true},
-		"error on argument not a file":           {wantErr: true},
+		"error on order file not existing": {wantErr: true},
+		"error on not ready for execution": {wantErr: true},
+		"error on argument not a file":     {wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -212,14 +215,14 @@ func TestRunScripts(t *testing.T) {
 					"Setup: can't create script dir")
 			}
 
-			err := scripts.RunScripts(context.Background(), scriptDir)
+			err := scripts.RunScripts(context.Background(), scriptDir, tc.allowOrderMissing)
 			if tc.wantErr {
 				require.NotNil(t, err, "RunScripts should have failed but didn't")
 				return
 			}
 			require.NoError(t, err, "RunScripts failed but shouldn't have")
 
-			_, err = os.Stat(scriptDir)
+			_, err = os.Stat(filepath.Dir(scriptDir))
 			if tc.wantDirRemoved {
 				require.True(t, os.IsNotExist(err), "RunScripts should have removed user/machine scripts dir but didn't")
 			} else {

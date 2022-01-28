@@ -241,7 +241,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 }
 
 // RunScripts executes all scripts in directory if ready and not already executed.
-func RunScripts(ctx context.Context, order string) (err error) {
+// allowOrderMissing will not require order to exists if we are ready to execute.
+func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't run scripts listed in %s"), order)
 
 	log.Infof(ctx, "Calling RunScripts on %q", order)
@@ -257,7 +258,10 @@ func RunScripts(ctx context.Context, order string) (err error) {
 
 	// Read from the order file the order of scripts to run
 	f, err := os.Open(order)
-	if err != nil {
+	if allowOrderMissing && errors.Is(err, os.ErrNotExist) {
+		log.Infof(ctx, "%q doesn't exist, but allowed to be missing, skipping", order)
+		return nil
+	} else if err != nil {
 		return err
 	}
 	defer f.Close()

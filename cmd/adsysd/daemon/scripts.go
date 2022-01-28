@@ -12,18 +12,20 @@ import (
 )
 
 func (a *App) installRunScripts() {
+	var allowOrderMissing *bool
 	cmd := &cobra.Command{
-		Use:    "runscripts SCRIPT_DIR",
+		Use:    "runscripts ORDER_FILE",
 		Short:  i18n.G("Runs scripts in the given subdirectory"),
 		Args:   cobra.ExactArgs(1),
 		Hidden: true,
-		RunE:   func(cmd *cobra.Command, args []string) error { return runScripts(args[1]) },
+		RunE:   func(cmd *cobra.Command, args []string) error { return runScripts(args[1], *allowOrderMissing) },
 	}
+	allowOrderMissing = cmd.Flags().BoolP("allow-order-missing", "", false, i18n.G("allow ORDER_FILE to be missing once the scripts are ready."))
 	a.rootCmd.AddCommand(cmd)
 }
 
-func runScripts(scriptsDir string) error {
-	if err := scripts.RunScripts(context.Background(), scriptsDir); err != nil {
+func runScripts(orderFile string, allowOrderMissing bool) error {
+	if err := scripts.RunScripts(context.Background(), orderFile, allowOrderMissing); err != nil {
 		return err
 	}
 

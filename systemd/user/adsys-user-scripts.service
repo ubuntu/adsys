@@ -9,8 +9,8 @@ Type=notify
 # needed for systemd-notify from non root user. Only open it to elements of the cgroup.
 NotifyAccess=all
 RemainAfterExit=yes
-ExecStart=/sbin/adsys runscripts /run/adsys/users/%U/scripts/logon
-ExecStop=/sbin/adsys runscripts /run/adsys/users/%U/scripts/logoff
+ExecStart=/sbin/adsys runscripts --allow-order-missing /run/adsys/users/%U/scripts/logon
+ExecStop=/sbin/adsys runscripts --allow-order-missing /run/adsys/users/%U/scripts/logoff
 
 [Install]
 WantedBy=default.target
