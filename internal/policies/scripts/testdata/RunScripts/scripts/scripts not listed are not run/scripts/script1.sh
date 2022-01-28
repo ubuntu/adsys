@@ -1,7 +1,7 @@
 #!/bin/sh
 
 script=$(realpath $0)
-# Our scripts are in: user/foo/scripts/<stageName>.
+# Our scripts are in: user/foo/scripts/scripts.
 # We want to write our golden file in user/foo/.
 path=$(dirname $(dirname $(dirname $(dirname ${script}))))
 

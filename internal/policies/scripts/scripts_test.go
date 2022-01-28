@@ -170,20 +170,21 @@ func TestRunScripts(t *testing.T) {
 	tests := map[string]struct {
 		stageDir string
 
-		wantErr bool
+		wantDirRemoved bool
+		wantErr        bool
 	}{
-		"one script":                                                      {},
-		"multiple scripts are run in order":                               {},
-		"scripts that are not executable are skipped":                     {},
-		"scripts in subdirectories are not run":                           {},
-		"scripts that don’t match expected format name are executed last": {},
+		"one script":                                  {},
+		"multiple scripts are run in order":           {},
+		"scripts that are not executable are skipped": {},
+		"scripts not listed are not run":              {},
+		"scripts referenced in subdirectories":        {},
 
-		"script directory is cleaned up after user logoff": {stageDir: "logoff"},
+		"script directory is cleaned up after user logoff": {stageDir: "logoff", wantDirRemoved: true},
 
 		// Error cases
 		"error on script directory not existing": {wantErr: true},
 		"error on not ready for execution":       {wantErr: true},
-		"error on argument not a directory":      {wantErr: true},
+		"error on argument not a file":           {wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -219,8 +220,8 @@ func TestRunScripts(t *testing.T) {
 			require.NoError(t, err, "RunScripts failed but shouldn't have")
 
 			_, err = os.Stat(scriptDir)
-			if tc.stageDir == "logoff" {
-				require.True(t, os.IsNotExist(err), "RunScripts should have removed script dir on logoff but didn't")
+			if tc.wantDirRemoved {
+				require.True(t, os.IsNotExist(err), "RunScripts should have removed user/machine scripts dir but didn't")
 			} else {
 				require.NoError(t, err, "RunScripts should have kept scripts directory intact")
 			}
