@@ -2,6 +2,7 @@ package policies_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,29 +20,39 @@ import (
 func TestApplyPolicies(t *testing.T) {
 	//t.Parallel()
 
+	// Let’s mock systemctl with a dummy command in PATH as this test is not running in parallel
+	bin := t.TempDir()
+	err := os.WriteFile(filepath.Join(bin, "systemctl"), []byte("#!/bin/sh"), 0700)
+	require.NoError(t, err, "Setup: can not create dummy systemctl")
+	testutils.Setenv(t, "PATH", fmt.Sprintf("%s:%s", bin, os.Getenv("PATH")))
+
 	bus := testutils.NewDbusConn(t)
 
 	subscriptionDbus := bus.Object(consts.SubscriptionDbusRegisteredName,
 		dbus.ObjectPath(consts.SubscriptionDbusObjectPath))
 
 	tests := map[string]struct {
-		policiesDir                  string
-		secondCallWithNoRules        bool
-		makeDirReadOnly              string
-		isNotSubscribed              bool
-		secondCallWithNoSubscription bool
+		policiesDir                     string
+		secondCallWithNoRules           bool
+		scriptSessionEndedForSecondCall bool
+		makeDirReadOnly                 string
+		isNotSubscribed                 bool
+		secondCallWithNoSubscription    bool
 
 		wantErr bool
 	}{
 		"succeed": {policiesDir: "all_entry_types"},
-		"second call with no rules deletes everything": {policiesDir: "all_entry_types", secondCallWithNoRules: true},
+		"second call with no rules deletes everything":                           {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: true},
+		"second call with no rules don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: false},
 
 		// no subscription filterings
-		"no subscription is only dconf content":                                       {policiesDir: "all_entry_types", isNotSubscribed: true},
-		"second call with no subscription should remove everything but dconf content": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true},
+		"no subscription is only dconf content":                                         {policiesDir: "all_entry_types", isNotSubscribed: true},
+		"second call with no subscription should remove everything but dconf content":   {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: true},
+		"second call with no subscription don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: false},
 
 		"dconf apply policy fails":     {policiesDir: "dconf_failing", wantErr: true},
 		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
+		"scripts apply policy fails":   {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -56,6 +67,7 @@ func TestApplyPolicies(t *testing.T) {
 
 			fakeRootDir := t.TempDir()
 			cacheDir := filepath.Join(fakeRootDir, "var", "cache", "adsys")
+			runDir := filepath.Join(fakeRootDir, "run", "adsys")
 			dconfDir := filepath.Join(fakeRootDir, "etc", "dconf")
 			policyKitDir := filepath.Join(fakeRootDir, "etc", "polkit-1")
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
@@ -71,6 +83,7 @@ func TestApplyPolicies(t *testing.T) {
 
 			m, err := policies.NewManager(bus,
 				policies.WithCacheDir(cacheDir),
+				policies.WithRunDir(runDir),
 				policies.WithDconfDir(dconfDir),
 				policies.WithPolicyKitDir(policyKitDir),
 				policies.WithSudoersDir(sudoersDir),
@@ -92,10 +105,16 @@ func TestApplyPolicies(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy should return no error but got one")
 
+			if tc.scriptSessionEndedForSecondCall {
+				err := os.Remove(filepath.Join(runDir, "machine", "scripts", ".ready"))
+				require.NoError(t, err, "Setup: can not remove .ready file before second call")
+			}
+
 			var runSecondCall bool
 			if tc.secondCallWithNoRules {
 				runSecondCall = true
-				pols = policies.Policies{}
+				pols, err = policies.New(context.Background(), nil, "")
+				require.NoError(t, err, "Setup: can not empty policies before second call")
 			} else if tc.secondCallWithNoSubscription {
 				runSecondCall = true
 				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", "disabled"), "Setup: can not set subscription status for second call to disabled")

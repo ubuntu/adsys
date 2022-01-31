@@ -21,3 +21,18 @@ gpos:
         bob@domain2
         %mygroup@domain
         cosmic carole@domain
+    scripts:
+    - key: startup
+      value: |
+          script-machine-startup
+          subfolder/other-script
+          final-machine-script.sh
+    - key: shutdown
+      value: |
+          script-machine-shutdown
+    - key: logon
+      value: |
+          script-user-logon
+    - key: logoff
+      value: |
+          otherfolder/script-user-logoff
