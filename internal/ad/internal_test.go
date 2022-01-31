@@ -252,7 +252,7 @@ func TestFetchGPO(t *testing.T) {
 				require.NoError(t,
 					shutil.CopyTree(
 						filepath.Join("testdata", "AD", "SYSVOL", tc.adDomain, src),
-						filepath.Join(adc.gpoCacheDir, n),
+						filepath.Join(adc.sysvolCacheDir, n),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't copy initial gpo directory")
 			}
@@ -307,9 +307,9 @@ func TestFetchGPO(t *testing.T) {
 			}
 
 			// Ensure that only wanted GPOs are cached
-			cacheRootFiles, err := os.ReadDir(adc.gpoCacheDir)
+			cacheRootFiles, err := os.ReadDir(adc.sysvolCacheDir)
 			require.NoError(t, err, "coudn't read gpo cache root directory")
-			gotDirs, err := os.ReadDir(filepath.Join(adc.gpoCacheDir, "Policies"))
+			gotDirs, err := os.ReadDir(filepath.Join(adc.sysvolCacheDir, "Policies"))
 			require.NoError(t, err, "coudn't read gpo cache Policies directory")
 			gotDirs = append(gotDirs, cacheRootFiles...)
 
@@ -329,7 +329,7 @@ func TestFetchGPO(t *testing.T) {
 				assert.Truef(t, ok, "fetched file %s which is not in want list", dirname)
 
 				goldPath := filepath.Join("testdata", "AD", "SYSVOL", tc.adDomain, tc.want[dirname])
-				gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, dirname))
+				gpoTree := md5Tree(t, filepath.Join(adc.sysvolCacheDir, dirname))
 				goldTree := md5Tree(t, goldPath)
 				assert.Equalf(t, goldTree, gpoTree, "expected and after fetch for %q does not match", dirname)
 			}
@@ -372,7 +372,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 				require.NoError(t,
 					shutil.CopyTree(
 						filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", "old_version"),
-						filepath.Join(adc.gpoCacheDir, "Policies", "gpo1"),
+						filepath.Join(adc.sysvolCacheDir, "Policies", "gpo1"),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't copy initial gpo directory")
 			}
@@ -381,30 +381,30 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 			require.NotNil(t, err, "fetch should return an error but didn't")
 
 			if !tc.withExistingGPO {
-				require.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "Policies", "gpo1"), "GPO directory shouldn't be committed on disk")
+				require.NoDirExists(t, filepath.Join(adc.sysvolCacheDir, "Policies", "gpo1"), "GPO directory shouldn't be committed on disk")
 				return
 			}
 
 			// Diff on each gpo dir content
 			goldPath := filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", "old_version")
-			gpoTree := md5Tree(t, filepath.Join(adc.gpoCacheDir, "Policies", "gpo1"))
+			gpoTree := md5Tree(t, filepath.Join(adc.sysvolCacheDir, "Policies", "gpo1"))
 			goldTree := md5Tree(t, goldPath)
 			assert.Equalf(t, goldTree, gpoTree, "expected and after fetch GPO %q does not match", "gpo1")
 		})
 	}
 }
 
-func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
+func TestFetchGPOTweakSysvolCacheDir(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
-		removeGPOCacheDir bool
-		roGPOCacheDir     bool
+		removeSysvolCacheDir bool
+		roSysvolCacheDir     bool
 	}{
-		"GPOCacheDir doesn't exist": {removeGPOCacheDir: true},
-		"GPOCacheDir is read only":  {roGPOCacheDir: true},
+		"SysvolCacheDir doesn't exist": {removeSysvolCacheDir: true},
+		"SysvolCacheDir is read only":  {roSysvolCacheDir: true},
 	}
 
 	for name, tc := range tests {
@@ -417,20 +417,19 @@ func TestFetchGPOTweakGPOCacheDir(t *testing.T) {
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
 			require.NoError(t, err, "Setup: cannot create ad object")
 
-			if tc.removeGPOCacheDir {
-				require.NoError(t, os.RemoveAll(adc.gpoCacheDir), "Setup: can’t remove gpoCacheDir")
+			if tc.removeSysvolCacheDir {
+				require.NoError(t, os.RemoveAll(adc.sysvolCacheDir), "Setup: can’t remove sysvolCacheDir")
 			}
-			if tc.roGPOCacheDir {
-				testutils.MakeReadOnly(t, adc.gpoCacheDir)
+			if tc.roSysvolCacheDir {
+				testutils.MakeReadOnly(t, adc.sysvolCacheDir)
 			}
 
 			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/gpo1", SmbPort)}, "")
 
 			require.NotNil(t, err, "fetch should return an error but didn't")
-			assert.NoDirExists(t, filepath.Join(adc.gpoCacheDir, "Policies", "gpo1"), "gpo1 shouldn't be downloaded")
+			assert.NoDirExists(t, filepath.Join(adc.sysvolCacheDir, "Policies", "gpo1"), "gpo1 shouldn't be downloaded")
 		})
 	}
-
 }
 
 func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
@@ -448,7 +447,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	require.NoError(t,
 		shutil.CopyTree(
 			filepath.Join("testdata", "AD", "SYSVOL", "gpoonly.com", "Policies", "standard-old"),
-			filepath.Join(adc.gpoCacheDir, "Policies", "standard"),
+			filepath.Join(adc.sysvolCacheDir, "Policies", "standard"),
 			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 		"Setup: can't copy initial gpo directory")
 	// create the lock made by fetch which is always called before parseGPOs in the public API
