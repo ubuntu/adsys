@@ -212,7 +212,7 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "E", Value: "standardE"},
 					}}}},
 			},
-			wantAssetsEquals: "testdata/AD/SYSVOL/assetsandgpo.com/Policies/Ubuntu",
+			wantAssetsEquals: "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
 			wantServerURL:    "ldap://myserver.assetsandgpo.com",
 		},
 		"Standard policy with assets, assets are not downloaded for user": {
