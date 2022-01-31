@@ -37,8 +37,8 @@ func TestNew(t *testing.T) {
 		"static server is always prefixed with ldap":                {staticServerURL: "my-static-server.gpoonly.com:1636/", wantServerURL: "ldap://my-static-server.gpoonly.com:1636/"},
 		"not provided static server URL is blank":                   {staticServerURL: "", wantServerURL: ""},
 
-		"failed to create KRB5 cache directory": {runDirRO: true, wantErr: true},
-		"failed to create GPO cache directory":  {cacheDirRO: true, wantErr: true},
+		"failed to create KRB5 cache directory":   {runDirRO: true, wantErr: true},
+		"failed to create Sysvol cache directory": {cacheDirRO: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -66,7 +66,7 @@ func TestNew(t *testing.T) {
 
 			// Ensure cache directories exists
 			assert.DirExists(t, adc.Krb5CacheDir(), "Kerberos ticket cache directory doesn't exist")
-			assert.DirExists(t, adc.GpoCacheDir(), "GPO cache directory doesn't exist")
+			assert.DirExists(t, adc.SysvolCacheDir(), "GPO cache directory doesn't exist")
 
 			adServerURL, offline := adc.GetStatus()
 			assert.Equal(t, tc.wantServerURL, adServerURL, "AD server URl matches static configuration")
@@ -212,7 +212,7 @@ func TestGetPolicies(t *testing.T) {
 						{Key: "E", Value: "standardE"},
 					}}}},
 			},
-			wantAssetsEquals: "testdata/AD/SYSVOL/assetsandgpo.com/Policies/Ubuntu",
+			wantAssetsEquals: "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
 			wantServerURL:    "ldap://myserver.assetsandgpo.com",
 		},
 		"Standard policy with assets, assets are not downloaded for user": {

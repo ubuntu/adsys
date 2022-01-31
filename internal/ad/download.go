@@ -106,7 +106,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 
 			log.Debugf(ctx, "Analyzing GPO %q", g.name)
 
-			dest := filepath.Join(ad.gpoCacheDir, filepath.Base(g.url))
+			dest := filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(g.url))
 
 			// Look at GPO version and compare with the one on AD to decide if we redownload or not
 			shouldDownload, err := gpoNeedsDownload(ctx, client, g, dest)
@@ -133,7 +133,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 		if assetsURL == "" {
 			return nil
 		}
-		destDir := filepath.Join(ad.gpoCacheDir, "assets")
+		destDir := filepath.Join(ad.sysvolCacheDir, "assets")
 		log.Infof(ctx, "Downloading assets to %q", destDir)
 
 		return download(ctx, client, assetsURL, destDir, true)

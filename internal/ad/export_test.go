@@ -5,8 +5,8 @@ var (
 	WithGPOListCmd  = withGPOListCmd
 )
 
-func (ad *AD) GpoCacheDir() string {
-	return ad.gpoCacheDir
+func (ad *AD) SysvolCacheDir() string {
+	return ad.sysvolCacheDir
 }
 func (ad *AD) PoliciesCacheDir() string {
 	return ad.policiesCacheDir

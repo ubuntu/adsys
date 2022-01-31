@@ -397,9 +397,9 @@ func TestPolicyUpdate(t *testing.T) {
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
-				"cache/gpo_cache/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
-				"cache/gpo_cache/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
-				"cache/gpo_cache/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
+				"cache/sysvol/Policies/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
+				"cache/sysvol/Policies/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
+				"cache/sysvol/Policies/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -454,9 +454,9 @@ func TestPolicyUpdate(t *testing.T) {
 				"dconf/profile/gdm",
 				"sudoers.d",
 				"polkit-1",
-				"cache/gpo_cache/{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}",
-				"cache/gpo_cache/{B8D10A86-0B78-4899-91AF-6F0124ECEB48}",
-				"cache/gpo_cache/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
+				"cache/sysvol/Policies/{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}",
+				"cache/sysvol/Policies/{B8D10A86-0B78-4899-91AF-6F0124ECEB48}",
+				"cache/sysvol/Policies/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -572,7 +572,7 @@ func TestPolicyUpdate(t *testing.T) {
 		"Error on host is offline, without policies": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
-			// clean gpos rules, but gpo_cache
+			// clean gpos rules, but sysvol/ directory
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
