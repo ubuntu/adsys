@@ -434,7 +434,7 @@ func TestCompressAssets(t *testing.T) {
 			if tc.src != "" {
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "cache", "gpo_cache", tc.src),
+						filepath.Join("testdata", "cache", "sysvol", tc.src),
 						p,
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can’t copy assets directory")
