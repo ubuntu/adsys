@@ -143,8 +143,9 @@ func TestSave(t *testing.T) {
 	tests := map[string]struct {
 		cacheSrc string
 
-		transformDest   string
-		initialCacheDir string
+		transformDest     string
+		initialCacheDir   string
+		saveTwiceSameDest bool
 
 		wantErr bool
 	}{
@@ -168,11 +169,21 @@ func TestSave(t *testing.T) {
 			cacheSrc:        "one_gpo",
 			initialCacheDir: "with_assets",
 		},
+		"save assets on existing opened file does not segfault": {
+			cacheSrc:          "with_assets",
+			initialCacheDir:   "with_assets",
+			saveTwiceSameDest: true,
+		},
 
 		// edge cases
 		"destdir does not exists": {
 			cacheSrc:      "one_gpo",
 			transformDest: "destdir does not exists",
+		},
+		"can refresh on existing read only asset file": {
+			cacheSrc:        "with_assets",
+			initialCacheDir: "with_assets_other",
+			transformDest:   "read only asset file",
 		},
 
 		// error cases
@@ -190,12 +201,6 @@ func TestSave(t *testing.T) {
 			cacheSrc:        "one_gpo",
 			initialCacheDir: "with_assets_other",
 			transformDest:   "unremovable asset",
-			wantErr:         true,
-		},
-		"error on can’t refresh existing assets": {
-			cacheSrc:        "with_assets",
-			initialCacheDir: "with_assets_other",
-			transformDest:   "read only asset file",
 			wantErr:         true,
 		},
 	}
@@ -257,6 +262,14 @@ func TestSave(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, dest, filepath.Join("testdata", "golden", "save", name), update)
 			// compare that assets compressed db corresponds to source.
 			testutils.CompareTreesWithFiltering(t, filepath.Join(dest, policies.PoliciesAssetsFileName), filepath.Join(src, policies.PoliciesAssetsFileName), false)
+
+			if !tc.saveTwiceSameDest {
+				return
+			}
+			// SIGBUS is not a panic, so we can’t catch it.
+			// See https://github.com/golang/go/issues/41155
+			err = pols.Save(dest)
+			require.NoError(t, err, "Save should allow re-saving on existing file")
 		})
 	}
 }

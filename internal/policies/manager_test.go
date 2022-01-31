@@ -85,7 +85,7 @@ func TestApplyPolicies(t *testing.T) {
 				testutils.MakeReadOnly(t, filepath.Join(fakeRootDir, tc.makeDirReadOnly))
 			}
 
-			err = m.ApplyPolicies(context.Background(), "hostname", true, pols)
+			err = m.ApplyPolicies(context.Background(), "hostname", true, &pols)
 			if tc.wantErr {
 				require.Error(t, err, "ApplyPolicy should return an error but got none")
 				return
@@ -101,7 +101,7 @@ func TestApplyPolicies(t *testing.T) {
 				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", "disabled"), "Setup: can not set subscription status for second call to disabled")
 			}
 			if runSecondCall {
-				err = m.ApplyPolicies(context.Background(), "hostname", true, pols)
+				err = m.ApplyPolicies(context.Background(), "hostname", true, &pols)
 				require.NoError(t, err, "ApplyPolicy should return no error but got one")
 			}
 
