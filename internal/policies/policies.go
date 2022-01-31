@@ -112,7 +112,6 @@ func openAssetsInMemory(assetsDB string) (assets *assetsFromMMAP, err error) {
 }
 
 // Save serializes in p policies.
-// It saves the assets also if not loaded from cache and switch to it.
 func (pols *Policies) Save(p string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save policies to %s"), p)
 
@@ -140,7 +139,8 @@ func (pols *Policies) Save(p string) (err error) {
 
 	// Save assets to user cache and reload it
 	dr := &readerAtToReader{ReaderAt: pols.assets.filemmap}
-	f, err := os.Create(assetPath)
+
+	f, err := os.Create(assetPath + ".new")
 	if err != nil {
 		return err
 	}
@@ -152,10 +152,14 @@ func (pols *Policies) Save(p string) (err error) {
 	if err := f.Close(); err != nil {
 		return err
 	}
+
+	os.Rename(assetPath+".new", assetPath)
+
 	// Close previous mmaped file
 	if err := pols.Close(); err != nil {
 		return err
 	}
+	pols.assets = nil
 
 	// redirect from cache
 	pols.assets, err = openAssetsInMemory(assetPath)

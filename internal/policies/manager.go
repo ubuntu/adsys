@@ -146,7 +146,7 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 
 // ApplyPolicies generates a computer or user policy based on a list of entries
 // retrieved from a directory service.
-func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComputer bool, pols Policies) (err error) {
+func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComputer bool, pols *Policies) (err error) {
 	defer decorate.OnError(&err, i18n.G("failed to apply policy to %q"), objectName)
 
 	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
