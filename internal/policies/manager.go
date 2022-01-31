@@ -282,7 +282,7 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) {
 	log.Debug(ctx, "Filtering Rules")
 
 	rules["privilege"] = nil
-	rules["script"] = nil
+	rules["scripts"] = nil
 }
 
 // GetStatus returns dynamic part of our manager instance like subscription status.
