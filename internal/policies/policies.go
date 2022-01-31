@@ -162,7 +162,9 @@ func (pols *Policies) Save(p string) (err error) {
 		return err
 	}
 
-	os.Rename(assetPath+".new", assetPath)
+	if err := os.Rename(assetPath+".new", assetPath); err != nil {
+		return err
+	}
 
 	// Close previous mmaped file
 	if err := pols.Close(); err != nil {
