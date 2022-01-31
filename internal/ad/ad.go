@@ -154,7 +154,8 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 		return nil, err
 	}
 	gpoCacheDir := filepath.Join(args.cacheDir, "gpo_cache")
-	if err := os.MkdirAll(gpoCacheDir, 0700); err != nil {
+	// Create Policies subdirectory alongside gpo_cache
+	if err := os.MkdirAll(filepath.Join(gpoCacheDir, "Policies"), 0700); err != nil {
 		return nil, err
 	}
 	policiesCacheDir := filepath.Join(args.cacheDir, policies.PoliciesCacheBaseName)
@@ -304,7 +305,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 			if err != nil {
 				return pols, err
 			}
-			u.Path = filepath.Join(filepath.Dir(u.Path), consts.DistroID)
+			// Assets are in <root>/DistroID, while GPOs are in <root>/Policies/<gpoName>
+			u.Path = filepath.Join(filepath.Dir(filepath.Dir(u.Path)), consts.DistroID)
 			assetsURL = u.String()
 			refreshedAssets = true
 		}
@@ -441,7 +443,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			if objectClass == ComputerObject {
 				class = "Machine"
 			}
-			f, err := os.Open(filepath.Join(ad.gpoCacheDir, filepath.Base(url), class, "Registry.pol"))
+			f, err := os.Open(filepath.Join(ad.gpoCacheDir, "Policies", filepath.Base(url), class, "Registry.pol"))
 			if errors.Is(err, fs.ErrExist) {
 				return err
 			} else if errors.Is(err, fs.ErrNotExist) {

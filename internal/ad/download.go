@@ -106,7 +106,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 
 			log.Debugf(ctx, "Analyzing GPO %q", g.name)
 
-			dest := filepath.Join(ad.gpoCacheDir, filepath.Base(g.url))
+			dest := filepath.Join(ad.gpoCacheDir, "Policies", filepath.Base(g.url))
 
 			// Look at GPO version and compare with the one on AD to decide if we redownload or not
 			shouldDownload, err := gpoNeedsDownload(ctx, client, g, dest)
