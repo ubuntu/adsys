@@ -29,7 +29,8 @@ const (
 
 type assetsFromMMAP struct {
 	*zip.Reader
-	filemmap *mmap.ReaderAt
+	filemmap   *mmap.ReaderAt
+	assetsFrom string
 }
 
 // Policies is the list of GPOs applied to a particular object, with the global data cache.
@@ -106,12 +107,14 @@ func openAssetsInMemory(assetsDB string) (assets *assetsFromMMAP, err error) {
 	}
 
 	return &assetsFromMMAP{
-		Reader:   r,
-		filemmap: f,
+		Reader:     r,
+		filemmap:   f,
+		assetsFrom: assetsDB,
 	}, nil
 }
 
 // Save serializes in p policies.
+// Do not save again if p is already the origin. We don’t allow modifying GPOs or assets on the object.
 func (pols *Policies) Save(p string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save policies to %s"), p)
 
@@ -134,6 +137,12 @@ func (pols *Policies) Save(p string) (err error) {
 		if err := os.Remove(assetPath); !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
+		return nil
+	}
+
+	// If assets are coming from current directory, do not try to resave it to the same file as
+	// we don’t change the original GPOs or assets.
+	if pols.assets.assetsFrom == assetPath {
 		return nil
 	}
 
