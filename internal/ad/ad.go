@@ -333,8 +333,16 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	var assetsDbPath string
 	assetsSrc := filepath.Join(ad.sysvolCacheDir, "assets")
 	errg.Go(func() (err error) {
-		// Only compress assets if we have fetched them.
+		// Only compress assets if we have fetched them, otherwise attach optionally
+		// existing db.
 		if !refreshedAssets {
+			db := filepath.Join(assetsSrc + ".db")
+			if _, err := os.Stat(db); errors.Is(err, os.ErrNotExist) {
+				return nil
+			} else if err != nil {
+				return err
+			}
+			assetsDbPath = db
 			return nil
 		}
 		// check assetsSrc exists and is a directory

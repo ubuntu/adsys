@@ -14,6 +14,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -122,6 +123,7 @@ func TestGetPolicies(t *testing.T) {
 		gpoListArgs                  []string
 		dontCreateOriginalKrb5CCName bool
 		turnKrb5CCRO                 bool
+		copyAssetsDBInCache          string
 
 		want             policies.Policies
 		wantAssetsEquals string
@@ -224,6 +226,17 @@ func TestGetPolicies(t *testing.T) {
 			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
 			wantAssetsEquals:   "",
 			wantServerURL:      "ldap://myserver.assetsandgpo.com",
+		},
+		"Standard policy with assets, existing assets in sysvol are reattached for user": {
+			gpoListArgs:         []string{"assetsandgpo.com", "bob:standard"},
+			objectName:          "bob@ASSETSANDGPO.COM",
+			objectClass:         ad.UserObject,
+			domain:              "assetsandgpo.com",
+			userKrb5CCBaseName:  "kbr5cc_adsys_tests_bob",
+			copyAssetsDBInCache: "assets.db",
+			want:                policies.Policies{GPOs: []policies.GPO{standardGPO}},
+			wantAssetsEquals:    "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
+			wantServerURL:       "ldap://myserver.assetsandgpo.com",
 		},
 		"Assets can’t be downloaded without GPO": {
 			gpoListArgs:        []string{"assetsonly.com", ""},
@@ -639,6 +652,15 @@ func TestGetPolicies(t *testing.T) {
 						t.Logf("Teardown: couldn’t restore permission on %s: %v", adc.Krb5CacheDir(), err)
 					}
 				}()
+			}
+
+			if tc.copyAssetsDBInCache != "" {
+				require.NoError(t,
+					shutil.CopyFile(
+						filepath.Join("testdata", "cachedassetsdb", tc.copyAssetsDBInCache),
+						filepath.Join(adc.SysvolCacheDir(), "assets.db"),
+						false),
+					"Setup: can't copy initial sysvol cache directory")
 			}
 
 			entries, err := adc.GetPolicies(context.Background(), tc.objectName, tc.objectClass, krb5CCName)
