@@ -11,6 +11,7 @@
     * Disabled: The scripts will be skipped.
     The set of scripts are per boot, and refreshed only on new boot of the machine.
   type: "scripts"
+  release: "any"
   meta:
     strategy: append
 
@@ -27,6 +28,7 @@
     * Disabled: The scripts will be skipped.
     The set of scripts are per boot, and refreshed only on new boot of the machine.
   type: "scripts"
+  release: "any"
   meta:
     strategy: append
 
@@ -37,6 +39,7 @@
     Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
     Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
   elementtype: "multiText"
+  release: "any"
   note: |
    -
     * Enabled: The scripts in the text entry are executed at user logon time.
@@ -59,5 +62,6 @@
     * Disabled: The scripts will be skipped.
     The set of scripts are per session, and refreshed only on new session creation.
   type: "scripts"
+  release: "any"
   meta:
     strategy: append

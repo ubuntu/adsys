@@ -141,6 +141,15 @@ func expand(src, dst, root, currentSession string) error {
 				if err = yaml.Unmarshal(data, &policies); err != nil {
 					return err
 				}
+
+				// any release means that we want it for all releases with overrides
+				for i, p := range policies {
+					if p.Release != "any" {
+						continue
+					}
+					policies[i].Release = release
+				}
+
 				expandedPoliciesStream <- policies
 			}
 
