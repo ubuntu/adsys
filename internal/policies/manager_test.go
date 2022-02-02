@@ -21,8 +21,8 @@ func TestApplyPolicies(t *testing.T) {
 
 	bus := testutils.NewDbusConn(t)
 
-	subscriptionDbus := bus.Object(consts.SubcriptionDbusRegisteredName,
-		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
+	subscriptionDbus := bus.Object(consts.SubscriptionDbusRegisteredName,
+		dbus.ObjectPath(consts.SubscriptionDbusObjectPath))
 
 	tests := map[string]struct {
 		policiesDir                  string
@@ -64,9 +64,9 @@ func TestApplyPolicies(t *testing.T) {
 			if tc.isNotSubscribed {
 				status = "disabled"
 			}
-			require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", status), "Setup: can not set subscription status to %q", status)
+			require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", status), "Setup: can not set subscription status to %q", status)
 			defer func() {
-				require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
 			}()
 
 			m, err := policies.NewManager(bus,
@@ -98,7 +98,7 @@ func TestApplyPolicies(t *testing.T) {
 				pols = policies.Policies{}
 			} else if tc.secondCallWithNoSubscription {
 				runSecondCall = true
-				require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", "disabled"), "Setup: can not set subscription status for second call to disabled")
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", "disabled"), "Setup: can not set subscription status for second call to disabled")
 			}
 			if runSecondCall {
 				err = m.ApplyPolicies(context.Background(), "hostname", true, pols)
@@ -324,8 +324,8 @@ func TestGetStatus(t *testing.T) {
 	//t.Parallel()
 
 	bus := testutils.NewDbusConn(t)
-	subscriptionDbus := bus.Object(consts.SubcriptionDbusRegisteredName,
-		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
+	subscriptionDbus := bus.Object(consts.SubscriptionDbusRegisteredName,
+		dbus.ObjectPath(consts.SubscriptionDbusObjectPath))
 
 	tests := map[string]struct {
 		status string
@@ -343,9 +343,9 @@ func TestGetStatus(t *testing.T) {
 			// We change the dbus returned values to simulate a subscription
 			//t.Parallel()
 
-			require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", tc.status), "Setup: can not set subscription status to %q", tc.status)
+			require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", tc.status), "Setup: can not set subscription status to %q", tc.status)
 			defer func() {
-				require.NoError(t, subscriptionDbus.SetProperty(consts.SubcriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
 			}()
 
 			cacheDir := t.TempDir()
@@ -353,7 +353,7 @@ func TestGetStatus(t *testing.T) {
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			// force a refresh
-			_ = m.GetSubcriptionState(context.Background())
+			_ = m.GetSubscriptionState(context.Background())
 
 			got := m.GetStatus()
 			assert.Equal(t, tc.want, got, "GetStatus should return %q but got %q", tc.want, got)

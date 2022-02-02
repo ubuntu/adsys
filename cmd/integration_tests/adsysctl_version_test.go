@@ -15,8 +15,8 @@ func TestVersion(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Get client version":           {systemAnswer: "yes"},
-		"Version is always authorized": {systemAnswer: "no"},
+		"Get client version":           {systemAnswer: "polkit_yes"},
+		"Version is always authorized": {systemAnswer: "polkit_no"},
 		"Daemon not responding":        {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {

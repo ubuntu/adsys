@@ -27,16 +27,16 @@ func TestPolicyAdmx(t *testing.T) {
 
 		wantErr bool
 	}{
-		"LTS only content":               {arg: "lts-only", systemAnswer: "yes"},
-		"All supported releases content": {arg: "all", systemAnswer: "yes"},
+		"LTS only content":               {arg: "lts-only", systemAnswer: "polkit_yes"},
+		"All supported releases content": {arg: "all", systemAnswer: "polkit_yes"},
 
-		"Accept distro option": {arg: "lts-only", distroOption: "Ubuntu", systemAnswer: "yes"},
+		"Accept distro option": {arg: "lts-only", distroOption: "Ubuntu", systemAnswer: "polkit_yes"},
 
-		"Need one valid argument": {systemAnswer: "yes", wantErr: true},
+		"Need one valid argument": {systemAnswer: "polkit_yes", wantErr: true},
 
-		"Admx generation is always allowed": {arg: "lts-only", systemAnswer: "no"},
-		"Fail on non stored distro":         {arg: "lts-only", distroOption: "Tartanpion", systemAnswer: "yes", wantErr: true},
-		"Fail on invalid arg":               {arg: "something", systemAnswer: "yes", wantErr: true},
+		"Admx generation is always allowed": {arg: "lts-only", systemAnswer: "polkit_no"},
+		"Fail on non stored distro":         {arg: "lts-only", distroOption: "Tartanpion", systemAnswer: "polkit_yes", wantErr: true},
+		"Fail on invalid arg":               {arg: "something", systemAnswer: "polkit_yes", wantErr: true},
 		"Daemon not responding":             {arg: "lts-only", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
@@ -114,14 +114,14 @@ func TestPolicyApplied(t *testing.T) {
 		"User cache not available":                                {userGPORules: "-", wantErr: true},
 		"Error on unexisting user":                                {args: []string{"doesnotexists@example.com"}, wantErr: true},
 		"Error on user name without domain and no default domain": {args: []string{"doesnotexists"}, wantErr: true},
-		"Applied denied":                                          {systemAnswer: "no", wantErr: true},
+		"Applied denied":                                          {systemAnswer: "polkit_no", wantErr: true},
 		"Daemon not responding":                                   {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.systemAnswer == "" {
-				tc.systemAnswer = "yes"
+				tc.systemAnswer = "polkit_yes"
 			}
 			systemAnswer(t, tc.systemAnswer)
 
@@ -524,7 +524,7 @@ func TestPolicyUpdate(t *testing.T) {
 
 		// subscriptions
 		"No subscription means dconf only": {
-			systemAnswer: "subcription_disabled",
+			systemAnswer: "subscription_disabled",
 			args:         []string{"-m"},
 			krb5ccname:   "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
@@ -536,9 +536,9 @@ func TestPolicyUpdate(t *testing.T) {
 
 		// Error cases
 		"User needs machine to be updated": {wantErr: true},
-		"Polkit denied updating self":      {systemAnswer: "no", initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating other":     {systemAnswer: "no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating machine":   {systemAnswer: "no", args: []string{"-m"}, wantErr: true},
+		"Polkit denied updating self":      {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
+		"Polkit denied updating other":     {systemAnswer: "polkit_no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
+		"Polkit denied updating machine":   {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
 		"Error on dynamic AD returning nothing": {
 			initState:             "localhost-uptodate",
 			dynamicADServerDomain: "online_no_active_server",
@@ -769,7 +769,7 @@ func TestPolicyUpdate(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.systemAnswer == "" {
-				tc.systemAnswer = "yes"
+				tc.systemAnswer = "polkit_yes"
 			}
 			systemAnswer(t, tc.systemAnswer)
 
@@ -906,8 +906,8 @@ func TestPolicyDebugGPOListScript(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Get adsys-gpolist script":     {systemAnswer: "yes"},
-		"Version is always authorized": {systemAnswer: "no"},
+		"Get adsys-gpolist script":     {systemAnswer: "polkit_yes"},
+		"Version is always authorized": {systemAnswer: "polkit_no"},
 		"Daemon not responding":        {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {

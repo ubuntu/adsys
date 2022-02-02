@@ -19,9 +19,9 @@ func WithGDM(m *gdm.Manager) Option {
 	}
 }
 
-// GetSubcriptionState forces a refresh of a subscription state. Exported for tests only.
-func (m *Manager) GetSubcriptionState(ctx context.Context) (subscriptionEnabled bool) {
-	return m.getSubcriptionState(ctx)
+// GetSubscriptionState forces a refresh of a subscription state. Exported for tests only.
+func (m *Manager) GetSubscriptionState(ctx context.Context) (subscriptionEnabled bool) {
+	return m.getSubscriptionState(ctx)
 }
 
 func (pols Policies) HasAssets() bool {
