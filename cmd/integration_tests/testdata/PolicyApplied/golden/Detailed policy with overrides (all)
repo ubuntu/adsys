@@ -18,10 +18,14 @@
 [90m        - org/gnome/shell/common-key: user value[0m
         - org/gnome/shell/common-key-user: user value on RnD Policy
         - org/gnome/shell/favorite-apps: 'libreoffice-writer.desktop'\n'snap-store_ubuntu-software.desktop'\n'yelp.desktop
+    - [1mscripts:[0m
+        - logon: local-script-user-logon
 - [35mIT Policy[0m ({75545F76-DEC2-4ADA-B7B8-D5209FD48727})
     - [1mdconf:[0m
         - org/gnome/desktop/background/picture-options: stretched
         - org/gnome/desktop/background/picture-uri: file:///usr/share/backgrounds/canonical.png
 [90m        - org/gnome/shell/common-key-user: Locked to system default[0m
 [90m        - org/gnome/shell/favorite-apps: 'firefox.desktop'\n'thunderbird.desktop'\n'org.gnome.Nautilus.desktop'[0m
+    - [1mscripts:[0m
+        - logon: script-user-logon\nsubdirectory/other-logon
 - [35mDefault Domain Policy[0m ({31B2F340-016D-11D2-945F-00C04FB984F9})
