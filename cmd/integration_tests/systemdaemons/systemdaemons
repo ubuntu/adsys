@@ -1,0 +1,214 @@
+#!/usr/bin/python3
+
+"""
+This script is used to mock the systemd daemon and several system services used by adsysd
+"""
+
+import argparse
+import os
+import sys
+from subprocess import Popen
+import tempfile
+
+import dbus
+import dbus.mainloop.glib
+import dbusmock
+from dbusmock.templates import systemd
+
+from gi.repository import GLib
+
+# Real system
+DBUS_SOCKET_PATH = "/dbus/system_bus_socket"
+POLKIT_PATH = "/usr/lib/policykit-1/polkitd"
+ADSYS_POLICY_PATH_SRC = "/usr/share/polkit-1/actions.orig/com.ubuntu.adsys.policy"
+ADSYS_POLICY_PATH_DST = "/usr/share/polkit-1/actions/com.ubuntu.adsys.policy"
+
+# For testing purpose
+#DBUS_SOCKET_PATH = "/tmp/system_bus_socket"
+#POLKIT_PATH = "/usr/libexec/polkitd"
+#ADSYS_POLICY_PATH_SRC = "/tmp/actions.orig/com.ubuntu.adsys.policy"
+#ADSYS_POLICY_PATH_DST = "/tmp/actions/com.ubuntu.adsys.policy"
+
+
+def main() -> int:
+    """main routine"""
+
+    parser = argparse.ArgumentParser(description="systemd mock")
+    parser.add_argument(
+        "mode", type=str,
+         choices = [
+             "polkit_yes", "polkit_no",
+             "no_startup_time", "invalid_startup_time",
+             "no_nextrefresh_time", "invalid_nextrefresh_time",
+             "subscription_disabled"])
+
+    args = parser.parse_args()
+
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+    bus = start_system_bus()
+
+    main_loop = GLib.MainLoop()
+    # quit mock when the bus is going down
+    bus.add_signal_receiver(main_loop.quit, signal_name="Disconnected",
+                            path="/org/freedesktop/DBus/Local",
+                            dbus_interface="org.freedesktop.DBus.Local")
+
+    systemd_on_bus(bus, args.mode)
+    sssd_on_bus(bus)
+    ubuntu_advantage_on_bus(bus, args.mode)
+    polkitd = allow_adsys_and_start_polkitd_in_bg(args.mode)
+
+    main_loop.run()
+    polkitd.terminate()
+
+    return 0
+
+def systemd_on_bus(bus: dbus.Bus, mode: str) -> None:
+    """ Installs systemd mock on dbus and sets up the adsys scripts and refresh timer services """
+    service = dbus.service.BusName(systemd.BUS_NAME,
+                                   bus,
+                                   allow_replacement=False,
+                                   replace_existing=False,
+                                   do_not_queue=True)
+    main_object = dbusmock.mockobject.DBusMockObject(service, systemd.PATH_PREFIX,
+                                                     systemd.MAIN_IFACE, {},
+                                                     "/tmp/systemd-mock.log",
+                                                     False)
+    main_object.AddTemplate("systemd", "")
+
+    # startup time and adsys timer
+    startup_time = dbus.UInt64(1621860927000000)
+    next_refresh_time = dbus.UInt64(86400000000)
+    if mode == "no_startup_time":
+        startup_time = ""
+    elif mode == "invalid_startup_time":
+        startup_time = dbus.String("invalid")
+    elif mode == "no_nextrefresh_time":
+        next_refresh_time = ""
+    elif mode == "invalid_nextrefresh_time":
+        next_refresh_time = dbus.String("invalid")
+
+    main_object.AddProperty(systemd.MAIN_IFACE, "GeneratorsStartTimestamp", startup_time)
+
+    main_object.AddObject(
+        "/org/freedesktop/systemd1/unit/adsys_2dgpo_2drefresh_2etimer",
+        "org.freedesktop.systemd1.Timer",
+        {
+            "NextElapseUSecMonotonic": next_refresh_time,
+        },
+        [])
+
+    # our script unit
+    main_object.AddMockUnit("adsys-machine-scripts.service")
+
+
+def sssd_on_bus(bus: dbus.Bus) -> None:
+    """ Installs sssd mock on the bus """
+    service = dbus.service.BusName(
+        "org.freedesktop.sssd.infopipe",
+        bus,
+        allow_replacement=True,
+        replace_existing=True,
+        do_not_queue=True)
+
+    # Create sssd domain, with online and active server status
+    main_object = dbusmock.mockobject.DBusMockObject(
+        service, "/org/freedesktop/sssd/infopipe/Domains/example_2ecom",
+        "org.freedesktop.sssd.infopipe.Domains.Domain", {},
+        "/tmp/sssd-mock.log",
+        False)
+    main_object.AddMethods("", [
+        ("IsOnline", "", "b", "ret = True"),
+        ("ActiveServer", "s", "s", 'ret = "adc.example.com"'),
+    ])
+
+    main_object.AddObject(
+        "/org/freedesktop/sssd/infopipe/Domains/offline",
+        "org.freedesktop.sssd.infopipe.Domains.Domain",
+        {},
+        [
+            ("IsOnline", "", "b", "ret = False"),
+        ])
+
+    main_object.AddObject(
+        "/org/freedesktop/sssd/infopipe/Domains/online_no_active_server",
+        "org.freedesktop.sssd.infopipe.Domains.Domain",
+        {},
+        [
+            ("IsOnline", "", "b", "ret = True"),
+            ("ActiveServer", "s", "s", 'ret = ""'),
+        ])
+
+
+def ubuntu_advantage_on_bus(bus: dbus.bus, mode: str) -> None:
+    """ Installs ubuntu_advantage mock on the bus """
+
+    # Ubuntu Advantage subscription state
+    subscription_state = dbus.String("enabled")
+    if mode == "subscription_disabled":
+        subscription_state = dbus.String("disabled")
+
+    service = dbus.service.BusName(
+        "com.canonical.UbuntuAdvantage",
+        bus,
+        allow_replacement=True,
+        replace_existing=True,
+        do_not_queue=True)
+
+    dbusmock.mockobject.DBusMockObject(
+        service, "/com/canonical/UbuntuAdvantage/Services/esm_2dinfra",
+        "com.canonical.UbuntuAdvantage.Service",
+        {"Status": subscription_state},
+        "/tmp/ubuntu-advantage-mock.log",
+        False)
+
+
+def allow_adsys_and_start_polkitd_in_bg(mode: str) -> Popen:
+    """Replace adsys policy depending on mode and starts polkitd in background"""
+
+    allow = "yes"
+    if mode == "polkit_no":
+        allow = "no"
+
+    with open(ADSYS_POLICY_PATH_SRC, "r") as r:
+        with open(ADSYS_POLICY_PATH_DST, "w") as w:
+            for line in r:
+                for token in ["<allow_any>", "<allow_inactive>", "<allow_active>"]:
+                    if not token in line:
+                        continue
+                    line = "      " + token + allow + "</" + token[1:] + "\n"
+                w.write(line)
+    return Popen([POLKIT_PATH])
+
+
+def start_system_bus() -> dbus.Bus:
+    """ starts system bus and returned the new bus """
+
+    conf = tempfile.NamedTemporaryFile(prefix='dbusmock_cfg')
+    conf.write('''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>system</type>
+  <keep_umask/>
+  <listen>unix:path={}</listen>
+
+  <policy context="default">
+    <allow user="*"/>
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+
+</busconfig>
+'''.format(DBUS_SOCKET_PATH).encode())
+
+    conf.flush()
+
+    (_, addr) = dbusmock.DBusTestCase.start_dbus(conf=conf.name)
+    os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
+    return dbusmock.DBusTestCase.get_dbus(True)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

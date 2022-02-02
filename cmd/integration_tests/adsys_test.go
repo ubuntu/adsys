@@ -58,7 +58,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStartAndStopDaemon(t *testing.T) {
-	systemAnswer(t, "yes")
+	systemAnswer(t, "polkit_yes")
 
 	conf := createConf(t, "")
 	quit := runDaemon(t, conf)
@@ -300,13 +300,13 @@ func changeOsArgs(t *testing.T, conf string, args ...string) (restore func()) {
 var (
 	systemSockets      = make(map[string]string)
 	systemAnswersModes = []string{
-		"yes",
-		"no",
+		"polkit_yes",
+		"polkit_no",
 		"no_startup_time",
 		"invalid_startup_time",
 		"no_nextrefresh_time",
 		"invalid_nextrefresh_time",
-		"subcription_disabled",
+		"subscription_disabled",
 	}
 )
 
@@ -379,7 +379,8 @@ func runDaemons() (teardown func()) {
 	}
 
 	// give time for polkit containers to start
-	time.Sleep(20 * time.Second)
+	// TODO: wait for polkit containers to be ready
+	time.Sleep(5 * time.Second)
 
 	return func() {
 		defer func() {

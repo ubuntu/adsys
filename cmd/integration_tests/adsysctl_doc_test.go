@@ -42,7 +42,7 @@ func TestDocChapter(t *testing.T) {
 		"Get documentation chapter with full name":         {chapter: fullName},
 		"Get documentation chapter with non matching case": {chapter: baseName, modifyCase: true},
 
-		"Get documentation is always authorized": {systemAnswer: "no", chapter: baseName},
+		"Get documentation is always authorized": {systemAnswer: "polkit_no", chapter: baseName},
 
 		// Error cases
 		"Daemon not responding":                        {daemonNotStarted: true, wantErr: true},
@@ -54,7 +54,7 @@ func TestDocChapter(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.systemAnswer == "" {
-				tc.systemAnswer = "yes"
+				tc.systemAnswer = "polkit_yes"
 			}
 			systemAnswer(t, tc.systemAnswer)
 
@@ -152,7 +152,7 @@ func TestDocList(t *testing.T) {
 		"List every documentation chapter":        {},
 		"Raw list of everu documentation chapter": {raw: true},
 
-		"List documentation is always authorized": {systemAnswer: "no"},
+		"List documentation is always authorized": {systemAnswer: "polkit_no"},
 
 		// Error cases
 		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
@@ -161,7 +161,7 @@ func TestDocList(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.systemAnswer == "" {
-				tc.systemAnswer = "yes"
+				tc.systemAnswer = "polkit_yes"
 			}
 			systemAnswer(t, tc.systemAnswer)
 

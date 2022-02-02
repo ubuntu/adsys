@@ -29,7 +29,7 @@ type Manager struct {
 	privilege *privilege.Manager
 	gdm       *gdm.Manager
 
-	subcriptionDbus dbus.BusObject
+	subscriptionDbus dbus.BusObject
 
 	sync.RWMutex
 	subscriptionEnabled bool
@@ -114,8 +114,8 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		return nil, err
 	}
 
-	subscriptionDbus := bus.Object(consts.SubcriptionDbusRegisteredName,
-		dbus.ObjectPath(consts.SubcriptionDbusObjectPath))
+	subscriptionDbus := bus.Object(consts.SubscriptionDbusRegisteredName,
+		dbus.ObjectPath(consts.SubscriptionDbusObjectPath))
 
 	return &Manager{
 		policiesCacheDir: policiesCacheDir,
@@ -124,7 +124,7 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		privilege: privilegeManager,
 		gdm:       args.gdm,
 
-		subcriptionDbus: subscriptionDbus,
+		subscriptionDbus: subscriptionDbus,
 	}, nil
 }
 
@@ -139,7 +139,7 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	var g errgroup.Group
 	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
 
-	if !m.getSubcriptionState(ctx) {
+	if !m.getSubscriptionState(ctx) {
 		filterRules(ctx, rules)
 	}
 
@@ -223,8 +223,8 @@ func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachin
 	return info.ModTime(), nil
 }
 
-// getSubcriptionState refresh subscription status from Ubuntu Advantage and return it.
-func (m *Manager) getSubcriptionState(ctx context.Context) (subscriptionEnabled bool) {
+// getSubscriptionState refresh subscription status from Ubuntu Advantage and return it.
+func (m *Manager) getSubscriptionState(ctx context.Context) (subscriptionEnabled bool) {
 	log.Debug(ctx, "Refresh subscription state")
 
 	defer func() {
@@ -241,7 +241,7 @@ func (m *Manager) getSubcriptionState(ctx context.Context) (subscriptionEnabled 
 	}()
 
 	// Check if the device is entitled to the Pro policy
-	prop, err := m.subcriptionDbus.GetProperty(consts.SubcriptionDbusInterface + ".Status")
+	prop, err := m.subscriptionDbus.GetProperty(consts.SubscriptionDbusInterface + ".Status")
 	if err != nil {
 		log.Warningf(ctx, "no dbus connection to Ubuntu Advantage. Considering device as not enabled: %v", err)
 		return false

@@ -28,11 +28,11 @@ func TestServiceStop(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Stop daemon":           {daemonAnswer: "yes"},
-		"Stop daemon denied":    {daemonAnswer: "no", wantErr: true},
+		"Stop daemon":           {daemonAnswer: "polkit_yes"},
+		"Stop daemon denied":    {daemonAnswer: "polkit_no", wantErr: true},
 		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
 
-		"Force stop doesn’t exit on error": {daemonAnswer: "yes", force: true, wantErr: false},
+		"Force stop doesn’t exit on error": {daemonAnswer: "polkit_yes", force: true, wantErr: false},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -60,7 +60,7 @@ func TestServiceStop(t *testing.T) {
 }
 
 func TestServiceStopWaitForHangingClient(t *testing.T) {
-	systemAnswer(t, "yes")
+	systemAnswer(t, "polkit_yes")
 
 	conf := createConf(t, "")
 	d := daemon.New()
@@ -104,7 +104,7 @@ func TestServiceStopWaitForHangingClient(t *testing.T) {
 }
 
 func TestServiceStopForcedWithHangingClient(t *testing.T) {
-	systemAnswer(t, "yes")
+	systemAnswer(t, "polkit_yes")
 
 	conf := createConf(t, "")
 	d := daemon.New()
@@ -153,15 +153,15 @@ func TestServiceCat(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Cat other clients and daemon - cover daemon": {systemAnswer: "yes"},
-		"Cat denied - cover daemon":                   {systemAnswer: "no", wantErr: true},
+		"Cat other clients and daemon - cover daemon": {systemAnswer: "polkit_yes"},
+		"Cat denied - cover daemon":                   {systemAnswer: "polkit_no", wantErr: true},
 		"Daemon not responding - cover daemon":        {daemonNotStarted: true, wantErr: true},
 
-		"Cat other clients and daemon - cover client": {systemAnswer: "yes", coverCatClient: true},
-		"Cat denied - cover client":                   {systemAnswer: "no", coverCatClient: true, wantErr: true},
+		"Cat other clients and daemon - cover client": {systemAnswer: "polkit_yes", coverCatClient: true},
+		"Cat denied - cover client":                   {systemAnswer: "polkit_no", coverCatClient: true, wantErr: true},
 		"Daemon not responding - cover client":        {daemonNotStarted: true, coverCatClient: true, wantErr: true},
 
-		"Multiple cats": {multipleCats: true, systemAnswer: "yes"},
+		"Multiple cats": {multipleCats: true, systemAnswer: "polkit_yes"},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -275,13 +275,13 @@ func TestServiceStatus(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Status with users and machines":          {systemAnswer: "yes"},
-		"Status offline cache":                    {dynamicADServerDomain: "offline", systemAnswer: "yes"},
-		"Status no user connected and no machine": {noCacheUsersMachine: true, systemAnswer: "yes"},
-		"Status is always authorized":             {systemAnswer: "no"},
-		"Status on user connected with no cache":  {krb5ccNoCache: true, systemAnswer: "yes"},
-		"Status with dynamic AD server":           {dynamicADServerDomain: "example.com", systemAnswer: "yes"},
-		"Status with empty dynamic AD server":     {dynamicADServerDomain: "online_no_active_server", systemAnswer: "yes"},
+		"Status with users and machines":          {systemAnswer: "polkit_yes"},
+		"Status offline cache":                    {dynamicADServerDomain: "offline", systemAnswer: "polkit_yes"},
+		"Status no user connected and no machine": {noCacheUsersMachine: true, systemAnswer: "polkit_yes"},
+		"Status is always authorized":             {systemAnswer: "polkit_no"},
+		"Status on user connected with no cache":  {krb5ccNoCache: true, systemAnswer: "polkit_yes"},
+		"Status with dynamic AD server":           {dynamicADServerDomain: "example.com", systemAnswer: "polkit_yes"},
+		"Status with empty dynamic AD server":     {dynamicADServerDomain: "online_no_active_server", systemAnswer: "polkit_yes"},
 
 		// Refresh time exception
 		"No startup time leads to unknown refresh time":           {systemAnswer: "no_startup_time"},

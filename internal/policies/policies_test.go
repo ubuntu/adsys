@@ -902,14 +902,14 @@ func TestMain(m *testing.M) {
 		<node>
 			<interface name="%s">
 				<property name='Status' type='s' access="readwrite"/>
-			</interface>%s%s</node>`, consts.SubcriptionDbusInterface, introspect.IntrospectDataString, prop.IntrospectDataString)
+			</interface>%s%s</node>`, consts.SubscriptionDbusInterface, introspect.IntrospectDataString, prop.IntrospectDataString)
 		ua := struct{}{}
-		if err := conn.Export(ua, consts.SubcriptionDbusObjectPath, consts.SubcriptionDbusInterface); err != nil {
+		if err := conn.Export(ua, consts.SubscriptionDbusObjectPath, consts.SubscriptionDbusInterface); err != nil {
 			log.Fatalf("Setup: could not export subscription object: %v", err)
 		}
 
 		propsSpec := map[string]map[string]*prop.Prop{
-			consts.SubcriptionDbusInterface: {
+			consts.SubscriptionDbusInterface: {
 				"Status": {
 					Value:    "",
 					Writable: true,
@@ -918,17 +918,17 @@ func TestMain(m *testing.M) {
 				},
 			},
 		}
-		_, err = prop.Export(conn, consts.SubcriptionDbusObjectPath, propsSpec)
+		_, err = prop.Export(conn, consts.SubscriptionDbusObjectPath, propsSpec)
 		if err != nil {
 			log.Fatalf("Setup: could not export property for subscription object: %v", err)
 		}
 
-		if err := conn.Export(introspect.Introspectable(intro), consts.SubcriptionDbusObjectPath,
+		if err := conn.Export(introspect.Introspectable(intro), consts.SubscriptionDbusObjectPath,
 			"org.freedesktop.DBus.Introspectable"); err != nil {
 			log.Fatalf("Setup: could not export introspectable subscription object: %v", err)
 		}
 
-		reply, err := conn.RequestName(consts.SubcriptionDbusRegisteredName, dbus.NameFlagDoNotQueue)
+		reply, err := conn.RequestName(consts.SubscriptionDbusRegisteredName, dbus.NameFlagDoNotQueue)
 		if err != nil {
 			log.Fatalf("Setup: Failed to acquire sssd name on local system bus: %v", err)
 		}
