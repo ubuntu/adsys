@@ -213,7 +213,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	// Create ready flag
-	log.Debug(ctx, "Create script ready flag for user %q", objectName)
+	log.Debugf(ctx, "Create script ready flag for user %q", objectName)
 	f, err := os.Create(filepath.Join(scriptsPath, readyFlag))
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create ready file for scripts: %v"), err)

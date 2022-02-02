@@ -354,7 +354,6 @@ func TestFetch(t *testing.T) {
 					require.False(t, assetsRefreshed1, "assetsRefreshed1 should be false")
 					require.False(t, assetsRefreshed2, "assetsRefreshed2 should be false")
 				}
-
 			}
 
 			// Ensure that only wanted GPOs are cached
