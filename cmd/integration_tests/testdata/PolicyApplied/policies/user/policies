@@ -21,6 +21,12 @@ gpos:
               'yelp.desktop
           disabled: false
           meta: as
+      scripts:
+      - key: logon
+        value: |
+          local-script-user-logon
+        disabled: false
+        strategy: append
 - id: '{75545F76-DEC2-4ADA-B7B8-D5209FD48727}'
   name: IT Policy
   rules:
@@ -43,6 +49,13 @@ gpos:
               'org.gnome.Nautilus.desktop'
           disabled: false
           meta: as
+      scripts:
+      - key: logon
+        value: |
+          script-user-logon
+          subdirectory/other-logon
+        disabled: false
+        strategy: append
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy
   rules: {}

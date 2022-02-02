@@ -18,10 +18,14 @@ Policies from user configuration:
         - org/gnome/shell/common-key: user value
         - org/gnome/shell/common-key-user: user value on RnD Policy
         - org/gnome/shell/favorite-apps: 'libreoffice-writer.desktop'\n'snap-store_ubuntu-software.desktop'\n'yelp.desktop
+    - scripts:
+        - logon: local-script-user-logon
 - IT Policy ({75545F76-DEC2-4ADA-B7B8-D5209FD48727})
     - dconf:
         - org/gnome/desktop/background/picture-options: stretched
         - org/gnome/desktop/background/picture-uri: file:///usr/share/backgrounds/canonical.png
         - org/gnome/shell/common-key-user: Locked to system default
         - org/gnome/shell/favorite-apps: 'firefox.desktop'\n'thunderbird.desktop'\n'org.gnome.Nautilus.desktop'
+    - scripts:
+        - logon: script-user-logon\nsubdirectory/other-logon
 - Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})
