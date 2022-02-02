@@ -215,6 +215,10 @@ func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string) (err e
 	// zip doesn’t like final /, even when listing them return it.
 	relSrc = strings.TrimSuffix(relSrc, "/")
 
+	if relSrc == "" {
+		return errors.New(i18n.G("no relSrc provided to look into database archive"))
+	}
+
 	dstPath := filepath.Join(dest, strings.TrimPrefix(relSrc, baseDir))
 
 	f, err := pols.assets.Open(relSrc)
