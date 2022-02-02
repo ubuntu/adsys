@@ -14,6 +14,27 @@ import (
 	"github.com/termie/go-shutil"
 )
 
+// Copy copies files and directories to dest.
+func Copy(t *testing.T, src, dest string) {
+	t.Helper()
+
+	// check that src is a file
+	info, err := os.Stat(src)
+	require.NoError(t, err, "Cannot stat %s", src)
+	if !info.IsDir() {
+		require.NoError(t, shutil.CopyFile(src, dest, false), "Cannot copy %s to %s", src, dest)
+		return
+	}
+
+	// Copy a directory
+	require.NoError(t,
+		shutil.CopyTree(
+			src,
+			dest,
+			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+		"Cannot copy %s to %s", src, dest)
+}
+
 // MakeReadOnly makes dest read only and restore permission on cleanup.
 func MakeReadOnly(t *testing.T, dest string) {
 	t.Helper()
