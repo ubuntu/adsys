@@ -14,7 +14,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -123,7 +122,7 @@ func TestGetPolicies(t *testing.T) {
 		gpoListArgs                  []string
 		dontCreateOriginalKrb5CCName bool
 		turnKrb5CCRO                 bool
-		copyAssetsDBInCache          string
+		existing                     map[string]string
 
 		want             policies.Policies
 		wantAssetsEquals string
@@ -200,7 +199,7 @@ func TestGetPolicies(t *testing.T) {
 		},
 
 		// Assets cases
-		"Standard policy with assets, computer object download assets": {
+		"Standard policy with assets, downloads assets": {
 			gpoListArgs:        []string{"assetsandgpo.com", hostname + ":standard"},
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
@@ -217,26 +216,27 @@ func TestGetPolicies(t *testing.T) {
 			wantAssetsEquals: "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
 			wantServerURL:    "ldap://myserver.assetsandgpo.com",
 		},
-		"Standard policy with assets, assets are not downloaded for user": {
+		"Standard policy with assets, existing assets are reattached if not refreshed": {
 			gpoListArgs:        []string{"assetsandgpo.com", "bob:standard"},
 			objectName:         "bob@ASSETSANDGPO.COM",
 			objectClass:        ad.UserObject,
 			domain:             "assetsandgpo.com",
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			existing:           map[string]string{"assets": "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu", "assets.db": "testdata/sysvolcache/assets.db"},
 			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
-			wantAssetsEquals:   "",
+			wantAssetsEquals:   "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
 			wantServerURL:      "ldap://myserver.assetsandgpo.com",
 		},
-		"Standard policy with assets, existing assets in sysvol are reattached for user": {
-			gpoListArgs:         []string{"assetsandgpo.com", "bob:standard"},
-			objectName:          "bob@ASSETSANDGPO.COM",
-			objectClass:         ad.UserObject,
-			domain:              "assetsandgpo.com",
-			userKrb5CCBaseName:  "kbr5cc_adsys_tests_bob",
-			copyAssetsDBInCache: "assets.db",
-			want:                policies.Policies{GPOs: []policies.GPO{standardGPO}},
-			wantAssetsEquals:    "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
-			wantServerURL:       "ldap://myserver.assetsandgpo.com",
+		"Local assets and its db are removed if not present anymore on AD sysvol": {
+			gpoListArgs:        []string{"gpoonly.com", "bob:standard"},
+			objectName:         "bob@ASSETSANDGPO.COM",
+			objectClass:        ad.UserObject,
+			domain:             "gpoonly.com",
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			existing:           map[string]string{"assets": "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu", "assets.db": "testdata/sysvolcache/assets.db"},
+			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
+			wantAssetsEquals:   "",
+			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 		"Assets can’t be downloaded without GPO": {
 			gpoListArgs:        []string{"assetsonly.com", ""},
@@ -247,6 +247,24 @@ func TestGetPolicies(t *testing.T) {
 			want:               policies.Policies{},
 			wantAssetsEquals:   "",
 			wantServerURL:      "ldap://myserver.assetsonly.com",
+		},
+		"Assets directory being a file cleanup local existing assets and its db": {
+			gpoListArgs:        []string{"assetsdirisfile.com", hostname + ":standard"},
+			objectName:         hostname,
+			objectClass:        ad.ComputerObject,
+			domain:             "assetsdirisfile.com",
+			userKrb5CCBaseName: "", // ignored for machine
+			existing:           map[string]string{"assets": "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu", "assets.db": "testdata/sysvolcache/assets.db"},
+			want: policies.Policies{GPOs: []policies.GPO{
+				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "D", Value: "standardD"},
+						{Key: "E", Value: "standardE"},
+					}}}},
+			},
+			wantAssetsEquals: "",
+			wantServerURL:    "ldap://myserver.assetsdirisfile.com",
 		},
 
 		// Multi releases cases
@@ -604,14 +622,6 @@ func TestGetPolicies(t *testing.T) {
 			turnKrb5CCRO:       true,
 			wantErr:            true,
 		},
-		"Error on assets directory being a file": {
-			gpoListArgs:        []string{"assetsdirisfile.com", hostname + ":standard"},
-			objectName:         hostname,
-			objectClass:        ad.ComputerObject,
-			domain:             "assetsdirisfile.com",
-			userKrb5CCBaseName: "", // ignored for machine
-			wantErr:            true,
-		},
 	}
 
 	for name, tc := range tests {
@@ -654,13 +664,9 @@ func TestGetPolicies(t *testing.T) {
 				}()
 			}
 
-			if tc.copyAssetsDBInCache != "" {
-				require.NoError(t,
-					shutil.CopyFile(
-						filepath.Join("testdata", "cachedassetsdb", tc.copyAssetsDBInCache),
-						filepath.Join(adc.SysvolCacheDir(), "assets.db"),
-						false),
-					"Setup: can't copy initial sysvol cache directory")
+			// prepare by copying downloadables if any
+			for n, src := range tc.existing {
+				testutils.Copy(t, src, filepath.Join(adc.SysvolCacheDir(), n))
 			}
 
 			entries, err := adc.GetPolicies(context.Background(), tc.objectName, tc.objectClass, krb5CCName)
@@ -679,6 +685,7 @@ func TestGetPolicies(t *testing.T) {
 			err = entries.SaveAssetsTo(context.Background(), ".", uncompressedAssets)
 			if tc.wantAssetsEquals == "" {
 				require.Error(t, err, "Teardown: policies should have no assets to uncompress")
+				require.NoFileExists(t, filepath.Join(adc.SysvolCacheDir(), "assets.db"), "assets db cache should not exists")
 			} else {
 				require.NoError(t, err, "Teardown: SaveAssetsTo should deserialize successfully.")
 				testutils.CompareTreesWithFiltering(t, uncompressedAssets, tc.wantAssetsEquals, false)
@@ -703,12 +710,12 @@ func TestGetPoliciesOffline(t *testing.T) {
 	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
-		domainToCache    string
-		domain           string
-		targetIsComputer bool
-		gpoListArgs      []string
+		domainToCache string
+		domain        string
+		gpoListArgs   []string
 
-		wantErr bool
+		wantAssets bool
+		wantErr    bool
 	}{
 		"Offline, get from cache, gpo only": {
 			domainToCache: "gpoonly.com",
@@ -719,17 +726,19 @@ func TestGetPoliciesOffline(t *testing.T) {
 			domainToCache: "assetsandgpo.com",
 			domain:        "offline",
 			gpoListArgs:   nil,
+			wantAssets:    true,
 		},
 		"Offline, ensure we fetch from cache and not fetch GPO list": {
 			domainToCache: "assetsandgpo.com",
 			domain:        "offline",
 			gpoListArgs:   []string{"-Exit2-"}, // this should not be used
+			wantAssets:    true,
 		},
-		"Offline, with assets on computer object": {
-			domainToCache:    "assetsandgpo.com",
-			targetIsComputer: true,
-			domain:           "offline",
-			gpoListArgs:      []string{"-Exit2-"}, // this should not be used
+		"Offline, with assets": {
+			domainToCache: "assetsandgpo.com",
+			domain:        "offline",
+			gpoListArgs:   []string{"-Exit2-"}, // this should not be used
+			wantAssets:    true,
 		},
 
 		"Error on SSSD reports online, but we are actually offline when fetching gpo list, even with a cache": {
@@ -759,19 +768,12 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 			objectName := fmt.Sprintf("useroffline@%s", strings.ToUpper(tc.domain))
 			objectClass := ad.UserObject
-			if tc.targetIsComputer {
-				objectName = hostname
-				objectClass = ad.ComputerObject
-			}
 			krb5CCName := setKrb5CC(t, objectName)
 
 			var initialPolicies policies.Policies
 
 			if tc.domainToCache != "" {
 				objectNameForCache := fmt.Sprintf("useroffline@%s", strings.ToUpper(tc.domainToCache))
-				if tc.targetIsComputer {
-					objectNameForCache = hostname
-				}
 				krb5CCNameForCache := setKrb5CC(t, objectNameForCache)
 
 				cachedir, rundir := t.TempDir(), t.TempDir()
@@ -799,7 +801,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 			// Ensure we only have one policy
 			require.NotEqual(t, 0, len(entries.GPOs), "GetPolicies should return at least one GPO list when not failing")
 
-			assertEqualPolicies(t, initialPolicies, entries, tc.targetIsComputer)
+			assertEqualPolicies(t, initialPolicies, entries, tc.wantAssets)
 
 			serverURL, isOffline := adc.GetStatus()
 			assert.True(t, isOffline, "We report that we are offline")
@@ -889,7 +891,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
+			adc, err := ad.New(context.Background(), "ldap://UNUSED:1636/", "assetsandgpo.com", bus,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithSSSCacheDir("testdata/sss/db"),
 				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs...)))
@@ -899,9 +901,9 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			entries, err := adc.GetPolicies(context.Background(), tc.objectName1, objectClass, krb5CCName)
 			require.NoError(t, err, "GetPolicies should return no error")
 
-			wantPolicyDir := filepath.Join("testdata", "cachedpolicies", strings.ToLower(tc.objectName1))
+			wantPolicyDir := filepath.Join("testdata", "sysvolcache", strings.ToLower(tc.objectName1))
 			if tc.objectName1 == hostname {
-				wantPolicyDir = filepath.Join("testdata", "cachedpolicies", "machine")
+				wantPolicyDir = filepath.Join("testdata", "sysvolcache", "machine")
 			}
 			want, err := policies.NewFromCache(context.Background(), wantPolicyDir)
 			require.NoError(t, err, "Setup: can't load wanted policies")
@@ -918,7 +920,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			// Restart: recreate ad object
 			if tc.restart {
-				adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
+				adc, err = ad.New(context.Background(), "ldap://UNUSED:1636/", "assetsandgpo.com", bus,
 					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 					ad.WithSSSCacheDir("testdata/sss/db"),
 					ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs...)))
@@ -929,9 +931,9 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			entries, err = adc.GetPolicies(context.Background(), tc.objectName2, objectClass, krb5CCName)
 			require.NoError(t, err, "GetPolicies should return no error")
 
-			wantPolicyDir = filepath.Join("testdata", "cachedpolicies", strings.ToLower(tc.objectName2))
+			wantPolicyDir = filepath.Join("testdata", "sysvolcache", strings.ToLower(tc.objectName2))
 			if tc.objectName2 == hostname {
-				wantPolicyDir = filepath.Join("testdata", "cachedpolicies", "machine")
+				wantPolicyDir = filepath.Join("testdata", "sysvolcache", "machine")
 			}
 			want, err = policies.NewFromCache(context.Background(), wantPolicyDir)
 			require.NoError(t, err, "Setup: can't load wanted policies")
@@ -1049,9 +1051,9 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 				got1, err := adc.GetPolicies(context.Background(), tc.objectName1, tc.objectClass1, krb5CCName1)
 				require.NoError(t, err, "GetPolicies should return no error")
 
-				wantPolicyDir := filepath.Join("testdata", "cachedpolicies", strings.ToLower(tc.objectName1))
+				wantPolicyDir := filepath.Join("testdata", "sysvolcache", strings.ToLower(tc.objectName1))
 				if tc.objectName1 == hostname {
-					wantPolicyDir = filepath.Join("testdata", "cachedpolicies", "machine")
+					wantPolicyDir = filepath.Join("testdata", "sysvolcache", "machine")
 				}
 				want, err := policies.NewFromCache(context.Background(), wantPolicyDir)
 				require.NoError(t, err, "Setup: can't load wanted policies")
@@ -1062,9 +1064,9 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 				got2, err := adc.GetPolicies(context.Background(), tc.objectName2, tc.objectClass2, krb5CCName2)
 				require.NoError(t, err, "GetPolicies should return no error")
 
-				wantPolicyDir := filepath.Join("testdata", "cachedpolicies", strings.ToLower(tc.objectName2))
+				wantPolicyDir := filepath.Join("testdata", "sysvolcache", strings.ToLower(tc.objectName2))
 				if tc.objectName2 == hostname {
-					wantPolicyDir = filepath.Join("testdata", "cachedpolicies", "machine")
+					wantPolicyDir = filepath.Join("testdata", "sysvolcache", "machine")
 				}
 				want, err := policies.NewFromCache(context.Background(), wantPolicyDir)
 				require.NoError(t, err, "Setup: can't load wanted policies")
