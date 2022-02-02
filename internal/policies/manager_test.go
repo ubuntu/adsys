@@ -22,7 +22,7 @@ func TestApplyPolicies(t *testing.T) {
 
 	// Let’s mock systemctl with a dummy command in PATH as this test is not running in parallel
 	bin := t.TempDir()
-	// #nosec G306: Thisis a dummy command for test on systemctl which is under our control.
+	// #nosec G306: This is a dummy command for test on systemctl which is under our control.
 	err := os.WriteFile(filepath.Join(bin, "systemctl"), []byte("#!/bin/sh"), 0700)
 	require.NoError(t, err, "Setup: can not create dummy systemctl")
 	testutils.Setenv(t, "PATH", fmt.Sprintf("%s:%s", bin, os.Getenv("PATH")))
