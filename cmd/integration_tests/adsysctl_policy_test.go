@@ -377,6 +377,7 @@ func TestPolicyUpdate(t *testing.T) {
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
+				"run/users/1000",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -390,16 +391,19 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			},
 		},
-		"Host is offline, user gpos cache is cleared, with policies cache": {
+		"Host is offline, sysvol cache is cleared, use user cache": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
-			// clean gpos cache, but keep machine ones and user policies
+			// clean sysvol cache, but keep machine ones and user policies
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
+				"run/users/1000",
 				"cache/sysvol/Policies/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
 				"cache/sysvol/Policies/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
 				"cache/sysvol/Policies/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
+				"cache/sysvol/assets",
+				"cache/sysvol/assets.db",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -892,6 +896,8 @@ func TestPolicyUpdate(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "dconf"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "sudoers.d"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "polkit-1"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "run", "users"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", hostname), filepath.Join("testdata", "PolicyUpdate", "golden", name, "run", "machine"), update)
 		})
 	}
 }
