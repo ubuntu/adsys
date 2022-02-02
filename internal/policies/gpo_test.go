@@ -21,6 +21,8 @@ func TestFormat(t *testing.T) {
 	}
 
 	tests := map[string]struct {
+		cachedPoliciesSrc string
+
 		withRules             bool
 		withOverridden        bool
 		alreadyProcessedRules map[string]struct{}
@@ -55,6 +57,28 @@ func TestFormat(t *testing.T) {
 			withOverridden:            true,
 			alreadyProcessedRules:     map[string]struct{}{"scripts/path/to/key3": {}},
 			wantAlreadyProcessedRules: defaultProcessedRules},
+
+		// append strategy cases
+		"GPO and assets with rules, appending to same key do not add to processed rules": {
+			cachedPoliciesSrc: "with_assets_other",
+			withRules:         true,
+			withOverridden:    true,
+			wantAlreadyProcessedRules: map[string]struct{}{
+				"dconf/path/to/key1": {},
+				"dconf/path/to/key2": {},
+				// key3 is not in the process rules as appended in term of strategy
+			}},
+		"GPO and assets with rules, append is overridden after a topmost override": {
+			cachedPoliciesSrc: "with_assets",
+			alreadyProcessedRules: map[string]struct{}{
+				"scripts/path/to/key3": {}},
+			withRules:      true,
+			withOverridden: true,
+			wantAlreadyProcessedRules: map[string]struct{}{
+				"dconf/path/to/key1":   {},
+				"dconf/path/to/key2":   {},
+				"scripts/path/to/key3": {},
+			}},
 	}
 
 	for name, tc := range tests {
@@ -63,14 +87,18 @@ func TestFormat(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			pols, err := policies.NewFromCache(context.Background(), "testdata/cache/policies/simple")
+			cachedPoliciesSrc := "simple"
+			if tc.cachedPoliciesSrc != "" {
+				cachedPoliciesSrc = tc.cachedPoliciesSrc
+			}
+
+			pols, err := policies.NewFromCache(context.Background(), filepath.Join("testdata", "cache", "policies", cachedPoliciesSrc))
 			require.NoError(t, err, "Got policies without error")
 			defer pols.Close()
 
 			var out strings.Builder
 
 			got := pols.GPOs[0].Format(&out, tc.withRules, tc.withOverridden, tc.alreadyProcessedRules)
-
 			// check cache between Format calls
 			require.Equal(t, tc.wantAlreadyProcessedRules, got, "Format returns expected alreadyProcessedRules cache")
 
