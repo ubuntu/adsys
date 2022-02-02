@@ -145,6 +145,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 	// Fix ownership of scripts/ subdirectory and its contents
 	if !isComputer {
+		log.Debugf(ctx, "Fixing ownership of scripts/ subdirectory for user %q", objectName)
 		if err := filepath.WalkDir(dest, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -156,6 +157,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	// create order files, check that the scripts existings in the destination
+	log.Debugf(ctx, "Creating script order file for user %q", objectName)
 	orderFilesContent := make(map[string][]string)
 	for _, e := range entries {
 		lifecycle := filepath.Base(e.Key)
@@ -167,6 +169,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 			// check that the script exists and make it executable
 			scriptFilePath := filepath.Join(scriptsPath, executableDir, script)
+			log.Debugf(ctx, "%q: found %q. Marking as executable %q", e.Key, script, scriptFilePath)
 			info, err := os.Stat(scriptFilePath)
 			if errors.Is(err, os.ErrNotExist) {
 				return fmt.Errorf(i18n.G("script %q doesn't exist in SYSVOL scripts/ subdirectory"), script)
@@ -186,6 +189,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	for lifecycle, scripts := range orderFilesContent {
 		orderFilePath := filepath.Join(scriptsPath, lifecycle)
 
+		log.Debugf(ctx, "Creating order file %q", orderFilePath)
 		f, err := os.Create(orderFilePath)
 		if err != nil {
 			return err
@@ -209,6 +213,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	// Create ready flag
+	log.Debug(ctx, "Create script ready flag for user %q", objectName)
 	f, err := os.Create(filepath.Join(scriptsPath, readyFlag))
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create ready file for scripts: %v"), err)
