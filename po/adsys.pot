@@ -21,7 +21,7 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
-#: internal/ad/ad.go:347
+#: internal/ad/ad.go:349
 msgid "%q downloaded from SYSVOL is not a directory"
 msgstr ""
 
@@ -43,7 +43,7 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:456
+#: internal/ad/ad.go:458
 msgid "%s :%v"
 msgstr ""
 
@@ -89,7 +89,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:256
+#: internal/ad/ad.go:257
 msgid "%s: %v"
 msgstr ""
 
@@ -103,7 +103,7 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/ad/ad.go:259
+#: internal/ad/ad.go:260
 #, c-format
 msgid "%s: no active server found"
 msgstr ""
@@ -387,7 +387,7 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/policies.go:269
+#: internal/policies/policies.go:273
 #, c-format
 msgid "can't compress assets from %s"
 msgstr ""
@@ -428,7 +428,7 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/ad/ad.go:394
+#: internal/ad/ad.go:396
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -468,7 +468,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:401
+#: internal/ad/ad.go:403
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -482,7 +482,7 @@ msgstr ""
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:205
+#: internal/ad/ad.go:206
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -490,7 +490,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/ad/ad.go:369
+#: internal/ad/ad.go:371
 msgid "can't list users from cache"
 msgstr ""
 
@@ -713,7 +713,7 @@ msgid "error while trying to get the list of active users"
 msgstr ""
 
 #. Try to update from SSSD the current active AD server
-#: internal/ad/ad.go:253
+#: internal/ad/ad.go:254
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
@@ -753,7 +753,7 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/ad/ad.go:378
+#: internal/ad/ad.go:380
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -769,15 +769,15 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:412
+#: internal/ad/ad.go:414
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/ad/ad.go:231
+#: internal/ad/ad.go:232
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/ad/ad.go:285
+#: internal/ad/ad.go:286
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -827,7 +827,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:241
+#: internal/ad/ad.go:242
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -877,6 +877,10 @@ msgstr ""
 msgid "no policy applied for %q: %v"
 msgstr ""
 
+#: internal/policies/policies.go:219
+msgid "no relSrc provided to look into database archive"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:234
 msgid "parsing error: %v"
 msgstr ""
@@ -913,7 +917,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:215
+#: internal/ad/ad.go:216
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -978,6 +982,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:210
+#: internal/ad/ad.go:211
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
