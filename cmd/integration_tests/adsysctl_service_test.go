@@ -64,7 +64,7 @@ func TestServiceStopWaitForHangingClient(t *testing.T) {
 
 	conf := createConf(t, "")
 	d := daemon.New()
-	changeOsArgs(t, conf)
+	changeAppArgs(t, d, conf)
 
 	daemonStopped := make(chan struct{})
 	go func() {
@@ -108,7 +108,7 @@ func TestServiceStopForcedWithHangingClient(t *testing.T) {
 
 	conf := createConf(t, "")
 	d := daemon.New()
-	changeOsArgs(t, conf)
+	changeAppArgs(t, d, conf)
 
 	daemonStopped := make(chan struct{})
 	go func() {
@@ -198,7 +198,7 @@ func TestServiceCat(t *testing.T) {
 				done := make(chan struct{})
 				go func() {
 					defer close(done)
-					changeOsArgs(t, conf, "service", "cat")
+					changeAppArgs(t, c, conf, "service", "cat")
 					err = c.Run()
 				}()
 

@@ -217,7 +217,7 @@ func runDaemon(t *testing.T, conf string) (quit func()) {
 
 	var wg sync.WaitGroup
 	d := daemon.New()
-	changeOsArgs(t, conf)
+	changeAppArgs(t, d, conf)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -250,7 +250,7 @@ func runClient(t *testing.T, conf string, args ...string) (stdout string, err er
 	t.Helper()
 
 	c := client.New()
-	changeOsArgs(t, conf, args...)
+	changeAppArgs(t, c, conf, args...)
 
 	// capture stdout
 	r, w, err := os.Pipe()
@@ -270,31 +270,24 @@ func runClient(t *testing.T, conf string, args ...string) (stdout string, err er
 	return out.String(), err
 }
 
-// changeOsArgs modifies the os Args for cobra to parse them successfully.
-// As os.Args is global, calling it prevents any parallell testing.
-// It returns a function to restore the args if you want to do so before the test ends.
-func changeOsArgs(t *testing.T, conf string, args ...string) (restore func()) {
+type setterArgs interface {
+	SetArgs([]string)
+}
+
+// changeAppArgs modifies the application Args for cobra to parse them successfully.
+// Do not share the daemon or client passed to it, as cobra store it globally.
+func changeAppArgs(t *testing.T, s setterArgs, conf string, args ...string) {
 	t.Helper()
 
-	origArgs := os.Args
-
-	os.Args = []string{"tests", "-vv"}
+	newArgs := []string{"-vv"}
 	if conf != "" {
-		os.Args = append(os.Args, "-c", conf)
+		newArgs = append(newArgs, "-c", conf)
 	}
 	if args != nil {
-		os.Args = append(os.Args, args...)
+		newArgs = append(newArgs, args...)
 	}
 
-	var once sync.Once
-	restore = func() {
-		once.Do(func() {
-			os.Args = origArgs
-		})
-	}
-
-	t.Cleanup(restore)
-	return restore
+	s.SetArgs(newArgs)
 }
 
 var (

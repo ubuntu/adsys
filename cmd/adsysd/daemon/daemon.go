@@ -212,3 +212,8 @@ func (a App) RootCmd() cobra.Command {
 func (a *App) WaitReady() {
 	<-a.ready
 }
+
+// SetArgs changes the root command args. Shouldn’t be in general necessary apart for integration tests.
+func (a *App) SetArgs(args []string) {
+	a.rootCmd.SetArgs(args)
+}
