@@ -278,6 +278,10 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
+		scriptPath := strings.TrimSpace(scanner.Text())
+		if scriptPath == "" {
+			continue
+		}
 		script := filepath.Join(baseDir, scriptPath)
 		// #nosec G204 - this variable is coming from concatenation of an order file.
 		// Permissions are restricted to the owner of the order file, which is the one executing
