@@ -5,5 +5,4 @@ script=$(realpath $0)
 # We want to write our golden file in user/foo/.
 path=$(dirname $(dirname $(dirname $(dirname ${script}))))
 
-mkdir -p "${path}/golden/"
-echo $(basename $0) >> "${path}/golden/order"
+echo $(basename $0) >> "${path}/golden"
