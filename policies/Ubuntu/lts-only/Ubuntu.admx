@@ -56,6 +56,15 @@
     <category name="UbuntuPrivilegeAuthorization" displayName="$(string.UbuntuDisplayPrivilegeAuthorization)">
       <parentCategory ref="UbuntuClientManagement" />
     </category>
+    <category name="UbuntuComputerScripts" displayName="$(string.UbuntuDisplayComputerScripts)">
+      <parentCategory ref="UbuntuClientManagement" />
+    </category>
+    <category name="UbuntuSessionManagement" displayName="$(string.UbuntuDisplaySessionManagement)">
+      <parentCategory ref="UbuntuUbuntu" />
+    </category>
+    <category name="UbuntuUserScripts" displayName="$(string.UbuntuDisplayUserScripts)">
+      <parentCategory ref="UbuntuSessionManagement" />
+    </category>
   </categories>
 
   <policies>
@@ -764,6 +773,42 @@
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"all":{}}</string></enabledValue>
       <disabledValue><string>{"all":{}}</string></disabledValue>
+    </policy>
+    <policy name="UbuntuMachineScriptsStartup" class="Machine" displayName="$(string.UbuntuDisplayMachineAllScriptsStartup)" explainText="$(string.UbuntuExplainTextMachineScriptsStartup)" presentation="$(presentation.UbuntuPresentationMachineScriptsStartup)" key="Software\Policies\Ubuntu\scripts\startup" valueName="metaValues">
+      <parentCategory ref="UbuntuComputerScripts" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemMachineAllScriptsStartup" valueName="all" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineScriptsShutdown" class="Machine" displayName="$(string.UbuntuDisplayMachineAllScriptsShutdown)" explainText="$(string.UbuntuExplainTextMachineScriptsShutdown)" presentation="$(presentation.UbuntuPresentationMachineScriptsShutdown)" key="Software\Policies\Ubuntu\scripts\shutdown" valueName="metaValues">
+      <parentCategory ref="UbuntuComputerScripts" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemMachineAllScriptsShutdown" valueName="all" />
+      </elements>
+    </policy>
+    <policy name="UbuntuUserScriptsLogon" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogon)" explainText="$(string.UbuntuExplainTextUserScriptsLogon)" presentation="$(presentation.UbuntuPresentationUserScriptsLogon)" key="Software\Policies\Ubuntu\scripts\logon" valueName="metaValues">
+      <parentCategory ref="UbuntuUserScripts" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemUserAllScriptsLogon" valueName="all" />
+      </elements>
+    </policy>
+    <policy name="UbuntuUserScriptsLogoff" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogoff)" explainText="$(string.UbuntuExplainTextUserScriptsLogoff)" presentation="$(presentation.UbuntuPresentationUserScriptsLogoff)" key="Software\Policies\Ubuntu\scripts\logoff" valueName="metaValues">
+      <parentCategory ref="UbuntuUserScripts" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemUserAllScriptsLogoff" valueName="all" />
+      </elements>
     </policy>
   </policies>
 
