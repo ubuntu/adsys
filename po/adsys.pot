@@ -21,8 +21,12 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
-#: internal/ad/ad.go:349
-msgid "%q downloaded from SYSVOL is not a directory"
+#: internal/policies/scripts/scripts.go:276
+msgid "%q is a directory and not a file"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:259
+msgid "%q is not ready to execute scripts"
 msgstr ""
 
 #: cmd/adsysd/client/version.go:44
@@ -43,7 +47,7 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:458
+#: internal/ad/ad.go:466
 msgid "%s :%v"
 msgstr ""
 
@@ -89,7 +93,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:257
+#: internal/ad/ad.go:260
 msgid "%s: %v"
 msgstr ""
 
@@ -103,7 +107,7 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/ad/ad.go:260
+#: internal/ad/ad.go:263
 #, c-format
 msgid "%s: no active server found"
 msgstr ""
@@ -165,7 +169,7 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:289
+#: internal/adsysservice/adsysservice.go:292
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
@@ -191,7 +195,7 @@ msgstr ""
 msgid "Control() error: %s"
 msgstr ""
 
-#: internal/ad/download.go:257
+#: internal/ad/download.go:242
 msgid "Could not clean up temporary directory:"
 msgstr ""
 
@@ -215,7 +219,7 @@ msgstr ""
 msgid "Documentation"
 msgstr ""
 
-#: internal/ad/download.go:307
+#: internal/ad/download.go:292
 #, c-format
 msgid "Downloading %s"
 msgstr ""
@@ -266,11 +270,11 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/manager.go:182
+#: internal/policies/manager.go:200
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:190
+#: internal/policies/manager.go:208
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -298,7 +302,7 @@ msgstr ""
 msgid "Quitting"
 msgstr ""
 
-#: internal/daemon/daemon.go:161
+#: cmd/adsysd/daemon/scripts.go:36 internal/daemon/daemon.go:161
 msgid "Ready state sent to systemd"
 msgstr ""
 
@@ -312,6 +316,10 @@ msgstr ""
 
 #: cmd/adsysd/daemon/version.go:14
 msgid "Returns version of service and exits"
+msgstr ""
+
+#: cmd/adsysd/daemon/scripts.go:18
+msgid "Runs scripts in the given subdirectory"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:20
@@ -364,6 +372,10 @@ msgid ""
 "USER_NAME/TICKET cannot be used with this option."
 msgstr ""
 
+#: cmd/adsysd/daemon/scripts.go:23
+msgid "allow ORDER_FILE to be missing once the scripts are ready."
+msgstr ""
+
 #: internal/authorizer/authorizer.go:188
 msgid "call to polkit failed: %v"
 msgstr ""
@@ -382,12 +394,29 @@ msgstr ""
 msgid "can't apply privilege policy to %s"
 msgstr ""
 
-#: internal/ad/download.go:150
+#: internal/policies/scripts/scripts.go:81
+#, c-format
+msgid "can't apply scripts policy to %s"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:181
+msgid "can't change mode of script %qto %o: %v"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:210
+msgid "can't change owner of order file %q to user %s: %v"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:137
+msgid "can't change owner of script directory %q to user %s: %v"
+msgstr ""
+
+#: internal/ad/download.go:166
 #, c-format
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/policies.go:273
+#: internal/policies/policies.go:292
 #, c-format
 msgid "can't compress assets from %s"
 msgstr ""
@@ -396,7 +425,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/ad/ad.go:130
+#: internal/ad/ad.go:133
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -404,7 +433,7 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:83
+#: internal/policies/manager.go:94
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
@@ -428,11 +457,19 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/ad/ad.go:396
+#: internal/policies/scripts/scripts.go:219
+msgid "can't create ready file for scripts: %v"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:133
+msgid "can't create scripts directory %q: %v"
+msgstr ""
+
+#: internal/ad/ad.go:404
 msgid "can't create symlink for caching"
 msgstr ""
 
-#: internal/policies/policies.go:45
+#: internal/policies/policies.go:46
 msgid "can't created new policies"
 msgstr ""
 
@@ -444,16 +481,12 @@ msgstr ""
 msgid "can't determine start time of client process"
 msgstr ""
 
-#: internal/ad/download.go:102
-msgid "can't download GPO %q"
+#: internal/ad/download.go:108
+msgid "can't download %q"
 msgstr ""
 
-#: internal/ad/download.go:64
-msgid "can't download all gpos"
-msgstr ""
-
-#: internal/ad/download.go:131
-msgid "can't download data directory"
+#: internal/ad/download.go:66
+msgid "can't download all gpos and assets"
 msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:423
@@ -468,11 +501,11 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:403
+#: internal/ad/ad.go:411
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/policies.go:65
+#: internal/policies/policies.go:66
 #, c-format
 msgid "can't get cached policies from %s"
 msgstr ""
@@ -482,7 +515,7 @@ msgstr ""
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:206
+#: internal/ad/ad.go:209
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -490,7 +523,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/ad/ad.go:371
+#: internal/ad/ad.go:379
 msgid "can't list users from cache"
 msgstr ""
 
@@ -498,7 +531,7 @@ msgstr ""
 msgid "can't listen on new socket %q"
 msgstr ""
 
-#: internal/ad/admxgen/main.go:221
+#: internal/ad/admxgen/main.go:230
 msgid "can't load category definition"
 msgstr ""
 
@@ -506,7 +539,7 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:233
+#: internal/adsysservice/adsysservice.go:236
 #, c-format
 msgid "can't load server info from %s"
 msgstr ""
@@ -519,7 +552,7 @@ msgstr ""
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:246
+#: internal/adsysservice/adsysservice.go:249
 msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
@@ -527,17 +560,22 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
+#: internal/policies/scripts/scripts.go:251
+#, c-format
+msgid "can't run scripts listed in %s"
+msgstr ""
+
 #: internal/policies/dconf/dconf.go:196
 #, c-format
 msgid "can't save %s"
 msgstr ""
 
-#: internal/policies/policies.go:201
+#: internal/policies/policies.go:216
 #, c-format
 msgid "can't save assets to %s"
 msgstr ""
 
-#: internal/policies/policies.go:117
+#: internal/policies/policies.go:119
 #, c-format
 msgid "can't save policies to %s"
 msgstr ""
@@ -579,7 +617,7 @@ msgstr ""
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
-#: internal/ad/download.go:247
+#: internal/ad/download.go:232
 msgid "could not close directory: %v"
 msgstr ""
 
@@ -602,7 +640,12 @@ msgstr ""
 msgid "could not read chapter %q: %v"
 msgstr ""
 
+#: internal/policies/scripts/scripts.go:96
+msgid "couldn't convert %q to a valid gid for %q"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:137
+#: internal/policies/scripts/scripts.go:93
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
@@ -615,6 +658,7 @@ msgid "couldn't open stat file for process: %v"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:133
+#: internal/policies/scripts/scripts.go:90
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
@@ -622,12 +666,16 @@ msgstr ""
 msgid "couldn't send logs to client"
 msgstr ""
 
-#: internal/daemon/daemon.go:159
+#: cmd/adsysd/daemon/scripts.go:34 internal/daemon/daemon.go:159
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
 #: internal/policies/dconf/dconf.go:188
 msgid "dconf update failed: %v"
+msgstr ""
+
+#: internal/policies/policies.go:226
+msgid "destination %q already exists"
 msgstr ""
 
 #: cmd/adsysd/daemon/daemon.go:140
@@ -646,7 +694,7 @@ msgstr ""
 msgid "don't display colorized version."
 msgstr ""
 
-#: internal/ad/download.go:205
+#: internal/ad/download.go:219
 msgid "download %q failed"
 msgstr ""
 
@@ -713,7 +761,7 @@ msgid "error while trying to get the list of active users"
 msgstr ""
 
 #. Try to update from SSSD the current active AD server
-#: internal/ad/ad.go:254
+#: internal/ad/ad.go:257
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
@@ -729,19 +777,19 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/manager.go:134
+#: internal/policies/manager.go:150
 msgid "failed to apply policy to %q"
 msgstr ""
 
-#: internal/policies/manager.go:167
+#: internal/policies/manager.go:185
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:254
+#: internal/adsysservice/adsysservice.go:257
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/policies/manager.go:207
+#: internal/policies/manager.go:225
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -753,7 +801,7 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/ad/ad.go:380
+#: internal/ad/ad.go:388
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -769,15 +817,15 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:414
+#: internal/ad/ad.go:422
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/ad/ad.go:232
+#: internal/ad/ad.go:235
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/ad/ad.go:286
+#: internal/ad/ad.go:289
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -809,11 +857,11 @@ msgstr ""
 msgid "invalid policy"
 msgstr ""
 
-#: internal/ad/download.go:184
+#: internal/ad/download.go:200
 msgid "invalid remote GPT.INI"
 msgstr ""
 
-#: internal/policies/policies.go:105
+#: internal/policies/policies.go:106
 msgid "invalid zip db archive: %w"
 msgstr ""
 
@@ -827,7 +875,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:242
+#: internal/ad/ad.go:245
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -857,7 +905,7 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/policies/policies.go:206
+#: internal/policies/policies.go:221
 msgid "no assets attached"
 msgstr ""
 
@@ -873,11 +921,11 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:185 internal/policies/manager.go:196
+#: internal/policies/manager.go:203 internal/policies/manager.go:214
 msgid "no policy applied for %q: %v"
 msgstr ""
 
-#: internal/policies/policies.go:219
+#: internal/policies/policies.go:238
 msgid "no relSrc provided to look into database archive"
 msgstr ""
 
@@ -901,7 +949,7 @@ msgstr ""
 msgid "permission denied"
 msgstr ""
 
-#: internal/policies/manager.go:221
+#: internal/policies/manager.go:239
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
@@ -917,8 +965,16 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:216
+#: internal/ad/ad.go:219
 msgid "requested a type computer of %q which isn't current host %q"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:175
+msgid "script %q doesn't exist in SYSVOL scripts/ subdirectory"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:178
+msgid "script %q is a directory and not a file to execute"
 msgstr ""
 
 #: internal/authorizer/servercreds.go:24
@@ -982,6 +1038,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:211
+#: internal/ad/ad.go:214
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
