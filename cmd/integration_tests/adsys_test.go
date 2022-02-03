@@ -79,7 +79,7 @@ func TestCommandsError(t *testing.T) {
 		err = srv.Serve(lis)
 		require.NoError(t, err, "Setup: Serving GRPC on unix socket failed")
 	}()
-	defer srv.Stop()
+	t.Cleanup(srv.Stop)
 	time.Sleep(time.Second)
 	confFile := filepath.Join(dir, "adsys.yaml")
 	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
