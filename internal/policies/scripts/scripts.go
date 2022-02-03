@@ -283,6 +283,7 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 			continue
 		}
 		script := filepath.Join(baseDir, scriptPath)
+		log.Debugf(ctx, "Running script %q", script)
 		// #nosec G204 - this variable is coming from concatenation of an order file.
 		// Permissions are restricted to the owner of the order file, which is the one executing
 		// this script.
@@ -295,6 +296,7 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 	if !strings.Contains(order, "/users/") || !strings.HasSuffix(order, "/logoff") {
 		return nil
 	}
+	log.Debug(ctx, "Logoff called, deleting users script directory")
 	return os.RemoveAll(baseDir)
 }
 
