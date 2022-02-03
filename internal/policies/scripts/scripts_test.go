@@ -182,7 +182,8 @@ func TestRunScripts(t *testing.T) {
 
 		"script directory is cleaned up after user logoff": {stageDir: "logoff", wantDirRemoved: true},
 
-		"allow order file missing": {allowOrderMissing: true},
+		"allow order file missing":           {allowOrderMissing: true},
+		"spaces and empty lines are skipped": {},
 
 		// Error cases
 		"error on order file not existing": {wantErr: true},
