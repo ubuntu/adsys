@@ -194,6 +194,10 @@ func TestPolicyApplied(t *testing.T) {
 func TestPolicyUpdate(t *testing.T) {
 	currentUser := "adsystestuser@example.com"
 
+	u, err := user.Current()
+	require.NoError(t, err, "Setup: can't get current user")
+	currentUID := u.Uid
+
 	// We setup and rerun in a subprocess because the test users must exist on the machine for the authorizer.
 	if setupSubprocessForTest(t, currentUser, "UserIntegrationTest@example.com") {
 		return
@@ -897,6 +901,15 @@ func TestPolicyUpdate(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "dconf"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "sudoers.d"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "polkit-1"), update)
+
+			// Current user can have different UID depending on where it’s running. We can’t mock it as we rely on current uid
+			// in the process for authorization check. Just make it generic.
+			if _, err := os.Stat(filepath.Join(adsysDir, "run", "users", currentUID)); err == nil {
+				require.NoError(t, os.Rename(filepath.Join(adsysDir, "run", "users", currentUID),
+					filepath.Join(adsysDir, "run", "users", "<CURRENT_UID>")),
+					"Setup: can't rename current user directory to generic <CURRENT_UID>")
+			}
+
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "run", "users"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", hostname), filepath.Join("testdata", "PolicyUpdate", "golden", name, "run", "machine"), update)
 		})
