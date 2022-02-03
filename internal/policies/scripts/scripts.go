@@ -133,7 +133,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), scriptsPath, err)
 	}
 	if !isComputer {
-		if err := os.Chown(scriptsPath, uid, gid); err != nil {
+		if err := chown(ctx, scriptsPath, uid, gid); err != nil {
 			return fmt.Errorf(i18n.G("can't change owner of script directory %q to user %s: %v"), scriptsPath, objectName, err)
 		}
 	}
@@ -150,7 +150,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			if err != nil {
 				return err
 			}
-			return os.Chown(path, uid, gid)
+			return chown(ctx, path, uid, gid)
 		}); err != nil {
 			return err
 		}
@@ -206,7 +206,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			return err
 		}
 		if !isComputer {
-			if err := os.Chown(orderFilePath, uid, gid); err != nil {
+			if err := chown(ctx, orderFilePath, uid, gid); err != nil {
 				return fmt.Errorf(i18n.G("can't change owner of order file %q to user %s: %v"), orderFilePath, objectName, err)
 			}
 		}
@@ -294,4 +294,14 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 		return nil
 	}
 	return os.RemoveAll(baseDir)
+}
+
+// chown allow to skip the Chown syscall for automated or manual testing when running as non root.
+func chown(ctx context.Context, name string, uid, gid int) error {
+	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
+		log.Infof(ctx, "Skipping chown on %q as requested by ADSYS_SKIP_ROOT_CALLS", name)
+		return nil
+	}
+
+	return os.Chown(name, uid, gid)
 }

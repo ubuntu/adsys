@@ -200,6 +200,7 @@ func TestPolicyUpdate(t *testing.T) {
 	}
 
 	testutils.Setenv(t, "ADSYS_TESTS_MOCK_SMBDOMAIN", "example.com")
+	testutils.Setenv(t, "ADSYS_SKIP_ROOT_CALLS", "TRUE")
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get current host")
