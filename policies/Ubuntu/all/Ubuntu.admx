@@ -56,6 +56,15 @@
     <category name="UbuntuPrivilegeAuthorization" displayName="$(string.UbuntuDisplayPrivilegeAuthorization)">
       <parentCategory ref="UbuntuClientManagement" />
     </category>
+    <category name="UbuntuComputerScripts" displayName="$(string.UbuntuDisplayComputerScripts)">
+      <parentCategory ref="UbuntuClientManagement" />
+    </category>
+    <category name="UbuntuSessionManagement" displayName="$(string.UbuntuDisplaySessionManagement)">
+      <parentCategory ref="UbuntuUbuntu" />
+    </category>
+    <category name="UbuntuUserScripts" displayName="$(string.UbuntuDisplayUserScripts)">
+      <parentCategory ref="UbuntuSessionManagement" />
+    </category>
   </categories>
 
   <policies>
@@ -2232,6 +2241,102 @@
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"all":{}}</string></enabledValue>
       <disabledValue><string>{"all":{}}</string></disabledValue>
+    </policy>
+    <policy name="UbuntuMachineScriptsStartup" class="Machine" displayName="$(string.UbuntuDisplayMachineAllScriptsStartup)" explainText="$(string.UbuntuExplainTextMachineScriptsStartup)" presentation="$(presentation.UbuntuPresentationMachineScriptsStartup)" key="Software\Policies\Ubuntu\scripts\startup" valueName="metaValues">
+      <parentCategory ref="UbuntuComputerScripts" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemMachineAllScriptsStartup" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204ScriptsStartup" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2204ScriptsStartup" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2110ScriptsStartup" valueName="Override21.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2110ScriptsStartup" valueName="21.10" />
+        <boolean id="UbuntuOverrideElemMachine2004ScriptsStartup" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2004ScriptsStartup" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineScriptsShutdown" class="Machine" displayName="$(string.UbuntuDisplayMachineAllScriptsShutdown)" explainText="$(string.UbuntuExplainTextMachineScriptsShutdown)" presentation="$(presentation.UbuntuPresentationMachineScriptsShutdown)" key="Software\Policies\Ubuntu\scripts\shutdown" valueName="metaValues">
+      <parentCategory ref="UbuntuComputerScripts" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemMachineAllScriptsShutdown" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204ScriptsShutdown" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2204ScriptsShutdown" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2110ScriptsShutdown" valueName="Override21.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2110ScriptsShutdown" valueName="21.10" />
+        <boolean id="UbuntuOverrideElemMachine2004ScriptsShutdown" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2004ScriptsShutdown" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuUserScriptsLogon" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogon)" explainText="$(string.UbuntuExplainTextUserScriptsLogon)" presentation="$(presentation.UbuntuPresentationUserScriptsLogon)" key="Software\Policies\Ubuntu\scripts\logon" valueName="metaValues">
+      <parentCategory ref="UbuntuUserScripts" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemUserAllScriptsLogon" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2204ScriptsLogon" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2204ScriptsLogon" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemUser2110ScriptsLogon" valueName="Override21.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2110ScriptsLogon" valueName="21.10" />
+        <boolean id="UbuntuOverrideElemUser2004ScriptsLogon" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2004ScriptsLogon" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuUserScriptsLogoff" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogoff)" explainText="$(string.UbuntuExplainTextUserScriptsLogoff)" presentation="$(presentation.UbuntuPresentationUserScriptsLogoff)" key="Software\Policies\Ubuntu\scripts\logoff" valueName="metaValues">
+      <parentCategory ref="UbuntuUserScripts" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemUserAllScriptsLogoff" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2204ScriptsLogoff" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2204ScriptsLogoff" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemUser2110ScriptsLogoff" valueName="Override21.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2110ScriptsLogoff" valueName="21.10" />
+        <boolean id="UbuntuOverrideElemUser2004ScriptsLogoff" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2004ScriptsLogoff" valueName="20.04" />
+      </elements>
     </policy>
   </policies>
 

@@ -22,6 +22,9 @@
       <string id="UbuntuDisplayInterface">Interface</string>
       <string id="UbuntuDisplayClientManagement">Client management</string>
       <string id="UbuntuDisplayPrivilegeAuthorization">Privilege Authorization</string>
+      <string id="UbuntuDisplayComputerScripts">Computer Scripts</string>
+      <string id="UbuntuDisplaySessionManagement">Session management</string>
+      <string id="UbuntuDisplayUserScripts">User Scripts</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
 
 - Type: dconf
@@ -578,6 +581,70 @@ Note: -
 
 </string>
       <string id="UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins">Allow local administrators</string>
+      <string id="UbuntuExplainTextMachineScriptsStartup">Define scripts that are executed on machine boot, once the GPO is downloaded.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /startup
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at startup time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per boot, and refreshed only on new boot of the machine.
+
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllScriptsStartup">Startup scripts</string>
+      <string id="UbuntuExplainTextMachineScriptsShutdown">Define scripts that are executed on machine poweroff.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /shutdown
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at shutdown time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per boot, and refreshed only on new boot of the machine.
+
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayMachineAllScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuExplainTextUserScriptsLogon">Define scripts that are executed the first time an user logon until it exits from all sessions.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /logon
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at user logon time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per session, and refreshed only on new session creation.
+
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllScriptsLogon">Logon scripts</string>
+      <string id="UbuntuExplainTextUserScriptsLogoff">Define scripts that are executed when the user exits from last session.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /logoff
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at user logoff time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per session, and refreshed only on new session creation.
+
+
+Supported on Ubuntu 20.04</string>
+      <string id="UbuntuDisplayUserAllScriptsLogoff">Logoff scripts</string>
     </stringTable>
 
     <presentationTable>
@@ -763,6 +830,22 @@ Note: -
         <multiTextBox refId="UbuntuElemMachineAllPrivilegeClientAdmins" defaultHeight="5" />
       </presentation>
       <presentation id="UbuntuPresentationMachinePrivilegeAllowLocalAdmins">
+      </presentation>
+      <presentation id="UbuntuPresentationMachineScriptsStartup">
+        <text>Startup scripts</text>
+        <multiTextBox refId="UbuntuElemMachineAllScriptsStartup" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationMachineScriptsShutdown">
+        <text>Shutdown scripts</text>
+        <multiTextBox refId="UbuntuElemMachineAllScriptsShutdown" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationUserScriptsLogon">
+        <text>Logon scripts</text>
+        <multiTextBox refId="UbuntuElemUserAllScriptsLogon" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationUserScriptsLogoff">
+        <text>Logoff scripts</text>
+        <multiTextBox refId="UbuntuElemUserAllScriptsLogoff" defaultHeight="5" />
       </presentation>
     </presentationTable>
 

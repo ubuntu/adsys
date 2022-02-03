@@ -22,6 +22,9 @@
       <string id="UbuntuDisplayInterface">Interface</string>
       <string id="UbuntuDisplayClientManagement">Client management</string>
       <string id="UbuntuDisplayPrivilegeAuthorization">Privilege Authorization</string>
+      <string id="UbuntuDisplayComputerScripts">Computer Scripts</string>
+      <string id="UbuntuDisplaySessionManagement">Session management</string>
+      <string id="UbuntuDisplayUserScripts">User Scripts</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
 
 - Type: dconf
@@ -816,6 +819,82 @@ Note: -
 
 </string>
       <string id="UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins">Allow local administrators</string>
+      <string id="UbuntuExplainTextMachineScriptsStartup">Define scripts that are executed on machine boot, once the GPO is downloaded.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /startup
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at startup time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per boot, and refreshed only on new boot of the machine.
+
+
+Supported on Ubuntu 20.04, 21.10, 22.04</string>
+      <string id="UbuntuDisplayMachineAllScriptsStartup">Startup scripts</string>
+      <string id="UbuntuDisplayMachine2204ScriptsStartup">Startup scripts</string>
+      <string id="UbuntuDisplayMachine2110ScriptsStartup">Startup scripts</string>
+      <string id="UbuntuDisplayMachine2004ScriptsStartup">Startup scripts</string>
+      <string id="UbuntuExplainTextMachineScriptsShutdown">Define scripts that are executed on machine poweroff.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /shutdown
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at shutdown time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per boot, and refreshed only on new boot of the machine.
+
+
+Supported on Ubuntu 20.04, 21.10, 22.04</string>
+      <string id="UbuntuDisplayMachineAllScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuDisplayMachine2204ScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuDisplayMachine2110ScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuDisplayMachine2004ScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuExplainTextUserScriptsLogon">Define scripts that are executed the first time an user logon until it exits from all sessions.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /logon
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at user logon time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per session, and refreshed only on new session creation.
+
+
+Supported on Ubuntu 20.04, 21.10, 22.04</string>
+      <string id="UbuntuDisplayUserAllScriptsLogon">Logon scripts</string>
+      <string id="UbuntuDisplayUser2204ScriptsLogon">Logon scripts</string>
+      <string id="UbuntuDisplayUser2110ScriptsLogon">Logon scripts</string>
+      <string id="UbuntuDisplayUser2004ScriptsLogon">Logon scripts</string>
+      <string id="UbuntuExplainTextUserScriptsLogoff">Define scripts that are executed when the user exits from last session.
+Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+
+- Type: scripts
+- Key: /logoff
+
+Note: -
+ * Enabled: The scripts in the text entry are executed at user logoff time.
+ * Disabled: The scripts will be skipped.
+ The set of scripts are per session, and refreshed only on new session creation.
+
+
+Supported on Ubuntu 20.04, 21.10, 22.04</string>
+      <string id="UbuntuDisplayUserAllScriptsLogoff">Logoff scripts</string>
+      <string id="UbuntuDisplayUser2204ScriptsLogoff">Logoff scripts</string>
+      <string id="UbuntuDisplayUser2110ScriptsLogoff">Logoff scripts</string>
+      <string id="UbuntuDisplayUser2004ScriptsLogoff">Logoff scripts</string>
     </stringTable>
 
     <presentationTable>
@@ -1528,6 +1607,70 @@ Note: -
         <multiTextBox refId="UbuntuElemMachineAllPrivilegeClientAdmins" defaultHeight="5" />
       </presentation>
       <presentation id="UbuntuPresentationMachinePrivilegeAllowLocalAdmins">
+      </presentation>
+      <presentation id="UbuntuPresentationMachineScriptsStartup">
+        <text>Startup scripts</text>
+        <multiTextBox refId="UbuntuElemMachineAllScriptsStartup" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204ScriptsStartup" defaultChecked="false">Override value for 22.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2204ScriptsStartup" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110ScriptsStartup" defaultChecked="false">Override value for 21.10:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2110ScriptsStartup" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004ScriptsStartup" defaultChecked="false">Override value for 20.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2004ScriptsStartup" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationMachineScriptsShutdown">
+        <text>Shutdown scripts</text>
+        <multiTextBox refId="UbuntuElemMachineAllScriptsShutdown" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204ScriptsShutdown" defaultChecked="false">Override value for 22.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2204ScriptsShutdown" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110ScriptsShutdown" defaultChecked="false">Override value for 21.10:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2110ScriptsShutdown" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004ScriptsShutdown" defaultChecked="false">Override value for 20.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2004ScriptsShutdown" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationUserScriptsLogon">
+        <text>Logon scripts</text>
+        <multiTextBox refId="UbuntuElemUserAllScriptsLogon" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2204ScriptsLogon" defaultChecked="false">Override value for 22.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2204ScriptsLogon" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2110ScriptsLogon" defaultChecked="false">Override value for 21.10:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2110ScriptsLogon" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2004ScriptsLogon" defaultChecked="false">Override value for 20.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2004ScriptsLogon" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationUserScriptsLogoff">
+        <text>Logoff scripts</text>
+        <multiTextBox refId="UbuntuElemUserAllScriptsLogoff" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2204ScriptsLogoff" defaultChecked="false">Override value for 22.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2204ScriptsLogoff" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2110ScriptsLogoff" defaultChecked="false">Override value for 21.10:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2110ScriptsLogoff" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2004ScriptsLogoff" defaultChecked="false">Override value for 20.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2004ScriptsLogoff" defaultHeight="5" />
       </presentation>
     </presentationTable>
 
