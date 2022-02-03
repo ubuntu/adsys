@@ -27,7 +27,7 @@ import (
 
 var Update bool
 
-func TestFetchGPO(t *testing.T) {
+func TestFetch(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	bus := testutils.NewDbusConn(t)
@@ -38,9 +38,11 @@ func TestFetchGPO(t *testing.T) {
 		assetsURL              string
 		concurrentGposDownload []string
 		existing               map[string]string
+		makeReadOnlyOnSource   []string
 
-		want    map[string]string
-		wantErr bool
+		want                map[string]string
+		wantAssetsRefreshed bool
+		wantErr             bool
 	}{
 		"one new gpo": {
 			gpos: []string{"gpo1"},
@@ -159,45 +161,59 @@ func TestFetchGPO(t *testing.T) {
 
 		// Assets cases
 		"assets only are downloaded": {
-			adDomain:  "assetsonly.com",
-			assetsURL: "Distro",
-			want:      map[string]string{"assets": "Distro"},
+			adDomain:            "assetsonly.com",
+			assetsURL:           "Distro",
+			want:                map[string]string{"assets": "Distro"},
+			wantAssetsRefreshed: true,
 		},
 		"assets root directory not present on SYSVOL issues a warning only": {
-			adDomain:  "gpoonly.com",
-			assetsURL: "Distro",
-			want:      nil,
+			adDomain:            "gpoonly.com",
+			assetsURL:           "Distro",
+			want:                nil,
+			wantAssetsRefreshed: false,
 		},
 		"assets are updated to latest version": {
-			adDomain:  "assetsonly.com",
-			assetsURL: "Distro",
-			existing:  map[string]string{"assets": "Distroold"},
-			want:      map[string]string{"assets": "Distro"},
+			adDomain:            "assetsonly.com",
+			assetsURL:           "Distro",
+			existing:            map[string]string{"assets": "Distroold"},
+			want:                map[string]string{"assets": "Distro"},
+			wantAssetsRefreshed: true,
 		},
-		"existing assets are kept if no assetsURL provided": {
-			adDomain:  "assetsonly.com",
-			assetsURL: "",
-			existing:  map[string]string{"assets": "Distro"},
-			want:      map[string]string{"assets": "Distro"},
+		"assets are not updated if version matches": {
+			adDomain:            "assetsonly.com",
+			assetsURL:           "Distro",
+			existing:            map[string]string{"assets": "Distro"},
+			want:                map[string]string{"assets": "Distro"},
+			wantAssetsRefreshed: false,
+		},
+		"existing assets are kept if no assets downloadable provided": {
+			adDomain:            "assetsonly.com",
+			assetsURL:           "",
+			existing:            map[string]string{"assets": "Distro"},
+			want:                map[string]string{"assets": "Distro"},
+			wantAssetsRefreshed: false,
 		},
 		"existing assets are removed if not present on SYSVOL": {
-			adDomain:  "fakegpo.com",
-			assetsURL: "Distro",
-			existing:  map[string]string{"assets": "Policies/gpo1"},
-			want:      nil,
+			adDomain:            "fakegpo.com",
+			assetsURL:           "Distro",
+			existing:            map[string]string{"assets": "Policies/gpo1"},
+			want:                nil,
+			wantAssetsRefreshed: true,
 		},
-		"assets is a file": {
-			adDomain:  "assetsdirisfile.com",
-			assetsURL: "Ubuntu",
-			want:      map[string]string{"assets": "Ubuntu"},
+		"assets is a file is not downloaded": {
+			adDomain:            "assetsdirisfile.com",
+			assetsURL:           "Ubuntu",
+			want:                nil,
+			wantAssetsRefreshed: false,
 		},
 
 		// Mix
 		"gpos and assets": {
-			adDomain:  "assetsandfakegpo.com",
-			gpos:      []string{"gpo1"},
-			assetsURL: "Distro",
-			want:      map[string]string{"assets": "Distro", "Policies/gpo1": "Policies/gpo1"},
+			adDomain:            "assetsandfakegpo.com",
+			gpos:                []string{"gpo1"},
+			assetsURL:           "Distro",
+			want:                map[string]string{"assets": "Distro", "Policies/gpo1": "Policies/gpo1"},
+			wantAssetsRefreshed: true,
 		},
 
 		// Concurrent downloads
@@ -230,6 +246,28 @@ func TestFetchGPO(t *testing.T) {
 			gpos:    []string{"missing_gpt_ini", "gpo2"},
 			want:    map[string]string{"Policies/gpo2": "Policies/gpo2"},
 			wantErr: true},
+		/*
+			This is to cover the error case on os.Removall() to clean up the directory. However
+			Marking the assets/ directory or any subelement read only doesn’t help.
+			"Error on cached assets not overwritable on refresh": {
+				adDomain:             "assetsonly.com",
+				assetsURL:            "Distro",
+				existing:             map[string]string{"assets": "Distroold"},
+				makeReadOnlyOnSource: []string{"assets"},
+				want:                 map[string]string{"assets": "Distro"},
+				wantErr:              true,
+				wantAssetsRefreshed:  false,
+			},
+			"Error on cached assets not removable on remove": {
+				adDomain:             "fakegpo.com",
+				assetsURL:            "Distro",
+				existing:             map[string]string{"assets": "Policies/gpo1"},
+				makeReadOnlyOnSource: []string{"assets/GPT.INI", "assets"},
+				wantErr:              true,
+				want:                 map[string]string{"assets": "Policies/gpo1"},
+				wantAssetsRefreshed:  false,
+			},
+		*/
 	}
 
 	for name, tc := range tests {
@@ -247,35 +285,40 @@ func TestFetchGPO(t *testing.T) {
 
 			require.NoError(t, err, "Setup: cannot create ad object")
 
-			// prepare by copying GPOs if any
+			// prepare by copying downloadables if any
 			for n, src := range tc.existing {
 				require.NoError(t,
 					shutil.CopyTree(
 						filepath.Join("testdata", "AD", "SYSVOL", tc.adDomain, src),
 						filepath.Join(adc.sysvolCacheDir, n),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
-					"Setup: can't copy initial gpo directory")
+					"Setup: can't copy initial downloadable directory")
+			}
+
+			for _, p := range tc.makeReadOnlyOnSource {
+				testutils.MakeReadOnly(t, filepath.Join(adc.sysvolCacheDir, p))
 			}
 
 			smbBaseURL := fmt.Sprintf("smb://localhost:%d/SYSVOL/%s/", SmbPort, tc.adDomain)
-			gpos := make(map[string]string)
+			downloadables := make(map[string]string)
 			for _, n := range tc.gpos {
 				// differentiate the gpo name from the url base path
-				gpos[n+"-name"] = smbBaseURL + "Policies/" + n
+				downloadables[n+"-name"] = smbBaseURL + "Policies/" + n
 			}
 
-			var assetsURL string
 			if tc.assetsURL != "" {
-				assetsURL = smbBaseURL + tc.assetsURL
+				downloadables["assets"] = smbBaseURL + tc.assetsURL
 			}
 
+			var assetsRefreshed bool
 			if tc.concurrentGposDownload == nil {
-				err = adc.fetch(context.Background(), "", gpos, assetsURL)
+				assetsRefreshed, err = adc.fetch(context.Background(), "", downloadables)
 				if tc.wantErr {
 					require.NotNil(t, err, "fetch should return an error but didn't")
 				} else {
 					require.NoError(t, err, "fetch returned an error but shouldn't")
 				}
+				require.Equal(t, tc.wantAssetsRefreshed, assetsRefreshed, "returned value assetsRefreshed should be as expected")
 			} else {
 				concurrentGpos := make(map[string]string)
 				for _, n := range tc.concurrentGposDownload {
@@ -285,9 +328,10 @@ func TestFetchGPO(t *testing.T) {
 
 				wg := sync.WaitGroup{}
 				wg.Add(2)
+				var assetsRefreshed1, assetsRefreshed2 bool
 				go func() {
 					defer wg.Done()
-					err := adc.fetch(context.Background(), "", gpos, assetsURL)
+					assetsRefreshed1, err = adc.fetch(context.Background(), "", downloadables)
 					if tc.wantErr {
 						require.NotNil(t, err, "fetch should return an error but didn't")
 					} else {
@@ -296,14 +340,21 @@ func TestFetchGPO(t *testing.T) {
 				}()
 				go func() {
 					defer wg.Done()
-					err := adc.fetch(context.Background(), "", concurrentGpos, assetsURL)
+					var err2 error
+					assetsRefreshed2, err2 = adc.fetch(context.Background(), "", concurrentGpos)
 					if tc.wantErr {
-						require.NotNil(t, err, "fetch should return an error but didn't")
+						require.NotNil(t, err2, "fetch should return an error but didn't")
 					} else {
-						require.NoError(t, err, "fetch returned an error but shouldn't")
+						require.NoError(t, err2, "fetch returned an error but shouldn't")
 					}
 				}()
 				wg.Wait()
+				if tc.wantAssetsRefreshed {
+					require.NotEqual(t, assetsRefreshed1, assetsRefreshed2, "only one fetch call should have assetsRefreshed set to true")
+				} else {
+					require.False(t, assetsRefreshed1, "assetsRefreshed1 should be false")
+					require.False(t, assetsRefreshed2, "assetsRefreshed2 should be false")
+				}
 			}
 
 			// Ensure that only wanted GPOs are cached
@@ -339,14 +390,14 @@ func TestFetchGPO(t *testing.T) {
 	}
 }
 
-func TestFetchGPOWithUnreadableFile(t *testing.T) {
+func TestFetchWithUnreadableFile(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	bus := testutils.NewDbusConn(t)
 
-	// Prepare GPO with unreadable file.
+	// Prepare downloadables with unreadable file.
 	// Defer will work after all tests are done because we don’t run it in parallel
-	gpos := map[string]string{
+	downloadables := map[string]string{
 		"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/broken.com/Policies/%s", SmbPort, "gpo1"),
 	}
 
@@ -377,7 +428,7 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 					"Setup: can't copy initial gpo directory")
 			}
 
-			err = adc.fetch(context.Background(), "", gpos, "")
+			assetsRefreshed, err := adc.fetch(context.Background(), "", downloadables)
 			require.NotNil(t, err, "fetch should return an error but didn't")
 
 			if !tc.withExistingGPO {
@@ -390,11 +441,12 @@ func TestFetchGPOWithUnreadableFile(t *testing.T) {
 			gpoTree := md5Tree(t, filepath.Join(adc.sysvolCacheDir, "Policies", "gpo1"))
 			goldTree := md5Tree(t, goldPath)
 			assert.Equalf(t, goldTree, gpoTree, "expected and after fetch GPO %q does not match", "gpo1")
+			assert.False(t, assetsRefreshed, "we haven't refreshed assets")
 		})
 	}
 }
 
-func TestFetchGPOTweakSysvolCacheDir(t *testing.T) {
+func TestFetchTweakSysvolCacheDir(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 	bus := testutils.NewDbusConn(t)
@@ -424,10 +476,11 @@ func TestFetchGPOTweakSysvolCacheDir(t *testing.T) {
 				testutils.MakeReadOnly(t, adc.sysvolCacheDir)
 			}
 
-			err = adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/gpo1", SmbPort)}, "")
+			assetsRefreshed, err := adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/gpo1", SmbPort)})
 
 			require.NotNil(t, err, "fetch should return an error but didn't")
 			assert.NoDirExists(t, filepath.Join(adc.sysvolCacheDir, "Policies", "gpo1"), "gpo1 shouldn't be downloaded")
+			assert.False(t, assetsRefreshed, "we haven't refreshed assets")
 		})
 	}
 }
@@ -451,7 +504,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 		"Setup: can't copy initial gpo directory")
 	// create the lock made by fetch which is always called before parseGPOs in the public API
-	adc.gpos["standard-name"] = &gpo{
+	adc.downloadables["standard-name"] = &downloadable{
 		name: "standard-name",
 		url:  fmt.Sprintf("smb://localhost:%d/SYSVOL/gpoonly.com/Policies/standard", SmbPort),
 		mu:   &sync.RWMutex{},
@@ -459,7 +512,7 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 
 	// concurrent downloads and parsing
 	gpos := map[string]string{
-		"standard-name": adc.gpos["standard-name"].url,
+		"standard-name": adc.downloadables["standard-name"].url,
 	}
 	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
 
@@ -468,8 +521,9 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	go func() {
 		defer wg.Done()
 
-		err := adc.fetch(context.Background(), "", gpos, "")
+		assetsRefreshed, err := adc.fetch(context.Background(), "", gpos)
 		require.NoError(t, err, "fetch returned an error but shouldn't")
+		assert.False(t, assetsRefreshed, "we haven't refreshed assets")
 	}()
 	go func() {
 		defer wg.Done()
@@ -496,8 +550,9 @@ func TestParseGPOConcurrent(t *testing.T) {
 		"standard-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/gpoonly.com/Policies/standard", SmbPort),
 	}
 	orderedGPOs := []gpo{{name: "standard-name", url: gpos["standard-name"]}}
-	err = adc.fetch(context.Background(), "", gpos, "")
+	assetsRefreshed, err := adc.fetch(context.Background(), "", gpos)
 	require.NoError(t, err, "Setup: couldn’t do initial GPO fetch as returned an error but shouldn't")
+	assert.False(t, assetsRefreshed, "we haven't refreshed assets")
 
 	// concurrent parsing of GPO
 	wg := sync.WaitGroup{}

@@ -112,3 +112,17 @@ categories:
         policies:
           - "/client-admins"
           - "/allow-local-admins"
+      - displayname: "Computer Scripts"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/startup"
+          - "/shutdown"
+
+    - displayname: "Session management"
+      defaultpolicyclass: "User"
+      children:
+      - displayname: "User Scripts"
+        defaultpolicyclass: "User"
+        policies:
+          - "/logon"
+          - "/logoff"

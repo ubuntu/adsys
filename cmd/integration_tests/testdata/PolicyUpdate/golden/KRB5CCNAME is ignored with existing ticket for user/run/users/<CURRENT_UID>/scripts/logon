@@ -1,0 +1,4 @@
+scripts/script-user-logon
+scripts/final-machine-script.sh
+scripts/script-user-logon
+scripts/subfolder/other-script

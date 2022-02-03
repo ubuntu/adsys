@@ -1,0 +1,67 @@
+- key: "/startup"
+  displayname: "Startup scripts"
+  explaintext: |
+    Define scripts that are executed on machine boot, once the GPO is downloaded.
+    Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+    Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+  elementtype: "multiText"
+  note: |
+   -
+    * Enabled: The scripts in the text entry are executed at startup time.
+    * Disabled: The scripts will be skipped.
+    The set of scripts are per boot, and refreshed only on new boot of the machine.
+  type: "scripts"
+  release: "any"
+  meta:
+    strategy: append
+
+- key: "/shutdown"
+  displayname: "Shutdown scripts"
+  explaintext: |
+    Define scripts that are executed on machine poweroff.
+    Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+    Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+  elementtype: "multiText"
+  note: |
+   -
+    * Enabled: The scripts in the text entry are executed at shutdown time.
+    * Disabled: The scripts will be skipped.
+    The set of scripts are per boot, and refreshed only on new boot of the machine.
+  type: "scripts"
+  release: "any"
+  meta:
+    strategy: append
+
+- key: "/logon"
+  displayname: "Logon scripts"
+  explaintext: |
+    Define scripts that are executed the first time an user logon until it exits from all sessions.
+    Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+    Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+  elementtype: "multiText"
+  release: "any"
+  note: |
+   -
+    * Enabled: The scripts in the text entry are executed at user logon time.
+    * Disabled: The scripts will be skipped.
+    The set of scripts are per session, and refreshed only on new session creation.
+  type: "scripts"
+  meta:
+    strategy: append
+
+- key: "/logoff"
+  displayname: "Logoff scripts"
+  explaintext: |
+    Define scripts that are executed when the user exits from last session.
+    Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+    Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+  elementtype: "multiText"
+  note: |
+   -
+    * Enabled: The scripts in the text entry are executed at user logoff time.
+    * Disabled: The scripts will be skipped.
+    The set of scripts are per session, and refreshed only on new session creation.
+  type: "scripts"
+  release: "any"
+  meta:
+    strategy: append

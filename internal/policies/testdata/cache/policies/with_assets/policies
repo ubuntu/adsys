@@ -14,4 +14,9 @@ gpos:
       meta: s
     scripts:
     - key: path/to/key3
-      disabled: true
+      value: |
+        ValueOfKey3
+        On
+        Multilines
+      disabled: false
+      strategy: append

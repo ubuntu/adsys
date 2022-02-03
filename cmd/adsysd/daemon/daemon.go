@@ -154,6 +154,7 @@ func New() *App {
 
 	// subcommands
 	a.installVersion()
+	a.installRunScripts()
 
 	return &a
 }
@@ -210,4 +211,9 @@ func (a App) RootCmd() cobra.Command {
 // Note: we need to use a pointer to not copy the App object before the daemon is ready, and thus, creates a data race.
 func (a *App) WaitReady() {
 	<-a.ready
+}
+
+// SetArgs changes the root command args. Shouldn’t be in general necessary apart for integration tests.
+func (a *App) SetArgs(args []string) {
+	a.rootCmd.SetArgs(args)
 }

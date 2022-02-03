@@ -14,8 +14,7 @@ import (
 
 func TestAdsysdVersion(t *testing.T) {
 	d := daemon.New()
-
-	defer changeOsArgs(t, "", "version")()
+	changeAppArgs(t, d, "", "version")
 
 	// capture stdout
 	r, w, err := os.Pipe()

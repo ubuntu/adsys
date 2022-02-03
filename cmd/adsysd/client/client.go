@@ -128,3 +128,8 @@ func (a App) RootCmd() cobra.Command {
 func (a App) getTimeout() time.Duration {
 	return time.Duration(a.config.ClientTimeout * int(time.Second))
 }
+
+// SetArgs changes the root command args. Shouldn’t be in general necessary apart for integration tests.
+func (a *App) SetArgs(args []string) {
+	a.rootCmd.SetArgs(args)
+}

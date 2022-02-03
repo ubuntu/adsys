@@ -14,6 +14,20 @@ gpos:
           value: true
           disabled: false
           meta: b
+      scripts:
+        - key: logon
+          value: |
+            script-user-logon
+            old-dir/old-other-script
+          disabled: false
+          strategy: append
+        - key: logoff
+          value: |
+            old-dir/old-other-script
+            otherfolder/script-user-logoff
+          disabled: false
+          strategy: append
+
 - id: '{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}'
   name: GPO2 for current User
   rules:

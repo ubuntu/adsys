@@ -57,6 +57,10 @@ func (g GPO) Format(w io.Writer, withRules, withOverridden bool, alreadyProcesse
 				fmt.Fprintf(w, "%s %s: %s\n", prefix, r.Key, v)
 			}
 
+			// Do not add non overridable key to the alreadyProcessedRules override detection map.
+			if r.Strategy == "append" {
+				continue
+			}
 			alreadyProcessedRules[k] = struct{}{}
 		}
 	}

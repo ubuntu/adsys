@@ -143,8 +143,9 @@ func TestSave(t *testing.T) {
 	tests := map[string]struct {
 		cacheSrc string
 
-		transformDest   string
-		initialCacheDir string
+		transformDest     string
+		initialCacheDir   string
+		saveTwiceSameDest bool
 
 		wantErr bool
 	}{
@@ -168,11 +169,21 @@ func TestSave(t *testing.T) {
 			cacheSrc:        "one_gpo",
 			initialCacheDir: "with_assets",
 		},
+		"save assets on existing opened file does not segfault": {
+			cacheSrc:          "with_assets",
+			initialCacheDir:   "with_assets",
+			saveTwiceSameDest: true,
+		},
 
 		// edge cases
 		"destdir does not exists": {
 			cacheSrc:      "one_gpo",
 			transformDest: "destdir does not exists",
+		},
+		"can refresh on existing read only asset file": {
+			cacheSrc:        "with_assets",
+			initialCacheDir: "with_assets_other",
+			transformDest:   "read only asset file",
 		},
 
 		// error cases
@@ -190,12 +201,6 @@ func TestSave(t *testing.T) {
 			cacheSrc:        "one_gpo",
 			initialCacheDir: "with_assets_other",
 			transformDest:   "unremovable asset",
-			wantErr:         true,
-		},
-		"error on can’t refresh existing assets": {
-			cacheSrc:        "with_assets",
-			initialCacheDir: "with_assets_other",
-			transformDest:   "read only asset file",
 			wantErr:         true,
 		},
 	}
@@ -257,6 +262,14 @@ func TestSave(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, dest, filepath.Join("testdata", "golden", "save", name), update)
 			// compare that assets compressed db corresponds to source.
 			testutils.CompareTreesWithFiltering(t, filepath.Join(dest, policies.PoliciesAssetsFileName), filepath.Join(src, policies.PoliciesAssetsFileName), false)
+
+			if !tc.saveTwiceSameDest {
+				return
+			}
+			// SIGBUS is not a panic, so we can’t catch it.
+			// See https://github.com/golang/go/issues/41155
+			err = pols.Save(dest)
+			require.NoError(t, err, "Save should allow re-saving on existing file")
 		})
 	}
 }
@@ -302,6 +315,7 @@ func TestSaveAssetsTo(t *testing.T) {
 
 		cacheSrc     string
 		readOnlyDest string
+		destExists   bool
 
 		wantErr bool
 	}{
@@ -349,6 +363,12 @@ func TestSaveAssetsTo(t *testing.T) {
 			readOnlyDest: "scripts/script-simple.sh",
 			wantErr:      true,
 		},
+		"error on dest already exists": {
+			relSrc:     ".",
+			cacheSrc:   "with_assets",
+			destExists: true,
+			wantErr:    true,
+		},
 	}
 
 	for name, tc := range tests {
@@ -366,6 +386,9 @@ func TestSaveAssetsTo(t *testing.T) {
 					require.NoError(t, err, "Setup: can’t mock readOnlyDest file")
 				}
 				testutils.MakeReadOnly(t, filepath.Join(dest, tc.readOnlyDest))
+			} else if !tc.destExists {
+				// we simulate unexisting dest by removing it
+				require.NoError(t, os.RemoveAll(dest), "Setup: can't mock unexisting dest")
 			}
 
 			pols, err := policies.NewFromCache(context.Background(), src)
@@ -861,8 +884,6 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, u
 	err := got.Save(compareDir)
 	require.NoError(t, err, "Teardown: saving gpo should work")
 	if got.HasAssets() {
-		err = os.MkdirAll(filepath.Join(compareDir, "assets.db.uncompressed"), 0700)
-		require.NoError(t, err, "Teardown: can't create uncompressed assets directory")
 		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"))
 		require.NoError(t, err, "Teardown: deserializing assets should work")
 		// Remove database that are different from machine to machine.

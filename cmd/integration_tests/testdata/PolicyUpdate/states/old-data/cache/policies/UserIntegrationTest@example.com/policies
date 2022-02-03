@@ -22,6 +22,12 @@ gpos:
               'org.gnome.Nautilus.desktop'
           disabled: false
           meta: as
+      scripts:
+        - key: logon
+          value: |
+            script-user-logon
+          disabled: false
+          strategy: append
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy
   rules: {}

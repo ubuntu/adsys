@@ -22,6 +22,14 @@ gpos:
         - key: client-admins
           value: "bob@example.com\n%mygroup@example2.com"
           disabled: false
+      scripts:
+        - key: startup
+          value: |
+            script-machine-startup
+            subfolder/other-script
+          disabled: false
+          strategy: append
+
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy
   rules: {}

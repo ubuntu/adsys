@@ -14,6 +14,27 @@ import (
 	"github.com/termie/go-shutil"
 )
 
+// Copy copies files and directories to dest.
+func Copy(t *testing.T, src, dest string) {
+	t.Helper()
+
+	// check that src is a file
+	info, err := os.Stat(src)
+	require.NoError(t, err, "Cannot stat %s", src)
+	if !info.IsDir() {
+		require.NoError(t, shutil.CopyFile(src, dest, false), "Cannot copy %s to %s", src, dest)
+		return
+	}
+
+	// Copy a directory
+	require.NoError(t,
+		shutil.CopyTree(
+			src,
+			dest,
+			&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+		"Cannot copy %s to %s", src, dest)
+}
+
 // MakeReadOnly makes dest read only and restore permission on cleanup.
 func MakeReadOnly(t *testing.T, dest string) {
 	t.Helper()
@@ -45,17 +66,26 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 		require.NoError(t, os.RemoveAll(goldPath), "Cannot remove target golden directory")
 
 		// check the source directory exists before trying to copy it
-		if _, err := os.Stat(p); errors.Is(err, fs.ErrNotExist) {
+		info, err := os.Stat(p)
+		if errors.Is(err, fs.ErrNotExist) {
 			return
 		}
+		require.NoErrorf(t, err, "Error on checking %q", p)
 
-		// Filter dconf generated DB files that are machine dependent
-		require.NoError(t,
-			shutil.CopyTree(
-				p, goldPath,
-				&shutil.CopyTreeOptions{Symlinks: true, Ignore: ignoreDconfDB, CopyFunction: shutil.Copy}),
-			"Can’t update golden directory")
-		require.NoError(t, addEmptyMarker(goldPath), "Cannot create empty file in empty directories")
+		if !info.IsDir() {
+			// copy file
+			data, err := os.ReadFile(p)
+			require.NoError(t, err, "Cannot read new generated file file %s", p)
+			require.NoError(t, os.WriteFile(goldPath, data, info.Mode()), "Cannot write golden file")
+		} else {
+			// Filter dconf generated DB files that are machine dependent
+			require.NoError(t,
+				shutil.CopyTree(
+					p, goldPath,
+					&shutil.CopyTreeOptions{Symlinks: true, Ignore: ignoreDconfDB, CopyFunction: shutil.Copy}),
+				"Can’t update golden directory")
+			require.NoError(t, addEmptyMarker(goldPath), "Cannot create empty file in empty directories")
+		}
 	}
 
 	var err error

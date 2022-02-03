@@ -59,9 +59,11 @@ In addition, assetsURL is always refreshed if not empty.
 Each gpo entry must be a gpo, with a name, url of the form: smb://<server>/SYSVOL/<AD domain>/<GPO_ID> and mutex.
 If krb5Ticket is empty, no authentication is done on samba.
 This should not be called concurrently.
+
+It returns if the assets were refreshed or not.
 */
-func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]string, assetsURL string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't download all gpos"))
+func (ad *AD) fetch(ctx context.Context, krb5Ticket string, downloadables map[string]string) (assetsWereRefreshed bool, err error) {
+	defer decorate.OnError(&err, i18n.G("can't download all gpos and assets"))
 
 	// protect env variable and map creation
 	ad.fetchMu.Lock()
@@ -71,7 +73,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	const krb5TicketEnv = "KRB5CCNAME"
 	oldKrb5Ticket := os.Getenv(krb5TicketEnv)
 	if err := os.Setenv(krb5TicketEnv, krb5Ticket); err != nil {
-		return err
+		return false, err
 	}
 	defer func() {
 		if err := os.Setenv(krb5TicketEnv, oldKrb5Ticket); err != nil {
@@ -88,65 +90,79 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, gpos map[string]stri
 	}
 
 	var errg errgroup.Group
-	for name, url := range gpos {
-		g, ok := ad.gpos[name]
+	for name, url := range downloadables {
+		g, ok := ad.downloadables[name]
 		if !ok {
-			ad.gpos[name] = &gpo{
-				name: name,
-				url:  url,
-				mu:   &sync.RWMutex{},
+			ad.downloadables[name] = &downloadable{
+				name:     name,
+				url:      url,
+				mu:       &sync.RWMutex{},
+				isAssets: false,
 			}
-			g = ad.gpos[name]
+			if name == "assets" {
+				ad.downloadables[name].isAssets = true
+			}
+			g = ad.downloadables[name]
 		}
 		errg.Go(func() (err error) {
-			defer decorate.OnError(&err, i18n.G("can't download GPO %q"), g.name)
+			defer decorate.OnError(&err, i18n.G("can't download %q"), g.name)
 
 			smbsafe.WaitSmb()
 			defer smbsafe.DoneSmb()
 
-			log.Debugf(ctx, "Analyzing GPO %q", g.name)
+			log.Debugf(ctx, "Analyzing %q", g.name)
 
 			dest := filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(g.url))
+			if g.isAssets {
+				dest = filepath.Join(ad.sysvolCacheDir, "assets")
+			}
 
 			// Look at GPO version and compare with the one on AD to decide if we redownload or not
-			shouldDownload, err := gpoNeedsDownload(ctx, client, g, dest)
+			shouldDownload, err := needsDownload(ctx, client, g, dest)
 			if err != nil {
+				if g.isAssets && errors.Is(err, errNoGPTINI) {
+					log.Info(ctx, "No assets directory with GPT.INI file found on AD, skipping assets download")
+					if _, err := os.Stat(dest); err == nil {
+						// we remove the assets existing directory. We need to repack the db.
+						assetsWereRefreshed = true
+						if err := os.RemoveAll(dest); err != nil {
+							return err
+						}
+					}
+					return nil
+				}
 				return err
 			}
+
 			if !shouldDownload {
 				return nil
 			}
 
-			log.Infof(ctx, "Downloading GPO %q", g.name)
+			log.Infof(ctx, "Downloading %q", g.name)
 			g.mu.Lock()
 			defer g.mu.Unlock()
 			g.testConcurrent = true
+			if g.isAssets {
+				assetsWereRefreshed = true
+			}
 
-			return download(ctx, client, g.url, dest, false)
+			return downloadDir(ctx, client, g.url, dest)
 		})
 	}
 
-	// Also, refresh data assets. We are protected by ad main mutex.
-	errg.Go(func() (err error) {
-		defer decorate.OnError(&err, i18n.G("can't download data directory"))
-
-		if assetsURL == "" {
-			return nil
-		}
-		destDir := filepath.Join(ad.sysvolCacheDir, "assets")
-		log.Infof(ctx, "Downloading assets to %q", destDir)
-
-		return download(ctx, client, assetsURL, destDir, true)
-	})
-
 	if err := errg.Wait(); err != nil {
-		return fmt.Errorf("one or more error while fetching GPOs: %w", err)
+		return false, fmt.Errorf("one or more error while fetching GPOs and assets: %w", err)
 	}
 
-	return nil
+	return assetsWereRefreshed, nil
 }
 
-func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g *gpo, localPath string) (updateNeeded bool, err error) {
+var errNoGPTINI = errors.New("no GPT.INI file")
+
+// needsDownload erturn if the downloadable should be refreshed.
+// This is done by comparing GPT.INI Version= content.
+// allowMissing is used to allow the function to return false if the file is missing.
+func needsDownload(ctx context.Context, client *libsmbclient.Client, g *downloadable, localPath string) (updateNeeded bool, err error) {
 	defer decorate.OnError(&err, i18n.G("can't check if %s needs refreshing"), g.name)
 
 	g.mu.RLock()
@@ -158,13 +174,13 @@ func gpoNeedsDownload(ctx context.Context, client *libsmbclient.Client, g *gpo, 
 		defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
 		if localVersion, err = getGPOVersion(f); err != nil {
-			log.Warningf(ctx, "Invalid local GPT.INI for %s: %v\nDownloading GPO…", g.name, err)
+			log.Warningf(ctx, "Invalid local GPT.INI for %s: %v\nDownloading it again…", g.name, err)
 		}
 	}
 
 	f, err := client.Open(fmt.Sprintf("%s/GPT.INI", g.url), 0, 0)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("%w: %v", errNoGPTINI, err)
 	}
 	defer f.Close()
 	// Read() is on *libsmbclient.File, not libsmbclient.File
@@ -198,48 +214,17 @@ func getGPOVersion(r io.Reader) (version int, err error) {
 	return 0, errors.New("version not found")
 }
 
-// download will dl in a temporary directory and only commit it if fully downloaded without any errors.
-// If url is a file, it will download it.
-// missingOk allows to not error out on url not present on server.
-func download(ctx context.Context, client *libsmbclient.Client, url, dest string, missingOK bool) (err error) {
+// downloadDir will dl in a temporary directory and only commit it if fully downloaded without any errors.
+func downloadDir(ctx context.Context, client *libsmbclient.Client, url, dest string) (err error) {
 	defer decorate.OnError(&err, i18n.G("download %q failed"), url)
 
 	smbsafe.WaitSmb()
 	defer smbsafe.DoneSmb()
 
 	// Check if we have a file or a directory
-	d, errOpenDir := client.Opendir(url)
-	if errOpenDir != nil {
-		f, errOpenFile := client.Open(url, 0, 0)
-		if errOpenFile != nil {
-			if err := os.RemoveAll(dest); err != nil {
-				return err
-			}
-
-			if missingOK {
-				log.Warningf(ctx, "%s not present on server", url)
-				return nil
-			}
-			return errOpenDir
-		}
-		defer f.Close()
-
-		// Download the file directly to dest
-		pf := &f
-		data, err := io.ReadAll(pf)
-		if err != nil {
-			return err
-		}
-		g, err := os.CreateTemp(filepath.Dir(dest), fmt.Sprintf("%s.*", filepath.Base(dest)))
-		if err != nil {
-			return err
-		}
-		defer g.Close()
-		if _, err := g.Write(data); err != nil {
-			return err
-		}
-		g.Close()
-		return os.Rename(g.Name(), dest)
+	d, err := client.Opendir(url)
+	if err != nil {
+		return err
 	}
 
 	// It is a directory: recursive download

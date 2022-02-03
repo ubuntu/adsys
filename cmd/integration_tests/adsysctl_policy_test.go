@@ -194,12 +194,17 @@ func TestPolicyApplied(t *testing.T) {
 func TestPolicyUpdate(t *testing.T) {
 	currentUser := "adsystestuser@example.com"
 
+	u, err := user.Current()
+	require.NoError(t, err, "Setup: can't get current user")
+	currentUID := u.Uid
+
 	// We setup and rerun in a subprocess because the test users must exist on the machine for the authorizer.
 	if setupSubprocessForTest(t, currentUser, "UserIntegrationTest@example.com") {
 		return
 	}
 
 	testutils.Setenv(t, "ADSYS_TESTS_MOCK_SMBDOMAIN", "example.com")
+	testutils.Setenv(t, "ADSYS_SKIP_ROOT_CALLS", "TRUE")
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get current host")
@@ -377,6 +382,7 @@ func TestPolicyUpdate(t *testing.T) {
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
+				"run/users/1000",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -390,16 +396,19 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			},
 		},
-		"Host is offline, user gpos cache is cleared, with policies cache": {
+		"Host is offline, sysvol cache is cleared, use user cache": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
-			// clean gpos cache, but keep machine ones and user policies
+			// clean sysvol cache, but keep machine ones and user policies
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
+				"run/users/1000",
 				"cache/sysvol/Policies/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
 				"cache/sysvol/Policies/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
 				"cache/sysvol/Policies/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
+				"cache/sysvol/assets",
+				"cache/sysvol/assets.db",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -892,6 +901,17 @@ func TestPolicyUpdate(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "dconf"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "sudoers.d"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "polkit-1"), update)
+
+			// Current user can have different UID depending on where it’s running. We can’t mock it as we rely on current uid
+			// in the process for authorization check. Just make it generic.
+			if _, err := os.Stat(filepath.Join(adsysDir, "run", "users", currentUID)); err == nil {
+				require.NoError(t, os.Rename(filepath.Join(adsysDir, "run", "users", currentUID),
+					filepath.Join(adsysDir, "run", "users", "<CURRENT_UID>")),
+					"Setup: can't rename current user directory to generic <CURRENT_UID>")
+			}
+
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "run", "users"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", hostname), filepath.Join("testdata", "PolicyUpdate", "golden", name, "run", "machine"), update)
 		})
 	}
 }

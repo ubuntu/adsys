@@ -29,7 +29,8 @@ const (
 
 type assetsFromMMAP struct {
 	*zip.Reader
-	filemmap *mmap.ReaderAt
+	filemmap   *mmap.ReaderAt
+	assetsFrom string
 }
 
 // Policies is the list of GPOs applied to a particular object, with the global data cache.
@@ -106,13 +107,14 @@ func openAssetsInMemory(assetsDB string) (assets *assetsFromMMAP, err error) {
 	}
 
 	return &assetsFromMMAP{
-		Reader:   r,
-		filemmap: f,
+		Reader:     r,
+		filemmap:   f,
+		assetsFrom: assetsDB,
 	}, nil
 }
 
 // Save serializes in p policies.
-// It saves the assets also if not loaded from cache and switch to it.
+// Do not save again if p is already the origin. We don’t allow modifying GPOs or assets on the object.
 func (pols *Policies) Save(p string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save policies to %s"), p)
 
@@ -138,9 +140,16 @@ func (pols *Policies) Save(p string) (err error) {
 		return nil
 	}
 
+	// If assets are coming from current directory, do not try to resave it to the same file as
+	// we don’t change the original GPOs or assets.
+	if pols.assets.assetsFrom == assetPath {
+		return nil
+	}
+
 	// Save assets to user cache and reload it
 	dr := &readerAtToReader{ReaderAt: pols.assets.filemmap}
-	f, err := os.Create(assetPath)
+
+	f, err := os.Create(assetPath + ".new")
 	if err != nil {
 		return err
 	}
@@ -152,10 +161,16 @@ func (pols *Policies) Save(p string) (err error) {
 	if err := f.Close(); err != nil {
 		return err
 	}
+
+	if err := os.Rename(assetPath+".new", assetPath); err != nil {
+		return err
+	}
+
 	// Close previous mmaped file
 	if err := pols.Close(); err != nil {
 		return err
 	}
+	pols.assets = nil
 
 	// redirect from cache
 	pols.assets, err = openAssetsInMemory(assetPath)
@@ -196,7 +211,7 @@ func (r *readerAtToReader) Read(p []byte) (n int, err error) {
 // SaveAssetsTo creates in dest the assets using relative src path.
 // Directories will recursively project its content.
 // If there is no asset attached and relSrc is not "." then it returns an error.
-// dest should exists.
+// The destination directory or file should not exists.
 func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save assets to %s"), dest)
 
@@ -206,8 +221,12 @@ func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string) (er
 		return errors.New(i18n.G("no assets attached"))
 	}
 
-	baseDir := filepath.Dir(relSrc)
+	// error out if dest exists
+	if _, err := os.Stat(dest); !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf(i18n.G("destination %q already exists"), dest)
+	}
 
+	baseDir := strings.TrimSuffix(relSrc, "/")
 	return pols.saveAssetsRecursively(relSrc, dest, baseDir)
 }
 

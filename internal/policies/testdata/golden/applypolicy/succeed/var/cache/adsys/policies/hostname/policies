@@ -25,3 +25,22 @@ gpos:
                 %mygroup@domain
                 cosmic carole@domain
               disabled: false
+        scripts:
+            - key: startup
+              value: |
+                script-machine-startup
+                subfolder/other-script
+                final-machine-script.sh
+              disabled: false
+            - key: shutdown
+              value: |
+                script-machine-shutdown
+              disabled: false
+            - key: logon
+              value: |
+                script-user-logon
+              disabled: false
+            - key: logoff
+              value: |
+                otherfolder/script-user-logoff
+              disabled: false

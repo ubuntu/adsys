@@ -229,9 +229,10 @@ func TestMainExpand(t *testing.T) {
 
 		wantErr bool
 	}{
-		"dconf":                     {root: "simple"},
-		"expanded policy":           {root: "simple"},
-		"expanded policy with meta": {root: "simple"},
+		"dconf":                            {root: "simple"},
+		"expanded policy":                  {root: "simple"},
+		"expanded policy with meta":        {root: "simple"},
+		"expanded policy with release any": {root: "simple"},
 
 		"ignore categories and non yaml files": {root: "simple"},
 

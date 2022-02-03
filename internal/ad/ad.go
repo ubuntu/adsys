@@ -41,10 +41,13 @@ const (
 	ComputerObject = "computer"
 )
 
-type gpo struct {
-	name string
-	url  string
-	mu   *sync.RWMutex
+type gpo downloadable
+
+type downloadable struct {
+	name     string
+	url      string
+	mu       *sync.RWMutex
+	isAssets bool
 
 	// This property is used to instrument the tests for concurrent download and parsing of GPOs
 	// Cf internal_test::TestFetchOneGPOWhileParsingItConcurrently()
@@ -67,7 +70,7 @@ type AD struct {
 
 	sssdDbus dbus.BusObject
 
-	gpos map[string]*gpo
+	downloadables map[string]*downloadable
 	sync.RWMutex
 	fetchMu sync.Mutex
 
@@ -190,7 +193,7 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 		krb5CacheDir:        krb5CacheDir,
 		sssCCName:           sssCCName,
 		sssdDbus:            sssdDbus,
-		gpos:                make(map[string]*gpo),
+		downloadables:       make(map[string]*downloadable),
 		gpoListCmd:          args.gpoListCmd,
 	}, nil
 }
@@ -286,9 +289,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return pols, fmt.Errorf(i18n.G("failed to retrieve the list of GPO (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, stderr.String())
 	}
 
-	var assetsURL string
-	var refreshedAssets bool
-	gpos := make(map[string]string)
+	downloadables := make(map[string]string)
 	var orderedGPOs []gpo
 	scanner := bufio.NewScanner(&stdout)
 	for scanner.Scan() {
@@ -296,20 +297,19 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		res := strings.SplitN(t, "\t", 2)
 		gpoName, gpoURL := res[0], res[1]
 		log.Debugf(ctx, "GPO %q for %q available at %q", gpoName, objectName, gpoURL)
-		gpos[gpoName] = gpoURL
+		downloadables[gpoName] = gpoURL
 		orderedGPOs = append(orderedGPOs, gpo{name: gpoName, url: gpoURL})
-		// We will only ask to fetch assets when downloading computer policies
-		// (no way to have a timestamp to avoid unnecessary downloads).
-		if objectClass == ComputerObject {
-			u, err := url.Parse(gpoURL)
-			if err != nil {
-				return pols, err
-			}
-			// Assets are in <root>/DistroID, while GPOs are in <root>/Policies/<gpoName>
-			u.Path = filepath.Join(filepath.Dir(filepath.Dir(u.Path)), consts.DistroID)
-			assetsURL = u.String()
-			refreshedAssets = true
+
+		if _, ok := downloadables["assets"]; ok {
+			continue
 		}
+		u, err := url.Parse(gpoURL)
+		if err != nil {
+			return pols, err
+		}
+		// Assets are in <root>/DistroID, while GPOs are in <root>/Policies/<gpoName>
+		u.Path = filepath.Join(filepath.Dir(filepath.Dir(u.Path)), consts.DistroID)
+		downloadables["assets"] = u.String()
 	}
 	if err := scanner.Err(); err != nil {
 		return pols, err
@@ -317,7 +317,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 
 	ad.Lock()
 	defer ad.Unlock()
-	if err = ad.fetch(ctx, krb5CCPath, gpos, assetsURL); err != nil {
+	assetsWereRefresh, err := ad.fetch(ctx, krb5CCPath, downloadables)
+	if err != nil {
 		return pols, err
 	}
 
@@ -333,20 +334,27 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	var assetsDbPath string
 	assetsSrc := filepath.Join(ad.sysvolCacheDir, "assets")
 	errg.Go(func() (err error) {
-		// Only compress assets if we have fetched them.
-		if !refreshedAssets {
+		// Only compress assets if we have fetched them, otherwise attach optionally
+		// existing db.
+		if !assetsWereRefresh {
+			db := filepath.Join(assetsSrc + ".db")
+			if _, err := os.Stat(db); errors.Is(err, os.ErrNotExist) {
+				return nil
+			} else if err != nil {
+				return err
+			}
+			assetsDbPath = db
 			return nil
 		}
-		// check assetsSrc exists and is a directory
-		fi, err := os.Stat(assetsSrc)
+		// check assetsSrc exists
+		_, err = os.Stat(assetsSrc)
 		if errors.Is(err, fs.ErrNotExist) {
+			if err := os.Remove(filepath.Join(assetsSrc + ".db")); err != nil {
+				return err
+			}
 			return nil
 		} else if err != nil {
 			return err
-		}
-
-		if !fi.IsDir() {
-			return fmt.Errorf(i18n.G("%q downloaded from SYSVOL is not a directory"), assetsSrc)
 		}
 
 		// Cache it as a single zip file
@@ -433,9 +441,9 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 		}
 		r = append(r, gpoWithRules)
 		if err := func() error {
-			ad.gpos[name].mu.RLock()
-			defer ad.gpos[name].mu.RUnlock()
-			_ = ad.gpos[name].testConcurrent
+			ad.downloadables[name].mu.RLock()
+			defer ad.downloadables[name].mu.RUnlock()
+			_ = ad.downloadables[name].testConcurrent
 
 			log.Debugf(ctx, "Parsing GPO %q", name)
 
