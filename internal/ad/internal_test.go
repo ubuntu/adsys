@@ -340,11 +340,12 @@ func TestFetch(t *testing.T) {
 				}()
 				go func() {
 					defer wg.Done()
-					assetsRefreshed2, err = adc.fetch(context.Background(), "", concurrentGpos)
+					var err2 error
+					assetsRefreshed2, err2 = adc.fetch(context.Background(), "", concurrentGpos)
 					if tc.wantErr {
-						require.NotNil(t, err, "fetch should return an error but didn't")
+						require.NotNil(t, err2, "fetch should return an error but didn't")
 					} else {
-						require.NoError(t, err, "fetch returned an error but shouldn't")
+						require.NoError(t, err2, "fetch returned an error but shouldn't")
 					}
 				}()
 				wg.Wait()
