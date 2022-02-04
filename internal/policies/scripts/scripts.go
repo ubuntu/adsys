@@ -259,12 +259,13 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 		return fmt.Errorf(i18n.G("%q is not ready to execute scripts"), order)
 	}
 
-	// Delete users script directory once all logoff scripts are executed
+	// Delete users or machine script directory once all user logoff or machine shutdown scripts are executed
 	defer func() {
-		if !strings.Contains(order, "/users/") || !strings.HasSuffix(order, "/logoff") {
+		if !((strings.Contains(order, "/users/") && strings.HasSuffix(order, "/logoff")) ||
+			(strings.Contains(order, "/machine/") && strings.HasSuffix(order, "/shutdown"))) {
 			return
 		}
-		log.Debug(ctx, "Logoff called, deleting users script directory")
+		log.Debug(ctx, "Logoff or shutdown called, deleting script directory")
 		err = os.RemoveAll(baseDir)
 	}()
 
