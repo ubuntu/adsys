@@ -272,9 +272,11 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 
 	// Otherwise, try fetching the GPO list from LDAP
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
-	cmdArgs := append(args, "--objectclass", string(objectClass), adServerURL, objectName)
+	scriptArgs := []string{"--objectclass", string(objectClass), adServerURL, objectName}
+	cmdArgs := append(args, scriptArgs...)
 	cmdCtx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
+	log.Debugf(ctx, "Getting gpo list with arguments: %q", strings.Join(scriptArgs, " "))
 	// #nosec G204 - cmdArgs is under our control (python embedded script or mock for tests)
 	cmd := exec.CommandContext(cmdCtx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
