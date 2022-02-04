@@ -19,6 +19,41 @@ import (
 
 var update bool
 
+func TestNew(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		makeReadOnly bool
+
+		wantErr bool
+	}{
+		// user cases
+		"create manager": {},
+
+		"error on read only rundir": {makeReadOnly: true, wantErr: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			runDir := t.TempDir()
+
+			if tc.makeReadOnly {
+				testutils.MakeReadOnly(t, runDir)
+			}
+			_, err := scripts.New(runDir)
+			if tc.wantErr {
+				require.NotNil(t, err, "New should have failed but didn't")
+				return
+			}
+			require.NoError(t, err, "New failed but shouldn't have")
+		})
+	}
+}
+
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
