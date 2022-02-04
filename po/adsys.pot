@@ -21,11 +21,11 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:276
+#: internal/policies/scripts/scripts.go:304
 msgid "%q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:259
+#: internal/policies/scripts/scripts.go:277
 msgid "%q is not ready to execute scripts"
 msgstr ""
 
@@ -47,7 +47,7 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:466
+#: internal/ad/ad.go:468
 msgid "%s :%v"
 msgstr ""
 
@@ -169,7 +169,7 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:292
+#: internal/adsysservice/adsysservice.go:311
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
@@ -270,11 +270,11 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/manager.go:200
+#: internal/policies/manager.go:203
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:208
+#: internal/policies/manager.go:211
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -394,20 +394,24 @@ msgstr ""
 msgid "can't apply privilege policy to %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:81
+#: internal/policies/scripts/scripts.go:90
 #, c-format
 msgid "can't apply scripts policy to %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:181
+#: internal/policies/scripts/scripts.go:192
 msgid "can't change mode of script %qto %o: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:210
+#: internal/policies/scripts/scripts.go:221
 msgid "can't change owner of order file %q to user %s: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:137
+#: internal/policies/scripts/scripts.go:239
+msgid "can't change owner of ready file %q to user %s: %v"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:148
 msgid "can't change owner of script directory %q to user %s: %v"
 msgstr ""
 
@@ -457,15 +461,19 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:219
+#: internal/policies/scripts/scripts.go:231
 msgid "can't create ready file for scripts: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:133
+#: internal/policies/scripts/scripts.go:144
 msgid "can't create scripts directory %q: %v"
 msgstr ""
 
-#: internal/ad/ad.go:404
+#: internal/policies/scripts/scripts.go:58
+msgid "can't create scripts manager"
+msgstr ""
+
+#: internal/ad/ad.go:406
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -501,7 +509,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:411
+#: internal/ad/ad.go:413
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -523,7 +531,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/ad/ad.go:379
+#: internal/ad/ad.go:381
 msgid "can't list users from cache"
 msgstr ""
 
@@ -539,7 +547,7 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:236
+#: internal/adsysservice/adsysservice.go:255
 #, c-format
 msgid "can't load server info from %s"
 msgstr ""
@@ -552,7 +560,7 @@ msgstr ""
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:249
+#: internal/adsysservice/adsysservice.go:268
 msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
@@ -560,7 +568,7 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:251
+#: internal/policies/scripts/scripts.go:269
 #, c-format
 msgid "can't run scripts listed in %s"
 msgstr ""
@@ -640,16 +648,16 @@ msgstr ""
 msgid "could not read chapter %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:96
+#: internal/policies/scripts/scripts.go:105
 msgid "couldn't convert %q to a valid gid for %q"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:137
-#: internal/policies/scripts/scripts.go:93
+#: internal/policies/scripts/scripts.go:102
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:134
+#: internal/adsysservice/adsysservice.go:135
 msgid "couldn't create adsys service"
 msgstr ""
 
@@ -658,7 +666,7 @@ msgid "couldn't open stat file for process: %v"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:133
-#: internal/policies/scripts/scripts.go:90
+#: internal/policies/scripts/scripts.go:99
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
@@ -777,19 +785,19 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/manager.go:150
+#: internal/policies/manager.go:153
 msgid "failed to apply policy to %q"
 msgstr ""
 
-#: internal/policies/manager.go:185
+#: internal/policies/manager.go:188
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:257
+#: internal/adsysservice/adsysservice.go:276
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/policies/manager.go:225
+#: internal/policies/manager.go:228
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -801,7 +809,7 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/ad/ad.go:388
+#: internal/ad/ad.go:390
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -817,7 +825,7 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:422
+#: internal/ad/ad.go:424
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -825,7 +833,7 @@ msgstr ""
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/ad/ad.go:289
+#: internal/ad/ad.go:291
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -921,7 +929,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:203 internal/policies/manager.go:214
+#: internal/policies/manager.go:206 internal/policies/manager.go:217
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -949,7 +957,7 @@ msgstr ""
 msgid "permission denied"
 msgstr ""
 
-#: internal/policies/manager.go:239
+#: internal/policies/manager.go:242
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
@@ -969,11 +977,11 @@ msgstr ""
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:175
+#: internal/policies/scripts/scripts.go:186
 msgid "script %q doesn't exist in SYSVOL scripts/ subdirectory"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:178
+#: internal/policies/scripts/scripts.go:189
 msgid "script %q is a directory and not a file to execute"
 msgstr ""
 
