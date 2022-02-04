@@ -170,6 +170,7 @@ func TestRunScripts(t *testing.T) {
 	tests := map[string]struct {
 		stageDir          string
 		allowOrderMissing bool
+		scriptObjectName  string
 
 		wantDirRemoved bool
 		wantErr        bool
@@ -180,7 +181,10 @@ func TestRunScripts(t *testing.T) {
 		"scripts not listed are not run":              {},
 		"scripts referenced in subdirectories":        {},
 
-		"script directory is cleaned up after user logoff": {stageDir: "logoff", wantDirRemoved: true},
+		"script directory is cleaned up after user logoff":                      {stageDir: "logoff", wantDirRemoved: true},
+		"script directory without logoff order is cleaned up after user logoff": {stageDir: "logoff", wantDirRemoved: true, allowOrderMissing: true},
+		"script directory not ready without logoff order is not cleaned up":     {stageDir: "logoff", wantErr: true, allowOrderMissing: true},
+		"script directory is not cleaned up after non user logoff":              {stageDir: "logoff", scriptObjectName: "machine", wantDirRemoved: false},
 
 		"allow order file missing":           {allowOrderMissing: true},
 		"spaces and empty lines are skipped": {},
@@ -203,7 +207,10 @@ func TestRunScripts(t *testing.T) {
 			if tc.stageDir == "" {
 				tc.stageDir = "s"
 			}
-			scriptRootParentDir := filepath.Join(scriptDir, "users", "foo")
+			if tc.scriptObjectName == "" {
+				tc.scriptObjectName = "users"
+			}
+			scriptRootParentDir := filepath.Join(scriptDir, tc.scriptObjectName, "foo")
 			scriptParentDir := filepath.Join(scriptRootParentDir, "scripts")
 			scriptDir = filepath.Join(scriptParentDir, tc.stageDir)
 
@@ -219,6 +226,8 @@ func TestRunScripts(t *testing.T) {
 			err := scripts.RunScripts(context.Background(), scriptDir, tc.allowOrderMissing)
 			if tc.wantErr {
 				require.NotNil(t, err, "RunScripts should have failed but didn't")
+				_, err = os.Stat(filepath.Dir(scriptDir))
+				require.NoError(t, err, "RunScripts should have kept scripts directory intact")
 				return
 			}
 			require.NoError(t, err, "RunScripts failed but shouldn't have")
