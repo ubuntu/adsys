@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -142,6 +143,24 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		if err := o(&args); err != nil {
 			return nil, err
 		}
+	}
+
+	// Create run and cache base directories
+	runDir := args.runDir
+	if runDir == "" {
+		runDir = consts.DefaultRunDir
+	}
+	// #nosec G301 - we need to ensure users have access directly to their own scripts
+	if err := os.MkdirAll(runDir, 0755); err != nil {
+		return nil, err
+	}
+
+	cacheDir := args.cacheDir
+	if cacheDir == "" {
+		cacheDir = consts.DefaultCacheDir
+	}
+	if err := os.MkdirAll(cacheDir, 0700); err != nil {
+		return nil, err
 	}
 
 	// Don’t call dbus.SystemBus which caches globally system dbus (issues in tests)

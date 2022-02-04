@@ -62,10 +62,10 @@ func TestApplyPolicy(t *testing.T) {
 		"no entries update existing non ready folder": {destAlreadyExists: "not ready", computer: true},
 
 		// Error cases
-		"error on subfolder listed":            {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
-		"error on script does not exist":       {entries: []entry.Entry{{Key: "s", Value: "doestnotexists"}}, wantErr: true},
-		"error on run directory Read Only":     {makeReadOnly: true, entries: defaultSingleScript, wantErr: true},
-		"error on save assets dumping failing": {entries: defaultSingleScript, saveAssetsError: true, wantErr: true},
+		"error on subfolder listed":              {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
+		"error on script does not exist":         {entries: []entry.Entry{{Key: "s", Value: "doestnotexists"}}, wantErr: true},
+		"error on users run directory Read Only": {makeReadOnly: true, entries: defaultSingleScript, wantErr: true},
+		"error on save assets dumping failing":   {entries: defaultSingleScript, saveAssetsError: true, wantErr: true},
 
 		// User error cases only
 		"error on invalid UID":                               {userReturnedUID: "invalid", entries: defaultSingleScript, wantErr: true},
@@ -110,10 +110,6 @@ func TestApplyPolicy(t *testing.T) {
 					"Setup: can't create initial run dir scripts content")
 			}
 
-			if tc.makeReadOnly {
-				testutils.MakeReadOnly(t, runDir)
-			}
-
 			systemctlCmd := mockSystemCtlCmd(t)
 			if tc.systemctlShouldFail {
 				systemctlCmd = append(systemctlCmd, "-Exit1-")
@@ -121,11 +117,17 @@ func TestApplyPolicy(t *testing.T) {
 
 			sat := sat{err: tc.saveAssetsError}
 
-			m := scripts.New(runDir,
+			m, err := scripts.New(runDir,
 				scripts.WithSystemCtlCmd(systemctlCmd),
 				scripts.WithUserLookup(userLookup),
 			)
-			err := m.ApplyPolicy(context.Background(), "ubuntu", tc.computer, tc.entries, sat.mockSaveAssetsTo)
+			require.NoError(t, err, "Setup: can't create scripts manager")
+
+			if tc.makeReadOnly {
+				testutils.MakeReadOnly(t, filepath.Join(runDir, "users"))
+			}
+
+			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.computer, tc.entries, sat.mockSaveAssetsTo)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")
 				return

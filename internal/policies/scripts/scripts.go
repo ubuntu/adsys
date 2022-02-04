@@ -54,7 +54,9 @@ type options struct {
 type Option func(*options)
 
 // New creates a manager with a specific scripts directory.
-func New(runDir string, opts ...Option) *Manager {
+func New(runDir string, opts ...Option) (m *Manager, err error) {
+	defer decorate.OnError(&err, i18n.G("can't create scripts manager"))
+
 	// defaults
 	args := options{
 		userLookup:   user.Lookup,
@@ -65,12 +67,19 @@ func New(runDir string, opts ...Option) *Manager {
 		o(&args)
 	}
 
+	// Multiple users will be in users/ subdirectory. Create the main one.
+	// #nosec G301 - multiple users will be in users/ subdirectory, we want all of them
+	// to be able to access its own subdirectory.
+	if err := os.MkdirAll(filepath.Join(runDir, "users"), 0755); err != nil {
+		return nil, err
+	}
+
 	return &Manager{
 		scriptsMu:    make(map[string]*sync.Mutex),
 		runDir:       runDir,
 		userLookup:   args.userLookup,
 		systemctlCmd: args.systemctlCmd,
-	}
+	}, nil
 }
 
 // AssetsDumper is a function which uncompress policies assets to a directory.
@@ -99,7 +108,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		objectDir = filepath.Join("users", user.Uid)
 	}
 
-	scriptsPath := filepath.Join(m.runDir, objectDir, executableDir)
+	objectPath := filepath.Join(m.runDir, objectDir)
+	scriptsPath := filepath.Join(objectPath, executableDir)
 
 	// Mutex is per user1, user2, computer
 	m.muMu.Lock()
@@ -128,25 +138,26 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return nil
 	}
 
-	// create scriptsDir directory and chown it to uid:gid of the user
-	if err := os.MkdirAll(scriptsPath, 0700); err != nil {
+	// This create objectDirPath and scriptsDir directory.
+	// We chown objectDirPath (user specific) to uid:gid of the user
+	if err := os.MkdirAll(scriptsPath, 0750); err != nil {
 		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), scriptsPath, err)
 	}
 	if !isComputer {
-		if err := chown(ctx, scriptsPath, uid, gid); err != nil {
-			return fmt.Errorf(i18n.G("can't change owner of script directory %q to user %s: %v"), scriptsPath, objectName, err)
+		if err := chown(ctx, objectPath, uid, gid); err != nil {
+			return fmt.Errorf(i18n.G("can't change owner of script directory %q to user %s: %v"), objectPath, objectName, err)
 		}
 	}
 
-	// Dump assets to scripts/ subdirectory. If no assets is present while entries != nil, we want to return an error.
-	dest := filepath.Join(scriptsPath, executableDir)
+	// Dump assets to scripts/scripts/ subdirectory. If no assets is present while entries != nil, we want to return an error.
+	dest := filepath.Join(scriptsPath, "scripts")
 	if err := assetsDumper(ctx, "scripts/", dest); err != nil {
 		return err
 	}
-	// Fix ownership of scripts/ subdirectory and its contents
+	// Fix ownership of scripts/ directory and its contents
 	if !isComputer {
-		log.Debugf(ctx, "Fixing ownership of scripts/ subdirectory for user %q", objectName)
-		if err := filepath.WalkDir(dest, func(path string, d fs.DirEntry, err error) error {
+		log.Debugf(ctx, "Fixing ownership of scripts/ directory for user %q", objectName)
+		if err := filepath.WalkDir(scriptsPath, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
@@ -214,12 +225,19 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// Create ready flag
 	log.Debugf(ctx, "Create script ready flag for user %q", objectName)
-	f, err := os.Create(filepath.Join(scriptsPath, readyFlag))
+	readyPath := filepath.Join(scriptsPath, readyFlag)
+	f, err := os.Create(readyPath)
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create ready file for scripts: %v"), err)
 	}
 	if err := f.Close(); err != nil {
 		return err
+	}
+
+	if !isComputer {
+		if err := chown(ctx, readyPath, uid, gid); err != nil {
+			return fmt.Errorf(i18n.G("can't change owner of ready file %q to user %s: %v"), readyPath, objectName, err)
+		}
 	}
 
 	if !isComputer {
