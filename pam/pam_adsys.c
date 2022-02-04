@@ -51,6 +51,12 @@
  */
 static int update_policy(pam_handle_t * pamh, const char *username, const char *krb5ccname, int debug)
 {
+	int retval;
+	retval = pam_info(pamh, "Applying user settings");
+	if (retval != PAM_SUCCESS) {
+		return retval;
+	}
+
 	if (memcmp(krb5ccname, (const char *)"FILE:", 5) == 0) {
 		krb5ccname += 5;
 	}
@@ -132,6 +138,12 @@ static int update_policy(pam_handle_t * pamh, const char *username, const char *
  */
 static int update_machine_policy(pam_handle_t * pamh, int debug)
 {
+	int retval;
+	retval = pam_info(pamh, "Applying machine settings");
+	if (retval != PAM_SUCCESS) {
+		return retval;
+	}
+
 	char **arggv;
 	arggv = calloc(5, sizeof(char *));
 	if (arggv == NULL) {

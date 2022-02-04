@@ -1,7 +1,7 @@
-99-adsys-privilege-enforcement.conf etc/polkit-1/localauthority.conf.d/
-99-adsys-privilege-enforcement etc/sudoers.d/
+./debian/99-adsys-privilege-enforcement.conf etc/polkit-1/localauthority.conf.d/
+./debian/99-adsys-privilege-enforcement etc/sudoers.d/
 pam/pam-configs usr/share
 systemd/*.service lib/systemd/system/
 systemd/*.socket lib/systemd/system/
 systemd/*.timer lib/systemd/system/
-systemd/user/*.service lib/systemd/user/
+systemd/user/*.service usr/lib/systemd/user/

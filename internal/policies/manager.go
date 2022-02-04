@@ -115,7 +115,10 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	privilegeManager := privilege.NewWithDirs(args.sudoersDir, args.policyKitDir)
 
 	// scripts manager
-	scriptsManager := scripts.New(args.runDir)
+	scriptsManager, err := scripts.New(args.runDir)
+	if err != nil {
+		return nil, err
+	}
 
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {

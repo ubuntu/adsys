@@ -49,7 +49,7 @@ def parse_gplink(gplink):
     ''' Parse a gPLink into an array of dn and options '''
     ret = []
 
-    if gplink.strip() == "b''":
+    if not gplink.strip() or gplink.strip() == "b''":
         return ret
 
     a = gplink.split(']')

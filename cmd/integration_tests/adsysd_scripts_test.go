@@ -14,9 +14,10 @@ func TestAdsysdRunScripts(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		orderFile string
-		args      []string
-		notready  bool
+		orderFile        string
+		args             []string
+		notready         bool
+		scriptObjectName string
 
 		wantDirRemoved bool
 		wantErr        bool
@@ -25,10 +26,11 @@ func TestAdsysdRunScripts(t *testing.T) {
 		"multiple scripts":                {orderFile: "multiple"},
 		"multiple scripts with subfolder": {orderFile: "multiple-subfolder"},
 
-		"logoff cleans up scripts and order": {orderFile: "logoff", wantDirRemoved: true},
-		"order file is missing but allowed":  {orderFile: "missing", args: []string{"--allow-order-missing"}},
-		"one missing script is allowed":      {orderFile: "script-missing"},
-		"failing script is allowed":          {orderFile: "script-failing"},
+		"logoff cleans up scripts and order":           {orderFile: "logoff", wantDirRemoved: true},
+		"shutdown machine cleans up scripts and order": {orderFile: "shutdown", scriptObjectName: "machine", wantDirRemoved: true},
+		"order file is missing but allowed":            {orderFile: "missing", args: []string{"--allow-order-missing"}},
+		"one missing script is allowed":                {orderFile: "script-missing"},
+		"failing script is allowed":                    {orderFile: "script-failing"},
 
 		"error on order file not existing": {orderFile: "missing", wantErr: true},
 		"error on directory not ready":     {orderFile: "simple", notready: true, wantErr: true},
@@ -42,8 +44,12 @@ func TestAdsysdRunScripts(t *testing.T) {
 
 			d := daemon.New()
 
+			if tc.scriptObjectName == "" {
+				tc.scriptObjectName = "users"
+			}
+
 			p := t.TempDir()
-			scriptRunBaseDir := filepath.Join(p, "users")
+			scriptRunBaseDir := filepath.Join(p, tc.scriptObjectName)
 
 			// Setup script directory
 			testutils.Copy(t, "testdata/RunScripts/scripts", scriptRunBaseDir)

@@ -19,6 +19,41 @@ import (
 
 var update bool
 
+func TestNew(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		makeReadOnly bool
+
+		wantErr bool
+	}{
+		// user cases
+		"create manager": {},
+
+		"error on read only rundir": {makeReadOnly: true, wantErr: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			runDir := t.TempDir()
+
+			if tc.makeReadOnly {
+				testutils.MakeReadOnly(t, runDir)
+			}
+			_, err := scripts.New(runDir)
+			if tc.wantErr {
+				require.NotNil(t, err, "New should have failed but didn't")
+				return
+			}
+			require.NoError(t, err, "New failed but shouldn't have")
+		})
+	}
+}
+
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
@@ -62,10 +97,10 @@ func TestApplyPolicy(t *testing.T) {
 		"no entries update existing non ready folder": {destAlreadyExists: "not ready", computer: true},
 
 		// Error cases
-		"error on subfolder listed":            {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
-		"error on script does not exist":       {entries: []entry.Entry{{Key: "s", Value: "doestnotexists"}}, wantErr: true},
-		"error on run directory Read Only":     {makeReadOnly: true, entries: defaultSingleScript, wantErr: true},
-		"error on save assets dumping failing": {entries: defaultSingleScript, saveAssetsError: true, wantErr: true},
+		"error on subfolder listed":              {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
+		"error on script does not exist":         {entries: []entry.Entry{{Key: "s", Value: "doestnotexists"}}, wantErr: true},
+		"error on users run directory Read Only": {makeReadOnly: true, entries: defaultSingleScript, wantErr: true},
+		"error on save assets dumping failing":   {entries: defaultSingleScript, saveAssetsError: true, wantErr: true},
 
 		// User error cases only
 		"error on invalid UID":                               {userReturnedUID: "invalid", entries: defaultSingleScript, wantErr: true},
@@ -110,10 +145,6 @@ func TestApplyPolicy(t *testing.T) {
 					"Setup: can't create initial run dir scripts content")
 			}
 
-			if tc.makeReadOnly {
-				testutils.MakeReadOnly(t, runDir)
-			}
-
 			systemctlCmd := mockSystemCtlCmd(t)
 			if tc.systemctlShouldFail {
 				systemctlCmd = append(systemctlCmd, "-Exit1-")
@@ -121,11 +152,17 @@ func TestApplyPolicy(t *testing.T) {
 
 			sat := sat{err: tc.saveAssetsError}
 
-			m := scripts.New(runDir,
+			m, err := scripts.New(runDir,
 				scripts.WithSystemCtlCmd(systemctlCmd),
 				scripts.WithUserLookup(userLookup),
 			)
-			err := m.ApplyPolicy(context.Background(), "ubuntu", tc.computer, tc.entries, sat.mockSaveAssetsTo)
+			require.NoError(t, err, "Setup: can't create scripts manager")
+
+			if tc.makeReadOnly {
+				testutils.MakeReadOnly(t, filepath.Join(runDir, "users"))
+			}
+
+			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.computer, tc.entries, sat.mockSaveAssetsTo)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")
 				return
@@ -170,6 +207,7 @@ func TestRunScripts(t *testing.T) {
 	tests := map[string]struct {
 		stageDir          string
 		allowOrderMissing bool
+		scriptObjectName  string
 
 		wantDirRemoved bool
 		wantErr        bool
@@ -180,7 +218,15 @@ func TestRunScripts(t *testing.T) {
 		"scripts not listed are not run":              {},
 		"scripts referenced in subdirectories":        {},
 
-		"script directory is cleaned up after user logoff": {stageDir: "logoff", wantDirRemoved: true},
+		"script directory is cleaned up after user logoff":                      {stageDir: "logoff", wantDirRemoved: true},
+		"script directory without logoff order is cleaned up after user logoff": {stageDir: "logoff", wantDirRemoved: true, allowOrderMissing: true},
+		"script directory not ready without logoff order is not cleaned up":     {stageDir: "logoff", wantErr: true, allowOrderMissing: true},
+		"script directory is not cleaned up after non user logoff":              {stageDir: "logoff", scriptObjectName: "machine", wantDirRemoved: false},
+
+		"script directory is cleaned up after machine shutdown":                        {stageDir: "shutdown", scriptObjectName: "machine", wantDirRemoved: true},
+		"script directory without shutdown order is cleaned up after machine shutdown": {stageDir: "shutdown", scriptObjectName: "machine", wantDirRemoved: true, allowOrderMissing: true},
+		"script directory not ready without shutdown order is not cleaned up":          {stageDir: "shutdown", scriptObjectName: "machine", wantErr: true, allowOrderMissing: true},
+		"script directory is not cleaned up after non machine shutdown":                {stageDir: "shutdown", scriptObjectName: "users", wantDirRemoved: false},
 
 		"allow order file missing":           {allowOrderMissing: true},
 		"spaces and empty lines are skipped": {},
@@ -203,7 +249,10 @@ func TestRunScripts(t *testing.T) {
 			if tc.stageDir == "" {
 				tc.stageDir = "s"
 			}
-			scriptRootParentDir := filepath.Join(scriptDir, "users", "foo")
+			if tc.scriptObjectName == "" {
+				tc.scriptObjectName = "users"
+			}
+			scriptRootParentDir := filepath.Join(scriptDir, tc.scriptObjectName, "foo")
 			scriptParentDir := filepath.Join(scriptRootParentDir, "scripts")
 			scriptDir = filepath.Join(scriptParentDir, tc.stageDir)
 
@@ -219,6 +268,8 @@ func TestRunScripts(t *testing.T) {
 			err := scripts.RunScripts(context.Background(), scriptDir, tc.allowOrderMissing)
 			if tc.wantErr {
 				require.NotNil(t, err, "RunScripts should have failed but didn't")
+				_, err = os.Stat(filepath.Dir(scriptDir))
+				require.NoError(t, err, "RunScripts should have kept scripts directory intact")
 				return
 			}
 			require.NoError(t, err, "RunScripts failed but shouldn't have")

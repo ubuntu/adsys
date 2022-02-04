@@ -55,8 +55,14 @@ func TestAdsysGPOList(t *testing.T) {
 			accountName: "RnDUserDep3@GPOONLY.COM",
 		},
 
-		"No GPO on OU": {
+		// Empty GPOs return an empty bytes field or a space depending on the client
+		// so we need to test both.
+		"No GPO on OU - bytes": {
 			accountName: "UserNoGPO@GPOONLY.COM",
+		},
+
+		"No GPO on OU - string": {
+			accountName: "UserNoGPOString@GPOONLY.COM",
 		},
 
 		// Filtering cases

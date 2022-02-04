@@ -233,8 +233,8 @@ func TestDumpPolicies(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			cacheDir := t.TempDir()
-			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir))
+			cacheDir, runDir := t.TempDir(), t.TempDir()
+			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
@@ -309,8 +309,8 @@ func TestLastUpdateFor(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			cacheDir := t.TempDir()
-			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir))
+			cacheDir, runDir := t.TempDir(), t.TempDir()
+			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
@@ -368,8 +368,8 @@ func TestGetStatus(t *testing.T) {
 				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
 			}()
 
-			cacheDir := t.TempDir()
-			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir))
+			cacheDir, runDir := t.TempDir(), t.TempDir()
+			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			// force a refresh

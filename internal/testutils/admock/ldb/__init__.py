@@ -93,6 +93,8 @@ class OU:
             self.gPOptions = [dsdb.GPO_BLOCK_INHERITANCE]
         if path.basename(strdn) == "NogPOptions":
             delattr(self, "gPOptions")
+        if path.basename(strdn) == "NoGPOString":
+            self.gPLink = [' ']
 
         OUs[strdn] = self
 
@@ -253,6 +255,9 @@ o.addAccount("RnDUserWithBlockedInheritance")
 
 o = OU("/example/NoGPO")
 o.addAccount("UserNoGPO")
+
+o = OU("/example/NoGPOString")
+o.addAccount("UserNoGPOString")
 
 o = OU("/example/NogPOptions")
 o.addGPO(GPO("NogPOptions GPO"))
