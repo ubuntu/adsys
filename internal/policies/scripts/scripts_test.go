@@ -186,6 +186,11 @@ func TestRunScripts(t *testing.T) {
 		"script directory not ready without logoff order is not cleaned up":     {stageDir: "logoff", wantErr: true, allowOrderMissing: true},
 		"script directory is not cleaned up after non user logoff":              {stageDir: "logoff", scriptObjectName: "machine", wantDirRemoved: false},
 
+		"script directory is cleaned up after machine shutdown":                        {stageDir: "shutdown", scriptObjectName: "machine", wantDirRemoved: true},
+		"script directory without shutdown order is cleaned up after machine shutdown": {stageDir: "shutdown", scriptObjectName: "machine", wantDirRemoved: true, allowOrderMissing: true},
+		"script directory not ready without shutdown order is not cleaned up":          {stageDir: "shutdown", scriptObjectName: "machine", wantErr: true, allowOrderMissing: true},
+		"script directory is not cleaned up after non machine shutdown":                {stageDir: "shutdown", scriptObjectName: "users", wantDirRemoved: false},
+
 		"allow order file missing":           {allowOrderMissing: true},
 		"spaces and empty lines are skipped": {},
 
