@@ -259,6 +259,15 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 		return fmt.Errorf(i18n.G("%q is not ready to execute scripts"), order)
 	}
 
+	// Delete users script directory once all logoff scripts are executed
+	defer func() {
+		if !strings.Contains(order, "/users/") || !strings.HasSuffix(order, "/logoff") {
+			return
+		}
+		log.Debug(ctx, "Logoff called, deleting users script directory")
+		err = os.RemoveAll(baseDir)
+	}()
+
 	// Read from the order file the order of scripts to run
 	f, err := os.Open(order)
 	if allowOrderMissing && errors.Is(err, os.ErrNotExist) {
@@ -287,17 +296,15 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 		// #nosec G204 - this variable is coming from concatenation of an order file.
 		// Permissions are restricted to the owner of the order file, which is the one executing
 		// this script.
-		if out, err := exec.CommandContext(ctx, script).CombinedOutput(); err != nil {
-			log.Warningf(ctx, "%q failed to run: %v\n%v", script, err, string(out))
+		cmd := exec.CommandContext(ctx, script)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			log.Warningf(ctx, "%q failed to run\n%v", script, err)
 		}
 	}
 
-	// Delete users script directory once all logoff scripts are executed
-	if !strings.Contains(order, "/users/") || !strings.HasSuffix(order, "/logoff") {
-		return nil
-	}
-	log.Debug(ctx, "Logoff called, deleting users script directory")
-	return os.RemoveAll(baseDir)
+	return nil
 }
 
 // chown allow to skip the Chown syscall for automated or manual testing when running as non root.
