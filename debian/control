@@ -33,5 +33,7 @@ Depends: ${shlibs:Depends},
          samba-dsdb-modules,
          sssd,
          sssd-dbus,
+Recommends: ${misc:Recommends},
+            ubuntu-advantage-desktop-daemon,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
