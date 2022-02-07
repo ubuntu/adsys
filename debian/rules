@@ -10,6 +10,9 @@ export DH_GOLANG_INSTALL_ALL := 1
 # Skip integration tests when building package: they need docker images.
 export ADSYS_SKIP_INTEGRATION_TESTS=1
 
+# Run with Go 1.16
+export PATH := /usr/lib/go-1.16/bin/:$(PATH)
+
 %:
 	dh $@ --buildsystem=golang --with=golang,apport
 
