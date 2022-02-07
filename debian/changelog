@@ -1,3 +1,59 @@
+adsys (0.8) UNRELEASED; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Add new types of GPOs support, with ubuntu advantage subscription
+    integration. Recommends ubuntu-advantage-desktop-daemon.
+  * Privilege escalation: support for privilege escalation and gives
+    administrator access to users and groups registered in Active Directory.
+    The administrator can also prevent any kind of local administrator on
+    the machine.
+  * Scripts integration: support for scripts in GPO when the computer boots and
+    shuts down, and when the user logs on or off.
+    - The computer scripts are ran as root, on startup (or first AD user login
+      if we couldn’t fetch GPOs and had no cache)
+    - The user scripts are ran with systemd user session, as the user.
+    - A transactional state is handled: New versions of scripts or list of
+      scripts are only updated when a given session is not opened.
+      Said differently, the shutdown scripts for the machine will be the ones
+      downloaded and enabled when the start scripts were ran.
+      Similarly, the user logoff scripts will be the ones corresponding to
+      the time when the log on scripts were executed.
+    - Any failing scripts won’t stop the boot or log on. Similarly to Windows
+      script support, this is not a security feature.
+  * Support downloading assets from the Active Directory server. Those assets
+    are located in the <Distribution> named directory at SYSVOL root.
+    Those needs a GPT.INI, similarly to GPO, to control cache update.
+  * Internal changes on how policies and cached are handled. Those changes are
+    needed to enhance the model of caching with assets, while keeping
+    a transactional behaviour.
+  * Many new tests covering all the new and existing changes.
+  * General cleanups:
+    - More debugging and info messages.
+    - In templates, policies define personalized notes and descriptions.
+      Those are now used to generate the description of the policy.
+    - Modernize, fix bugs and workarounds now that we are on at min Go 1.16,
+      and prepare for 1.17 and new vendored dependencies versions.
+    - Add more linting support and fix discovered issues.
+    - Rewrite integration tests containers mimicking system services in python
+      for better reliability and support via dbus-mock. Upgraded to a newer
+      version.
+    - Adapt to new GitHub infrastructure changes with new container repository,
+      and change workflows adjustements by new linting rules.
+    - Discare deprecated dconf keys for those releases.
+  * Updated vendored go dependencies:
+    - bluemonday
+    - cobra
+    - color
+    - glamour
+    - go-dbus
+    - golangci-lint
+    - grpc
+    - ini
+    - viper
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 07 Feb 2022 09:37:45 +0100
+
 adsys (0.7.1) impish; urgency=medium
 
   * Fix user login name when being prefixed by domain (domain\user) or using
