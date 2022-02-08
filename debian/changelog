@@ -1,4 +1,4 @@
-adsys (0.8+22.04) UNRELEASED; urgency=medium
+adsys (0.8~22.04) focal; urgency=medium
 
   * Backport to focal: (LP: #1929038)
     - Build with Go 1.16
