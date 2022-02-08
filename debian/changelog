@@ -1,6 +1,6 @@
 adsys (0.8+22.04) UNRELEASED; urgency=medium
 
-  * Backport to focal:
+  * Backport to focal: (LP: #1929038)
     - Build with Go 1.16
     - Move debhelper compat to 12
     - Do not recommends ubuntu-advantage-desktop-daemon as it’s not available
