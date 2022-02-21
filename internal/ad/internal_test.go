@@ -2,7 +2,6 @@ package ad
 
 import (
 	"context"
-
 	// #nosec: G501: we are using it only for comparing directory tree content in tests.
 	"crypto/md5"
 	"flag"
