@@ -2,7 +2,6 @@ package testutils
 
 import (
 	"bufio"
-
 	// blank embed import for python3-mock.in.
 	_ "embed"
 	"fmt"

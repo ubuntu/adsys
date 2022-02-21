@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-
 	// embed gpolist python binary.
 	_ "embed"
 	"errors"
