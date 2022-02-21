@@ -127,6 +127,7 @@ static int update_policy(pam_handle_t * pamh, const char *username, const char *
 		execv(arggv[0], arggv);
 		int i = errno;
 		pam_syslog(pamh, LOG_ERR, "execv(%s,...) failed: %m", arggv[0]);
+		free(arggv);
 		_exit(i);
 	}
 
@@ -207,6 +208,7 @@ static int update_machine_policy(pam_handle_t * pamh, int debug)
 		execv(arggv[0], arggv);
 		int i = errno;
 		pam_syslog(pamh, LOG_ERR, "execv(%s,...) failed: %m", arggv[0]);
+		free(arggv);
 		_exit(i);
 	}
 
@@ -294,10 +296,10 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
 	*/
 	char hostname[HOST_NAME_MAX + 1];
 	char cache_path[HOST_NAME_MAX + 1 + strlen(ADSYS_POLICIES_DIR) - 2];
-    if (gethostname(hostname, HOST_NAME_MAX + 1) < 0) {
+	if (gethostname(hostname, HOST_NAME_MAX + 1) < 0) {
 		pam_syslog(pamh, LOG_ERR, "Failed to get hostname");
 		return PAM_SYSTEM_ERR;
-    }
+	}
 	if (sprintf(cache_path, ADSYS_POLICIES_DIR, hostname) < 0) {
 		pam_syslog(pamh, LOG_ERR, "Failed to allocate cache_path");
 		return PAM_BUF_ERR;
