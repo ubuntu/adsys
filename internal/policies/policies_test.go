@@ -312,6 +312,8 @@ func TestSaveAssetsTo(t *testing.T) {
 
 	tests := map[string]struct {
 		relSrc string
+		uid    int
+		gid    int
 
 		cacheSrc     string
 		readOnlyDest string
@@ -333,6 +335,13 @@ func TestSaveAssetsTo(t *testing.T) {
 		},
 		"file": {
 			relSrc:   "scripts/script-simple.sh",
+			cacheSrc: "with_assets",
+		},
+
+		"chown directories and files when requested": {
+			relSrc:   ".",
+			uid:      os.Getuid(),
+			gid:      os.Getgid(),
 			cacheSrc: "with_assets",
 		},
 
@@ -369,6 +378,13 @@ func TestSaveAssetsTo(t *testing.T) {
 			destExists: true,
 			wantErr:    true,
 		},
+		"error on can't chown to user": {
+			relSrc:   ".",
+			uid:      -2,
+			gid:      -2,
+			cacheSrc: "with_assets",
+			wantErr:  true,
+		},
 	}
 
 	for name, tc := range tests {
@@ -395,7 +411,7 @@ func TestSaveAssetsTo(t *testing.T) {
 			require.NoError(t, err, "Setup: NewFromCache should return no error but got one")
 			defer pols.Close()
 
-			err = pols.SaveAssetsTo(context.Background(), tc.relSrc, dest)
+			err = pols.SaveAssetsTo(context.Background(), tc.relSrc, dest, tc.uid, tc.gid)
 			if tc.wantErr {
 				require.Error(t, err, "SaveAssetsTo should return an error but got none")
 				return
@@ -884,7 +900,7 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, u
 	err := got.Save(compareDir)
 	require.NoError(t, err, "Teardown: saving gpo should work")
 	if got.HasAssets() {
-		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"))
+		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"), 0, 0)
 		require.NoError(t, err, "Teardown: deserializing assets should work")
 		// Remove database that are different from machine to machine.
 		err = os.RemoveAll(filepath.Join(compareDir, "assets.db"))
