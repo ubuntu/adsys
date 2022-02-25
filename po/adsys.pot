@@ -21,11 +21,11 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:304
+#: internal/policies/scripts/scripts.go:284
 msgid "%q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:277
+#: internal/policies/scripts/scripts.go:257
 msgid "%q is not ready to execute scripts"
 msgstr ""
 
@@ -47,7 +47,7 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:468
+#: internal/ad/ad.go:467
 msgid "%s :%v"
 msgstr ""
 
@@ -93,7 +93,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:260
+#: internal/ad/ad.go:259
 msgid "%s: %v"
 msgstr ""
 
@@ -107,7 +107,7 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/ad/ad.go:263
+#: internal/ad/ad.go:262
 #, c-format
 msgid "%s: no active server found"
 msgstr ""
@@ -394,25 +394,13 @@ msgstr ""
 msgid "can't apply privilege policy to %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:90
+#: internal/policies/scripts/scripts.go:89
 #, c-format
 msgid "can't apply scripts policy to %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:192
+#: internal/policies/scripts/scripts.go:177
 msgid "can't change mode of script %qto %o: %v"
-msgstr ""
-
-#: internal/policies/scripts/scripts.go:221
-msgid "can't change owner of order file %q to user %s: %v"
-msgstr ""
-
-#: internal/policies/scripts/scripts.go:239
-msgid "can't change owner of ready file %q to user %s: %v"
-msgstr ""
-
-#: internal/policies/scripts/scripts.go:148
-msgid "can't change owner of script directory %q to user %s: %v"
 msgstr ""
 
 #: internal/ad/download.go:166
@@ -420,7 +408,11 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/policies.go:292
+#: internal/policies/policies.go:430 internal/policies/scripts/scripts.go:320
+msgid "can't chown %q"
+msgstr ""
+
+#: internal/policies/policies.go:299
 #, c-format
 msgid "can't compress assets from %s"
 msgstr ""
@@ -429,7 +421,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/ad/ad.go:133
+#: internal/ad/ad.go:132
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -461,19 +453,24 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:231
+#: internal/policies/scripts/scripts.go:143
+msgid "can't create object directory %q: %v"
+msgstr ""
+
+#: internal/policies/scripts/scripts.go:214
 msgid "can't create ready file for scripts: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:144
+#: internal/policies/scripts/scripts.go:146
+#: internal/policies/scripts/scripts.go:311
 msgid "can't create scripts directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:58
+#: internal/policies/scripts/scripts.go:57
 msgid "can't create scripts manager"
 msgstr ""
 
-#: internal/ad/ad.go:406
+#: internal/ad/ad.go:405
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -509,7 +506,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:413
+#: internal/ad/ad.go:412
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -523,7 +520,7 @@ msgstr ""
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:209
+#: internal/ad/ad.go:208
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -531,7 +528,7 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: internal/ad/ad.go:381
+#: internal/ad/ad.go:380
 msgid "can't list users from cache"
 msgstr ""
 
@@ -568,7 +565,7 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:269
+#: internal/policies/scripts/scripts.go:249
 #, c-format
 msgid "can't run scripts listed in %s"
 msgstr ""
@@ -578,7 +575,7 @@ msgstr ""
 msgid "can't save %s"
 msgstr ""
 
-#: internal/policies/policies.go:216
+#: internal/policies/policies.go:217
 #, c-format
 msgid "can't save assets to %s"
 msgstr ""
@@ -648,12 +645,12 @@ msgstr ""
 msgid "could not read chapter %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:105
+#: internal/policies/scripts/scripts.go:104
 msgid "couldn't convert %q to a valid gid for %q"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:137
-#: internal/policies/scripts/scripts.go:102
+#: internal/policies/scripts/scripts.go:101
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
@@ -666,7 +663,7 @@ msgid "couldn't open stat file for process: %v"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:133
-#: internal/policies/scripts/scripts.go:99
+#: internal/policies/scripts/scripts.go:98
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
@@ -682,7 +679,7 @@ msgstr ""
 msgid "dconf update failed: %v"
 msgstr ""
 
-#: internal/policies/policies.go:226
+#: internal/policies/policies.go:227
 msgid "destination %q already exists"
 msgstr ""
 
@@ -769,7 +766,7 @@ msgid "error while trying to get the list of active users"
 msgstr ""
 
 #. Try to update from SSSD the current active AD server
-#: internal/ad/ad.go:257
+#: internal/ad/ad.go:256
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
@@ -809,7 +806,7 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/ad/ad.go:390
+#: internal/ad/ad.go:389
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -825,15 +822,15 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:424
+#: internal/ad/ad.go:423
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/ad/ad.go:235
+#: internal/ad/ad.go:234
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/ad/ad.go:291
+#: internal/ad/ad.go:290
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -883,7 +880,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:245
+#: internal/ad/ad.go:244
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -913,7 +910,7 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/policies/policies.go:221
+#: internal/policies/policies.go:222
 msgid "no assets attached"
 msgstr ""
 
@@ -933,7 +930,7 @@ msgstr ""
 msgid "no policy applied for %q: %v"
 msgstr ""
 
-#: internal/policies/policies.go:238
+#: internal/policies/policies.go:239
 msgid "no relSrc provided to look into database archive"
 msgstr ""
 
@@ -973,15 +970,15 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:219
+#: internal/ad/ad.go:218
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:186
+#: internal/policies/scripts/scripts.go:171
 msgid "script %q doesn't exist in SYSVOL scripts/ subdirectory"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:189
+#: internal/policies/scripts/scripts.go:174
 msgid "script %q is a directory and not a file to execute"
 msgstr ""
 
@@ -1046,6 +1043,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:214
+#: internal/ad/ad.go:213
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
