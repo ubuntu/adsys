@@ -312,8 +312,8 @@ func TestSaveAssetsTo(t *testing.T) {
 
 	tests := map[string]struct {
 		relSrc string
-		uid    int
-		gid    int
+		uid    int // we will default it to -1 if no set
+		gid    int // we will default it to -1 if no set
 
 		cacheSrc     string
 		readOnlyDest string
@@ -405,6 +405,13 @@ func TestSaveAssetsTo(t *testing.T) {
 			} else if !tc.destExists {
 				// we simulate unexisting dest by removing it
 				require.NoError(t, os.RemoveAll(dest), "Setup: can't mock unexisting dest")
+			}
+
+			if tc.uid == 0 {
+				tc.uid = -1
+			}
+			if tc.gid == 0 {
+				tc.gid = -1
 			}
 
 			pols, err := policies.NewFromCache(context.Background(), src)
@@ -900,7 +907,7 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, u
 	err := got.Save(compareDir)
 	require.NoError(t, err, "Teardown: saving gpo should work")
 	if got.HasAssets() {
-		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"), 0, 0)
+		err = got.SaveAssetsTo(context.Background(), ".", filepath.Join(compareDir, "assets.db.uncompressed"), -1, -1)
 		require.NoError(t, err, "Teardown: deserializing assets should work")
 		// Remove database that are different from machine to machine.
 		err = os.RemoveAll(filepath.Join(compareDir, "assets.db"))

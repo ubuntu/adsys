@@ -91,7 +91,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	log.Debugf(ctx, "Applying scripts policy to %s", objectName)
 
 	objectDir := "machine"
-	var uid, gid int
+	uid, gid := -1, -1
 	if !isComputer {
 		user, err := m.userLookup(objectName)
 		if err != nil {
@@ -139,10 +139,10 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// This creates objectDirPath and scriptsDir directory.
 	// We chown objectDirPath and scripts (user specific) to uid:gid of the user. Nothing is done for the machine
-	if err := mkdirAllWithUIDGid(ctx, objectPath, uid, gid); err != nil {
+	if err := mkdirAllWithUIDGid(objectPath, uid, gid); err != nil {
 		return fmt.Errorf(i18n.G("can't create object directory %q: %v"), objectPath, err)
 	}
-	if err := mkdirAllWithUIDGid(ctx, scriptsPath, uid, gid); err != nil {
+	if err := mkdirAllWithUIDGid(scriptsPath, uid, gid); err != nil {
 		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), scriptsPath, err)
 	}
 
@@ -197,10 +197,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 				return err
 			}
 		}
-		if shouldChown(ctx, orderFilePath, uid, gid) {
-			if err := f.Chown(uid, gid); err != nil {
-				return fmt.Errorf(i18n.G("can't change owner of order file %q to user %s: %v"), orderFilePath, objectName, err)
-			}
+		if err := chown(orderFilePath, f, uid, gid); err != nil {
+			return err
 		}
 		// Commit file on disk before preparing the ready flag
 		if err := f.Close(); err != nil {
@@ -215,10 +213,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create ready file for scripts: %v"), err)
 	}
-	if shouldChown(ctx, readyPath, uid, gid) {
-		if err := f.Chown(uid, gid); err != nil {
-			return fmt.Errorf(i18n.G("can't change owner of order file %q to user %s: %v"), readyPath, objectName, err)
-		}
+	if err := chown(readyPath, f, uid, gid); err != nil {
+		return err
 	}
 	if err := f.Close(); err != nil {
 		return err
@@ -310,27 +306,28 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 	return nil
 }
 
-func mkdirAllWithUIDGid(ctx context.Context, p string, uid, gid int) error {
+func mkdirAllWithUIDGid(p string, uid, gid int) error {
 	if err := os.MkdirAll(p, 0750); err != nil {
 		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), p, err)
 	}
 
-	if !shouldChown(ctx, p, uid, gid) {
-		return nil
-	}
-
-	return os.Chown(p, uid, gid)
+	return chown(p, nil, uid, gid)
 }
 
-// shouldChown notifies if we should skip chown for root or in tests.
-func shouldChown(ctx context.Context, name string, uid, gid int) bool {
-	if uid == 0 && gid == 0 {
-		return false
-	}
+// chown either chown the file descriptor attached, or the path if this one is null to uid and gid.
+// It will know if we should skip chown for tests.
+func chown(p string, f *os.File, uid, gid int) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't chown %q"), p)
 
 	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
-		log.Infof(ctx, "Skipping chown on %q as requested by ADSYS_SKIP_ROOT_CALLS", name)
-		return false
+		uid = -1
+		gid = -1
 	}
-	return true
+
+	if f == nil {
+		// Ensure that if p is a symlink, we only change the symlink itself, not what was pointed by it.
+		return os.Lchown(p, uid, gid)
+	}
+
+	return f.Chown(uid, gid)
 }

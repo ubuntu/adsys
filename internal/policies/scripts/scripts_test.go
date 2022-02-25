@@ -87,7 +87,7 @@ func TestApplyPolicy(t *testing.T) {
 		"no entries is an empty folder":      {},
 		"empty entries are discared":         {entries: []entry.Entry{{Key: "s", Value: "script3.sh\n\nscript1.sh"}}},
 
-		// computer cases -> no setuid/setgid
+		// computer cases -> no setuid/setgid (should be -1)
 		"computer, no systemctl with other directory than startup":       {computer: true, systemctlShouldFail: true, entries: defaultSingleScript},
 		"startup script for computer runs systemctl (systemctl success)": {computer: true, systemctlShouldFail: false, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}},
 
