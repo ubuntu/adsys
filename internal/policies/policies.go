@@ -212,7 +212,8 @@ func (r *readerAtToReader) Read(p []byte) (n int, err error) {
 // Directories will recursively project its content.
 // If there is no asset attached and relSrc is not "." then it returns an error.
 // The destination directory or file should not exists.
-func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string) (err error) {
+// A uid or gid different from -1 means that every directories and files will be chown to that user and group.
+func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string, uid, gid int) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't save assets to %s"), dest)
 
 	log.Debugf(ctx, "export assets %q to %q", relSrc, dest)
@@ -227,10 +228,10 @@ func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string) (er
 	}
 
 	baseDir := strings.TrimSuffix(relSrc, "/")
-	return pols.saveAssetsRecursively(relSrc, dest, baseDir)
+	return pols.saveAssetsRecursively(relSrc, dest, baseDir, uid, gid)
 }
 
-func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string) (err error) {
+func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string, uid, gid int) (err error) {
 	// zip doesn’t like final /, even when listing them return it.
 	relSrc = strings.TrimSuffix(relSrc, "/")
 
@@ -253,6 +254,9 @@ func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string) (err e
 		if err := os.MkdirAll(dstPath, 0700); err != nil {
 			return err
 		}
+		if err := chown(dstPath, nil, uid, gid); err != nil {
+			return err
+		}
 
 		// Remove any "." to match directory content
 		relSrc = strings.TrimLeft(relSrc, "./")
@@ -266,7 +270,7 @@ func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string) (err e
 			if !strings.HasPrefix(zipF.Name, relSrc) || zipF.Name == relSrc {
 				continue
 			}
-			if err := pols.saveAssetsRecursively(zipF.Name, dest, baseDir); err != nil {
+			if err := pols.saveAssetsRecursively(zipF.Name, dest, baseDir, uid, gid); err != nil {
 				return err
 			}
 		}
@@ -281,6 +285,9 @@ func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string) (err e
 	defer outF.Close()
 
 	if _, err = io.Copy(outF, f); err != nil {
+		return err
+	}
+	if err := chown(dstPath, outF, uid, gid); err != nil {
 		return err
 	}
 
@@ -415,4 +422,22 @@ func (pols Policies) GetUniqueRules() map[string][]entry.Entry {
 	}
 
 	return r
+}
+
+// chown either chown the file descriptor attached, or the path if this one is null to uid and gid.
+// It will know if we should skip chown for tests.
+func chown(p string, f *os.File, uid, gid int) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't chown %q"), p)
+
+	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
+		uid = -1
+		gid = -1
+	}
+
+	if f == nil {
+		// Ensure that if p is a symlink, we only change the symlink itself, not what was pointed by it.
+		return os.Lchown(p, uid, gid)
+	}
+
+	return f.Chown(uid, gid)
 }

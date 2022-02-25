@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
 	"os/user"
@@ -83,7 +82,7 @@ func New(runDir string, opts ...Option) (m *Manager, err error) {
 }
 
 // AssetsDumper is a function which uncompress policies assets to a directory.
-type AssetsDumper func(ctx context.Context, relSrc, dest string) (err error)
+type AssetsDumper func(ctx context.Context, relSrc, dest string, uid int, gid int) (err error)
 
 // ApplyPolicy generates a privilege policy based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry, assetsDumper AssetsDumper) (err error) {
@@ -92,7 +91,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	log.Debugf(ctx, "Applying scripts policy to %s", objectName)
 
 	objectDir := "machine"
-	var uid, gid int
+	uid, gid := -1, -1
 	if !isComputer {
 		user, err := m.userLookup(objectName)
 		if err != nil {
@@ -138,33 +137,19 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return nil
 	}
 
-	// This create objectDirPath and scriptsDir directory.
-	// We chown objectDirPath (user specific) to uid:gid of the user
-	if err := os.MkdirAll(scriptsPath, 0750); err != nil {
+	// This creates objectDirPath and scriptsDir directory.
+	// We chown objectDirPath and scripts (user specific) to uid:gid of the user. Nothing is done for the machine
+	if err := mkdirAllWithUIDGid(objectPath, uid, gid); err != nil {
+		return fmt.Errorf(i18n.G("can't create object directory %q: %v"), objectPath, err)
+	}
+	if err := mkdirAllWithUIDGid(scriptsPath, uid, gid); err != nil {
 		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), scriptsPath, err)
 	}
-	if !isComputer {
-		if err := chown(ctx, objectPath, uid, gid); err != nil {
-			return fmt.Errorf(i18n.G("can't change owner of script directory %q to user %s: %v"), objectPath, objectName, err)
-		}
-	}
 
-	// Dump assets to scripts/scripts/ subdirectory. If no assets is present while entries != nil, we want to return an error.
+	// Dump assets to scripts/scripts/ subdirectory with correct ownership. If no assets is present while entries != nil, we want to return an error.
 	dest := filepath.Join(scriptsPath, "scripts")
-	if err := assetsDumper(ctx, "scripts/", dest); err != nil {
+	if err := assetsDumper(ctx, "scripts/", dest, uid, gid); err != nil {
 		return err
-	}
-	// Fix ownership of scripts/ directory and its contents
-	if !isComputer {
-		log.Debugf(ctx, "Fixing ownership of scripts/ directory for user %q", objectName)
-		if err := filepath.WalkDir(scriptsPath, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				return err
-			}
-			return chown(ctx, path, uid, gid)
-		}); err != nil {
-			return err
-		}
 	}
 
 	// create order files, check that the scripts existings in the destination
@@ -212,14 +197,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 				return err
 			}
 		}
+		if err := chown(orderFilePath, f, uid, gid); err != nil {
+			return err
+		}
 		// Commit file on disk before preparing the ready flag
 		if err := f.Close(); err != nil {
 			return err
-		}
-		if !isComputer {
-			if err := chown(ctx, orderFilePath, uid, gid); err != nil {
-				return fmt.Errorf(i18n.G("can't change owner of order file %q to user %s: %v"), orderFilePath, objectName, err)
-			}
 		}
 	}
 
@@ -230,14 +213,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't create ready file for scripts: %v"), err)
 	}
-	if err := f.Close(); err != nil {
+	if err := chown(readyPath, f, uid, gid); err != nil {
 		return err
 	}
-
-	if !isComputer {
-		if err := chown(ctx, readyPath, uid, gid); err != nil {
-			return fmt.Errorf(i18n.G("can't change owner of ready file %q to user %s: %v"), readyPath, objectName, err)
-		}
+	if err := f.Close(); err != nil {
+		return err
 	}
 
 	if !isComputer {
@@ -326,12 +306,28 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 	return nil
 }
 
-// chown allow to skip the Chown syscall for automated or manual testing when running as non root.
-func chown(ctx context.Context, name string, uid, gid int) error {
-	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
-		log.Infof(ctx, "Skipping chown on %q as requested by ADSYS_SKIP_ROOT_CALLS", name)
-		return nil
+func mkdirAllWithUIDGid(p string, uid, gid int) error {
+	if err := os.MkdirAll(p, 0750); err != nil {
+		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), p, err)
 	}
 
-	return os.Chown(name, uid, gid)
+	return chown(p, nil, uid, gid)
+}
+
+// chown either chown the file descriptor attached, or the path if this one is null to uid and gid.
+// It will know if we should skip chown for tests.
+func chown(p string, f *os.File, uid, gid int) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't chown %q"), p)
+
+	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
+		uid = -1
+		gid = -1
+	}
+
+	if f == nil {
+		// Ensure that if p is a symlink, we only change the symlink itself, not what was pointed by it.
+		return os.Lchown(p, uid, gid)
+	}
+
+	return f.Chown(uid, gid)
 }

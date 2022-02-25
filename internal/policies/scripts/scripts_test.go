@@ -75,7 +75,7 @@ func TestApplyPolicy(t *testing.T) {
 
 		wantErr bool
 	}{
-		// user cases
+		// user cases -> setuid/setgid to current user in tests
 		"one script": {entries: defaultSingleScript},
 		"one directory, multiple scripts in order": {entries: []entry.Entry{{Key: "s", Value: "script3.sh\nscript1.sh\nscript2.sh"}}},
 		"multiple directories:": {entries: []entry.Entry{
@@ -87,7 +87,7 @@ func TestApplyPolicy(t *testing.T) {
 		"no entries is an empty folder":      {},
 		"empty entries are discared":         {entries: []entry.Entry{{Key: "s", Value: "script3.sh\n\nscript1.sh"}}},
 
-		// computer cases
+		// computer cases -> no setuid/setgid (should be -1)
 		"computer, no systemctl with other directory than startup":       {computer: true, systemctlShouldFail: true, entries: defaultSingleScript},
 		"startup script for computer runs systemctl (systemctl success)": {computer: true, systemctlShouldFail: false, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}},
 
@@ -314,7 +314,7 @@ type sat struct {
 }
 
 // mockSaveAssetsTo returns a static mock directory with scripts.
-func (s sat) mockSaveAssetsTo(ctx context.Context, relSrc, dest string) (err error) {
+func (s sat) mockSaveAssetsTo(ctx context.Context, relSrc, dest string, uid int, gid int) (err error) {
 	if s.err {
 		return errors.New("mockSaveAssetsTo error")
 	}

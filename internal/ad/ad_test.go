@@ -682,7 +682,7 @@ func TestGetPolicies(t *testing.T) {
 			// Compare assets
 			uncompressedAssets := t.TempDir()
 			require.NoError(t, os.RemoveAll(uncompressedAssets), "Teardown: can’t remove uncompressed assets directory for saving assets")
-			err = entries.SaveAssetsTo(context.Background(), ".", uncompressedAssets)
+			err = entries.SaveAssetsTo(context.Background(), ".", uncompressedAssets, -1, -1)
 			if tc.wantAssetsEquals == "" {
 				require.Error(t, err, "Teardown: policies should have no assets to uncompress")
 				require.NoFileExists(t, filepath.Join(adc.SysvolCacheDir(), "assets.db"), "assets db cache should not exists")
@@ -1306,8 +1306,8 @@ func assertEqualPolicies(t *testing.T, expected policies.Policies, got policies.
 	require.NoError(t, os.RemoveAll(expectedAssetsDir), "Teardown: can’t remove expected assets directory created for comparison")
 	require.NoError(t, os.RemoveAll(gotAssetsDir), "Teardown: can’t remove new assets directory created for comparison")
 
-	require.NoError(t, expected.SaveAssetsTo(context.Background(), ".", expectedAssetsDir), "Teardown: Saving expected policies failed.")
-	require.NoError(t, got.SaveAssetsTo(context.Background(), ".", gotAssetsDir), "Teardown: Saving got policies failed.")
+	require.NoError(t, expected.SaveAssetsTo(context.Background(), ".", expectedAssetsDir, -1, -1), "Teardown: Saving expected policies failed.")
+	require.NoError(t, got.SaveAssetsTo(context.Background(), ".", gotAssetsDir, -1, -1), "Teardown: Saving got policies failed.")
 
 	testutils.CompareTreesWithFiltering(t, gotAssetsDir, expectedAssetsDir, false)
 }
