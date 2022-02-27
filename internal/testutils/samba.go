@@ -18,7 +18,7 @@ func SetupSmb(port int, sysvolDir string) func() {
 	dir, cleanup := mkSmbDirWithConf(smbPort, sysvolDir)
 
 	// #nosec:G204 - we control the directory we run smbd on (on tests)
-	cmd := exec.Command("smbd", "-FS", "-s", filepath.Join(dir, "smbd.conf"))
+	cmd := exec.Command("smbd", "-F", "--debug-stdout", "-s", filepath.Join(dir, "smbd.conf"))
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		log.Fatalf("Setup: can’t get smb output: %v", err)
