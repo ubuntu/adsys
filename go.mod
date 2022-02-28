@@ -7,7 +7,7 @@ require (
 	github.com/coreos/go-systemd v0.0.0-20190620071333-e64a0ec8b42a
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.1
-	github.com/godbus/dbus/v5 v5.0.6
+	github.com/godbus/dbus/v5 v5.1.0
 	github.com/golang/protobuf v1.5.2
 	github.com/golangci/golangci-lint v1.44.2
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
