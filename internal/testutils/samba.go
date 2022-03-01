@@ -18,7 +18,27 @@ func SetupSmb(port int, sysvolDir string) func() {
 	dir, cleanup := mkSmbDirWithConf(smbPort, sysvolDir)
 
 	// #nosec:G204 - we control the directory we run smbd on (on tests)
-	cmd := exec.Command("smbd", "-F", "--debug-stdout", "-s", filepath.Join(dir, "smbd.conf"))
+
+	var cmd *exec.Cmd
+
+	verCmd := exec.Command("smbd", "-V")
+
+	verString, err := verCmd.Output()
+	if err != nil {
+		log.Fatalf("Setup: can’t get smbd version: %v", err)
+	}
+
+	var major, minor int
+	_, err = fmt.Sscanf(string(verString), "Version %i.%i", &major, &minor)
+	if err != nil {
+		log.Fatalf("Setup: couldn't understand smbd version %q: %v", verString, err)
+	}
+	if (major > 4 || minor >= 15) {
+		cmd = exec.Command("smbd", "-F", "--debug-stdout", "-s", filepath.Join(dir, "smbd.conf"))
+	} else {
+		cmd = exec.Command("smbd", "-SF", "-s", filepath.Join(dir, "smbd.conf"))
+	}
+
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		log.Fatalf("Setup: can’t get smb output: %v", err)
