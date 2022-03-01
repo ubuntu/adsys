@@ -29,7 +29,7 @@ func SetupSmb(port int, sysvolDir string) func() {
 	}
 
 	var major, minor int
-	_, err = fmt.Sscanf(string(verString), "Version %i.%i", &major, &minor)
+	_, err = fmt.Sscanf(string(verString), "Version %d.%d", &major, &minor)
 	if err != nil {
 		log.Fatalf("Setup: couldn't understand smbd version %q: %v", verString, err)
 	}
