@@ -33,7 +33,7 @@ func SetupSmb(port int, sysvolDir string) func() {
 	if err != nil {
 		log.Fatalf("Setup: couldn't understand smbd version %q: %v", verString, err)
 	}
-	if (major > 4 || minor >= 15) {
+	if major > 4 || minor >= 15 {
 		cmd = exec.Command("smbd", "-F", "--debug-stdout", "-s", filepath.Join(dir, "smbd.conf"))
 	} else {
 		cmd = exec.Command("smbd", "-SF", "-s", filepath.Join(dir, "smbd.conf"))
