@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -276,7 +277,7 @@ func TestRunScripts(t *testing.T) {
 
 			_, err = os.Stat(filepath.Dir(scriptDir))
 			if tc.wantDirRemoved {
-				require.True(t, os.IsNotExist(err), "RunScripts should have removed user/machine scripts dir but didn't")
+				require.True(t, errors.Is(err, fs.ErrNotExist), "RunScripts should have removed user/machine scripts dir but didn't")
 			} else {
 				require.NoError(t, err, "RunScripts should have kept scripts directory intact")
 			}
