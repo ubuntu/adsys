@@ -17,27 +17,26 @@ func SetupSmb(port int, sysvolDir string) func() {
 	smbPort := port
 	dir, cleanup := mkSmbDirWithConf(smbPort, sysvolDir)
 
-	// #nosec:G204 - we control the directory we run smbd on (on tests)
-
-	var cmd *exec.Cmd
-
-	verCmd := exec.Command("smbd", "-V")
-
-	verString, err := verCmd.Output()
+	version, err := exec.Command("smbd", "-V").Output()
 	if err != nil {
 		log.Fatalf("Setup: can’t get smbd version: %v", err)
 	}
 
 	var major, minor int
-	_, err = fmt.Sscanf(string(verString), "Version %d.%d", &major, &minor)
+	_, err = fmt.Sscanf(string(version), "Version %d.%d", &major, &minor)
 	if err != nil {
-		log.Fatalf("Setup: couldn't understand smbd version %q: %v", verString, err)
+		log.Fatalf("Setup: couldn't understand smbd version %q: %v", version, err)
 	}
+
+	args := []string{"-F", "-s", filepath.Join(dir, "smbd.conf")}
 	if major > 4 || minor >= 15 {
-		cmd = exec.Command("smbd", "-F", "--debug-stdout", "-s", filepath.Join(dir, "smbd.conf"))
+		args = append(args, "--debug-stdout")
 	} else {
-		cmd = exec.Command("smbd", "-SF", "-s", filepath.Join(dir, "smbd.conf"))
+		args = append(args, "-S")
 	}
+
+	// #nosec:G204 - we control the arguments and directory we run smbd on (on tests)
+	cmd := exec.Command("smbd", args...)
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
