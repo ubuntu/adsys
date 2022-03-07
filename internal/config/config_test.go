@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -219,6 +220,9 @@ func TestInit(t *testing.T) {
 				Value string
 			}{}
 
+			// Let’s force a sync to make sure the initial files are written on disk
+			syscall.Sync()
+
 			var callbackCalled int
 			firstCallbackDone, secondCallbackDone := make(chan struct{}), make(chan struct{})
 			err = config.Init(prefix, cmd, vip, func(refreshed bool) error {
@@ -255,6 +259,8 @@ func TestInit(t *testing.T) {
 			if tc.changeConfigWith != "" {
 				err = os.WriteFile(filepath.Join(configDir, prefix+".yaml"), []byte(tc.changeConfigWith), 0600)
 				require.NoError(t, err, "Setup: failed to write initial config file")
+				// Let’s force a sync to make sure the file is written on disk
+				syscall.Sync()
 				select {
 				case <-secondCallbackDone:
 					if tc.wantCallbackCalled != 2 {
