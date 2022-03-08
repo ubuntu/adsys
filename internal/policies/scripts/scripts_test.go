@@ -93,9 +93,10 @@ func TestApplyPolicy(t *testing.T) {
 		"startup script for computer runs systemctl (systemctl success)": {computer: true, systemctlShouldFail: false, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}},
 
 		// Destination already exists. Using computer to be uid independent
-		"destination is already ready, no change":     {destAlreadyExists: "already ready", computer: true, entries: defaultSingleScript},
-		"destination is not ready, refreshing":        {destAlreadyExists: "not ready", computer: true, entries: defaultSingleScript},
-		"no entries update existing non ready folder": {destAlreadyExists: "not ready", computer: true},
+		"destination is already running, no change":                   {destAlreadyExists: "already running", computer: true, entries: defaultSingleScript},
+		"destination is already ready but not in session, refreshing": {destAlreadyExists: "already ready", computer: true, entries: defaultSingleScript},
+		"destination is not ready, refreshing":                        {destAlreadyExists: "not ready", computer: true, entries: defaultSingleScript},
+		"no entries update existing non ready folder":                 {destAlreadyExists: "not ready", computer: true},
 
 		// Error cases
 		"error on subfolder listed":              {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
