@@ -21,18 +21,18 @@ func TestAdsysdRunScripts(t *testing.T) {
 		notready         bool
 		scriptObjectName string
 
-		wantDirRemoved bool
-		wantErr        bool
+		wantSessionFlagFileRemoved bool
+		wantErr                    bool
 	}{
 		"one script":                      {orderFile: "simple"},
 		"multiple scripts":                {orderFile: "multiple"},
 		"multiple scripts with subfolder": {orderFile: "multiple-subfolder"},
 
-		"logoff cleans up scripts and order":           {orderFile: "logoff", wantDirRemoved: true},
-		"shutdown machine cleans up scripts and order": {orderFile: "shutdown", scriptObjectName: "machine", wantDirRemoved: true},
-		"order file is missing but allowed":            {orderFile: "missing", args: []string{"--allow-order-missing"}},
-		"one missing script is allowed":                {orderFile: "script-missing"},
-		"failing script is allowed":                    {orderFile: "script-failing"},
+		"logoff cleans up running flag":           {orderFile: "logoff", wantSessionFlagFileRemoved: true},
+		"shutdown machine cleans up running flag": {orderFile: "shutdown", scriptObjectName: "machine", wantSessionFlagFileRemoved: true},
+		"order file is missing but allowed":       {orderFile: "missing", args: []string{"--allow-order-missing"}},
+		"one missing script is allowed":           {orderFile: "script-missing"},
+		"failing script is allowed":               {orderFile: "script-failing"},
 
 		"error on order file not existing": {orderFile: "missing", wantErr: true},
 		"error on directory not ready":     {orderFile: "simple", notready: true, wantErr: true},
@@ -75,11 +75,11 @@ func TestAdsysdRunScripts(t *testing.T) {
 			}
 			require.NoError(t, err, "client should exit with no error")
 
-			_, err = os.Stat(scriptRunBaseDir)
-			if tc.wantDirRemoved {
-				require.True(t, errors.Is(err, fs.ErrNotExist), "RunScripts should have removed user/machine scripts dir but didn't")
+			_, err = os.Stat(filepath.Join(scriptRunBaseDir, ".running"))
+			if tc.wantSessionFlagFileRemoved {
+				require.True(t, errors.Is(err, fs.ErrNotExist), "In session flag should have been removed from user/machine scripts dir but didn't")
 			} else {
-				require.NoError(t, err, "RunScripts should have kept scripts directory intact")
+				require.Nil(t, err, "RunScripts should have added in session flag file but didn’t")
 			}
 
 			// Get and compare oracle file to check order
