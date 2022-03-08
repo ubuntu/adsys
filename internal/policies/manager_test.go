@@ -106,9 +106,14 @@ func TestApplyPolicies(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy should return no error but got one")
 
+			// Fake starting scripts session when we ran scripts
+			runningFlag := filepath.Join(runDir, "machine", "scripts", ".running")
+			if !tc.isNotSubscribed && tc.policiesDir != "dconf_failing" {
+				require.NoError(t, os.WriteFile(runningFlag, nil, 0600), "Setup: can't mimick session in progress")
+			}
+
 			if tc.scriptSessionEndedForSecondCall {
-				err := os.Remove(filepath.Join(runDir, "machine", "scripts", ".ready"))
-				require.NoError(t, err, "Setup: can not remove .ready file before second call")
+				require.NoError(t, os.Remove(runningFlag), "Setup: can not remove .running file before second call")
 			}
 
 			var runSecondCall bool

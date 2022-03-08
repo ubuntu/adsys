@@ -2,6 +2,10 @@ package scripts
 
 import "os/user"
 
+const (
+	InSessionFlag = inSessionFlag
+)
+
 // WithSystemCtlCmd allow to mock systemctl call.
 func WithSystemCtlCmd(cmd []string) Option {
 	return func(o *options) {

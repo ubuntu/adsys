@@ -29,6 +29,7 @@ import (
 */
 
 const (
+	inSessionFlag = ".running"
 	readyFlag     = ".ready"
 	executableDir = "scripts"
 )
@@ -120,12 +121,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	m.scriptsMu[scriptsPath].Lock()
 	defer m.scriptsMu[scriptsPath].Unlock()
 
-	// If exists: there is a "session" in progress:*
+	// If exists: there is a "session" in progress:
 	// - machine already booted and startup scripts executed
 	// - user session in progress and login scripts executed
 	// Do nothing, we have potential next versions in cache, we will use them on next apply at session start if all sessions are closed.
-	if _, err := os.Stat(filepath.Join(scriptsPath, readyFlag)); err == nil {
-		log.Infof(ctx, "%q already exists, a session is already running, ignoring.", scriptsPath)
+	if _, err := os.Stat(filepath.Join(scriptsPath, inSessionFlag)); err == nil {
+		log.Infof(ctx, "%q already exists, a session is already running, ignoring.", filepath.Join(scriptsPath, inSessionFlag))
 		return nil
 	}
 
@@ -207,16 +208,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	// Create ready flag
-	log.Debugf(ctx, "Create script ready flag for user %q", objectName)
-	readyPath := filepath.Join(scriptsPath, readyFlag)
-	f, err := os.Create(readyPath)
-	if err != nil {
-		return fmt.Errorf(i18n.G("can't create ready file for scripts: %v"), err)
-	}
-	if err := chown(readyPath, f, uid, gid); err != nil {
-		return err
-	}
-	if err := f.Close(); err != nil {
+	if err := createFlagFile(ctx, filepath.Join(scriptsPath, readyFlag), uid, gid); err != nil {
 		return err
 	}
 
@@ -257,14 +249,27 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 		return fmt.Errorf(i18n.G("%q is not ready to execute scripts"), order)
 	}
 
+	// create running flag for the user or machine
+	if err := createFlagFile(ctx, filepath.Join(baseDir, inSessionFlag), -1, -1); err != nil {
+		return err
+	}
+
 	// Delete users or machine script directory once all user logoff or machine shutdown scripts are executed
 	defer func() {
 		if !((strings.Contains(order, "/users/") && strings.HasSuffix(order, "/logoff")) ||
 			(strings.Contains(order, "/machine/") && strings.HasSuffix(order, "/shutdown"))) {
 			return
 		}
-		log.Debug(ctx, "Logoff or shutdown called, deleting script directory")
-		err = os.RemoveAll(baseDir)
+		log.Debug(ctx, "Logoff or shutdown called, deleting in session flag")
+		errRemove := os.Remove(filepath.Join(baseDir, inSessionFlag))
+		// Keep primary error as first
+		if err != nil {
+			return
+		}
+		// Ignore unexisting running session flag
+		if errors.Is(errRemove, os.ErrNotExist) {
+			return
+		}
 	}()
 
 	// Read from the order file the order of scripts to run
@@ -312,6 +317,22 @@ func mkdirAllWithUIDGid(p string, uid, gid int) error {
 	}
 
 	return chown(p, nil, uid, gid)
+}
+
+func createFlagFile(ctx context.Context, path string, uid, gid int) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't create flag file %q"), path)
+
+	log.Debugf(ctx, "Create script flag %q", path)
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if err := chown(path, f, uid, gid); err != nil {
+		return err
+	}
+	return nil
 }
 
 // chown either chown the file descriptor attached, or the path if this one is null to uid and gid.

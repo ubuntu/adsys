@@ -93,9 +93,10 @@ func TestApplyPolicy(t *testing.T) {
 		"startup script for computer runs systemctl (systemctl success)": {computer: true, systemctlShouldFail: false, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}},
 
 		// Destination already exists. Using computer to be uid independent
-		"destination is already ready, no change":     {destAlreadyExists: "already ready", computer: true, entries: defaultSingleScript},
-		"destination is not ready, refreshing":        {destAlreadyExists: "not ready", computer: true, entries: defaultSingleScript},
-		"no entries update existing non ready folder": {destAlreadyExists: "not ready", computer: true},
+		"destination is already running, no change":                   {destAlreadyExists: "already running", computer: true, entries: defaultSingleScript},
+		"destination is already ready but not in session, refreshing": {destAlreadyExists: "already ready", computer: true, entries: defaultSingleScript},
+		"destination is not ready, refreshing":                        {destAlreadyExists: "not ready", computer: true, entries: defaultSingleScript},
+		"no entries update existing non ready folder":                 {destAlreadyExists: "not ready", computer: true},
 
 		// Error cases
 		"error on subfolder listed":              {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
@@ -210,8 +211,8 @@ func TestRunScripts(t *testing.T) {
 		allowOrderMissing bool
 		scriptObjectName  string
 
-		wantDirRemoved bool
-		wantErr        bool
+		wantSessionFlagFileRemoved bool
+		wantErr                    bool
 	}{
 		"one script":                                  {},
 		"multiple scripts are run in order":           {},
@@ -219,15 +220,17 @@ func TestRunScripts(t *testing.T) {
 		"scripts not listed are not run":              {},
 		"scripts referenced in subdirectories":        {},
 
-		"script directory is cleaned up after user logoff":                      {stageDir: "logoff", wantDirRemoved: true},
-		"script directory without logoff order is cleaned up after user logoff": {stageDir: "logoff", wantDirRemoved: true, allowOrderMissing: true},
-		"script directory not ready without logoff order is not cleaned up":     {stageDir: "logoff", wantErr: true, allowOrderMissing: true},
-		"script directory is not cleaned up after non user logoff":              {stageDir: "logoff", scriptObjectName: "machine", wantDirRemoved: false},
+		// logoff cases
+		"has no session running flag after user logoff":                                       {stageDir: "logoff", wantSessionFlagFileRemoved: true},
+		"still executes without existing running flag on user logoff":                         {stageDir: "logoff", wantSessionFlagFileRemoved: true},
+		"script directory without logoff order has no session running flag after user logoff": {stageDir: "logoff", wantSessionFlagFileRemoved: true, allowOrderMissing: true},
+		"keeps running flag after non user logoff":                                            {stageDir: "logoff", scriptObjectName: "machine", wantSessionFlagFileRemoved: false},
 
-		"script directory is cleaned up after machine shutdown":                        {stageDir: "shutdown", scriptObjectName: "machine", wantDirRemoved: true},
-		"script directory without shutdown order is cleaned up after machine shutdown": {stageDir: "shutdown", scriptObjectName: "machine", wantDirRemoved: true, allowOrderMissing: true},
-		"script directory not ready without shutdown order is not cleaned up":          {stageDir: "shutdown", scriptObjectName: "machine", wantErr: true, allowOrderMissing: true},
-		"script directory is not cleaned up after non machine shutdown":                {stageDir: "shutdown", scriptObjectName: "users", wantDirRemoved: false},
+		// shutdown cases
+		"has no session running flag after machine shutdown":                                         {stageDir: "shutdown", scriptObjectName: "machine", wantSessionFlagFileRemoved: true},
+		"still executes without existing running flag on machine shutdown":                           {stageDir: "shutdown", scriptObjectName: "machine", wantSessionFlagFileRemoved: true},
+		"script directory without shutdown order has no session running flag after machine shutdown": {stageDir: "shutdown", scriptObjectName: "machine", wantSessionFlagFileRemoved: true, allowOrderMissing: true},
+		"keeps running flag after non machine shutdown":                                              {stageDir: "shutdown", scriptObjectName: "users", wantSessionFlagFileRemoved: false},
 
 		"allow order file missing":           {allowOrderMissing: true},
 		"spaces and empty lines are skipped": {},
@@ -275,11 +278,11 @@ func TestRunScripts(t *testing.T) {
 			}
 			require.NoError(t, err, "RunScripts failed but shouldn't have")
 
-			_, err = os.Stat(filepath.Dir(scriptDir))
-			if tc.wantDirRemoved {
-				require.True(t, errors.Is(err, fs.ErrNotExist), "RunScripts should have removed user/machine scripts dir but didn't")
+			_, err = os.Stat(filepath.Join(filepath.Dir(scriptDir), scripts.InSessionFlag))
+			if tc.wantSessionFlagFileRemoved {
+				require.True(t, errors.Is(err, fs.ErrNotExist), "In session flag should have been removed from user/machine scripts dir but didn't")
 			} else {
-				require.NoError(t, err, "RunScripts should have kept scripts directory intact")
+				require.Nil(t, err, "RunScripts should have added in session flag file but didn’t")
 			}
 
 			// Get and compare oracle file to check order
