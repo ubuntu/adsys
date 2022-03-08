@@ -54,6 +54,10 @@ func SetupSmb(port int, sysvolDir string) func() {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
 		}
 
+		if err := stderr.Close(); err != nil {
+			log.Fatalf("Setup: failed to close stderr on smbd process: %v", err)
+		}
+
 		d, err := io.ReadAll(stderr)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Setup: Can't show stderr from smbd command: %v", err)
