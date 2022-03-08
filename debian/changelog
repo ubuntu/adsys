@@ -1,3 +1,26 @@
+adsys (0.8.1) jammy; urgency=medium
+
+  * Change chown logic on script directory and parents to avoid potential
+    vulnerability. (LP: #1961458)
+  * Separate readiness from session running to avoid unrefreshed user script
+    directories after a logout without any new logins.
+  * pam_adsys: Fix memory leak and identation. (LP: #1961459)
+  * Adapt to newer samba, while keeping backward compatilibity for CI.
+    Thanks Michael. (LP: #1962170)
+  * Try to stabilize configuration detection change test by calling sync() to
+    sync FHS to disk, and then, hoping we get the inotify update. Seems to fix
+    flakyness on armhf. (LP: #1962510)
+  * Enforce closing stderr on ppcel64 in tests with new samba to avoid hangs
+    in race.
+  * Fix linting issues discovered by new golangci-lint.
+  * Misc syntax polish.
+  * Dependencies update:
+    - github.com/godbus/dbus/v5
+    - github.com/golangci/golangci-lint
+    - gopkg.in/ini.v1
+
+ -- Didier Roche <didrocks@ubuntu.com>  Tue, 08 Mar 2022 09:49:08 +0100
+
 adsys (0.8) jammy; urgency=medium
 
   [ Jean-Baptiste Lallement ]
