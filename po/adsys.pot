@@ -21,11 +21,11 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:284
+#: internal/policies/scripts/scripts.go:289
 msgid "%q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:257
+#: internal/policies/scripts/scripts.go:249
 msgid "%q is not ready to execute scripts"
 msgstr ""
 
@@ -394,12 +394,12 @@ msgstr ""
 msgid "can't apply privilege policy to %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:89
+#: internal/policies/scripts/scripts.go:90
 #, c-format
 msgid "can't apply scripts policy to %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:177
+#: internal/policies/scripts/scripts.go:178
 msgid "can't change mode of script %qto %o: %v"
 msgstr ""
 
@@ -408,7 +408,7 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/policies.go:430 internal/policies/scripts/scripts.go:320
+#: internal/policies/policies.go:430 internal/policies/scripts/scripts.go:341
 msgid "can't chown %q"
 msgstr ""
 
@@ -449,24 +449,24 @@ msgstr ""
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
+#: internal/policies/scripts/scripts.go:323
+msgid "can't create flag file %q"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:56
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:143
+#: internal/policies/scripts/scripts.go:144
 msgid "can't create object directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:214
-msgid "can't create ready file for scripts: %v"
-msgstr ""
-
-#: internal/policies/scripts/scripts.go:146
-#: internal/policies/scripts/scripts.go:311
+#: internal/policies/scripts/scripts.go:147
+#: internal/policies/scripts/scripts.go:316
 msgid "can't create scripts directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:57
+#: internal/policies/scripts/scripts.go:58
 msgid "can't create scripts manager"
 msgstr ""
 
@@ -565,7 +565,7 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:249
+#: internal/policies/scripts/scripts.go:241
 #, c-format
 msgid "can't run scripts listed in %s"
 msgstr ""
@@ -645,12 +645,12 @@ msgstr ""
 msgid "could not read chapter %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:104
+#: internal/policies/scripts/scripts.go:105
 msgid "couldn't convert %q to a valid gid for %q"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:137
-#: internal/policies/scripts/scripts.go:101
+#: internal/policies/scripts/scripts.go:102
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
@@ -663,7 +663,7 @@ msgid "couldn't open stat file for process: %v"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:133
-#: internal/policies/scripts/scripts.go:98
+#: internal/policies/scripts/scripts.go:99
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
@@ -974,11 +974,11 @@ msgstr ""
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:171
+#: internal/policies/scripts/scripts.go:172
 msgid "script %q doesn't exist in SYSVOL scripts/ subdirectory"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:174
+#: internal/policies/scripts/scripts.go:175
 msgid "script %q is a directory and not a file to execute"
 msgstr ""
 
