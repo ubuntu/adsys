@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
@@ -223,24 +224,30 @@ func TestInit(t *testing.T) {
 			// Let’s force a sync to make sure the initial files are written on disk
 			syscall.Sync()
 
+			var phaseMu sync.Mutex
+			callbackPhase := 1
 			var callbackCalled int
 			firstCallbackDone, secondCallbackDone := make(chan struct{}), make(chan struct{})
 			err = config.Init(prefix, cmd, vip, func(refreshed bool) error {
-				// inotify triggers on several times "randomly" so, we can have more than 2 callback calls, where our max is two…
-				if callbackCalled == 2 {
-					return nil
-				}
+				// inotify triggers on several times "randomly" so, we split the callback in phases to ensure
+				// we don’t have delayed calls from the system
 
-				callbackCalled++
-				switch callbackCalled {
-				case 1:
+				phaseMu.Lock()
+				phase := callbackPhase
+				phaseMu.Unlock()
+
+				if phase == 1 && callbackCalled != phase {
 					defer func() { close(firstCallbackDone) }()
 					require.False(t, refreshed, "First call to callback is an init")
-				case 2:
+				} else if phase == 2 && callbackCalled != phase {
 					// Only close it on the secondary call, as the callback can be called more than this due to inotify
 					defer func() { close(secondCallbackDone) }()
 					require.True(t, refreshed, "Any following calls to callback are refresh")
+				} else {
+					return nil
 				}
+
+				callbackCalled = phase
 				if callbackCalled == tc.errFromCallbackOn {
 					return errors.New("Error from callback")
 				}
@@ -257,6 +264,12 @@ func TestInit(t *testing.T) {
 
 			// Refresh config file
 			if tc.changeConfigWith != "" {
+				// Wait a little bit for consecutive inotify calls to be consumed before entering second phase.
+				time.Sleep(2 * time.Second)
+				phaseMu.Lock()
+				callbackPhase = 2
+				phaseMu.Unlock()
+
 				err = os.WriteFile(filepath.Join(configDir, prefix+".yaml"), []byte(tc.changeConfigWith), 0600)
 				require.NoError(t, err, "Setup: failed to write initial config file")
 				// Let’s force a sync to make sure the file is written on disk
@@ -272,6 +285,9 @@ func TestInit(t *testing.T) {
 					}
 				}
 			}
+			phaseMu.Lock()
+			callbackPhase = 3
+			phaseMu.Unlock()
 
 			require.Equal(t, callbackCalled, tc.wantCallbackCalled, "Callback was called expected amount of times")
 			require.EqualValues(t, tc.want, result.Value, "Expected config has been decoded")
