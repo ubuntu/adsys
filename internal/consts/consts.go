@@ -62,7 +62,7 @@ const (
 	// SubscriptionDbusRegisteredName is the well-known name of UA on dbus.
 	SubscriptionDbusRegisteredName = "com.canonical.UbuntuAdvantage"
 	// SubscriptionDbusObjectPath  is the path under which our AD service is registered.
-	SubscriptionDbusObjectPath = "/com/canonical/UbuntuAdvantage/Services/esm_2dinfra"
+	SubscriptionDbusObjectPath = "/com/canonical/UbuntuAdvantage/Manager"
 	// SubscriptionDbusInterface is the interface we are using for access dbus properties.
-	SubscriptionDbusInterface = "com.canonical.UbuntuAdvantage.Service"
+	SubscriptionDbusInterface = "com.canonical.UbuntuAdvantage.Manager"
 )

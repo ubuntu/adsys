@@ -945,7 +945,7 @@ func TestMain(m *testing.M) {
 		intro := fmt.Sprintf(`
 		<node>
 			<interface name="%s">
-				<property name='Status' type='s' access="readwrite"/>
+				<property name='Attached' type='b' access="readwrite"/>
 			</interface>%s%s</node>`, consts.SubscriptionDbusInterface, introspect.IntrospectDataString, prop.IntrospectDataString)
 		ua := struct{}{}
 		if err := conn.Export(ua, consts.SubscriptionDbusObjectPath, consts.SubscriptionDbusInterface); err != nil {
@@ -954,8 +954,8 @@ func TestMain(m *testing.M) {
 
 		propsSpec := map[string]map[string]*prop.Prop{
 			consts.SubscriptionDbusInterface: {
-				"Status": {
-					Value:    "",
+				"Attached": {
+					Value:    true,
 					Writable: true,
 					Emit:     prop.EmitTrue,
 					Callback: func(c *prop.Change) *dbus.Error { return nil },
