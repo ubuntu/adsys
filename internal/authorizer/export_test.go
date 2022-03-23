@@ -14,6 +14,7 @@ var (
 
 type PeerCredsInfo = peerCredsInfo
 
+//nolint:revive // Revive doesn’t understand we return an exported type aliases
 func NewTestPeerCredsInfo(uid uint32, pid int32) PeerCredsInfo {
 	return PeerCredsInfo{uid: uid, pid: pid}
 }
