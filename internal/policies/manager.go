@@ -262,18 +262,18 @@ func (m *Manager) getSubscriptionState(ctx context.Context) (subscriptionEnabled
 	}()
 
 	// Check if the device is entitled to the Pro policy
-	prop, err := m.subscriptionDbus.GetProperty(consts.SubscriptionDbusInterface + ".Status")
+	prop, err := m.subscriptionDbus.GetProperty(consts.SubscriptionDbusInterface + ".Attached")
 	if err != nil {
 		log.Warningf(ctx, "no dbus connection to Ubuntu Advantage. Considering device as not enabled: %v", err)
 		return false
 	}
-	enabled, ok := prop.Value().(string)
+	enabled, ok := prop.Value().(bool)
 	if !ok {
 		log.Warningf(ctx, "dbus returned an improper value from Ubuntu Advantage. Considering device as not enabled: %v", prop.Value())
 		return false
 	}
 
-	if enabled != "enabled" {
+	if !enabled {
 		return false
 	}
 
