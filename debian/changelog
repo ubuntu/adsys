@@ -1,3 +1,21 @@
+adsys (0.8.3) jammy; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Use ua attached instead of a specific ua feature to gate optional
+    features.
+  * Added and updated documentation for privilege escalation and scripts
+    support.
+  * New linter version trigger fix.
+  * Dependencies update for latest bug fixes:
+    - github.com/golangci/golangci-lint
+    - github.com/spf13/cobra-1.4.0
+    - github.com/stretchr/testify-1.7.1
+    - google.golang.org/protobuf-1.28.0
+    - google.golang.org/grpc-1.45.0
+
+ -- Didier Roche <didrocks@ubuntu.com>  Wed, 23 Mar 2022 13:39:27 +0100
+
 adsys (0.8.2) jammy; urgency=medium
 
   * Fix flaky "pick up config changes" tests on armhf and arm64
