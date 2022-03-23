@@ -73,13 +73,13 @@ func TestApplyPolicies(t *testing.T) {
 			policyKitDir := filepath.Join(fakeRootDir, "etc", "polkit-1")
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
 
-			status := "enabled"
+			status := true
 			if tc.isNotSubscribed {
-				status = "disabled"
+				status = false
 			}
-			require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", status), "Setup: can not set subscription status to %q", status)
+			require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Attached", status), "Setup: can not set subscription status to %q", status)
 			defer func() {
-				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Attached", false), "Teardown: can not restore subscription status")
 			}()
 
 			m, err := policies.NewManager(bus,
@@ -123,7 +123,7 @@ func TestApplyPolicies(t *testing.T) {
 				require.NoError(t, err, "Setup: can not empty policies before second call")
 			} else if tc.secondCallWithNoSubscription {
 				runSecondCall = true
-				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", "disabled"), "Setup: can not set subscription status for second call to disabled")
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Attached", false), "Setup: can not set subscription status for second call to disabled")
 			}
 			if runSecondCall {
 				err = m.ApplyPolicies(context.Background(), "hostname", true, &pols)
@@ -353,12 +353,12 @@ func TestGetStatus(t *testing.T) {
 		dbus.ObjectPath(consts.SubscriptionDbusObjectPath))
 
 	tests := map[string]struct {
-		status string
+		status bool
 
 		want bool
 	}{
-		"returns enablement status (enabled)":  {status: "enabled", want: true},
-		"returns enablement status (disabled)": {status: "somethingelse", want: false},
+		"returns enablement status (enabled)":  {status: true, want: true},
+		"returns enablement status (disabled)": {status: false, want: false},
 	}
 
 	for name, tc := range tests {
@@ -368,9 +368,9 @@ func TestGetStatus(t *testing.T) {
 			// We change the dbus returned values to simulate a subscription
 			//t.Parallel()
 
-			require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", tc.status), "Setup: can not set subscription status to %q", tc.status)
+			require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Attached", tc.status), "Setup: can not set subscription status to %q", tc.status)
 			defer func() {
-				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Status", ""), "Teardown: can not restore subscription status")
+				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Attached", false), "Teardown: can not restore subscription status")
 			}()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()

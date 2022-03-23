@@ -145,9 +145,9 @@ def ubuntu_advantage_on_bus(bus: dbus.bus, mode: str) -> None:
     """ Installs ubuntu_advantage mock on the bus """
 
     # Ubuntu Advantage subscription state
-    subscription_state = dbus.String("enabled")
+    subscription_state = dbus.Boolean(True)
     if mode == "subscription_disabled":
-        subscription_state = dbus.String("disabled")
+        subscription_state = dbus.Boolean(False)
 
     service = dbus.service.BusName(
         "com.canonical.UbuntuAdvantage",
@@ -157,9 +157,9 @@ def ubuntu_advantage_on_bus(bus: dbus.bus, mode: str) -> None:
         do_not_queue=True)
 
     dbusmock.mockobject.DBusMockObject(
-        service, "/com/canonical/UbuntuAdvantage/Services/esm_2dinfra",
-        "com.canonical.UbuntuAdvantage.Service",
-        {"Status": subscription_state},
+        service, "/com/canonical/UbuntuAdvantage/Manager",
+        "com.canonical.UbuntuAdvantage.Manager",
+        {"Attached": subscription_state},
         "/tmp/ubuntu-advantage-mock.log",
         False)
 
