@@ -53,6 +53,8 @@ import (
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // expandedCategories generation
@@ -414,9 +416,9 @@ func (g generator) toID(key string, s ...string) string {
 	r := g.distroID
 
 	for _, e := range s {
-		r += re.ReplaceAllString(strings.Title(e), "")
+		r += re.ReplaceAllString(cases.Title(language.Und, cases.NoLower).String(e), "")
 	}
-	return r + re.ReplaceAllString(strings.Title(key), "")
+	return r + re.ReplaceAllString(cases.Title(language.Und, cases.NoLower).String(key), "")
 }
 
 func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) (err error) {
