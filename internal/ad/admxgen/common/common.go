@@ -3,9 +3,10 @@ package common
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/ubuntu/adsys/internal/i18n"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -73,7 +74,7 @@ func (p ExpandedPolicy) GetDefaultForADM() string {
 
 // ValidClass returns a valid, capitalized class. It will error out if it can’t match the input as valid class.
 func ValidClass(class string) (string, error) {
-	c := strings.Title(class)
+	c := cases.Title(language.Und, cases.NoLower).String(class)
 
 	if c != "" && c != "User" && c != "Machine" {
 		return "", fmt.Errorf(i18n.G("invalid class %q"), class)
