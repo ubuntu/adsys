@@ -16,7 +16,7 @@ import (
 func TestDocChapter(t *testing.T) {
 	testutils.Setenv(t, "GLAMOUR_STYLE", "notty")
 
-	fullName, strippedExt, baseName := getTestChapter(t, "2.")
+	fullName, strippedExt, baseName := getTestChapter(t, "02.")
 
 	tests := map[string]struct {
 		chapter          string
