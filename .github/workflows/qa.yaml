@@ -20,6 +20,8 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           apt update
           apt install -y ca-certificates git gcc libsmbclient-dev
+      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
+        run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v2
       - name: Code formatting, vet, static checker Security…
         uses: golangci/golangci-lint-action@v2
@@ -91,6 +93,8 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           apt update
           apt install -y ca-certificates gcc protobuf-compiler gettext git libsmbclient-dev
+      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
+        run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v2
       - name: Setup go
         uses: actions/setup-go@v2
