@@ -57,7 +57,7 @@ jobs:
               echo "${exists}"
           }
 
-          all="$(distro-info --supported-esm) $(distro-info --supported) toto"
+          all="$(distro-info --supported-esm) $(distro-info --supported)"
           all="$(echo $all | tr ' ' '\n' | sort -u)"
 
           releases=""
