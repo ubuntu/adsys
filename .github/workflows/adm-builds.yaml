@@ -140,7 +140,7 @@ jobs:
           set -eu
 
           allowflag="-allow-missing-keys"
-          target=$(ubuntu-distro-info -r --lts | cut -d" " -f1)
+          target=$(ubuntu-distro-info -r --supported-esm | cut -d" " -f1)
           if [ ${{ matrix.releases }} = "ALL" ]; then
             target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
             allowflag=""
