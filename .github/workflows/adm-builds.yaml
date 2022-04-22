@@ -10,7 +10,7 @@ on:
     - cron: '42 0 * * *'
 
 env:
-  goversion: '1.17'
+  goversion: '1.18'
 
 jobs:
   build-admxgen:
