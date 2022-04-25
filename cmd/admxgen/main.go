@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/ubuntu/adsys/internal/ad/admxgen"
 )
 
 func main() {
@@ -60,7 +61,7 @@ Commands:
 			flag.Usage()
 			os.Exit(1)
 		}
-		if err := expand(args[1], args[2], *flagRoot, *flagCurrentSession); err != nil {
+		if err := admxgen.Expand(args[1], args[2], *flagRoot, *flagCurrentSession); err != nil {
 			log.Error(fmt.Errorf("command expand failed with %w", err))
 			os.Exit(1)
 		}
@@ -70,7 +71,7 @@ Commands:
 			flag.Usage()
 			os.Exit(1)
 		}
-		if err := admx(args[1], args[2], args[3], *autoDetectReleases, *allowMissingKeys); err != nil {
+		if err := admxgen.Generate(args[1], args[2], args[3], *autoDetectReleases, *allowMissingKeys); err != nil {
 			log.Error(fmt.Errorf("command admx failed with %w", err))
 			os.Exit(1)
 		}

@@ -1,5 +1,5 @@
 /*
-admxgen generates admx and adml from a category and multiple policies per release
+Package admxgen generates admx and adml from a category and multiple policies per release
 
 	The process is acting on multiple steps:
 	- We generate on each release, for each type of conversion (dconf, install script, apparmor) common.ExpandedPolicy object.
@@ -34,7 +34,7 @@ admxgen generates admx and adml from a category and multiple policies per releas
     schema -------|
 
 */
-package main
+package admxgen
 
 import (
 	"context"

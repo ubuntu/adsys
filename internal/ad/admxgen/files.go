@@ -1,4 +1,4 @@
-package main
+package admxgen
 
 import (
 	_ "embed"
@@ -23,7 +23,8 @@ var admxTemplate string
 //go:embed adml.template
 var admlTemplate string
 
-func expand(src, dst, root, currentSession string) error {
+// Expand will expand any policies on the system into a list of expanded policies.
+func Expand(src, dst, root, currentSession string) error {
 	release, err := adcommon.GetVersionID(root)
 	if err != nil {
 		return err
@@ -115,7 +116,8 @@ type categoryFileStruct struct {
 	Categories        []category
 }
 
-func admx(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
+// Generate creates and merge all policies into ADMX/ADML files.
+func Generate(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
 	// Load all expanded categories
 	policies, catfs, err := loadDefinitions(categoryDefinition, src)
 	if err != nil {

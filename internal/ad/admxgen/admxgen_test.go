@@ -1,4 +1,4 @@
-package main
+package admxgen
 
 import (
 	"flag"
@@ -256,7 +256,7 @@ func TestMainExpand(t *testing.T) {
 			root := filepath.Join("testdata", "expand", "system", tc.root)
 
 			currentSession := "ubuntu"
-			err := expand(src, dst, root, currentSession)
+			err := Expand(src, dst, root, currentSession)
 			if tc.wantErr {
 				require.Error(t, err, "expand should have errored out")
 				return
@@ -291,7 +291,7 @@ func TestMainExpand(t *testing.T) {
 	}
 }
 
-func TestMainADMX(t *testing.T) {
+func TestMainGenerate(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -326,7 +326,7 @@ func TestMainADMX(t *testing.T) {
 				require.NoError(t, err, "Setup: should create a file as destination")
 			}
 
-			err := admx(catDef, src, dst, tc.autoDetectReleases, false)
+			err := Generate(catDef, src, dst, tc.autoDetectReleases, false)
 			if tc.wantErr {
 				require.Error(t, err, "admx should have errored out")
 				return

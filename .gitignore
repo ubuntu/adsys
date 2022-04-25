@@ -1,7 +1,7 @@
 # Binaries for programs, uncommited generated code and plugins
 cmd/adsysd/adsysd
+cmd/admxgen/admxgen
 generated/
-internal/ad/admxgen/admxgen
 __pycache__/
 
 # Test binary, build with `go test -c`
