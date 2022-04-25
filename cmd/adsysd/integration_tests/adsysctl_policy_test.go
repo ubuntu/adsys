@@ -917,7 +917,7 @@ func TestPolicyUpdate(t *testing.T) {
 }
 
 func TestPolicyDebugGPOListScript(t *testing.T) {
-	gpolistSrc, err := os.ReadFile("../../internal/ad/adsys-gpolist")
+	gpolistSrc, err := os.ReadFile(filepath.Join(rootProjectDir, "internal/ad/adsys-gpolist"))
 	require.NoError(t, err, "Setup: failed to load source of adsys-gpolist")
 
 	tests := map[string]struct {
@@ -1034,7 +1034,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	err := exec.Command("pkg-config", "--exists", "nss_wrapper").Run()
 	require.NoError(t, err, "libnss-wrapper is not installed on disk, either skip integration tests or install it")
 
-	testutils.PythonCoverageToGoFormat(t, "../../internal/ad/adsys-gpolist", true)
+	testutils.PythonCoverageToGoFormat(t, filepath.Join(rootProjectDir, "internal/ad/adsys-gpolist"), true)
 
 	var subArgs []string
 	// We are going to only reexec ourself: only take options (without -run)
@@ -1066,7 +1066,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	// #nosec G204: this is only for tests, under controlled args
 	cmd := exec.Command(subArgs[0], subArgs[1:]...)
 
-	admock, err := filepath.Abs("../../internal/testutils/admock")
+	admock, err := filepath.Abs(filepath.Join(rootProjectDir, "internal/testutils/admock"))
 	require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
 
 	passwd := modifyAndAddUsers(t, currentUser, otherUsers...)
