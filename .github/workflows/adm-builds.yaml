@@ -104,7 +104,7 @@ jobs:
       - name: Collect support keys
         run: |
           chmod 755 ./admxgen
-          ./admxgen -current-session ubuntu expand ./cmd/admxgen/defs/ ./out/
+          ./admxgen expand --current-session ubuntu ./cmd/admxgen/defs/ ./out/
       - name: Prepare artefact name variable
         shell: bash
         run: |
@@ -140,7 +140,7 @@ jobs:
         run: |
           set -eu
 
-          allowflag="-allow-missing-keys"
+          allowflag="--allow-missing-keys"
           target=$(ubuntu-distro-info -r --supported-esm | cut -d" " -f1)
           if [ ${{ matrix.releases }} = "ALL" ]; then
             target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
@@ -157,7 +157,7 @@ jobs:
             done
           done
           chmod +x artifacts/admxgen/admxgen
-          artifacts/admxgen/admxgen -auto-detect-releases ${allowflag} admx artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ .
+          artifacts/admxgen/admxgen admx --auto-detect-releases ${allowflag} artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ .
           ls -R
       - name: Upload adm template files
         uses: actions/upload-artifact@v2
