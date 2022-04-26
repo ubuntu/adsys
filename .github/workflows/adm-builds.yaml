@@ -4,6 +4,7 @@ on:
     branches:
       - '**' # Ignore tag push, but take any branch
     paths:
+      - 'cmd/admxgen/**'
       - 'internal/ad/admxgen/**'
       - '.github/workflows/adm-builds.yaml'
   schedule:
@@ -23,14 +24,14 @@ jobs:
           go-version: ${{ env.goversion }}
       - run: |
           mkdir /tmp/adsys
-          CO_ENABLED=0 go build ./internal/ad/admxgen/
+          CO_ENABLED=0 go build ./cmd/admxgen/
       - name: Upload admxgen
         uses: actions/upload-artifact@v2
         with:
           name: admxgen
           path: |
             admxgen
-            ./internal/ad/admxgen/defs/*
+            ./cmd/admxgen/defs/*
           if-no-files-found: error
 
   supported-releases:
@@ -103,7 +104,7 @@ jobs:
       - name: Collect support keys
         run: |
           chmod 755 ./admxgen
-          ./admxgen -current-session ubuntu expand ./internal/ad/admxgen/defs/ ./out/
+          ./admxgen expand --current-session ubuntu ./cmd/admxgen/defs/ ./out/
       - name: Prepare artefact name variable
         shell: bash
         run: |
@@ -139,7 +140,7 @@ jobs:
         run: |
           set -eu
 
-          allowflag="-allow-missing-keys"
+          allowflag="--allow-missing-keys"
           target=$(ubuntu-distro-info -r --supported-esm | cut -d" " -f1)
           if [ ${{ matrix.releases }} = "ALL" ]; then
             target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
@@ -156,7 +157,7 @@ jobs:
             done
           done
           chmod +x artifacts/admxgen/admxgen
-          artifacts/admxgen/admxgen -auto-detect-releases ${allowflag} admx artifacts/admxgen/internal/ad/admxgen/defs/categories.yaml wanted/ .
+          artifacts/admxgen/admxgen admx --auto-detect-releases ${allowflag} artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ .
           ls -R
       - name: Upload adm template files
         uses: actions/upload-artifact@v2

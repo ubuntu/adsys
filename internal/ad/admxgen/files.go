@@ -1,15 +1,13 @@
-package main
+package admxgen
 
 import (
 	_ "embed"
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/dconf"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
@@ -25,77 +23,8 @@ var admxTemplate string
 //go:embed adml.template
 var admlTemplate string
 
-func main() {
-	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, `Usage: %s [FLAGS] [COMMAND] [ARGS] ...
-Generate ADMX and intermediary working files from a list of policy definition
-files
-
-Commands:
-  [-root PATH] [-current-session SESSION_NAME] expand SOURCE DEST
-	Generates an intermediary policy definition file into DEST directory from
-	all the policy definition files in SOURCE directory, using the correct
-	decoder.
-	The generated definition file will be of the form
-	expanded_policies.RELEASE.yaml
-	-root is the root filesystem path to use. Default to /.
-	-current-session is the current session to consider for dconf per-session
-	overrides. Default to "".
-
-  [-auto-detect-releases] [-allow-missing-keys] admx CATEGORIES_DEF.yaml SOURCE DEST
-	Collects all intermediary policy definition files in SOURCE directory to
-	create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml.
-	-auto-detect-releases will override supportedreleases in categories definition
-	file and will takes all yaml files in SOURCE directory and use the basename
-	as their versions.
-	-allow-missing-keys will not fail but display a warning if some keys are not
-	available in a release. This is the case when news keys are added to non-lts
-	releases.
-`, filepath.Base(os.Args[0]))
-	}
-
-	flagRoot := flag.String("root", "/", "")
-	flagCurrentSession := flag.String("current-session", "", "")
-
-	autoDetectReleases := flag.Bool("auto-detect-releases", false, "")
-	allowMissingKeys := flag.Bool("allow-missing-keys", false, "")
-
-	flag.Parse()
-	args := flag.Args()
-	if len(args) < 1 {
-		log.Error("Missing mandatory argument")
-		flag.Usage()
-		os.Exit(1)
-	}
-	switch strings.ToLower(args[0]) {
-	case "expand":
-		if len(args) != 3 {
-			log.Error("Command expand is missing mandatory option(s)")
-			flag.Usage()
-			os.Exit(1)
-		}
-		if err := expand(args[1], args[2], *flagRoot, *flagCurrentSession); err != nil {
-			log.Error(fmt.Errorf("command expand failed with %w", err))
-			os.Exit(1)
-		}
-	case "admx":
-		if len(args) != 4 {
-			log.Error("Command admx is missing mandatory options(s)")
-			flag.Usage()
-			os.Exit(1)
-		}
-		if err := admx(args[1], args[2], args[3], *autoDetectReleases, *allowMissingKeys); err != nil {
-			log.Error(fmt.Errorf("command admx failed with %w", err))
-			os.Exit(1)
-		}
-	default:
-		log.Errorf("Unknown command: %s", args[0])
-		flag.Usage()
-		os.Exit(1)
-	}
-}
-
-func expand(src, dst, root, currentSession string) error {
+// Expand will expand any policies on the system into a list of expanded policies.
+func Expand(src, dst, root, currentSession string) error {
 	release, err := adcommon.GetVersionID(root)
 	if err != nil {
 		return err
@@ -187,7 +116,8 @@ type categoryFileStruct struct {
 	Categories        []category
 }
 
-func admx(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
+// Generate creates and merge all policies into ADMX/ADML files.
+func Generate(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
 	// Load all expanded categories
 	policies, catfs, err := loadDefinitions(categoryDefinition, src)
 	if err != nil {
