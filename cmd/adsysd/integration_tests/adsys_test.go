@@ -28,12 +28,31 @@ import (
 
 const dockerSystemDaemonsImage = "ghcr.io/ubuntu/adsys/systemdaemons:0.1"
 
-var update bool
+var (
+	update         bool
+	rootProjectDir string
+)
 
 func TestMain(m *testing.M) {
 	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
 		fmt.Println("Integration tests skipped as requested")
 		return
+	}
+
+	// get root project directory with go.mod file
+	p, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Setup: cant't get current working directory: %v", err)
+	}
+	for p != "/" {
+		if _, err := os.Stat(filepath.Join(p, "go.mod")); err == nil {
+			rootProjectDir = p
+			break
+		}
+		p = filepath.Dir(p)
+	}
+	if rootProjectDir == "" {
+		log.Fatalf("Setup: can't find project root directory")
 	}
 
 	// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
@@ -42,7 +61,7 @@ func TestMain(m *testing.M) {
 		defer runDaemons()()
 		cwd, err := os.Getwd()
 		if err != nil {
-			log.Fatalf("Setup: cant't get current working directory: %v", err)
+			log.Fatalf("Setup: can't get current working directory: %v", err)
 		}
 		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/PolicyUpdate/AD/SYSVOL"))()
 	}
@@ -320,7 +339,7 @@ func runDaemons() (teardown func()) {
 	}
 	containerName := fmt.Sprintf("adsys-tests-%06d", r.Int64())
 
-	adsysActionsDir, err := filepath.Abs("../../internal/adsysservice/actions")
+	adsysActionsDir, err := filepath.Abs(filepath.Join(rootProjectDir, "internal/adsysservice/actions"))
 	if err != nil {
 		log.Fatalf("Setup: couldn't get absolute path for actions: %v", err)
 	}
