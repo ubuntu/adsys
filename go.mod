@@ -6,7 +6,7 @@ require (
 	github.com/charmbracelet/glamour v0.5.0
 	github.com/coreos/go-systemd v0.0.0-20190620071333-e64a0ec8b42a
 	github.com/fatih/color v1.13.0
-	github.com/fsnotify/fsnotify v1.5.3
+	github.com/fsnotify/fsnotify v1.5.4
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/golang/protobuf v1.5.2
 	github.com/golangci/golangci-lint v1.45.2
