@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the adsys package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#: cmd/admxgen/main.go:76
 #, fuzzy
 msgid ""
 msgstr ""
@@ -39,7 +40,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:242
+#: internal/ad/admxgen/admxgen.go:244
 #, c-format
 msgid ""
 "%s\n"
@@ -68,7 +69,7 @@ msgstr ""
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:289
+#: internal/ad/admxgen/admxgen.go:291
 #, c-format
 msgid "%s needs a default policy class"
 msgstr ""
@@ -118,13 +119,13 @@ msgid ""
 "\n"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:201
+#: internal/ad/admxgen/admxgen.go:203
 #, c-format
 msgid "- Default for %s: %s"
 msgstr ""
 
 #. All defaults are the same and not empty
-#: internal/ad/admxgen/admxgen.go:238
+#: internal/ad/admxgen/admxgen.go:240
 #, c-format
 msgid "- Default: %s"
 msgstr ""
@@ -181,6 +182,12 @@ msgstr ""
 msgid "Check if grpc request peer is authorized"
 msgstr ""
 
+#: cmd/admxgen/main.go:90
+msgid ""
+"Collects all intermediary policy definition files in SOURCE directory to "
+"create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."
+msgstr ""
+
 #: internal/adsysservice/service.go:125
 msgid "Connected users:"
 msgstr ""
@@ -205,6 +212,10 @@ msgstr ""
 
 #: internal/grpc/logstreamer/server.go:44
 msgid "Couldn't send initial connection log to client"
+msgstr ""
+
+#: cmd/admxgen/main.go:89
+msgid "Create finale admx and adml files"
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:74
@@ -238,6 +249,14 @@ msgstr ""
 
 #: cmd/adsysd/client/doc.go:54
 msgid "Format type (markdown, raw or html)."
+msgstr ""
+
+#: cmd/admxgen/main.go:31
+msgid "Generate Active Directory admx and adml files"
+msgstr ""
+
+#: cmd/admxgen/main.go:66
+msgid "Generates intermediary policy definition files"
 msgstr ""
 
 #: internal/authorizer/servercreds.go:50
@@ -339,7 +358,7 @@ msgstr ""
 msgid "Stopping daemon requested."
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:188
+#: internal/ad/admxgen/admxgen.go:190
 #, c-format
 msgid "Supported on %s %s"
 msgstr ""
@@ -433,7 +452,7 @@ msgstr ""
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:451 internal/ad/admxgen/admxgen.go:464
+#: internal/ad/admxgen/admxgen.go:453 internal/ad/admxgen/admxgen.go:466
 msgid "can't create admx file: %v"
 msgstr ""
 
@@ -445,7 +464,7 @@ msgstr ""
 msgid "can't create daemon"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:440
+#: internal/ad/admxgen/admxgen.go:442
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
@@ -494,7 +513,7 @@ msgstr ""
 msgid "can't download all gpos and assets"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:423
+#: internal/ad/admxgen/admxgen.go:425
 msgid "can't generate ADMX files"
 msgstr ""
 
@@ -502,7 +521,7 @@ msgstr ""
 msgid "can't generate dconf expanded policies"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:96
+#: internal/ad/admxgen/admxgen.go:98
 msgid "can't generate expanded categories"
 msgstr ""
 
@@ -528,6 +547,10 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
+#: cmd/admxgen/main.go:43 cmd/admxgen/main.go:78 cmd/admxgen/main.go:99
+msgid "can't install command flag bindings: %v"
+msgstr ""
+
 #: internal/ad/ad.go:380
 msgid "can't list users from cache"
 msgstr ""
@@ -536,7 +559,7 @@ msgstr ""
 msgid "can't listen on new socket %q"
 msgstr ""
 
-#: internal/ad/admxgen/main.go:230
+#: internal/ad/admxgen/files.go:160
 msgid "can't load category definition"
 msgstr ""
 
@@ -630,12 +653,12 @@ msgstr ""
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
-#: cmd/integration_tests/adsysctl_doc_test.go:224
+#: cmd/adsysd/integration_tests/adsysctl_doc_test.go:224
 #, c-format
 msgid "could not find chapter starting with %s"
 msgstr ""
 
-#: cmd/integration_tests/adsysctl_doc_test.go:211
+#: cmd/adsysd/integration_tests/adsysctl_doc_test.go:211
 #: internal/adsysservice/doc.go:36 internal/adsysservice/doc.go:91
 #: internal/adsysservice/doc.go:143
 msgid "could not list documentation directory: %v"
@@ -778,7 +801,7 @@ msgstr ""
 msgid "error while updating policy"
 msgstr ""
 
-#: internal/ad/admxgen/main.go:105
+#: internal/ad/admxgen/files.go:34
 msgid "failed to access definition files: %w"
 msgstr ""
 
@@ -798,11 +821,11 @@ msgstr ""
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:260
+#: internal/ad/admxgen/admxgen.go:262
 msgid "failed to marshal disabled meta data"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:253
+#: internal/ad/admxgen/admxgen.go:255
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
@@ -810,7 +833,7 @@ msgstr ""
 msgid "failed to read cache directory: %v"
 msgstr ""
 
-#: internal/ad/admxgen/main.go:110
+#: internal/ad/admxgen/files.go:39
 msgid "failed to read list of definition files: %w"
 msgstr ""
 
@@ -840,7 +863,7 @@ msgstr ""
 msgid "force will shut it down immediately and drop existing connections."
 msgstr ""
 
-#: internal/ad/admxgen/common/common.go:79
+#: internal/ad/admxgen/common/common.go:80
 msgid "invalid class %q"
 msgstr ""
 
@@ -870,7 +893,7 @@ msgstr ""
 msgid "invalid zip db archive: %w"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:46
+#: cmd/admxgen/main.go:41 internal/cmdhandler/cmdhandler.go:46
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
@@ -934,6 +957,12 @@ msgstr ""
 msgid "no relSrc provided to look into database archive"
 msgstr ""
 
+#: cmd/admxgen/main.go:96
+msgid ""
+"override supported releases in categories definition file and will takes all "
+"yaml files in SOURCE directory and use the basename as their versions."
+msgstr ""
+
 #: internal/authorizer/authorizer.go:234
 msgid "parsing error: %v"
 msgstr ""
@@ -958,7 +987,7 @@ msgstr ""
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:304
+#: internal/ad/admxgen/admxgen.go:306
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
@@ -972,6 +1001,10 @@ msgstr ""
 
 #: internal/ad/ad.go:218
 msgid "requested a type computer of %q which isn't current host %q"
+msgstr ""
+
+#: cmd/admxgen/main.go:74
+msgid "root filesystem path to use. Default to /."
 msgstr ""
 
 #: internal/policies/scripts/scripts.go:172
@@ -1000,13 +1033,13 @@ msgid ""
 "socket activation."
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:279
+#: internal/ad/admxgen/admxgen.go:281
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:350
+#: internal/ad/admxgen/admxgen.go:352
 msgid "the following policies have not been assigned to a category: %v"
 msgstr ""
 
