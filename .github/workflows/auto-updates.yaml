@@ -21,6 +21,8 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           apt update
           apt install -y gettext git
+      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
+        run: git config --global --add safe.directory /__w/adsys/adsys
       # Checkout code with git
       - uses: actions/checkout@v2
         with:
@@ -70,6 +72,8 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           apt update
           apt install -y libsmbclient-dev gcc git
+      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
+        run: git config --global --add safe.directory /__w/adsys/adsys
       # Checkout code with git
       - uses: actions/checkout@v2
         with:
