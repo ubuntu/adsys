@@ -199,7 +199,8 @@ func writeIfChanged(path string, content string) (done bool, err error) {
 		return false, nil
 	}
 
-	if err := os.WriteFile(path+".new", []byte(content), 0600); err != nil {
+	// #nosec G306. This asset needs to be world-readable.
+	if err := os.WriteFile(path+".new", []byte(content), 0644); err != nil {
 		return false, err
 	}
 	if err := os.Rename(path+".new", path); err != nil {
@@ -249,7 +250,8 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	}
 
 	// Otherwise, update the file.
-	if err := os.WriteFile(profilePath+".adsys.new", newContent, 0600); err != nil {
+	// #nosec G306. This asset needs to be world-readable.
+	if err := os.WriteFile(profilePath+".adsys.new", newContent, 0644); err != nil {
 		return err
 	}
 	if err := os.Rename(profilePath+".adsys.new", profilePath); err != nil {
