@@ -1,6 +1,7 @@
 ./debian/99-adsys-privilege-enforcement.conf etc/polkit-1/localauthority.conf.d/
 ./debian/99-adsys-privilege-enforcement etc/sudoers.d/
 pam/pam-configs usr/share
+systemd/*.mount lib/systemd/system/
 systemd/*.service lib/systemd/system/
 systemd/*.socket lib/systemd/system/
 systemd/*.timer lib/systemd/system/
