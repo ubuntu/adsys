@@ -2717,7 +2717,7 @@
       <parentCategory ref="UbuntuPrivilegeAuthorization" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"all":{}}</string></enabledValue>
-      <disabledValue><string>{"all":{}}</string></disabledValue>
+      <disabledValue><string>{"DISABLED":{},"all":{}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllPrivilegeClientAdmins" valueName="all" />
       </elements>
@@ -2726,13 +2726,13 @@
       <parentCategory ref="UbuntuPrivilegeAuthorization" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"all":{}}</string></enabledValue>
-      <disabledValue><string>{"all":{}}</string></disabledValue>
+      <disabledValue><string>{"DISABLED":{},"all":{}}</string></disabledValue>
     </policy>
     <policy name="UbuntuMachineScriptsStartup" class="Machine" displayName="$(string.UbuntuDisplayMachineAllScriptsStartup)" explainText="$(string.UbuntuExplainTextMachineScriptsStartup)" presentation="$(presentation.UbuntuPresentationMachineScriptsStartup)" key="Software\Policies\Ubuntu\scripts\startup" valueName="metaValues">
       <parentCategory ref="UbuntuComputerScripts" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllScriptsStartup" valueName="all" />
         <boolean id="UbuntuOverrideElemMachine2210ScriptsStartup" valueName="Override22.10">
@@ -2761,7 +2761,7 @@
       <parentCategory ref="UbuntuComputerScripts" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllScriptsShutdown" valueName="all" />
         <boolean id="UbuntuOverrideElemMachine2210ScriptsShutdown" valueName="Override22.10">
@@ -2790,7 +2790,7 @@
       <parentCategory ref="UbuntuUserScripts" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllScriptsLogon" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2210ScriptsLogon" valueName="Override22.10">
@@ -2819,7 +2819,7 @@
       <parentCategory ref="UbuntuUserScripts" />
       <supportedOn ref="Ubuntu" />
       <enabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></disabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"21.10":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllScriptsLogoff" valueName="all" />
         <boolean id="UbuntuOverrideElemUser2210ScriptsLogoff" valueName="Override22.10">
