@@ -93,10 +93,15 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 				continue
 			}
 
-			// Get metavalues for the single key (withg "all: {}")
+			// Get metavalues for the single key (with "all: {}")
 			metaValues, err = getMetaValues(e.data, fmt.Sprintf("%s\\%s", e.path, e.key))
 			if err != nil {
 				return nil, err
+			}
+
+			// disabled keys with disabledvalues are not set as DISABLED
+			if _, exists := metaValues["DISABLED"]; exists {
+				disabled = true
 			}
 
 			// Force it to be considered as an "all" key to apply to every releases

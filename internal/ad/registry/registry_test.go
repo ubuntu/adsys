@@ -88,13 +88,21 @@ func TestDecodePolicy(t *testing.T) {
 					Meta:     "foo",
 				},
 			}},
-		"basic type with empty default is not taken into account for disabled keys": {
+		"basic type with default value needs a DISABLED marker": {
 			want: []entry.Entry{
 				{
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
-					Value:    "",
+					Value:    "", // Value is ignored
+					Disabled: true,
+				},
+			}},
+		"basic type with a DISABLED marker keeps meta and strategy": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
 					Disabled: true,
 					Meta:     "foo",
+					Strategy: "append",
 				},
 			}},
 		"basic type with strategy": {
