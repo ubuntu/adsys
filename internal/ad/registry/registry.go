@@ -257,10 +257,15 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		var data = make([]byte, len(elems[4]))
 		copy(data, elems[4])
 
+		t := elems[2]
+		if len(t) != 2 {
+			return nil, fmt.Errorf("invalid type: %d", t)
+		}
+
 		entries = append(entries, policyRawEntry{
 			path:  keyPrefix,
 			key:   keySuffix,
-			dType: dataType(elems[2][0]),
+			dType: dataType(t[0]),
 			data:  data, // TODO: if admx support binary data, then also return size
 		})
 	}
