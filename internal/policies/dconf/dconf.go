@@ -228,7 +228,8 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 		if !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
-		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0600)
+		// #nosec G306. This asset needs to be world-readable.
+		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0644)
 	}
 
 	// Read file to insert them at the end, removing duplicates
