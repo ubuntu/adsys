@@ -82,6 +82,12 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 			if err != nil {
 				return nil, err
 			}
+
+			// disabled keys with disabledvalues are not set as DISABLED
+			if _, exists := metaValues["DISABLED"]; exists {
+				disabledContainer = true
+			}
+
 			continue
 
 		case policyWithNoChildrenName:

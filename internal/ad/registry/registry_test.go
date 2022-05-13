@@ -172,6 +172,23 @@ func TestDecodePolicy(t *testing.T) {
 					Disabled: true,
 				},
 			}},
+		"disabled container with values needs a DISABLED marker": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Container/Child`,
+					Value:    "", // Value is ignored
+					Disabled: true,
+				},
+			}},
+		"disabled container with values still keep meta and strategy with a DISABLED marker": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Container/Child`,
+					Disabled: true,
+					Meta:     "foo",
+					Strategy: "append",
+				},
+			}},
 		"container with meta elements and default without value on options": {
 			want: []entry.Entry{
 				{
