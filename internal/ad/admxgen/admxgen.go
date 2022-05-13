@@ -217,8 +217,9 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 
 		// assign "all" elements and default to highest release description
 		releasesElements["all"] = releasesElements[highestRelease]
-		metasEnabled["all"] = releasesElements["all"].MetaEnabled
-		metasDisabled["all"] = releasesElements["all"].MetaDisabled
+		// match all metas to the highest release
+		metasEnabled["all"] = metasEnabled[highestRelease]
+		metasDisabled["all"] = metasDisabled[highestRelease]
 		explainText := releasesElements["all"].ExplainText
 
 		// Keep only all if there is one supported release on this key
@@ -246,16 +247,10 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
 
 		// prepare meta for the whole policy
-		// ensure we don’t serialize nil object to null but {}
-		if metasEnabled["all"] == nil {
-			metasEnabled["all"] = make(map[string]string)
-		}
 		metaEnabled, err := json.Marshal(metasEnabled)
 		if err != nil {
 			return nil, errors.New(i18n.G("failed to marshal enabled meta data"))
 		}
-		if metasDisabled["all"] == nil {
-			metasDisabled["all"] = make(map[string]string)
 		}
 		metaDisabled, err := json.Marshal(metasDisabled)
 		if err != nil {
