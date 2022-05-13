@@ -43,6 +43,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -251,6 +252,11 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		if err != nil {
 			return nil, errors.New(i18n.G("failed to marshal enabled meta data"))
 		}
+		// We can’t have metaEnabled or metaDisabled being strictly equals:
+		// some AD servers thinks they that disabled means
+		// that the key is enabled (matching only on values, no **del set)
+		if reflect.DeepEqual(metasEnabled, metasDisabled) {
+			metasDisabled["DISABLED"] = make(map[string]string)
 		}
 		metaDisabled, err := json.Marshal(metasDisabled)
 		if err != nil {

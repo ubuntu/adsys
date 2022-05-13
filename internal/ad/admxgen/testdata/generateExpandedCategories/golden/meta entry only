@@ -13,7 +13,7 @@
 
         Supported on Ubuntu 20.04
       metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
-      metadisabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+      metadisabled: '{"20.04":{"empty":"''''","meta":"s"},"DISABLED":{},"all":{"empty":"''''","meta":"s"}}'
       class: Machine
       releaseselements:
         all:
