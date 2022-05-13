@@ -60,7 +60,7 @@ func New() *App {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
-			return config.Init("adsys", a.rootCmd, a.viper, func(refreshed bool) error {
+			err := config.Init("adsys", a.rootCmd, a.viper, func(refreshed bool) error {
 				var newConfig daemonConfig
 				if err := config.LoadConfig(&newConfig, a.viper); err != nil {
 					return err
@@ -97,11 +97,12 @@ func New() *App {
 				}
 				return nil
 			})
+			// Set configured verbose status for the daemon.
+			config.SetVerboseMode(a.config.Verbose)
+			return err
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			config.SetVerboseMode(a.config.Verbose)
-
 			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain,
 				adsysservice.WithCacheDir(a.config.CacheDir),
 				adsysservice.WithRunDir(a.config.RunDir),
