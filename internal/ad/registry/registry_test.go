@@ -77,10 +77,9 @@ func TestDecodePolicy(t *testing.T) {
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
 					Value:    "",
 					Disabled: true,
-					Meta:     "foo",
 				},
 			}},
-		"basic type with empty default has value filed in": {
+		"basic type with default value has value filed in": {
 			want: []entry.Entry{
 				{
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
@@ -89,13 +88,21 @@ func TestDecodePolicy(t *testing.T) {
 					Meta:     "foo",
 				},
 			}},
-		"basic type with empty default is not taken into account for disabled keys": {
+		"basic type with default value needs a DISABLED marker": {
 			want: []entry.Entry{
 				{
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
-					Value:    "",
+					Value:    "", // Value is ignored
+					Disabled: true,
+				},
+			}},
+		"basic type with a DISABLED marker keeps meta and strategy": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
 					Disabled: true,
 					Meta:     "foo",
+					Strategy: "append",
 				},
 			}},
 		"basic type with strategy": {
@@ -163,6 +170,23 @@ func TestDecodePolicy(t *testing.T) {
 					Key:      `Software/Container/Child`,
 					Value:    "",
 					Disabled: true,
+				},
+			}},
+		"disabled container with values needs a DISABLED marker": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Container/Child`,
+					Value:    "", // Value is ignored
+					Disabled: true,
+				},
+			}},
+		"disabled container with values still keep meta and strategy with a DISABLED marker": {
+			want: []entry.Entry{
+				{
+					Key:      `Software/Container/Child`,
+					Disabled: true,
+					Meta:     "foo",
+					Strategy: "append",
 				},
 			}},
 		"container with meta elements and default without value on options": {

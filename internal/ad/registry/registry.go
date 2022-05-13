@@ -82,6 +82,12 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 			if err != nil {
 				return nil, err
 			}
+
+			// disabled keys with disabledvalues are not set as DISABLED
+			if _, exists := metaValues["DISABLED"]; exists {
+				disabledContainer = true
+			}
+
 			continue
 
 		case policyWithNoChildrenName:
@@ -93,10 +99,15 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 				continue
 			}
 
-			// Get metavalues for the single key (withg "all: {}")
+			// Get metavalues for the single key (with "all: {}")
 			metaValues, err = getMetaValues(e.data, fmt.Sprintf("%s\\%s", e.path, e.key))
 			if err != nil {
 				return nil, err
+			}
+
+			// disabled keys with disabledvalues are not set as DISABLED
+			if _, exists := metaValues["DISABLED"]; exists {
+				disabled = true
 			}
 
 			// Force it to be considered as an "all" key to apply to every releases
@@ -285,8 +296,8 @@ func getMetaValues(data []byte, keypath string) (metaValues map[string]meta, err
 	if err != nil {
 		return nil, err
 	}
-	// Return empty dictionary for empty content
-	if v == "" {
+	// Return empty dictionary for empty content (or space only)
+	if strings.TrimSpace(v) == "" {
 		return metaValues, nil
 	}
 	if err := json.Unmarshal([]byte(v), &metaValues); err != nil {
