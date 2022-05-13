@@ -77,10 +77,9 @@ func TestDecodePolicy(t *testing.T) {
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,
 					Value:    "",
 					Disabled: true,
-					Meta:     "foo",
 				},
 			}},
-		"basic type with empty default has value filed in": {
+		"basic type with default value has value filed in": {
 			want: []entry.Entry{
 				{
 					Key:      `Software/Policies/Ubuntu/privilege/allow-local-admins/all`,

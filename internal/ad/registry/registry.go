@@ -285,8 +285,8 @@ func getMetaValues(data []byte, keypath string) (metaValues map[string]meta, err
 	if err != nil {
 		return nil, err
 	}
-	// Return empty dictionary for empty content
-	if v == "" {
+	// Return empty dictionary for empty content (or space only)
+	if strings.TrimSpace(v) == "" {
 		return metaValues, nil
 	}
 	if err := json.Unmarshal([]byte(v), &metaValues); err != nil {
