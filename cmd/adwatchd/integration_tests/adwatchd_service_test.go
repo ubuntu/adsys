@@ -17,12 +17,6 @@ import (
 )
 
 func TestServiceStateChange(t *testing.T) {
-	// Parallelization is not supported on Windows due to Service
-	// Control Manager reasons.
-	if runtime.GOOS != "windows" {
-		t.Parallel()
-	}
-
 	tests := map[string]struct {
 		sequence   []string
 		invalidDir bool
@@ -58,6 +52,12 @@ func TestServiceStateChange(t *testing.T) {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
+			// Parallelization is not supported on Windows due to Service
+			// Control Manager reasons.
+			if runtime.GOOS != "windows" {
+				t.Parallel()
+			}
+
 			// Skip Windows-only tests if requested
 			if runtime.GOOS != "windows" && tc.skipUnlessWindows {
 				t.Skip()

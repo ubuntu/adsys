@@ -51,6 +51,8 @@ jobs:
           cache: true
       # We add a new user and execute under it for file permissions to be taken into account
       # as root can write in RO directories.
+      - name: Replace default go symlink
+        run: cp -f `which go` /usr/bin/go
       - name: Install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -65,11 +67,18 @@ jobs:
         run: |
           set -eu
 
-          go test -coverpkg=./... -coverprofile=/tmp/coverage.txt.full -covermode=count ./...
-          # Filter out test utilities and generated files
-          grep -v -e "testutils" -e "pb.go:" "/tmp/coverage.txt.full" > "/tmp/coverage.txt"
+          ADSYS_SKIP_SUDO_TESTS=1 go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=count ./...
+
+          # Run integration tests that need sudo
+          sudo -E go test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=count ./cmd/adwatchd/integration_tests ./internal/watchdtui
+
+          # Combine coverage files, and filter out test utilities and generated files
+          echo "mode: set" > /tmp/coverage.txt
+          grep -hv -e "mode: set" -e "testutils" -e "pb.go:" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
       - name: Run tests (with race detector)
-        run: go test -race ./...
+        run: |
+          ADSYS_SKIP_SUDO_TESTS=1 go test -race ./...
+          sudo -E go test -race ./cmd/adwatchd/integration_tests ./internal/watchdtui
       - name: Install curl for codecov
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -77,7 +86,23 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
-          file: /tmp/coverage.txt
+          file: /tmp/coverage.combined.out
+
+  adwatchd-tests:
+    name: Windows tests for adwatchd
+    runs-on: windows-latest
+    env:
+      packages: ./internal/loghooks ./internal/watchdservice ./internal/watchdtui ./internal/watcher ./internal/watchdhelpers ./cmd/adwatchd/integration_tests
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.goversion }}
+      - name: Run tests
+        run: go test ${{ env.packages }}
+      - name: Run tests (with race detector)
+        run: go test -race ${{ env.packages }}
 
   generators:
     name: Generated files are up to date

@@ -15,7 +15,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
+	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" || os.Getenv("ADSYS_SKIP_SUDO_TESTS") != "" {
 		fmt.Println("Integration tests skipped as requested")
 		return
 	}
