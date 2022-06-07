@@ -37,3 +37,15 @@ Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
+
+Package: adsys-windows
+Architecture: any
+Built-Using: ${misc:Built-Using},
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+Description: ${source:Synopsis}
+ ${source:Extended-Description}
+ .
+ This package contains all the assets and binaries to install
+ on the Active Directory Windows server.
+ The binaries are Windows executables.

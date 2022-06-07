@@ -4,7 +4,7 @@
 export GOCACHE=$(shell mktemp -d /tmp/gocache-XXXX)
 export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$(shell dpkg-parsechangelog -S Version) --mod=vendor -buildmode=pie
 
-# Install all content to embed
+# Copy in build directory all content to embed
 export DH_GOLANG_INSTALL_ALL := 1
 
 # Skip integration tests when building package: they need docker images.
@@ -18,16 +18,39 @@ override_dh_auto_clean:
 	# create the vendor directory when building the source package
 	[ -d vendor/ ] || go mod vendor
 
+override_dh_auto_build:
+	# Build on linux only adsysd itself, and not generator or Windows binaries.
+	DH_GOLANG_BUILDPKG=github.com/ubuntu/adsys/cmd/adsysd dh_auto_build
+
+	# build the Windows executables for adwatchd
+	GOOS=windows DH_GOLANG_BUILDPKG=github.com/ubuntu/adsys/cmd/adwatchd dh_auto_build
+
 override_dh_auto_install:
 	dh_auto_install -- --no-source
+
+	# PAM configuration
+	mkdir -p debian/tmp/usr/share/pam
+	cp -a pam/pam-configs debian/tmp/usr/share
+
+	# systemd services
+	mkdir -p debian/tmp/lib/systemd/system debian/tmp/usr/lib/systemd/user
+	cp -a systemd/*.mount debian/tmp/lib/systemd/system/
+	cp -a systemd/*.service debian/tmp/lib/systemd/system/
+	cp -a systemd/*.socket debian/tmp/lib/systemd/system/
+	cp -a systemd/*.timer debian/tmp/lib/systemd/system/
+	cp -a systemd/user/*.service debian/tmp/usr/lib/systemd/user/
+
+	# separate windows binaries
+	mkdir -p debian/tmp/usr/share/adsys/windows
+	mv debian/tmp/usr/bin/windows_*/* debian/tmp/usr/share/adsys/windows
+	rmdir debian/tmp/usr/bin/windows_*
+
+	# ship admx/adml for ubuntu
+	cp -a policies/Ubuntu debian/tmp/usr/share/adsys/windows/policies
+
 	# install in /sbin
-	mv debian/adsys/usr/bin/ debian/adsys/sbin
-	rmdir debian/adsys/usr/
+	mv debian/tmp/usr/bin/ debian/tmp/sbin
 	# create adsysctl command
-	ln -s adsysd debian/adsys/sbin/adsysctl
-	# Workaround file system race making debian/adsys/lib/ a file while it’s a directory
-	mkdir debian/adsys/lib
+	ln -s adsysd debian/tmp/sbin/adsysctl
 	# run go generate to install assets, but don’t regenerate them
-	GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/adsys go generate -tags tools $(GOFLAGS) ./...
-	# remove admxgen helper from installation
-	rm debian/adsys/sbin/admxgen
+	GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/tmp go generate -tags tools $(GOFLAGS) ./...

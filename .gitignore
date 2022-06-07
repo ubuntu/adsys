@@ -25,9 +25,12 @@ installer/Output
 
 # Packaging artefacts
 debian/*debhelper*
-debian/adsys*
 debian/debhelper-build-stamp
 debian/files
+debian/*.substvars
+debian/tmp
+debian/adsys
+debian/adsys-windows
 
 # Local testing
 /adsysd

@@ -1,0 +1,13 @@
+sbin/adsys*
+lib/
+usr/lib
+usr/share/bash-completion
+usr/share/locale
+usr/share/man
+usr/share/polkit-1
+usr/share/pam-configs
+usr/share/zsh
+
+# blank conffiles
+debian/99-adsys-privilege-enforcement.conf etc/polkit-1/localauthority.conf.d/
+debian/99-adsys-privilege-enforcement etc/sudoers.d/

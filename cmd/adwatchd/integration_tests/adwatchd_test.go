@@ -15,20 +15,20 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if os.Getenv("ADWATCHD_RUN_INTEGRATION_TESTS") == "" {
-		// Running real command mock from service manager
-		if len(os.Args) > 0 && os.Args[1] == "run" {
-			app := commands.New()
-			err := app.Run()
-			if err != nil {
-				log.Error(context.Background(), err)
-				os.Exit(1)
-			}
-			os.Exit(0)
-		}
-
+	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
 		fmt.Println("Integration tests skipped as requested")
 		return
+	}
+
+	// Installed service by the tests are using the test binary, with the "run" argument from service manager
+	if len(os.Args) > 0 && os.Args[1] == "run" {
+		app := commands.New()
+		err := app.Run()
+		if err != nil {
+			log.Error(context.Background(), err)
+			os.Exit(1)
+		}
+		os.Exit(0)
 	}
 
 	m.Run()
