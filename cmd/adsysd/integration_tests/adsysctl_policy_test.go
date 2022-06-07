@@ -176,7 +176,7 @@ func TestPolicyApplied(t *testing.T) {
 			require.NoError(t, err, "client should exit with no error")
 
 			// Compare golden files
-			goldPath := filepath.Join("testdata/PolicyApplied/golden", name)
+			goldPath := filepath.Join("testdata/PolicyApplied/golden", testutils.NormalizeGoldenName(t, name))
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
@@ -898,20 +898,21 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 			require.NoError(t, err, "client should exit with no error")
 
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "dconf"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "sudoers.d"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "polkit-1"), update)
+			goldName := testutils.NormalizeGoldenName(t, name)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "dconf"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "sudoers.d"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "polkit-1"), update)
 
 			// Current user can have different UID depending on where it’s running. We can’t mock it as we rely on current uid
 			// in the process for authorization check. Just make it generic.
 			if _, err := os.Stat(filepath.Join(adsysDir, "run", "users", currentUID)); err == nil {
 				require.NoError(t, os.Rename(filepath.Join(adsysDir, "run", "users", currentUID),
-					filepath.Join(adsysDir, "run", "users", "<CURRENT_UID>")),
-					"Setup: can't rename current user directory to generic <CURRENT_UID>")
+					filepath.Join(adsysDir, "run", "users", "CURRENT_UID")),
+					"Setup: can't rename current user directory to generic CURRENT_UID")
 			}
 
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join("testdata", "PolicyUpdate", "golden", name, "run", "users"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", hostname), filepath.Join("testdata", "PolicyUpdate", "golden", name, "run", "machine"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "users"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", hostname), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "machine"), update)
 		})
 	}
 }

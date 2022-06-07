@@ -237,7 +237,7 @@ func TestAdsysGPOList(t *testing.T) {
 			assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpostlist returns expected exit code")
 
 			// check collected output between FormatGPO calls
-			goldPath := filepath.Join("testdata", "adsys-gpolist", "golden", name)
+			goldPath := filepath.Join("testdata", "adsys-gpolist", "golden", testutils.NormalizeGoldenName(t, name))
 			// Update golden file
 			if ad.Update {
 				t.Logf("updating golden file %s", goldPath)

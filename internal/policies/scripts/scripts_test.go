@@ -173,7 +173,7 @@ func TestApplyPolicy(t *testing.T) {
 
 			makeIndependentOfCurrentUID(t, runDir, u.Uid)
 
-			testutils.CompareTreesWithFiltering(t, runDir, filepath.Join("testdata", "ApplyPolicy", "golden", name), update)
+			testutils.CompareTreesWithFiltering(t, runDir, filepath.Join("testdata", "ApplyPolicy", "golden", testutils.NormalizeGoldenName(t, name)), update)
 		})
 	}
 }
