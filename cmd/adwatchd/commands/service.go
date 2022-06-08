@@ -9,7 +9,6 @@ import (
 )
 
 func (a *App) installService() {
-
 	cmd := &cobra.Command{
 		Use:   "service",
 		Short: i18n.G("Manages the adwatchd service"),

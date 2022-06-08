@@ -11,15 +11,14 @@ import (
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/watchdhelpers"
-	"github.com/ubuntu/adsys/internal/watchdtui"
-	"golang.org/x/exp/slices"
-
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/watchdhelpers"
 	"github.com/ubuntu/adsys/internal/watchdservice"
+	"github.com/ubuntu/adsys/internal/watchdtui"
+	"golang.org/x/exp/slices"
 )
 
 // App encapsulates commands and options of the daemon, which can be controlled by env variables and config files.
@@ -38,7 +37,7 @@ type App struct {
 type options struct {
 	name string
 }
-type option func(*options) error
+type option func(*options)
 
 // New registers commands and return a new App.
 func New(opts ...option) *App {
@@ -232,10 +231,9 @@ func (a *App) Quit(sig syscall.Signal) error {
 // WithServiceName allows setting a custom name for the daemon. Shouldn't be in
 // general necessary apart for integration tests where it helps with parallel
 // execution.
-func WithServiceName(name string) func(o *options) error {
-	return func(o *options) error {
+func WithServiceName(name string) func(o *options) {
+	return func(o *options) {
 		o.name = name
-		return nil
 	}
 }
 

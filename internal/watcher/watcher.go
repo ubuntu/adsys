@@ -195,13 +195,17 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 						log.Warningf(ctx, i18n.G("Failed to watch: %s"), err)
 					}
 				} else if fileInfo.Mode().IsRegular() {
-					fsWatcher.Add(event.Name)
+					if err := fsWatcher.Add(event.Name); err != nil {
+						log.Warningf(ctx, i18n.G("Failed add watcher on %q: %s"), event.Name, err)
+					}
 				}
 			}
 
 			// Remove deleted or renamed files/directories from the watch list.
 			if event.Op&fsnotify.Remove == fsnotify.Remove || event.Op&fsnotify.Rename == fsnotify.Rename {
-				fsWatcher.Remove(event.Name)
+				if err := fsWatcher.Remove(event.Name); err != nil {
+					log.Warningf(ctx, i18n.G("Failed remove watcher on %q: %s"), event.Name, err)
+				}
 			}
 
 			// Check there is something to update
@@ -325,7 +329,9 @@ func bumpVersion(ctx context.Context, path string) (err error) {
 	if err != nil {
 		log.Warningf(ctx, i18n.G("error loading ini contents: %v, creating a new file"), err)
 		cfg = ini.Empty()
-		cfg.Section("General").NewKey("Version", "0")
+		if _, err := cfg.Section("General").NewKey("Version", "0"); err != nil {
+			return err
+		}
 	}
 
 	v, err := cfg.Section("General").Key("Version").Int()
@@ -339,7 +345,7 @@ func bumpVersion(ctx context.Context, path string) (err error) {
 	v++
 	cfg.Section("General").Key("Version").SetValue(strconv.Itoa(v))
 
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return err
 	}

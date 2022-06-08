@@ -314,13 +314,13 @@ func TestInteractiveInput(t *testing.T) {
 			// Create existing directories/files
 			for _, path := range tc.existingPaths {
 				if strings.HasSuffix(path, "/") {
-					err = os.MkdirAll(path, 0755)
+					err = os.MkdirAll(path, 0750)
 					require.NoError(t, err, "can't create directories")
 				} else {
-					err = os.MkdirAll(filepath.Dir(path), 0755)
+					err = os.MkdirAll(filepath.Dir(path), 0750)
 					require.NoError(t, err, "can't create directory for file")
 
-					err = os.WriteFile(path, []byte("some content"), 0644)
+					err = os.WriteFile(path, []byte("some content"), 0600)
 					require.NoError(t, err, "could not write sample file")
 				}
 			}
@@ -329,7 +329,7 @@ func TestInteractiveInput(t *testing.T) {
 			if len(tc.configDirs) > 0 {
 				data, err := yaml.Marshal(&watchdtui.AppConfig{Dirs: tc.configDirs})
 				require.NoError(t, err, "could not marshal config")
-				err = os.WriteFile("adwatchd.yml", data, 0644)
+				err = os.WriteFile("adwatchd.yml", data, 0600)
 				require.NoError(t, err, "could not write previous config")
 			}
 
@@ -402,9 +402,9 @@ func TestInteractiveInstall(t *testing.T) {
 	_ = chdirToTempdir(t)
 
 	// Create existing directories/files
-	err = os.MkdirAll("foo/bar", 0755)
+	err = os.MkdirAll("foo/bar", 0750)
 	require.NoError(t, err, "can't create directories")
-	err = os.MkdirAll("foo/baz", 0755)
+	err = os.MkdirAll("foo/baz", 0750)
 	require.NoError(t, err, "can't create directories")
 
 	m, _ := watchdtui.InitialModel().Update(nil)

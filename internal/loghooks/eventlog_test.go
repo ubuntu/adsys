@@ -36,7 +36,7 @@ func TestEventLogHook(t *testing.T) {
 			buf.Reset()
 			log := logrus.New()
 			log.AddHook(&loghooks.EventLog{mockServiceLogger{}})
-			log.SetLevel(logrus.Level(tc.level))
+			log.SetLevel(tc.level)
 
 			log.Debug("Debug msg")
 			log.Info(msgs["info"])
@@ -58,7 +58,6 @@ func TestEventLogHook(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 type mockServiceLogger struct{}

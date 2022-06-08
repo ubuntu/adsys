@@ -27,7 +27,7 @@ func GetDirsFromConfigFile(configFile string) []string {
 		return dirs
 	}
 	cfg := AppConfig{}
-	if err := yaml.Unmarshal([]byte(config), &cfg); err == nil {
+	if err := yaml.Unmarshal(config, &cfg); err == nil {
 		dirs = cfg.Dirs
 	}
 	return dirs
@@ -66,7 +66,7 @@ func WriteConfig(confFile string, dirs []string, defaultConfFile string) error {
 	}
 
 	// Make sure the directory structure exists for the config file
-	if err := os.MkdirAll(filepath.Dir(confFile), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(confFile), 0750); err != nil {
 		return fmt.Errorf(i18n.G("unable to create config directory: %v"), err)
 	}
 
@@ -76,7 +76,7 @@ func WriteConfig(confFile string, dirs []string, defaultConfFile string) error {
 		return fmt.Errorf(i18n.G("unable to marshal config: %v"), err)
 	}
 
-	if err := os.WriteFile(confFile, data, 0644); err != nil {
+	if err := os.WriteFile(confFile, data, 0600); err != nil {
 		return fmt.Errorf(i18n.G("unable to write config file: %v"), err)
 	}
 

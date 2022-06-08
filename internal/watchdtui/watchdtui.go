@@ -428,7 +428,6 @@ func (m *model) updateDirInputErrorAndStyle(i int) {
 		m.inputs[i].Err = nil
 		m.inputs[i].TextStyle = successStyle
 	}
-
 }
 
 // View renders the UI based on the data in the model.

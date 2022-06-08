@@ -7,12 +7,12 @@ import (
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 func (a *App) installRun() {
-
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: i18n.G("Starts the directory watch loop"),
@@ -58,8 +58,8 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 		false,
 		i18n.G("force the program to run even if another instance is already running"),
 	)
-	a.viper.BindPFlag("dirs", cmd.Flags().Lookup("dirs"))
-	a.viper.BindPFlag("force", cmd.Flags().Lookup("force"))
+	decorate.LogOnError(a.viper.BindPFlag("dirs", cmd.Flags().Lookup("dirs")))
+	decorate.LogOnError(a.viper.BindPFlag("force", cmd.Flags().Lookup("force")))
 
 	a.rootCmd.AddCommand(cmd)
 }

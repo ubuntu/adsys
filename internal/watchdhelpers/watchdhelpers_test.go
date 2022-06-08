@@ -71,21 +71,22 @@ func TestGetDirsFromConfigFile(t *testing.T) {
 				if tc.noConfig {
 					// no config file
 				} else if tc.emptyConfig {
-					os.Create(goldPath)
+					_, err = os.Create(goldPath)
+					require.NoError(t, err, "failed to create empty config file")
 				} else if tc.noDirs {
 					appConfig.Dirs = nil
 					data, err = yaml.Marshal(&appConfig)
 					require.NoError(t, err, "failed to marshal config")
-					err = os.WriteFile(goldPath, data, 0644)
+					err = os.WriteFile(goldPath, data, 0600)
 					require.NoError(t, err, "failed to write config")
 				} else if tc.badDirs {
-					err = os.WriteFile(goldPath, []byte(`- dirs: "testdir"`), 0644)
+					err = os.WriteFile(goldPath, []byte(`- dirs: "testdir"`), 0600)
 					require.NoError(t, err, "failed to write config")
 				} else {
 					// Normal case
 					data, err = yaml.Marshal(&appConfig)
 					require.NoError(t, err, "failed to marshal config")
-					err = os.WriteFile(goldPath, data, 0644)
+					err = os.WriteFile(goldPath, data, 0600)
 					require.NoError(t, err, "failed to write config")
 				}
 			}
@@ -112,7 +113,7 @@ func TestFilterAbsentDirs(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			chdirToTempdir(t)
 			for _, dir := range tc.existingDirs {
-				require.NoError(t, os.MkdirAll(dir, 0755), "failed to create existing dirs")
+				require.NoError(t, os.MkdirAll(dir, 0750), "failed to create existing dirs")
 			}
 			got := watchdhelpers.FilterAbsentDirs(tc.inputDirs)
 			require.ElementsMatch(t, tc.wantDirs, got)
@@ -150,7 +151,7 @@ func TestWriteConfig(t *testing.T) {
 
 			if !tc.absentDirs {
 				for _, dir := range tc.dirs {
-					require.NoError(t, os.MkdirAll(dir, 0755), "failed to create dirs")
+					require.NoError(t, os.MkdirAll(dir, 0750), "failed to create dirs")
 				}
 			}
 
@@ -162,7 +163,7 @@ func TestWriteConfig(t *testing.T) {
 					data, err = yaml.Marshal(&appConfig)
 					require.NoError(t, err, "failed to marshal config")
 
-					err = os.WriteFile(goldPath, data, 0644)
+					err = os.WriteFile(goldPath, data, 0600)
 					require.NoError(t, err, "failed to write config")
 				}
 			}
