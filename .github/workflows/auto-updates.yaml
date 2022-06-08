@@ -71,7 +71,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND=noninteractive
           apt update
-          apt install -y libsmbclient-dev gcc git
+          apt install -y libsmbclient-dev gcc pkg-config git
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       # Checkout code with git
