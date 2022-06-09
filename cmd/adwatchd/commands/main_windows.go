@@ -1,13 +1,23 @@
-package adwatchd_test
+package commands
 
 import (
+	"fmt"
 	"os"
 	"syscall"
 
+	"github.com/kardianos/service"
+	"github.com/ubuntu/adsys/internal/i18n"
 	"golang.org/x/sys/windows"
 )
 
-func terminateProc(_ os.Signal) error {
+// Quit gracefully exits the app. Shouldn't be in general necessary apart for
+// integration tests where we might need to close the app manually.
+func (a *App) Quit(_ syscall.Signal) error {
+	a.WaitReady()
+	if !service.Interactive() {
+		return fmt.Errorf(i18n.G("not running in interactive mode"))
+	}
+
 	dll, err := windows.LoadDLL("kernel32.dll")
 	if err != nil {
 		return err

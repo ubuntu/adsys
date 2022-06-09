@@ -41,26 +41,25 @@ func TestRunWithForceWhenServiceIsRunning(t *testing.T) {
 
 	changeAppArgs(t, app, configPath, "run", "--force")
 	done := make(chan struct{})
-	var err error
+	var err, appErr error
 	go func() {
 		defer close(done)
-		app.Run()
+		appErr = app.Run()
 	}()
+	app.WaitReady()
 
 	// Give time for the watcher itself to start
 	time.Sleep(time.Millisecond * 100)
 
-	err = terminateProc(syscall.SIGTERM)
-	// err = app.Quit(syscall.SIGTERM)
+	err = app.Quit(syscall.SIGTERM)
 	require.NoError(t, err, "Quitting should succeed")
-
 	select {
 	case <-done:
 	case <-time.After(5 * time.Second):
 		// TODO: fix quitting on windows
 		// t.Fatal("run hasn't exited quickly enough")
 	}
-	require.NoError(t, err)
+	require.NoError(t, appErr, "App should exit without error")
 }
 
 func TestRunWithNoDirs(t *testing.T) {
@@ -73,7 +72,7 @@ func TestRunWithNoDirs(t *testing.T) {
 }
 
 func TestRunReactsToConfigUpdates(t *testing.T) {
-	var err error
+	var err, appErr error
 	watchDir := t.TempDir()
 	newWatchDir := t.TempDir()
 
@@ -87,8 +86,9 @@ func TestRunReactsToConfigUpdates(t *testing.T) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		err = app.Run()
+		appErr = app.Run()
 	}()
+	app.WaitReady()
 
 	// Give time for the watcher itself to start
 	time.Sleep(time.Millisecond * 500)
@@ -115,19 +115,19 @@ func TestRunReactsToConfigUpdates(t *testing.T) {
 	time.Sleep(time.Millisecond * 500)
 
 	// TODO: fix quitting on windows
-	// terminateProc(syscall.SIGTERM)
-	// app.Quit(syscall.SIGINT)
+	err = app.Quit(syscall.SIGTERM)
+	require.NoError(t, err, "Quitting should succeed")
 	select {
 	case <-done:
 	case <-time.After(1 * time.Second):
 		// t.Fatal("run hasn't exited quickly enough")
 	}
-	require.NoError(t, err, "Quitting should succeed")
+	require.NoError(t, appErr, "App should exit without error")
 }
 
-// TODO: TestRunCanQuitWithCtrlC.
-func TestRunCanQuitWithSigterm(t *testing.T) {
-	t.Skip()
+func TestRunCanQuitWithCtrlC(t *testing.T) {
+	t.Skip() // TODO: fix quitting on windows
+
 	watchDir := t.TempDir()
 	app := commands.New()
 	changeAppArgs(t, app, "", "run", "--dirs", watchDir)
@@ -138,44 +138,17 @@ func TestRunCanQuitWithSigterm(t *testing.T) {
 		defer close(done)
 		err = app.Run()
 	}()
+	app.WaitReady()
 
 	// Give time for the watcher itself to start
 	time.Sleep(time.Millisecond * 100)
 
-	err = terminateProc(syscall.SIGTERM)
-	// err = app.Quit(syscall.SIGTERM)
+	err = app.Quit(syscall.SIGTERM)
 	require.NoError(t, err, "Quitting should succeed")
 
 	select {
 	case <-done:
-	case <-time.After(1000 * time.Second):
-		t.Fatal("run hasn't exited quickly enough")
-	}
-}
-
-func TestRunCanQuitWithSigint(t *testing.T) {
-	t.Skip()
-	watchDir := t.TempDir()
-	app := commands.New()
-	changeAppArgs(t, app, "", "run", "--dirs", watchDir)
-
-	done := make(chan struct{})
-	var err error
-	go func() {
-		defer close(done)
-		err = app.Run()
-	}()
-
-	// Give time for the watcher itself to start
-	time.Sleep(time.Millisecond * 100)
-
-	err = terminateProc(syscall.SIGINT)
-	// err = app.Quit(syscall.SIGINT)
-	require.NoError(t, err, "Quitting should succeed")
-
-	select {
-	case <-done:
-	case <-time.After(1000 * time.Second):
+	case <-time.After(5 * time.Second):
 		t.Fatal("run hasn't exited quickly enough")
 	}
 }
