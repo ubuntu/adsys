@@ -9,29 +9,32 @@ import (
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
-// getServiceArgs returns the full command line arguments for the service.
-func (s *WatchdService) getServiceArgs() (string, error) {
+// getServiceArgs returns the absolute binary path and the full command line
+// arguments for the service.
+func (s *WatchdService) getServiceArgs() (string, string, error) {
 	m, err := lowPrivMgr()
 	if err != nil {
-		return "", fmt.Errorf("failed to get low-privilege service manager: %v", err)
+		return "", "", fmt.Errorf("failed to get low-privilege service manager: %v", err)
 	}
 	defer m.Disconnect()
 
 	svc, err := lowPrivSvc(m, s.Name())
 	if err != nil {
-		return "", fmt.Errorf("failed to get low-privilege service: %v", err)
+		return "", "", fmt.Errorf("failed to get low-privilege service: %v", err)
 	}
 	defer svc.Close()
 
 	config, err := svc.Config()
 	if err != nil {
-		return "", fmt.Errorf("failed to get service config: %v", err)
+		return "", "", fmt.Errorf("failed to get service config: %v", err)
 	}
 
-	// Strip the first argument, which is the fully qualified path to the
-	// service binary.
-	_, args, _ := strings.Cut(config.BinaryPathName, ".exe")
-	return strings.Trim(args, " "), nil
+	idx := strings.Index(config.BinaryPathName, " run ")
+	// Strip quotes and spaces from the binary path if they exist
+	binPath := strings.Trim(config.BinaryPathName[:idx], `" `)
+	args := strings.Trim(config.BinaryPathName[idx+1:], " ")
+
+	return binPath, args, nil
 }
 
 // lowPrivMgr returns a low-privilege Windows Service Manager that can be used

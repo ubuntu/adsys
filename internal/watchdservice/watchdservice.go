@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -224,7 +225,6 @@ func (s *WatchdService) Restart(ctx context.Context) (err error) {
 }
 
 // Status provides a status of the watcher service in a pretty format.
-// TODO show a warning if the installed service is in a different path than the adwatchd being run.
 func (s *WatchdService) Status(ctx context.Context) (status string, err error) {
 	decorate.OnError(&err, i18n.G("failed to retrieve status for service"))
 	log.Debug(ctx, i18n.G("Getting status from service"))
@@ -252,47 +252,76 @@ func (s *WatchdService) Status(ctx context.Context) (status string, err error) {
 	}
 
 	// If the service is installed, attempt to figure out the configured
-	// directories.
-	var dirs []string
-	configFile := i18n.G("no config file")
+	// directories and the binary path.
+	var exePath string
+	var svcInfo serviceInfo
+	var pathMismatch bool
+
 	if stat != uninstalledState {
-		configFile, dirs, err = s.getConfigAndDirsFromArgs()
+		svcInfo, err = s.getServiceInfoFromArgs()
 		if err != nil {
-			log.Warningf(ctx, i18n.G("Failed to get directories from service arguments: %v"), err)
+			log.Warningf(ctx, i18n.G("Failed to get service info from arguments: %v"), err)
+		}
+
+		exePath, err = os.Executable()
+		if err != nil {
+			log.Warningf(ctx, i18n.G("Failed to get current executable path: %v"), err)
+		}
+
+		if exePath != svcInfo.binPath && svcInfo.binPath != "" {
+			pathMismatch = true
 		}
 	}
 
 	var statStr strings.Builder
 	statStr.WriteString(fmt.Sprintf(i18n.G("Service status: %s"), serviceStatus))
 	statStr.WriteString("\n\n")
-	statStr.WriteString(fmt.Sprintf(i18n.G("Config file: %s\n"), configFile))
+	statStr.WriteString(fmt.Sprintf(i18n.G("Config file: %s\n"), svcInfo.configFile))
 	statStr.WriteString(i18n.G("Watched directories: "))
 
-	if len(dirs) == 0 {
+	if len(svcInfo.dirs) == 0 {
 		statStr.WriteString(i18n.G("no configured directories"))
 	}
 
-	for _, dir := range dirs {
+	for _, dir := range svcInfo.dirs {
 		statStr.WriteString(fmt.Sprintf("\n  - %s", dir))
+	}
+
+	if pathMismatch {
+		log.Warningf(ctx, i18n.G(`Service binary path does not match executable path
+Service binary path: %s
+Current executable path: %s`), svcInfo.binPath, exePath)
 	}
 	status = statStr.String()
 
 	return status, nil
 }
 
-// getDirsFromArgs returns the directories to watch from the service arguments.
-func (s *WatchdService) getConfigAndDirsFromArgs() (string, []string, error) {
-	args, err := s.getServiceArgs()
+// serviceInfo represents the information gathered from the service arguments.
+type serviceInfo struct {
+	configFile string
+	dirs       []string
+	binPath    string
+}
+
+// getServiceInfoFromArgs returns the service configuration extracted from the
+// service arguments.
+func (s *WatchdService) getServiceInfoFromArgs() (serviceInfo, error) {
+	svcInfo := serviceInfo{configFile: i18n.G("no config file")}
+	binPath, args, err := s.getServiceArgs()
 	if err != nil {
-		return "", nil, fmt.Errorf(i18n.G("failed to get service args: %v"), err)
+		return svcInfo, fmt.Errorf(i18n.G("failed to get service args: %v"), err)
 	}
+	svcInfo.binPath = binPath
 
 	configFile, err := watchdhelpers.GetConfigFileFromArgs(args)
 	if err != nil {
-		return "", nil, fmt.Errorf(i18n.G("failed to get config file from args: %v"), err)
+		return svcInfo, fmt.Errorf(i18n.G("failed to get config file from args: %v"), err)
 	}
+	svcInfo.configFile = configFile
+	svcInfo.dirs = watchdhelpers.GetDirsFromConfigFile(configFile)
 
-	return configFile, watchdhelpers.GetDirsFromConfigFile(configFile), nil
+	return svcInfo, nil
 }
 
 // Install installs the watcher service and starts it if it doesn't
