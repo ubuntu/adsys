@@ -80,7 +80,7 @@ func (a *App) serviceInstall() *cobra.Command {
 		Use:   "install",
 		Short: i18n.G("Installs the service"),
 		Long: i18n.G(`Installs the adwatchd service.
-		
+
 The service will be installed as a Windows service.
 `),
 		RunE: func(cmd *cobra.Command, args []string) error {

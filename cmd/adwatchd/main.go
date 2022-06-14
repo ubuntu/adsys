@@ -19,6 +19,10 @@ func run(a *commands.App) int {
 	log.SetFormatter(&log.TextFormatter{
 		DisableLevelTruncation: true,
 		DisableTimestamp:       true,
+
+		// support colors on Windows, ref:
+		// https://github.com/sirupsen/logrus/pull/957
+		ForceColors: true,
 	})
 
 	if err := a.Run(); err != nil {
