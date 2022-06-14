@@ -78,14 +78,14 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 		for {
 			switch c := <-cmd; c.action {
 			case startCmd:
-				// Start from service don’t pass a context explicitly
+				// Start from service doesn't pass a context explicitly
 				parentCtx := c.ctx
-				if parentCtx == nil {
+				if parentCtx == context.TODO() {
 					parentCtx = ctx
 				}
 				ctx, cancel = context.WithCancel(parentCtx)
 
-				// Start from service don’t pass dirs explicitly
+				// Start from service doesn't pass dirs explicitly
 				dirs := c.dirs
 				if dirs == nil {
 					dirs = initialDirs
@@ -134,7 +134,7 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 func (w *Watcher) Start(s service.Service) (err error) {
 	decorate.OnError(&err, i18n.G("can't start service"))
 
-	return w.send(nil, startCmd, nil)
+	return w.send(context.TODO(), startCmd, nil)
 }
 
 // Stop is called by the service manager to stop the watcher service.
@@ -143,7 +143,7 @@ func (w *Watcher) Start(s service.Service) (err error) {
 func (w *Watcher) Stop(s service.Service) (err error) {
 	decorate.OnError(&err, i18n.G("can't stop service"))
 
-	return w.send(nil, stopCmd, nil)
+	return w.send(context.TODO(), stopCmd, nil)
 }
 
 // stopWatch stops the watch loop.
