@@ -51,8 +51,6 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      # We add a new user and execute under it for file permissions to be taken into account
-      # as root can write in RO directories.
       - name: Replace default go symlink
         run: cp -f `which go` /usr/bin/go
       - name: Install dependencies
@@ -123,8 +121,18 @@ jobs:
           path: installer/Output/adwatchd_setup.exe
       - name: Run tests
         run: go test ${{ env.packages }}
-      # - name: Run tests (with race detector)
-      #   run: go test -race ${{ env.packages }}
+      - name: Run tests (with race detector)
+        env:
+          ADSYS_SKIP_INTEGRATION_TESTS: 1
+        run: go test -race ${{ env.packages }}
+        # There are some cryptic "The pipe has been closed" errors on Windows
+        # that arise from running the tests with the race detector enabled. We
+        # believe this originates outside our code, thus we avoid running the
+        # integration suite with the race detector.
+        #
+        # As the Linux job already exercises the entire testsuite with race
+        # detection enabled and the code is mostly platform independent, this
+        # should be a safe action to take.
       - name: Draft release and publish installer artifact
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
