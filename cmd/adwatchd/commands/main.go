@@ -232,3 +232,9 @@ func WithServiceName(name string) func(o *options) {
 func (a *App) WaitReady() {
 	<-a.ready
 }
+
+// RootCmd returns a copy of the root command for the app. Shouldn't be in
+// general necessary apart from running generators.
+func (a App) RootCmd() cobra.Command {
+	return a.rootCmd
+}
