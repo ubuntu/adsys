@@ -282,7 +282,7 @@ func TestUpdateDirs(t *testing.T) {
 	writeToFiles(t, []string{filepath.Join(destRemove, "alreadyexists")})
 
 	// Change directories to watch
-	err = w.UpdateDirs([]string{destKeep, destAdd})
+	err = w.UpdateDirs(context.Background(), []string{destKeep, destAdd})
 	require.NoError(t, err, "Can't update watched dirs")
 
 	// GPT.ini version was updated on the removed directory
@@ -334,7 +334,7 @@ func TestUpdateDirsFailing(t *testing.T) {
 	assertGPTVersionEquals(t, destRemove, 2)
 
 	// Give some unexisting directories to watch
-	err = w.UpdateDirs([]string{destKeep, "unexisting"})
+	err = w.UpdateDirs(context.Background(), []string{destKeep, "unexisting"})
 	require.Error(t, err, "UpdateDirs should have failed but didn't")
 
 	// Modify files in previous watched directories
@@ -363,16 +363,6 @@ func TestStopWithoutStart(t *testing.T) {
 
 	err = w.Stop(s)
 	require.Error(t, err, "Stop should have failed but hasn't")
-}
-
-func TestDirs(t *testing.T) {
-	t.Parallel()
-
-	temp := t.TempDir()
-	w, err := watcher.New(context.Background(), []string{temp})
-	require.NoError(t, err, "Can't create watcher")
-
-	assert.Equal(t, []string{temp}, w.Dirs())
 }
 
 func assertGPTVersionEquals(t *testing.T, path string, version int) {

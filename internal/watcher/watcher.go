@@ -22,14 +22,23 @@ const (
 	gptFileName = "gpt.ini"
 )
 
+const (
+	startCmd = iota
+	stopCmd
+)
+
 // Watcher provides options necessary to watch a directory and its children.
 type Watcher struct {
-	dirs      []string
-	parentCtx context.Context
-	cancel    context.CancelFunc
-	watching  chan struct{}
+	cmd    chan command
+	cmdErr chan error
 
 	refreshDuration time.Duration
+}
+
+type command struct {
+	ctx    context.Context
+	action int
+	dirs   []string
 }
 
 // options are the configurable functional options for the watcher.
@@ -39,8 +48,8 @@ type options struct {
 type option func(*options) error
 
 // New returns a new Watcher instance.
-func New(ctx context.Context, dirs []string, opts ...option) (*Watcher, error) {
-	if len(dirs) == 0 {
+func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, error) {
+	if len(initialDirs) == 0 {
 		return nil, errors.New(i18n.G("no directories to watch"))
 	}
 
@@ -55,17 +64,67 @@ func New(ctx context.Context, dirs []string, opts ...option) (*Watcher, error) {
 		}
 	}
 
-	return &Watcher{
-		dirs: dirs,
+	cmd, cmdErr := make(chan command), make(chan error)
+	w := &Watcher{
+		cmd:    cmd,
+		cmdErr: cmdErr,
 
-		parentCtx:       ctx,
 		refreshDuration: args.refreshDuration,
-	}, nil
-}
+	}
 
-// Dirs returns the directories currently being watched.
-func (w *Watcher) Dirs() []string {
-	return w.dirs
+	go func() {
+		var cancel context.CancelFunc
+		var watching chan struct{}
+		for {
+			switch c := <-cmd; c.action {
+			case startCmd:
+				// Start from service don’t pass a context explicitly
+				parentCtx := c.ctx
+				if parentCtx == nil {
+					parentCtx = ctx
+				}
+				ctx, cancel = context.WithCancel(parentCtx)
+
+				// Start from service don’t pass dirs explicitly
+				dirs := c.dirs
+				if dirs == nil {
+					dirs = initialDirs
+				}
+
+				initError := make(chan error)
+				watching = make(chan struct{})
+				go func() {
+					defer close(watching)
+					if errWatching := w.watch(ctx, dirs, initError); errWatching != nil {
+						log.Warningf(ctx, i18n.G("Watch failed: %v"), errWatching)
+					}
+				}()
+				err := <-initError
+				cmdErr <- err
+
+			case stopCmd:
+				if watching == nil {
+					cmdErr <- errors.New(i18n.G("the service is already stopping or not running"))
+					break
+				}
+
+				cancel()
+
+				// wait for watching to be closed
+				for {
+					_, ok := <-watching
+					if ok {
+						continue
+					}
+					watching = nil
+					break
+				}
+				cmdErr <- nil
+			}
+		}
+	}()
+
+	return w, nil
 }
 
 // Start is called by the service manager to start the watcher service.
@@ -75,7 +134,7 @@ func (w *Watcher) Dirs() []string {
 func (w *Watcher) Start(s service.Service) (err error) {
 	decorate.OnError(&err, i18n.G("can't start service"))
 
-	return w.startWatch(w.parentCtx, w.dirs)
+	return w.send(nil, startCmd, nil)
 }
 
 // Stop is called by the service manager to stop the watcher service.
@@ -84,48 +143,22 @@ func (w *Watcher) Start(s service.Service) (err error) {
 func (w *Watcher) Stop(s service.Service) (err error) {
 	decorate.OnError(&err, i18n.G("can't stop service"))
 
-	return w.stopWatch(w.parentCtx)
-}
-
-// startWatch starts the actual watch loop in a goroutine.
-func (w *Watcher) startWatch(ctx context.Context, dirs []string) error {
-	ctx, cancel := context.WithCancel(w.parentCtx)
-	w.cancel = cancel
-
-	w.watching = make(chan struct{})
-	initError := make(chan error)
-	go func() {
-		if errWatching := w.watch(ctx, w.dirs, initError); errWatching != nil {
-			log.Warningf(ctx, i18n.G("Watch failed: %v"), errWatching)
-		}
-	}()
-	return <-initError
+	return w.send(nil, stopCmd, nil)
 }
 
 // stopWatch stops the watch loop.
-func (w *Watcher) stopWatch(ctx context.Context) error {
-	if w.cancel == nil {
-		return errors.New(i18n.G("the service is already stopping or not running"))
+func (w *Watcher) send(ctx context.Context, action int, dirs []string) error {
+	w.cmd <- command{
+		ctx:    ctx,
+		action: action,
+		dirs:   dirs,
 	}
-
-	w.cancel()
-	w.cancel = nil
-
-	// wait for watching to be closed
-	for {
-		_, ok := <-w.watching
-		if ok {
-			continue
-		}
-		break
-	}
-
-	return nil
+	return <-w.cmdErr
 }
 
 // UpdateDirs restarts watch loop with new directories. No action is taken if
 // one or more directories do not exist.
-func (w *Watcher) UpdateDirs(dirs []string) (err error) {
+func (w *Watcher) UpdateDirs(ctx context.Context, dirs []string) (err error) {
 	decorate.OnError(&err, i18n.G("can't update directories to watch"))
 	for _, dir := range dirs {
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -133,20 +166,18 @@ func (w *Watcher) UpdateDirs(dirs []string) (err error) {
 		}
 	}
 
-	log.Debugf(w.parentCtx, i18n.G("Updating directories to %v"), dirs)
+	log.Debugf(ctx, i18n.G("Updating directories to %v"), dirs)
 
-	if err := w.stopWatch(w.parentCtx); err != nil {
+	if err := w.send(ctx, stopCmd, nil); err != nil {
 		return err
 	}
 
-	w.dirs = dirs
-	return w.startWatch(w.parentCtx, dirs)
+	return w.send(ctx, startCmd, dirs)
 }
 
 // watch is the main watch loop.
 func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- error) (err error) {
 	decorate.OnError(&err, i18n.G("can't watch over %v"), dirs)
-	defer close(w.watching)
 
 	fsWatcher, err := fsnotify.NewWatcher()
 	if err != nil {

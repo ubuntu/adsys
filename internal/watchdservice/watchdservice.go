@@ -125,7 +125,7 @@ func (s *WatchdService) UpdateDirs(ctx context.Context, dirs []string) (err erro
 	decorate.OnError(&err, i18n.G("failed to change directories to watch"))
 	log.Info(ctx, i18n.G("Updating directories to watch"))
 
-	if err := s.watcher.UpdateDirs(dirs); err != nil {
+	if err := s.watcher.UpdateDirs(ctx, dirs); err != nil {
 		return err
 	}
 
