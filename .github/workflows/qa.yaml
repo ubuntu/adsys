@@ -2,7 +2,9 @@ name: QA
 on:
   push:
     branches:
-    - main
+      - main
+    tags:
+      - '*'
   pull_request:
 
 jobs:
@@ -95,14 +97,39 @@ jobs:
       packages: ./internal/loghooks ./internal/watchdservice ./internal/watchdtui ./internal/watcher ./internal/watchdhelpers ./cmd/adwatchd/integration_tests
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Setup go
         uses: actions/setup-go@v2
         with:
           go-version: ${{ env.goversion }}
+      - name: Build installer
+        run: |
+          tag=$(git describe --tags)
+          export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$tag
+
+          # Transforms git describe output:
+          # - from X.Y.Z-P-gSHA to X.Y.Z.P for untagged commits
+          # - from vX.Y.Z to X.Y.Z for tagged commits
+          INSTALLER_VERSION=$(echo $tag | tr -d v | tr '-' '.' | cut -d. -f-4)
+
+          go build ./cmd/adwatchd
+          iscc.exe //DAPP_VERSION=$INSTALLER_VERSION installer/setup.iss
+        shell: bash
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: adwatchd_setup
+          path: installer/Output/adwatchd_setup.exe
       - name: Run tests
         run: go test ${{ env.packages }}
-      - name: Run tests (with race detector)
-        run: go test -race ${{ env.packages }}
+      # - name: Run tests (with race detector)
+      #   run: go test -race ${{ env.packages }}
+      - name: Draft release and publish installer artifact
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: installer/Output/adwatchd_setup.exe
 
   generators:
     name: Generated files are up to date

@@ -34,7 +34,6 @@ Name: fr; MessagesFile: "compiler:Languages\French.isl"
 
 [Messages]
 WelcomeLabel2=This will install [name/ver] on your computer.%n%nIt is recommended that you close all other applications before continuing.%n%nThe AD Watch Daemon is a service that will monitor a set of configured SYSVOL directories for changes and bump their respective GPT.ini versions, so that assets are not needlessly downloaded.%n%nAfter installation completes, you will be prompted to run the main executable program in order to configure and install the watcher service.
-fr.WelcomeLabel2=TRANSLATED WELCOME MESSAGE
 
 [Run]
 Filename: {app}\adwatchd.exe; Description: Start interactive service installer; Flags: postinstall nowait skipifsilent unchecked
@@ -47,7 +46,7 @@ Filename: {sys}\sc.exe; Parameters: "delete adwatchd"; Flags: runhidden; RunOnce
 Type: files; Name: "{app}\adwatchd.yml"
 
 [Files]
-Source: "..\cmd\adwatchd\adwatchd.exe"; DestDir: "{app}"
+Source: "..\adwatchd.exe"; DestDir: "{app}"
 Source: "..\README.md"; DestDir: "{app}"; Flags: isreadme
 Source: "assets\adwatchd_shell.bat"; DestDir: "{app}"
 Source: "assets\icon.ico"; DestDir: "{app}"
