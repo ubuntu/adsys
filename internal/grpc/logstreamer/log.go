@@ -111,6 +111,13 @@ var (
 	localLoggerMu = sync.RWMutex{}
 )
 
+// AddHook adds a hook to the logger.
+func AddHook(ctx context.Context, hook logrus.Hook) {
+	localLogger := logrus.StandardLogger()
+
+	localLogger.AddHook(hook)
+}
+
 // SetReportCaller set if we want to report caller to standard logger.
 func SetReportCaller(reportCaller bool) {
 	localLogger := logrus.StandardLogger()

@@ -1,0 +1,5 @@
+verbose: 0
+force: false
+dirs:
+- dir1
+- dir2
