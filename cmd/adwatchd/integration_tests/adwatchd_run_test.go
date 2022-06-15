@@ -44,7 +44,7 @@ func TestRunWithForceWhenServiceIsRunning(t *testing.T) {
 	var err error
 	go func() {
 		defer close(done)
-		err = app.Run()
+		app.Run()
 	}()
 
 	// Give time for the watcher itself to start
@@ -83,7 +83,7 @@ func TestRunReactsToConfigUpdates(t *testing.T) {
 
 	app := commands.New()
 
-	changeAppArgs(t, app, configPath, "run")
+	changeAppArgs(t, app, configPath, "run", "--force")
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -107,14 +107,16 @@ func TestRunReactsToConfigUpdates(t *testing.T) {
 	// Give time for the watcher to reload
 	time.Sleep(time.Millisecond * 100)
 
+	// Verbosity should change, but dirs should not
 	require.EqualValues(t, []string{newWatchDir}, app.Dirs(), "Watcher should not be updated with non-existent directory")
+	require.Equal(t, 3, app.Verbosity(), "Watcher should have updated verbosity")
 
-	// TODO: fix verbosity assertion, should actually be 3 here
-	require.Equal(t, 2, app.Verbosity(), "Watcher should have updated verbosity")
+	// Give time for the watcher itself to start
+	time.Sleep(time.Millisecond * 500)
 
 	// TODO: fix quitting on windows
-	// err = terminateProc(syscall.SIGTERM)
-	// err = app.Quit(syscall.SIGTERM)
+	// terminateProc(syscall.SIGTERM)
+	// app.Quit(syscall.SIGINT)
 	select {
 	case <-done:
 	case <-time.After(1 * time.Second):

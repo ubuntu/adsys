@@ -85,7 +85,7 @@ func getStatus(t *testing.T, app *commands.App) string {
 func changeAppArgs(t *testing.T, app *commands.App, conf string, args ...string) {
 	t.Helper()
 
-	newArgs := []string{"-vv"}
+	var newArgs []string
 	if conf != "" {
 		newArgs = append(newArgs, "-c", conf)
 	}

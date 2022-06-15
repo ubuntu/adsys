@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/kardianos/service"
@@ -30,7 +31,8 @@ type App struct {
 	service *watchdservice.WatchdService
 	options options
 
-	ready chan struct{}
+	ready    chan struct{}
+	configMu *sync.RWMutex
 }
 
 // options are the configurable functional options of the application.
@@ -52,6 +54,7 @@ func New(opts ...option) *App {
 	}
 
 	a := App{ready: make(chan struct{})}
+	a.configMu = &sync.RWMutex{}
 	a.options = args
 	a.rootCmd = cobra.Command{
 		Use:   "adwatchd [COMMAND]",
@@ -63,6 +66,8 @@ func New(opts ...option) *App {
 			// configuration) error now and so, don't print usage.
 			cmd.SilenceUsage = true
 			err := config.Init("adwatchd", a.rootCmd, a.viper, func(refreshed bool) error {
+				a.configMu.Lock()
+				defer a.configMu.Unlock()
 				var newConfig watchdhelpers.AppConfig
 				if err := config.LoadConfig(&newConfig, a.viper); err != nil {
 					return err
@@ -193,12 +198,18 @@ func (a *App) SetArgs(args []string) {
 }
 
 // Dirs returns the configured directories. Shouldn't be in general necessary apart for integration tests.
-func (a App) Dirs() []string {
+func (a *App) Dirs() []string {
+	a.configMu.RLock()
+	defer a.configMu.RUnlock()
+
 	return a.config.Dirs
 }
 
 // Verbosity returns the configured verbosity. Shouldn't be in general necessary apart for integration tests.
-func (a App) Verbosity() int {
+func (a *App) Verbosity() int {
+	a.configMu.RLock()
+	defer a.configMu.RUnlock()
+
 	return a.config.Verbose
 }
 

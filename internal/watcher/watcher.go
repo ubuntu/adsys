@@ -204,7 +204,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			// Remove deleted or renamed files/directories from the watch list.
 			if event.Op&fsnotify.Remove == fsnotify.Remove || event.Op&fsnotify.Rename == fsnotify.Rename {
 				if err := fsWatcher.Remove(event.Name); err != nil {
-					log.Warningf(ctx, i18n.G("Failed remove watcher on %q: %s"), event.Name, err)
+					log.Debugf(ctx, i18n.G("Failed to remove watcher on %q: %s"), event.Name, err)
 				}
 			}
 
