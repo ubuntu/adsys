@@ -86,14 +86,15 @@ func TestSetVerboseMode(t *testing.T) {
 
 func TestInit(t *testing.T) {
 	tests := map[string]struct {
-		withValueFlagSet  bool
-		noVerboseFlag     bool
-		noConfigFlag      bool
-		withConfigFlagSet string
-		withConfigEnv     bool
-		configFileContent string
-		notInConfigDir    bool
-		changeConfigWith  string
+		withValueFlagSet   bool
+		noVerboseFlag      bool
+		noConfigFlag       bool
+		withConfigFlagSet  string
+		withConfigEnv      bool
+		withConfigInExeDir bool
+		configFileContent  string
+		notInConfigDir     bool
+		changeConfigWith   string
 
 		errFromCallbackOn int
 
@@ -107,6 +108,12 @@ func TestInit(t *testing.T) {
 		"Load configuration with file": {
 			configFileContent: "value: filecontentvalue",
 			want:              "filecontentvalue", wantCallbackCalled: 1,
+		},
+		"Load configuration from executable dir": {
+			configFileContent:  "value: filecontentvalue",
+			withConfigInExeDir: true,
+			notInConfigDir:     true,
+			want:               "filecontentvalue", wantCallbackCalled: 1,
 		},
 		"No config flag set before Init is call is ignored": {
 			noConfigFlag:       true,
@@ -170,6 +177,19 @@ func TestInit(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			configDir := t.TempDir()
+			prefix := "adsys_config_test"
+
+			if tc.withConfigInExeDir {
+				exePath, err := os.Executable()
+				require.NoError(t, err, "Setup: can't get executable path")
+				configDir = filepath.Dir(exePath)
+
+				t.Cleanup(func() {
+					os.Remove(filepath.Join(configDir, prefix+".yaml"))
+					syscall.Sync()
+				})
+			}
+
 			if !tc.notInConfigDir {
 				chDir(t, configDir)
 			}
@@ -204,7 +224,6 @@ func TestInit(t *testing.T) {
 				require.NoError(t, err, "Setup: can’t set config flag")
 			}
 
-			prefix := "adsys_config_test"
 			if tc.withConfigEnv {
 				testutils.Setenv(t, strings.ToUpper(prefix)+"_VALUE", "envvalue")
 			}
