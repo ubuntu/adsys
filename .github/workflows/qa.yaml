@@ -46,6 +46,8 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
+    env:
+      sudo_packages:
     steps:
       - uses: actions/checkout@v2
       - name: Setup go
@@ -68,11 +70,18 @@ jobs:
         run: |
           set -eu
 
-          go test -coverpkg=./... -coverprofile=/tmp/coverage.txt.full -covermode=count ./...
-          # Filter out test utilities and generated files
-          grep -v -e "testutils" -e "pb.go:" "/tmp/coverage.txt.full" > "/tmp/coverage.txt"
+          ADSYS_SKIP_SUDO_TESTS=1 go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=count ./...
+
+          # Run integration tests that need sudo
+          sudo -E go test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=count ${{ sudo_packages }}
+
+          # Combine coverage files, and filter out test utilities and generated files
+          echo "mode: set" > /tmp/coverage.txt
+          grep -hv -e "mode: set" -e "testutils" -e "pb.go:" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
       - name: Run tests (with race detector)
-        run: go test -race ./...
+        run: |
+          ADSYS_SKIP_SUDO_TESTS=1 go test -race ./...
+          sudo -E go test -race ${{ sudo_packages }}
       - name: Install curl for codecov
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -80,7 +89,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
-          file: /tmp/coverage.txt
+          file: /tmp/coverage.combined.out
 
   generators:
     name: Generated files are up to date
