@@ -48,7 +48,7 @@ func FilterAbsentDirs(dirs []string) []string {
 // WriteConfig writes the config to the given file, checking whether the
 // directories that are passed in actually exist. It receives a config file and
 // a slice of absolute sorted paths.
-func WriteConfig(confFile string, dirs []string, defaultConfFile string) error {
+func WriteConfig(confFile string, dirs []string) error {
 	if len(dirs) == 0 {
 		return fmt.Errorf(i18n.G("needs at least one directory to watch"))
 	}
@@ -58,11 +58,6 @@ func WriteConfig(confFile string, dirs []string, defaultConfFile string) error {
 		if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
 			return fmt.Errorf(i18n.G("directory %q does not exist"), dir)
 		}
-	}
-
-	// Empty input means using the default config file
-	if confFile == "" {
-		confFile = defaultConfFile
 	}
 
 	// Make sure the directory structure exists for the config file

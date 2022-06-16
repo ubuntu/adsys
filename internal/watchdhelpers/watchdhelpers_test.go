@@ -136,7 +136,6 @@ func TestWriteConfig(t *testing.T) {
 
 		"with relative config path": {dirs: []string{"dir1", "dir2"}},
 		"with nested config path":   {dirs: []string{"dir1", "dir2"}, nestedConfigPath: true},
-		"with default config path":  {dirs: []string{"dir1", "dir2"}, useDefaultConfig: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -168,16 +167,12 @@ func TestWriteConfig(t *testing.T) {
 				}
 			}
 
-			defaultConfigPath := "adwatchd.yml"
-			configPath := defaultConfigPath
+			configPath := "adwatchd.yml"
 			if tc.nestedConfigPath {
 				configPath = filepath.Join("path", "to", "adwatchd.yml")
 			}
-			if tc.useDefaultConfig {
-				configPath = ""
-			}
 
-			error := watchdhelpers.WriteConfig(configPath, tc.dirs, defaultConfigPath)
+			error := watchdhelpers.WriteConfig(configPath, tc.dirs)
 			if tc.wantErr {
 				require.Error(t, error, "expected error")
 			} else {

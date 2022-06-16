@@ -75,7 +75,12 @@ func (m model) installService(confFile string, dirsMap map[string]struct{}) tea.
 		// Sort the directories to avoid nondeterministic behavior
 		slices.Sort(dirs)
 
-		if err := watchdhelpers.WriteConfig(confFile, dirs, m.defaultConfig); err != nil {
+		// Empty input means using the default config file
+		if confFile == "" {
+			confFile = m.defaultConfig
+		}
+
+		if err := watchdhelpers.WriteConfig(confFile, dirs); err != nil {
 			return installMsg{err}
 		}
 
