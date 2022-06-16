@@ -14,6 +14,16 @@ import (
 	"github.com/termie/go-shutil"
 )
 
+// NormalizeGoldenName returns the name of the golden file with illegal Windows
+// characters replaced or removed.
+func NormalizeGoldenName(t *testing.T, name string) string {
+	t.Helper()
+
+	name = strings.ReplaceAll(name, `\`, "_")
+	name = strings.ReplaceAll(name, ":", "")
+	return name
+}
+
 // Copy copies files and directories to dest.
 func Copy(t *testing.T, src, dest string) {
 	t.Helper()
