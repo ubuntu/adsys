@@ -1,4 +1,4 @@
-package watcher_test
+package testutils
 
 import (
 	"syscall"
@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// waitForWrites waits for test I/O to be picked up.
-func waitForWrites(t *testing.T, _ ...string) {
+// WaitForWrites waits for test I/O to be picked up.
+func WaitForWrites(t *testing.T, _ ...string) {
 	t.Helper()
 
 	// Give time for the writes to be picked up

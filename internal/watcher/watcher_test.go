@@ -181,14 +181,14 @@ func TestWatchDirectory(t *testing.T) {
 				}
 			}
 
-			waitForWrites(t)
+			testutils.WaitForWrites(t)
 
 			// Stop the watcher
 			err = w.Stop(mockService{})
 			require.NoError(t, err, "Can't stop watcher")
 
 			// compare GPT.ini version
-			waitForWrites(t)
+			testutils.WaitForWrites(t)
 
 			if len(tc.wantVersions) > 0 {
 				for i, dir := range tc.existingDirs {
@@ -224,7 +224,7 @@ func TestRefreshGracePeriod(t *testing.T) {
 	err = os.WriteFile(filepath.Join(temp, dir, "alreadyexists"), []byte("new content"), 0600)
 	require.NoError(t, err, "Setup: Can't update file")
 
-	waitForWrites(t)
+	testutils.WaitForWrites(t)
 
 	// Wait for half of the grace period
 	time.Sleep(w.RefreshDuration() / 2)
@@ -236,7 +236,7 @@ func TestRefreshGracePeriod(t *testing.T) {
 	err = os.WriteFile(filepath.Join(temp, dir, "alreadyexistsDir", "alreadyexists"), []byte("new content"), 0600)
 	require.NoError(t, err, "Setup: Can't update file")
 
-	waitForWrites(t)
+	testutils.WaitForWrites(t)
 
 	// Wait for 3/4 of the grace period (to be sure that we waited for more than one whole grace period in total).
 	time.Sleep(time.Duration(float64(w.RefreshDuration()) * 0.75))
@@ -262,7 +262,7 @@ func TestUpdateDirs(t *testing.T) {
 	testutils.Copy(t, filepath.Join("testdata", "withsubdir"), destKeep)
 	testutils.Copy(t, filepath.Join("testdata", "withsubdir"), destRemove)
 	testutils.Copy(t, filepath.Join("testdata", "withsubdir"), destAdd)
-	waitForWrites(t, destKeep, destRemove, destAdd)
+	testutils.WaitForWrites(t, destKeep, destRemove, destAdd)
 
 	// Instantiate the object
 	w, err := watcher.New(context.Background(), []string{destRemove, destKeep})
@@ -286,7 +286,7 @@ func TestUpdateDirs(t *testing.T) {
 	require.NoError(t, err, "Can't update watched dirs")
 
 	// GPT.ini version was updated on the removed directory
-	waitForWrites(t)
+	testutils.WaitForWrites(t)
 	assertGPTVersionEquals(t, destRemove, 3)
 	assertGPTVersionEquals(t, destKeep, 2)
 	assertGPTVersionEquals(t, destAdd, 2)
@@ -302,7 +302,7 @@ func TestUpdateDirs(t *testing.T) {
 	require.NoError(t, err, "Can't stop watcher")
 
 	// compare GPT.ini version: only keep and add should be updated
-	waitForWrites(t)
+	testutils.WaitForWrites(t)
 	assertGPTVersionEquals(t, destKeep, 3)
 	assertGPTVersionEquals(t, destAdd, 3)
 	assertGPTVersionEquals(t, destRemove, 3) // remove was already 3
@@ -347,7 +347,7 @@ func TestUpdateDirsFailing(t *testing.T) {
 	require.NoError(t, err, "Can't stop watcher")
 
 	// compare GPT.ini version: only keep and add should be updated
-	waitForWrites(t)
+	testutils.WaitForWrites(t)
 	assertGPTVersionEquals(t, destKeep, 3)
 	assertGPTVersionEquals(t, destRemove, 3)
 }
@@ -368,7 +368,7 @@ func TestStopWithoutStart(t *testing.T) {
 func assertGPTVersionEquals(t *testing.T, path string, version int) {
 	t.Helper()
 
-	waitForWrites(t)
+	testutils.WaitForWrites(t)
 	gptfile := filepath.Join(path, "gpt.ini")
 
 	// Wait for GPT.ini to be created
@@ -395,7 +395,7 @@ func assertGPTVersionEquals(t *testing.T, path string, version int) {
 func assertGPTVersionError(t *testing.T, path string) {
 	t.Helper()
 
-	waitForWrites(t)
+	testutils.WaitForWrites(t)
 	gptfile := filepath.Join(path, "gpt.ini")
 
 	// Wait for GPT.ini to be created
@@ -419,7 +419,7 @@ func writeToFiles(t *testing.T, files []string) {
 		err := os.WriteFile(file, []byte("new content"), 0600)
 		require.NoError(t, err, "Can't write to file")
 	}
-	waitForWrites(t)
+	testutils.WaitForWrites(t)
 }
 
 type mockService struct{}

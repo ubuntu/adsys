@@ -3,7 +3,6 @@ package commands
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -156,13 +155,8 @@ This can be done via the Services UI or by running: adwatchd service uninstall`)
 
 	a.viper = viper.New()
 
+	cmdhandler.InstallConfigFlag(&a.rootCmd)
 	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
-	a.rootCmd.PersistentFlags().StringP(
-		"config",
-		"c",
-		defaultConfigPath(),
-		i18n.G("`path` to config file"),
-	)
 
 	// Install subcommands
 	a.installRun()
@@ -170,14 +164,6 @@ This can be done via the Services UI or by running: adwatchd service uninstall`)
 	a.installVersion()
 
 	return &a
-}
-
-func defaultConfigPath() string {
-	binPath, err := os.Executable()
-	if err != nil {
-		log.Warningf(context.Background(), i18n.G("failed to get executable path, using relative path for default config: %v"), err)
-	}
-	return filepath.Join(filepath.Dir(binPath), "adwatchd.yml")
 }
 
 // Run executes the app.

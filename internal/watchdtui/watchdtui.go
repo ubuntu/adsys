@@ -62,8 +62,10 @@ type installMsg struct {
 func (m model) installService(confFile string, dirsMap map[string]struct{}) tea.Cmd {
 	return func() tea.Msg {
 		// If the user typed in a directory, create the config file inside it
-		if stat, err := os.Stat(confFile); confFile == "" || err == nil && stat.IsDir() {
-			confFile = filepath.Join(confFile, "adwatchd.yml")
+		if confFile != "" {
+			if stat, err := os.Stat(confFile); err == nil && stat.IsDir() {
+				confFile = filepath.Join(confFile, "adwatchd.yml")
+			}
 		}
 
 		// Convert directories to a string slice
@@ -126,7 +128,7 @@ func initialModel(configFile string, isDefault bool) model {
 		inputs:        make([]textinput.Model, dirCount+1),
 		spinner:       s,
 		typing:        true,
-		defaultConfig: configFile,
+		defaultConfig: watchdhelpers.DefaultConfigPath(),
 	}
 
 	var t textinput.Model

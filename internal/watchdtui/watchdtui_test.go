@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adwatchd/commands"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	"github.com/ubuntu/adsys/internal/testutils"
 	"github.com/ubuntu/adsys/internal/watchdservice"
 	"github.com/ubuntu/adsys/internal/watchdtui"
 	"gopkg.in/yaml.v2"
@@ -30,6 +31,10 @@ var (
 func TestInteractiveInput(t *testing.T) {
 	// Simulate a color terminal
 	lipgloss.SetColorProfile(termenv.ANSI256)
+
+	binPath, err := os.Executable()
+	require.NoError(t, err, "can't get executable directory")
+	binDir := filepath.Dir(binPath)
 
 	tests := map[string]struct {
 		events        []tea.Msg
@@ -195,7 +200,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
-			cfgToValidate: "adwatchd.yml",
+			cfgToValidate: filepath.Join(binDir, "adwatchd.yml"),
 		},
 		"submit with fresh config in current directory": {
 			events: []tea.Msg{
@@ -242,7 +247,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
-			cfgToValidate: "adwatchd.yml",
+			cfgToValidate: filepath.Join(binDir, "adwatchd.yml"),
 		},
 		"submit with directory as config input": {
 			events: []tea.Msg{
@@ -267,7 +272,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/"},
-			cfgToValidate: "adwatchd.yml",
+			cfgToValidate: filepath.Join(binDir, "adwatchd.yml"),
 		},
 		"submit with double dot directories is normalized": {
 			events: []tea.Msg{
@@ -278,7 +283,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/baz/"},
-			cfgToValidate: "adwatchd.yml",
+			cfgToValidate: filepath.Join(binDir, "adwatchd.yml"),
 		},
 
 		// Other navigation behaviors
@@ -305,6 +310,11 @@ func TestInteractiveInput(t *testing.T) {
 		tc := tc
 		goldDir, _ := filepath.Abs(filepath.Join("testdata", "golden"))
 		t.Run(name, func(t *testing.T) {
+			t.Cleanup(func() {
+				os.Remove(filepath.Join(binDir, "adwatchd.yml"))
+				testutils.WaitForWrites(t, binDir)
+			})
+
 			var err error
 
 			goldPath := filepath.Join(goldDir, strings.Replace(name, " ", "_", -1))
@@ -329,11 +339,11 @@ func TestInteractiveInput(t *testing.T) {
 			if len(tc.configDirs) > 0 {
 				data, err := yaml.Marshal(&watchdtui.AppConfig{Dirs: tc.configDirs})
 				require.NoError(t, err, "could not marshal config")
-				err = os.WriteFile("adwatchd.yml", data, 0600)
+				err = os.WriteFile(filepath.Join(binDir, "adwatchd.yml"), data, 0600)
 				require.NoError(t, err, "could not write previous config")
 			}
 
-			m, _ := watchdtui.InitialModelForTests(!tc.configOverride).Update(nil)
+			m, _ := watchdtui.InitialModelForTests(filepath.Join(binDir, "adwatchd.yml"), !tc.configOverride).Update(nil)
 
 			for _, e := range tc.events {
 				keyMsg, ok := e.(tea.KeyMsg)
@@ -499,7 +509,12 @@ func parseOutput(t *testing.T, out string) string {
 	cwd, err := os.Getwd()
 	require.NoError(t, err, "can't get current directory")
 
-	cwd = filepath.ToSlash(cwd)
+	binPath, err := os.Executable()
+	require.NoError(t, err, "can't get executable directory")
+
+	// Replace executable directory with a deterministic placeholder
+	out = strings.Replace(out, filepath.Dir(binPath), "#BINDIR#", -1)
+
 	// Normalize backslashes to slashes
 	out = strings.Replace(out, "\\", "/", -1)
 
@@ -507,7 +522,9 @@ func parseOutput(t *testing.T, out string) string {
 	out = strings.Replace(out, "\r", "/", -1)
 
 	// Replace cwd with a deterministic placeholder
+	cwd = filepath.ToSlash(cwd)
 	out = strings.Replace(out, cwd, "#ABSPATH#", -1)
+
 	return out
 }
 

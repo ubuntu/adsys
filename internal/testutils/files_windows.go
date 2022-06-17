@@ -1,4 +1,4 @@
-package watcher_test
+package testutils
 
 import (
 	"os"
@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-// waitForWrites waits for test I/O to be picked up.
+// WaitForWrites waits for test I/O to be picked up.
 //
 // Windows doesn't have a syscall.Sync function, so the next best thing to do is
 // to force a walk of the directory to make sure the writes are picked up.
 // Otherwise the watcher could detect changes just as soon as it starts walking
 // paths.
-func waitForWrites(t *testing.T, dirs ...string) {
+func WaitForWrites(t *testing.T, dirs ...string) {
 	t.Helper()
 
 	for _, dir := range dirs {

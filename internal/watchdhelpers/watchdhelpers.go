@@ -1,12 +1,14 @@
 package watchdhelpers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"gopkg.in/yaml.v2"
 )
@@ -94,4 +96,12 @@ func GetConfigFileFromArgs(args string) (string, error) {
 	// config file contains spaces)
 	configFile = strings.Trim(configFile, `" `)
 	return configFile, nil
+}
+
+func DefaultConfigPath() string {
+	binPath, err := os.Executable()
+	if err != nil {
+		log.Warningf(context.Background(), i18n.G("failed to get executable path, using relative path for default config: %v"), err)
+	}
+	return filepath.Join(filepath.Dir(binPath), "adwatchd.yml")
 }
