@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
@@ -54,6 +56,12 @@ func Init(name string, rootCmd cobra.Command, vip *viper.Viper, configChanged fu
 		vip.AddConfigPath("./")
 		vip.AddConfigPath("$HOME/")
 		vip.AddConfigPath("/etc/")
+		// Add the executable path to the config search path.
+		if binPath, err := os.Executable(); err != nil {
+			log.Warningf(context.Background(), i18n.G("Failed to get current executable path, not adding it as a config dir: %v"), err)
+		} else {
+			vip.AddConfigPath(filepath.Dir(binPath))
+		}
 	}
 
 	if err := vip.ReadInConfig(); err != nil {
