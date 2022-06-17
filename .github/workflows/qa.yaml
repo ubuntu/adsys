@@ -45,6 +45,8 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
+    env:
+      sudo_packages: ./cmd/adwatchd/integration_tests ./internal/watchdtui
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v3
@@ -70,7 +72,7 @@ jobs:
           ADSYS_SKIP_SUDO_TESTS=1 go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=count ./...
 
           # Run integration tests that need sudo
-          sudo -E go test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=count ./cmd/adwatchd/integration_tests ./internal/watchdtui
+          sudo -E go test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=count ${{ env.sudo_packages }}
 
           # Combine coverage files, and filter out test utilities and generated files
           echo "mode: set" > /tmp/coverage.txt
@@ -78,7 +80,7 @@ jobs:
       - name: Run tests (with race detector)
         run: |
           ADSYS_SKIP_SUDO_TESTS=1 go test -race ./...
-          sudo -E go test -race ./cmd/adwatchd/integration_tests ./internal/watchdtui
+          sudo -E go test -race ${{ env.sudo_packages }}
       - name: Install curl for codecov
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
