@@ -9,11 +9,11 @@ import (
 	"time"
 
 	"github.com/kardianos/service"
+	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/loghooks"
-	"github.com/ubuntu/adsys/internal/watchdhelpers"
 	"github.com/ubuntu/adsys/internal/watcher"
 )
 
@@ -314,12 +314,12 @@ func (s *WatchdService) getServiceInfoFromArgs() (serviceInfo, error) {
 	}
 	svcInfo.binPath = binPath
 
-	configFile, err := watchdhelpers.GetConfigFileFromArgs(args)
+	configFile, err := watchdconfig.GetConfigFileFromArgs(args)
 	if err != nil {
 		return svcInfo, fmt.Errorf(i18n.G("failed to get config file from args: %v"), err)
 	}
 	svcInfo.configFile = configFile
-	svcInfo.dirs = watchdhelpers.GetDirsFromConfigFile(configFile)
+	svcInfo.dirs = watchdconfig.GetDirsFromConfigFile(configFile)
 
 	return svcInfo, nil
 }

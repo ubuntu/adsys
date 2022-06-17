@@ -11,9 +11,9 @@ import (
 	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
+	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/watchdhelpers"
 	"github.com/ubuntu/adsys/internal/watchdservice"
 	"github.com/ubuntu/adsys/internal/watchdtui"
 	"golang.org/x/exp/slices"
@@ -24,7 +24,7 @@ type App struct {
 	rootCmd cobra.Command
 	viper   *viper.Viper
 
-	config  watchdhelpers.AppConfig
+	config  watchdconfig.AppConfig
 	service *watchdservice.WatchdService
 	options options
 
@@ -65,7 +65,7 @@ func New(opts ...option) *App {
 			err := config.Init("adwatchd", a.rootCmd, a.viper, func(refreshed bool) error {
 				a.configMu.Lock()
 				defer a.configMu.Unlock()
-				var newConfig watchdhelpers.AppConfig
+				var newConfig watchdconfig.AppConfig
 				if err := config.LoadConfig(&newConfig, a.viper); err != nil {
 					return err
 				}

@@ -1,4 +1,4 @@
-package watchdhelpers
+package watchd
 
 import (
 	"context"
@@ -98,6 +98,8 @@ func GetConfigFileFromArgs(args string) (string, error) {
 	return configFile, nil
 }
 
+// DefaultConfigPath returns the default path to the config file inferred from
+// the current executable directory.
 func DefaultConfigPath() string {
 	binPath, err := os.Executable()
 	if err != nil {

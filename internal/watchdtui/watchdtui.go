@@ -13,8 +13,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/watchdhelpers"
 	"github.com/ubuntu/adsys/internal/watchdservice"
 	"golang.org/x/exp/slices"
 )
@@ -82,7 +82,7 @@ func (m model) installService(confFile string, dirsMap map[string]struct{}) tea.
 			confFile = m.defaultConfig
 		}
 
-		if err := watchdhelpers.WriteConfig(confFile, dirs); err != nil {
+		if err := watchdconfig.WriteConfig(confFile, dirs); err != nil {
 			return installMsg{err}
 		}
 
@@ -116,8 +116,8 @@ func initialModel(configFile string, isDefault bool) model {
 	s.Spinner = spinner.Dot
 
 	// Attempt to read directories from the config file
-	previousDirs := watchdhelpers.GetDirsFromConfigFile(configFile)
-	previousDirs = watchdhelpers.FilterAbsentDirs(previousDirs)
+	previousDirs := watchdconfig.GetDirsFromConfigFile(configFile)
+	previousDirs = watchdconfig.FilterAbsentDirs(previousDirs)
 	if len(previousDirs) > 0 {
 		dirCount = len(previousDirs)
 	}
@@ -128,7 +128,7 @@ func initialModel(configFile string, isDefault bool) model {
 		inputs:        make([]textinput.Model, dirCount+1),
 		spinner:       s,
 		typing:        true,
-		defaultConfig: watchdhelpers.DefaultConfigPath(),
+		defaultConfig: watchdconfig.DefaultConfigPath(),
 	}
 
 	var t textinput.Model

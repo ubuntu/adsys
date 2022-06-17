@@ -1,4 +1,4 @@
-package watchdhelpers_test
+package watchd_test
 
 import (
 	"flag"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/watchdhelpers"
+	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"gopkg.in/yaml.v2"
 )
 
@@ -30,7 +30,7 @@ func TestGetConfigFileFromArgs(t *testing.T) {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			got, err := watchdhelpers.GetConfigFileFromArgs(tc.args)
+			got, err := watchdconfig.GetConfigFileFromArgs(tc.args)
 			if tc.wantErr {
 				require.Error(t, err)
 			} else {
@@ -65,7 +65,7 @@ func TestGetDirsFromConfigFile(t *testing.T) {
 
 			goldPath := filepath.Join("testdata", "golden", strings.Replace(name, " ", "_", -1))
 			if update {
-				appConfig := watchdhelpers.AppConfig{Dirs: tc.wantDirs}
+				appConfig := watchdconfig.AppConfig{Dirs: tc.wantDirs}
 
 				// Handle error cases
 				if tc.noConfig {
@@ -90,7 +90,7 @@ func TestGetDirsFromConfigFile(t *testing.T) {
 					require.NoError(t, err, "failed to write config")
 				}
 			}
-			got := watchdhelpers.GetDirsFromConfigFile(goldPath)
+			got := watchdconfig.GetDirsFromConfigFile(goldPath)
 			require.ElementsMatch(t, tc.wantDirs, got)
 		})
 	}
@@ -115,7 +115,7 @@ func TestFilterAbsentDirs(t *testing.T) {
 			for _, dir := range tc.existingDirs {
 				require.NoError(t, os.MkdirAll(dir, 0750), "failed to create existing dirs")
 			}
-			got := watchdhelpers.FilterAbsentDirs(tc.inputDirs)
+			got := watchdconfig.FilterAbsentDirs(tc.inputDirs)
 			require.ElementsMatch(t, tc.wantDirs, got)
 		})
 	}
@@ -155,7 +155,7 @@ func TestWriteConfig(t *testing.T) {
 			}
 
 			if update {
-				appConfig := watchdhelpers.AppConfig{Dirs: tc.dirs}
+				appConfig := watchdconfig.AppConfig{Dirs: tc.dirs}
 
 				// If we want an error, we don't need to write the config file
 				if !tc.wantErr {
@@ -172,13 +172,13 @@ func TestWriteConfig(t *testing.T) {
 				configPath = filepath.Join("path", "to", "adwatchd.yml")
 			}
 
-			error := watchdhelpers.WriteConfig(configPath, tc.dirs)
+			error := watchdconfig.WriteConfig(configPath, tc.dirs)
 			if tc.wantErr {
 				require.Error(t, error, "expected error")
 			} else {
 				require.NoError(t, error, "unexpected error")
 
-				got := watchdhelpers.GetDirsFromConfigFile(goldPath)
+				got := watchdconfig.GetDirsFromConfigFile(goldPath)
 				require.ElementsMatch(t, tc.dirs, got)
 			}
 		})

@@ -94,7 +94,7 @@ jobs:
     name: Windows tests for adwatchd
     runs-on: windows-latest
     env:
-      packages: ./internal/loghooks ./internal/watchdservice ./internal/watchdtui ./internal/watcher ./internal/watchdhelpers ./cmd/adwatchd/integration_tests
+      packages: ./internal/loghooks ./internal/watchdservice ./internal/watchdtui ./internal/watcher ./internal/config/watchd ./cmd/adwatchd/integration_tests
     steps:
       - uses: actions/checkout@v2
         with:
