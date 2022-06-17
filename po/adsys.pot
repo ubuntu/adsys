@@ -40,7 +40,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:244
+#: internal/ad/admxgen/admxgen.go:246
 #, c-format
 msgid ""
 "%s\n"
@@ -61,7 +61,7 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:413
+#: internal/policies/dconf/dconf.go:416
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -69,7 +69,7 @@ msgstr ""
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:291
+#: internal/ad/admxgen/admxgen.go:292
 #, c-format
 msgid "%s needs a default policy class"
 msgstr ""
@@ -119,13 +119,13 @@ msgid ""
 "\n"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:203
+#: internal/ad/admxgen/admxgen.go:204
 #, c-format
 msgid "- Default for %s: %s"
 msgstr ""
 
 #. All defaults are the same and not empty
-#: internal/ad/admxgen/admxgen.go:240
+#: internal/ad/admxgen/admxgen.go:242
 #, c-format
 msgid "- Default: %s"
 msgstr ""
@@ -138,11 +138,11 @@ msgstr ""
 msgid "- error on %s: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:152
+#: cmd/adsysd/daemon/daemon.go:153
 msgid "AD default domain suffix to use. This overrides parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:150
+#: cmd/adsysd/daemon/daemon.go:151
 msgid "AD domain to use. This overrides parsing sssd.conf"
 msgstr ""
 
@@ -245,6 +245,11 @@ msgstr ""
 
 #: internal/grpc/grpcerror/grpcerror.go:34
 msgid "Error from server: %v"
+msgstr ""
+
+#: internal/config/config.go:61
+msgid ""
+"Failed to get current executable path, not adding it as a config dir: %v"
 msgstr ""
 
 #: cmd/adsysd/client/doc.go:54
@@ -358,12 +363,12 @@ msgstr ""
 msgid "Stopping daemon requested."
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:190
+#: internal/ad/admxgen/admxgen.go:191
 #, c-format
 msgid "Supported on %s %s"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:148
+#: cmd/adsysd/daemon/daemon.go:149
 msgid "URL of the Active Directory server. This overrides parsing sssd.conf."
 msgstr ""
 
@@ -452,7 +457,7 @@ msgstr ""
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:453 internal/ad/admxgen/admxgen.go:466
+#: internal/ad/admxgen/admxgen.go:454 internal/ad/admxgen/admxgen.go:467
 msgid "can't create admx file: %v"
 msgstr ""
 
@@ -464,7 +469,7 @@ msgstr ""
 msgid "can't create daemon"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:442
+#: internal/ad/admxgen/admxgen.go:443
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
@@ -497,7 +502,7 @@ msgstr ""
 msgid "can't created new policies"
 msgstr ""
 
-#: internal/ad/registry/registry.go:281
+#: internal/ad/registry/registry.go:297
 msgid "can't decode meta value for %s: %v"
 msgstr ""
 
@@ -513,7 +518,7 @@ msgstr ""
 msgid "can't download all gpos and assets"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:425
+#: internal/ad/admxgen/admxgen.go:426
 msgid "can't generate ADMX files"
 msgstr ""
 
@@ -521,7 +526,7 @@ msgstr ""
 msgid "can't generate dconf expanded policies"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:98
+#: internal/ad/admxgen/admxgen.go:99
 msgid "can't generate expanded categories"
 msgstr ""
 
@@ -563,7 +568,7 @@ msgstr ""
 msgid "can't load category definition"
 msgstr ""
 
-#: internal/config/config.go:40
+#: internal/config/config.go:42
 msgid "can't load configuration"
 msgstr ""
 
@@ -572,7 +577,7 @@ msgstr ""
 msgid "can't load server info from %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:417
+#: internal/policies/dconf/dconf.go:420
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
@@ -616,7 +621,7 @@ msgstr ""
 msgid "can't serve"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:216
+#: internal/policies/dconf/dconf.go:217
 #, c-format
 msgid "can't update user profile %s"
 msgstr ""
@@ -706,11 +711,11 @@ msgstr ""
 msgid "destination %q already exists"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:140
+#: cmd/adsysd/daemon/daemon.go:141
 msgid "directory where ADsys caches GPOs downloads and policies."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:142
+#: cmd/adsysd/daemon/daemon.go:143
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
@@ -726,7 +731,7 @@ msgstr ""
 msgid "download %q failed"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:408
+#: internal/policies/dconf/dconf.go:411
 msgid "empty signature for %v"
 msgstr ""
 
@@ -740,7 +745,7 @@ msgstr ""
 msgid "error opening raw connection: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:405
+#: internal/policies/dconf/dconf.go:408
 msgid "error while checking signature"
 msgstr ""
 
@@ -821,11 +826,11 @@ msgstr ""
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:262
+#: internal/ad/admxgen/admxgen.go:263
 msgid "failed to marshal disabled meta data"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:255
+#: internal/ad/admxgen/admxgen.go:253
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
@@ -881,7 +886,7 @@ msgstr ""
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
-#: internal/ad/registry/registry.go:168
+#: internal/ad/registry/registry.go:179
 msgid "invalid policy"
 msgstr ""
 
@@ -987,7 +992,7 @@ msgstr ""
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:306
+#: internal/ad/admxgen/admxgen.go:307
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
@@ -1033,23 +1038,23 @@ msgid ""
 "socket activation."
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:281
+#: internal/ad/admxgen/admxgen.go:282
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:352
+#: internal/ad/admxgen/admxgen.go:353
 msgid "the following policies have not been assigned to a category: %v"
 msgstr ""
 
-#: cmd/adsysd/client/client.go:89
+#: cmd/adsysd/client/client.go:92
 msgid ""
 "time in seconds before cancelling the client request when the server gives "
 "no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:145
+#: cmd/adsysd/daemon/daemon.go:146
 msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
