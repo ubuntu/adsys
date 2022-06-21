@@ -111,7 +111,7 @@ To load completions for every new session, execute once:
 
 ###### macOS:
 
-	adsysctl completion bash > /usr/local/etc/bash_completion.d/adsysctl
+	adsysctl completion bash > $(brew --prefix)/etc/bash_completion.d/adsysctl
 
 You will need to start a new shell for this setup to take effect.
 
@@ -224,6 +224,10 @@ to enable it.  You can execute the following once:
 
 	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
+To load completions in your current shell session:
+
+	source <(adsysctl completion zsh); compdef _adsysctl adsysctl
+
 To load completions for every new session, execute once:
 
 ###### Linux:
@@ -232,7 +236,7 @@ To load completions for every new session, execute once:
 
 ###### macOS:
 
-	adsysctl completion zsh > /usr/local/share/zsh/site-functions/_adsysctl
+	adsysctl completion zsh > $(brew --prefix)/share/zsh/site-functions/_adsysctl
 
 You will need to start a new shell for this setup to take effect.
 
@@ -605,7 +609,7 @@ To load completions for every new session, execute once:
 
 ###### macOS:
 
-	adsysd completion bash > /usr/local/etc/bash_completion.d/adsysd
+	adsysd completion bash > $(brew --prefix)/etc/bash_completion.d/adsysd
 
 You will need to start a new shell for this setup to take effect.
 
@@ -733,6 +737,10 @@ to enable it.  You can execute the following once:
 
 	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
+To load completions in your current shell session:
+
+	source <(adsysd completion zsh); compdef _adsysd adsysd
+
 To load completions for every new session, execute once:
 
 ###### Linux:
@@ -741,7 +749,7 @@ To load completions for every new session, execute once:
 
 ###### macOS:
 
-	adsysd completion zsh > /usr/local/share/zsh/site-functions/_adsysd
+	adsysd completion zsh > $(brew --prefix)/share/zsh/site-functions/_adsysd
 
 You will need to start a new shell for this setup to take effect.
 
