@@ -7,9 +7,6 @@ on:
       - po/*
       - README.md
 
-env:
-  goversion: '1.18'
-
 jobs:
   update-po:
     name: Update po files
@@ -28,9 +25,10 @@ jobs:
         with:
           ref: main
       # Install go
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.goversion }}
+          go-version-file: go.mod
+          cache: true
       # Update po if needed
       - name: Check po files
         id: checkpo
@@ -79,9 +77,10 @@ jobs:
         with:
           ref: main
       # Install go
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.goversion }}
+          go-version-file: go.mod
+          cache: true
       # Try updating README
       - name: Check README file
         id: checkreadme

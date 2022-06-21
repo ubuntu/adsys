@@ -5,9 +5,6 @@ on:
     - main
   pull_request:
 
-env:
-  goversion: '1.18'
-
 jobs:
   quality:
     name: Code quality and mod files up to date
@@ -48,10 +45,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Setup go
-        uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.goversion }}
+          go-version-file: go.mod
+          cache: true
       # We add a new user and execute under it for file permissions to be taken into account
       # as root can write in RO directories.
       - name: Install dependencies
@@ -96,10 +93,10 @@ jobs:
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v2
-      - name: Setup go
-        uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.goversion }}
+          go-version-file: go.mod
+          cache: true
       - name: Install go grpc protoc generator
         run: |
           set -eu
