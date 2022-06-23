@@ -48,11 +48,6 @@ type model struct {
 	dryrun bool
 }
 
-type appConfig struct {
-	Verbose int
-	Dirs    []string
-}
-
 type installMsg struct {
 	err error
 }
@@ -64,7 +59,7 @@ func (m model) installService(confFile string, dirsMap map[string]struct{}) tea.
 		// If the user typed in a directory, create the config file inside it
 		if confFile != "" {
 			if stat, err := os.Stat(confFile); err == nil && stat.IsDir() {
-				confFile = filepath.Join(confFile, "adwatchd.yml")
+				confFile = filepath.Join(confFile, fmt.Sprintf("%s.yaml", watchdconfig.CmdName))
 			}
 		}
 
@@ -93,7 +88,7 @@ func (m model) installService(confFile string, dirsMap map[string]struct{}) tea.
 
 		svc, err := watchdservice.New(
 			context.Background(),
-			watchdservice.WithArgs([]string{"-c", configAbsPath}),
+			watchdservice.WithConfig(configAbsPath),
 		)
 		if err != nil {
 			return installMsg{err}
@@ -116,8 +111,7 @@ func initialModel(configFile string, isDefault bool) model {
 	s.Spinner = spinner.Dot
 
 	// Attempt to read directories from the config file
-	previousDirs := watchdconfig.GetDirsFromConfigFile(configFile)
-	previousDirs = watchdconfig.FilterAbsentDirs(previousDirs)
+	previousDirs := watchdconfig.DirsFromConfigFile(context.Background(), configFile)
 	if len(previousDirs) > 0 {
 		dirCount = len(previousDirs)
 	}
@@ -276,7 +270,6 @@ func (m model) Update(teaMsg tea.Msg) (tea.Model, tea.Cmd) {
 				m.typing = false
 				m.loading = true
 
-				//return m, m.installService(confFile, dirs)
 				return m, tea.Batch(m.spinner.Tick, m.installService(confFile, dirs))
 			}
 
@@ -383,9 +376,8 @@ func updateConfigInputError(input *textinput.Model) {
 
 	// If the config file does not exist, we're good
 	if errors.Is(err, os.ErrNotExist) {
-		if filepath.IsAbs(value) {
-			input.Err = nil
-		} else {
+		input.Err = nil
+		if !filepath.IsAbs(value) {
 			input.Err = fmt.Errorf(i18n.G("%s will be the absolute path"), absPath)
 		}
 		return
@@ -398,7 +390,7 @@ func updateConfigInputError(input *textinput.Model) {
 	}
 
 	if stat.IsDir() {
-		input.Err = fmt.Errorf(i18n.G("%s is a directory; will create adwatchd.yml inside"), absPath)
+		input.Err = fmt.Errorf(i18n.G("%s is a directory; will create %s.yaml inside"), absPath, watchdconfig.CmdName)
 		return
 	}
 
@@ -415,25 +407,25 @@ func (m *model) updateDirInputErrorAndStyle(i int) {
 	// We consider an empty string to be valid, so users are allowed to press
 	// enter on it.
 	if m.inputs[i].Value() == "" {
+		m.inputs[i].Err = nil
 		if len(m.inputs) == 2 {
 			m.inputs[i].Err = errors.New(i18n.G("please enter at least one directory"))
-		} else {
-			m.inputs[i].Err = nil
 		}
 		return
 	}
 
 	// Check to see if the input exists, and if it is a directory
 	absPath, _ := filepath.Abs(m.inputs[i].Value())
+
+	m.inputs[i].Err = nil
+	m.inputs[i].TextStyle = successStyle
+
 	if stat, err := os.Stat(absPath); err != nil {
 		m.inputs[i].Err = fmt.Errorf(i18n.G("%s: directory does not exist, please enter a valid path"), absPath)
 		m.inputs[i].TextStyle = noStyle
 	} else if !stat.IsDir() {
 		m.inputs[i].Err = fmt.Errorf(i18n.G("%s: is not a directory"), absPath)
 		m.inputs[i].TextStyle = noStyle
-	} else {
-		m.inputs[i].Err = nil
-		m.inputs[i].TextStyle = successStyle
 	}
 }
 
@@ -447,54 +439,52 @@ func (m model) View() string {
 		return fmt.Sprintf(i18n.G("Could not install service: %v\n"), err)
 	}
 
-	if m.typing {
-		var b strings.Builder
-
-		b.WriteString(titleStyle.Render(i18n.G("Ubuntu AD Watch Daemon Installer")))
-		b.WriteString("\n\n")
-
-		// Display config input and hint
-		b.WriteString(m.inputs[0].View())
-		if m.inputs[0].Err != nil {
-			b.WriteRune('\n')
-			b.WriteString(hintStyle.Render(m.inputs[0].Err.Error()))
-			b.WriteString("\n\n")
-		} else {
-			b.WriteString("\n\n\n")
-		}
-
-		directoriesMsg := i18n.G("Directories:")
-		if m.focusIndex > 0 && m.focusIndex < len(m.inputs) {
-			b.WriteString(focusedStyle.Render(directoriesMsg))
-		} else {
-			b.WriteString(boldStyle.Render(directoriesMsg))
-		}
-		b.WriteRune('\n')
-
-		// Display directory inputs
-		for i, v := range m.inputs[1:] {
-			_, _ = b.WriteString(v.View())
-			if i < len(m.inputs)-1 {
-				_, _ = b.WriteRune('\n')
-			}
-		}
-
-		// Display directory error if any
-		if m.focusIndex > 0 && m.focusIndex < len(m.inputs) && m.inputs[m.focusIndex].Err != nil {
-			b.WriteString(hintStyle.Render(m.inputs[m.focusIndex].Err.Error()))
-		}
-
-		// Display button
-		button := &blurredButton
-		if m.focusIndex == len(m.inputs) {
-			button = &focusedButton
-		}
-		_, _ = fmt.Fprintf(&b, "\n\n%s\n", *button)
-
-		return b.String()
+	if !m.typing {
+		return fmt.Sprintln(i18n.G("Service adwatchd was successfully installed and is now running."))
 	}
 
-	return fmt.Sprintln(i18n.G("Service adwatchd was successfully installed and is now running."))
+	var b strings.Builder
+
+	b.WriteString(titleStyle.Render(i18n.G("Ubuntu AD Watch Daemon Installer")))
+	b.WriteString("\n\n")
+
+	// Display config input and hint
+	b.WriteString(m.inputs[0].View())
+	b.WriteRune('\n')
+	if m.inputs[0].Err != nil {
+		b.WriteString(hintStyle.Render(m.inputs[0].Err.Error()))
+	}
+	b.WriteString("\n\n")
+
+	directoriesMsg := i18n.G("Directories:")
+	if m.focusIndex > 0 && m.focusIndex < len(m.inputs) {
+		b.WriteString(focusedStyle.Render(directoriesMsg))
+	} else {
+		b.WriteString(boldStyle.Render(directoriesMsg))
+	}
+	b.WriteRune('\n')
+
+	// Display directory inputs
+	for i, v := range m.inputs[1:] {
+		_, _ = b.WriteString(v.View())
+		if i < len(m.inputs)-1 {
+			_, _ = b.WriteRune('\n')
+		}
+	}
+
+	// Display directory error if any
+	if m.focusIndex > 0 && m.focusIndex < len(m.inputs) && m.inputs[m.focusIndex].Err != nil {
+		b.WriteString(hintStyle.Render(m.inputs[m.focusIndex].Err.Error()))
+	}
+
+	// Display button
+	button := &blurredButton
+	if m.focusIndex == len(m.inputs) {
+		button = &focusedButton
+	}
+	_, _ = fmt.Fprintf(&b, "\n\n%s\n", *button)
+
+	return b.String()
 }
 
 // Start starts the interactive TUI.

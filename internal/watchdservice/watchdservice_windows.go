@@ -9,9 +9,9 @@ import (
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
-// getServiceArgs returns the absolute binary path and the full command line
+// serviceArgs returns the absolute binary path and the full command line
 // arguments for the service.
-func (s *WatchdService) getServiceArgs() (string, string, error) {
+func (s *WatchdService) serviceArgs() (string, string, error) {
 	m, err := lowPrivMgr()
 	if err != nil {
 		return "", "", fmt.Errorf("failed to get low-privilege service manager: %v", err)
@@ -47,7 +47,7 @@ func lowPrivMgr() (*mgr.Mgr, error) {
 	return &mgr.Mgr{Handle: h}, nil
 }
 
-// lowPrivMgr returns a low-privilege Windows Service instance that can only
+// lowPrivSvc returns a low-privilege Windows Service instance that can only
 // query its state and query parameters.
 func lowPrivSvc(m *mgr.Mgr, name string) (*mgr.Service, error) {
 	h, err := windows.OpenService(

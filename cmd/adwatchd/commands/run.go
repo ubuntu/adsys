@@ -7,6 +7,7 @@ import (
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
+	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -30,10 +31,10 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 			// Exit early if we are interactive and have a service with the same name running.
 			if service.Interactive() {
 				if status, _ := a.service.Status(context.Background()); strings.Contains(status, "running") {
-					msg := "another instance of adwatchd is already running"
+					msg := fmt.Sprintf(i18n.G("another instance of the %s service is already running"), watchdconfig.CmdName)
 
 					if !a.config.Force {
-						return fmt.Errorf(i18n.G(msg + ", use --force to override"))
+						return fmt.Errorf(i18n.G("%s, use --force to override"), msg)
 					}
 					log.Warningf(context.Background(), i18n.G(msg))
 				}
@@ -51,6 +52,7 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 		[]string{},
 		i18n.G("a `directory` to check for changes (can be specified multiple times)"),
 	)
+	decorate.LogOnError(a.viper.BindPFlag("dirs", cmd.Flags().Lookup("dirs")))
 
 	cmd.Flags().BoolP(
 		"force",
@@ -58,7 +60,6 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 		false,
 		i18n.G("force the program to run even if another instance is already running"),
 	)
-	decorate.LogOnError(a.viper.BindPFlag("dirs", cmd.Flags().Lookup("dirs")))
 	decorate.LogOnError(a.viper.BindPFlag("force", cmd.Flags().Lookup("force")))
 
 	a.rootCmd.AddCommand(cmd)

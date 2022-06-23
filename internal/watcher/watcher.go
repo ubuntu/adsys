@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	gptFileName = "gpt.ini"
+	gptFileName = "GPT.INI"
 )
 
 const (
@@ -36,7 +36,7 @@ type Watcher struct {
 }
 
 type command struct {
-	ctx    context.Context
+	ctx    *context.Context
 	action int
 	dirs   []string
 }
@@ -80,10 +80,11 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 			case startCmd:
 				// Start from service doesn't pass a context explicitly
 				parentCtx := c.ctx
-				if parentCtx == context.TODO() {
-					parentCtx = ctx
+				if parentCtx == nil {
+					ctx, cancel = context.WithCancel(ctx)
+				} else {
+					ctx, cancel = context.WithCancel(*parentCtx)
 				}
-				ctx, cancel = context.WithCancel(parentCtx)
 
 				// Start from service doesn't pass dirs explicitly
 				dirs := c.dirs
@@ -132,22 +133,22 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 // asynchronously. When our function exits, the service manager registers a
 // signal handler that calls Stop when a signal is received.
 func (w *Watcher) Start(s service.Service) (err error) {
-	decorate.OnError(&err, i18n.G("can't start service"))
+	defer decorate.OnError(&err, i18n.G("can't start service"))
 
-	return w.send(context.TODO(), startCmd, nil)
+	return w.send(nil, startCmd, nil)
 }
 
 // Stop is called by the service manager to stop the watcher service.
 // Documentation states that the function should not take more than a few
 // seconds to execute.
 func (w *Watcher) Stop(s service.Service) (err error) {
-	decorate.OnError(&err, i18n.G("can't stop service"))
+	defer decorate.OnError(&err, i18n.G("can't stop service"))
 
-	return w.send(context.TODO(), stopCmd, nil)
+	return w.send(nil, stopCmd, nil)
 }
 
 // stopWatch stops the watch loop.
-func (w *Watcher) send(ctx context.Context, action int, dirs []string) error {
+func (w *Watcher) send(ctx *context.Context, action int, dirs []string) error {
 	w.cmd <- command{
 		ctx:    ctx,
 		action: action,
@@ -159,25 +160,25 @@ func (w *Watcher) send(ctx context.Context, action int, dirs []string) error {
 // UpdateDirs restarts watch loop with new directories. No action is taken if
 // one or more directories do not exist.
 func (w *Watcher) UpdateDirs(ctx context.Context, dirs []string) (err error) {
-	decorate.OnError(&err, i18n.G("can't update directories to watch"))
+	defer decorate.OnError(&err, i18n.G("can't update directories to watch"))
+	log.Debugf(ctx, i18n.G("Updating directories to %v"), dirs)
+
 	for _, dir := range dirs {
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			return fmt.Errorf(i18n.G("directory %q does not exist"), dir)
 		}
 	}
 
-	log.Debugf(ctx, i18n.G("Updating directories to %v"), dirs)
-
-	if err := w.send(ctx, stopCmd, nil); err != nil {
+	if err := w.send(&ctx, stopCmd, nil); err != nil {
 		return err
 	}
 
-	return w.send(ctx, startCmd, dirs)
+	return w.send(&ctx, startCmd, dirs)
 }
 
 // watch is the main watch loop.
 func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- error) (err error) {
-	decorate.OnError(&err, i18n.G("can't watch over %v"), dirs)
+	defer decorate.OnError(&err, i18n.G("can't watch over %v"), dirs)
 
 	fsWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -209,7 +210,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			log.Debugf(ctx, i18n.G("Got event: %v"), event)
 
 			// If the modified file is our own change, ignore it.
-			if strings.ToLower(filepath.Base(event.Name)) == gptFileName {
+			if strings.EqualFold(filepath.Base(event.Name), gptFileName) {
 				continue
 			}
 
@@ -299,7 +300,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 
 // watchSubDirs walks a given directory and adds all subdirectories to the watch list.
 func watchSubDirs(ctx context.Context, fsWatcher *fsnotify.Watcher, path string) (err error) {
-	decorate.OnError(&err, i18n.G("can't watch directory and children of %s"), path)
+	defer decorate.OnError(&err, i18n.G("can't watch directory and children of %s"), path)
 	log.Debugf(ctx, i18n.G("Watching %s and children"), path)
 
 	err = filepath.WalkDir(path, func(p string, d os.DirEntry, err error) error {
@@ -351,14 +352,18 @@ func updateVersions(ctx context.Context, modifiedRootDirs []string) {
 
 // bumpVersion does the actual bumping of the version in the given GPT.ini file.
 func bumpVersion(ctx context.Context, path string) (err error) {
-	decorate.OnError(&err, i18n.G("can't bump version for %s"), path)
+	defer decorate.OnError(&err, i18n.G("can't bump version for %s"), path)
 	log.Infof(ctx, i18n.G("Bumping version for %s"), path)
 
+	// Windows-generated files do not have spaces around the equals sign.
+	if !ini.PrettyFormat {
+		ini.PrettyFormat = false
+	}
 	cfg, err := ini.Load(path)
 
 	// If the file doesn't exist, create it and initialize the key to be updated.
 	if err != nil {
-		log.Warningf(ctx, i18n.G("error loading ini contents: %v, creating a new file"), err)
+		log.Infof(ctx, i18n.G("error loading ini contents: %v, creating a new file"), err)
 		cfg = ini.Empty()
 		if _, err := cfg.Section("General").NewKey("Version", "0"); err != nil {
 			return err

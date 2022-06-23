@@ -18,25 +18,19 @@ func TestRunFailsWhenServiceIsRunning(t *testing.T) {
 	configPath := generateConfig(t, -1, watchDir)
 
 	app := commands.New(commands.WithServiceName(fmt.Sprintf("adwatchd-test-%s", t.Name())))
-	t.Cleanup(func() {
-		uninstallService(t, configPath, app)
-	})
 
 	installService(t, configPath, app)
 
 	changeAppArgs(t, app, configPath, "run")
 	err = app.Run()
-	require.ErrorContains(t, err, "another instance of adwatchd is already running", "Running second instance should fail")
+	require.ErrorContains(t, err, "another instance of the adwatchd service is already running", "Running second instance should fail")
 }
 
 func TestRunWithForceWhenServiceIsRunning(t *testing.T) {
 	watchDir := t.TempDir()
 	configPath := generateConfig(t, -1, watchDir)
 
-	app := commands.New(commands.WithServiceName("adwatchd-test-force"))
-	t.Cleanup(func() {
-		uninstallService(t, configPath, app)
-	})
+	app := commands.New(commands.WithServiceName(fmt.Sprintf("adwatchd-test-%s", t.Name())))
 
 	installService(t, configPath, app)
 
@@ -49,16 +43,15 @@ func TestRunWithForceWhenServiceIsRunning(t *testing.T) {
 	}()
 	app.WaitReady()
 
-	// Give time for the watcher itself to start
-	time.Sleep(time.Millisecond * 100)
-
 	err = app.Quit(syscall.SIGTERM)
 	require.NoError(t, err, "Quitting should succeed")
 	select {
 	case <-done:
 	case <-time.After(1 * time.Second):
-		// TODO: fix quitting on windows
-		// t.Fatal("run hasn't exited quickly enough")
+		// FIXME: fix quitting on windows
+		if runtime.GOOS != "windows" {
+			t.Fatal("run hasn't exited quickly enough")
+		}
 	}
 	require.NoError(t, appErr, "App should exit without error")
 }
@@ -91,9 +84,6 @@ func TestRunReactsToConfigUpdates(t *testing.T) {
 	}()
 	app.WaitReady()
 
-	// Give time for the watcher itself to start
-	time.Sleep(time.Millisecond * 500)
-
 	// Replace the config file to trigger reload
 	testutils.Copy(t, newConfigPath, configPath)
 
@@ -112,16 +102,15 @@ func TestRunReactsToConfigUpdates(t *testing.T) {
 	require.EqualValues(t, []string{newWatchDir}, app.Dirs(), "Watcher should not be updated with non-existent directory")
 	require.Equal(t, 3, app.Verbosity(), "Watcher should have updated verbosity")
 
-	// Give time for the watcher itself to start
-	time.Sleep(time.Millisecond * 500)
-
 	err = app.Quit(syscall.SIGTERM)
 	require.NoError(t, err, "Quitting should succeed")
 	select {
 	case <-done:
 	case <-time.After(1 * time.Second):
-		// TODO: fix quitting on windows
-		// t.Fatal("run hasn't exited quickly enough")
+		// FIXME: fix quitting on windows
+		if runtime.GOOS != "windows" {
+			t.Fatal("run hasn't exited quickly enough")
+		}
 	}
 	require.NoError(t, appErr, "App should exit without error")
 }
@@ -143,15 +132,12 @@ func TestRunCanQuitWithCtrlC(t *testing.T) {
 	}()
 	app.WaitReady()
 
-	// Give time for the watcher itself to start
-	time.Sleep(time.Millisecond * 100)
-
 	err = app.Quit(syscall.SIGTERM)
 	require.NoError(t, err, "Quitting should succeed")
 
 	select {
 	case <-done:
-	case <-time.After(5 * time.Second):
+	case <-time.After(1 * time.Second):
 		t.Fatal("run hasn't exited quickly enough")
 	}
 	require.NoError(t, appErr, "App should exit without error")

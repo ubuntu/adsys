@@ -2,7 +2,7 @@ package watchdtui
 
 // InitialModelForTests returns an instance of the initial model that will not
 // install the service.
-func InitialModelForTests(configFile string, isDefaultConfig bool) model {
+func InitialModelForTests(configFile string, isDefaultConfig bool) Model {
 	m := initialModel(configFile, isDefaultConfig)
 	m.dryrun = true
 	return m
@@ -10,10 +10,9 @@ func InitialModelForTests(configFile string, isDefaultConfig bool) model {
 
 // InitialModel returns an instance of the initial model with default values,
 // suitable for integration tests.
-func InitialModel() model {
-	m := initialModel("adwatchd.yml", true)
+func InitialModel() Model {
+	m := initialModel("adwatchd.yaml", true)
 	return m
 }
 
 type Model = model
-type AppConfig = appConfig

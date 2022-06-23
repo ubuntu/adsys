@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
@@ -20,6 +21,6 @@ func (a *App) installVersion() {
 
 // getVersion returns the current service version.
 func getVersion() (err error) {
-	fmt.Printf(i18n.G("adwatchd\t%s")+"\n", consts.Version)
+	fmt.Printf(i18n.G("%s\t%s")+"\n", watchdconfig.CmdName, consts.Version)
 	return nil
 }

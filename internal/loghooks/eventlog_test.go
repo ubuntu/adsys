@@ -38,6 +38,12 @@ func TestEventLogHook(t *testing.T) {
 			log.AddHook(&loghooks.EventLog{mockServiceLogger{}})
 			log.SetLevel(tc.level)
 
+			// Log only "Debug msg", as the hook itself should prepend "DEBUG: "
+			// to it, announcing that it's a debug message. We do this to
+			// differentiate between info and debug, as eventlog has no debug
+			// level built in.
+			//
+			// The other messages should be logged as is.
 			log.Debug("Debug msg")
 			log.Info(msgs["info"])
 			log.Warning(msgs["warning"])

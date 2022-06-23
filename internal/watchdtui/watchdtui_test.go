@@ -16,6 +16,7 @@ import (
 	"github.com/muesli/termenv"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adwatchd/commands"
+	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/testutils"
 	"github.com/ubuntu/adsys/internal/watchdservice"
@@ -83,11 +84,20 @@ func TestInteractiveInput(t *testing.T) {
 			configOverride: true,
 		},
 		"previous config file is passed in and contains directories which exist on the system": {
+			events: []tea.Msg{
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeyDown}, // focus on submit button
+			},
 			configOverride: true,
 			existingPaths:  []string{"foo/bar/", "foo/baz/"},
 			configDirs:     []string{"foo/bar", "foo/baz"},
 		},
 		"previous config file is passed in and contains directories, not all which exist on the system": {
+			events: []tea.Msg{
+				tea.KeyMsg{Type: tea.KeyDown},
+				tea.KeyMsg{Type: tea.KeyDown}, // focus on bad input for the error message
+			},
 			configOverride: true,
 			existingPaths:  []string{"foo/bar/"},
 			configDirs:     []string{"foo/bar", "foo/baz"},
@@ -147,15 +157,12 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
 				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/qux")},
-				tea.KeyMsg{Type: tea.KeyUp},
 				tea.KeyMsg{Type: tea.KeyUp},        // focus on first entry
 				tea.KeyMsg{Type: tea.KeyBackspace}, // delete last char to make it invalid
 				tea.KeyMsg{Type: tea.KeyDown},      // attempt to move
 				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("r")}, // fix entry
+				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("z")}, // fix entry
 				tea.KeyMsg{Type: tea.KeyTab},
 				tea.KeyMsg{Type: tea.KeyTab},  // back to the last entry
 				tea.KeyMsg{Type: tea.KeyDown}, // focus on Submit
@@ -200,11 +207,11 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
-			cfgToValidate: filepath.Join(binDir, "adwatchd.yml"),
+			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
 		"submit with fresh config in current directory": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("my_config.yml")},
+				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("my_config.yaml")},
 				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
 				tea.KeyMsg{Type: tea.KeyEnter},
@@ -214,11 +221,11 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
-			cfgToValidate: "my_config.yml",
+			cfgToValidate: "my_config.yaml",
 		},
 		"submit with fresh config in nested directory": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("aaa/bbb/ccc/my_config.yml")},
+				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("aaa/bbb/ccc/my_config.yaml")},
 				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
 				tea.KeyMsg{Type: tea.KeyEnter},
@@ -228,7 +235,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
-			cfgToValidate: "aaa/bbb/ccc/my_config.yml",
+			cfgToValidate: "aaa/bbb/ccc/my_config.yaml",
 		},
 		"submit with duplicate directories": {
 			events: []tea.Msg{
@@ -247,7 +254,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
-			cfgToValidate: filepath.Join(binDir, "adwatchd.yml"),
+			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
 		"submit with directory as config input": {
 			events: []tea.Msg{
@@ -259,7 +266,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
-			cfgToValidate: "foo/bar/adwatchd.yml",
+			cfgToValidate: "foo/bar/adwatchd.yaml",
 		},
 		"submit with dot directories is normalized": {
 			events: []tea.Msg{
@@ -272,7 +279,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/"},
-			cfgToValidate: filepath.Join(binDir, "adwatchd.yml"),
+			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
 		"submit with double dot directories is normalized": {
 			events: []tea.Msg{
@@ -283,7 +290,7 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/baz/"},
-			cfgToValidate: filepath.Join(binDir, "adwatchd.yml"),
+			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
 
 		// Other navigation behaviors
@@ -311,39 +318,30 @@ func TestInteractiveInput(t *testing.T) {
 		goldDir, _ := filepath.Abs(filepath.Join("testdata", "golden"))
 		t.Run(name, func(t *testing.T) {
 			t.Cleanup(func() {
-				os.Remove(filepath.Join(binDir, "adwatchd.yml"))
-				testutils.WaitForWrites(t, binDir)
+				os.Remove(filepath.Join(binDir, "adwatchd.yaml"))
 			})
 
 			var err error
 
-			goldPath := filepath.Join(goldDir, strings.Replace(name, " ", "_", -1))
+			goldPath := filepath.Join(goldDir, strings.ReplaceAll(name, " ", "_"))
 
-			tmpdir := chdirToTempdir(t)
+			tmpdir := t.TempDir()
+			testutils.Chdir(t, tmpdir)
 
 			// Create existing directories/files
 			for _, path := range tc.existingPaths {
-				if strings.HasSuffix(path, "/") {
-					err = os.MkdirAll(path, 0750)
-					require.NoError(t, err, "can't create directories")
-				} else {
-					err = os.MkdirAll(filepath.Dir(path), 0750)
-					require.NoError(t, err, "can't create directory for file")
-
-					err = os.WriteFile(path, []byte("some content"), 0600)
-					require.NoError(t, err, "could not write sample file")
-				}
+				testutils.CreatePath(t, path)
 			}
 
 			// Create previous/existing config file if needed
 			if len(tc.configDirs) > 0 {
-				data, err := yaml.Marshal(&watchdtui.AppConfig{Dirs: tc.configDirs})
+				data, err := yaml.Marshal(&watchdconfig.AppConfig{Dirs: tc.configDirs})
 				require.NoError(t, err, "could not marshal config")
-				err = os.WriteFile(filepath.Join(binDir, "adwatchd.yml"), data, 0600)
+				err = os.WriteFile(filepath.Join(binDir, "adwatchd.yaml"), data, 0600)
 				require.NoError(t, err, "could not write previous config")
 			}
 
-			m, _ := watchdtui.InitialModelForTests(filepath.Join(binDir, "adwatchd.yml"), !tc.configOverride).Update(nil)
+			m, _ := watchdtui.InitialModelForTests(filepath.Join(binDir, "adwatchd.yaml"), !tc.configOverride).Update(nil)
 
 			for _, e := range tc.events {
 				keyMsg, ok := e.(tea.KeyMsg)
@@ -368,36 +366,37 @@ func TestInteractiveInput(t *testing.T) {
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(parseOutput(t, out)), 0600)
+				err = os.WriteFile(goldPath, []byte(normalizeOutput(t, out)), 0600)
 				require.NoError(t, err, "Cannot write golden file")
 			}
+
 			want, err := os.ReadFile(goldPath)
 			require.NoError(t, err, "Cannot load golden file")
 
 			if tc.cfgToValidate != "" {
-				goldCfgPath := filepath.Join(goldDir, strings.Replace(name, " ", "_", -1)+".yml")
+				goldCfgPath := filepath.Join(goldDir, strings.ReplaceAll(name, " ", "_")+".yaml")
 				outCfg, err := os.ReadFile(tc.cfgToValidate)
 				require.NoError(t, err, "Cannot load test config file")
 
 				if update {
-					err = os.WriteFile(goldCfgPath, []byte(parseOutput(t, string(outCfg))), 0600)
+					err = os.WriteFile(goldCfgPath, []byte(normalizeOutput(t, string(outCfg))), 0600)
 					require.NoError(t, err, "Cannot write golden config file")
 				}
 
 				wantCfg, err := os.ReadFile(goldCfgPath)
 				require.NoError(t, err, "Cannot load golden config file")
 
-				require.Equal(t, string(wantCfg), parseOutput(t, string(outCfg)), "Configs don't match")
+				require.Equal(t, normalizeGoldenFile(t, string(wantCfg)), normalizeOutput(t, string(outCfg)), "Configs don't match")
 			}
 
-			require.Equal(t, string(want), parseOutput(t, m.View()), "Didn't get expected output")
+			require.Equal(t, normalizeGoldenFile(t, string(want)), normalizeOutput(t, m.View()), "Didn't get expected output")
 		})
 	}
 }
 
 func TestInteractiveInstall(t *testing.T) {
 	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" || os.Getenv("ADSYS_SKIP_SUDO_TESTS") != "" {
-		fmt.Println("Integration tests skipped as requested")
+		t.Skip("Integration tests skipped as requested")
 		return
 	}
 
@@ -409,7 +408,7 @@ func TestInteractiveInstall(t *testing.T) {
 		require.NoError(t, err, "Cannot uninstall watchd service")
 	})
 
-	_ = chdirToTempdir(t)
+	testutils.Chdir(t, t.TempDir())
 
 	// Create existing directories/files
 	err = os.MkdirAll("foo/bar", 0750)
@@ -432,8 +431,8 @@ func TestInteractiveInstall(t *testing.T) {
 	m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
 
 	out := m.View()
-	goldOutput := "Service adwatchd was successfully installed and is now running.\n"
-	require.Equal(t, goldOutput, out, "Didn't get expected output")
+	successMessage := "Service adwatchd was successfully installed and is now running.\n"
+	require.Equal(t, successMessage, out, "Didn't get expected output")
 
 	status, err := svc.Status(context.Background())
 	require.NoError(t, err, "Cannot get status")
@@ -485,25 +484,9 @@ func updateModel(t *testing.T, m tea.Model, msg tea.Msg) tea.Model {
 	return updateModel(t, m, messageCandidates)
 }
 
-func chdirToTempdir(t *testing.T) string {
-	t.Helper()
-
-	orig, err := os.Getwd()
-	require.NoError(t, err, "Setup: can't get current directory")
-
-	dir := t.TempDir()
-	err = os.Chdir(dir)
-	require.NoError(t, err, "Setup: can't change current directory")
-	t.Cleanup(func() {
-		err := os.Chdir(orig)
-		require.NoError(t, err, "Teardown: can't restore current directory")
-	})
-	return dir
-}
-
-// parseOutput normalizes the output of the view function in order to ensure
+// normalizeOutput normalizes the output of the view function in order to ensure
 // tests work on both Linux and Windows.
-func parseOutput(t *testing.T, out string) string {
+func normalizeOutput(t *testing.T, out string) string {
 	t.Helper()
 
 	cwd, err := os.Getwd()
@@ -513,17 +496,25 @@ func parseOutput(t *testing.T, out string) string {
 	require.NoError(t, err, "can't get executable directory")
 
 	// Replace executable directory with a deterministic placeholder
-	out = strings.Replace(out, filepath.Dir(binPath), "#BINDIR#", -1)
+	out = strings.ReplaceAll(out, filepath.Dir(binPath), "#BINDIR#")
 
 	// Normalize backslashes to slashes
-	out = strings.Replace(out, "\\", "/", -1)
-
-	// Strip carriage returns
-	out = strings.Replace(out, "\r", "/", -1)
+	out = strings.ReplaceAll(out, "\\", "/")
 
 	// Replace cwd with a deterministic placeholder
 	cwd = filepath.ToSlash(cwd)
-	out = strings.Replace(out, cwd, "#ABSPATH#", -1)
+	out = strings.ReplaceAll(out, cwd, "#ABSPATH#")
+
+	return out
+}
+
+// normalizeGoldenOutput normalizes the golden file content in order to ensure
+// Linux/Windows compatibility with a single set of golden files.
+func normalizeGoldenFile(t *testing.T, out string) string {
+	t.Helper()
+
+	// Strip carriage returns
+	out = strings.ReplaceAll(out, "\r", "")
 
 	return out
 }

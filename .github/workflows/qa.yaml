@@ -53,8 +53,6 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: Replace default go symlink
-        run: cp -f `which go` /usr/bin/go
       - name: Install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -72,15 +70,17 @@ jobs:
           ADSYS_SKIP_SUDO_TESTS=1 go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=count ./...
 
           # Run integration tests that need sudo
-          sudo -E go test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=count ${{ env.sudo_packages }}
+          # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
+          sudo -E $(which go) test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=count ${{ env.sudo_packages }}
 
           # Combine coverage files, and filter out test utilities and generated files
-          echo "mode: set" > /tmp/coverage.txt
+          echo "mode: set" > /tmp/coverage.combined.out
           grep -hv -e "mode: set" -e "testutils" -e "pb.go:" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
       - name: Run tests (with race detector)
         run: |
           ADSYS_SKIP_SUDO_TESTS=1 go test -race ./...
-          sudo -E go test -race ${{ env.sudo_packages }}
+          # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
+          sudo -E $(which go) test -race ${{ env.sudo_packages }}
       - name: Install curl for codecov
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -99,10 +99,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Setup go
-        uses: actions/setup-go@v2
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.goversion }}
+          go-version-file: go.mod
+          cache: true
       - name: Build installer
         run: |
           tag=$(git describe --tags)
@@ -116,11 +116,6 @@ jobs:
           go build ./cmd/adwatchd
           iscc.exe //DAPP_VERSION=$INSTALLER_VERSION installer/setup.iss
         shell: bash
-      - name: Upload installer artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: adwatchd_setup
-          path: installer/Output/adwatchd_setup.exe
       - name: Run tests
         run: go test ${{ env.packages }}
       - name: Run tests (with race detector)
@@ -135,6 +130,11 @@ jobs:
         # As the Linux job already exercises the entire testsuite with race
         # detection enabled and the code is mostly platform independent, this
         # should be a safe action to take.
+      - name: Attach installer artifact to workflow run
+        uses: actions/upload-artifact@v3
+        with:
+          name: adwatchd_setup
+          path: installer/Output/adwatchd_setup.exe
       - name: Draft release and publish installer artifact
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')

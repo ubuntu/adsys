@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -38,11 +39,20 @@ type options struct {
 }
 type option func(*options)
 
+// WithServiceName allows setting a custom name for the daemon. Shouldn't be in
+// general necessary apart for integration tests where it helps with parallel
+// execution.
+func WithServiceName(name string) func(o *options) {
+	return func(o *options) {
+		o.name = name
+	}
+}
+
 // New registers commands and return a new App.
 func New(opts ...option) *App {
 	// Set default options.
 	args := options{
-		name: "adwatchd",
+		name: watchdconfig.CmdName,
 	}
 
 	// Apply given options.
@@ -54,7 +64,7 @@ func New(opts ...option) *App {
 	a.configMu = &sync.RWMutex{}
 	a.options = args
 	a.rootCmd = cobra.Command{
-		Use:   "adwatchd [COMMAND]",
+		Use:   fmt.Sprintf("%s [COMMAND]", watchdconfig.CmdName),
 		Short: i18n.G("AD watch daemon"),
 		Long:  i18n.G(`Watch directories for changes and bump the relevant GPT.ini versions.`),
 		Args:  cobra.NoArgs,
@@ -62,7 +72,7 @@ func New(opts ...option) *App {
 			// Command parsing has been successful. Returns runtime (or
 			// configuration) error now and so, don't print usage.
 			cmd.SilenceUsage = true
-			err := config.Init("adwatchd", a.rootCmd, a.viper, func(refreshed bool) error {
+			err := config.Init(watchdconfig.CmdName, a.rootCmd, a.viper, func(refreshed bool) error {
 				a.configMu.Lock()
 				defer a.configMu.Unlock()
 				var newConfig watchdconfig.AppConfig
@@ -86,12 +96,16 @@ func New(opts ...option) *App {
 				if oldVerbose != a.config.Verbose {
 					config.SetVerboseMode(a.config.Verbose)
 				}
+
+				// Now deal with service only changes.
+				if a.service == nil {
+					return nil
+				}
+
 				if !slices.Equal(oldDirs, a.config.Dirs) {
-					if a.service != nil {
-						if err := a.service.UpdateDirs(context.Background(), a.config.Dirs); err != nil {
-							log.Warningf(context.Background(), i18n.G("failed to update directories: %v"), err)
-							a.config.Dirs = oldDirs
-						}
+					if err := a.service.UpdateDirs(context.Background(), a.config.Dirs); err != nil {
+						log.Warningf(context.Background(), i18n.G("failed to update directories: %v"), err)
+						a.config.Dirs = oldDirs
 					}
 				}
 
@@ -106,14 +120,14 @@ func New(opts ...option) *App {
 			}
 
 			// If we have a config file, pass it as an argument to the service.
-			var configFile []string
+			var configFile string
 			if len(a.viper.ConfigFileUsed()) > 0 {
 				absPath, err := filepath.Abs(a.viper.ConfigFileUsed())
 				if err != nil {
 					close(a.ready)
 					return err
 				}
-				configFile = []string{"-c", absPath}
+				configFile = absPath
 			}
 
 			// Create main service and attach it to the app
@@ -121,7 +135,7 @@ func New(opts ...option) *App {
 				context.Background(),
 				watchdservice.WithName(a.options.name),
 				watchdservice.WithDirs(a.config.Dirs),
-				watchdservice.WithArgs(configFile))
+				watchdservice.WithConfig(configFile))
 
 			if err != nil {
 				close(a.ready)
@@ -138,7 +152,7 @@ func New(opts ...option) *App {
 				return fmt.Errorf(i18n.G(`Cannot run the interactive installer if the service is already installed.
 If you wish to rerun the installer, please remove the service first.
 
-This can be done via the Services UI or by running: adwatchd service uninstall`))
+This can be done via the Services UI or by running: %s service uninstall`), watchdconfig.CmdName)
 			}
 
 			configFileSet := a.rootCmd.Flags().Lookup("config").Changed
@@ -177,7 +191,11 @@ func (a App) UsageError() bool {
 }
 
 // SetArgs changes the root command args. Shouldn't be in general necessary apart for integration tests.
-func (a *App) SetArgs(args []string) {
+func (a *App) SetArgs(args []string, conf string) {
+	// cmdhandler.InstallConfigFlag(&a.rootCmd)
+	a.rootCmd.PersistentFlags().StringP("config", "c", conf, i18n.G("use a specific configuration file"))
+	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
+
 	a.rootCmd.SetArgs(args)
 }
 
@@ -197,26 +215,22 @@ func (a *App) Verbosity() int {
 	return a.config.Verbose
 }
 
-// Reset recreates the ready channel. Shouldn't be in general necessary apart
-// for integration tests, where multiple commands are executed on the same
-// instance.
+// Reset recreates the ready channel and reinstalls the persistent root flags.
+// Shouldn't be in general necessary apart for integration tests, where multiple
+// commands are executed on the same instance.
 func (a *App) Reset() {
-	a.ready = make(chan struct{})
-}
+	a.rootCmd.ResetFlags()
 
-// WithServiceName allows setting a custom name for the daemon. Shouldn't be in
-// general necessary apart for integration tests where it helps with parallel
-// execution.
-func WithServiceName(name string) func(o *options) {
-	return func(o *options) {
-		o.name = name
-	}
+	a.ready = make(chan struct{})
 }
 
 // WaitReady signals when the daemon is ready
 // Note: we need to use a pointer to not copy the App object before the daemon is ready, and thus, creates a data race.
 func (a *App) WaitReady() {
 	<-a.ready
+
+	// Give time for the watcher itself to start
+	time.Sleep(time.Millisecond * 100)
 }
 
 // RootCmd returns a copy of the root command for the app. Shouldn't be in

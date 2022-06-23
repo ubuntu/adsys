@@ -1,11 +1,13 @@
 package cmdhandler
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/decorate"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 )
 
@@ -62,4 +64,19 @@ func InstallConfigFlag(cmd *cobra.Command, persistent bool) *string {
 		target = cmd.PersistentFlags()
 	}
 	return target.StringP("config", "c", "", i18n.G("use a specific configuration file"))
+}
+
+// HideFlags hides a list of flags from the help output.
+func HideFlags(flags []string) func(*cobra.Command, []string) {
+	return func(cmd *cobra.Command, args []string) {
+		// Hide flags from the command.
+		for _, flag := range flags {
+			if err := cmd.Flags().MarkHidden(flag); err != nil {
+				log.Warningf(context.Background(), "Failed to hide flag %q: %v", flag, err)
+			}
+		}
+
+		// Call the parent help function.
+		cmd.Parent().HelpFunc()(cmd, args)
+	}
 }

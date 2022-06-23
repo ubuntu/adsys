@@ -1,7 +1,9 @@
 package adwatchd_test
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adwatchd/commands"
+	"github.com/ubuntu/adsys/internal/testutils"
 	"golang.org/x/exp/slices"
 	"gopkg.in/ini.v1"
 )
@@ -52,12 +55,6 @@ func TestServiceStateChange(t *testing.T) {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			// Parallelization is not supported on Windows due to Service
-			// Control Manager reasons.
-			if runtime.GOOS != "windows" {
-				t.Parallel()
-			}
-
 			// Skip Windows-only tests if requested
 			if runtime.GOOS != "windows" && tc.skipUnlessWindows {
 				t.Skip()
@@ -68,18 +65,14 @@ func TestServiceStateChange(t *testing.T) {
 			watchDir := t.TempDir()
 			configPath := generateConfig(t, -1, watchDir)
 
-			// Give each test a different service name so we can parallelize
+			// Give each test a different service name for better tracking
 			svcName := strings.ReplaceAll(name, " ", "_")
 			app := commands.New(commands.WithServiceName(fmt.Sprintf("adwatchd-test-%s", svcName)))
-
-			t.Cleanup(func() {
-				uninstallService(t, configPath, app)
-			})
 
 			installService(t, configPath, app)
 
 			// Begin with a stopped state
-			changeAppArgs(t, app, configPath, "service", "stop")
+			changeAppArgs(t, app, "", "service", "stop")
 			err = app.Run()
 			require.NoError(t, err, "Setup: Stopping the service failed but shouldn't")
 
@@ -87,13 +80,19 @@ func TestServiceStateChange(t *testing.T) {
 				os.RemoveAll(watchDir)
 			}
 			for index, state := range tc.sequence {
-				changeAppArgs(t, app, configPath, "service", state)
+				if state == "install" {
+					changeAppArgs(t, app, configPath, "service", state)
+				} else {
+					changeAppArgs(t, app, "", "service", state)
+				}
+
 				err := app.Run()
 				if slices.Contains(tc.wantErrAt, index) {
 					require.Error(t, err, fmt.Sprintf("%s should have failed but hasn't", state))
-				} else {
-					require.NoError(t, err, fmt.Sprintf("%s failed but shouldn't", state))
+					return
 				}
+				require.NoError(t, err, fmt.Sprintf("%s failed but shouldn't", state))
+
 				if tc.wantStopped {
 					out := getStatus(t, app)
 					require.Contains(t, out, "stopped", "Service should be stopped")
@@ -103,26 +102,16 @@ func TestServiceStateChange(t *testing.T) {
 	}
 }
 func TestInstall(t *testing.T) {
-	// Parallelization is not supported on Windows due to Service
-	// Control Manager reasons.
-	if runtime.GOOS != "windows" {
-		t.Parallel()
-	}
-
 	watchedDir := t.TempDir()
 
 	app := commands.New()
 	installService(t, generateConfig(t, -1, watchedDir), app)
 
-	t.Cleanup(func() {
-		uninstallService(t, generateConfig(t, -1, watchedDir), app)
-	})
-
 	out := getStatus(t, app)
 	require.Contains(t, out, "running", "Newly installed service should be running")
 }
 
-func TestUpdateGPT(t *testing.T) {
+func TestCreateAndUpdateGPT(t *testing.T) {
 	// Parallelization is not supported on Windows due to Service
 	// Control Manager reasons.
 	if runtime.GOOS != "windows" {
@@ -132,35 +121,49 @@ func TestUpdateGPT(t *testing.T) {
 	watchedDir := t.TempDir()
 	configPath := generateConfig(t, -1, watchedDir)
 
-	app := commands.New(commands.WithServiceName("adwatchd-test-update-gpt"))
-	t.Cleanup(func() {
-		uninstallService(t, configPath, app)
-	})
+	app := commands.New(commands.WithServiceName(fmt.Sprintf("adwatchd-test-%s", t.Name())))
 
 	installService(t, configPath, app)
 
 	// Wait for service to be running
 	time.Sleep(time.Second)
 
-	// Write to some file
-	err := os.WriteFile(filepath.Join(watchedDir, "new_file"), []byte("new content"), 0600)
-	require.NoError(t, err, "Can't write to file")
+	for i, state := range []string{"create", "update"} {
+		expectedValue := i + 1
 
-	// Give time for the writes to be picked up
-	time.Sleep(time.Millisecond * 100)
+		if state == "update" {
+			// Start the service if already installed
+			changeAppArgs(t, app, "", "service", "start")
+			err := app.Run()
+			require.NoError(t, err, "Setup: Starting the service failed but shouldn't")
 
-	// Stop the service to trigger the GPT update
-	changeAppArgs(t, app, configPath, "service", "stop")
-	err = app.Run()
-	require.NoError(t, err, "Setup: Stopping the service failed but shouldn't")
+			// Wait for service to be running
+			time.Sleep(time.Millisecond * 100)
+		}
 
-	cfg, err := ini.Load(filepath.Join(watchedDir, "gpt.ini"))
-	require.NoError(t, err, "Can't load GPT.ini")
+		// Write to some file
+		err := os.WriteFile(filepath.Join(watchedDir, "new_file"), []byte("new content"), 0600)
+		require.NoError(t, err, "Setup: Can't write to file")
 
-	v, err := cfg.Section("General").Key("Version").Int()
-	require.NoError(t, err, "Can't get GPT.ini version as an integer")
+		// Give time for the writes to be picked up
+		testutils.WaitForWrites(t)
 
-	assert.Equal(t, 1, v, "GPT.ini version is not equal to the expected one")
+		// Stop the service to trigger GPT creation / update
+		changeAppArgs(t, app, "", "service", "stop")
+		err = app.Run()
+		require.NoError(t, err, "Setup: Stopping the service failed but shouldn't")
+
+		// Give time for the GPT creation / update to be processed
+		testutils.WaitForWrites(t)
+
+		cfg, err := ini.Load(filepath.Join(watchedDir, "GPT.INI"))
+		require.NoError(t, err, "Can't load GPT.ini")
+
+		v, err := cfg.Section("General").Key("Version").Int()
+		require.NoError(t, err, "Can't get GPT.ini version as an integer")
+
+		assert.Equal(t, expectedValue, v, "GPT.ini version is not equal to the expected one")
+	}
 }
 
 func TestServiceStatusContainsCorrectDirs(t *testing.T) {
@@ -173,10 +176,7 @@ func TestServiceStatusContainsCorrectDirs(t *testing.T) {
 	firstDir, secondDir := t.TempDir(), t.TempDir()
 	configPath := generateConfig(t, -1, firstDir, secondDir)
 
-	app := commands.New(commands.WithServiceName("adwatchd-test-service-status-contains-correct-dirs"))
-	t.Cleanup(func() {
-		uninstallService(t, configPath, app)
-	})
+	app := commands.New(commands.WithServiceName(fmt.Sprintf("adwatchd-test-%s", t.Name())))
 
 	installService(t, configPath, app)
 
@@ -193,4 +193,60 @@ Watched directories:
 
 	// Get actual status
 	require.Equal(t, want, getStatus(t, app), "Service status doesn't match")
+}
+
+func TestServiceConfigFlagUsage(t *testing.T) {
+	tests := map[string]struct {
+		wantConfig bool
+	}{
+		// Subcommands not allowing a config flag
+		"start":     {},
+		"restart":   {},
+		"uninstall": {},
+		"status":    {},
+
+		// Subcommands allowing a config flag
+		"install": {wantConfig: true},
+	}
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			r, w, err := os.Pipe()
+			require.NoError(t, err, "Setup: pipe shouldn't fail")
+
+			app := commands.New()
+
+			changeAppArgs(t, app, "", "service", name, "-c", "badconf")
+
+			err = app.Run()
+			if tc.wantConfig {
+				require.ErrorContains(t, err, "invalid configuration file")
+			} else {
+				require.ErrorContains(t, err, "cannot use --config with this subcommand")
+			}
+
+			// Check the usage message
+			changeAppArgs(t, app, "", "service", name, "--help")
+
+			orig := os.Stdout
+			os.Stdout = w
+
+			err = app.Run()
+			require.NoError(t, err, "Setup: running the app shouldn't fail")
+
+			os.Stdout = orig
+			w.Close()
+
+			var out bytes.Buffer
+			_, err = io.Copy(&out, r)
+			require.NoError(t, err, "Couldn't copy stdout to buffer")
+
+			if tc.wantConfig {
+				require.Contains(t, out.String(), "--config", "--config should be in the usage message")
+			} else {
+				require.NotContains(t, out.String(), "--config", "--config should not be in the usage message")
+			}
+		})
+	}
 }

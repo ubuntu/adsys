@@ -47,7 +47,7 @@ func generateConfig(t *testing.T, verbosity int, dirs ...string) string {
 		verboseContent = fmt.Sprintf("verbose: %d\n", verbosity)
 	}
 
-	dest := filepath.Join(t.TempDir(), "adwatchd.yml")
+	dest := filepath.Join(t.TempDir(), "adwatchd.yaml")
 	err := os.WriteFile(dest, []byte(fmt.Sprintf(`%sdirs:
 %s`, verboseContent, dirContent)), 0600)
 	require.NoError(t, err, "Setup: can't write configuration file")
@@ -94,12 +94,14 @@ func changeAppArgs(t *testing.T, app *commands.App, conf string, args ...string)
 	}
 
 	app.Reset()
-	app.SetArgs(newArgs)
+	app.SetArgs(newArgs, conf)
 }
 
 // installService installs the service on the system.
 func installService(t *testing.T, config string, app *commands.App) {
 	t.Helper()
+
+	t.Cleanup(func() { uninstallService(t, app) })
 
 	changeAppArgs(t, app, config, "service", "install")
 	err := app.Run()
@@ -107,10 +109,10 @@ func installService(t *testing.T, config string, app *commands.App) {
 }
 
 // installService uninstall the service on the system.
-func uninstallService(t *testing.T, config string, app *commands.App) {
+func uninstallService(t *testing.T, app *commands.App) {
 	t.Helper()
 
-	changeAppArgs(t, app, config, "service", "uninstall")
+	changeAppArgs(t, app, "", "service", "uninstall")
 	err := app.Run()
 	require.NoError(t, err, "Couldn't uninstall service")
 }

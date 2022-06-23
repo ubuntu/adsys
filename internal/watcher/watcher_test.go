@@ -40,7 +40,7 @@ func TestWatchDirectory(t *testing.T) {
 		"Update with existing gpt.ini": {filesToUpdate: []string{"one_file/new"}, existingDirs: []string{"one_file"}, wantVersions: []int{4}},
 		"No update, existing gpt.ini":  {existingDirs: []string{"one_file"}, wantVersions: []int{3}},
 		"Update existing file":         {filesToUpdate: []string{"one_file/alreadyexists"}, existingDirs: []string{"one_file"}, wantVersions: []int{4}},
-		"Updating gpt.ini is a no-op":  {filesToUpdate: []string{"one_file/gpt.ini"}, existingDirs: []string{"one_file"}, wantVersions: []int{3}},
+		"Updating gpt.ini is a no-op":  {filesToUpdate: []string{"one_file/GPT.INI"}, existingDirs: []string{"one_file"}, wantVersions: []int{3}},
 
 		// remove / rename
 		"Remove root directory": {filesToRemove: []string{"one_file"}, existingDirs: []string{"one_file"}},
@@ -126,7 +126,7 @@ func TestWatchDirectory(t *testing.T) {
 			// Instantiate the object
 			w, err := watcher.New(context.Background(), dirs)
 			if tc.wantErrNew {
-				require.Error(t, err, "Create should have failed but hasn't")
+				require.Error(t, err, "watcher.New should have failed but hasn't")
 				return
 			}
 			require.NoError(t, err, "Can't create watcher")
@@ -157,7 +157,7 @@ func TestWatchDirectory(t *testing.T) {
 				// update the file if it exists
 				if _, err := os.Stat(filepath.Join(temp, path)); err == nil {
 					d := []byte("new content")
-					if strings.HasSuffix(path, "gpt.ini") {
+					if strings.HasSuffix(path, "GPT.INI") {
 						data, err := os.ReadFile(filepath.Join(temp, path))
 						require.NoError(t, err, "Can't read file")
 						d = append(data, []byte("\n;comment string")...)
@@ -167,18 +167,7 @@ func TestWatchDirectory(t *testing.T) {
 					continue
 				}
 
-				slash := strings.LastIndex(path, "/")
-				// we have intermediate directories: create them if needed
-				if slash > -1 {
-					dir := path[:slash]
-					err := os.MkdirAll(filepath.Join(temp, dir), 0750)
-					require.NoError(t, err, "Setup: Can't create directory")
-				}
-				// this is the file (last element, not empty)
-				if slash == -1 || slash != len(path)-1 {
-					err := os.WriteFile(filepath.Join(temp, path), []byte("new content"), 0600)
-					require.NoError(t, err, "Setup: Can't update file")
-				}
+				testutils.CreatePath(t, filepath.Join(temp, path))
 			}
 
 			testutils.WaitForWrites(t)
@@ -193,10 +182,10 @@ func TestWatchDirectory(t *testing.T) {
 			if len(tc.wantVersions) > 0 {
 				for i, dir := range tc.existingDirs {
 					if tc.wantErrBump {
-						assertGPTVersionError(t, filepath.Join(temp, dir))
-					} else {
-						assertGPTVersionEquals(t, filepath.Join(temp, dir), tc.wantVersions[i])
+						requireGPTVersionError(t, filepath.Join(temp, dir))
+						return
 					}
+					assertGPTVersionEquals(t, filepath.Join(temp, dir), tc.wantVersions[i])
 				}
 			}
 		})
@@ -279,7 +268,7 @@ func TestUpdateDirs(t *testing.T) {
 	assertGPTVersionEquals(t, destAdd, 2)
 
 	// Modify one of the folder to check that it will be updated when changing dir
-	writeToFiles(t, []string{filepath.Join(destRemove, "alreadyexists")})
+	updateFiles(t, []string{filepath.Join(destRemove, "alreadyexists")})
 
 	// Change directories to watch
 	err = w.UpdateDirs(context.Background(), []string{destKeep, destAdd})
@@ -292,7 +281,7 @@ func TestUpdateDirs(t *testing.T) {
 	assertGPTVersionEquals(t, destAdd, 2)
 
 	// Modify files in all directories
-	writeToFiles(t, []string{
+	updateFiles(t, []string{
 		filepath.Join(destKeep, "alreadyexists"),
 		filepath.Join(destRemove, "alreadyexists"),
 		filepath.Join(destAdd, "alreadyexists")})
@@ -338,7 +327,7 @@ func TestUpdateDirsFailing(t *testing.T) {
 	require.Error(t, err, "UpdateDirs should have failed but didn't")
 
 	// Modify files in previous watched directories
-	writeToFiles(t, []string{
+	updateFiles(t, []string{
 		filepath.Join(destKeep, "alreadyexists"),
 		filepath.Join(destRemove, "alreadyexists")})
 
@@ -368,10 +357,8 @@ func TestStopWithoutStart(t *testing.T) {
 func assertGPTVersionEquals(t *testing.T, path string, version int) {
 	t.Helper()
 
-	testutils.WaitForWrites(t)
-	gptfile := filepath.Join(path, "gpt.ini")
+	gptfile := filepath.Join(path, "GPT.INI")
 
-	// Wait for GPT.ini to be created
 	var gptFileExists bool
 	if _, err := os.Stat(gptfile); err == nil {
 		gptFileExists = true
@@ -392,13 +379,11 @@ func assertGPTVersionEquals(t *testing.T, path string, version int) {
 	assert.Equal(t, version, v, "GPT.ini version is not equal to the expected one")
 }
 
-func assertGPTVersionError(t *testing.T, path string) {
+func requireGPTVersionError(t *testing.T, path string) {
 	t.Helper()
 
-	testutils.WaitForWrites(t)
-	gptfile := filepath.Join(path, "gpt.ini")
+	gptfile := filepath.Join(path, "GPT.INI")
 
-	// Wait for GPT.ini to be created
 	var gptFileExists bool
 	if _, err := os.Stat(gptfile); err == nil {
 		gptFileExists = true
@@ -412,7 +397,7 @@ func assertGPTVersionError(t *testing.T, path string) {
 	require.Error(t, err, "Version should be invalid")
 }
 
-func writeToFiles(t *testing.T, files []string) {
+func updateFiles(t *testing.T, files []string) {
 	t.Helper()
 
 	for _, file := range files {

@@ -1,6 +1,7 @@
 package watchd_test
 
 import (
+	"context"
 	"flag"
 	"os"
 	"path/filepath"
@@ -9,88 +10,75 @@ import (
 
 	"github.com/stretchr/testify/require"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
-	"gopkg.in/yaml.v2"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 var update bool
 
-func TestGetConfigFileFromArgs(t *testing.T) {
+func TestConfigFileFromArgs(t *testing.T) {
+	t.Parallel()
+
 	tests := map[string]struct {
 		args string
 
 		want    string
 		wantErr bool
 	}{
-		"empty args":                        {wantErr: true},
-		"no config argument":                {args: "adwatchd.exe", wantErr: true},
-		"short config argument":             {args: `adwatchd.exe -c C:\path\to\adwatchd.yml`, want: `C:\path\to\adwatchd.yml`},
-		"short config argument with quotes": {args: `adwatchd.exe -c "C:\path\to\adwatchd.yml"`, want: `C:\path\to\adwatchd.yml`},
+		"short config argument":             {args: `adwatchd.exe -c C:\path\to\adwatchd.yaml`, want: `C:\path\to\adwatchd.yaml`},
+		"short config argument with quotes": {args: `adwatchd.exe -c "C:\path\to\adwatchd.yaml"`, want: `C:\path\to\adwatchd.yaml`},
+
+		"empty args":                    {wantErr: true},
+		"no config argument":            {args: "adwatchd.exe", wantErr: true},
+		"config argument with no value": {args: "adwatchd.exe -c ", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			got, err := watchdconfig.GetConfigFileFromArgs(tc.args)
+			t.Parallel()
+
+			got, err := watchdconfig.ConfigFileFromArgs(tc.args)
 			if tc.wantErr {
 				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
+				return
 			}
+			require.NoError(t, err)
 			require.Equal(t, tc.want, got)
 		})
 	}
 }
 
-func TestGetDirsFromConfigFile(t *testing.T) {
+func TestDirsFromConfigFile(t *testing.T) {
+	t.Parallel()
+
 	tests := map[string]struct {
-		emptyConfig bool
-		noConfig    bool
-		noDirs      bool
-		badDirs     bool
+		dirsInConfig string
+		noConfig     bool
 
 		wantDirs []string
 	}{
 		"no config file":              {noConfig: true},
-		"empty config file":           {emptyConfig: true},
-		"no dirs in config file":      {noDirs: true},
-		"config dirs is not an array": {badDirs: true},
-		"config dirs is an array":     {wantDirs: []string{"/path/to/dir1", "/path/to/dir2"}},
+		"empty config file":           {dirsInConfig: ""},
+		"no dirs in config file":      {dirsInConfig: "dirs:\n"},
+		"config dirs is not an array": {dirsInConfig: "dirs: testdir"},
+		"config dirs is an array": {
+			dirsInConfig: "dirs:\n  - /path/to/dir1\n  - /path/to/dir2",
+			wantDirs:     []string{"/path/to/dir1", "/path/to/dir2"},
+		},
 	}
 	for name, tc := range tests {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			var data []byte
-			var err error
+			t.Parallel()
 
-			goldPath := filepath.Join("testdata", "golden", strings.Replace(name, " ", "_", -1))
-			if update {
-				appConfig := watchdconfig.AppConfig{Dirs: tc.wantDirs}
-
-				// Handle error cases
-				if tc.noConfig {
-					// no config file
-				} else if tc.emptyConfig {
-					_, err = os.Create(goldPath)
-					require.NoError(t, err, "failed to create empty config file")
-				} else if tc.noDirs {
-					appConfig.Dirs = nil
-					data, err = yaml.Marshal(&appConfig)
-					require.NoError(t, err, "failed to marshal config")
-					err = os.WriteFile(goldPath, data, 0600)
-					require.NoError(t, err, "failed to write config")
-				} else if tc.badDirs {
-					err = os.WriteFile(goldPath, []byte(`- dirs: "testdir"`), 0600)
-					require.NoError(t, err, "failed to write config")
-				} else {
-					// Normal case
-					data, err = yaml.Marshal(&appConfig)
-					require.NoError(t, err, "failed to marshal config")
-					err = os.WriteFile(goldPath, data, 0600)
-					require.NoError(t, err, "failed to write config")
-				}
+			configPath := filepath.Join(t.TempDir(), strings.ReplaceAll(name, " ", "_"))
+			if !tc.noConfig {
+				err := os.WriteFile(configPath, []byte(tc.dirsInConfig), 0600)
+				require.NoError(t, err, "Setup: failed to write config file")
 			}
-			got := watchdconfig.GetDirsFromConfigFile(goldPath)
+
+			got := watchdconfig.DirsFromConfigFile(context.Background(), configPath)
 			require.ElementsMatch(t, tc.wantDirs, got)
 		})
 	}
@@ -98,24 +86,25 @@ func TestGetDirsFromConfigFile(t *testing.T) {
 
 func TestFilterAbsentDirs(t *testing.T) {
 	tests := map[string]struct {
-		inputDirs    []string
-		existingDirs []string
+		inputDirs     []string
+		existingPaths []string
 
 		wantDirs []string
 	}{
 		"no existing dirs":   {inputDirs: []string{"dir1", "dir2"}},
-		"some existing dirs": {inputDirs: []string{"dir1", "dir2"}, existingDirs: []string{"dir1"}, wantDirs: []string{"dir1"}},
-		"all existing dirs":  {inputDirs: []string{"dir1", "dir2"}, existingDirs: []string{"dir1", "dir2"}, wantDirs: []string{"dir1", "dir2"}},
+		"some existing dirs": {inputDirs: []string{"dir1", "dir2"}, existingPaths: []string{"dir1/", "file1"}, wantDirs: []string{"dir1"}},
+		"all existing dirs":  {inputDirs: []string{"dir1", "dir2"}, existingPaths: []string{"dir1/", "dir2/"}, wantDirs: []string{"dir1", "dir2"}},
 	}
 	for name, tc := range tests {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			chdirToTempdir(t)
-			for _, dir := range tc.existingDirs {
-				require.NoError(t, os.MkdirAll(dir, 0750), "failed to create existing dirs")
+			tmpdir := t.TempDir()
+			testutils.Chdir(t, tmpdir)
+			for _, path := range tc.existingPaths {
+				testutils.CreatePath(t, path)
 			}
-			got := watchdconfig.FilterAbsentDirs(tc.inputDirs)
+			got := watchdconfig.FilterAbsentDirs(context.Background(), tc.inputDirs)
 			require.ElementsMatch(t, tc.wantDirs, got)
 		})
 	}
@@ -131,22 +120,21 @@ func TestWriteConfig(t *testing.T) {
 
 		wantErr bool
 	}{
-		"with empty dirs":  {wantErr: true},
-		"with absent dirs": {dirs: []string{"dir1", "dir2"}, absentDirs: true, wantErr: true},
-
 		"with relative config path": {dirs: []string{"dir1", "dir2"}},
 		"with nested config path":   {dirs: []string{"dir1", "dir2"}, nestedConfigPath: true},
+
+		"with empty dirs":  {wantErr: true},
+		"with absent dirs": {dirs: []string{"dir1", "dir2"}, absentDirs: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			goldPath, err := filepath.Abs(filepath.Join("testdata", "golden", strings.Replace(name, " ", "_", -1)))
+			goldPath, err := filepath.Abs(filepath.Join("testdata", "golden", strings.ReplaceAll(name, " ", "_")))
 			require.NoError(t, err, "failed to get absolute path")
 
-			chdirToTempdir(t)
-
-			var data []byte
+			tmpdir := t.TempDir()
+			testutils.Chdir(t, tmpdir)
 
 			if !tc.absentDirs {
 				for _, dir := range tc.dirs {
@@ -154,51 +142,26 @@ func TestWriteConfig(t *testing.T) {
 				}
 			}
 
-			if update {
-				appConfig := watchdconfig.AppConfig{Dirs: tc.dirs}
-
-				// If we want an error, we don't need to write the config file
-				if !tc.wantErr {
-					data, err = yaml.Marshal(&appConfig)
-					require.NoError(t, err, "failed to marshal config")
-
-					err = os.WriteFile(goldPath, data, 0600)
-					require.NoError(t, err, "failed to write config")
-				}
-			}
-
-			configPath := "adwatchd.yml"
+			configPath := "adwatchd.yaml"
 			if tc.nestedConfigPath {
-				configPath = filepath.Join("path", "to", "adwatchd.yml")
+				configPath = filepath.Join("path", "to", "adwatchd.yaml")
 			}
 
 			error := watchdconfig.WriteConfig(configPath, tc.dirs)
 			if tc.wantErr {
-				require.Error(t, error, "expected error")
-			} else {
-				require.NoError(t, error, "unexpected error")
-
-				got := watchdconfig.GetDirsFromConfigFile(goldPath)
-				require.ElementsMatch(t, tc.dirs, got)
+				require.Error(t, error, "expected writing config to fail")
+				return
 			}
+			require.NoError(t, error, "didn't expect writing config to fail")
+
+			if update {
+				testutils.Copy(t, configPath, goldPath)
+			}
+
+			got := watchdconfig.DirsFromConfigFile(context.Background(), goldPath)
+			require.ElementsMatch(t, tc.dirs, got)
 		})
 	}
-}
-
-func chdirToTempdir(t *testing.T) string {
-	t.Helper()
-
-	orig, err := os.Getwd()
-	require.NoError(t, err, "Setup: can't get current directory")
-
-	dir := t.TempDir()
-	err = os.Chdir(dir)
-	require.NoError(t, err, "Setup: can't change current directory")
-	t.Cleanup(func() {
-		err := os.Chdir(orig)
-		require.NoError(t, err, "Teardown: can't restore current directory")
-	})
-	return dir
 }
 
 func TestMain(m *testing.M) {

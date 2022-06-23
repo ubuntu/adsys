@@ -8,49 +8,62 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"gopkg.in/yaml.v2"
 )
 
+// CmdName is the binary name for the daemon.
+const CmdName = "adwatchd"
+
 // AppConfig represents the configurable options of the application.
 type AppConfig struct {
 	Verbose int
-	Force   bool
+	Force   bool `yaml:"-"` // This is a CLI-only option
 	Dirs    []string
 }
 
-// GetDirsFromConfigFile unmarshals and returns the directories from the passed in
+// DirsFromConfigFile unmarshals and returns the directories from the passed in
 // config file.
-func GetDirsFromConfigFile(configFile string) []string {
+func DirsFromConfigFile(ctx context.Context, configFile string) []string {
 	var dirs []string
 	config, err := os.ReadFile(configFile)
 	if err != nil {
+		log.Debugf(ctx, i18n.G("Could not read config file: %v"), err)
 		return dirs
 	}
 	cfg := AppConfig{}
-	if err := yaml.Unmarshal(config, &cfg); err == nil {
-		dirs = cfg.Dirs
+	if err := yaml.Unmarshal(config, &cfg); err != nil {
+		log.Debugf(ctx, i18n.G("Could not unmarshal config YAML: %v"), err)
+		return dirs
 	}
+	dirs = cfg.Dirs
+
 	return dirs
 }
 
 // FilterAbsentDirs returns only the existing directories from the passed in
 // slice.
-func FilterAbsentDirs(dirs []string) []string {
+func FilterAbsentDirs(ctx context.Context, dirs []string) []string {
 	var filtered []string
 	for _, dir := range dirs {
-		if stat, err := os.Stat(dir); err == nil && stat.IsDir() {
-			filtered = append(filtered, dir)
+		if stat, err := os.Stat(dir); err != nil || !stat.IsDir() {
+			log.Debugf(ctx, i18n.G("Could not stat %q or is not a directory"), dir)
+			continue
 		}
+		filtered = append(filtered, dir)
 	}
+
 	return filtered
 }
 
 // WriteConfig writes the config to the given file, checking whether the
 // directories that are passed in actually exist. It receives a config file and
 // a slice of absolute sorted paths.
-func WriteConfig(confFile string, dirs []string) error {
+func WriteConfig(confFile string, dirs []string) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't write config"))
+
 	if len(dirs) == 0 {
 		return fmt.Errorf(i18n.G("needs at least one directory to watch"))
 	}
@@ -70,31 +83,36 @@ func WriteConfig(confFile string, dirs []string) error {
 	cfg := AppConfig{Dirs: dirs, Verbose: 0}
 	data, err := yaml.Marshal(&cfg)
 	if err != nil {
-		return fmt.Errorf(i18n.G("unable to marshal config: %v"), err)
+		return fmt.Errorf(i18n.G("unable to marshal: %v"), err)
 	}
 
 	if err := os.WriteFile(confFile, data, 0600); err != nil {
-		return fmt.Errorf(i18n.G("unable to write config file: %v"), err)
+		return err
 	}
 
 	return nil
 }
 
-// GetConfigFileFromArgs returns the path to the config file extracted from the
+// ConfigFileFromArgs returns the path to the config file extracted from the
 // command line arguments.
 //
 // This is not an exhaustive implementation of "parsing" the command line and
 // only covers the cases used by the service installer, which should be good
 // enough for us.
-func GetConfigFileFromArgs(args string) (string, error) {
+func ConfigFileFromArgs(args string) (string, error) {
+	err := fmt.Errorf(i18n.G("missing config file in CLI arguments"))
+
 	_, configFile, found := strings.Cut(args, "-c")
 	if !found {
-		return "", fmt.Errorf(i18n.G("missing config file in CLI arguments"))
+		return configFile, err
 	}
 
 	// Remove trailing quotes and spaces (quotes are added if the path to the
 	// config file contains spaces)
 	configFile = strings.Trim(configFile, `" `)
+	if configFile == "" {
+		return configFile, err
+	}
 	return configFile, nil
 }
 
@@ -105,5 +123,5 @@ func DefaultConfigPath() string {
 	if err != nil {
 		log.Warningf(context.Background(), i18n.G("failed to get executable path, using relative path for default config: %v"), err)
 	}
-	return filepath.Join(filepath.Dir(binPath), "adwatchd.yml")
+	return filepath.Join(filepath.Dir(binPath), fmt.Sprintf("%s.yaml", CmdName))
 }

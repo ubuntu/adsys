@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"os"
 	"os/signal"
 	"sync"
@@ -26,7 +25,7 @@ func run(a *commands.App) int {
 	})
 
 	if err := a.Run(); err != nil {
-		log.Error(context.Background(), err)
+		log.Error(err)
 
 		if a.UsageError() {
 			return 2

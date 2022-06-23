@@ -43,7 +43,7 @@ Filename: {sys}\sc.exe; Parameters: "stop adwatchd"; Flags: runhidden; RunOnceId
 Filename: {sys}\sc.exe; Parameters: "delete adwatchd"; Flags: runhidden; RunOnceId: "DelService"
 
 [UninstallDelete]
-Type: files; Name: "{app}\adwatchd.yml"
+Type: files; Name: "{app}\adwatchd.yaml"
 
 [Files]
 Source: "..\adwatchd.exe"; DestDir: "{app}"
