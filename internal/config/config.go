@@ -38,18 +38,21 @@ func SetVerboseMode(level int) {
 // It calls immediately the configChanged function with refreshed set to false (as this is the first call)
 // to let you deserialize the initial configuration and returns any errors.
 // Then, it automatically watches any configuration changes and will call configChanged with refresh set to true.
-func Init(name string, rootCmd cobra.Command, vip *viper.Viper, configChanged func(refreshed bool) error) (err error) {
+func Init(name string, cmd cobra.Command, vip *viper.Viper, configChanged func(refreshed bool) error) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't load configuration"))
 
+	// Force a visit of the local flags so persistent flags for all parents are merged.
+	cmd.LocalFlags()
+
 	// Get cmdline flag for verbosity to configure logger until we have everything parsed.
-	v, err := rootCmd.PersistentFlags().GetCount("verbose")
+	v, err := cmd.Flags().GetCount("verbose")
 	if err != nil {
-		return fmt.Errorf("internal error: no persistent verbose flag installed on rootCmd: %w", err)
+		return fmt.Errorf("internal error: no persistent verbose flag installed on cmd: %w", err)
 	}
 
 	SetVerboseMode(v)
 
-	if v, err := rootCmd.PersistentFlags().GetString("config"); err == nil && v != "" {
+	if v, err := cmd.Flags().GetString("config"); err == nil && v != "" {
 		vip.SetConfigFile(v)
 	} else {
 		vip.SetConfigName(name)

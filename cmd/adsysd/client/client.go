@@ -86,7 +86,7 @@ func New() *App {
 	a.viper = viper.New()
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
-	cmdhandler.InstallConfigFlag(&a.rootCmd)
+	cmdhandler.InstallConfigFlag(&a.rootCmd, true)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
