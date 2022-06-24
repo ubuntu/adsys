@@ -114,31 +114,3 @@ func TestRunReactsToConfigUpdates(t *testing.T) {
 	}
 	require.NoError(t, appErr, "App should exit without error")
 }
-
-func TestRunCanQuitWithCtrlC(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("Skipping on Windows as there's no simple way to programatically stop the interactive watcher")
-	}
-
-	watchDir := t.TempDir()
-	app := commands.New()
-	changeAppArgs(t, app, "", "run", "--dirs", watchDir)
-
-	done := make(chan struct{})
-	var err, appErr error
-	go func() {
-		defer close(done)
-		appErr = app.Run()
-	}()
-	app.WaitReady()
-
-	err = app.Quit(syscall.SIGTERM)
-	require.NoError(t, err, "Quitting should succeed")
-
-	select {
-	case <-done:
-	case <-time.After(1 * time.Second):
-		t.Fatal("run hasn't exited quickly enough")
-	}
-	require.NoError(t, appErr, "App should exit without error")
-}

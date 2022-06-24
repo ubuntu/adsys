@@ -31,7 +31,6 @@ type options struct {
 	extraArgs   []string
 	name        string
 	userService bool
-	interactive bool
 }
 type option func(*options) error
 
@@ -309,12 +308,22 @@ type serviceInfo struct {
 	binPath    string
 }
 
+// ConfigFile returns the config file in use by the active service.
+func (s *WatchdService) ConfigFile(ctx context.Context) (string, error) {
+	svcInfo, err := s.args(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return svcInfo.configFile, nil
+}
+
 // args returns the service configuration extracted from the
 // service arguments.
 func (s *WatchdService) args(ctx context.Context) (svcInfo serviceInfo, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to get service info from arguments"))
 
-	svcInfo = serviceInfo{configFile: i18n.G("no config file")}
+	svcInfo = serviceInfo{}
 	binPath, args, err := s.serviceArgs()
 	if err != nil {
 		return svcInfo, err
@@ -368,7 +377,29 @@ func (s *WatchdService) Uninstall(ctx context.Context) (err error) {
 		}
 	}
 
-	return s.service.Uninstall()
+	if err := s.service.Uninstall(); err != nil {
+		return err
+	}
+
+	// Wait for an error indicating that the service is not installed
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	var gotError bool
+	for !gotError {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			_, err := s.service.Status()
+			if !errors.Is(err, service.ErrNotInstalled) {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+			gotError = true
+		}
+	}
+	return nil
 }
 
 // Run runs the watcher service.

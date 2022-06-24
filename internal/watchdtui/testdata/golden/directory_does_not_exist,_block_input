@@ -7,4 +7,4 @@
 [1;38;5;166m> [0mfoo/bar[1;7;38;5;166m [0m
 [38;5;220m#ABSPATH#/foo/bar: directory does not exist, please enter a valid path[0m
 
-[ Install ]
+[ [38;5;240mInstall[0m ]

@@ -43,21 +43,6 @@ func DirsFromConfigFile(ctx context.Context, configFile string) []string {
 	return dirs
 }
 
-// FilterAbsentDirs returns only the existing directories from the passed in
-// slice.
-func FilterAbsentDirs(ctx context.Context, dirs []string) []string {
-	var filtered []string
-	for _, dir := range dirs {
-		if stat, err := os.Stat(dir); err != nil || !stat.IsDir() {
-			log.Debugf(ctx, i18n.G("Could not stat %q or is not a directory"), dir)
-			continue
-		}
-		filtered = append(filtered, dir)
-	}
-
-	return filtered
-}
-
 // WriteConfig writes the config to the given file, checking whether the
 // directories that are passed in actually exist. It receives a config file and
 // a slice of absolute sorted paths.
@@ -111,7 +96,7 @@ func ConfigFileFromArgs(args string) (string, error) {
 	// config file contains spaces)
 	configFile = strings.Trim(configFile, `" `)
 	if configFile == "" {
-		return configFile, err
+		return "", err
 	}
 	return configFile, nil
 }

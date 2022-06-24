@@ -45,7 +45,7 @@ issues:
     # EXC0010 gosec: False positive is triggered by 'src, err := ioutil.ReadFile(filename)'
     - Potential file inclusion via variable
     # revive: unexported-return for functions exported only in tests, aliasing doesn't work here as the linter always goes for the underlying model which is unexported
-    - 'unexported-return: exported func InitialModel(ForTests)? returns unexported type watchdtui.model, which can be annoying to use'
+    - 'unexported-return: exported func InitialModel(ForTests|WithPrevConfig)? returns unexported type watchdtui.model, which can be annoying to use'
   #fix: true # we don’t want this in CI
 
 nolintlint:

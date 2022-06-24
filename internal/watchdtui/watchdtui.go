@@ -28,10 +28,6 @@ var (
 	boldStyle    = lipgloss.NewStyle().Bold(true)
 	titleStyle   = lipgloss.NewStyle().Underline(true).Bold(true)
 	focusedStyle = boldStyle.Copy().Foreground(lipgloss.Color("#E95420")) // Ubuntu orange
-
-	submitText    = i18n.G("Install")
-	focusedButton = focusedStyle.Copy().Render(fmt.Sprintf("[ %s ]", submitText))
-	blurredButton = fmt.Sprintf("[ %s ]", blurredStyle.Render(submitText))
 )
 
 type model struct {
@@ -39,6 +35,8 @@ type model struct {
 	inputs        []textinput.Model
 	spinner       spinner.Model
 	defaultConfig string
+	prevConfig    string
+	serviceExists bool
 
 	err       error
 	loading   bool
@@ -99,16 +97,48 @@ func (m model) installService(confFile string, dirsMap map[string]struct{}) tea.
 			return installMsg{nil}
 		}
 
-		err = svc.Install(context.Background())
-		return installMsg{err}
+		return installMsg{m.takeInstallAction(svc, configAbsPath)}
 	}
 }
 
+func (m *model) takeInstallAction(svc *watchdservice.WatchdService, configPath string) error {
+	var err error
+
+	// If the service is already installed and the config file is the same, the
+	// reload mechanism should take care of things.
+	// If the service is already installed and the config file is different, we
+	// need to reinstall.
+	if m.serviceExists {
+		if m.prevConfig == configPath {
+			return nil
+		}
+
+		if err = svc.Uninstall(context.Background()); err != nil {
+			return err
+		}
+	}
+
+	// Install the new service.
+	return svc.Install(context.Background())
+}
+
 // initialModel builds and returns the initial model.
-func initialModel(configFile string, isDefault bool) model {
+func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool) model {
 	dirCount := 1
 	s := spinner.New()
 	s.Spinner = spinner.Dot
+
+	defaultConfig := watchdconfig.DefaultConfigPath()
+	// If the service already exists, use its config file as the default
+	if prevConfigFile != "" {
+		defaultConfig = prevConfigFile
+
+		// Only use the existing service config file if the user did not explicitly
+		// pass in another one.
+		if isDefaultConfig {
+			configFile = prevConfigFile
+		}
+	}
 
 	// Attempt to read directories from the config file
 	previousDirs := watchdconfig.DirsFromConfigFile(context.Background(), configFile)
@@ -122,7 +152,9 @@ func initialModel(configFile string, isDefault bool) model {
 		inputs:        make([]textinput.Model, dirCount+1),
 		spinner:       s,
 		typing:        true,
-		defaultConfig: watchdconfig.DefaultConfigPath(),
+		defaultConfig: defaultConfig,
+		prevConfig:    prevConfigFile,
+		serviceExists: prevConfigFile != "",
 	}
 
 	var t textinput.Model
@@ -138,8 +170,8 @@ func initialModel(configFile string, isDefault bool) model {
 
 			// Only prefill the config path if we received it via argument, even
 			// if it's the default one.
-			if !isDefault {
-				t.SetValue(m.defaultConfig)
+			if !isDefaultConfig {
+				t.SetValue(configFile)
 			}
 		case 1:
 			t.Placeholder = i18n.G("Directory to watch (one per line)")
@@ -429,6 +461,14 @@ func (m *model) updateDirInputErrorAndStyle(i int) {
 	}
 }
 
+func (m model) submitText() string {
+	text := i18n.G("Install")
+	if m.prevConfig != "" {
+		text = i18n.G("Update")
+	}
+	return text
+}
+
 // View renders the UI based on the data in the model.
 func (m model) View() string {
 	if m.loading {
@@ -454,6 +494,10 @@ func (m model) View() string {
 	if m.inputs[0].Err != nil {
 		b.WriteString(hintStyle.Render(m.inputs[0].Err.Error()))
 	}
+	if m.serviceExists {
+		b.WriteString(hintStyle.Render(i18n.G("\nService already exists and will be reconfigured\n")))
+	}
+
 	b.WriteString("\n\n")
 
 	directoriesMsg := i18n.G("Directories:")
@@ -478,18 +522,19 @@ func (m model) View() string {
 	}
 
 	// Display button
-	button := &blurredButton
+	button := fmt.Sprintf("[ %s ]", blurredStyle.Render(m.submitText()))
 	if m.focusIndex == len(m.inputs) {
-		button = &focusedButton
+		button = focusedStyle.Copy().Render(fmt.Sprintf("[ %s ]", m.submitText()))
 	}
-	_, _ = fmt.Fprintf(&b, "\n\n%s\n", *button)
+
+	_, _ = fmt.Fprintf(&b, "\n\n%s\n", button)
 
 	return b.String()
 }
 
 // Start starts the interactive TUI.
-func Start(ctx context.Context, configFile string, isDefault bool) error {
-	p := tea.NewProgram(initialModel(configFile, isDefault))
+func Start(ctx context.Context, configFile string, prevConfigFile string, isDefaultConfig bool) error {
+	p := tea.NewProgram(initialModel(configFile, prevConfigFile, isDefaultConfig))
 	if err := p.Start(); err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
+	"github.com/ubuntu/adsys/internal/cmdhandler"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -61,6 +62,7 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 		i18n.G("force the program to run even if another instance is already running"),
 	)
 	decorate.LogOnError(a.viper.BindPFlag("force", cmd.Flags().Lookup("force")))
+	cmdhandler.InstallConfigFlag(cmd, false)
 
 	a.rootCmd.AddCommand(cmd)
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -72,7 +71,15 @@ func New(opts ...option) *App {
 			// Command parsing has been successful. Returns runtime (or
 			// configuration) error now and so, don't print usage.
 			cmd.SilenceUsage = true
-			err := config.Init(watchdconfig.CmdName, a.rootCmd, a.viper, func(refreshed bool) error {
+
+			// Send the called command instead of the root command to the config
+			// initializer. This is to account for the config flag not being
+			// persistent on the root command.
+			calledCmd, err := cmdhandler.CalledCmd(cmd)
+			if err != nil {
+				return err
+			}
+			err = config.Init(watchdconfig.CmdName, *calledCmd, a.viper, func(refreshed bool) error {
 				a.configMu.Lock()
 				defer a.configMu.Unlock()
 				var newConfig watchdconfig.AppConfig
@@ -148,15 +155,15 @@ func New(opts ...option) *App {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if status, _ := a.service.Status(context.Background()); !strings.Contains(status, "not installed") {
-				return fmt.Errorf(i18n.G(`Cannot run the interactive installer if the service is already installed.
-If you wish to rerun the installer, please remove the service first.
+			var prevConfigFile string
 
-This can be done via the Services UI or by running: %s service uninstall`), watchdconfig.CmdName)
+			// Check to see if adwatchd is already installed and get its config file.
+			if configFile, err := a.service.ConfigFile(context.Background()); err == nil {
+				prevConfigFile = configFile
 			}
 
 			configFileSet := a.rootCmd.Flags().Lookup("config").Changed
-			if err := watchdtui.Start(context.Background(), a.viper.ConfigFileUsed(), !configFileSet); err != nil {
+			if err := watchdtui.Start(context.Background(), a.viper.ConfigFileUsed(), prevConfigFile, !configFileSet); err != nil {
 				return err
 			}
 
@@ -169,7 +176,7 @@ This can be done via the Services UI or by running: %s service uninstall`), watc
 
 	a.viper = viper.New()
 
-	cmdhandler.InstallConfigFlag(&a.rootCmd)
+	cmdhandler.InstallConfigFlag(&a.rootCmd, false)
 	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
 
 	// Install subcommands
@@ -192,10 +199,6 @@ func (a App) UsageError() bool {
 
 // SetArgs changes the root command args. Shouldn't be in general necessary apart for integration tests.
 func (a *App) SetArgs(args []string, conf string) {
-	// cmdhandler.InstallConfigFlag(&a.rootCmd)
-	a.rootCmd.PersistentFlags().StringP("config", "c", conf, i18n.G("use a specific configuration file"))
-	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
-
 	a.rootCmd.SetArgs(args)
 }
 
@@ -219,8 +222,6 @@ func (a *App) Verbosity() int {
 // Shouldn't be in general necessary apart for integration tests, where multiple
 // commands are executed on the same instance.
 func (a *App) Reset() {
-	a.rootCmd.ResetFlags()
-
 	a.ready = make(chan struct{})
 }
 

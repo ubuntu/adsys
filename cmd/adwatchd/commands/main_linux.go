@@ -1,11 +1,12 @@
 package commands
 
 import (
-	"fmt"
+	"context"
 	"os"
 	"syscall"
 
 	"github.com/kardianos/service"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"golang.org/x/sys/unix"
 )
@@ -15,7 +16,8 @@ import (
 func (a *App) Quit(sig syscall.Signal) error {
 	a.WaitReady()
 	if !service.Interactive() {
-		return fmt.Errorf(i18n.G("not running in interactive mode"))
+		log.Debug(context.Background(), i18n.G("Calling quit on a non-interactive service is useless"))
+		return nil
 	}
 
 	p := os.Getpid()

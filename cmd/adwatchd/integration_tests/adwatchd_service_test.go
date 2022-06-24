@@ -70,6 +70,7 @@ func TestServiceStateChange(t *testing.T) {
 			app := commands.New(commands.WithServiceName(fmt.Sprintf("adwatchd-test-%s", svcName)))
 
 			installService(t, configPath, app)
+			time.Sleep(time.Second)
 
 			// Begin with a stopped state
 			changeAppArgs(t, app, "", "service", "stop")
@@ -80,11 +81,15 @@ func TestServiceStateChange(t *testing.T) {
 				os.RemoveAll(watchDir)
 			}
 			for index, state := range tc.sequence {
-				if state == "install" {
-					changeAppArgs(t, app, configPath, "service", state)
-				} else {
-					changeAppArgs(t, app, "", "service", state)
+				if runtime.GOOS == "windows" {
+					time.Sleep(time.Second)
 				}
+
+				var configPathArg string
+				if state == "install" {
+					configPathArg = configPath
+				}
+				changeAppArgs(t, app, configPathArg, "service", state)
 
 				err := app.Run()
 				if slices.Contains(tc.wantErrAt, index) {
@@ -221,9 +226,9 @@ func TestServiceConfigFlagUsage(t *testing.T) {
 
 			err = app.Run()
 			if tc.wantConfig {
-				require.ErrorContains(t, err, "invalid configuration file")
+				assert.ErrorContains(t, err, "invalid configuration file")
 			} else {
-				require.ErrorContains(t, err, "cannot use --config with this subcommand")
+				assert.ErrorContains(t, err, "unknown shorthand flag: 'c' in -c")
 			}
 
 			// Check the usage message
@@ -243,9 +248,9 @@ func TestServiceConfigFlagUsage(t *testing.T) {
 			require.NoError(t, err, "Couldn't copy stdout to buffer")
 
 			if tc.wantConfig {
-				require.Contains(t, out.String(), "--config", "--config should be in the usage message")
+				assert.Contains(t, out.String(), "--config", "--config should be in the usage message")
 			} else {
-				require.NotContains(t, out.String(), "--config", "--config should not be in the usage message")
+				assert.NotContains(t, out.String(), "--config", "--config should not be in the usage message")
 			}
 		})
 	}

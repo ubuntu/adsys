@@ -1320,4 +1320,4 @@ adsysd runscripts ORDER_FILE [flags]
 
 For every commit on the `main` branch of the `adsys` repository, the GitHub Actions CI builds a development version of the `adwatchd` project. This is *NOT* a stable version of the application and should not be used for production purposes. However, it may prove useful to preview features or bugfixes not yet available as part of a stable release.
 
-The latest development builds are available at: TODO
+To get access to the build artifact you need to be logged in on GitHub. Then, click on any passing run of the [QA workflow](https://github.com/ubuntu/adsys/actions/workflows/qa.yaml) that has the `Windows tests for adwatchd` job, and look for the `adwatchd_setup` file.

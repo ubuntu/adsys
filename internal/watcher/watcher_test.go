@@ -126,7 +126,7 @@ func TestWatchDirectory(t *testing.T) {
 			// Instantiate the object
 			w, err := watcher.New(context.Background(), dirs)
 			if tc.wantErrNew {
-				require.Error(t, err, "watcher.New should have failed but hasn't")
+				require.Error(t, err, "New should have failed but hasn't")
 				return
 			}
 			require.NoError(t, err, "Can't create watcher")

@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -30,9 +31,6 @@ var (
 )
 
 func TestInteractiveInput(t *testing.T) {
-	// Simulate a color terminal
-	lipgloss.SetColorProfile(termenv.ANSI256)
-
 	binPath, err := os.Executable()
 	require.NoError(t, err, "can't get executable directory")
 	binDir := filepath.Dir(binPath)
@@ -46,6 +44,8 @@ func TestInteractiveInput(t *testing.T) {
 		// Parameters for when we want to simulate a previous config file
 		configOverride bool
 		configDirs     []string
+		prevConfig     string
+		prevConfigDirs []string
 	}{
 		"initial view": {
 			events:        []tea.Msg{},
@@ -80,10 +80,10 @@ func TestInteractiveInput(t *testing.T) {
 			},
 			existingPaths: []string{"foo/bar/"},
 		},
-		"previous config file is passed in and is empty or has no directories": {
+		"existing config file is passed in and is empty or has no directories": {
 			configOverride: true,
 		},
-		"previous config file is passed in and contains directories which exist on the system": {
+		"existing config file is passed in and contains directories which exist on the system": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyDown},
@@ -93,7 +93,7 @@ func TestInteractiveInput(t *testing.T) {
 			existingPaths:  []string{"foo/bar/", "foo/baz/"},
 			configDirs:     []string{"foo/bar", "foo/baz"},
 		},
-		"previous config file is passed in and contains directories, not all which exist on the system": {
+		"existing config file is passed in and contains directories, not all which exist on the system": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyDown}, // focus on bad input for the error message
@@ -101,6 +101,21 @@ func TestInteractiveInput(t *testing.T) {
 			configOverride: true,
 			existingPaths:  []string{"foo/bar/"},
 			configDirs:     []string{"foo/bar", "foo/baz"},
+		},
+
+		// Installed service behaviors
+		"found installed service, config not overridden": {
+			prevConfig:     "myprevconfig.yaml",
+			prevConfigDirs: []string{"foo/bar", "foo/baz"},
+			configDirs:     []string{"foo/bar", "foo/qux"},
+			existingPaths:  []string{"foo/bar/", "foo/baz/", "foo/qux/"},
+		},
+		"found installed service, config overridden": {
+			configOverride: true,
+			prevConfig:     "myprevconfig.yaml",
+			prevConfigDirs: []string{"foo/bar", "foo/baz"},
+			configDirs:     []string{"foo/bar", "foo/qux"},
+			existingPaths:  []string{"foo/bar/", "foo/baz/", "foo/qux/"},
 		},
 
 		// Directory input behaviors
@@ -317,9 +332,7 @@ func TestInteractiveInput(t *testing.T) {
 		tc := tc
 		goldDir, _ := filepath.Abs(filepath.Join("testdata", "golden"))
 		t.Run(name, func(t *testing.T) {
-			t.Cleanup(func() {
-				os.Remove(filepath.Join(binDir, "adwatchd.yaml"))
-			})
+			t.Cleanup(func() { os.Remove(filepath.Join(binDir, "adwatchd.yaml")) })
 
 			var err error
 
@@ -333,15 +346,26 @@ func TestInteractiveInput(t *testing.T) {
 				testutils.CreatePath(t, path)
 			}
 
-			// Create previous/existing config file if needed
+			var prevConfig string
+			// Create actively used config file if needed
+			if len(tc.prevConfigDirs) > 0 {
+				prevConfig = filepath.Join(binDir, tc.prevConfig)
+				data, err := yaml.Marshal(&watchdconfig.AppConfig{Dirs: tc.prevConfigDirs})
+				require.NoError(t, err, "could not marshal config")
+				err = os.WriteFile(prevConfig, data, 0600)
+				require.NoError(t, err, "could not write actively used config")
+				t.Cleanup(func() { os.Remove(prevConfig) })
+			}
+
+			// Create existing config file if needed
 			if len(tc.configDirs) > 0 {
 				data, err := yaml.Marshal(&watchdconfig.AppConfig{Dirs: tc.configDirs})
 				require.NoError(t, err, "could not marshal config")
 				err = os.WriteFile(filepath.Join(binDir, "adwatchd.yaml"), data, 0600)
-				require.NoError(t, err, "could not write previous config")
+				require.NoError(t, err, "could not write existing config")
 			}
 
-			m, _ := watchdtui.InitialModelForTests(filepath.Join(binDir, "adwatchd.yaml"), !tc.configOverride).Update(nil)
+			m, _ := watchdtui.InitialModelForTests(filepath.Join(binDir, "adwatchd.yaml"), prevConfig, !tc.configOverride).Update(nil)
 
 			for _, e := range tc.events {
 				keyMsg, ok := e.(tea.KeyMsg)
@@ -395,7 +419,7 @@ func TestInteractiveInput(t *testing.T) {
 }
 
 func TestInteractiveInstall(t *testing.T) {
-	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" || os.Getenv("ADSYS_SKIP_SUDO_TESTS") != "" {
+	if os.Getenv("ADWATCHD_SKIP_INTEGRATION_TESTS") != "" || os.Getenv("ADSYS_SKIP_SUDO_TESTS") != "" {
 		t.Skip("Integration tests skipped as requested")
 		return
 	}
@@ -404,6 +428,7 @@ func TestInteractiveInstall(t *testing.T) {
 	require.NoError(t, err, "Cannot initialize watchd service")
 
 	t.Cleanup(func() {
+		time.Sleep(time.Second)
 		err = svc.Uninstall(context.Background())
 		require.NoError(t, err, "Cannot uninstall watchd service")
 	})
@@ -437,6 +462,108 @@ func TestInteractiveInstall(t *testing.T) {
 	status, err := svc.Status(context.Background())
 	require.NoError(t, err, "Cannot get status")
 	require.Contains(t, status, "running", "Expected service to be running")
+}
+
+func TestInteractiveUpdate(t *testing.T) {
+	if os.Getenv("ADWATCHD_SKIP_INTEGRATION_TESTS") != "" || os.Getenv("ADSYS_SKIP_SUDO_TESTS") != "" {
+		t.Skip("Integration tests skipped as requested")
+		return
+	}
+
+	tests := map[string]struct {
+		prevDirs  []string
+		dirsToAdd []string
+
+		changeConfigPath bool
+	}{
+		"change directories, same config file": {
+			prevDirs:  []string{"foo/bar", "foo/baz"},
+			dirsToAdd: []string{"foo/qux"},
+		},
+		"change directories, different config file": {
+			prevDirs:         []string{"foo/bar", "foo/baz"},
+			dirsToAdd:        []string{"foo/qux"},
+			changeConfigPath: true,
+		},
+	}
+	for name, tc := range tests {
+		tc := tc
+		name := name
+		t.Run(name, func(t *testing.T) {
+			tmpdir := t.TempDir()
+			absPrevDirs := make([]string, len(tc.prevDirs))
+			for i, dir := range tc.prevDirs {
+				absPrevDirs[i] = filepath.Join(tmpdir, dir)
+				err := os.MkdirAll(absPrevDirs[i], 0750)
+				require.NoError(t, err, "Cannot create previous directories")
+			}
+
+			absDirsToAdd := make([]string, len(tc.dirsToAdd))
+			for i, dir := range tc.dirsToAdd {
+				absDirsToAdd[i] = filepath.Join(tmpdir, dir)
+				err := os.MkdirAll(absDirsToAdd[i], 0750)
+				require.NoError(t, err, "Cannot create new directories")
+			}
+
+			prevConfigPath := filepath.Join(tmpdir, "prevconfig.yaml")
+			err := watchdconfig.WriteConfig(prevConfigPath, absPrevDirs)
+			require.NoError(t, err, "Cannot write previous config file")
+
+			svc, err := watchdservice.New(context.Background(), watchdservice.WithConfig(prevConfigPath))
+			require.NoError(t, err, "Cannot initialize watchd service")
+
+			t.Cleanup(func() {
+				time.Sleep(time.Second)
+				err = svc.Uninstall(context.Background())
+				require.NoError(t, err, "Cannot uninstall watchd service")
+			})
+
+			// Start with an installed service
+			err = svc.Install(context.Background())
+			require.NoError(t, err, "Cannot install watchd service")
+
+			configPath := prevConfigPath
+			if tc.changeConfigPath {
+				configPath = filepath.Join(tmpdir, "newconfig.yaml")
+			}
+
+			// Using the TUI, update the watched directory
+			m, _ := watchdtui.InitialModelWithPrevConfig(configPath, prevConfigPath, true).Update(nil)
+			if tc.changeConfigPath {
+				// Change to the new config file
+				m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(configPath)})
+			}
+
+			// Move to the end of the directory list
+			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+
+			// Add directories
+			for _, dir := range absDirsToAdd {
+				m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(dir)})
+				m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+			}
+
+			// Sleep to ensure the service is properly installed before we hit
+			// submit on the TUI and trigger the reinstall.
+			time.Sleep(time.Second)
+
+			// Submit
+			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+
+			// Check service status
+			status, err := svc.Status(context.Background())
+			require.NoError(t, err, "Cannot get status")
+			require.Contains(t, status, configPath, fmt.Sprintf("Expected config file to be correct. TUI view: %q", m.View()))
+
+			for _, dir := range append(absPrevDirs, absDirsToAdd...) {
+				require.Contains(t, status, dir, "Expected directory to be watched")
+			}
+		})
+	}
 }
 
 // updateModel calls Update() on the model and executes returned commands.
@@ -530,6 +657,9 @@ func TestMain(m *testing.M) {
 		}
 		os.Exit(0)
 	}
+
+	// Simulate a color terminal
+	lipgloss.SetColorProfile(termenv.ANSI256)
 
 	flag.BoolVar(&update, "update", false, "update golden files")
 	flag.BoolVar(&stdout, "stdout", false, "print output to stdout for debugging purposes")

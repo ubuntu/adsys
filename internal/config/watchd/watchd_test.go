@@ -84,32 +84,6 @@ func TestDirsFromConfigFile(t *testing.T) {
 	}
 }
 
-func TestFilterAbsentDirs(t *testing.T) {
-	tests := map[string]struct {
-		inputDirs     []string
-		existingPaths []string
-
-		wantDirs []string
-	}{
-		"no existing dirs":   {inputDirs: []string{"dir1", "dir2"}},
-		"some existing dirs": {inputDirs: []string{"dir1", "dir2"}, existingPaths: []string{"dir1/", "file1"}, wantDirs: []string{"dir1"}},
-		"all existing dirs":  {inputDirs: []string{"dir1", "dir2"}, existingPaths: []string{"dir1/", "dir2/"}, wantDirs: []string{"dir1", "dir2"}},
-	}
-	for name, tc := range tests {
-		tc := tc
-		name := name
-		t.Run(name, func(t *testing.T) {
-			tmpdir := t.TempDir()
-			testutils.Chdir(t, tmpdir)
-			for _, path := range tc.existingPaths {
-				testutils.CreatePath(t, path)
-			}
-			got := watchdconfig.FilterAbsentDirs(context.Background(), tc.inputDirs)
-			require.ElementsMatch(t, tc.wantDirs, got)
-		})
-	}
-}
-
 func TestWriteConfig(t *testing.T) {
 	tests := map[string]struct {
 		dirs             []string

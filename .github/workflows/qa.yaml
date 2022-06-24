@@ -120,7 +120,7 @@ jobs:
         run: go test ${{ env.packages }}
       - name: Run tests (with race detector)
         env:
-          ADSYS_SKIP_INTEGRATION_TESTS: 1
+          ADWATCHD_SKIP_INTEGRATION_TESTS: 1
         run: go test -race ${{ env.packages }}
         # There are some cryptic "The pipe has been closed" errors on Windows
         # that arise from running the tests with the race detector enabled. We
