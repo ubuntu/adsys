@@ -135,7 +135,7 @@ func New() *App {
 	a.viper = viper.New()
 
 	cmdhandler.InstallVerboseFlag(&a.rootCmd, a.viper)
-	cmdhandler.InstallConfigFlag(&a.rootCmd)
+	cmdhandler.InstallConfigFlag(&a.rootCmd, true)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().StringP("cache-dir", "", consts.DefaultCacheDir, i18n.G("directory where ADsys caches GPOs downloads and policies."))

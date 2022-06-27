@@ -96,6 +96,9 @@ func TestInit(t *testing.T) {
 		notInConfigDir     bool
 		changeConfigWith   string
 
+		subcommand             bool
+		configFlagOnSubcommand bool
+
 		errFromCallbackOn int
 
 		want               string
@@ -127,6 +130,14 @@ func TestInit(t *testing.T) {
 		// Other configuration options
 		"Configuration flag, not in config dir": {
 			withConfigFlagSet: "custom.yaml", notInConfigDir: true,
+			want: "customconfigvalue", wantCallbackCalled: 1,
+		},
+		"Configuration flag on parent, not in config dir, init on subcommand": {
+			withConfigFlagSet: "custom.yaml", notInConfigDir: true, subcommand: true,
+			want: "customconfigvalue", wantCallbackCalled: 1,
+		},
+		"Configuration flag on subcommand, not in config dir, init on subcommand": {
+			withConfigFlagSet: "custom.yaml", notInConfigDir: true, subcommand: true, configFlagOnSubcommand: true,
 			want: "customconfigvalue", wantCallbackCalled: 1,
 		},
 		"Flag is supported": {
@@ -196,22 +207,34 @@ func TestInit(t *testing.T) {
 
 			// Setup config to read
 			vip := viper.New()
-			cmd := cobra.Command{}
-			cmd.PersistentFlags().String("value", "", "value flag")
-			err := vip.BindPFlag("value", cmd.PersistentFlags().Lookup("value"))
+			rootCmd := cobra.Command{}
+			rootCmd.PersistentFlags().String("value", "", "value flag")
+			err := vip.BindPFlag("value", rootCmd.PersistentFlags().Lookup("value"))
 			require.NoError(t, err, "Setup: can't bind value flag to viper")
 
 			if tc.withValueFlagSet {
-				err := cmd.PersistentFlags().Set("value", "flagvalue")
+				err := rootCmd.PersistentFlags().Set("value", "flagvalue")
 				require.NoError(t, err, "Setup: can’t set value flag")
 			}
 
 			if !tc.noVerboseFlag {
-				cmd.PersistentFlags().CountP("verbose", "v", "verbose flag")
+				rootCmd.PersistentFlags().CountP("verbose", "v", "verbose flag")
 			}
 
-			if !tc.noConfigFlag {
-				cmd.PersistentFlags().String("config", "", "config flag")
+			if !tc.noConfigFlag && !tc.configFlagOnSubcommand {
+				rootCmd.PersistentFlags().String("config", "", "config flag")
+			}
+
+			cmdFlags := rootCmd.PersistentFlags()
+			cmd := rootCmd
+			if tc.subcommand {
+				subcmd := cobra.Command{}
+				if tc.configFlagOnSubcommand {
+					cmdFlags = subcmd.Flags()
+					cmdFlags.String("config", "", "config flag")
+				}
+				rootCmd.AddCommand(&subcmd)
+				cmd = subcmd
 			}
 
 			if tc.withConfigFlagSet != "" {
@@ -220,7 +243,7 @@ func TestInit(t *testing.T) {
 					err = os.WriteFile(p, []byte("value: customconfigvalue"), 0600)
 					require.NoError(t, err, "Setup: failed to write custom config file")
 				}
-				err := cmd.PersistentFlags().Set("config", p)
+				err := cmdFlags.Set("config", p)
 				require.NoError(t, err, "Setup: can’t set config flag")
 			}
 
