@@ -1,0 +1,13 @@
+[1;4;4mU[0m[1;4;4mb[0m[1;4;4mu[0m[1;4;4mn[0m[1;4;4mt[0m[1;4;4mu[0m[4m [0m[1;4;4mA[0m[1;4;4mD[0m[4m [0m[1;4;4mW[0m[1;4;4ma[0m[1;4;4mt[0m[1;4;4mc[0m[1;4;4mh[0m[4m [0m[1;4;4mD[0m[1;4;4ma[0m[1;4;4me[0m[1;4;4mm[0m[1;4;4mo[0m[1;4;4mn[0m[4m [0m[1;4;4mI[0m[1;4;4mn[0m[1;4;4ms[0m[1;4;4mt[0m[1;4;4ma[0m[1;4;4ml[0m[1;4;4ml[0m[1;4;4me[0m[1;4;4mr[0m
+
+[1;38;5;166mConfig file: [0m[1;7;38;5;166mC[0m[38;5;240monfig file location (leave blank for default: #BINDIR#/myprevconfig.yaml)[0m
+[38;5;220m[0m                                               
+[38;5;220mService already exists and will be reconfigured[0m
+[38;5;220m[0m                                               
+
+[1mDirectories:[0m
+[1m> [0mfoo/bar 
+[1m> [0mfoo/baz 
+
+
+[ [38;5;240mUpdate[0m ]

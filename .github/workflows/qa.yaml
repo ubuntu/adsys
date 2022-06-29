@@ -2,7 +2,9 @@ name: QA
 on:
   push:
     branches:
-    - main
+      - main
+    tags:
+      - '*'
   pull_request:
 
 jobs:
@@ -43,14 +45,14 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
+    env:
+      sudo_packages: ./cmd/adwatchd/integration_tests ./internal/watchdtui
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v3
         with:
           go-version-file: go.mod
           cache: true
-      # We add a new user and execute under it for file permissions to be taken into account
-      # as root can write in RO directories.
       - name: Install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -65,11 +67,20 @@ jobs:
         run: |
           set -eu
 
-          go test -coverpkg=./... -coverprofile=/tmp/coverage.txt.full -covermode=count ./...
-          # Filter out test utilities and generated files
-          grep -v -e "testutils" -e "pb.go:" "/tmp/coverage.txt.full" > "/tmp/coverage.txt"
+          ADSYS_SKIP_SUDO_TESTS=1 go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=count ./...
+
+          # Run integration tests that need sudo
+          # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
+          sudo -E $(which go) test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=count ${{ env.sudo_packages }}
+
+          # Combine coverage files, and filter out test utilities and generated files
+          echo "mode: set" > /tmp/coverage.combined.out
+          grep -hv -e "mode: set" -e "testutils" -e "pb.go:" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
       - name: Run tests (with race detector)
-        run: go test -race ./...
+        run: |
+          ADSYS_SKIP_SUDO_TESTS=1 go test -race ./...
+          # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
+          sudo -E $(which go) test -race ${{ env.sudo_packages }}
       - name: Install curl for codecov
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -77,7 +88,58 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
-          file: /tmp/coverage.txt
+          file: /tmp/coverage.combined.out
+
+  adwatchd-tests:
+    name: Windows tests for adwatchd
+    runs-on: windows-latest
+    env:
+      packages: ./internal/loghooks ./internal/watchdservice ./internal/watchdtui ./internal/watcher ./internal/config/watchd ./cmd/adwatchd/integration_tests
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build installer
+        run: |
+          tag=$(git describe --tags)
+          export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$tag
+
+          # Transforms git describe output:
+          # - from X.Y.Z-P-gSHA to X.Y.Z.P for untagged commits
+          # - from vX.Y.Z to X.Y.Z for tagged commits
+          INSTALLER_VERSION=$(echo $tag | tr -d v | tr '-' '.' | cut -d. -f-4)
+
+          go build ./cmd/adwatchd
+          iscc.exe //DAPP_VERSION=$INSTALLER_VERSION installer/setup.iss
+        shell: bash
+      - name: Run tests
+        run: go test ${{ env.packages }}
+      - name: Run tests (with race detector)
+        env:
+          ADWATCHD_SKIP_INTEGRATION_TESTS: 1
+        run: go test -race ${{ env.packages }}
+        # There are some cryptic "The pipe has been closed" errors on Windows
+        # that arise from running the tests with the race detector enabled. We
+        # believe this originates outside our code, thus we avoid running the
+        # integration suite with the race detector.
+        #
+        # As the Linux job already exercises the entire testsuite with race
+        # detection enabled and the code is mostly platform independent, this
+        # should be a safe action to take.
+      - name: Attach installer artifact to workflow run
+        uses: actions/upload-artifact@v3
+        with:
+          name: adwatchd_setup
+          path: installer/Output/adwatchd_setup.exe
+      - name: Draft release and publish installer artifact
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: installer/Output/adwatchd_setup.exe
 
   generators:
     name: Generated files are up to date

@@ -1,6 +1,7 @@
 # Binaries for programs, uncommited generated code and plugins
 cmd/adsysd/adsysd
 cmd/admxgen/admxgen
+cmd/adwatchd/adwatchd
 generated/
 __pycache__/
 
@@ -16,6 +17,7 @@ vendor/
 
 # Package artefacts
 obj-x86_64-linux-gnu/
+installer/Output
 
 # Various cruft to not consider by default
 *.log
@@ -23,9 +25,12 @@ obj-x86_64-linux-gnu/
 
 # Packaging artefacts
 debian/*debhelper*
-debian/adsys*
 debian/debhelper-build-stamp
 debian/files
+debian/*.substvars
+debian/tmp
+debian/adsys
+debian/adsys-windows
 
 # Local testing
 /adsysd

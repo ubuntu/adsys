@@ -2,6 +2,7 @@ package cmdhandler
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -62,4 +63,15 @@ func InstallConfigFlag(cmd *cobra.Command, persistent bool) *string {
 		target = cmd.PersistentFlags()
 	}
 	return target.StringP("config", "c", "", i18n.G("use a specific configuration file"))
+}
+
+// CalledCmd returns the actual command called by the user inferred from the arguments.
+func CalledCmd(cmd *cobra.Command) (*cobra.Command, error) {
+	cmdArgs := strings.Fields(cmd.CommandPath())[1:]
+	cmd, _, err := cmd.Find(cmdArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	return cmd, nil
 }

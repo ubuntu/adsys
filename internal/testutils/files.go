@@ -14,6 +14,43 @@ import (
 	"github.com/termie/go-shutil"
 )
 
+// Chdir changes current directory to dir.
+// The previous current directory is restored when the test ends.
+func Chdir(t *testing.T, dir string) {
+	t.Helper()
+
+	orig, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Setup: Can’t get current directory: %v", err)
+	}
+	if err := os.Chdir(dir); err != nil {
+		t.Fatalf("Setup: Can’t change current directory: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chdir(orig); err != nil {
+			t.Fatalf("Teardown: Can’t restore current directory: %v", err)
+		}
+	})
+}
+
+// CreatePath creates a directory or a file with dummy content based on whether
+// the given path contains a slash character at the end.
+func CreatePath(t *testing.T, path string) {
+	t.Helper()
+
+	if strings.HasSuffix(path, "/") {
+		err := os.MkdirAll(path, 0750)
+		require.NoError(t, err, "Setup: cannot create directory %s", path)
+		return
+	}
+
+	err := os.MkdirAll(filepath.Dir(path), 0750)
+	require.NoError(t, err, "Setup: can't create directory for file")
+
+	err = os.WriteFile(path, []byte("new content"), 0600)
+	require.NoError(t, err, "Setup: could not write sample file")
+}
+
 // NormalizeGoldenName returns the name of the golden file with illegal Windows
 // characters replaced or removed.
 func NormalizeGoldenName(t *testing.T, name string) string {

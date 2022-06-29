@@ -25,7 +25,7 @@ adsys (0.8.5) kinetic; urgency=medium
     (LP: #1973748)
   * Ensure we can execute machine and user scripts:
     /run is now noexec on Ubuntu. Ensure that we can execute the scripts in
-    /run/adsys subdirectories. The scripts mecanism has been reviewed by the
+    /run/adsys subdirectories. The scripts mechanism has been reviewed by the
     security team, so we can reset them as executable. (LP: #1973751)
   * Move integration tests under cmd/adsysd and admxgen binary to cmd/admxgen
     to prepare future adwatchd daemon under cmd/ which will be SRUed with an

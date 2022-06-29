@@ -1,7 +1,11 @@
 package log_test
 
 import (
+	"bytes"
+	"context"
 	"errors"
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -215,6 +219,33 @@ func TestLogStreamsAreSeparated(t *testing.T) {
 		[]string{"level=debug msg=", "Connecting as [[123456:"},
 		[]string{"level=warning msg=", "something stream 2"})
 }
+
+func TestLogAddHook(t *testing.T) {
+	log.AddHook(context.Background(), &mockLogHook{})
+
+	// capture stderr
+	r, w, err := os.Pipe()
+	require.NoError(t, err, "Setup: pipe shouldn’t fail")
+	orig := os.Stderr
+	os.Stderr = w
+
+	log.Info(context.Background(), "")
+
+	// restore and collect
+	os.Stderr = orig
+	w.Close()
+	var out bytes.Buffer
+	_, err = io.Copy(&out, r)
+	require.NoError(t, err, "Couldn’t copy stderr to buffer")
+
+	require.Contains(t, out.String(), "hook fired", "does not contain expected hook message")
+}
+
+type mockLogHook struct{}
+
+// Fire is called by logrus and will print a message to stderr.
+func (*mockLogHook) Fire(entry *logrus.Entry) error { return errors.New("hook fired") }
+func (*mockLogHook) Levels() []logrus.Level         { return logrus.AllLevels }
 
 func requireLog(t *testing.T, logs string, want ...[]string) {
 	t.Helper()

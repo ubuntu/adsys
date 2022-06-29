@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra/doc"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
+	"github.com/ubuntu/adsys/cmd/adwatchd/commands"
 	"github.com/ubuntu/adsys/internal/generators"
 )
 
@@ -39,8 +40,9 @@ func main() {
 
 	c := client.New()
 	d := daemon.New()
+	w := commands.New()
 
-	commands := []cobra.Command{c.RootCmd(), d.RootCmd()}
+	commands := []cobra.Command{c.RootCmd(), d.RootCmd(), w.RootCmd()}
 	switch os.Args[1] {
 	case "completion":
 		if len(os.Args) < 3 {
@@ -63,7 +65,7 @@ func main() {
 		if generators.InstallOnlyMode() {
 			return
 		}
-		updateFromCmd(commands, filepath.Join("doc", "11.-Command-line-reference.md"))
+		updateFromCmd(commands, filepath.Join("doc", "12.-Command-line-reference.md"))
 	default:
 		log.Fatalf(usage, os.Args[0])
 	}

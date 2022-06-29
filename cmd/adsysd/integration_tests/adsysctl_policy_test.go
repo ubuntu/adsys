@@ -58,7 +58,7 @@ func TestPolicyAdmx(t *testing.T) {
 				distro = tc.distroOption
 			}
 			dest := t.TempDir()
-			chdir(t, dest)
+			testutils.Chdir(t, dest)
 			_, err := runClient(t, conf, args...)
 			if tc.wantErr {
 				require.Error(t, err, "client should exit with an error")
@@ -941,7 +941,7 @@ func TestPolicyDebugGPOListScript(t *testing.T) {
 				defer runDaemon(t, conf)()
 			}
 
-			chdir(t, os.TempDir())
+			testutils.Chdir(t, os.TempDir())
 
 			_, err := runClient(t, conf, "policy", "debug", "gpolist-script")
 			if tc.wantErr {
@@ -997,25 +997,6 @@ func modifyAndAddUsers(t *testing.T, new string, users ...string) (passwd string
 	}
 
 	return dest
-}
-
-// chdir change current directory to dir.
-// The previous current directory is restored when the test ends.
-func chdir(t *testing.T, dir string) {
-	t.Helper()
-
-	orig, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("Setup: Can’t get current directory: %v", err)
-	}
-	if err := os.Chdir(dir); err != nil {
-		t.Fatalf("Setup: Can’t change current directory: %v", err)
-	}
-	t.Cleanup(func() {
-		if err := os.Chdir(orig); err != nil {
-			t.Fatalf("Teardown: Can’t restore current directory: %v", err)
-		}
-	})
 }
 
 // setupSubprocessForTest prepares a subprocess with a mock passwd file for running the tests.

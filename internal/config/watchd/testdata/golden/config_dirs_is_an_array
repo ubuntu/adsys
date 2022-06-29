@@ -1,0 +1,5 @@
+verbose: 0
+force: false
+dirs:
+- /path/to/dir1
+- /path/to/dir2

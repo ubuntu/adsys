@@ -1,0 +1,4 @@
+verbose: 0
+dirs:
+- #ABSPATH#
+- #ABSPATH#/foo/bar
