@@ -111,7 +111,7 @@ To load completions for every new session, execute once:
 
 ###### macOS:
 
-	adsysctl completion bash > $(brew --prefix)/etc/bash_completion.d/adsysctl
+	adsysctl completion bash > /usr/local/etc/bash_completion.d/adsysctl
 
 You will need to start a new shell for this setup to take effect.
 
@@ -224,10 +224,6 @@ to enable it.  You can execute the following once:
 
 	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
-To load completions in your current shell session:
-
-	source <(adsysctl completion zsh); compdef _adsysctl adsysctl
-
 To load completions for every new session, execute once:
 
 ###### Linux:
@@ -236,7 +232,7 @@ To load completions for every new session, execute once:
 
 ###### macOS:
 
-	adsysctl completion zsh > $(brew --prefix)/share/zsh/site-functions/_adsysctl
+	adsysctl completion zsh > /usr/local/share/zsh/site-functions/_adsysctl
 
 You will need to start a new shell for this setup to take effect.
 
@@ -609,7 +605,7 @@ To load completions for every new session, execute once:
 
 ###### macOS:
 
-	adsysd completion bash > $(brew --prefix)/etc/bash_completion.d/adsysd
+	adsysd completion bash > /usr/local/etc/bash_completion.d/adsysd
 
 You will need to start a new shell for this setup to take effect.
 
@@ -737,10 +733,6 @@ to enable it.  You can execute the following once:
 
 	echo "autoload -U compinit; compinit" >> ~/.zshrc
 
-To load completions in your current shell session:
-
-	source <(adsysd completion zsh); compdef _adsysd adsysd
-
 To load completions for every new session, execute once:
 
 ###### Linux:
@@ -749,7 +741,7 @@ To load completions for every new session, execute once:
 
 ###### macOS:
 
-	adsysd completion zsh > $(brew --prefix)/share/zsh/site-functions/_adsysd
+	adsysd completion zsh > /usr/local/share/zsh/site-functions/_adsysd
 
 You will need to start a new shell for this setup to take effect.
 
@@ -846,7 +838,6 @@ See each sub-command's help for details on how to use the generated script.
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -892,7 +883,6 @@ adwatchd completion bash
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -929,7 +919,6 @@ adwatchd completion fish [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -963,7 +952,6 @@ adwatchd completion powershell [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1007,7 +995,6 @@ adwatchd completion zsh [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1030,6 +1017,7 @@ adwatchd run [flags]
 ##### Options
 
 ```
+  -c, --config string    use a specific configuration file
   -d, --dirs directory   a directory to check for changes (can be specified multiple times)
   -f, --force            force the program to run even if another instance is already running
   -h, --help             help for run
@@ -1038,7 +1026,6 @@ adwatchd run [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1050,6 +1037,10 @@ Manages the adwatchd service
 
 The service command allows the user to interact with the adwatchd service. It can manage and query the service status, and also install and uninstall the service.
 
+```
+adwatchd service COMMAND [flags]
+```
+
 ##### Options
 
 ```
@@ -1059,7 +1050,6 @@ The service command allows the user to interact with the adwatchd service. It ca
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1081,13 +1071,13 @@ adwatchd service install [flags]
 ##### Options
 
 ```
-  -h, --help   help for install
+  -c, --config string   use a specific configuration file
+  -h, --help            help for install
 ```
 
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1112,7 +1102,6 @@ adwatchd service restart [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1137,7 +1126,6 @@ adwatchd service start [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1162,7 +1150,6 @@ adwatchd service status [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1187,7 +1174,6 @@ adwatchd service stop [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1212,7 +1198,6 @@ adwatchd service uninstall [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
@@ -1233,7 +1218,6 @@ adwatchd version [flags]
 ##### Options inherited from parent commands
 
 ```
-  -c, --config string   use a specific configuration file
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
