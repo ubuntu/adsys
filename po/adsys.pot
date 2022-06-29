@@ -22,6 +22,19 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
+#: internal/watchdservice/watchdservice.go:291
+#, c-format
+msgid ""
+"\n"
+"  - %s"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:498
+msgid ""
+"\n"
+"Service already exists and will be reconfigured\n"
+msgstr ""
+
 #: internal/policies/scripts/scripts.go:289
 msgid "%q is a directory and not a file"
 msgstr ""
@@ -36,6 +49,7 @@ msgid "%s\t\t%s"
 msgstr ""
 
 #: cmd/adsysd/client/version.go:27 cmd/adsysd/daemon/version.go:23
+#: cmd/adwatchd/commands/version.go:24
 #, c-format
 msgid "%s\t%s"
 msgstr ""
@@ -52,9 +66,19 @@ msgstr ""
 msgid "%s :%v"
 msgstr ""
 
+#: internal/watchdtui/watchdtui.go:475
+#, c-format
+msgid "%s installing service... please wait."
+msgstr ""
+
 #: internal/policies/privilege/privilege.go:253
 #, c-format
 msgid "%s is a directory. Ignoring."
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:425
+#, c-format
+msgid "%s is a directory; will create %s.yaml inside"
 msgstr ""
 
 #: internal/ad/admxgen/dconf/dconf.go:256
@@ -79,6 +103,11 @@ msgstr ""
 msgid "%s requires a valid subcommand"
 msgstr ""
 
+#: internal/watchdtui/watchdtui.go:413
+#, c-format
+msgid "%s will be the absolute path"
+msgstr ""
+
 #: internal/adsysservice/service.go:130
 #, c-format
 msgid "%s, no gpo applied found"
@@ -87,6 +116,11 @@ msgstr ""
 #: internal/adsysservice/service.go:115
 #, c-format
 msgid "%s, updated on %s"
+msgstr ""
+
+#: cmd/adwatchd/commands/run.go:38
+#, c-format
+msgid "%s, use --force to override"
 msgstr ""
 
 #: internal/cmdhandler/suggest.go:58
@@ -106,6 +140,21 @@ msgstr ""
 #: cmd/adsysd/client/policy.go:271
 #, c-format
 msgid "%s: Locked to system default"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:456
+#, c-format
+msgid "%s: directory does not exist, please enter a valid path"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:430
+#, c-format
+msgid "%s: file already exists and will be overwritten"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:459
+#, c-format
+msgid "%s: is not a directory"
 msgstr ""
 
 #: internal/ad/ad.go:262
@@ -154,7 +203,11 @@ msgstr ""
 msgid "AD integration daemon"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:36
+#: cmd/adwatchd/commands/main.go:67
+msgid "AD watch daemon"
+msgstr ""
+
+#: internal/cmdhandler/cmdhandler.go:37
 msgid "Alias of %q"
 msgstr ""
 
@@ -168,6 +221,16 @@ msgstr ""
 
 #: internal/authorizer/authorizer.go:150
 msgid "Authorized as being administrator"
+msgstr ""
+
+#: internal/watcher/watcher.go:360
+#, c-format
+msgid "Bumping version for %s"
+msgstr ""
+
+#: cmd/adwatchd/commands/main_linux.go:19
+#: cmd/adwatchd/commands/main_windows.go:19
+msgid "Calling quit on a non-interactive service is useless"
 msgstr ""
 
 #: internal/adsysservice/adsysservice.go:311
@@ -188,6 +251,20 @@ msgid ""
 "create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."
 msgstr ""
 
+#: internal/watchdtui/watchdtui.go:166
+#, c-format
+msgid "Config file location (leave blank for default: %s)"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:167
+msgid "Config file: "
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:283
+#, c-format
+msgid "Config file: %s\n"
+msgstr ""
+
 #: internal/adsysservice/service.go:125
 msgid "Connected users:"
 msgstr ""
@@ -204,6 +281,18 @@ msgstr ""
 
 #: internal/ad/download.go:242
 msgid "Could not clean up temporary directory:"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:479
+msgid "Could not install service: %v\n"
+msgstr ""
+
+#: internal/config/watchd/watchd.go:33
+msgid "Could not read config file: %v"
+msgstr ""
+
+#: internal/config/watchd/watchd.go:38
+msgid "Could not unmarshal config YAML: %v"
 msgstr ""
 
 #: internal/grpc/grpcerror/grpcerror.go:28
@@ -224,6 +313,14 @@ msgstr ""
 
 #: internal/cmdhandler/suggest.go:51
 msgid "Did you mean this?\n"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:503
+msgid "Directories:"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:177
+msgid "Directory to watch (one per line)"
 msgstr ""
 
 #: cmd/adsysd/client/doc.go:24
@@ -247,9 +344,36 @@ msgstr ""
 msgid "Error from server: %v"
 msgstr ""
 
-#: internal/config/config.go:61
+#: internal/watcher/watcher.go:235
+msgid "Failed add watcher on %q: %s"
+msgstr ""
+
+#: internal/watcher/watcher.go:352
+#, c-format
+msgid "Failed to bump %s version: %s"
+msgstr ""
+
+#: internal/config/config.go:64
 msgid ""
 "Failed to get current executable path, not adding it as a config dir: %v"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:274
+msgid "Failed to get current executable path: %v"
+msgstr ""
+
+#: internal/watcher/watcher.go:243
+msgid "Failed to remove watcher on %q: %s"
+msgstr ""
+
+#: internal/watcher/watcher.go:224
+#, c-format
+msgid "Failed to stat: %s"
+msgstr ""
+
+#: internal/watcher/watcher.go:231
+#, c-format
+msgid "Failed to watch: %s"
 msgstr ""
 
 #: cmd/adsysd/client/doc.go:54
@@ -269,12 +393,41 @@ msgstr ""
 msgid "GetsockoptUcred() error: %s"
 msgstr ""
 
+#: internal/watchdservice/watchdservice.go:231
+msgid "Getting status from service"
+msgstr ""
+
+#: internal/watcher/watcher.go:286
+msgid "Got event error: %v"
+msgstr ""
+
+#: internal/watcher/watcher.go:214
+msgid "Got event: %v"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:465
+msgid "Install"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:347
+msgid "Installing watcher service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:99
+msgid "Installs the service"
+msgstr ""
+
 #: internal/adsysservice/service.go:119
 msgid "Machine"
 msgstr ""
 
 #: internal/adsysservice/service.go:116
 msgid "Machine, no gpo applied found"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:16
+#, c-format
+msgid "Manages the %s service"
 msgstr ""
 
 #: internal/adsysservice/service.go:103
@@ -334,20 +487,59 @@ msgstr ""
 msgid "Requests to stop the service once all connections are done"
 msgstr ""
 
+#: internal/watchdservice/watchdservice.go:207
+msgid "Restarting service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:66
+#, c-format
+msgid "Restarts the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:65
+msgid "Restarts the service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:79
+msgid "Returns service status"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:80
+#, c-format
+msgid "Returns the status of the %s service."
+msgstr ""
+
 #: cmd/adsysd/client/version.go:17
 msgid "Returns version of client and service"
 msgstr ""
 
-#: cmd/adsysd/daemon/version.go:14
+#: cmd/adsysd/daemon/version.go:14 cmd/adwatchd/commands/version.go:15
 msgid "Returns version of service and exits"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:409
+msgid "Running watcher service"
 msgstr ""
 
 #: cmd/adsysd/daemon/scripts.go:18
 msgid "Runs scripts in the given subdirectory"
 msgstr ""
 
+#: internal/watchdtui/watchdtui.go:483
+msgid "Service adwatchd was successfully installed and is now running."
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:369
+msgid "Service is not installed"
+msgstr ""
+
 #: cmd/adsysd/client/service.go:20
 msgid "Service management"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:256
+#, c-format
+msgid "Service status: %s"
 msgstr ""
 
 #: internal/grpc/grpcerror/grpcerror.go:31
@@ -359,8 +551,38 @@ msgstr ""
 msgid "Serving on %s"
 msgstr ""
 
+#: internal/watchdservice/watchdservice.go:141
+msgid "Starting service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:38
+#, c-format
+msgid "Starts the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/run.go:20
+msgid "Starts the directory watch loop"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:37
+msgid "Starts the service"
+msgstr ""
+
 #: internal/daemon/daemon.go:211
 msgid "Stopping daemon requested."
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:163
+msgid "Stopping service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:52
+#, c-format
+msgid "Stops the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:51
+msgid "Stops the service"
 msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:191
@@ -372,14 +594,64 @@ msgstr ""
 msgid "URL of the Active Directory server. This overrides parsing sssd.conf."
 msgstr ""
 
+#: internal/watchdtui/watchdtui.go:488
+msgid "Ubuntu AD Watch Daemon Installer"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:365
+msgid "Uninstalling watcher service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:119
+#, c-format
+msgid "Uninstalls the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:118
+msgid "Uninstalls the service"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:467
+msgid "Update"
+msgstr ""
+
 #: cmd/adsysd/client/policy.go:92
 msgid ""
 "Updates/Create a policy for current user or given user with its kerberos "
 "ticket"
 msgstr ""
 
+#: internal/watcher/watcher.go:168
+msgid "Updating directories to %v"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:127
+msgid "Updating directories to watch"
+msgstr ""
+
 #: internal/daemon/daemon.go:217
 msgid "Wait for active requests to close."
+msgstr ""
+
+#: internal/watcher/watcher.go:104
+msgid "Watch failed: %v"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:284
+msgid "Watched directories: "
+msgstr ""
+
+#: internal/watcher/watcher.go:295
+msgid "Watcher stopped"
+msgstr ""
+
+#: internal/watcher/watcher.go:308
+#, c-format
+msgid "Watching %s and children"
+msgstr ""
+
+#: internal/watcher/watcher.go:314
+msgid "Watching: %v"
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:82
@@ -390,6 +662,10 @@ msgstr ""
 msgid "Write documentation file(s) to this directory."
 msgstr ""
 
+#: cmd/adwatchd/commands/run.go:54
+msgid "a `directory` to check for changes (can be specified multiple times)"
+msgstr ""
+
 #: cmd/adsysd/client/policy.go:120
 msgid ""
 "all updates the policy of the computer and all the logged in users. -m or "
@@ -398,6 +674,11 @@ msgstr ""
 
 #: cmd/adsysd/daemon/scripts.go:23
 msgid "allow ORDER_FILE to be missing once the scripts are ready."
+msgstr ""
+
+#: cmd/adwatchd/commands/run.go:35
+#, c-format
+msgid "another instance of the %s service is already running"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:188
@@ -421,6 +702,11 @@ msgstr ""
 #: internal/policies/scripts/scripts.go:90
 #, c-format
 msgid "can't apply scripts policy to %s"
+msgstr ""
+
+#: internal/watcher/watcher.go:359
+#, c-format
+msgid "can't bump version for %s"
 msgstr ""
 
 #: internal/policies/scripts/scripts.go:178
@@ -613,7 +899,7 @@ msgstr ""
 msgid "can't save policies to %s"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:170
+#: internal/grpc/logstreamer/log.go:177
 msgid "can't send logs to client: %v"
 msgstr ""
 
@@ -621,9 +907,34 @@ msgstr ""
 msgid "can't serve"
 msgstr ""
 
+#: internal/watcher/watcher.go:140
+msgid "can't start service"
+msgstr ""
+
+#: internal/watcher/watcher.go:149
+msgid "can't stop service"
+msgstr ""
+
+#: internal/watcher/watcher.go:167
+msgid "can't update directories to watch"
+msgstr ""
+
 #: internal/policies/dconf/dconf.go:217
 #, c-format
 msgid "can't update user profile %s"
+msgstr ""
+
+#: internal/watcher/watcher.go:307
+#, c-format
+msgid "can't watch directory and children of %s"
+msgstr ""
+
+#: internal/watcher/watcher.go:185
+msgid "can't watch over %v"
+msgstr ""
+
+#: internal/config/watchd/watchd.go:50
+msgid "can't write config"
 msgstr ""
 
 #: cmd/adsysd/client/doc.go:138
@@ -658,9 +969,17 @@ msgstr ""
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
+#: internal/watchdservice/watchdservice_linux.go:45
+msgid "could not find %s unit on systemd bus: no service installed? %v"
+msgstr ""
+
 #: cmd/adsysd/integration_tests/adsysctl_doc_test.go:224
 #, c-format
 msgid "could not find chapter starting with %s"
+msgstr ""
+
+#: internal/watcher/watcher.go:189
+msgid "could not initialize fsnotify watcher: %v"
 msgstr ""
 
 #: cmd/adsysd/integration_tests/adsysctl_doc_test.go:211
@@ -695,7 +1014,7 @@ msgstr ""
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:162
+#: internal/grpc/logstreamer/log.go:169
 msgid "couldn't send logs to client"
 msgstr ""
 
@@ -709,6 +1028,10 @@ msgstr ""
 
 #: internal/policies/policies.go:227
 msgid "destination %q already exists"
+msgstr ""
+
+#: internal/config/watchd/watchd.go:59 internal/watcher/watcher.go:172
+msgid "directory %q does not exist"
 msgstr ""
 
 #: cmd/adsysd/daemon/daemon.go:141
@@ -738,6 +1061,10 @@ msgstr ""
 #: internal/ad/admxgen/dconf/dconf.go:326
 #, c-format
 msgid "enum id %s referenced by %s doesn't exist in list of enums"
+msgstr ""
+
+#: internal/watcher/watcher.go:366
+msgid "error loading ini contents: %v, creating a new file"
 msgstr ""
 
 #: internal/authorizer/servercreds.go:37
@@ -814,6 +1141,10 @@ msgstr ""
 msgid "failed to apply policy to %q"
 msgstr ""
 
+#: internal/watchdservice/watchdservice.go:126
+msgid "failed to change directories to watch"
+msgstr ""
+
 #: internal/policies/manager.go:188
 msgid "failed to dump policies for %q"
 msgstr ""
@@ -822,8 +1153,21 @@ msgstr ""
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
+#: internal/config/watchd/watchd.go:109
+msgid ""
+"failed to get executable path, using relative path for default config: %v"
+msgstr ""
+
 #: internal/policies/manager.go:228
 msgid "failed to get policy last update time %q (machine: %q)"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:324
+msgid "failed to get service info from arguments"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:346
+msgid "failed to install service"
 msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:263
@@ -854,14 +1198,50 @@ msgstr ""
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
+#: internal/watchdservice/watchdservice.go:206
+msgid "failed to restart service"
+msgstr ""
+
 #: internal/ad/ad.go:234
 msgid "failed to retrieve offline state from SSSD: %v"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:230
+msgid "failed to retrieve status for service"
 msgstr ""
 
 #: internal/ad/ad.go:290
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:407
+msgid "failed to run service"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:140
+msgid "failed to start service"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:162
+msgid "failed to stop service"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:364
+msgid "failed to uninstall service"
+msgstr ""
+
+#: cmd/adwatchd/commands/main.go:114
+msgid "failed to update directories: %v"
+msgstr ""
+
+#: internal/watcher/watcher.go:196
+msgid "failed to watch directory %q: %v"
+msgstr ""
+
+#: cmd/adwatchd/commands/run.go:62
+msgid "force the program to run even if another instance is already running"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:52
@@ -898,7 +1278,7 @@ msgstr ""
 msgid "invalid zip db archive: %w"
 msgstr ""
 
-#: cmd/admxgen/main.go:41 internal/cmdhandler/cmdhandler.go:46
+#: cmd/admxgen/main.go:41 internal/cmdhandler/cmdhandler.go:47
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
@@ -933,9 +1313,17 @@ msgstr ""
 msgid "missing client metadata"
 msgstr ""
 
+#: internal/config/watchd/watchd.go:88
+msgid "missing config file in CLI arguments"
+msgstr ""
+
 #: internal/grpc/logstreamer/server.go:116
 #, c-format
 msgid "missing metadata %s for incoming request"
+msgstr ""
+
+#: internal/config/watchd/watchd.go:53
+msgid "needs at least one directory to watch"
 msgstr ""
 
 #: internal/policies/policies.go:222
@@ -950,6 +1338,14 @@ msgstr ""
 msgid "no chapter %q found in documentation"
 msgstr ""
 
+#: internal/watchdservice/watchdservice.go:287
+msgid "no configured directories"
+msgstr ""
+
+#: internal/watcher/watcher.go:58
+msgid "no directories to watch"
+msgstr ""
+
 #: internal/adsysservice/doc.go:167
 msgid "no file found matching chapter %q"
 msgstr ""
@@ -960,6 +1356,15 @@ msgstr ""
 
 #: internal/policies/policies.go:239
 msgid "no relSrc provided to look into database archive"
+msgstr ""
+
+#: internal/watcher/watcher.go:341
+#, c-format
+msgid "no root directory matching %s found"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:250
+msgid "not installed"
 msgstr ""
 
 #: cmd/admxgen/main.go:96
@@ -988,6 +1393,10 @@ msgstr ""
 msgid "permission denied"
 msgstr ""
 
+#: internal/watchdtui/watchdtui.go:444
+msgid "please enter at least one directory"
+msgstr ""
+
 #: internal/policies/manager.go:242
 msgid "policies were not applied for %q: %v"
 msgstr ""
@@ -1012,6 +1421,16 @@ msgstr ""
 msgid "root filesystem path to use. Default to /."
 msgstr ""
 
+#: cmd/adwatchd/commands/run.go:29
+msgid ""
+"run command needs at least one directory to watch either with --dirs or via "
+"the configuration file"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:244
+msgid "running"
+msgstr ""
+
 #: internal/policies/scripts/scripts.go:172
 msgid "script %q doesn't exist in SYSVOL scripts/ subdirectory"
 msgstr ""
@@ -1032,7 +1451,7 @@ msgstr ""
 msgid "show overridden rules in each GPOs."
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:53
+#: internal/cmdhandler/cmdhandler.go:54
 msgid ""
 "socket path to use between daemon and client. Can be overridden by systemd "
 "socket activation."
@@ -1044,8 +1463,16 @@ msgid ""
 "categories: %v"
 msgstr ""
 
+#: internal/watchdservice/watchdservice.go:246
+msgid "stopped"
+msgstr ""
+
 #: internal/ad/admxgen/admxgen.go:353
 msgid "the following policies have not been assigned to a category: %v"
+msgstr ""
+
+#: internal/watcher/watcher.go:112
+msgid "the service is already stopping or not running"
 msgstr ""
 
 #: cmd/adsysd/client/client.go:92
@@ -1059,6 +1486,18 @@ msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
 
+#: internal/config/watchd/watchd.go:65
+msgid "unable to create config directory: %v"
+msgstr ""
+
+#: internal/config/watchd/watchd.go:71
+msgid "unable to marshal: %v"
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:252
+msgid "undefined"
+msgstr ""
+
 #: internal/daemon/daemon.go:111
 #, c-format
 msgid "unexpected number of systemd socket activation (%d != 1)"
@@ -1070,10 +1509,11 @@ msgstr ""
 
 #: internal/adsysservice/service.go:86 internal/adsysservice/service.go:87
 #: internal/adsysservice/service.go:108
+#: internal/watchdservice/watchdservice.go:248
 msgid "unknown"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:60
+#: internal/cmdhandler/cmdhandler.go:65
 msgid "use a specific configuration file"
 msgstr ""
 
