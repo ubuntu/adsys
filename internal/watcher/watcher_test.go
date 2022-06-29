@@ -341,6 +341,60 @@ func TestUpdateDirsFailing(t *testing.T) {
 	assertGPTVersionEquals(t, destRemove, 3)
 }
 
+func TestUpdateDirsWithEmptyDirSlice(t *testing.T) {
+	t.Parallel()
+
+	temp := t.TempDir()
+	dirToWatch := filepath.Join(temp, "watchdir")
+	testutils.Copy(t, filepath.Join("testdata", "withsubdir"), dirToWatch)
+
+	// Instantiate the object
+	w, err := watcher.New(context.Background(), []string{dirToWatch})
+	require.NoError(t, err, "Setup: Can't create watcher")
+
+	// Start it
+	err = w.Start(mockService{})
+	require.NoError(t, err, "Setup: Can't start watcher")
+	defer w.Stop(mockService{})
+
+	// Update the watched directories with an empty slice
+	err = w.UpdateDirs(context.Background(), []string{})
+	require.ErrorContains(t, err, "need at least one directory to watch", "Updating directories should have failed")
+}
+
+func TestUpdateDirsOnStoppedWatcher(t *testing.T) {
+	t.Parallel()
+
+	temp := t.TempDir()
+	prevDir := filepath.Join(temp, "prevdir")
+	curDir := filepath.Join(temp, "curdir")
+	testutils.Copy(t, filepath.Join("testdata", "withsubdir"), prevDir)
+	testutils.Copy(t, filepath.Join("testdata", "withsubdir"), curDir)
+
+	// Instantiate the object
+	w, err := watcher.New(context.Background(), []string{prevDir})
+	require.NoError(t, err, "Setup: Can't create watcher")
+
+	// Check initial GPT version on the new directory
+	assertGPTVersionEquals(t, curDir, 2)
+
+	// Update the stopped watcher with the new directory
+	err = w.UpdateDirs(context.Background(), []string{curDir})
+	require.NoError(t, err, "UpdateDirs should have succeeded")
+	defer w.Stop(mockService{})
+
+	// Update something in the new directory to confirm it's watched
+	updateFiles(t, []string{filepath.Join(curDir, "alreadyexists")})
+
+	// Stop the watcher
+	err = w.Stop(mockService{})
+	require.NoError(t, err, "Can't stop watcher")
+
+	// Check updated GPT version on the new directory
+	testutils.WaitForWrites(t)
+	assertGPTVersionEquals(t, curDir, 3)
+}
+
 func TestStopWithoutStart(t *testing.T) {
 	t.Parallel()
 
