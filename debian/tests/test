@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -e
+
+HELP_MSG="Script argument must be one of: no-sudo, sudo"
+
+if [ "$#" -ne 1 ]; then
+    echo "$HELP_MSG"
+    exit 1
+fi
+
+case $1 in
+    no-sudo)
+        echo "Running non-root tests..."
+        export ADSYS_SKIP_INTEGRATION_TESTS=1
+        export ADSYS_SKIP_SUDO_TESTS=1
+        PACKAGES_TO_TEST=./...
+        ;;
+    sudo)
+        echo "Running root tests..."
+        DIR_NAME=$(dirname "$0")
+        PACKAGES_TO_TEST=$(cat "$DIR_NAME"/.sudo-packages)
+        ;;
+    *)
+        echo "$HELP_MSG"
+        exit 1
+        ;;
+esac
+
+# shellcheck disable=SC2086 # Splitting is intentional
+go test -v -mod=vendor $PACKAGES_TO_TEST
