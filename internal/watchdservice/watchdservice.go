@@ -181,7 +181,7 @@ func (s *WatchdService) Stop(ctx context.Context) (err error) {
 
 func (s *WatchdService) waitForStatus(ctx context.Context, status service.Status) error {
 	// Check that the service updated correctly.
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	var gotStatus bool
