@@ -167,6 +167,10 @@ func (w *Watcher) UpdateDirs(ctx context.Context, dirs []string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't update directories to watch"))
 	log.Debugf(ctx, i18n.G("Updating directories to %v"), dirs)
 
+	if len(dirs) == 0 {
+		return errors.New(i18n.G("need at least one directory to watch"))
+	}
+
 	for _, dir := range dirs {
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
 			return fmt.Errorf(i18n.G("directory %q does not exist"), dir)
@@ -174,7 +178,7 @@ func (w *Watcher) UpdateDirs(ctx context.Context, dirs []string) (err error) {
 	}
 
 	if err := w.send(&ctx, stopCmd, nil); err != nil {
-		return err
+		log.Warningf(ctx, i18n.G("Error stopping watcher: %v"), err)
 	}
 
 	return w.send(&ctx, startCmd, dirs)
