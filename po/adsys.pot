@@ -223,7 +223,7 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/watcher/watcher.go:360
+#: internal/watcher/watcher.go:364
 #, c-format
 msgid "Bumping version for %s"
 msgstr ""
@@ -344,11 +344,15 @@ msgstr ""
 msgid "Error from server: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:235
+#: internal/watcher/watcher.go:181
+msgid "Error stopping watcher: %v"
+msgstr ""
+
+#: internal/watcher/watcher.go:239
 msgid "Failed add watcher on %q: %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:352
+#: internal/watcher/watcher.go:356
 #, c-format
 msgid "Failed to bump %s version: %s"
 msgstr ""
@@ -362,16 +366,16 @@ msgstr ""
 msgid "Failed to get current executable path: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:243
+#: internal/watcher/watcher.go:247
 msgid "Failed to remove watcher on %q: %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:224
+#: internal/watcher/watcher.go:228
 #, c-format
 msgid "Failed to stat: %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:231
+#: internal/watcher/watcher.go:235
 #, c-format
 msgid "Failed to watch: %s"
 msgstr ""
@@ -397,11 +401,11 @@ msgstr ""
 msgid "Getting status from service"
 msgstr ""
 
-#: internal/watcher/watcher.go:286
+#: internal/watcher/watcher.go:290
 msgid "Got event error: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:214
+#: internal/watcher/watcher.go:218
 msgid "Got event: %v"
 msgstr ""
 
@@ -641,16 +645,16 @@ msgstr ""
 msgid "Watched directories: "
 msgstr ""
 
-#: internal/watcher/watcher.go:295
+#: internal/watcher/watcher.go:299
 msgid "Watcher stopped"
 msgstr ""
 
-#: internal/watcher/watcher.go:308
+#: internal/watcher/watcher.go:312
 #, c-format
 msgid "Watching %s and children"
 msgstr ""
 
-#: internal/watcher/watcher.go:314
+#: internal/watcher/watcher.go:318
 msgid "Watching: %v"
 msgstr ""
 
@@ -704,7 +708,7 @@ msgstr ""
 msgid "can't apply scripts policy to %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:359
+#: internal/watcher/watcher.go:363
 #, c-format
 msgid "can't bump version for %s"
 msgstr ""
@@ -924,12 +928,12 @@ msgstr ""
 msgid "can't update user profile %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:307
+#: internal/watcher/watcher.go:311
 #, c-format
 msgid "can't watch directory and children of %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:185
+#: internal/watcher/watcher.go:189
 msgid "can't watch over %v"
 msgstr ""
 
@@ -978,7 +982,7 @@ msgstr ""
 msgid "could not find chapter starting with %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:189
+#: internal/watcher/watcher.go:193
 msgid "could not initialize fsnotify watcher: %v"
 msgstr ""
 
@@ -1030,7 +1034,7 @@ msgstr ""
 msgid "destination %q already exists"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:59 internal/watcher/watcher.go:172
+#: internal/config/watchd/watchd.go:59 internal/watcher/watcher.go:176
 msgid "directory %q does not exist"
 msgstr ""
 
@@ -1063,7 +1067,7 @@ msgstr ""
 msgid "enum id %s referenced by %s doesn't exist in list of enums"
 msgstr ""
 
-#: internal/watcher/watcher.go:366
+#: internal/watcher/watcher.go:370
 msgid "error loading ini contents: %v, creating a new file"
 msgstr ""
 
@@ -1236,7 +1240,7 @@ msgstr ""
 msgid "failed to update directories: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:196
+#: internal/watcher/watcher.go:200
 msgid "failed to watch directory %q: %v"
 msgstr ""
 
@@ -1322,6 +1326,10 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
+#: internal/watcher/watcher.go:171
+msgid "need at least one directory to watch"
+msgstr ""
+
 #: internal/config/watchd/watchd.go:53
 msgid "needs at least one directory to watch"
 msgstr ""
@@ -1358,7 +1366,7 @@ msgstr ""
 msgid "no relSrc provided to look into database archive"
 msgstr ""
 
-#: internal/watcher/watcher.go:341
+#: internal/watcher/watcher.go:345
 #, c-format
 msgid "no root directory matching %s found"
 msgstr ""
