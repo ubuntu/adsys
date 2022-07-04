@@ -27,8 +27,8 @@ func main() {
 		// Sleep and force a sync before exiting to avoid possible race
 		// conditions during the package build, where the paths to install are
 		// not fully written by the time dh_install runs.
-		time.Sleep(100 * time.Millisecond)
 		syscall.Sync()
+		time.Sleep(1 * time.Second)
 	}()
 
 	from, err := os.Open(os.Args[1])
