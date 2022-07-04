@@ -1,3 +1,24 @@
+adsys (0.9.0) kinetic; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  * Add Active Directory Watch Daemon - adwatchd:
+    - Implement a Windows daemon that watches a list of configured directories
+      for changes and bumps the relevant GPT.INI files.
+    - Add adsys-windows binary package which includes the Windows daemon
+      executable and the admx/adml policies.
+  * Config detection now includes current executable directory
+  * Fixes in generator build race
+  * Update dependencies to latest:
+    - github.com/spf13/cobra
+    - github.com/stretchr/testify
+  * CI updates:
+    - switch to Go setup v3
+    - bump to really build with Golang 1.18
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Mon, 04 Jul 2022 16:36:52 +0300
+
 adsys (0.8.6) kinetic; urgency=medium
 
   * Fix new build failures on 32 bits due to libsmbclient-dev no longer sets
