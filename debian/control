@@ -39,7 +39,7 @@ Description: ${source:Synopsis}
  ${source:Extended-Description}
 
 Package: adsys-windows
-Architecture: any
+Architecture: amd64 arm64
 Built-Using: ${misc:Built-Using},
 Depends: ${shlibs:Depends},
          ${misc:Depends},

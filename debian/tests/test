@@ -17,6 +17,12 @@ case $1 in
         PACKAGES_TO_TEST=./...
         ;;
     sudo)
+        arch=$(dpkg --print-architecture)
+        if [ "$arch" != "amd64" ] && [ "$arch" != "arm64" ]; then
+            echo "Skipping root tests for non-amd64/arm64 architecture"
+            exit 77
+        fi
+
         echo "Running root tests..."
         DIR_NAME=$(dirname "$0")
         PACKAGES_TO_TEST=$(cat "$DIR_NAME"/.sudo-packages)

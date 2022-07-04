@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"syscall"
 
 	"github.com/ubuntu/adsys/internal/generators"
 )
@@ -21,6 +22,7 @@ func main() {
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		log.Fatalf("Couldn't create dest directory: %v", err)
 	}
+	defer syscall.Sync()
 
 	from, err := os.Open(os.Args[1])
 	if err != nil {
