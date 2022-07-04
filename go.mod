@@ -16,7 +16,7 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
 	github.com/kardianos/service v1.2.1
 	github.com/muesli/termenv v0.11.1-0.20220212125758-44cd13922739
-	github.com/mvo5/libsmbclient-go v0.0.0-20201002095607-f9fa2a5c1104
+	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
 	github.com/spf13/cobra v1.4.0
