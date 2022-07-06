@@ -30,6 +30,10 @@ var (
 	focusedStyle = boldStyle.Copy().Foreground(lipgloss.Color("#E95420")) // Ubuntu orange
 )
 
+const (
+	noDirectoriesMsg = "please enter at least one directory"
+)
+
 type model struct {
 	focusIndex    int
 	inputs        []textinput.Model
@@ -159,10 +163,10 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 
 	var t textinput.Model
 	for i := range m.inputs {
-		t = newStyledTextInput()
 
 		switch i {
 		case 0:
+			t = newStyledTextInput(configInputValidator)
 			t.Placeholder = fmt.Sprintf(i18n.G("Config file location (leave blank for default: %s)"), m.defaultConfig)
 			t.Prompt = i18n.G("Config file: ")
 			t.PromptStyle = boldStyle
@@ -174,7 +178,11 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 				t.SetValue(configFile)
 			}
 		case 1:
+			t = newStyledTextInput(m.dirInputValidator)
 			t.Placeholder = i18n.G("Directory to watch (one per line)")
+			if len(previousDirs) == 0 {
+				t.Err = errors.New(i18n.G(noDirectoriesMsg))
+			}
 		}
 
 		m.inputs[i] = t
@@ -183,6 +191,7 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 	// If we managed to read directories from the "previous" config file,
 	// prefill them
 	for index, dir := range previousDirs {
+		m.inputs[index+1] = newStyledTextInput(m.dirInputValidator)
 		m.inputs[index+1].SetValue(dir)
 	}
 
@@ -190,10 +199,12 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 }
 
 // newStyledTextInput returns a new text input with the default style.
-func newStyledTextInput() textinput.Model {
+func newStyledTextInput(validateFunc textinput.ValidateFunc) textinput.Model {
 	t := textinput.New()
 	t.CursorStyle = cursorStyle
 	t.CharLimit = 1024
+	t.Validate = validateFunc
+	t.ValidateAction = textinput.AllowInput
 	t.SetCursorMode(textinput.CursorStatic)
 	return t
 }
@@ -328,7 +339,7 @@ func (m model) Update(teaMsg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				// add a new input where we are and move focus to it
 				m.focusIndex++
-				m.inputs = slices.Insert(m.inputs, m.focusIndex, newStyledTextInput())
+				m.inputs = slices.Insert(m.inputs, m.focusIndex, newStyledTextInput(m.dirInputValidator))
 			}
 		}
 	}
@@ -384,9 +395,7 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 
 		// Update input style/error separately for config and directories
 		if m.focusIndex > 0 {
-			m.updateDirInputErrorAndStyle(i)
-		} else {
-			updateConfigInputError(&m.inputs[0])
+			m.updateDirInputStyle(i)
 		}
 		cmds = append(cmds, update)
 	}
@@ -394,69 +403,66 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
-// updateConfigInputError updates the error state of the config input.
-func updateConfigInputError(input *textinput.Model) {
-	value := input.Value()
+// configInputValidator validates the config file input.
+func configInputValidator(s string) error {
 	// If the config input is empty, clean up the error message
-	if value == "" {
-		input.Err = nil
-		return
+	if s == "" {
+		return nil
 	}
 
-	absPath, _ := filepath.Abs(value)
-	stat, err := os.Stat(value)
+	absPath, _ := filepath.Abs(s)
+	stat, err := os.Stat(s)
 
 	// If the config file does not exist, we're good
 	if errors.Is(err, os.ErrNotExist) {
-		input.Err = nil
-		if !filepath.IsAbs(value) {
-			input.Err = fmt.Errorf(i18n.G("%s will be the absolute path"), absPath)
+		if !filepath.IsAbs(s) {
+			return fmt.Errorf(i18n.G("%s will be the absolute path"), absPath)
 		}
-		return
+		return nil
 	}
 
 	// If we got another error, display it
 	if err != nil {
-		input.Err = err
-		return
+		return err
 	}
 
 	if stat.IsDir() {
-		input.Err = fmt.Errorf(i18n.G("%s is a directory; will create %s.yaml inside"), absPath, watchdconfig.CmdName)
-		return
+		return fmt.Errorf(i18n.G("%s is a directory; will create %s.yaml inside"), absPath, watchdconfig.CmdName)
 	}
 
 	if stat.Mode().IsRegular() {
-		input.Err = fmt.Errorf(i18n.G("%s: file already exists and will be overwritten"), absPath)
-		return
+		return fmt.Errorf(i18n.G("%s: file already exists and will be overwritten"), absPath)
 	}
 
-	input.Err = nil
+	return nil
 }
 
 // updateDirInputErrorAndStyle updates the error message and style of the given directory input.
-func (m *model) updateDirInputErrorAndStyle(i int) {
+func (m *model) dirInputValidator(s string) error {
 	// We consider an empty string to be valid, so users are allowed to press
 	// enter on it.
-	if m.inputs[i].Value() == "" {
-		m.inputs[i].Err = nil
+	if s == "" {
 		if len(m.inputs) == 2 {
-			m.inputs[i].Err = errors.New(i18n.G("please enter at least one directory"))
+			return errors.New(i18n.G(noDirectoriesMsg))
 		}
-		return
+		return nil
 	}
 
 	// Check to see if the input exists, and if it is a directory
-	absPath, _ := filepath.Abs(m.inputs[i].Value())
-
-	m.inputs[i].Err = nil
-	m.inputs[i].TextStyle = successStyle
+	absPath, _ := filepath.Abs(s)
 
 	if stat, err := os.Stat(absPath); err != nil {
-		m.inputs[i].Err = fmt.Errorf(i18n.G("%s: directory does not exist, please enter a valid path"), absPath)
-		m.inputs[i].TextStyle = noStyle
+		return fmt.Errorf(i18n.G("%s: directory does not exist, please enter a valid path"), absPath)
 	} else if !stat.IsDir() {
-		m.inputs[i].Err = fmt.Errorf(i18n.G("%s: is not a directory"), absPath)
+		return fmt.Errorf(i18n.G("%s: is not a directory"), absPath)
+	}
+
+	return nil
+}
+
+func (m *model) updateDirInputStyle(i int) {
+	m.inputs[i].TextStyle = successStyle
+	if m.inputs[i].Err != nil {
 		m.inputs[i].TextStyle = noStyle
 	}
 }
