@@ -83,13 +83,6 @@ func TestGetPolicies(t *testing.T) {
 
 	bus := testutils.NewDbusConn(t)
 
-	standardGPO := policies.GPO{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-		"dconf": {
-			{Key: "A", Value: "standardA"},
-			{Key: "B", Value: "standardB"},
-			{Key: "C", Value: "standardC"},
-		}}}
-
 	/*
 		GPOs layout:
 
@@ -134,7 +127,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@GPOONLY.COM",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
+			want:               policies.Policies{GPOs: []policies.GPO{standardUserGPO("standard")}},
 			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 		"Standard policy, computer object": {
@@ -142,15 +135,8 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "", // ignored for machine
-			want: policies.Policies{GPOs: []policies.GPO{
-				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "standardA"},
-						{Key: "D", Value: "standardD"},
-						{Key: "E", Value: "standardE"},
-					}}}},
-			},
-			wantServerURL: "ldap://myserver.gpoonly.com",
+			want:               policies.Policies{GPOs: []policies.GPO{standardComputerGPO("standard")}},
+			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 		"User only policy, user object": {
 			gpoListArgs:        []string{"gpoonly.com", "bob:user-only"},
@@ -187,15 +173,8 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         hostname,
 			objectClass:        ad.ComputerObject,
 			userKrb5CCBaseName: "somethingtotallyarbitrary", // ignored for machine
-			want: policies.Policies{GPOs: []policies.GPO{
-				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "standardA"},
-						{Key: "D", Value: "standardD"},
-						{Key: "E", Value: "standardE"},
-					}}}},
-			},
-			wantServerURL: "ldap://myserver.gpoonly.com",
+			want:               policies.Policies{GPOs: []policies.GPO{standardComputerGPO("standard")}},
+			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 
 		// Assets cases
@@ -205,16 +184,9 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.ComputerObject,
 			domain:             "assetsandgpo.com",
 			userKrb5CCBaseName: "", // ignored for machine
-			want: policies.Policies{GPOs: []policies.GPO{
-				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "standardA"},
-						{Key: "D", Value: "standardD"},
-						{Key: "E", Value: "standardE"},
-					}}}},
-			},
-			wantAssetsEquals: "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
-			wantServerURL:    "ldap://myserver.assetsandgpo.com",
+			want:               policies.Policies{GPOs: []policies.GPO{standardComputerGPO("standard")}},
+			wantAssetsEquals:   "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
+			wantServerURL:      "ldap://myserver.assetsandgpo.com",
 		},
 		"Standard policy with assets, existing assets are reattached if not refreshed": {
 			gpoListArgs:        []string{"assetsandgpo.com", "bob:standard"},
@@ -223,7 +195,7 @@ func TestGetPolicies(t *testing.T) {
 			domain:             "assetsandgpo.com",
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			existing:           map[string]string{"assets": "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu", "assets.db": "testdata/sysvolcache/assets.db"},
-			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
+			want:               policies.Policies{GPOs: []policies.GPO{standardUserGPO("standard")}},
 			wantAssetsEquals:   "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu",
 			wantServerURL:      "ldap://myserver.assetsandgpo.com",
 		},
@@ -234,7 +206,7 @@ func TestGetPolicies(t *testing.T) {
 			domain:             "gpoonly.com",
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			existing:           map[string]string{"assets": "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu", "assets.db": "testdata/sysvolcache/assets.db"},
-			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
+			want:               policies.Policies{GPOs: []policies.GPO{standardUserGPO("standard")}},
 			wantAssetsEquals:   "",
 			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
@@ -255,16 +227,9 @@ func TestGetPolicies(t *testing.T) {
 			domain:             "assetsdirisfile.com",
 			userKrb5CCBaseName: "", // ignored for machine
 			existing:           map[string]string{"assets": "testdata/AD/SYSVOL/assetsandgpo.com/Ubuntu", "assets.db": "testdata/sysvolcache/assets.db"},
-			want: policies.Policies{GPOs: []policies.GPO{
-				{ID: "standard", Name: "standard-name", Rules: map[string][]entry.Entry{
-					"dconf": {
-						{Key: "A", Value: "standardA"},
-						{Key: "D", Value: "standardD"},
-						{Key: "E", Value: "standardE"},
-					}}}},
-			},
-			wantAssetsEquals: "",
-			wantServerURL:    "ldap://myserver.assetsdirisfile.com",
+			want:               policies.Policies{GPOs: []policies.GPO{standardComputerGPO("standard")}},
+			wantAssetsEquals:   "",
+			wantServerURL:      "ldap://myserver.assetsdirisfile.com",
 		},
 
 		// Multi releases cases
@@ -398,7 +363,7 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
-				standardGPO,
+				standardUserGPO("standard"),
 				{ID: "one-value", Name: "one-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						// this value will be overridden with the higher one
@@ -449,7 +414,7 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{{ID: "machine-only", Name: "machine-only-name", Rules: make(map[string][]entry.Entry)},
-				standardGPO}},
+				standardUserGPO("standard")}},
 			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 
@@ -463,7 +428,7 @@ func TestGetPolicies(t *testing.T) {
 					"dconf": {
 						{Key: "C", Value: "", Disabled: true},
 					}}},
-				standardGPO,
+				standardUserGPO("standard"),
 			}},
 			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
@@ -473,7 +438,7 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			want: policies.Policies{GPOs: []policies.GPO{
-				standardGPO,
+				standardUserGPO("standard"),
 				{ID: "disabled-value", Name: "disabled-value-name", Rules: map[string][]entry.Entry{
 					"dconf": {
 						{Key: "C", Value: "", Disabled: true},
@@ -497,7 +462,7 @@ func TestGetPolicies(t *testing.T) {
 					"dconf": {
 						{Key: "C", Value: "oneValueC"},
 					}}},
-				standardGPO,
+				standardUserGPO("standard"),
 			}},
 			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
@@ -506,7 +471,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob@GPOONLY.com",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
+			want:               policies.Policies{GPOs: []policies.GPO{standardUserGPO("standard")}},
 			wantServerURL:      "ldap://myserver.gpoonly.com",
 		},
 		"Filter non Ubuntu keys": {
@@ -530,8 +495,47 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			staticServerURL:    "ldap://myotherserver.gpoonly.com",
-			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
+			want:               policies.Policies{GPOs: []policies.GPO{standardUserGPO("standard")}},
 			wantServerURL:      "ldap://myotherserver.gpoonly.com",
+		},
+
+		// Policy class directory spelling cases
+		"Policy user directory is uppercase": {
+			gpoListArgs:        []string{"gpoonly.com", "bob:uppercase-class"},
+			objectName:         "bob@GPOONLY.COM",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want:               policies.Policies{GPOs: []policies.GPO{standardUserGPO("uppercase-class")}},
+			wantServerURL:      "ldap://myserver.gpoonly.com",
+		},
+		"Policy machine directory is uppercase": {
+			gpoListArgs:        []string{"gpoonly.com", hostname + ":uppercase-class"},
+			objectName:         hostname,
+			objectClass:        ad.ComputerObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want:               policies.Policies{GPOs: []policies.GPO{standardComputerGPO("uppercase-class")}},
+			wantServerURL:      "ldap://myserver.gpoonly.com",
+		},
+
+		"Policy user directory is not capitalized or uppercase, no rules are parsed": {
+			gpoListArgs:        []string{"gpoonly.com", "bob:lowercase-class"},
+			objectName:         "bob@GPOONLY.COM",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: policies.Policies{GPOs: []policies.GPO{
+				{ID: "lowercase-class", Name: "lowercase-class-name", Rules: map[string][]entry.Entry{}}},
+			},
+			wantServerURL: "ldap://myserver.gpoonly.com",
+		},
+		"Policy machine directory is not capitalized or uppercase, no rules are parsed": {
+			gpoListArgs:        []string{"gpoonly.com", hostname + ":lowercase-class"},
+			objectName:         hostname,
+			objectClass:        ad.ComputerObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: policies.Policies{GPOs: []policies.GPO{
+				{ID: "lowercase-class", Name: "lowercase-class-name", Rules: map[string][]entry.Entry{}}},
+			},
+			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
 
 		// Error cases
@@ -596,7 +600,7 @@ func TestGetPolicies(t *testing.T) {
 			objectName:         "bob",
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
-			want:               policies.Policies{GPOs: []policies.GPO{standardGPO}},
+			want:               policies.Policies{GPOs: []policies.GPO{standardUserGPO("standard")}},
 			wantServerURL:      "ldap://myserver.gpoonly.com",
 			wantErr:            true,
 		},
@@ -1310,4 +1314,22 @@ func assertEqualPolicies(t *testing.T, expected policies.Policies, got policies.
 	require.NoError(t, got.SaveAssetsTo(context.Background(), ".", gotAssetsDir, -1, -1), "Teardown: Saving got policies failed.")
 
 	testutils.CompareTreesWithFiltering(t, gotAssetsDir, expectedAssetsDir, false)
+}
+
+func standardUserGPO(id string) policies.GPO {
+	return policies.GPO{ID: id, Name: id + "-name", Rules: map[string][]entry.Entry{
+		"dconf": {
+			{Key: "A", Value: "standardA"},
+			{Key: "B", Value: "standardB"},
+			{Key: "C", Value: "standardC"},
+		}}}
+}
+
+func standardComputerGPO(id string) policies.GPO {
+	return policies.GPO{ID: id, Name: id + "-name", Rules: map[string][]entry.Entry{
+		"dconf": {
+			{Key: "A", Value: "standardA"},
+			{Key: "D", Value: "standardD"},
+			{Key: "E", Value: "standardE"},
+		}}}
 }

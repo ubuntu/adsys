@@ -4,8 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	// embed gpolist python binary.
-	_ "embed"
+	_ "embed" // embed gpolist python binary.
 	"errors"
 	"fmt"
 	"io/fs"
@@ -448,16 +447,36 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 
 			log.Debugf(ctx, "Parsing GPO %q", name)
 
-			class := "User"
+			// We need to consider the uppercase version of the name as well,
+			// which could occur in some of the default GPOs such as Default
+			// Domain Policy.
+			classes := []string{"User", "USER"}
 			if objectClass == ComputerObject {
-				class = "Machine"
+				classes = []string{"Machine", "MACHINE"}
 			}
-			f, err := os.Open(filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(url), class, "Registry.pol"))
-			if errors.Is(err, fs.ErrExist) {
-				return err
-			} else if errors.Is(err, fs.ErrNotExist) {
+
+			var err error
+			var f *os.File
+			for _, class := range classes {
+				var e error
+				f, e = os.Open(filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(url), class, "Registry.pol"))
+
+				// We only care about the first error which is caused by opening
+				// the capitalized version of the class, instead of the
+				// uppercase version which is less common and more of an edge case.
+				if e != nil && err == nil {
+					err = e
+				} else if e == nil {
+					err = nil
+					break
+				}
+			}
+
+			if errors.Is(err, fs.ErrNotExist) {
 				log.Debugf(ctx, "Policy %q doesn't have any policy for class %q %s", name, objectClass, err)
 				return nil
+			} else if err != nil {
+				return err
 			}
 			defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
