@@ -23,6 +23,7 @@
       <string id="UbuntuDisplayClientManagement">Client management</string>
       <string id="UbuntuDisplayPrivilegeAuthorization">Privilege Authorization</string>
       <string id="UbuntuDisplayComputerScripts">Computer Scripts</string>
+      <string id="UbuntuDisplayPowerManagement">Power Management</string>
       <string id="UbuntuDisplaySessionManagement">Session management</string>
       <string id="UbuntuDisplayUserScripts">User Scripts</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
@@ -938,6 +939,332 @@ Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
       <string id="UbuntuDisplayMachine2204ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2110ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2004ScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">If the ambient light sensor functionality is enabled.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/ambient-enabled
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">This is the laptop panel screen brightness used when the session is idle.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/idle-brightness
+- Default: 30
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">If the screen should be dimmed to save power when the computer is idle.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/idle-dim
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">The action to take when the laptop lid is closed and the laptop is on AC power.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/lid-close-ac-action
+- Default: &#39;suspend&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2">shutdown</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3">hibernate</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4">interactive</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5">nothing</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6">logout</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2">shutdown</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3">hibernate</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4">interactive</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5">nothing</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6">logout</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2">shutdown</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3">hibernate</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4">interactive</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5">nothing</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6">logout</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2">shutdown</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3">hibernate</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4">interactive</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5">nothing</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6">logout</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2">shutdown</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3">hibernate</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4">interactive</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5">nothing</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6">logout</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">The action to take when the laptop lid is closed and the laptop is on battery power.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/lid-close-battery-action
+- Default: &#39;suspend&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2">shutdown</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3">hibernate</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4">interactive</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5">nothing</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6">logout</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2">shutdown</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3">hibernate</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4">interactive</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5">nothing</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6">logout</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2">shutdown</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3">hibernate</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4">interactive</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5">nothing</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6">logout</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2">shutdown</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3">hibernate</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4">interactive</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5">nothing</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6">logout</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2">shutdown</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3">hibernate</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4">interactive</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5">nothing</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6">logout</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">With no external monitors plugged in, closing a laptop&#39;s lid will suspend the machine (as set by the lid-close-battery-action and lid-close-ac-action keys).  By default, however, closing the lid when an external monitor is present will not suspend the machine, so that one can keep working on that monitor (e.g. for docking stations or media viewers).  Set this key to False to keep the default behavior, or to True to suspend the laptop whenever the lid is closed and regardless of external monitors.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/lid-close-suspend-with-external-monitor
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">The action to take when the system power button is pressed. This action is hard-coded (and the setting ignored) on virtual machines (power off) and tablets (suspend).
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/power-button-action
+- Default: &#39;interactive&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2">hibernate</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3">interactive</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2">hibernate</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3">interactive</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2">hibernate</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3">interactive</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2">hibernate</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3">interactive</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2">hibernate</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3">interactive</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Automatically enable the &#34;power-saver&#34; profile using power-profiles-daemon if the battery is low.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/power-saver-profile-on-low-battery
+- Default: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Enable power-saver profile when battery is low</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Enable power-saver profile when battery is low</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Enable power-saver profile when battery is low</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">The amount of time in seconds the computer on AC power needs to be inactive before it goes to sleep. A value of 0 means never.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-timeout
+- Default: 0
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">The type of sleeping that should be performed when the computer is inactive.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-type
+- Default: &#39;suspend&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2">shutdown</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3">hibernate</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4">interactive</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5">nothing</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6">logout</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2">shutdown</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3">hibernate</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4">interactive</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5">nothing</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6">logout</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2">shutdown</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3">hibernate</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4">interactive</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5">nothing</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6">logout</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2">shutdown</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3">hibernate</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4">interactive</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5">nothing</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6">logout</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2">shutdown</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3">hibernate</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4">interactive</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5">nothing</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6">logout</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">The amount of time in seconds the computer on battery power needs to be inactive before it goes to sleep. A value of 0 means never.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-timeout
+- Default: 1200
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">The type of sleeping that should be performed when the computer is inactive.
+
+- Type: dconf
+- Key: /org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-type
+- Default: &#39;suspend&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2">shutdown</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3">hibernate</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4">interactive</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5">nothing</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6">logout</string>
+      <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2">shutdown</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3">hibernate</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4">interactive</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5">nothing</string>
+      <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6">logout</string>
+      <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2">shutdown</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3">hibernate</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4">interactive</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5">nothing</string>
+      <string id="UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6">logout</string>
+      <string id="UbuntuDisplayMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2">shutdown</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3">hibernate</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4">interactive</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5">nothing</string>
+      <string id="UbuntuItemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6">logout</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2">shutdown</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3">hibernate</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4">interactive</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5">nothing</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6">logout</string>
       <string id="UbuntuExplainTextUserScriptsLogon">Define scripts that are executed the first time an user logon until it exits from all sessions.
 Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
@@ -1903,6 +2230,180 @@ Supported on Ubuntu 20.04, 21.10, 22.04, 22.10</string>
         <checkBox refId="UbuntuOverrideElemMachine2004ScriptsShutdown" defaultChecked="false">Override value for 20.04:</checkBox>
         
         <multiTextBox refId="UbuntuElemMachine2004ScriptsShutdown" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">
+        <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Enable the ALS sensor</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Override value for 22.10:</checkBox>
+        <checkBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="true">Enable the ALS sensor</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Override value for 22.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="true">Enable the ALS sensor</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Override value for 21.10:</checkBox>
+        <checkBox refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="true">Enable the ALS sensor</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Override value for 20.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="true">Enable the ALS sensor</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">
+        <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultValue="">The brightness of the screen when idle</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultChecked="false">Override value for 22.10:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultValue="30">The brightness of the screen when idle</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultChecked="false">Override value for 22.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultValue="30">The brightness of the screen when idle</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultChecked="false">Override value for 21.10:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultValue="30">The brightness of the screen when idle</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultChecked="false">Override value for 20.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultValue="30">The brightness of the screen when idle</decimalTextBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">
+        <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="false">Dim the screen after a period of inactivity</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="false">Override value for 22.10:</checkBox>
+        <checkBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="true">Dim the screen after a period of inactivity</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="false">Override value for 22.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="true">Dim the screen after a period of inactivity</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="false">Override value for 21.10:</checkBox>
+        <checkBox refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="true">Dim the screen after a period of inactivity</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="false">Override value for 20.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="true">Dim the screen after a period of inactivity</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">
+        <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" noSort="true" defaultItem="">Laptop lid close action when on AC</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" defaultChecked="false">Override value for 22.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" defaultChecked="false">Override value for 22.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" defaultChecked="false">Override value for 21.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" defaultChecked="false">Override value for 20.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" noSort="true" defaultItem="0"></dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">
+        <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" noSort="true" defaultItem="">Laptop lid close action on battery</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" defaultChecked="false">Override value for 22.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" defaultChecked="false">Override value for 22.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" defaultChecked="false">Override value for 21.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" defaultChecked="false">Override value for 20.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" noSort="true" defaultItem="0"></dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">
+        <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Override value for 22.10:</checkBox>
+        <checkBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Override value for 22.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Override value for 21.10:</checkBox>
+        <checkBox refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Override value for 20.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">
+        <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" noSort="true" defaultItem="">Power button action</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" defaultChecked="false">Override value for 22.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" defaultChecked="false">Override value for 22.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" defaultChecked="false">Override value for 21.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" defaultChecked="false">Override value for 20.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" noSort="true" defaultItem="0"></dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">
+        <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="false">Enable power-saver profile when battery is low</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="false">Override value for 22.10:</checkBox>
+        <checkBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="true">Enable power-saver profile when battery is low</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="false">Override value for 22.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="true">Enable power-saver profile when battery is low</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">
+        <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultValue="">Sleep timeout computer when on AC</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultChecked="false">Override value for 22.10:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultValue="0">Sleep timeout computer when on AC</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultChecked="false">Override value for 22.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultValue="0">Sleep timeout computer when on AC</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultChecked="false">Override value for 21.10:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultValue="0">Sleep timeout computer when on AC</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultChecked="false">Override value for 20.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultValue="0">Sleep timeout computer when on AC</decimalTextBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">
+        <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" noSort="true" defaultItem="">Whether to hibernate, suspend or do nothing when inactive</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" defaultChecked="false">Override value for 22.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" defaultChecked="false">Override value for 22.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" defaultChecked="false">Override value for 21.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" defaultChecked="false">Override value for 20.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" noSort="true" defaultItem="0"></dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">
+        <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="">Sleep timeout computer when on battery</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultChecked="false">Override value for 22.10:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="1200">Sleep timeout computer when on battery</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultChecked="false">Override value for 22.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="1200">Sleep timeout computer when on battery</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultChecked="false">Override value for 21.10:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="1200">Sleep timeout computer when on battery</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultChecked="false">Override value for 20.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="1200">Sleep timeout computer when on battery</decimalTextBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">
+        <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="">Whether to hibernate, suspend or do nothing when inactive</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" defaultChecked="false">Override value for 22.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" defaultChecked="false">Override value for 22.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" defaultChecked="false">Override value for 21.10:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2110DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" defaultChecked="false">Override value for 20.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="0"></dropdownList>
       </presentation>
       <presentation id="UbuntuPresentationUserScriptsLogon">
         <text>Logon scripts</text>
