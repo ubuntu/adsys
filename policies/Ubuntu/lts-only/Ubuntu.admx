@@ -59,6 +59,9 @@
     <category name="UbuntuComputerScripts" displayName="$(string.UbuntuDisplayComputerScripts)">
       <parentCategory ref="UbuntuClientManagement" />
     </category>
+    <category name="UbuntuPowerManagement" displayName="$(string.UbuntuDisplayPowerManagement)">
+      <parentCategory ref="UbuntuClientManagement" />
+    </category>
     <category name="UbuntuSessionManagement" displayName="$(string.UbuntuDisplaySessionManagement)">
       <parentCategory ref="UbuntuUbuntu" />
     </category>
@@ -1782,6 +1785,749 @@
           <falseValue><string>false</string></falseValue>
         </boolean>
         <multiText id="UbuntuElemMachine2004ScriptsShutdown" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\ambient-enabled" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" valueName="22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\idle-brightness" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
+      <elements>
+        <decimal id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\idle-dim" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" valueName="22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\lid-close-ac-action" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" valueName="22.04">
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\lid-close-battery-action" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" valueName="22.04">
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\lid-close-suspend-with-external-monitor" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" valueName="22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\power-button-action" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" valueName="22.04">
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\power-saver-profile-on-low-battery" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"22.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"22.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <elements>
+        <boolean id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-ac-timeout" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
+      <elements>
+        <decimal id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-ac-type" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" valueName="22.04">
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-battery-timeout" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
+      <elements>
+        <decimal id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-battery-type" valueName="metaValues">
+      <parentCategory ref="UbuntuPowerManagement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" valueName="22.04">
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
       </elements>
     </policy>
     <policy name="UbuntuUserScriptsLogon" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogon)" explainText="$(string.UbuntuExplainTextUserScriptsLogon)" presentation="$(presentation.UbuntuPresentationUserScriptsLogon)" key="Software\Policies\Ubuntu\scripts\logon" valueName="metaValues">
