@@ -17,8 +17,9 @@ func TestReadPolicy(t *testing.T) {
 	defaultKey := `ValueName`
 	defaultData := []byte("B\x00A\x00\x00\x00")
 	tests := map[string]struct {
-		want    []policyRawEntry
-		wantErr bool
+		want         []policyRawEntry
+		wantErr      bool
+		wantEntryErr bool
 	}{
 		"one element, string value": {
 			want: []policyRawEntry{
@@ -185,6 +186,19 @@ func TestReadPolicy(t *testing.T) {
 			}},
 		"header only": {},
 
+		// Soft error cases
+		"empty value": {
+			wantEntryErr: true,
+			want: []policyRawEntry{
+				{
+					path:  `Software\Canonical\Ubuntu`,
+					dType: dataType(1),
+					data:  []byte("B\x00A\x00\x00\x00"),
+				},
+			},
+		},
+
+		// Error cases
 		"invalid header, header doesnt match": {wantErr: true},
 		"invalid header, header too short":    {wantErr: true},
 		"invalid header, file truncated":      {wantErr: true},
@@ -195,7 +209,6 @@ func TestReadPolicy(t *testing.T) {
 		"key is not utf16":                    {wantErr: true},
 		"value is not utf16":                  {wantErr: true},
 		"empty key":                           {wantErr: true},
-		"empty value":                         {wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -215,6 +228,18 @@ func TestReadPolicy(t *testing.T) {
 				require.NotNil(t, err, "readPolicy returned no error when expecting one")
 			} else {
 				require.NoError(t, err, "readPolicy returned an error when expecting none")
+			}
+
+			if tc.wantEntryErr {
+				var found bool
+				for i := range rules {
+					if rules[i].err != nil {
+						found = true
+						rules[i].err = nil
+					}
+				}
+
+				require.True(t, found, "readPolicy returned no entry error when expecting one")
 			}
 
 			require.Equalf(t, tc.want, rules, "expected value from readPolicy doesn't match")

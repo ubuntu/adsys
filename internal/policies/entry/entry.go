@@ -11,6 +11,9 @@ type Entry struct {
 	// Strategy are overlay rules for the same keys between multiple GPOs.
 	// Default (empty or unknown value) means "override".
 	Strategy string `yaml:",omitempty"`
+	// Err is set if there was an error parsing the entry. It is ignored if the
+	// underlying key is not supported by adsys.
+	Err error `yaml:"-"`
 }
 
 const (
