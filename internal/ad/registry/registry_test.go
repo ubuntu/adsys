@@ -321,6 +321,21 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "BA][C]",
 				},
 			}},
+
+		// Empty/void data cases
+		"empty data": {
+			want: []entry.Entry{
+				{
+					Key: defaultKey,
+				},
+			}},
+		"null character in data": {
+			want: []entry.Entry{
+				{
+					Key: defaultKey,
+				},
+			}},
+
 		"header only": {},
 
 		"exotic return type":                  {wantErr: true},
