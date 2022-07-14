@@ -147,7 +147,7 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 				}
 				res = strconv.FormatUint(uint64(resInt), 10)
 			default:
-				return nil, fmt.Errorf("%d type is not supported for key %s", t, e.key)
+				e.err = fmt.Errorf("%d type is not supported for key %s", t, e.key)
 			}
 		}
 

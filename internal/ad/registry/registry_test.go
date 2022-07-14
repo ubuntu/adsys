@@ -334,9 +334,16 @@ func TestDecodePolicy(t *testing.T) {
 				},
 			},
 		},
+		"exotic return type": {
+			wantEntryErr: true,
+			want: []entry.Entry{
+				{
+					Key: defaultKey,
+				},
+			},
+		},
 
 		// Error cases
-		"exotic return type":                  {wantErr: true},
 		"invalid decimal value":               {wantErr: true},
 		"invalid header, header doesnt match": {wantErr: true},
 		"invalid header, header too short":    {wantErr: true},

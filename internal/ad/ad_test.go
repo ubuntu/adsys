@@ -626,6 +626,20 @@ func TestGetPolicies(t *testing.T) {
 			turnKrb5CCRO:       true,
 			wantErr:            true,
 		},
+		"Unsupported type for unfiltered entry": {
+			gpoListArgs:        []string{"gpoonly.com", "bob:bad-entry-type"},
+			objectName:         "bob@GPOONLY.COM",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			wantErr:            true,
+		},
+		"Empty value for unfiltered entry": {
+			gpoListArgs:        []string{"gpoonly.com", "bob:empty-value"},
+			objectName:         "bob@GPOONLY.COM",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			wantErr:            true,
+		},
 	}
 
 	for name, tc := range tests {
