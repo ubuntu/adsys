@@ -488,6 +488,20 @@ func TestGetPolicies(t *testing.T) {
 			}},
 			wantServerURL: "ldap://myserver.gpoonly.com",
 		},
+		"Ignore errors on non Ubuntu keys": {
+			gpoListArgs:        []string{"gpoonly.com", "bob:unsupported-with-errors"},
+			objectName:         "bob@GPOONLY.COM",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			want: policies.Policies{GPOs: []policies.GPO{
+				{ID: "unsupported-with-errors", Name: "unsupported-with-errors-name", Rules: map[string][]entry.Entry{
+					"dconf": {
+						{Key: "A", Value: "standardA"},
+						{Key: "C", Value: "standardC"},
+					}}},
+			}},
+			wantServerURL: "ldap://myserver.gpoonly.com",
+		},
 
 		"No discovery for statistically configured domain controller": {
 			gpoListArgs:        []string{"gpoonly.com", "bob:standard"},
@@ -624,6 +638,20 @@ func TestGetPolicies(t *testing.T) {
 			objectClass:        ad.UserObject,
 			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			turnKrb5CCRO:       true,
+			wantErr:            true,
+		},
+		"Unsupported type for unfiltered entry": {
+			gpoListArgs:        []string{"gpoonly.com", "bob:bad-entry-type"},
+			objectName:         "bob@GPOONLY.COM",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
+			wantErr:            true,
+		},
+		"Empty value for unfiltered entry": {
+			gpoListArgs:        []string{"gpoonly.com", "bob:empty-value"},
+			objectName:         "bob@GPOONLY.COM",
+			objectClass:        ad.UserObject,
+			userKrb5CCBaseName: "kbr5cc_adsys_tests_bob",
 			wantErr:            true,
 		},
 	}
