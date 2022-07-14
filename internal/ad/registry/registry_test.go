@@ -18,8 +18,9 @@ func TestDecodePolicy(t *testing.T) {
 	defaultKey := `Software/Canonical/Ubuntu/ValueName`
 	defaultData := "BA"
 	tests := map[string]struct {
-		want    []entry.Entry
-		wantErr bool
+		want         []entry.Entry
+		wantErr      bool
+		wantEntryErr bool
 	}{
 		"one element, string value": {
 			want: []entry.Entry{
@@ -323,6 +324,18 @@ func TestDecodePolicy(t *testing.T) {
 			}},
 		"header only": {},
 
+		// Soft error cases
+		"empty value": {
+			wantEntryErr: true,
+			want: []entry.Entry{
+				{
+					Key:   `Software/Canonical/Ubuntu`,
+					Value: defaultData,
+				},
+			},
+		},
+
+		// Error cases
 		"exotic return type":                  {wantErr: true},
 		"invalid decimal value":               {wantErr: true},
 		"invalid header, header doesnt match": {wantErr: true},
@@ -336,7 +349,6 @@ func TestDecodePolicy(t *testing.T) {
 		"key is not utf16":                    {wantErr: true},
 		"value is not utf16":                  {wantErr: true},
 		"empty key":                           {wantErr: true},
-		"empty value":                         {wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -356,6 +368,21 @@ func TestDecodePolicy(t *testing.T) {
 				require.NotNil(t, err, "readPolicy returned no error when expecting one")
 			} else {
 				require.NoError(t, err, "readPolicy returned an error when expecting none")
+			}
+
+			if tc.wantEntryErr {
+				var found bool
+				for i, r := range rules {
+					if r.Err != nil {
+						found = true
+
+						// Don't serialize errors when comparing policy entries
+						r.Err = nil
+						rules[i] = r
+					}
+				}
+
+				require.True(t, found, "readPolicy returned no entry error when expecting one")
 			}
 
 			require.Equalf(t, tc.want, rules, "expected value from readPolicy doesn't match")
