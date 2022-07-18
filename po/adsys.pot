@@ -62,10 +62,6 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:467
-msgid "%s :%v"
-msgstr ""
-
 #: internal/watchdtui/watchdtui.go:475
 #, c-format
 msgid "%s installing service... please wait."
@@ -128,7 +124,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:259
+#: internal/ad/ad.go:258 internal/ad/ad.go:486 internal/ad/ad.go:498
 msgid "%s: %v"
 msgstr ""
 
@@ -157,7 +153,7 @@ msgstr ""
 msgid "%s: is not a directory"
 msgstr ""
 
-#: internal/ad/ad.go:262
+#: internal/ad/ad.go:261
 #, c-format
 msgid "%s: no active server found"
 msgstr ""
@@ -735,7 +731,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/ad/ad.go:132
+#: internal/ad/ad.go:131
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -784,7 +780,7 @@ msgstr ""
 msgid "can't create scripts manager"
 msgstr ""
 
-#: internal/ad/ad.go:405
+#: internal/ad/ad.go:404
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -792,7 +788,7 @@ msgstr ""
 msgid "can't created new policies"
 msgstr ""
 
-#: internal/ad/registry/registry.go:297
+#: internal/ad/registry/registry.go:302
 msgid "can't decode meta value for %s: %v"
 msgstr ""
 
@@ -820,7 +816,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:412
+#: internal/ad/ad.go:411
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -834,7 +830,7 @@ msgstr ""
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:208
+#: internal/ad/ad.go:207
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -846,7 +842,7 @@ msgstr ""
 msgid "can't install command flag bindings: %v"
 msgstr ""
 
-#: internal/ad/ad.go:380
+#: internal/ad/ad.go:379
 msgid "can't list users from cache"
 msgstr ""
 
@@ -1125,7 +1121,7 @@ msgid "error while trying to get the list of active users"
 msgstr ""
 
 #. Try to update from SSSD the current active AD server
-#: internal/ad/ad.go:256
+#: internal/ad/ad.go:255
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
@@ -1182,7 +1178,7 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/ad/ad.go:389
+#: internal/ad/ad.go:388
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -1198,7 +1194,7 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:423
+#: internal/ad/ad.go:422
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -1206,7 +1202,7 @@ msgstr ""
 msgid "failed to restart service"
 msgstr ""
 
-#: internal/ad/ad.go:234
+#: internal/ad/ad.go:233
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
@@ -1214,7 +1210,7 @@ msgstr ""
 msgid "failed to retrieve status for service"
 msgstr ""
 
-#: internal/ad/ad.go:290
+#: internal/ad/ad.go:289
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -1270,7 +1266,7 @@ msgstr ""
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
-#: internal/ad/registry/registry.go:179
+#: internal/ad/registry/registry.go:181
 msgid "invalid policy"
 msgstr ""
 
@@ -1292,7 +1288,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:244
+#: internal/ad/ad.go:243
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -1421,7 +1417,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:218
+#: internal/ad/ad.go:217
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -1529,6 +1525,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:213
+#: internal/ad/ad.go:212
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
