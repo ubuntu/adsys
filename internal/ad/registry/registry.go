@@ -198,8 +198,9 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		return nil, fmt.Errorf("file header: %x%x", header.Signature, header.Version)
 	}
 
-	sectionStart := []byte{'[', 0}     // [ in UTF-16 (little endian)
-	sectionEnd := []byte{0, 0, ']', 0} // \0] in UTF-16 (little endian)
+	sectionStart := []byte{'[', 0}                 // [ in UTF-16 (little endian)
+	sectionEnd := []byte{0, 0, ']', 0}             // \0] in UTF-16 (little endian)
+	sectionEndNoNullChar := []byte{';', 0, ']', 0} // ;] in UTF-16 (little endian) - last field can be empty
 	dataOffset := len(sectionStart)
 	sectionEndWidth := len(sectionEnd)
 
@@ -215,7 +216,8 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 
 		// Scan until sectionEnd, marking end of word.
 		for i := start + dataOffset; i+sectionEndWidth-1 < len(data); i++ {
-			if bytes.Equal(data[i:i+sectionEndWidth], sectionEnd) {
+			if bytes.Equal(data[i:i+sectionEndWidth], sectionEnd) ||
+				bytes.Equal(data[i:i+sectionEndWidth], sectionEndNoNullChar) {
 				return i + sectionEndWidth, data[start+dataOffset : i+2], nil
 			}
 		}
