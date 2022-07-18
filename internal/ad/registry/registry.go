@@ -147,7 +147,7 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 				}
 				res = strconv.FormatUint(uint64(resInt), 10)
 			default:
-				return nil, fmt.Errorf("%d type is not supported for key %s", t, e.key)
+				e.err = fmt.Errorf("%d type is not supported for key %s", t, e.key)
 			}
 		}
 
@@ -157,6 +157,7 @@ func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
 			Disabled: disabled,
 			Meta:     metaValues[e.key].Meta,
 			Strategy: metaValues[e.key].Strategy,
+			Err:      e.err,
 		})
 	}
 
@@ -168,6 +169,7 @@ type policyRawEntry struct {
 	key   string
 	dType dataType
 	data  []byte
+	err   error
 }
 
 type policyFileHeader struct {
@@ -230,6 +232,8 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 	s.Split(scanEntries)
 	delimiter := []byte{0, 0, ';', 0} // \0; in little endian (UTF-16)
 	for s.Scan() {
+		var e error
+
 		elems := bytes.SplitN(s.Bytes(), delimiter, 5)
 		if len(elems) != 5 {
 			return nil, fmt.Errorf("item should contains 5 fields separated by ';': %s", strings.ToValidUTF8(s.Text(), "?"))
@@ -248,7 +252,7 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 			return nil, fmt.Errorf("empty key in %s", strings.ToValidUTF8(s.Text(), "?"))
 		}
 		if keySuffix == "" {
-			return nil, fmt.Errorf("empty value in %s", strings.ToValidUTF8(s.Text(), "?"))
+			e = fmt.Errorf("empty value in %s", strings.ToValidUTF8(s.Text(), "?"))
 		}
 
 		// Copy data to avoid pointing to newer elements on the next loop
@@ -267,6 +271,7 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 			key:   keySuffix,
 			dType: dataType(t[0]),
 			data:  data, // TODO: if admx support binary data, then also return size
+			err:   e,
 		})
 	}
 

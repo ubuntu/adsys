@@ -92,7 +92,7 @@ func TestApplyPolicies(t *testing.T) {
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
-			require.NoError(t, err, "Setup: cant not create policies cache directory")
+			require.NoError(t, err, "Setup: cannot create policies cache directory")
 
 			if tc.makeDirReadOnly != "" {
 				require.NoError(t, os.MkdirAll(filepath.Join(fakeRootDir, tc.makeDirReadOnly), 0750), "Setup: can not create directory")
