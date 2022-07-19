@@ -245,7 +245,16 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		if releasesElements["all"].Note != "" {
 			explainText = fmt.Sprintf(i18n.G("%s\n\nNote: %s"), explainText, releasesElements["all"].Note)
 		}
-		explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
+
+		if supportedOn != "" {
+			explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
+		}
+
+		// Mention if any of the policies require Ubuntu Pro
+		// Currently this only applies to non-dconf policies
+		if typePol != "dconf" {
+			explainText = fmt.Sprintf("%s\n\n%s", explainText, i18n.G("An Ubuntu Advantage subscription is required to use this policy."))
+		}
 
 		// prepare meta for the whole policy
 		metaEnabled, err := json.Marshal(metasEnabled)
