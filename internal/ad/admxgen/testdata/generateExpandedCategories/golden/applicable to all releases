@@ -2,7 +2,7 @@
   parent: ubuntu:Desktop
   policies:
     - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple
-      explaintext: |+
+      explaintext: |-
         description
 
         - Type: dconf
@@ -10,7 +10,6 @@
         - Default: 'Default Value'
 
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
-
       metaenabled: '{"all":{"empty":"''''","meta":"s"}}'
       metadisabled: '{"all":{"meta":"s"}}'
       class: Machine
@@ -38,7 +37,7 @@
 
         Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-        Supported on Ubuntu 20.04
+        Supported on Ubuntu 20.04.
       metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
       metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
       class: Machine
