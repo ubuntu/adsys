@@ -9,7 +9,7 @@
         - Key: /org/gnome/desktop/policy-simple
         - Default: 'Default Value'
 
-        Supported on Ubuntu 20.04
+        Supported on Ubuntu 20.04.
       metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
       metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
       class: Machine

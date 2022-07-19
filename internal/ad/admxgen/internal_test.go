@@ -52,6 +52,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"choices":     {},
 
 		"default policy class is capitalized": {},
+		"requires ubuntu pro":                 {},
 
 		// Optional content and options varies
 		"different element type": {},
