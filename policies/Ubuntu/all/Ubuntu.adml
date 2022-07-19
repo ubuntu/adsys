@@ -803,7 +803,7 @@ Note: -
  * Disabled: This disallows any Active Directory group or user to become an administrator of the client even if it is defined in a parent GPO of the hierarchy tree.
 
 
-</string>
+An Ubuntu Advantage subscription is required to use this policy.</string>
       <string id="UbuntuDisplayMachineAllPrivilegeClientAdmins">Client administrators</string>
       <string id="UbuntuExplainTextMachinePrivilegeAllowLocalAdmins">This allows or prevents client machine to have local users gaining administrators privilege on the machine.
 
@@ -816,7 +816,7 @@ Note: -
  * Disabled: This denies root privileges to the predefined administrator groups (sudo and admin).
 
 
-</string>
+An Ubuntu Advantage subscription is required to use this policy.</string>
       <string id="UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins">Allow local administrators</string>
       <string id="UbuntuExplainTextMachineScriptsStartup">Define scripts that are executed on machine boot, once the GPO is downloaded.
 Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
@@ -832,7 +832,9 @@ Note: -
  The set of scripts are per boot, and refreshed only on new boot of the machine.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10</string>
+Supported on Ubuntu 20.04, 22.04, 22.10
+
+An Ubuntu Advantage subscription is required to use this policy.</string>
       <string id="UbuntuDisplayMachineAllScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2210ScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2204ScriptsStartup">Startup scripts</string>
@@ -851,7 +853,9 @@ Note: -
  The set of scripts are per boot, and refreshed only on new boot of the machine.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10</string>
+Supported on Ubuntu 20.04, 22.04, 22.10
+
+An Ubuntu Advantage subscription is required to use this policy.</string>
       <string id="UbuntuDisplayMachineAllScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2210ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2204ScriptsShutdown">Shutdown scripts</string>
@@ -1153,7 +1157,9 @@ Note: -
  The set of scripts are per session, and refreshed only on new session creation.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10</string>
+Supported on Ubuntu 20.04, 22.04, 22.10
+
+An Ubuntu Advantage subscription is required to use this policy.</string>
       <string id="UbuntuDisplayUserAllScriptsLogon">Logon scripts</string>
       <string id="UbuntuDisplayUser2210ScriptsLogon">Logon scripts</string>
       <string id="UbuntuDisplayUser2204ScriptsLogon">Logon scripts</string>
@@ -1172,7 +1178,9 @@ Note: -
  The set of scripts are per session, and refreshed only on new session creation.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10</string>
+Supported on Ubuntu 20.04, 22.04, 22.10
+
+An Ubuntu Advantage subscription is required to use this policy.</string>
       <string id="UbuntuDisplayUserAllScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2210ScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2204ScriptsLogoff">Logoff scripts</string>
