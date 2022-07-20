@@ -34,7 +34,7 @@
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
@@ -46,7 +46,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
@@ -58,7 +58,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
@@ -70,7 +70,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
@@ -82,7 +82,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
@@ -94,7 +94,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureOptions">Picture Options</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions0">none</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions1">wallpaper</string>
@@ -128,7 +128,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
@@ -140,7 +140,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
@@ -152,7 +152,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
@@ -164,7 +164,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
@@ -182,7 +182,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
@@ -194,7 +194,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
@@ -206,7 +206,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
@@ -218,7 +218,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
@@ -230,7 +230,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
@@ -242,7 +242,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
@@ -254,7 +254,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
@@ -266,7 +266,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
@@ -278,7 +278,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
@@ -290,7 +290,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
@@ -302,7 +302,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
@@ -314,7 +314,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
@@ -326,7 +326,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
@@ -338,7 +338,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
@@ -350,7 +350,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04</string>
+Supported on Ubuntu 20.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopWmKeybindingsPanelMainMenu">Show the activities overview</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeMutterOverlayKey">This key will initiate the “overlay”, which is a combination window overview and application launching system.  The default is intended to be the “Windows key” on PC hardware.  It’s expected that this binding either the default or set to the empty string.
 
@@ -360,7 +360,7 @@ Supported on Ubuntu 20.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
@@ -372,7 +372,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
@@ -384,7 +384,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureOptions">Picture Options</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions0">none</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions1">wallpaper</string>
@@ -417,7 +417,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
@@ -429,7 +429,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
@@ -441,7 +441,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
@@ -453,7 +453,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
@@ -465,7 +465,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
@@ -477,7 +477,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
@@ -489,7 +489,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
@@ -501,7 +501,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
@@ -513,7 +513,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
@@ -525,7 +525,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
@@ -537,7 +537,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
@@ -549,7 +549,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
@@ -561,7 +561,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
@@ -579,7 +579,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
@@ -591,7 +591,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
@@ -603,7 +603,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
@@ -615,7 +615,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
@@ -627,7 +627,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
@@ -639,7 +639,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
       <string id="UbuntuDisplayMachine2204GdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
       <string id="UbuntuDisplayMachine2004GdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
@@ -651,7 +651,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
       <string id="UbuntuDisplayMachine2204GdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
       <string id="UbuntuDisplayMachine2004GdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
@@ -663,7 +663,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat">The background-repeat property sets if/how the background image will be repeated.</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat0">default</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat1">repeat</string>
@@ -696,7 +696,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize">The background-size property specifies the size of the background image.</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize0">default</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize1">auto</string>
@@ -724,7 +724,7 @@ Note: -
  * Disabled: This disallows any Active Directory group or user to become an administrator of the client even if it is defined in a parent GPO of the hierarchy tree.
 
 
-</string>
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayMachineAllPrivilegeClientAdmins">Client administrators</string>
       <string id="UbuntuExplainTextMachinePrivilegeAllowLocalAdmins">This allows or prevents client machine to have local users gaining administrators privilege on the machine.
 
@@ -737,7 +737,7 @@ Note: -
  * Disabled: This denies root privileges to the predefined administrator groups (sudo and admin).
 
 
-</string>
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayMachineAllPrivilegeAllowLocalAdmins">Allow local administrators</string>
       <string id="UbuntuExplainTextMachineScriptsStartup">Define scripts that are executed on machine boot, once the GPO is downloaded.
 Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
@@ -753,7 +753,9 @@ Note: -
  The set of scripts are per boot, and refreshed only on new boot of the machine.
 
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.
+
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayMachineAllScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2204ScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2004ScriptsStartup">Startup scripts</string>
@@ -771,7 +773,9 @@ Note: -
  The set of scripts are per boot, and refreshed only on new boot of the machine.
 
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.
+
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayMachineAllScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2204ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2004ScriptsShutdown">Shutdown scripts</string>
@@ -783,7 +787,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
@@ -795,7 +799,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
@@ -807,7 +811,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
@@ -819,7 +823,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
@@ -852,7 +856,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
@@ -885,7 +889,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
@@ -897,7 +901,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
@@ -921,7 +925,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 22.04</string>
+Supported on Ubuntu 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Enable power-saver profile when battery is low</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">The amount of time in seconds the computer on AC power needs to be inactive before it goes to sleep. A value of 0 means never.
 
@@ -931,7 +935,7 @@ Supported on Ubuntu 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
@@ -943,7 +947,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
@@ -976,7 +980,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
@@ -988,7 +992,7 @@ Supported on Ubuntu 20.04, 22.04</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
@@ -1027,7 +1031,9 @@ Note: -
  The set of scripts are per session, and refreshed only on new session creation.
 
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.
+
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayUserAllScriptsLogon">Logon scripts</string>
       <string id="UbuntuDisplayUser2204ScriptsLogon">Logon scripts</string>
       <string id="UbuntuDisplayUser2004ScriptsLogon">Logon scripts</string>
@@ -1045,7 +1051,9 @@ Note: -
  The set of scripts are per session, and refreshed only on new session creation.
 
 
-Supported on Ubuntu 20.04, 22.04</string>
+Supported on Ubuntu 20.04, 22.04.
+
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayUserAllScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2204ScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2004ScriptsLogoff">Logoff scripts</string>
