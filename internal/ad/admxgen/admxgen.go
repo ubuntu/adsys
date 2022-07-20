@@ -58,6 +58,8 @@ import (
 	"golang.org/x/text/language"
 )
 
+const dconfPolicyType = "dconf"
+
 // expandedCategories generation
 
 type expandedCategory struct {
@@ -245,7 +247,18 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		if releasesElements["all"].Note != "" {
 			explainText = fmt.Sprintf(i18n.G("%s\n\nNote: %s"), explainText, releasesElements["all"].Note)
 		}
-		explainText = fmt.Sprintf("%s\n\n%s", explainText, supportedOn)
+
+		// supportedOn can be empty if no release is specified in the policy definition
+		// In this case we don't want to print redundant newlines
+		if supportedOn != "" {
+			explainText = fmt.Sprintf("%s\n\n%s.", explainText, supportedOn)
+		}
+
+		// Mention if any of the policies require Ubuntu Pro
+		// Currently this only applies to non-dconf policies
+		if typePol != dconfPolicyType {
+			explainText = fmt.Sprintf("%s\n\n%s", explainText, i18n.G("An Ubuntu Pro subscription on the client is required to apply this policy."))
+		}
 
 		// prepare meta for the whole policy
 		metaEnabled, err := json.Marshal(metasEnabled)
