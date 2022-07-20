@@ -1205,6 +1205,7 @@ func TestNormalizeTargetName(t *testing.T) {
 		wantErr bool
 	}{
 		"One valid user":                          {target: "user@gpoonly.com", want: "user@gpoonly.com"},
+		"One valid user with mixed case":          {target: "User@GPOONLY.COM", want: "user@gpoonly.com"},
 		`One valid user with domain\user`:         {target: `gpoonly.com\user`, want: "user@gpoonly.com"},
 		"One user without explicit domain suffix": {target: "user", defaultDomainSuffix: "gpoonly.com", want: "user@gpoonly.com"},
 
@@ -1215,8 +1216,9 @@ func TestNormalizeTargetName(t *testing.T) {
 		"Computer name without objectClass": {target: hostname, want: hostname},
 
 		// Computer cases
-		"Computer is left as such":        {target: "computername", objectClass: ad.ComputerObject, want: "computername"},
-		"Computer with @ is left as such": {target: "computername@gpoonly.com", objectClass: ad.ComputerObject, want: "computername@gpoonly.com"},
+		"Computer is left as such":              {target: "computername", objectClass: ad.ComputerObject, want: "computername"},
+		"Computer in uppercase is left as such": {target: "COMPUTERNAME", objectClass: ad.ComputerObject, want: "computername"},
+		"Computer with @ is left as such":       {target: "computername@gpoonly.com", objectClass: ad.ComputerObject, want: "computername@gpoonly.com"},
 
 		// Error cases
 		`Error on multiple \ in name`:                        {target: `gpoonly.com\user\something`, wantErr: true},

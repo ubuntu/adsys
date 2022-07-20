@@ -549,10 +549,15 @@ func (ad *AD) GetStatus() (adServerURL string, isOffline bool) {
 	return ad.url, ad.isOffline
 }
 
-// NormalizeTargetName transform user or domain\user as user@domain.
+// NormalizeTargetName transforms and lowercases User or DOMAIN\User to user@domain.
 // If no domain is provided, we rely on having a default domain policy.
 func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClass ObjectClass) (string, error) {
 	log.Debugf(ctx, "NormalizeTargetName for %q, type %q", target, objectClass)
+
+	// Lowercase the target name to ensure we don't pollute the Linux
+	// case-sensitive filesystem with multiple files based on the case of the
+	// target.
+	target = strings.ToLower(target)
 
 	if objectClass == ComputerObject {
 		return target, nil
