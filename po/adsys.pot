@@ -54,7 +54,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:246
+#: internal/ad/admxgen/admxgen.go:248
 #, c-format
 msgid ""
 "%s\n"
@@ -89,7 +89,7 @@ msgstr ""
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:292
+#: internal/ad/admxgen/admxgen.go:305
 #, c-format
 msgid "%s needs a default policy class"
 msgstr ""
@@ -164,13 +164,13 @@ msgid ""
 "\n"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:204
+#: internal/ad/admxgen/admxgen.go:206
 #, c-format
 msgid "- Default for %s: %s"
 msgstr ""
 
 #. All defaults are the same and not empty
-#: internal/ad/admxgen/admxgen.go:242
+#: internal/ad/admxgen/admxgen.go:244
 #, c-format
 msgid "- Default: %s"
 msgstr ""
@@ -209,6 +209,11 @@ msgstr ""
 
 #: internal/daemon/daemon.go:219
 msgid "All connections have now ended."
+msgstr ""
+
+#: internal/ad/admxgen/admxgen.go:260
+msgid ""
+"An Ubuntu Pro subscription on the client is required to apply this policy."
 msgstr ""
 
 #: internal/authorizer/authorizer.go:153
@@ -585,7 +590,7 @@ msgstr ""
 msgid "Stops the service"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:191
+#: internal/ad/admxgen/admxgen.go:193
 #, c-format
 msgid "Supported on %s %s"
 msgstr ""
@@ -743,7 +748,7 @@ msgstr ""
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:454 internal/ad/admxgen/admxgen.go:467
+#: internal/ad/admxgen/admxgen.go:467 internal/ad/admxgen/admxgen.go:480
 msgid "can't create admx file: %v"
 msgstr ""
 
@@ -755,7 +760,7 @@ msgstr ""
 msgid "can't create daemon"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:443
+#: internal/ad/admxgen/admxgen.go:456
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
@@ -788,7 +793,7 @@ msgstr ""
 msgid "can't created new policies"
 msgstr ""
 
-#: internal/ad/registry/registry.go:302
+#: internal/ad/registry/registry.go:304
 msgid "can't decode meta value for %s: %v"
 msgstr ""
 
@@ -804,7 +809,7 @@ msgstr ""
 msgid "can't download all gpos and assets"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:426
+#: internal/ad/admxgen/admxgen.go:439
 msgid "can't generate ADMX files"
 msgstr ""
 
@@ -812,7 +817,7 @@ msgstr ""
 msgid "can't generate dconf expanded policies"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:99
+#: internal/ad/admxgen/admxgen.go:101
 msgid "can't generate expanded categories"
 msgstr ""
 
@@ -1170,11 +1175,11 @@ msgstr ""
 msgid "failed to install service"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:263
+#: internal/ad/admxgen/admxgen.go:276
 msgid "failed to marshal disabled meta data"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:253
+#: internal/ad/admxgen/admxgen.go:266
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
@@ -1405,7 +1410,7 @@ msgstr ""
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:307
+#: internal/ad/admxgen/admxgen.go:320
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
@@ -1461,7 +1466,7 @@ msgid ""
 "socket activation."
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:282
+#: internal/ad/admxgen/admxgen.go:295
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
@@ -1471,7 +1476,7 @@ msgstr ""
 msgid "stopped"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:353
+#: internal/ad/admxgen/admxgen.go:366
 msgid "the following policies have not been assigned to a category: %v"
 msgstr ""
 
