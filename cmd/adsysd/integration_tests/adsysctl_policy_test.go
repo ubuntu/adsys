@@ -79,7 +79,7 @@ func TestPolicyApplied(t *testing.T) {
 	currentUser := "adsystestuser@example.com"
 
 	// We setup and rerun in a subprocess because the test users must exist on the machine for the authorizer.
-	if setupSubprocessForTest(t, currentUser, "UserIntegrationTest@example.com") {
+	if setupSubprocessForTest(t, currentUser, "userintegrationtest@example.com") {
 		return
 	}
 
@@ -96,9 +96,10 @@ func TestPolicyApplied(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Current user applied gpos": {},
-		"Other user applied gpos":   {args: []string{"UserIntegrationTest@example.com"}, userGPORules: "UserIntegrationTest@example.com"},
-		"Machine only applied gpos": {args: []string{hostname}},
+		"Current user applied gpos":               {},
+		"Other user applied gpos":                 {args: []string{"userintegrationtest@example.com"}, userGPORules: "userintegrationtest@example.com"},
+		"Other user applied gpos with mixed case": {args: []string{"UserIntegrationTest@example.com"}, userGPORules: "userintegrationtest@example.com"},
+		"Machine only applied gpos":               {args: []string{hostname}},
 
 		"Detailed policy without override":               {args: []string{"--details"}},
 		"Detailed policy with overrides (all)":           {args: []string{"--all"}},
@@ -199,7 +200,7 @@ func TestPolicyUpdate(t *testing.T) {
 	currentUID := u.Uid
 
 	// We setup and rerun in a subprocess because the test users must exist on the machine for the authorizer.
-	if setupSubprocessForTest(t, currentUser, "UserIntegrationTest@example.com") {
+	if setupSubprocessForTest(t, currentUser, "userintegrationtest@example.com") {
 		return
 	}
 
@@ -271,13 +272,28 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"Other user, update old data": {
+			args:       []string{"userintegrationtest@example.com", "UserIntegrationTest@example.com.krb5"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          "UserIntegrationTest@example.com.krb5",
+					adsysSymlink: "userintegrationtest@example.com",
+				},
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			}},
+		"Other user with mixed case, update old data": {
 			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
 			initState:  "old-data",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
 					src:          "UserIntegrationTest@example.com.krb5",
-					adsysSymlink: "UserIntegrationTest@example.com",
+					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
 					src:          "ccache_EXAMPLE.COM",
@@ -315,7 +331,7 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 				{
 					src:          "UserIntegrationTest@example.com.krb5",
-					adsysSymlink: "UserIntegrationTest@example.com",
+					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
 					src:          "ccache_EXAMPLE.COM",
@@ -333,7 +349,7 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 				// UserIntegration is not connected (no symlink, old ticket exists though)
 				{
-					src: "UserIntegrationTest@example.com.krb5",
+					src: "userintegrationtest@example.com.krb5",
 				},
 				{
 					src:          "ccache_EXAMPLE.COM",
@@ -753,7 +769,7 @@ func TestPolicyUpdate(t *testing.T) {
 				{
 					// dangling adsys symlink for this user
 					//src:          "UserIntegrationTest@example.com.krb5",
-					adsysSymlink: "UserIntegrationTest@example.com",
+					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
 					src:          "ccache_EXAMPLE.COM",

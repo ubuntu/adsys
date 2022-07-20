@@ -75,7 +75,7 @@ accounts = {}
 
 # Only called on user/machine, returns correct account object
 def Dn(samdb, dn):
-    return accounts[dn]
+    return accounts[dn.lower()]
 
 
 # OU themselves
@@ -169,7 +169,7 @@ class Account:
     def __init__(self, name, dn):
         self.name = name
         self.parentDn = dn
-        accounts[name] = self
+        accounts[name.lower()] = self
 
     def parent(self):
         return self.parentDn
