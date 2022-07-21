@@ -1,3 +1,26 @@
+adsys (0.9.1) kinetic; urgency=medium
+
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  * Fix loading policy content from uppercase folders (LP: #1982330)
+  * Add GSettings power management keys (LP: #1982349)
+  * Allow parsing policy entries with empty values (LP: #1982342)
+  * Allow parsing policies with unsupported types (LP: #1982343)
+  * Allow parsing policy entries with no data (LP: #1982345)
+  * Lowercase target name when normalizing (LP: #1982347)
+  * Annotate policies that require Ubuntu Pro (LP: #1982348)
+  * Update dependencies to latest:
+    - github.com/spf13/cobra
+    - github.com/spf13/viper
+    - github.com/stretchr/testify
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/bubbles
+    - google.golang.org/grpc
+    - github.com/golangci/golangci-lint
+    - github.com/sirupsen/logrus
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Thu, 21 Jul 2022 11:44:30 +0300
+
 adsys (0.9.0) kinetic; urgency=medium
 
   [ Jean-Baptiste Lallement ]
