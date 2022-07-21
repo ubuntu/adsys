@@ -26,7 +26,7 @@ adsys (0.9.0) kinetic; urgency=medium
   [ Jean-Baptiste Lallement ]
   [ Didier Roche ]
   [ Gabriel Nagy ]
-  * Add Active Directory Watch Daemon - adwatchd:
+  * Add Active Directory Watch Daemon - adwatchd: (LP: #1982351)
     - Implement a Windows daemon that watches a list of configured directories
       for changes and bumps the relevant GPT.INI files.
     - Add adsys-windows binary package which includes the Windows daemon
