@@ -12,7 +12,7 @@ require (
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/golang/protobuf v1.5.2
-	github.com/golangci/golangci-lint v1.47.1
+	github.com/golangci/golangci-lint v1.47.2
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
 	github.com/kardianos/service v1.2.1
 	github.com/muesli/termenv v0.11.1-0.20220212125758-44cd13922739
