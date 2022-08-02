@@ -7,8 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"syscall"
-	"time"
 
 	"github.com/ubuntu/adsys/internal/generators"
 )
@@ -19,16 +17,9 @@ func main() {
 	}
 	dir := filepath.Join(generators.DestDirectory(os.Args[3]), os.Args[2])
 
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		log.Fatalf("Couldn't create dest directory: %v", err)
+	if err := generators.CreateDirectory(dir, 0755); err != nil {
+		log.Fatal(err)
 	}
-	defer func() {
-		// Sleep and force a sync before exiting to avoid possible race
-		// conditions during the package build, where the paths to install are
-		// not fully written by the time dh_install runs.
-		syscall.Sync()
-		time.Sleep(1 * time.Second)
-	}()
 
 	fromBytes, err := os.ReadFile(os.Args[1])
 	if err != nil {

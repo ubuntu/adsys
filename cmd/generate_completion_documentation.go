@@ -79,7 +79,7 @@ func genCompletions(cmds []cobra.Command, dir string) {
 		if err := generators.CleanDirectory(filepath.Dir(d)); err != nil {
 			log.Fatalln(err)
 		}
-		if err := os.MkdirAll(d, 0755); err != nil {
+		if err := generators.CreateDirectory(d, 0755); err != nil {
 			log.Fatalf("Couldn't create bash completion directory: %v", err)
 		}
 	}
@@ -101,7 +101,7 @@ func genManPages(cmds []cobra.Command, dir string) {
 	}
 
 	out := filepath.Join(manBaseDir, "man1")
-	if err := os.MkdirAll(out, 0755); err != nil {
+	if err := generators.CreateDirectory(out, 0755); err != nil {
 		log.Fatalf("Couldn't create man pages directory: %v", err)
 	}
 
