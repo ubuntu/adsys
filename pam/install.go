@@ -27,7 +27,7 @@ func main() {
 	switch mode {
 
 	case "install":
-		if err := os.MkdirAll(destDir, 0755); err != nil {
+		if err := generators.CreateDirectory(destDir, 0755); err != nil {
 			log.Fatal(err)
 		}
 		args := []string{"--shared", "-Wl,-soname,libpam_adsys.so"}
