@@ -4,7 +4,6 @@
 package main
 
 import (
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,20 +30,12 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}()
 
-	from, err := os.Open(os.Args[1])
+	fromBytes, err := os.ReadFile(os.Args[1])
 	if err != nil {
 		log.Fatalf("Couldn't open source file: %v", err)
 	}
-	defer from.Close()
 
-	dest, err := os.OpenFile(filepath.Join(dir, filepath.Base(os.Args[1])), os.O_RDWR|os.O_CREATE, 0666)
-	if err != nil {
-		log.Fatal("Couldn't open dest file: %v", err)
-	}
-	defer dest.Close()
-
-	_, err = io.Copy(dest, from)
-	if err != nil {
-		log.Fatalf("Copy failed: %v", err)
+	if err := os.WriteFile(filepath.Join(dir, filepath.Base(os.Args[1])), fromBytes, 0666); err != nil {
+		log.Fatalf("Couldn't write to dest file: %v", err)
 	}
 }
