@@ -1,3 +1,14 @@
+adsys (0.9.2) kinetic; urgency=medium
+
+  * Update generators to fix FTBFS
+    - shell out to mkdir instead of go's os.Mkdir which can bypass fakeroot's
+      filesystem hijacking and cause unexpected behavior
+  * Update dependencies to latest:
+    - github.com/golangci/golangci-lint
+    - google.golang.org/protobuf
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Wed, 03 Aug 2022 11:00:39 +0300
+
 adsys (0.9.1) kinetic; urgency=medium
 
   [ Didier Roche ]
