@@ -15,7 +15,7 @@ jobs:
     name: Build admxgen static binary
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
           go-version-file: go.mod
@@ -24,7 +24,7 @@ jobs:
           mkdir /tmp/adsys
           CO_ENABLED=0 go build ./cmd/admxgen/
       - name: Upload admxgen
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: admxgen
           path: |
@@ -91,7 +91,7 @@ jobs:
       image: ${{ matrix.releases }}
     steps:
       - name: Download admxgen and definition files
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: admxgen
       - name: Install desktop with all default package in container
@@ -112,7 +112,7 @@ jobs:
           artifacts_name=${artifacts_name/:/-}
           echo "artifacts_name=${artifacts_name}" >> $GITHUB_ENV
       - name: Generated definition files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: policies-${{ env.artifacts_name }}
           path: out/*
@@ -131,7 +131,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y distro-info
       - name: Download all available artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
       - name: Display structure of downloaded files
@@ -158,7 +158,7 @@ jobs:
           artifacts/admxgen/admxgen admx --auto-detect-releases ${allowflag} artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ .
           ls -R
       - name: Upload adm template files
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: adm-${{ matrix.releases }}
           path: Ubuntu.adm*
@@ -169,12 +169,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: generate-ad
     steps:
-      - name: Install dependencies, including git for checkout
-        run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y git
-      # Checkout code with git
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Download adm template files for "all"
         uses: actions/download-artifact@v2
         with:
@@ -193,7 +188,7 @@ jobs:
         shell: bash
         run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           commit-message: Refresh policy definition files
           title: Refresh policy definition files

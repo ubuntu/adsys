@@ -11,17 +11,13 @@ jobs:
   update-po:
     name: Update po files
     runs-on: ubuntu-latest
-    container: ubuntu:rolling
     steps:
-      - name: Install dependencies, including git for checkout
+      - name: Install dependencies
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt update
-          apt install -y gettext git
-      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
-        run: git config --global --add safe.directory /__w/adsys/adsys
+          sudo DEBIAN_FRONTEND=noninteractive apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y gettext
       # Checkout code with git
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: main
       # Install go
@@ -45,7 +41,7 @@ jobs:
           echo "modified=${hasModif}" >> $GITHUB_ENV
       - name: Create Pull Request
         if: ${{ env.modified == 'true' }}
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           commit-message: Auto update po files
           title: Auto update po files
@@ -63,17 +59,13 @@ jobs:
     # This should just be "after", but we don't want the 2 jobs to push at the same time
     needs: update-po
     runs-on: ubuntu-latest
-    container: ubuntu:rolling
     steps:
-      - name: Install dependencies, including git for checkout
+      - name: Install dependencies
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt update
-          apt install -y libsmbclient-dev gcc pkg-config git
-      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
-        run: git config --global --add safe.directory /__w/adsys/adsys
+          sudo DEBIAN_FRONTEND=noninteractive apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y libsmbclient-dev gcc pkg-config
       # Checkout code with git
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: main
       # Install go
