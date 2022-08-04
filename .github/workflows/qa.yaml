@@ -13,17 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu:latest
     steps:
-      # We install git before checkouting so that actions/checkout use the git command and persists .git/ thus
       - name: Install dependencies
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt update
-          apt install -y ca-certificates git gcc pkg-config libsmbclient-dev
+          DEBIAN_FRONTEND=noninteractive apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc pkg-config libsmbclient-dev
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: go.mod
+          cache: true
       - name: Code formatting, vet, static checker Security…
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3
         with:
           args: "--config .golangci-ci.yaml"
       - name: Module files are up to date
@@ -46,7 +48,7 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
           go-version-file: go.mod
@@ -54,7 +56,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper curl
       - name: Set required environment variables
         run: echo "SUDO_PACKAGES=$(cat debian/tests/.sudo-packages)" >> $GITHUB_ENV
       - name: Authenticate to docker local registry and pull image with our token
@@ -81,12 +83,8 @@ jobs:
           ADSYS_SKIP_SUDO_TESTS=1 go test -race ./...
           # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
           sudo -E $(which go) test -race ${{ env.sudo_packages }}
-      - name: Install curl for codecov
-        run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y curl
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: /tmp/coverage.combined.out
 
@@ -96,7 +94,7 @@ jobs:
     env:
       packages: ./internal/loghooks ./internal/watchdservice ./internal/watchdtui ./internal/watcher ./internal/config/watchd ./cmd/adwatchd/integration_tests
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/setup-go@v3
@@ -149,12 +147,11 @@ jobs:
       # Add dependencies
       - name: Install dependencies
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt update
-          apt install -y ca-certificates gcc pkg-config protobuf-compiler gettext git libsmbclient-dev
+          DEBIAN_FRONTEND=noninteractive apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y git ca-certificates gcc pkg-config protobuf-compiler gettext libsmbclient-dev
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
           go-version-file: go.mod
