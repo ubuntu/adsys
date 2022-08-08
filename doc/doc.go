@@ -9,6 +9,7 @@ import (
 
 // Dir is the embedded directory containing documentation
 // Only embed structured documentation.
+//
 //go:embed *-*.md
 var Dir embed.FS
 

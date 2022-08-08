@@ -57,11 +57,11 @@ type idlerClientStream struct {
 // RecvMsg is used to reset the timer as we got a new messages.
 // If we get an error from server, it will analyze the kind of error transform it appropriately,
 // after ensuring the timer is stopped.
-// 1. If the error isn’t a cancellation error, returns it raw.
-// 2. If the error is a cancellation error and the timer was already been stopped: this was a timeout,
-//    transform it as cancellation.
-// 3. If the error is a cancellation error and the timer wasn’t stopped, this is a client cancellation
-//    being requested (like Ctrl+C), returns then EOF.
+//  1. If the error isn’t a cancellation error, returns it raw.
+//  2. If the error is a cancellation error and the timer was already been stopped: this was a timeout,
+//     transform it as cancellation.
+//  3. If the error is a cancellation error and the timer wasn’t stopped, this is a client cancellation
+//     being requested (like Ctrl+C), returns then EOF.
 func (ss *idlerClientStream) RecvMsg(m interface{}) error {
 	if err := ss.ClientStream.RecvMsg(m); err != nil {
 		// Transform grpc context cancel deadline if this is what we got.

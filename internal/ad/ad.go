@@ -123,6 +123,7 @@ func WithDefaultDomainSuffix(defaultDomainSuffix string) Option {
 
 // AdsysGpoListCode is the embedded script which request
 // Samba to get our GPO list for the given object.
+//
 //go:embed adsys-gpolist
 var AdsysGpoListCode string
 

@@ -1,38 +1,37 @@
 /*
 Package admxgen generates admx and adml from a category and multiple policies per release
 
-	The process is acting on multiple steps:
-	- We generate on each release, for each type of conversion (dconf, install script, apparmor) common.ExpandedPolicy object.
-	  The common.ExpandedPolicy is independent of the type of the policy and contains all needed data and metadata for the policy
-	  for a given release.
-	- Using the category definition, we merge all expanded policies in a finale expandedCategories set, which contains all definitions,
-	  including any supported release information for a given policy. It can also adjust the default value information if it
-	  differs between releases.
-	- Finally, we are taking this expandedCategories object and outputing the administrative template from it.
+		The process is acting on multiple steps:
+		- We generate on each release, for each type of conversion (dconf, install script, apparmor) common.ExpandedPolicy object.
+		  The common.ExpandedPolicy is independent of the type of the policy and contains all needed data and metadata for the policy
+		  for a given release.
+		- Using the category definition, we merge all expanded policies in a finale expandedCategories set, which contains all definitions,
+		  including any supported release information for a given policy. It can also adjust the default value information if it
+		  differs between releases.
+		- Finally, we are taking this expandedCategories object and outputing the administrative template from it.
 
 
-    categories.yaml --------------------------------------------|
-                                                                |
-    20.10:                                                      |
-    (install script)                                            |
-    install.yaml   -----|                                       |
-                        |                                       |
-    (dconf)             |----|> ExpandedPolicies --|            |
-    dconf.yaml ---|     |                          |            |
-                  |-----|                          |            |
-    schema -------|                                |            |
-                                                   |        |-------|
-                                                   |--------|   O   |-----|> expandedCategories ----|> PolicyDefinition (ADMX/ADML)
-                                                   |        |-------|
-    20.10:                                         |
-    (install script)                               |
-    install.yaml   -----|                          |
-                        |                          |
-    (dconf)             |----|> ExpandedPolicies --|
-    dconf.yaml ---|     |
-                  |-----|
-    schema -------|
-
+	    categories.yaml --------------------------------------------|
+	                                                                |
+	    20.10:                                                      |
+	    (install script)                                            |
+	    install.yaml   -----|                                       |
+	                        |                                       |
+	    (dconf)             |----|> ExpandedPolicies --|            |
+	    dconf.yaml ---|     |                          |            |
+	                  |-----|                          |            |
+	    schema -------|                                |            |
+	                                                   |        |-------|
+	                                                   |--------|   O   |-----|> expandedCategories ----|> PolicyDefinition (ADMX/ADML)
+	                                                   |        |-------|
+	    20.10:                                         |
+	    (install script)                               |
+	    install.yaml   -----|                          |
+	                        |                          |
+	    (dconf)             |----|> ExpandedPolicies --|
+	    dconf.yaml ---|     |
+	                  |-----|
+	    schema -------|
 */
 package admxgen
 
