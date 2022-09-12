@@ -24,9 +24,13 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: Get version of golanci-lint to use
+        id: cilint-version-fetch
+        run: echo "::set-output name=version::$(grep -r golangci-lint tools/go.mod | cut -f2 -d' ')"
       - name: Code formatting, vet, static checker Security…
         uses: golangci/golangci-lint-action@v3
         with:
+          version: ${{ steps.cilint-version-fetch.outputs.version }}
           args: "--config .golangci-ci.yaml"
       - name: Module files are up to date
         run: |
@@ -160,8 +164,10 @@ jobs:
         run: |
           set -eu
 
+          cd tools/
           go install google.golang.org/protobuf/cmd/protoc-gen-go \
             google.golang.org/grpc/cmd/protoc-gen-go-grpc
+          cd -
       - name: Check generated files
         run: |
           set -eu
