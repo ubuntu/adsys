@@ -26,7 +26,8 @@ jobs:
           cache: true
       - name: Get version of golanci-lint to use
         id: cilint-version-fetch
-        run: echo "::set-output name=version::$(grep -r golangci-lint tools/go.mod | cut -f2 -d' ')"
+        # This handles "require foo version" and "require (\nfoo version\n)"" formats
+        run: echo "::set-output name=version::$(grep golangci-lint tools/go.mod | rev | cut -f1 -d' ' | rev)"
       - name: Code formatting, vet, static checker Security…
         uses: golangci/golangci-lint-action@v3
         with:
