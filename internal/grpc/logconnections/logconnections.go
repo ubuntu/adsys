@@ -1,3 +1,4 @@
+// Package logconnections implements a stream interceptor to notify the pingued object on each new and ended connections.
 package logconnections
 
 import (

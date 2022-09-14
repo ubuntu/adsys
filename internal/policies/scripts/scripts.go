@@ -1,3 +1,6 @@
+// Package scripts is the policy manager for machine and user script entry types.
+//
+// It handles also the script assets themselves.
 package scripts
 
 import (

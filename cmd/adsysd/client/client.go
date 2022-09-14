@@ -1,3 +1,4 @@
+// Package client represents the CLI UI for adsysctl client.
 package client
 
 import (

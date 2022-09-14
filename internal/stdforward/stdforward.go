@@ -1,3 +1,6 @@
+// Package stdforward handles the totality of process stdout and stderr forwarding to one or multiple writers.
+//
+// This is used to connect one or multiple GRPC stream writers.
 package stdforward
 
 import (

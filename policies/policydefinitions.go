@@ -1,3 +1,4 @@
+// Package policydefinitions contains all policy definitions.
 package policydefinitions
 
 import "embed"

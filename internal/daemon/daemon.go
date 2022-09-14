@@ -1,3 +1,5 @@
+// Package daemon hadnles the GRPC daemon with systemd activation, configuration changes like dynamic
+// socket listening, idling timeout functionality.
 package daemon
 
 import (

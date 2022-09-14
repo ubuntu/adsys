@@ -1,3 +1,4 @@
+// Package config handles config parsing for adsys.
 package config
 
 import (

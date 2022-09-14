@@ -1,3 +1,4 @@
+// Package privilege is the policy manager for privilege escalation (sudo and polkit) entry types.
 package privilege
 
 import (

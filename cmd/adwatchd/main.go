@@ -1,3 +1,4 @@
+// Package main is the adwatchd entry point to start the Windows or Linux service.
 package main
 
 import (

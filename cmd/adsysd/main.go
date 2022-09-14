@@ -1,3 +1,4 @@
+// Package main is the adsysd/adsysctl entry point.
 package main
 
 import (

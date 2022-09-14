@@ -1,3 +1,4 @@
+// Package daemon represents the CLI UI for adsysd service.
 package daemon
 
 import (

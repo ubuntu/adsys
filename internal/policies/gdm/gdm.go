@@ -1,3 +1,4 @@
+// Package gdm is the policy manager for gdm entry types. It’s using the dconf parser for gdm user.
 package gdm
 
 import (

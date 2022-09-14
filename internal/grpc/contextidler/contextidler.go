@@ -1,3 +1,7 @@
+// Package contextidler allows to timeout any idled client connection.
+//
+// An idle connection is a connection which hasn’t received any messages from server during timeout time.
+// The stream call will return EOF though if the client itself request a cancellation.
 package contextidler
 
 import (

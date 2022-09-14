@@ -1,3 +1,4 @@
+// Package watchdtui is the interactive UI part of watchd for configuration handling.
 package watchdtui
 
 import (

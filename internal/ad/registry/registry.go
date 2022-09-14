@@ -1,3 +1,5 @@
+// Package registry handles parsing Windows registry .pol files
+// to convert them to comprehensible entries datastructure for adsys to consume.
 package registry
 
 import (

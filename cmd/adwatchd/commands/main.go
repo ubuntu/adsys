@@ -1,3 +1,4 @@
+// Package commands is the adwatchd command handling.
 package commands
 
 import (

@@ -1,4 +1,4 @@
-// Package adcommon includes utilities for packages depending on ad
+// Package adcommon includes utilities for packages depending on ad.
 package adcommon
 
 import (

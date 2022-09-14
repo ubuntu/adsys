@@ -1,3 +1,4 @@
+// Package grpcerror formats well known GRPC errors to comprehensible end-user errors.
 package grpcerror
 
 import (
