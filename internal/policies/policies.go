@@ -1,4 +1,4 @@
-// Package policies is the orchestrators of all managers, based on the entries we pass to it.
+// Package policies is the orchestrator of all managers, based on the entries we pass to it.
 //
 // It also handles serialization, caching, and deserialization of applied policies for later user request.
 // The notion of order, overrides and priorities are also managed by this package.

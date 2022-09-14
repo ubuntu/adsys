@@ -1,4 +1,4 @@
-// Package ad is responsible for the Active Directory connexion to parse what to apply to each user/machine,
+// Package ad is responsible for the Active Directory connection to parse what to apply to each user/machine,
 // get the URL and permissions on what to fetch, downloads GPOs policy files and assets.
 //
 // It has a cache policy to avoid unnecessary downloads.

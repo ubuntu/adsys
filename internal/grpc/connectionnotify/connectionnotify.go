@@ -1,5 +1,5 @@
 // Package connectionnotify contains a GRPC interceptor to notify about new incoming or closing
-// streal connexions.
+// stream connexions.
 package connectionnotify
 
 import (
