@@ -1,3 +1,4 @@
+// Package watchdservice is the watchd main service handler, compatible with Windows and Linux.
 package watchdservice
 
 import (

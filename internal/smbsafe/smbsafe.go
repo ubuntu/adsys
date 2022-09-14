@@ -1,13 +1,12 @@
+// Package smbsafe is an helper for libsmbclient calls.
+//
+// libsmbclient overrides sigchild without setting SA_ONSTACK
+// It means that any cmd.Wait() would segfault when ran concurrently with this.
+//
+// This package will handle globally (sigh) states to restore sig child and exec safely.
+// We use the want and done channels to held and enter safely in one of the mode. Multiple
+// requests in the same mode can be executed in parallel.
 package smbsafe
-
-/*
-libsmbclient overrides sigchild without setting SA_ONSTACK
-It means that any cmd.Wait() would segfault when ran concurrently with this.
-
-This package will handle globally (sigh) states to restore sig child and exec safely.
-We use the want and done channels to held and enter safely in one of the mode. Multiple
-requests in the same mode can be executed in parallel.
-*/
 
 /*
 #include <stdio.h>

@@ -1,3 +1,4 @@
+// Package doc embeds structured adsys documentation.
 package doc
 
 import (

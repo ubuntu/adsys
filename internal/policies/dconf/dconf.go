@@ -1,3 +1,4 @@
+// Package dconf is the policy manager for dconf entry types.
 package dconf
 
 import (

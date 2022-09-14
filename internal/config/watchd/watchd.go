@@ -1,3 +1,4 @@
+// Package watchd is the configuration handler for watchd daemon.
 package watchd
 
 import (

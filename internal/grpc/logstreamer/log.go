@@ -1,3 +1,10 @@
+// Package log implements multiple string interceptors to stream logs initiated and tagged from the server to
+// the targeted clients.
+//
+// This package allows then to multiplex logs, while only sending the parts for each stream connection to the
+// destination client. Each client can have its own log level, independently of the daemon one.
+//
+// There are also privilege clients where all stream connection could be forwarded.
 package log
 
 import (

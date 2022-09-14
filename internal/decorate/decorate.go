@@ -1,3 +1,4 @@
+// Package decorate contains various helpers to decorate errors with fewer lines of code in functions.
 package decorate
 
 import (

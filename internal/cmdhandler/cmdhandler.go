@@ -1,3 +1,4 @@
+// Package cmdhandler contains multiple helper functions for cobra cmd integration.
 package cmdhandler
 
 import (

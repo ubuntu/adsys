@@ -1,3 +1,4 @@
+// Package loghooks allows to fire special hook entries to logrus.
 package loghooks
 
 import (

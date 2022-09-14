@@ -1,3 +1,4 @@
+// Package i18n is responsible for internationalization/translation handling and generation.
 package i18n
 
 /*

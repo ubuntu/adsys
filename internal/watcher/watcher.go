@@ -1,3 +1,6 @@
+// Package watcher is the watchd inotify handler.
+//
+// It treats and emits events on directory changes and increments the GPT file version when needed.
 package watcher
 
 import (

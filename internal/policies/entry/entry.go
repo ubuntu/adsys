@@ -1,3 +1,5 @@
+// Package entry contains the Entry type, which is the bridge between AD and adsys minimal item, containing
+// every information to apply.
 package entry
 
 // Entry represents a key/value based policy (dconf, apparmor, ...) entry.

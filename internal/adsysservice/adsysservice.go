@@ -1,3 +1,4 @@
+// Package adsysservice is the implementation of all GRPC calls endpoints.
 package adsysservice
 
 import (

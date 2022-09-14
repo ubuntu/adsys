@@ -1,3 +1,6 @@
+// Package main is the entry point for admxgen command line.
+//
+// admxgen is a tool used in CI to refresh policy definition files and generates admx/adml.
 package main
 
 import (

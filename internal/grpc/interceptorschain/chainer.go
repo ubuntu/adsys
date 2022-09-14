@@ -1,3 +1,4 @@
+// Package interceptorschain allows chaining multiple streams server interceptor by returning an unique interceptor.
 package interceptorschain
 
 import (
