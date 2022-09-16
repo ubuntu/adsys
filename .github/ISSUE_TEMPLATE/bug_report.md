@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 >**Please do not report security vulnerabilities here**  
->Use [launchpad ADSys private bugs](https://bugs.launchpad.net/ubuntu/+source/adsys/+filebug) which is monitored by our security team. On ubuntu machine, it’s best to use `ubuntu-bug adsys` to collect relevant information.
+>Use [launchpad ADSys private bugs](https://bugs.launchpad.net/ubuntu/+source/adsys/+filebug) which is monitored by our security team. On Ubuntu machines, it’s best to use `ubuntu-bug adsys` to collect relevant information.
 
 **Thank you in advance for helping us to improve ADSys!**  
 Please read through the template below and answer all relevant questions. Your additional work here is greatly appreciated and will help us respond as quickly as possible. For general support or usage questions, use [Ubuntu Discourse](https://discourse.ubuntu.com/c/desktop/8). Finally, to avoid duplicates, please search existing Issues before submitting one here.
@@ -33,7 +33,7 @@ By submitting an Issue to this repository, you agree to the terms within the [Ub
 
 > Please provide the following:
 
-#### For ubuntu users, please run and copy the following
+#### For Ubuntu users, please run and copy the following
 
 1. `ubuntu-bug adsys --save=/tmp/report`
 1. Copy paste below `/tmp/report` content:
@@ -41,6 +41,17 @@ By submitting an Issue to this repository, you agree to the terms within the [Ub
 ```raw
 COPY REPORT CONTENT HERE.
 ```
+
+#### Relevant AD information
+
+If AD authentication works but adsys fails to fetch GPOs (e.g. you see `can't get policies` errors on login), please perform the following steps:
+
+1. Add the following to `/etc/samba/smb.conf`:
+```
+log level = 10
+```
+2. Run `sudo login user@domain` in a terminal, replacing with your AD credentials
+3. Paste the output in the bug report
 
 #### Installed versions
 
