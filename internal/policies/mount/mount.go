@@ -153,7 +153,7 @@ func writeMountsFile(ctx context.Context, entries []entry.Entry, opts ...Option)
 		}
 	}
 
-	err = os.WriteFile(o.mountsFilePath, []byte(strings.Join(p, "\n")), 0755)
+	err = os.WriteFile(o.mountsFilePath, []byte(strings.Join(p, "\n")+"\n"), 0755)
 	if err != nil {
 		return err
 	}
