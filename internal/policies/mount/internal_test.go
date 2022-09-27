@@ -31,7 +31,7 @@ func TestWriteMountsFile(t *testing.T) {
 		"write mounts file with values deduplicated from values":           {nEntries: 1, nValues: 5, nDuplicated: 3},
 		"write mounts file with values deduplicated from multiple entries": {nEntries: 3, nValues: 5, nDuplicated: 3},
 
-		// "errored entries should not be added": {nEntries: 5, nErrored: 3, nValues: 2},
+		"errored entries should not be added": {nEntries: 5, nErrored: 3, nValues: 2},
 	}
 
 	for name, tc := range tests {
