@@ -102,11 +102,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), usr.Gid, objectName)
 	}
 
-	if err = os.MkdirAll(filepath.Dir(m.mountsFilePath), 0755); err != nil {
+	if err = os.MkdirAll(filepath.Dir(m.mountsFilePath), 0750); err != nil {
 		return err
 	}
 
-	err = writeMountsFile(ctx, entries, WithMountsFilePath(m.mountsFilePath))
+	err = writeMountsFile(entries, WithMountsFilePath(m.mountsFilePath))
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	return nil
 }
 
-func writeMountsFile(ctx context.Context, entries []entry.Entry, opts ...Option) (err error) {
+func writeMountsFile(entries []entry.Entry, opts ...Option) (err error) {
 	o := option{
 		mountsFilePath: consts.DefaultMountsFilePath,
 	}
@@ -153,7 +153,7 @@ func writeMountsFile(ctx context.Context, entries []entry.Entry, opts ...Option)
 		}
 	}
 
-	err = os.WriteFile(o.mountsFilePath, []byte(strings.Join(p, "\n")+"\n"), 0755)
+	err = os.WriteFile(o.mountsFilePath, []byte(strings.Join(p, "\n")+"\n"), 0600)
 	if err != nil {
 		return err
 	}

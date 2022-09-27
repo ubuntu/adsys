@@ -12,11 +12,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-}
-
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
@@ -88,10 +83,10 @@ func TestApplyPolicy(t *testing.T) {
 			testdata := filepath.Join("testdata", t.Name())
 			wantPath := filepath.Join(testdata, "mounts")
 			if update {
-				err = os.MkdirAll(testdata, 0777)
+				err = os.MkdirAll(testdata, 0750)
 				require.NoError(t, err, "Expected to create testdata dir for the tests")
 
-				err = os.WriteFile(wantPath, b, 0777)
+				err = os.WriteFile(wantPath, b, 0600)
 				require.NoError(t, err, "Expected to update golden file for the test")
 			}
 

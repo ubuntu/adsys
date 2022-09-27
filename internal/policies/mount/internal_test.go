@@ -1,7 +1,6 @@
 package mount
 
 import (
-	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -45,7 +44,7 @@ func TestWriteMountsFile(t *testing.T) {
 				tc.separators = append(tc.separators, "\n")
 			}
 
-			err := writeMountsFile(context.Background(), GetEntries(tc.nEntries, tc.nErrored, tc.nValues, tc.nDuplicated, tc.separators), WithMountsFilePath(mountsPath))
+			err := writeMountsFile(GetEntries(tc.nEntries, tc.nErrored, tc.nValues, tc.nDuplicated, tc.separators), WithMountsFilePath(mountsPath))
 			require.NoError(t, err, "Expected no error but got one")
 
 			b, err := os.ReadFile(mountsPath)
