@@ -133,12 +133,24 @@ func writeMountsFile(ctx context.Context, entries []entry.Entry, opts ...Option)
 
 	decorate.OnError(&err, i18n.G("failed when writing mounts file %s"), o.mountsFilePath)
 
+	seen := make(map[string]struct{})
 	p := []string{}
 	for _, entry := range entries {
 		if entry.Err != nil {
 			continue
 		}
-		p = append(p, entry.Value)
+
+		values := strings.Split(entry.Value, "\n")
+		for _, value := range values {
+			val := strings.Split(value, ",")
+			for _, v := range val {
+				if _, ok := seen[v]; ok || v == "" {
+					continue
+				}
+				p = append(p, v)
+				seen[v] = struct{}{}
+			}
+		}
 	}
 
 	err = os.WriteFile(o.mountsFilePath, []byte(strings.Join(p, "\n")), 0755)
