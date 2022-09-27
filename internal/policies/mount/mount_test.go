@@ -20,7 +20,7 @@ func TestNew(t *testing.T) {
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
-	entries := GetEntries(5, 0)
+	entries := GetEntries(5, 0, 1, 0, []string{"\n"})
 
 	tests := map[string]struct {
 		entries    []entry.Entry

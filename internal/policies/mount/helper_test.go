@@ -7,22 +7,27 @@ import (
 )
 
 // GetEntries generates entries to be used in tests.
-func GetEntries(nEntries, nErrored int) []entry.Entry {
+func GetEntries(nEntries, nErrored, nValues, nDuplicated int, sep []string) []entry.Entry {
 	entries := []entry.Entry{}
-
+	c := 0
 	for i := 0; i < nEntries; i++ {
-
-		e := entry.Entry{
-			Key:      "mount",
-			Value:    fmt.Sprintf("protocol://domain.com/entry-%d", i+1),
-			Disabled: false,
-			Meta:     "",
-			Strategy: "",
-			Err:      nil,
+		if i < nErrored {
+			e := entry.Entry{Err: fmt.Errorf("this entry has an error")}
+			entries = append(entries, e)
+			continue
 		}
 
-		if i < nErrored {
-			e.Err = fmt.Errorf("this entry has an error")
+		e := entry.Entry{Key: fmt.Sprintf("mount/%d", i)}
+		dup := 0
+		value := "protocol://domain.com/mount-%d-path"
+		for n := 0; n < nValues; n++ {
+			v := fmt.Sprintf(value, c)
+			c++
+			if dup < nDuplicated {
+				v = fmt.Sprintf(value, 1000)
+				dup++
+			}
+			e.Value += v + sep[n%len(sep)]
 		}
 
 		entries = append(entries, e)
