@@ -1,0 +1,14 @@
+
+[Unit]
+Description=ADSys mount service for the user
+ConditionPathExists=/run/adsys/users/success/mounts
+After=something
+
+[Service]
+Type=notify
+NotifyAccess=all
+RemainAfterExit=yes
+ExecStart=/usr/libexec/adsys_mount user /run/adsys/users/%u/mounts
+
+[Install]
+WantedBy=default.target
