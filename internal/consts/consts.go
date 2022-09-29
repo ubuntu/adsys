@@ -65,11 +65,4 @@ const (
 	SubscriptionDbusObjectPath = "/com/canonical/UbuntuAdvantage/Manager"
 	// SubscriptionDbusInterface is the interface we are using for access dbus properties.
 	SubscriptionDbusInterface = "com.canonical.UbuntuAdvantage.Manager"
-
-	// Mount related properties.
-
-	// DefaultMountsFilePath is the path in which the mount entries for the user will be / %s should be formatted with the full username.
-	DefaultMountsFilePath string = "/run/adsys/users/%s/mounts"
-	//DefaultUserMountServicePath is the path in which the mount service for the user will be.
-	DefaultUserMountServicePath string = "/usr/lib/systemd/user/adsys-user-mount.service"
 )
