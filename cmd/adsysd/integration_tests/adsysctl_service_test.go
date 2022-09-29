@@ -372,7 +372,7 @@ func TestServiceStatus(t *testing.T) {
 			got = re.ReplaceAllString(got, "$1 Tue May 25 14:55")
 
 			// Compare golden files
-			goldPath := filepath.Join("testdata/PolicyStatus/golden", name)
+			goldPath := filepath.Join("testdata/ServiceStatus/golden", name)
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)
