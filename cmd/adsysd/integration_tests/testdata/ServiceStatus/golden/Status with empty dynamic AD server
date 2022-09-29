@@ -2,11 +2,13 @@ Machine, updated on DDD MON D HH:MM
 Connected users:
   user1@example.com, updated on DDD MON D HH:MM
   user2@example.com, updated on DDD MON D HH:MM
-Next Refresh: unknown
+Next Refresh: Tue May 25 14:55
+
+Ubuntu Pro subscription active.
 
 Active Directory:
-  Server: ldap://adc.example.com
-  Domain: example.com
+  Server: N/A
+  Domain: online_no_active_server
 
 SSS:
   Configuration: /etc/sssd/sssd.conf

@@ -135,9 +135,17 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 		}
 	}
 
+	ubuntuProStatus := i18n.G("Ubuntu Pro subscription is not active on this machine. Some policies won't be applied.")
+	subscriptionEnabled := s.policyManager.GetSubscriptionState(stream.Context())
+	if subscriptionEnabled {
+		ubuntuProStatus = i18n.G("Ubuntu Pro subscription active.")
+	}
+
 	status := fmt.Sprintf(i18n.G(`%s%s
 %s
 Next Refresh: %s
+
+%s
 
 Active Directory:
   Server: %s
@@ -155,6 +163,7 @@ Daemon:
   Dconf path: %s
   Sudoers path: %s
   PolicyKit path: %s`), offline, updateMachine, updateUsers, nextRefresh,
+		ubuntuProStatus,
 		adServerURL, state.adDomain,
 		state.sssConf, state.sssCacheDir,
 		timeout, socket, state.cacheDir, state.runDir, state.dconfDir,

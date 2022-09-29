@@ -1,14 +1,14 @@
-**Offline mode** using cached policies
-
 Machine, updated on DDD MON D HH:MM
 Connected users:
   user1@example.com, updated on DDD MON D HH:MM
   user2@example.com, updated on DDD MON D HH:MM
-Next Refresh: Tue May 25 14:55
+Next Refresh: unknown
+
+Ubuntu Pro subscription active.
 
 Active Directory:
   Server: ldap://adc.example.com
-  Domain: offline
+  Domain: example.com
 
 SSS:
   Configuration: /etc/sssd/sssd.conf

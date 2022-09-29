@@ -1,8 +1,10 @@
-Machine, updated on DDD MON D HH:MM
+Machine, no gpo applied found
 Connected users:
-  user1@example.com, updated on DDD MON D HH:MM
-  user2@example.com, updated on DDD MON D HH:MM
-Next Refresh: unknown
+  user1@example.com, no gpo applied found
+  user2@example.com, no gpo applied found
+Next Refresh: Tue May 25 14:55
+
+Ubuntu Pro subscription active.
 
 Active Directory:
   Server: ldap://adc.example.com

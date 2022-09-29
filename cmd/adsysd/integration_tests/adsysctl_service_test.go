@@ -289,7 +289,10 @@ func TestServiceStatus(t *testing.T) {
 		"No unit refresh time leads to unknown refresh time":      {systemAnswer: "no_nextrefresh_time"},
 		"Invalid unit refresh time leads to unknown refresh time": {systemAnswer: "invalid_nextrefresh_time"},
 
-		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
+		// Ubuntu pro subscription
+		"Ubuntu Pro subscription is not active": {systemAnswer: "subscription_disabled"},
+
+		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -372,7 +375,7 @@ func TestServiceStatus(t *testing.T) {
 			got = re.ReplaceAllString(got, "$1 Tue May 25 14:55")
 
 			// Compare golden files
-			goldPath := filepath.Join("testdata/PolicyStatus/golden", name)
+			goldPath := filepath.Join("testdata/ServiceStatus/golden", name)
 			// Update golden file
 			if update {
 				t.Logf("updating golden file %s", goldPath)

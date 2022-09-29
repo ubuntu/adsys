@@ -322,7 +322,7 @@ var (
 	}
 )
 
-// runDaemons is a helper to start polkit, mock systemd and a system dbus session in multile containers:
+// runDaemons is a helper to start polkit, mock systemd and a system dbus session in multiple containers:
 // - one giving all permissions to any actions, with a harcoded startup time and next refresh unit time.
 // - one giving no permissions to every actions, with a harcoded startup time and next refresh unit time.
 // - one having no startup time available.

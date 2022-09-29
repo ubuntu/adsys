@@ -1,12 +1,13 @@
-Machine, updated on DDD MON D HH:MM
+Machine, no gpo applied found
 Connected users:
-  user1@example.com, updated on DDD MON D HH:MM
-  user2@example.com, updated on DDD MON D HH:MM
+  None
 Next Refresh: Tue May 25 14:55
 
+Ubuntu Pro subscription active.
+
 Active Directory:
-  Server: N/A
-  Domain: online_no_active_server
+  Server: ldap://adc.example.com
+  Domain: example.com
 
 SSS:
   Configuration: /etc/sssd/sssd.conf
