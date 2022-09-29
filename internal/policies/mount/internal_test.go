@@ -1,36 +1,42 @@
 package mount
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var update bool
+var Update bool
 
 func TestWriteMountsFile(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		path        string
-		nEntries    int
-		nErrored    int
-		nValues     int
-		nDuplicated int
-		separators  []string
+		path    string
+		entries string
+
+		perm os.FileMode
 
 		wantErr bool
 	}{
-		"write mounts file with multiple entries":                          {nEntries: 5, nValues: 1},
-		"write mounts file with values separated by ','":                   {nEntries: 1, nValues: 5, separators: []string{","}},
-		"write mounts file with values separated by '\n'":                  {nEntries: 1, nValues: 5},
-		"write mounts file with values separated by ',' and '\n'":          {nEntries: 1, nValues: 5, separators: []string{",", "\n"}},
-		"write mounts file with values deduplicated from values":           {nEntries: 1, nValues: 5, nDuplicated: 3},
-		"write mounts file with values deduplicated from multiple entries": {nEntries: 3, nValues: 5, nDuplicated: 3},
+		"write mounts file with one entry with one value":                        {entries: "one entry with one value"},
+		"write mounts file with multiple entries with one value":                 {entries: "multiple entries with one value"},
+		"write mounts file with one entry with multiple values":                  {entries: "one entry with multiple values"},
+		"write mounts file with multiple entries with multiple values":           {entries: "multiple entries with multiple values"},
+		"write mounts file with one entry with repeatead values":                 {entries: "one entry with repeatead values"},
+		"write mounts file with multiple entries with the same value":            {entries: "multiple entries with the same value"},
+		"write mounts file with multiple entries with repeated values":           {entries: "multiple entries with repeated values"},
+		"write mounts file with values from errored entries should not be added": {entries: "errored entries"},
 
-		"errored entries should not be added": {nEntries: 5, nErrored: 3, nValues: 2},
+		"write an empty file if the entry is empty":    {entries: "one entry with no value"},
+		"write an empty file if all entries are empty": {entries: "multiple entries with no value"},
+
+		// Error cases.
+		"fails when writing on a dir with invalid permissions": {entries: "one entry with one value", perm: 0100, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -38,33 +44,29 @@ func TestWriteMountsFile(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			mountsPath := filepath.Join(t.TempDir(), "mounts")
+			gotPath := t.TempDir()
 
-			if len(tc.separators) == 0 {
-				tc.separators = append(tc.separators, "\n")
+			if tc.perm == 0 {
+				tc.perm = 0750
 			}
 
-			err := writeMountsFile(GetEntries(tc.nEntries, tc.nErrored, tc.nValues, tc.nDuplicated, tc.separators), WithMountsFilePath(mountsPath))
-			require.NoError(t, err, "Expected no error but got one")
+			os.Chmod(gotPath, tc.perm)
 
-			b, err := os.ReadFile(mountsPath)
-			require.NoError(t, err, "Expected to read the mounts file with no error")
-
-			got := string(b)
-			if update {
-				dir := filepath.Join("testdata", t.Name())
-				err := os.MkdirAll(dir, os.ModePerm)
-				require.NoError(t, err, "Expected no error when creating dir for golden files")
-
-				err = os.WriteFile(filepath.Join(dir, "mounts"), b, os.ModePerm)
-				require.NoError(t, err, "Expected no error but got one")
+			err := writeMountsFile(gotPath+"/mounts", EntriesForTests[tc.entries])
+			if tc.wantErr {
+				require.Error(t, err, "Expected an error when writing mounts file but got none")
+				return
 			}
+			require.NoError(t, err, "Expected no error when writing mounts file but got one")
 
-			b, err = os.ReadFile(filepath.Join("testdata", t.Name(), "mounts"))
-			require.NoError(t, err, "Expected no error but got one")
-
-			want := string(b)
-			require.Equal(t, want, got, "Expected files to be the same")
+			goldenPath := filepath.Join("testdata", t.Name(), "golden", "mounts")
+			testutils.CompareTreesWithFiltering(t, gotPath, goldenPath, Update)
 		})
 	}
+}
+
+func TestMain(m *testing.M) {
+	flag.BoolVar(&Update, "update", false, "Update the golden files")
+	flag.Parse()
+	m.Run()
 }

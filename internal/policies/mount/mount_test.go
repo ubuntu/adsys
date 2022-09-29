@@ -1,40 +1,28 @@
-package mount
+package mount_test
 
 import (
 	"context"
-	"flag"
 	"os"
 	"os/user"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/adsys/internal/policies/mount"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-func TestApplyPolicy(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
 
-	entries := GetEntries(5, 0, 1, 0, []string{"\n"})
-
 	tests := map[string]struct {
-		entries    []entry.Entry
-		objectName string
-		computer   bool
-		uid        string
-		gid        string
+		invalidPerm bool
 
 		wantErr bool
 	}{
-		"successfully generates mounts file":        {entries: entries},
-		"generates no file if there are no entries": {entries: []entry.Entry{}},
+		"creates manager successfully": {},
 
-		"error when user is not found":    {entries: entries, objectName: "dont exist", wantErr: true},
-		"error when user has invalid uid": {entries: entries, uid: "invalid", wantErr: true},
-		"error when user has invalid gid": {entries: entries, gid: "invalid", wantErr: true},
-
-		// To be removed when computer policies get implemented.
-		"error when trying to apply computer policies": {entries: entries, computer: true, wantErr: true},
+		"creation fails with invalid runDir permissions": {invalidPerm: true, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -42,65 +30,142 @@ func TestApplyPolicy(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			mountsPath := filepath.Join(t.TempDir(), t.Name(), "mounts")
+			runDir := t.TempDir()
+			if tc.invalidPerm {
+				os.Chmod(runDir, 0100)
+			}
 
-			userServicePath := filepath.Join("testdata", "adsys-user-mount.service")
+			_, err := mount.New(mount.WithRunDir(runDir))
+			if tc.wantErr {
+				require.Error(t, err, "Expected an error when creating manager but got none.")
+				return
+			}
+			require.NoError(t, err, "Expected no error when creating manager but got one.")
+		})
+	}
+}
 
-			opts := []Option{WithMountsFilePath(mountsPath), WithUserMountServicePath(userServicePath)}
+func TestApplyPolicy(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		entries    string
+		objectName string
+		computer   bool
+
+		usrDirPerm os.FileMode
+
+		secondCall      string
+		userReturnedUID string
+		userReturnedGID string
+
+		wantErr bool
+	}{
+		"successfully generates mounts file for one entry with one value": {},
+
+		"successfully generates mounts file for multiple entries with one value":       {entries: "multiple entries with one value"},
+		"successfully generates mounts file for one entry with multiple values":        {entries: "one entry with multiple values"},
+		"successfully generates mounts file for multiple entries with multiple values": {entries: "multiple entries with multiple values"},
+		"successfully generates mounts file for one entry with repeatead values":       {entries: "one entry with repeatead values"},
+		"successfully generates mounts file for multiple entries with the same value":  {entries: "multiple entries with the same value"},
+		"successfully generates mounts file for multiple entries with repeated values": {entries: "multiple entries with repeated values"},
+		"successfully generates mounts file for errored entries":                       {entries: "errored entries"},
+
+		"generates an empty file if the entry is empty": {entries: "one entry with no value"},
+		"generates no file if there are no entries":     {entries: "no entries"},
+
+		// Policy refresh.
+		"mount file is removed on refreshing policy with no entries": {secondCall: "no entries"},
+		"mount file is updated on refreshing policy with one entry":  {secondCall: "one entry with multiple values"},
+
+		// Error cases.
+		"error when user is not found":              {objectName: "dont exist", wantErr: true},
+		"error when user has invalid uid":           {userReturnedUID: "invalid", wantErr: true},
+		"error when user has invalid gid":           {userReturnedGID: "invalid", wantErr: true},
+		"error when usrDir has invalid permissions": {usrDirPerm: 0100, wantErr: true},
+
+		// To be removed when computer policies get implemented.
+		"error when trying to apply computer policies": {computer: true, wantErr: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			testRunDir := t.TempDir()
+
+			opts := []mount.Option{mount.WithRunDir(testRunDir)}
 
 			usr, _ := user.Current()
 			if tc.objectName == "" {
-				if tc.uid == "" {
-					tc.uid = usr.Uid
+				if tc.userReturnedUID == "" {
+					tc.userReturnedUID = usr.Uid
 				}
-				if tc.gid == "" {
-					tc.gid = usr.Gid
+				if tc.userReturnedGID == "" {
+					tc.userReturnedGID = usr.Gid
 				}
 
 				tc.objectName = "ubuntu"
 
-				opts = append(opts, WithUserLookup(func(string) (*user.User, error) {
-					return &user.User{Uid: tc.uid, Gid: tc.gid}, nil
+				opts = append(opts, mount.WithUserLookup(func(string) (*user.User, error) {
+					return &user.User{Uid: tc.userReturnedUID, Gid: tc.userReturnedGID}, nil
 				}))
 			}
 
-			m := New(opts...)
+			entries := mount.EntriesForTests["one entry with one value"]
+			if tc.entries != "" {
+				entries = mount.EntriesForTests[tc.entries]
+			}
 
-			err := m.ApplyPolicy(context.Background(), tc.objectName, tc.computer, tc.entries)
+			if tc.usrDirPerm != 0 {
+				opts = append(opts, mount.WithPerm(0100))
+			}
+
+			m, err := mount.New(opts...)
+			require.NoError(t, err, "Expected no error but got one.")
+
+			err = m.ApplyPolicy(context.Background(), tc.objectName, tc.computer, entries)
 			if tc.wantErr {
 				require.Error(t, err, "Expected an error but got none")
 				return
 			}
 			require.NoError(t, err, "Expected no error but got one")
 
-			b, err := os.ReadFile(mountsPath)
-			if len(tc.entries) == 0 {
-				require.Error(t, err, "Expected no mounts file")
-				return
-			}
-			require.NoError(t, err, "Expected to read generated mounts file")
-
-			testdata := filepath.Join("testdata", t.Name())
-			wantPath := filepath.Join(testdata, "mounts")
-			if update {
-				err = os.MkdirAll(testdata, 0750)
-				require.NoError(t, err, "Expected to create testdata dir for the tests")
-
-				err = os.WriteFile(wantPath, b, 0600)
-				require.NoError(t, err, "Expected to update golden file for the test")
+			if tc.secondCall != "" {
+				err = m.ApplyPolicy(context.Background(), tc.objectName, tc.computer, mount.EntriesForTests[tc.secondCall])
+				require.NoError(t, err, "Expected no error on second apply call but got one")
 			}
 
-			got := string(b)
-			b, err = os.ReadFile(wantPath)
-			require.NoError(t, err, "Expected to read from golden file")
+			goldenPath := filepath.Join("testdata", t.Name(), "golden")
 
-			require.Equal(t, string(b), got, "Mounts files must match")
+			makeIndependentOfCurrentUID(t, testRunDir, usr.Uid)
+			testutils.CompareTreesWithFiltering(t, testRunDir, goldenPath, mount.Update)
 		})
 	}
 }
 
-func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "Update the golden files")
-	flag.Parse()
-	m.Run()
+// makeCurrentUIDIndepmakeIndependentOfCurrentUIDendent renames any file or directory which exactly match uid in path and replace it with 4242.
+func makeIndependentOfCurrentUID(t *testing.T, path string, uid string) {
+	t.Helper()
+
+	// We need to rename at the end, starting from the leaf to the start so that we don’t fail filepath.Walk()
+	// walking in currently renamed directory.
+	var toRename []string
+	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if filepath.Base(path) != uid {
+			return nil
+		}
+		toRename = append([]string{path}, toRename...)
+		return nil
+	})
+	require.NoError(t, err, "Setup: failed walk in generated directory")
+
+	for _, path := range toRename {
+		err := os.Rename(path, filepath.Join(filepath.Dir(path), "4242"))
+		require.NoError(t, err, "Setup: failed to generated path independent of current Uid")
+	}
 }
