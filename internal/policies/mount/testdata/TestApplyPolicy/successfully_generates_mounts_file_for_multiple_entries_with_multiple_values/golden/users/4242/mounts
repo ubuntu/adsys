@@ -1,0 +1,9 @@
+protocol://domain.com/mountpath
+smb://dmn.com/mount
+nfs://d.com/mnt/pth
+protocol://otherdomain.com/mount/path
+smb://otherdomain.com/mount-path
+nfs://otherdomain.com/mount-path
+nfs://yetanotherdomain.com/mount-path/mount/path
+smb://yetanotherdomain.com/mount-path
+protocol://yetanotherdomain.com/mount
