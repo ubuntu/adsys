@@ -141,3 +141,7 @@ categories:
         policies:
           - "/logon"
           - "/logoff"
+      - displayname: "Drive Mapping"
+        defaultpolicyclass: "User"
+        policies:
+          - "/mount"
