@@ -345,7 +345,7 @@ func TestLastUpdateFor(t *testing.T) {
 	}
 }
 
-func TestGetStatus(t *testing.T) {
+func TestGetSubscriptionState(t *testing.T) {
 	//t.Parallel()
 
 	bus := testutils.NewDbusConn(t)
@@ -377,10 +377,7 @@ func TestGetStatus(t *testing.T) {
 			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
-			// force a refresh
-			_ = m.GetSubscriptionState(context.Background())
-
-			got := m.GetStatus()
+			got := m.GetSubscriptionState(context.Background())
 			assert.Equal(t, tc.want, got, "GetStatus should return %q but got %q", tc.want, got)
 		})
 	}

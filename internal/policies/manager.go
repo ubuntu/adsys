@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/godbus/dbus/v5"
@@ -32,9 +31,6 @@ type Manager struct {
 	gdm       *gdm.Manager
 
 	subscriptionDbus dbus.BusObject
-
-	sync.RWMutex
-	subscriptionEnabled bool
 }
 
 type options struct {
@@ -157,8 +153,7 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	rules := pols.GetUniqueRules()
 	var g errgroup.Group
 	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
-
-	if !m.getSubscriptionState(ctx) {
+	if !m.GetSubscriptionState(ctx) {
 		filterRules(ctx, rules)
 	}
 
@@ -244,32 +239,28 @@ func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachin
 	return info.ModTime(), nil
 }
 
-// getSubscriptionState refresh subscription status from Ubuntu Advantage and return it.
-func (m *Manager) getSubscriptionState(ctx context.Context) (subscriptionEnabled bool) {
+// GetSubscriptionState returns the subscription status from Ubuntu Pro.
+func (m *Manager) GetSubscriptionState(ctx context.Context) (subscriptionEnabled bool) {
 	log.Debug(ctx, "Refresh subscription state")
 
 	defer func() {
-		m.Lock()
-		m.subscriptionEnabled = subscriptionEnabled
-		m.Unlock()
-
 		if subscriptionEnabled {
-			log.Debug(ctx, "Ubuntu advantage is enabled for GPO restrictions")
+			log.Debug(ctx, "Ubuntu Pro is enabled for GPO restrictions")
 			return
 		}
 
-		log.Debug(ctx, "Ubuntu advantage is not enabled for GPO restrictions")
+		log.Debug(ctx, "Ubuntu Pro is not enabled for GPO restrictions")
 	}()
 
 	// Check if the device is entitled to the Pro policy
 	prop, err := m.subscriptionDbus.GetProperty(consts.SubscriptionDbusInterface + ".Attached")
 	if err != nil {
-		log.Warningf(ctx, "no dbus connection to Ubuntu Advantage. Considering device as not enabled: %v", err)
+		log.Warningf(ctx, "no dbus connection to Ubuntu Pro. Considering device as not enabled: %v", err)
 		return false
 	}
 	enabled, ok := prop.Value().(bool)
 	if !ok {
-		log.Warningf(ctx, "dbus returned an improper value from Ubuntu Advantage. Considering device as not enabled: %v", prop.Value())
+		log.Warningf(ctx, "dbus returned an improper value from Ubuntu Pro. Considering device as not enabled: %v", prop.Value())
 		return false
 	}
 
@@ -286,11 +277,4 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) {
 
 	rules["privilege"] = nil
 	rules["scripts"] = nil
-}
-
-// GetStatus returns dynamic part of our manager instance like subscription status.
-func (m *Manager) GetStatus() (subscriptionEnabled bool) {
-	m.RLock()
-	defer m.RUnlock()
-	return m.subscriptionEnabled
 }
