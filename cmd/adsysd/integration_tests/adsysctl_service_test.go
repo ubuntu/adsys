@@ -289,7 +289,7 @@ func TestServiceStatus(t *testing.T) {
 		"No unit refresh time leads to unknown refresh time":      {systemAnswer: "no_nextrefresh_time"},
 		"Invalid unit refresh time leads to unknown refresh time": {systemAnswer: "invalid_nextrefresh_time"},
 
-		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
+		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
