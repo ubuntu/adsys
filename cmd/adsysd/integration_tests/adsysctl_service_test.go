@@ -289,6 +289,9 @@ func TestServiceStatus(t *testing.T) {
 		"No unit refresh time leads to unknown refresh time":      {systemAnswer: "no_nextrefresh_time"},
 		"Invalid unit refresh time leads to unknown refresh time": {systemAnswer: "invalid_nextrefresh_time"},
 
+		// Ubuntu pro subscription
+		"Ubuntu Pro subscription is not active": {systemAnswer: "subscription_disabled"},
+
 		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
