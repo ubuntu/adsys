@@ -5,12 +5,14 @@ package mount
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
@@ -19,61 +21,53 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
-type option struct {
-	mountsFilePath       string
-	userMountServicePath string
-	userLookupFunc       func(string) (*user.User, error)
+type options struct {
+	runDir       string
+	systemctlCmd []string
+	perm         os.FileMode
+	userLookup   func(string) (*user.User, error)
 }
 
 // Option represents an optional function that is able to alter a default behavior used in mount.
-type Option func(*option)
-
-// WithMountsFilePath overrides the default path for the mounts file.
-func WithMountsFilePath(p string) Option {
-	return func(opt *option) {
-		opt.mountsFilePath = p
-	}
-}
-
-// WithUserMountServicePath overrides the default path for the user service.
-func WithUserMountServicePath(p string) Option {
-	return func(opt *option) {
-		opt.userMountServicePath = p
-	}
-}
-
-// WithUserLookup defines a custom userLookup function for tests.
-func WithUserLookup(f func(string) (*user.User, error)) Option {
-	return func(opt *option) {
-		opt.userLookupFunc = f
-	}
-}
+type Option func(*options)
 
 // Manager holds information needed for handling the mount policies.
 type Manager struct {
-	// mountMu              sync.RWMutex // Still wondering if the mutex is needed for this policy.
-	userLookup           func(string) (*user.User, error)
-	mountsFilePath       string
-	userMountServicePath string
+	mountsMu map[string]*sync.Mutex
+	muMu     sync.Mutex
+
+	runDir string
+
+	userLookup   func(string) (*user.User, error)
+	systemCtlCmd []string
 }
 
 // New creates a Manager to handle mount policies.
-func New(opts ...Option) (m *Manager) {
-	o := option{
-		mountsFilePath:       consts.DefaultMountsFilePath,
-		userMountServicePath: consts.DefaultUserMountServicePath,
-		userLookupFunc:       user.Lookup,
+func New(opts ...Option) (m *Manager, err error) {
+	defer decorate.OnError(&err, i18n.G("failed to create new mount manager"))
+	o := options{
+		runDir:     consts.DefaultRunDir,
+		userLookup: user.Lookup,
+		perm:       0750,
 	}
 
 	for _, opt := range opts {
 		opt(&o)
 	}
 
-	return &Manager{
-		userLookup:           o.userLookupFunc,
-		mountsFilePath:       o.mountsFilePath,
-		userMountServicePath: o.userMountServicePath,
+	// Multiple users will be in users/ subdirectory. Create the main one.
+	// #nosec G301 - multiple users will be in users/ subdirectory, we want all of them to be able to access its own subdirectory.
+	if err := os.MkdirAll(filepath.Join(o.runDir, "users"), o.perm); err != nil {
+		return nil, err
 	}
+
+	return &Manager{
+		mountsMu: make(map[string]*sync.Mutex),
+
+		runDir:       o.runDir,
+		userLookup:   o.userLookup,
+		systemCtlCmd: o.systemctlCmd,
+	}, nil
 }
 
 // ApplyPolicy generates mount policies based on a list of entries.
@@ -84,10 +78,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	if isComputer {
 		return fmt.Errorf(i18n.G("computer mounts are currently not supported"))
-	}
-
-	if len(entries) == 0 {
-		return nil
 	}
 
 	var uid, gid int
@@ -102,36 +92,49 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), usr.Gid, objectName)
 	}
 
-	if err = os.MkdirAll(filepath.Dir(m.mountsFilePath), 0750); err != nil {
+	usrDir := filepath.Join(m.runDir, "users", usr.Uid)
+	mountsPath := filepath.Join(usrDir, "mounts")
+
+	// Mutexes are per user1, user2, computer
+	m.muMu.Lock()
+	if _, exists := m.mountsMu[mountsPath]; !exists {
+		m.mountsMu[mountsPath] = &sync.Mutex{}
+	}
+	m.muMu.Unlock()
+	m.mountsMu[mountsPath].Lock()
+	defer m.mountsMu[mountsPath].Unlock()
+
+	// Removes the current mounts file, if it exists, before continuing applying the policy.
+	if err = os.Remove(mountsPath); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 
-	err = writeMountsFile(entries, WithMountsFilePath(m.mountsFilePath))
+	if len(entries) == 0 {
+		return nil
+	}
+
+	// This creates usrDir directory.
+	// We chown usrDir to uid:gid of the user. Nothing is done for the machine
+	if err := mkdirAllWithUIDGID(usrDir, uid, gid); err != nil {
+		return fmt.Errorf(i18n.G("can't create mounts directory %q: %v"), usrDir, err)
+	}
+
+	err = writeMountsFile(mountsPath, entries)
 	if err != nil {
 		return err
 	}
 
 	// Fix the ownership of the directory and the mounts file.
-	if err = os.Chown(filepath.Dir(m.mountsFilePath), uid, gid); err != nil {
-		return err
-	}
-	if err = os.Chown(m.mountsFilePath, uid, gid); err != nil {
+	if err = chown(mountsPath, nil, uid, gid); err != nil {
+		defer os.Remove(mountsPath)
 		return err
 	}
 
 	return nil
 }
 
-func writeMountsFile(entries []entry.Entry, opts ...Option) (err error) {
-	o := option{
-		mountsFilePath: consts.DefaultMountsFilePath,
-	}
-
-	for _, opt := range opts {
-		opt(&o)
-	}
-
-	decorate.OnError(&err, i18n.G("failed when writing mounts file %s"), o.mountsFilePath)
+func writeMountsFile(mountsPath string, entries []entry.Entry) (err error) {
+	defer decorate.OnError(&err, i18n.G("failed when writing mounts file %s"), mountsPath)
 
 	seen := make(map[string]struct{})
 	p := []string{}
@@ -141,22 +144,49 @@ func writeMountsFile(entries []entry.Entry, opts ...Option) (err error) {
 		}
 
 		values := strings.Split(entry.Value, "\n")
-		for _, value := range values {
-			val := strings.Split(value, ",")
-			for _, v := range val {
-				if _, ok := seen[v]; ok || v == "" {
-					continue
-				}
-				p = append(p, v)
-				seen[v] = struct{}{}
+		for _, v := range values {
+			if _, ok := seen[v]; ok || v == "" {
+				continue
 			}
+			p = append(p, v)
+			seen[v] = struct{}{}
 		}
 	}
 
-	err = os.WriteFile(o.mountsFilePath, []byte(strings.Join(p, "\n")+"\n"), 0600)
-	if err != nil {
+	// #nosec G306. This should be world-readable.
+	if err := os.WriteFile(mountsPath+".new", []byte(strings.Join(p, "\n")+"\n"), 0644); err != nil {
+		return err
+	}
+	if err := os.Rename(mountsPath+".new", mountsPath); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// mkdirAllWithUIDGID create a directory and sets its ownership to the specified uid and gid.
+func mkdirAllWithUIDGID(p string, uid, gid int) error {
+	if err := os.MkdirAll(p, 0750); err != nil {
+		return fmt.Errorf(i18n.G("can't create mounts directory %q: %v"), p, err)
+	}
+
+	return chown(p, nil, uid, gid)
+}
+
+// chown either chown the file descriptor attached, or the path if this one is null to uid and gid.
+// It will know if we should skip chown for tests.
+func chown(p string, f *os.File, uid, gid int) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't chown %q"), p)
+
+	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
+		uid = -1
+		gid = -1
+	}
+
+	if f == nil {
+		// Ensure that if p is a symlink, we only change the symlink itself, not what was pointed by it.
+		return os.Lchown(p, uid, gid)
+	}
+
+	return f.Chown(uid, gid)
 }
