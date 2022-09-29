@@ -50,9 +50,10 @@ func TestWriteMountsFile(t *testing.T) {
 				tc.perm = 0750
 			}
 
-			os.Chmod(gotPath, tc.perm)
+			err := os.Chmod(gotPath, tc.perm)
+			require.NoError(t, err, "Expected to be able to change permissions but got an error instead.")
 
-			err := writeMountsFile(gotPath+"/mounts", EntriesForTests[tc.entries])
+			err = writeMountsFile(gotPath+"/mounts", EntriesForTests[tc.entries])
 			if tc.wantErr {
 				require.Error(t, err, "Expected an error when writing mounts file but got none")
 				return

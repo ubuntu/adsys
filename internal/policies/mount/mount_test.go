@@ -32,7 +32,8 @@ func TestNew(t *testing.T) {
 
 			runDir := t.TempDir()
 			if tc.invalidPerm {
-				os.Chmod(runDir, 0100)
+				err := os.Chmod(runDir, 0100)
+				require.NoError(t, err, "Expected to be able to change permissions but got an error instead.")
 			}
 
 			_, err := mount.New(mount.WithRunDir(runDir))
