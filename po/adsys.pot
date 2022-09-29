@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the adsys package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#: cmd/admxgen/main.go:76
+#: cmd/admxgen/main.go:79
 #, fuzzy
 msgid ""
 msgstr ""
@@ -22,24 +22,24 @@ msgstr ""
 msgid "\t%v\n"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:291
+#: internal/watchdservice/watchdservice.go:292
 #, c-format
 msgid ""
 "\n"
 "  - %s"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:498
+#: internal/watchdtui/watchdtui.go:499
 msgid ""
 "\n"
 "Service already exists and will be reconfigured\n"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:289
+#: internal/policies/scripts/scripts.go:292
 msgid "%q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:249
+#: internal/policies/scripts/scripts.go:252
 msgid "%q is not ready to execute scripts"
 msgstr ""
 
@@ -54,7 +54,7 @@ msgstr ""
 msgid "%s\t%s"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:248
+#: internal/ad/admxgen/admxgen.go:247
 #, c-format
 msgid ""
 "%s\n"
@@ -62,17 +62,17 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:475
+#: internal/watchdtui/watchdtui.go:476
 #, c-format
 msgid "%s installing service... please wait."
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:253
+#: internal/policies/privilege/privilege.go:254
 #, c-format
 msgid "%s is a directory. Ignoring."
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:425
+#: internal/watchdtui/watchdtui.go:426
 #, c-format
 msgid "%s is a directory; will create %s.yaml inside"
 msgstr ""
@@ -81,7 +81,7 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:416
+#: internal/policies/dconf/dconf.go:417
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -89,7 +89,7 @@ msgstr ""
 msgid "%s isn't a boolean: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:305
+#: internal/ad/admxgen/admxgen.go:304
 #, c-format
 msgid "%s needs a default policy class"
 msgstr ""
@@ -99,7 +99,7 @@ msgstr ""
 msgid "%s requires a valid subcommand"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:413
+#: internal/watchdtui/watchdtui.go:414
 #, c-format
 msgid "%s will be the absolute path"
 msgstr ""
@@ -124,7 +124,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:258 internal/ad/ad.go:486 internal/ad/ad.go:498
+#: internal/ad/ad.go:263 internal/ad/ad.go:491 internal/ad/ad.go:503
 msgid "%s: %v"
 msgstr ""
 
@@ -138,22 +138,22 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:456
+#: internal/watchdtui/watchdtui.go:457
 #, c-format
 msgid "%s: directory does not exist, please enter a valid path"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:430
+#: internal/watchdtui/watchdtui.go:431
 #, c-format
 msgid "%s: file already exists and will be overwritten"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:459
+#: internal/watchdtui/watchdtui.go:460
 #, c-format
 msgid "%s: is not a directory"
 msgstr ""
 
-#: internal/ad/ad.go:261
+#: internal/ad/ad.go:266
 #, c-format
 msgid "%s: no active server found"
 msgstr ""
@@ -164,13 +164,13 @@ msgid ""
 "\n"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:206
+#: internal/ad/admxgen/admxgen.go:205
 #, c-format
 msgid "- Default for %s: %s"
 msgstr ""
 
 #. All defaults are the same and not empty
-#: internal/ad/admxgen/admxgen.go:244
+#: internal/ad/admxgen/admxgen.go:243
 #, c-format
 msgid "- Default: %s"
 msgstr ""
@@ -179,39 +179,39 @@ msgstr ""
 msgid "- can't read content -"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:113
+#: internal/policies/dconf/dconf.go:114
 msgid "- error on %s: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:153
+#: cmd/adsysd/daemon/daemon.go:154
 msgid "AD default domain suffix to use. This overrides parsing sssd.conf."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:151
+#: cmd/adsysd/daemon/daemon.go:152
 msgid "AD domain to use. This overrides parsing sssd.conf"
 msgstr ""
 
-#: cmd/adsysd/client/client.go:44
+#: cmd/adsysd/client/client.go:45
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:58
+#: cmd/adsysd/daemon/daemon.go:59
 msgid "AD integration daemon"
 msgstr ""
 
-#: cmd/adwatchd/commands/main.go:67
+#: cmd/adwatchd/commands/main.go:68
 msgid "AD watch daemon"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:37
+#: internal/cmdhandler/cmdhandler.go:38
 msgid "Alias of %q"
 msgstr ""
 
-#: internal/daemon/daemon.go:219
+#: internal/daemon/daemon.go:221
 msgid "All connections have now ended."
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:260
+#: internal/ad/admxgen/admxgen.go:259
 msgid ""
 "An Ubuntu Pro subscription on the client is required to apply this policy."
 msgstr ""
@@ -224,7 +224,7 @@ msgstr ""
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/watcher/watcher.go:364
+#: internal/watcher/watcher.go:367
 #, c-format
 msgid "Bumping version for %s"
 msgstr ""
@@ -234,7 +234,7 @@ msgstr ""
 msgid "Calling quit on a non-interactive service is useless"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:311
+#: internal/adsysservice/adsysservice.go:312
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
@@ -246,22 +246,22 @@ msgstr ""
 msgid "Check if grpc request peer is authorized"
 msgstr ""
 
-#: cmd/admxgen/main.go:90
+#: cmd/admxgen/main.go:93
 msgid ""
 "Collects all intermediary policy definition files in SOURCE directory to "
 "create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:166
+#: internal/watchdtui/watchdtui.go:167
 #, c-format
 msgid "Config file location (leave blank for default: %s)"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:167
+#: internal/watchdtui/watchdtui.go:168
 msgid "Config file: "
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:283
+#: internal/watchdservice/watchdservice.go:284
 #, c-format
 msgid "Config file: %s\n"
 msgstr ""
@@ -284,19 +284,19 @@ msgstr ""
 msgid "Could not clean up temporary directory:"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:479
+#: internal/watchdtui/watchdtui.go:480
 msgid "Could not install service: %v\n"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:33
+#: internal/config/watchd/watchd.go:34
 msgid "Could not read config file: %v"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:38
+#: internal/config/watchd/watchd.go:39
 msgid "Could not unmarshal config YAML: %v"
 msgstr ""
 
-#: internal/grpc/grpcerror/grpcerror.go:28
+#: internal/grpc/grpcerror/grpcerror.go:29
 msgid "Couldn't connect to %s daemon: %v"
 msgstr ""
 
@@ -304,7 +304,7 @@ msgstr ""
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
-#: cmd/admxgen/main.go:89
+#: cmd/admxgen/main.go:92
 msgid "Create finale admx and adml files"
 msgstr ""
 
@@ -316,11 +316,11 @@ msgstr ""
 msgid "Did you mean this?\n"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:503
+#: internal/watchdtui/watchdtui.go:504
 msgid "Directories:"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:177
+#: internal/watchdtui/watchdtui.go:178
 msgid "Directory to watch (one per line)"
 msgstr ""
 
@@ -337,46 +337,46 @@ msgstr ""
 msgid "Dump windows policy definitions"
 msgstr ""
 
-#: internal/grpc/grpcerror/grpcerror.go:37
+#: internal/grpc/grpcerror/grpcerror.go:38
 msgid "Error %s from server: %v"
 msgstr ""
 
-#: internal/grpc/grpcerror/grpcerror.go:34
+#: internal/grpc/grpcerror/grpcerror.go:35
 msgid "Error from server: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:181
+#: internal/watcher/watcher.go:184
 msgid "Error stopping watcher: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:239
+#: internal/watcher/watcher.go:242
 msgid "Failed add watcher on %q: %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:356
+#: internal/watcher/watcher.go:359
 #, c-format
 msgid "Failed to bump %s version: %s"
 msgstr ""
 
-#: internal/config/config.go:64
+#: internal/config/config.go:65
 msgid ""
 "Failed to get current executable path, not adding it as a config dir: %v"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:274
+#: internal/watchdservice/watchdservice.go:275
 msgid "Failed to get current executable path: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:247
+#: internal/watcher/watcher.go:250
 msgid "Failed to remove watcher on %q: %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:228
+#: internal/watcher/watcher.go:231
 #, c-format
 msgid "Failed to stat: %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:235
+#: internal/watcher/watcher.go:238
 #, c-format
 msgid "Failed to watch: %s"
 msgstr ""
@@ -385,11 +385,11 @@ msgstr ""
 msgid "Format type (markdown, raw or html)."
 msgstr ""
 
-#: cmd/admxgen/main.go:31
+#: cmd/admxgen/main.go:34
 msgid "Generate Active Directory admx and adml files"
 msgstr ""
 
-#: cmd/admxgen/main.go:66
+#: cmd/admxgen/main.go:69
 msgid "Generates intermediary policy definition files"
 msgstr ""
 
@@ -398,23 +398,23 @@ msgstr ""
 msgid "GetsockoptUcred() error: %s"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:231
+#: internal/watchdservice/watchdservice.go:232
 msgid "Getting status from service"
 msgstr ""
 
-#: internal/watcher/watcher.go:290
+#: internal/watcher/watcher.go:293
 msgid "Got event error: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:218
+#: internal/watcher/watcher.go:221
 msgid "Got event: %v"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:465
+#: internal/watchdtui/watchdtui.go:466
 msgid "Install"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:347
+#: internal/watchdservice/watchdservice.go:348
 msgid "Installing watcher service"
 msgstr ""
 
@@ -452,11 +452,11 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/manager.go:203
+#: internal/policies/manager.go:198
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:211
+#: internal/policies/manager.go:206
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -480,11 +480,11 @@ msgstr ""
 msgid "Print service status"
 msgstr ""
 
-#: internal/daemon/daemon.go:189
+#: internal/daemon/daemon.go:191
 msgid "Quitting"
 msgstr ""
 
-#: cmd/adsysd/daemon/scripts.go:36 internal/daemon/daemon.go:161
+#: cmd/adsysd/daemon/scripts.go:36 internal/daemon/daemon.go:163
 msgid "Ready state sent to systemd"
 msgstr ""
 
@@ -492,7 +492,7 @@ msgstr ""
 msgid "Requests to stop the service once all connections are done"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:207
+#: internal/watchdservice/watchdservice.go:208
 msgid "Restarting service"
 msgstr ""
 
@@ -522,7 +522,7 @@ msgstr ""
 msgid "Returns version of service and exits"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:409
+#: internal/watchdservice/watchdservice.go:410
 msgid "Running watcher service"
 msgstr ""
 
@@ -530,11 +530,11 @@ msgstr ""
 msgid "Runs scripts in the given subdirectory"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:483
+#: internal/watchdtui/watchdtui.go:484
 msgid "Service adwatchd was successfully installed and is now running."
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:369
+#: internal/watchdservice/watchdservice.go:370
 msgid "Service is not installed"
 msgstr ""
 
@@ -542,21 +542,21 @@ msgstr ""
 msgid "Service management"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:256
+#: internal/watchdservice/watchdservice.go:257
 #, c-format
 msgid "Service status: %s"
 msgstr ""
 
-#: internal/grpc/grpcerror/grpcerror.go:31
+#: internal/grpc/grpcerror/grpcerror.go:32
 msgid "Service took too long to respond. Disconnecting client."
 msgstr ""
 
-#: internal/daemon/daemon.go:171
+#: internal/daemon/daemon.go:173
 #, c-format
 msgid "Serving on %s"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:141
+#: internal/watchdservice/watchdservice.go:142
 msgid "Starting service"
 msgstr ""
 
@@ -573,11 +573,11 @@ msgstr ""
 msgid "Starts the service"
 msgstr ""
 
-#: internal/daemon/daemon.go:211
+#: internal/daemon/daemon.go:213
 msgid "Stopping daemon requested."
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:163
+#: internal/watchdservice/watchdservice.go:164
 msgid "Stopping service"
 msgstr ""
 
@@ -590,20 +590,30 @@ msgstr ""
 msgid "Stops the service"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:193
+#: internal/ad/admxgen/admxgen.go:192
 #, c-format
 msgid "Supported on %s %s"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:149
+#: cmd/adsysd/daemon/daemon.go:150
 msgid "URL of the Active Directory server. This overrides parsing sssd.conf."
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:488
+#: internal/watchdtui/watchdtui.go:489
 msgid "Ubuntu AD Watch Daemon Installer"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:365
+#: internal/adsysservice/service.go:141
+msgid "Ubuntu Pro subscription active."
+msgstr ""
+
+#: internal/adsysservice/service.go:138
+msgid ""
+"Ubuntu Pro subscription is not active on this machine. Some policies won't "
+"be applied."
+msgstr ""
+
+#: internal/watchdservice/watchdservice.go:366
 msgid "Uninstalling watcher service"
 msgstr ""
 
@@ -616,7 +626,7 @@ msgstr ""
 msgid "Uninstalls the service"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:467
+#: internal/watchdtui/watchdtui.go:468
 msgid "Update"
 msgstr ""
 
@@ -626,36 +636,36 @@ msgid ""
 "ticket"
 msgstr ""
 
-#: internal/watcher/watcher.go:168
+#: internal/watcher/watcher.go:171
 msgid "Updating directories to %v"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:127
+#: internal/watchdservice/watchdservice.go:128
 msgid "Updating directories to watch"
 msgstr ""
 
-#: internal/daemon/daemon.go:217
+#: internal/daemon/daemon.go:219
 msgid "Wait for active requests to close."
 msgstr ""
 
-#: internal/watcher/watcher.go:104
+#: internal/watcher/watcher.go:107
 msgid "Watch failed: %v"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:284
+#: internal/watchdservice/watchdservice.go:285
 msgid "Watched directories: "
 msgstr ""
 
-#: internal/watcher/watcher.go:299
+#: internal/watcher/watcher.go:302
 msgid "Watcher stopped"
 msgstr ""
 
-#: internal/watcher/watcher.go:312
+#: internal/watcher/watcher.go:315
 #, c-format
 msgid "Watching %s and children"
 msgstr ""
 
-#: internal/watcher/watcher.go:318
+#: internal/watcher/watcher.go:321
 msgid "Watching: %v"
 msgstr ""
 
@@ -690,31 +700,31 @@ msgstr ""
 msgid "call to polkit failed: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:61
+#: internal/policies/dconf/dconf.go:62
 #, c-format
 msgid "can't apply dconf policy to %s"
 msgstr ""
 
-#: internal/policies/gdm/gdm.go:57
+#: internal/policies/gdm/gdm.go:58
 msgid "can't apply gdm policy"
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:57
+#: internal/policies/privilege/privilege.go:58
 #, c-format
 msgid "can't apply privilege policy to %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:90
+#: internal/policies/scripts/scripts.go:93
 #, c-format
 msgid "can't apply scripts policy to %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:363
+#: internal/watcher/watcher.go:366
 #, c-format
 msgid "can't bump version for %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:178
+#: internal/policies/scripts/scripts.go:181
 msgid "can't change mode of script %qto %o: %v"
 msgstr ""
 
@@ -723,11 +733,11 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/policies.go:430 internal/policies/scripts/scripts.go:341
+#: internal/policies/policies.go:434 internal/policies/scripts/scripts.go:344
 msgid "can't chown %q"
 msgstr ""
 
-#: internal/policies/policies.go:299
+#: internal/policies/policies.go:303
 #, c-format
 msgid "can't compress assets from %s"
 msgstr ""
@@ -736,19 +746,19 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/ad/ad.go:131
+#: internal/ad/ad.go:136
 msgid "can't create Active Directory object"
 msgstr ""
 
-#: internal/policies/gdm/gdm.go:37
+#: internal/policies/gdm/gdm.go:38
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:94
+#: internal/policies/manager.go:90
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:467 internal/ad/admxgen/admxgen.go:480
+#: internal/ad/admxgen/admxgen.go:466 internal/ad/admxgen/admxgen.go:479
 msgid "can't create admx file: %v"
 msgstr ""
 
@@ -756,15 +766,15 @@ msgstr ""
 msgid "can't create client for service"
 msgstr ""
 
-#: internal/daemon/daemon.go:70
+#: internal/daemon/daemon.go:72
 msgid "can't create daemon"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:456
+#: internal/ad/admxgen/admxgen.go:455
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:323
+#: internal/policies/scripts/scripts.go:326
 msgid "can't create flag file %q"
 msgstr ""
 
@@ -772,32 +782,32 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:144
+#: internal/policies/scripts/scripts.go:147
 msgid "can't create object directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:147
-#: internal/policies/scripts/scripts.go:316
+#: internal/policies/scripts/scripts.go:150
+#: internal/policies/scripts/scripts.go:319
 msgid "can't create scripts directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:58
+#: internal/policies/scripts/scripts.go:61
 msgid "can't create scripts manager"
 msgstr ""
 
-#: internal/ad/ad.go:404
+#: internal/ad/ad.go:409
 msgid "can't create symlink for caching"
 msgstr ""
 
-#: internal/policies/policies.go:46
+#: internal/policies/policies.go:50
 msgid "can't created new policies"
 msgstr ""
 
-#: internal/ad/registry/registry.go:304
+#: internal/ad/registry/registry.go:306
 msgid "can't decode meta value for %s: %v"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:204
+#: internal/authorizer/authorizer.go:205
 msgid "can't determine start time of client process"
 msgstr ""
 
@@ -809,7 +819,7 @@ msgstr ""
 msgid "can't download all gpos and assets"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:439
+#: internal/ad/admxgen/admxgen.go:438
 msgid "can't generate ADMX files"
 msgstr ""
 
@@ -817,25 +827,25 @@ msgstr ""
 msgid "can't generate dconf expanded policies"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:101
+#: internal/ad/admxgen/admxgen.go:100
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:411
+#: internal/ad/ad.go:416
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
-#: internal/policies/policies.go:66
+#: internal/policies/policies.go:70
 #, c-format
 msgid "can't get cached policies from %s"
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:240
+#: internal/policies/privilege/privilege.go:241
 #, c-format
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:207
+#: internal/ad/ad.go:212
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -843,15 +853,15 @@ msgstr ""
 msgid "can't get policy definition file"
 msgstr ""
 
-#: cmd/admxgen/main.go:43 cmd/admxgen/main.go:78 cmd/admxgen/main.go:99
+#: cmd/admxgen/main.go:46 cmd/admxgen/main.go:81 cmd/admxgen/main.go:102
 msgid "can't install command flag bindings: %v"
 msgstr ""
 
-#: internal/ad/ad.go:379
+#: internal/ad/ad.go:384
 msgid "can't list users from cache"
 msgstr ""
 
-#: internal/daemon/daemon.go:129
+#: internal/daemon/daemon.go:131
 msgid "can't listen on new socket %q"
 msgstr ""
 
@@ -859,86 +869,86 @@ msgstr ""
 msgid "can't load category definition"
 msgstr ""
 
-#: internal/config/config.go:42
+#: internal/config/config.go:43
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:255
+#: internal/adsysservice/adsysservice.go:256
 #, c-format
 msgid "can't load server info from %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:420
+#: internal/policies/dconf/dconf.go:421
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/ad/registry/registry.go:53
+#: internal/ad/registry/registry.go:55
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:268
+#: internal/adsysservice/adsysservice.go:269
 msgid "can't read sssd.conf and no url or domain provided: %v"
 msgstr ""
 
-#: internal/stdforward/stdforward.go:66
+#: internal/stdforward/stdforward.go:69
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:241
+#: internal/policies/scripts/scripts.go:244
 #, c-format
 msgid "can't run scripts listed in %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:196
+#: internal/policies/dconf/dconf.go:197
 #, c-format
 msgid "can't save %s"
 msgstr ""
 
-#: internal/policies/policies.go:217
+#: internal/policies/policies.go:221
 #, c-format
 msgid "can't save assets to %s"
 msgstr ""
 
-#: internal/policies/policies.go:119
+#: internal/policies/policies.go:123
 #, c-format
 msgid "can't save policies to %s"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:177
+#: internal/grpc/logstreamer/log.go:184
 msgid "can't send logs to client: %v"
 msgstr ""
 
-#: internal/daemon/daemon.go:156
+#: internal/daemon/daemon.go:158
 msgid "can't serve"
 msgstr ""
 
-#: internal/watcher/watcher.go:140
+#: internal/watcher/watcher.go:143
 msgid "can't start service"
 msgstr ""
 
-#: internal/watcher/watcher.go:149
+#: internal/watcher/watcher.go:152
 msgid "can't stop service"
 msgstr ""
 
-#: internal/watcher/watcher.go:167
+#: internal/watcher/watcher.go:170
 msgid "can't update directories to watch"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:217
+#: internal/policies/dconf/dconf.go:218
 #, c-format
 msgid "can't update user profile %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:311
+#: internal/watcher/watcher.go:314
 #, c-format
 msgid "can't watch directory and children of %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:189
+#: internal/watcher/watcher.go:192
 msgid "can't watch over %v"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:50
+#: internal/config/watchd/watchd.go:51
 msgid "can't write config"
 msgstr ""
 
@@ -970,7 +980,7 @@ msgstr ""
 msgid "could not close directory: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:221
+#: internal/adsysservice/service.go:230
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
@@ -983,7 +993,7 @@ msgstr ""
 msgid "could not find chapter starting with %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:193
+#: internal/watcher/watcher.go:196
 msgid "could not initialize fsnotify watcher: %v"
 msgstr ""
 
@@ -997,16 +1007,16 @@ msgstr ""
 msgid "could not read chapter %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:105
+#: internal/policies/scripts/scripts.go:108
 msgid "couldn't convert %q to a valid gid for %q"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:137
-#: internal/policies/scripts/scripts.go:102
+#: internal/policies/scripts/scripts.go:105
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:135
+#: internal/adsysservice/adsysservice.go:136
 msgid "couldn't create adsys service"
 msgstr ""
 
@@ -1015,35 +1025,35 @@ msgid "couldn't open stat file for process: %v"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:133
-#: internal/policies/scripts/scripts.go:99
+#: internal/policies/scripts/scripts.go:102
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
-#: internal/grpc/logstreamer/log.go:169
+#: internal/grpc/logstreamer/log.go:176
 msgid "couldn't send logs to client"
 msgstr ""
 
-#: cmd/adsysd/daemon/scripts.go:34 internal/daemon/daemon.go:159
+#: cmd/adsysd/daemon/scripts.go:34 internal/daemon/daemon.go:161
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:188
+#: internal/policies/dconf/dconf.go:189
 msgid "dconf update failed: %v"
 msgstr ""
 
-#: internal/policies/policies.go:227
+#: internal/policies/policies.go:231
 msgid "destination %q already exists"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:59 internal/watcher/watcher.go:176
+#: internal/config/watchd/watchd.go:60 internal/watcher/watcher.go:179
 msgid "directory %q does not exist"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:141
+#: cmd/adsysd/daemon/daemon.go:142
 msgid "directory where ADsys caches GPOs downloads and policies."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:143
+#: cmd/adsysd/daemon/daemon.go:144
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
@@ -1059,7 +1069,7 @@ msgstr ""
 msgid "download %q failed"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:411
+#: internal/policies/dconf/dconf.go:412
 msgid "empty signature for %v"
 msgstr ""
 
@@ -1068,7 +1078,7 @@ msgstr ""
 msgid "enum id %s referenced by %s doesn't exist in list of enums"
 msgstr ""
 
-#: internal/watcher/watcher.go:370
+#: internal/watcher/watcher.go:373
 msgid "error loading ini contents: %v, creating a new file"
 msgstr ""
 
@@ -1077,7 +1087,7 @@ msgstr ""
 msgid "error opening raw connection: %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:408
+#: internal/policies/dconf/dconf.go:409
 msgid "error while checking signature"
 msgstr ""
 
@@ -1113,7 +1123,7 @@ msgstr ""
 msgid "error while loading schemas"
 msgstr ""
 
-#: internal/adsysservice/service.go:208
+#: internal/adsysservice/service.go:217
 msgid "error while trying to determine next refresh time"
 msgstr ""
 
@@ -1121,16 +1131,16 @@ msgstr ""
 msgid "error while trying to display daemon output"
 msgstr ""
 
-#: internal/adsysservice/service.go:187
+#: internal/adsysservice/service.go:196
 msgid "error while trying to get the list of active users"
 msgstr ""
 
 #. Try to update from SSSD the current active AD server
-#: internal/ad/ad.go:255
+#: internal/ad/ad.go:260
 msgid "error while trying to look up AD server address on SSSD"
 msgstr ""
 
-#: internal/adsysservice/service.go:175
+#: internal/adsysservice/service.go:184
 msgid "error while trying to stop daemon"
 msgstr ""
 
@@ -1142,48 +1152,48 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/manager.go:153
+#: internal/policies/manager.go:149
 msgid "failed to apply policy to %q"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:126
+#: internal/watchdservice/watchdservice.go:127
 msgid "failed to change directories to watch"
 msgstr ""
 
-#: internal/policies/manager.go:188
+#: internal/policies/manager.go:183
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:276
+#: internal/adsysservice/adsysservice.go:277
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:109
+#: internal/config/watchd/watchd.go:110
 msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:228
+#: internal/policies/manager.go:223
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:324
+#: internal/watchdservice/watchdservice.go:325
 msgid "failed to get service info from arguments"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:346
+#: internal/watchdservice/watchdservice.go:347
 msgid "failed to install service"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:276
+#: internal/ad/admxgen/admxgen.go:275
 msgid "failed to marshal disabled meta data"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:266
+#: internal/ad/admxgen/admxgen.go:265
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/ad/ad.go:388
+#: internal/ad/ad.go:393
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -1199,49 +1209,49 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:422
+#: internal/ad/ad.go:427
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:206
+#: internal/watchdservice/watchdservice.go:207
 msgid "failed to restart service"
 msgstr ""
 
-#: internal/ad/ad.go:233
+#: internal/ad/ad.go:238
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:230
+#: internal/watchdservice/watchdservice.go:231
 msgid "failed to retrieve status for service"
 msgstr ""
 
-#: internal/ad/ad.go:289
+#: internal/ad/ad.go:294
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:407
+#: internal/watchdservice/watchdservice.go:408
 msgid "failed to run service"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:140
+#: internal/watchdservice/watchdservice.go:141
 msgid "failed to start service"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:162
+#: internal/watchdservice/watchdservice.go:163
 msgid "failed to stop service"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:364
+#: internal/watchdservice/watchdservice.go:365
 msgid "failed to uninstall service"
 msgstr ""
 
-#: cmd/adwatchd/commands/main.go:114
+#: cmd/adwatchd/commands/main.go:115
 msgid "failed to update directories: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:200
+#: internal/watcher/watcher.go:203
 msgid "failed to watch directory %q: %v"
 msgstr ""
 
@@ -1267,11 +1277,11 @@ msgid ""
 ". Please use the StreamClientInterceptor: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:225
+#: internal/adsysservice/service.go:234
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
-#: internal/ad/registry/registry.go:181
+#: internal/ad/registry/registry.go:183
 msgid "invalid policy"
 msgstr ""
 
@@ -1279,21 +1289,21 @@ msgstr ""
 msgid "invalid remote GPT.INI"
 msgstr ""
 
-#: internal/policies/policies.go:106
+#: internal/policies/policies.go:110
 msgid "invalid zip db archive: %w"
 msgstr ""
 
-#: cmd/admxgen/main.go:41 internal/cmdhandler/cmdhandler.go:47
+#: cmd/admxgen/main.go:44 internal/cmdhandler/cmdhandler.go:48
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:82
+#: internal/policies/dconf/dconf.go:83
 msgid ""
 "machine dconf database is required before generating a policy for an user. "
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:243
+#: internal/ad/ad.go:248
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -1318,7 +1328,7 @@ msgstr ""
 msgid "missing client metadata"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:88
+#: internal/config/watchd/watchd.go:89
 msgid "missing config file in CLI arguments"
 msgstr ""
 
@@ -1327,19 +1337,19 @@ msgstr ""
 msgid "missing metadata %s for incoming request"
 msgstr ""
 
-#: internal/watcher/watcher.go:171
+#: internal/watcher/watcher.go:174
 msgid "need at least one directory to watch"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:53
+#: internal/config/watchd/watchd.go:54
 msgid "needs at least one directory to watch"
 msgstr ""
 
-#: internal/policies/policies.go:222
+#: internal/policies/policies.go:226
 msgid "no assets attached"
 msgstr ""
 
-#: internal/adsysservice/service.go:211
+#: internal/adsysservice/service.go:220
 msgid "no boot system time found"
 msgstr ""
 
@@ -1347,11 +1357,11 @@ msgstr ""
 msgid "no chapter %q found in documentation"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:287
+#: internal/watchdservice/watchdservice.go:288
 msgid "no configured directories"
 msgstr ""
 
-#: internal/watcher/watcher.go:58
+#: internal/watcher/watcher.go:61
 msgid "no directories to watch"
 msgstr ""
 
@@ -1359,42 +1369,42 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:206 internal/policies/manager.go:217
+#: internal/policies/manager.go:201 internal/policies/manager.go:212
 msgid "no policy applied for %q: %v"
 msgstr ""
 
-#: internal/policies/policies.go:239
+#: internal/policies/policies.go:243
 msgid "no relSrc provided to look into database archive"
 msgstr ""
 
-#: internal/watcher/watcher.go:345
+#: internal/watcher/watcher.go:348
 #, c-format
 msgid "no root directory matching %s found"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:250
+#: internal/watchdservice/watchdservice.go:251
 msgid "not installed"
 msgstr ""
 
-#: cmd/admxgen/main.go:96
+#: cmd/admxgen/main.go:99
 msgid ""
 "override supported releases in categories definition file and will takes all "
 "yaml files in SOURCE directory and use the basename as their versions."
 msgstr ""
 
-#: internal/authorizer/authorizer.go:234
+#: internal/authorizer/authorizer.go:235
 msgid "parsing error: %v"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:226
+#: internal/authorizer/authorizer.go:227
 msgid "parsing error: ) at the end"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:230
+#: internal/authorizer/authorizer.go:231
 msgid "parsing error: less fields than required"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:222
+#: internal/authorizer/authorizer.go:223
 msgid "parsing error: missing )"
 msgstr ""
 
@@ -1402,15 +1412,15 @@ msgstr ""
 msgid "permission denied"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:444
+#: internal/watchdtui/watchdtui.go:445
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:242
+#: internal/policies/manager.go:237
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:320
+#: internal/ad/admxgen/admxgen.go:319
 msgid "policy %s referenced in %q does not exist in any supported releases"
 msgstr ""
 
@@ -1422,11 +1432,11 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:217
+#: internal/ad/ad.go:222
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
-#: cmd/admxgen/main.go:74
+#: cmd/admxgen/main.go:77
 msgid "root filesystem path to use. Default to /."
 msgstr ""
 
@@ -1436,15 +1446,15 @@ msgid ""
 "the configuration file"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:244
+#: internal/watchdservice/watchdservice.go:245
 msgid "running"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:172
+#: internal/policies/scripts/scripts.go:175
 msgid "script %q doesn't exist in SYSVOL scripts/ subdirectory"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:175
+#: internal/policies/scripts/scripts.go:178
 msgid "script %q is a directory and not a file to execute"
 msgstr ""
 
@@ -1460,54 +1470,54 @@ msgstr ""
 msgid "show overridden rules in each GPOs."
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:54
+#: internal/cmdhandler/cmdhandler.go:55
 msgid ""
 "socket path to use between daemon and client. Can be overridden by systemd "
 "socket activation."
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:295
+#: internal/ad/admxgen/admxgen.go:294
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:246
+#: internal/watchdservice/watchdservice.go:247
 msgid "stopped"
 msgstr ""
 
-#: internal/ad/admxgen/admxgen.go:366
+#: internal/ad/admxgen/admxgen.go:365
 msgid "the following policies have not been assigned to a category: %v"
 msgstr ""
 
-#: internal/watcher/watcher.go:112
+#: internal/watcher/watcher.go:115
 msgid "the service is already stopping or not running"
 msgstr ""
 
-#: cmd/adsysd/client/client.go:92
+#: cmd/adsysd/client/client.go:93
 msgid ""
 "time in seconds before cancelling the client request when the server gives "
 "no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:146
+#: cmd/adsysd/daemon/daemon.go:147
 msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
 
-#: internal/config/watchd/watchd.go:65
+#: internal/config/watchd/watchd.go:66
 msgid "unable to create config directory: %v"
 msgstr ""
 
-#: internal/config/watchd/watchd.go:71
+#: internal/config/watchd/watchd.go:72
 msgid "unable to marshal: %v"
 msgstr ""
 
-#: internal/watchdservice/watchdservice.go:252
+#: internal/watchdservice/watchdservice.go:253
 msgid "undefined"
 msgstr ""
 
-#: internal/daemon/daemon.go:111
+#: internal/daemon/daemon.go:113
 #, c-format
 msgid "unexpected number of systemd socket activation (%d != 1)"
 msgstr ""
@@ -1518,11 +1528,11 @@ msgstr ""
 
 #: internal/adsysservice/service.go:86 internal/adsysservice/service.go:87
 #: internal/adsysservice/service.go:108
-#: internal/watchdservice/watchdservice.go:248
+#: internal/watchdservice/watchdservice.go:249
 msgid "unknown"
 msgstr ""
 
-#: internal/cmdhandler/cmdhandler.go:65
+#: internal/cmdhandler/cmdhandler.go:66
 msgid "use a specific configuration file"
 msgstr ""
 
@@ -1530,6 +1540,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:212
+#: internal/ad/ad.go:217
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
