@@ -16,13 +16,13 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		invalidPerm bool
+		readOnlyPerm bool
 
 		wantErr bool
 	}{
 		"creates manager successfully": {},
 
-		"creation fails with invalid runDir permissions": {invalidPerm: true, wantErr: true},
+		"creation fails with invalid runDir permissions": {readOnlyPerm: true, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -31,9 +31,17 @@ func TestNew(t *testing.T) {
 			t.Parallel()
 
 			runDir := t.TempDir()
-			if tc.invalidPerm {
+			if tc.readOnlyPerm {
 				err := os.Chmod(runDir, 0100)
-				require.NoError(t, err, "Expected to be able to change permissions but got an error instead.")
+				require.NoError(t, err, "Debug: Expected to be able to change permissions but got an error instead.")
+
+				// Ensures that the test dir will be cleaned after the test.
+				defer func(p string) {
+					//nolint:errcheck,gosec // Permissions for directories should be 750 and we don't need to check this error in the tests.
+					_ = os.Chmod(p, 0750)
+					//nolint:errcheck // We don't need to check this error for the tests.
+					_ = os.RemoveAll(p)
+				}(runDir)
 			}
 
 			_, err := mount.New(mount.WithRunDir(runDir))
@@ -88,10 +96,10 @@ func TestApplyPolicy(t *testing.T) {
 		"mount file is updated on refreshing policy with one entry":  {secondCall: "one entry with multiple values"},
 
 		// Error cases.
-		"error when user is not found":              {objectName: "dont exist", wantErr: true},
-		"error when user has invalid uid":           {userReturnedUID: "invalid", wantErr: true},
-		"error when user has invalid gid":           {userReturnedGID: "invalid", wantErr: true},
-		"error when usrDir has invalid permissions": {readOnlyUserDir: true, wantErr: true},
+		"error when user is not found":               {objectName: "dont exist", wantErr: true},
+		"error when user has invalid uid":            {userReturnedUID: "invalid", wantErr: true},
+		"error when user has invalid gid":            {userReturnedGID: "invalid", wantErr: true},
+		"error when userDir has invalid permissions": {readOnlyUserDir: true, wantErr: true},
 
 		// To be removed when computer policies get implemented.
 		"error when trying to apply computer policies": {computer: true, wantErr: true},
@@ -132,10 +140,10 @@ func TestApplyPolicy(t *testing.T) {
 
 				// Ensures that the test dir will be cleaned after the test.
 				defer func(p string) {
-					//nolint:errcheck,gosec
-					os.Chmod(p, 0750)
-					//nolint:errcheck
-					os.RemoveAll(p)
+					//nolint:errcheck,gosec // Permissions for directories should be 750 and we don't need to check this error in the tests.
+					_ = os.Chmod(p, 0750)
+					//nolint:errcheck // We don't need to check this error for the tests.
+					_ = os.RemoveAll(p)
 				}(testRunDir)
 			}
 

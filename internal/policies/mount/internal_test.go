@@ -61,10 +61,10 @@ func TestWriteMountsFile(t *testing.T) {
 
 				// Ensures that the test dir will be cleaned after the test.
 				defer func(p string) {
-					//nolint:errcheck,gosec
-					os.Chmod(p, 0750)
-					//nolint:errcheck
-					os.RemoveAll(p)
+					//nolint:errcheck,gosec // Permissions for directories should be 750 and we don't need to check this error in the tests.
+					_ = os.Chmod(p, 0750)
+					//nolint:errcheck // We don't need to check this error for the tests.
+					_ = os.RemoveAll(p)
 				}(gotPath)
 			}
 

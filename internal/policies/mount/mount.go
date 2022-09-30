@@ -1,7 +1,7 @@
 // Package mount implements the manager responsible to handle the file sharing
 // policy of adsys, parsing the GPO rules and setting up the mount process for
-// the requested drives. User mounts will be handled by a systemd user unit and
-// computer mounts will be handled directly by systemd, via .mount files.
+// the requested drives. User mounts will be handled by a systemd user service and
+// computer mounts will be handled directly by systemd, via mount units.
 package mount
 
 import (
@@ -114,8 +114,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return nil
 	}
 
-	// This creates usrDir directory.
-	// We chown usrDir to uid:gid of the user. Nothing is done for the machine
+	// This creates userDir directory.
+	// We chown userDir to uid:gid of the user. Nothing is done for the machine
 	if err := mkdirAllWithUIDGID(objectPath, uid, gid); err != nil {
 		return fmt.Errorf(i18n.G("can't create mounts directory %q: %v"), objectPath, err)
 	}
@@ -147,7 +147,7 @@ func writeMountsFile(mountsPath string, entries []entry.Entry) (err error) {
 		}
 
 		for _, v := range strings.Split(entry.Value, "\n") {
-			v := strings.Trim(v, " \t")
+			v := strings.TrimSpace(v)
 			if _, ok := seen[v]; ok || v == "" {
 				continue
 			}
