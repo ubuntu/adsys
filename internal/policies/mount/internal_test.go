@@ -60,10 +60,11 @@ func TestWriteMountsFile(t *testing.T) {
 				require.NoError(t, err, "Setup: Expected to change directory permissions for the tests.")
 
 				// Ensures that the test dir will be cleaned after the test.
-				defer func(p string) error {
-					// nolint:errcheck
-					_ = os.Chmod(p, 0750)
-					return os.RemoveAll(p)
+				defer func(p string) {
+					//nolint:errcheck,gosec
+					os.Chmod(p, 0750)
+					//nolint:errcheck
+					os.RemoveAll(p)
 				}(gotPath)
 			}
 

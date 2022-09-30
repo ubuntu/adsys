@@ -131,9 +131,11 @@ func TestApplyPolicy(t *testing.T) {
 				opts = append(opts, mount.WithPerm(0100))
 
 				// Ensures that the test dir will be cleaned after the test.
-				defer func(p string) error {
+				defer func(p string) {
+					//nolint:errcheck,gosec
 					os.Chmod(p, 0750)
-					return os.RemoveAll(p)
+					//nolint:errcheck
+					os.RemoveAll(p)
 				}(testRunDir)
 			}
 
