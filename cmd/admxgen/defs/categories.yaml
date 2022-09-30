@@ -117,6 +117,10 @@ categories:
         policies:
           - "/startup"
           - "/shutdown"
+      - displayname: "System-wide application confinement"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/apparmor-machine"
       - displayname: "Power Management"
         defaultpolicyclass: "Machine"
         policies:
