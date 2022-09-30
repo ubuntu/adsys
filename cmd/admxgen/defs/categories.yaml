@@ -132,10 +132,6 @@ categories:
           - "/org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-type"
           - "/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-timeout"
           - "/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-type"
-      - displayname: "Computer Drive Mapping"
-        defaultpolicyclass: "Machine"
-        policies:
-          - "/computer-mounts"
 
     - displayname: "Session management"
       defaultpolicyclass: "User"
