@@ -54,7 +54,7 @@ func TestApplyPolicy(t *testing.T) {
 		objectName string
 		computer   bool
 
-		usrDirPerm os.FileMode
+		readOnlyUserDir bool
 
 		secondCall      string
 		userReturnedUID string
@@ -62,18 +62,26 @@ func TestApplyPolicy(t *testing.T) {
 
 		wantErr bool
 	}{
-		"successfully generates mounts file for one entry with one value": {},
+		// Single entry cases.
+		"successfully generates mounts file for one entry with one value":        {},
+		"successfully generates mounts file for one entry with multiple values":  {entries: "one entry with multiple values"},
+		"successfully generates mounts file for one entry with repeatead values": {entries: "one entry with repeatead values"},
 
+		// Multiple entries cases.
 		"successfully generates mounts file for multiple entries with one value":       {entries: "multiple entries with one value"},
-		"successfully generates mounts file for one entry with multiple values":        {entries: "one entry with multiple values"},
 		"successfully generates mounts file for multiple entries with multiple values": {entries: "multiple entries with multiple values"},
-		"successfully generates mounts file for one entry with repeatead values":       {entries: "one entry with repeatead values"},
 		"successfully generates mounts file for multiple entries with the same value":  {entries: "multiple entries with the same value"},
 		"successfully generates mounts file for multiple entries with repeated values": {entries: "multiple entries with repeated values"},
-		"successfully generates mounts file for errored entries":                       {entries: "errored entries"},
 
-		"generates an empty file if the entry is empty": {entries: "one entry with no value"},
-		"generates no file if there are no entries":     {entries: "no entries"},
+		// Special cases.
+		"successfully generates mounts file for errored entries":   {entries: "errored entries"},
+		"successfully generates mounts file with anonymous values": {entries: "entry with anonymous tags"},
+
+		// Badly formatted entries.
+		"successfully generates mounts file trimming whitespaces":           {entries: "entry with linebreaks and spaces"},
+		"successfully generates mounts file trimming sequential linebreaks": {entries: "entry with multiple linebreaks"},
+		"generates an empty file if the entry is empty":                     {entries: "one entry with no value"},
+		"generates no file if there are no entries":                         {entries: "no entries"},
 
 		// Policy refresh.
 		"mount file is removed on refreshing policy with no entries": {secondCall: "no entries"},
@@ -83,7 +91,7 @@ func TestApplyPolicy(t *testing.T) {
 		"error when user is not found":              {objectName: "dont exist", wantErr: true},
 		"error when user has invalid uid":           {userReturnedUID: "invalid", wantErr: true},
 		"error when user has invalid gid":           {userReturnedGID: "invalid", wantErr: true},
-		"error when usrDir has invalid permissions": {usrDirPerm: 0100, wantErr: true},
+		"error when usrDir has invalid permissions": {readOnlyUserDir: true, wantErr: true},
 
 		// To be removed when computer policies get implemented.
 		"error when trying to apply computer policies": {computer: true, wantErr: true},
@@ -119,12 +127,18 @@ func TestApplyPolicy(t *testing.T) {
 				entries = mount.EntriesForTests[tc.entries]
 			}
 
-			if tc.usrDirPerm != 0 {
+			if tc.readOnlyUserDir {
 				opts = append(opts, mount.WithPerm(0100))
+
+				// Ensures that the test dir will be cleaned after the test.
+				defer func(p string) error {
+					os.Chmod(p, 0750)
+					return os.RemoveAll(p)
+				}(testRunDir)
 			}
 
 			m, err := mount.New(opts...)
-			require.NoError(t, err, "Expected no error but got one.")
+			require.NoError(t, err, "Setup: Expected no error when creating manager but got one.")
 
 			err = m.ApplyPolicy(context.Background(), tc.objectName, tc.computer, entries)
 			if tc.wantErr {
@@ -146,7 +160,7 @@ func TestApplyPolicy(t *testing.T) {
 	}
 }
 
-// makeCurrentUIDIndepmakeIndependentOfCurrentUIDendent renames any file or directory which exactly match uid in path and replace it with 4242.
+// makeIndependentOfCurrentUID renames any file or directory which exactly match uid in path and replace it with 4242.
 func makeIndependentOfCurrentUID(t *testing.T, path string, uid string) {
 	t.Helper()
 

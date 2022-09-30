@@ -1,6 +1,7 @@
 // Package mount implements the manager responsible to handle the file sharing
-// policy of adsys, parsing the GPO rules and properly mounting the requested
-// drives / folders.
+// policy of adsys, parsing the GPO rules and setting up the mount process for
+// the requested drives. User mounts will be handled by a systemd user unit and
+// computer mounts will be handled directly by systemd, via .mount files.
 package mount
 
 import (
@@ -92,8 +93,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), usr.Gid, objectName)
 	}
 
-	usrDir := filepath.Join(m.runDir, "users", usr.Uid)
-	mountsPath := filepath.Join(usrDir, "mounts")
+	objectPath := filepath.Join(m.runDir, "users", usr.Uid)
+	mountsPath := filepath.Join(objectPath, "mounts")
 
 	// Mutexes are per user1, user2, computer
 	m.muMu.Lock()
@@ -115,24 +116,26 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// This creates usrDir directory.
 	// We chown usrDir to uid:gid of the user. Nothing is done for the machine
-	if err := mkdirAllWithUIDGID(usrDir, uid, gid); err != nil {
-		return fmt.Errorf(i18n.G("can't create mounts directory %q: %v"), usrDir, err)
+	if err := mkdirAllWithUIDGID(objectPath, uid, gid); err != nil {
+		return fmt.Errorf(i18n.G("can't create mounts directory %q: %v"), objectPath, err)
 	}
 
-	err = writeMountsFile(mountsPath, entries)
-	if err != nil {
+	if err = writeMountsFile(mountsPath, entries); err != nil {
 		return err
 	}
 
 	// Fix the ownership of the directory and the mounts file.
 	if err = chown(mountsPath, nil, uid, gid); err != nil {
-		defer os.Remove(mountsPath)
+		// nolint:errcheck // We don't care about the error, as we are already returning another more important one.
+		_ = os.Remove(mountsPath)
 		return err
 	}
 
 	return nil
 }
 
+// writeMountsFile writes the mounts file required for the user mount systemd user unit.
+// The function trims whitespaces and tabs and deduplicates values before writing to the file.
 func writeMountsFile(mountsPath string, entries []entry.Entry) (err error) {
 	defer decorate.OnError(&err, i18n.G("failed when writing mounts file %s"), mountsPath)
 
@@ -143,8 +146,8 @@ func writeMountsFile(mountsPath string, entries []entry.Entry) (err error) {
 			continue
 		}
 
-		values := strings.Split(entry.Value, "\n")
-		for _, v := range values {
+		for _, v := range strings.Split(entry.Value, "\n") {
+			v := strings.Trim(v, " \t")
 			if _, ok := seen[v]; ok || v == "" {
 				continue
 			}
@@ -154,7 +157,7 @@ func writeMountsFile(mountsPath string, entries []entry.Entry) (err error) {
 	}
 
 	// #nosec G306. This should be world-readable.
-	if err := os.WriteFile(mountsPath+".new", []byte(strings.Join(p, "\n")+"\n"), 0644); err != nil {
+	if err := os.WriteFile(mountsPath+".new", []byte(strings.Join(p, "\n")+"\n"), 0600); err != nil {
 		return err
 	}
 	if err := os.Rename(mountsPath+".new", mountsPath); err != nil {

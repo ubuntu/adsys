@@ -8,7 +8,9 @@ import (
 
 // EntriesForTests is a map with multiple []entries combinations to be used in tests.
 var EntriesForTests = map[string][]entry.Entry{
-	"one entry with one value": {{Value: "protocol://domain.com/mountpath"}},
+	"one entry with one value": {
+		{Value: "protocol://domain.com/mountpath"},
+	},
 
 	"multiple entries with one value": {
 		{Value: "protocol://domain.com/mountpath2"},
@@ -16,15 +18,40 @@ var EntriesForTests = map[string][]entry.Entry{
 		{Value: "nfs://yetanotherdomain.com/mount-path/mount/path"},
 	},
 
-	"one entry with multiple values": {{Value: "protocol://domain.com/mountpath2\nsmb://otherdomain.com/mount/path\nnfs://yetanotherdomain.com/mount-path/mount/path"}},
-
-	"multiple entries with multiple values": {
-		{Value: "protocol://domain.com/mountpath\nsmb://dmn.com/mount\nnfs://d.com/mnt/pth"},
-		{Value: "protocol://otherdomain.com/mount/path\nsmb://otherdomain.com/mount-path\nnfs://otherdomain.com/mount-path"},
-		{Value: "nfs://yetanotherdomain.com/mount-path/mount/path\nsmb://yetanotherdomain.com/mount-path\nprotocol://yetanotherdomain.com/mount"},
+	"one entry with multiple values": {
+		{Value: `
+protocol://domain.com/mountpath2
+smb://otherdomain.com/mount/path
+nfs://yetanotherdomain.com/mount-path/mount/path`,
+		},
 	},
 
-	"one entry with repeatead values": {{Value: "rpt://repeated.com/repeatedmount\nsmb://single.com/mnt\nrpt://repeated.com/repeatedmount\nnfs://anotherone.com/mnt\n"}},
+	"multiple entries with multiple values": {
+		{Value: `
+protocol://domain.com/mountpath
+smb://dmn.com/mount
+nfs://d.com/mnt/pth`,
+		},
+		{Value: `
+protocol://otherdomain.com/mount/path
+smb://otherdomain.com/mount-path
+nfs://otherdomain.com/mount-path`,
+		},
+		{Value: `
+nfs://yetanotherdomain.com/mount-path/mount/path
+smb://yetanotherdomain.com/mount-path
+protocol://yetanotherdomain.com/mount`,
+		},
+	},
+
+	"one entry with repeatead values": {
+		{Value: `
+rpt://repeated.com/repeatedmount
+smb://single.com/mnt
+rpt://repeated.com/repeatedmount
+nfs://anotherone.com/mnt
+		`},
+	},
 
 	"multiple entries with the same value": {
 		{Value: "rpt://repeated.com/repeatedmount"},
@@ -33,9 +60,21 @@ var EntriesForTests = map[string][]entry.Entry{
 	},
 
 	"multiple entries with repeated values": {
-		{Value: "rpt://repeated.com/repeatedmount\nnfs://not-repeated/mount\nsmb://something.com/some-mount"},
-		{Value: "nfs://otherdomain.com/other-mount\nrpt://repeated.com/repeatedmount\nnfs://domain.com/mountpath"},
-		{Value: "smb://testing.com/test/mount\nnfs://chaos.com/none/mount\nrpt://repeated.com/repeatedmount"},
+		{Value: `
+rpt://repeated.com/repeatedmount
+nfs://not-repeated/mount
+smb://something.com/some-mount
+		`},
+		{Value: `
+nfs://otherdomain.com/other-mount
+rpt://repeated.com/repeatedmount
+nfs://domain.com/mountpath
+		`},
+		{Value: `
+smb://testing.com/test/mount
+nfs://chaos.com/none/mount
+rpt://repeated.com/repeatedmount
+		`},
 	},
 
 	"errored entries": {
@@ -55,4 +94,35 @@ var EntriesForTests = map[string][]entry.Entry{
 	},
 
 	"no entries": {},
+
+	"entry with multiple linebreaks": {
+		{Value: `
+protocol://domain.com/mounpath
+
+
+
+
+
+smb://otherdomain.com/mount/path
+		`},
+	},
+
+	"entry with linebreaks and spaces": {
+		{Value: `
+			protocol://domain.com/mountpath
+		  
+smb://otherdomain.com/mount/path
+		      
+	nfs://yetanotherdomain.com/path/mount
+
+		`},
+	},
+
+	"entry with anonymous tags": {
+		{Value: `
+[anonymous]smb://shady.com/shady/mount
+[anonymous]nfs://stealthydomain.com/mount/stealthy
+protocol://domain.com/mountpath
+		`},
+	},
 }
