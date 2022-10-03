@@ -1,8 +1,10 @@
 package mount
 
 import (
-	"os"
+	"context"
 	"os/user"
+
+	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
 // WithUserLookup defines a custom userLookup function for tests.
@@ -19,16 +21,7 @@ func WithSystemCtlCmd(cmd []string) Option {
 	}
 }
 
-// WithRunDir overrides the default path for the run directory.
-func WithRunDir(p string) Option {
-	return func(o *options) {
-		o.runDir = p
-	}
-}
-
-// WithPerm overrides the default permissions of the runDir/users directory for tests.
-func WithPerm(perm os.FileMode) Option {
-	return func(o *options) {
-		o.perm = perm
-	}
+// ApplyUserPolicy exports the internal applyUserPolicy for tests.
+func (m *Manager) ApplyUserPolicy(ctx context.Context, username string, e entry.Entry) error {
+	return m.applyUserPolicy(ctx, username, e)
 }
