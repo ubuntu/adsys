@@ -6,7 +6,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
-	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -41,13 +40,13 @@ func TestParseEntryValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			c := parseEntryValues(EntriesForTests[tc.entry])
+			got := parseEntryValues(EntriesForTests[tc.entry])
 
 			gotPath := t.TempDir()
-			m, err := yaml.Marshal(c)
+			marshaledGot, err := yaml.Marshal(got)
 			require.NoError(t, err, "Setup: Failed to marshal the result")
 
-			err = os.WriteFile(filepath.Join(gotPath, "parsed_values"), m, 0600)
+			err = os.WriteFile(filepath.Join(gotPath, "parsed_values"), marshaledGot, 0600)
 			require.NoError(t, err, "Setup: Failed to write the result")
 
 			goldenPath := filepath.Join("testdata", t.Name(), "golden")
@@ -74,16 +73,16 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 		"error when invalid uid":                               {uid: "-150", wantErr: true},
 		"error when invalid gid":                               {gid: "-150", wantErr: true},
 		"fails when writing on a dir with invalid permissions": {readOnlyDir: true, wantErr: true},
-		// "error when path already exists and has different ownership": {pathAlreadyExists: true, wantErr: true},
+		"error when path already exists as a directory":        {pathAlreadyExists: true, wantErr: true},
 	}
+
+	u, err := user.Current()
+	require.NoError(t, err, "Setup: failed to get current user")
 
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-
-			u, err := user.Current()
-			require.NoError(t, err, "Setup: failed to get current user")
 
 			path := t.TempDir()
 
@@ -109,15 +108,10 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 			filePath := filepath.Join(path, "test_write")
 
 			if tc.pathAlreadyExists {
-				err = os.WriteFile(filePath, []byte("file already existed"), 0600)
-				require.NoError(t, err, "Setup: Failed to set up pre existent file for testing")
-
-				err = os.Chown(filePath, iUID+1, iGID+1)
-				require.NoError(t, err, "Setup: Failed to change file ownership for testing")
+				err = os.MkdirAll(filePath, 0750)
+				require.NoError(t, err, "Setup: Failed to set up pre existent directory for testing")
 
 				t.Cleanup(func() {
-					//nolint:errcheck // This happens in a controlled environment
-					_ = os.Chown(filePath, iUID, iGID)
 					//nolint:errcheck // This happens in a controlled environment
 					_ = os.Remove(filePath)
 				})
@@ -125,22 +119,10 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 
 			err = writeFileWithUIDGID(filePath, iUID, iGID, "testing writeFileWithUIDGID file")
 			if tc.wantErr {
-				require.Error(t, err, "Expected an error but got none")
+				require.Error(t, err, "writeFileWithUIDGID should have returned an error but didn't")
 				return
 			}
-			require.NoError(t, err, "Expected no error but got one")
-
-			s, err := os.Stat(filePath)
-			require.NoError(t, err, "Failed when fetching info of the written file")
-
-			//nolint:forcetypeassert // This happens in a controlled environment
-			gotUID := s.Sys().(*syscall.Stat_t).Uid
-			//nolint:forcetypeassert // This happens in a controlled environment
-			gotGID := s.Sys().(*syscall.Stat_t).Gid
-
-			require.Equal(t, iUID, int(gotUID), "Expected UID to be the same")
-			require.Equal(t, iGID, int(gotGID), "Expected GID to be the same")
-
+			require.NoError(t, err, "writeFileWithUIDGID should not have returned an error but did")
 			testutils.CompareTreesWithFiltering(t, path, filepath.Join("testdata", t.Name(), "golden"), Update)
 		})
 	}

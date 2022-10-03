@@ -15,7 +15,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -23,20 +22,12 @@ import (
 )
 
 type options struct {
-	runDir       string
 	systemctlCmd []string
 	userLookup   func(string) (*user.User, error)
 }
 
 // Option represents an optional function that is able to alter a default behavior used in mount.
 type Option func(*options)
-
-// WithRunDir overrides the default path for the run directory.
-func WithRunDir(p string) Option {
-	return func(o *options) {
-		o.runDir = p
-	}
-}
 
 // Manager holds information needed for handling the mount policies.
 type Manager struct {
@@ -50,10 +41,9 @@ type Manager struct {
 }
 
 // New creates a Manager to handle mount policies.
-func New(opts ...Option) (m *Manager, err error) {
+func New(runDir string, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to create new mount manager"))
 	o := options{
-		runDir:     consts.DefaultRunDir,
 		userLookup: user.Lookup,
 	}
 
@@ -63,14 +53,14 @@ func New(opts ...Option) (m *Manager, err error) {
 
 	// Multiple users will be in users/ subdirectory. Create the main one.
 	// #nosec G301 - multiple users will be in users/ subdirectory, we want all of them to be able to access its own subdirectory.
-	if err := os.MkdirAll(filepath.Join(o.runDir, "users"), 0750); err != nil {
+	if err := os.MkdirAll(filepath.Join(runDir, "users"), 0750); err != nil {
 		return nil, err
 	}
 
 	return &Manager{
 		mountsMu: make(map[string]*sync.Mutex),
 
-		runDir:       o.runDir,
+		runDir:       runDir,
 		userLookup:   o.userLookup,
 		systemCtlCmd: o.systemctlCmd,
 	}, nil
@@ -142,7 +132,7 @@ func (m *Manager) applyUserPolicy(ctx context.Context, username string, entry en
 	// This creates userDir directory.
 	// We chown userDir to uid:gid of the user. Nothing is done for the machine
 	if err := mkdirAllWithUIDGID(objectPath, uid, gid); err != nil {
-		return fmt.Errorf(i18n.G("can't create mounts directory %q: %v"), objectPath, err)
+		return fmt.Errorf(i18n.G("can't create user directory %q for %q: %v"), objectPath, username, err)
 	}
 
 	s := strings.Join(parseEntryValues(entry), "\n")
@@ -200,7 +190,7 @@ func writeFileWithUIDGID(path string, uid, gid int, content string) (err error) 
 // mkdirAllWithUIDGID create a directory and sets its ownership to the specified uid and gid.
 func mkdirAllWithUIDGID(p string, uid, gid int) error {
 	if err := os.MkdirAll(p, 0750); err != nil {
-		return fmt.Errorf(i18n.G("can't create mounts directory %q: %v"), p, err)
+		return fmt.Errorf(i18n.G("can't create directory %q: %v"), p, err)
 	}
 
 	return chown(p, nil, uid, gid)

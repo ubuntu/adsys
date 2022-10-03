@@ -123,7 +123,7 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	}
 
 	// mount manager
-	mountManager, err := mount.New(mount.WithRunDir(args.runDir))
+	mountManager, err := mount.New(args.runDir)
 	if err != nil {
 		return nil, err
 	}
