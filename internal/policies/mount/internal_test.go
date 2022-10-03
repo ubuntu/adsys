@@ -3,49 +3,37 @@ package mount
 import (
 	"flag"
 	"os"
+	"os/user"
 	"path/filepath"
+	"strconv"
+	"syscall"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/testutils"
+	"gopkg.in/yaml.v3"
 )
 
 var Update bool
 
-func TestWriteMountsFile(t *testing.T) {
+func TestParseEntryValues(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		path    string
-		entries string
-
-		readOnlyDir bool
-
-		wantErr bool
+		entry string
 	}{
 		// Single entry cases.
-		"write mounts file with one entry with one value":        {entries: "one entry with one value"},
-		"write mounts file with one entry with multiple values":  {entries: "one entry with multiple values"},
-		"write mounts file with one entry with repeatead values": {entries: "one entry with repeatead values"},
-
-		// Multiple entries cases.
-		"write mounts file with multiple entries with one value":       {entries: "multiple entries with one value"},
-		"write mounts file with multiple entries with multiple values": {entries: "multiple entries with multiple values"},
-		"write mounts file with multiple entries with the same value":  {entries: "multiple entries with the same value"},
-		"write mounts file with multiple entries with repeated values": {entries: "multiple entries with repeated values"},
+		"parse values from entry with one value":        {entry: "entry with one value"},
+		"parse values from entry with multiple values":  {entry: "entry with multiple values"},
+		"parse values from entry with repeatead values": {entry: "entry with repeatead values"},
 
 		// Badly formatted entries.
-		"write mounts file trimming whitespaces":           {entries: "entry with linebreaks and spaces"},
-		"write mounts file trimming sequential linebreaks": {entries: "entry with multiple linebreaks"},
+		"parse values trimming whitespaces":           {entry: "entry with spaces"},
+		"parse values trimming sequential linebreaks": {entry: "entry with multiple linebreaks"},
 
 		// Special cases.
-		"write mounts file with anonymous tags":                                  {entries: "entry with anonymous tags"},
-		"write mounts file with values from errored entries should not be added": {entries: "errored entries"},
-		"write an empty file if the entry is empty":                              {entries: "one entry with no value"},
-		"write an empty file if all entries are empty":                           {entries: "multiple entries with no value"},
-
-		// Error cases.
-		"fails when writing on a dir with invalid permissions": {entries: "one entry with one value", readOnlyDir: true, wantErr: true},
+		"parse values from entry with anonymous tags": {entry: "entry with anonymous tags"},
+		"returns empty slice if the entry is empty":   {entry: "entry with no value"},
 	}
 
 	for name, tc := range tests {
@@ -53,30 +41,107 @@ func TestWriteMountsFile(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
+			c := parseEntryValues(EntriesForTests[tc.entry])
+
 			gotPath := t.TempDir()
+			m, err := yaml.Marshal(c)
+			require.NoError(t, err, "Setup: Failed to marshal the result")
 
-			if tc.readOnlyDir {
-				err := os.Chmod(gotPath, 0100)
-				require.NoError(t, err, "Setup: Expected to change directory permissions for the tests.")
-
-				// Ensures that the test dir will be cleaned after the test.
-				defer func(p string) {
-					//nolint:errcheck,gosec // Permissions for directories should be 750 and we don't need to check this error in the tests.
-					_ = os.Chmod(p, 0750)
-					//nolint:errcheck // We don't need to check this error for the tests.
-					_ = os.RemoveAll(p)
-				}(gotPath)
-			}
-
-			err := writeMountsFile(gotPath+"/mounts", EntriesForTests[tc.entries])
-			if tc.wantErr {
-				require.Error(t, err, "Expected an error when writing mounts file but got none")
-				return
-			}
-			require.NoError(t, err, "Expected no error when writing mounts file but got one")
+			os.WriteFile(gotPath+"/parsed_values", m, 0600)
+			require.NoError(t, err, "Setup: Failed to write the result")
 
 			goldenPath := filepath.Join("testdata", t.Name(), "golden")
 			testutils.CompareTreesWithFiltering(t, gotPath, goldenPath, Update)
+		})
+	}
+}
+
+func TestWriteFileWithUIDGID(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		uid     string
+		gid     string
+		content string
+
+		readOnlyDir       bool
+		pathAlreadyExists bool
+
+		wantErr bool
+	}{
+		"write file with current user ownership": {},
+
+		"error when invalid uid":                               {uid: "-150", wantErr: true},
+		"error when invalid gid":                               {gid: "-150", wantErr: true},
+		"fails when writing on a dir with invalid permissions": {readOnlyDir: true, wantErr: true},
+		// "error when path already exists and has different ownership": {pathAlreadyExists: true, wantErr: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			u, err := user.Current()
+			require.NoError(t, err, "Setup: failed to get current user")
+
+			path := t.TempDir()
+
+			uid := u.Uid
+			if tc.uid != "" {
+				uid = tc.uid
+			}
+
+			gid := u.Gid
+			if tc.gid != "" {
+				gid = tc.gid
+			}
+
+			if tc.readOnlyDir {
+				testutils.MakeReadOnly(t, path)
+			}
+
+			iUID, err := strconv.Atoi(uid)
+			require.NoError(t, err, "Setup: Failed to convert uid to int")
+			iGID, err := strconv.Atoi(gid)
+			require.NoError(t, err, "Setup: Failed to convert gid to int")
+
+			filePath := filepath.Join(path, "test_write")
+
+			if tc.pathAlreadyExists {
+				err = os.WriteFile(filePath, []byte("file already existed"), 0600)
+				require.NoError(t, err, "Setup: Failed to set up pre existent file for testing")
+
+				err = os.Chown(filePath, iUID+1, iGID+1)
+				require.NoError(t, err, "Setup: Failed to change file ownership for testing")
+
+				t.Cleanup(func() {
+					//nolint:errcheck // This happens in a controlled environment
+					_ = os.Chown(filePath, iUID, iGID)
+					//nolint:errcheck // This happens in a controlled environment
+					_ = os.Remove(filePath)
+				})
+			}
+
+			err = writeFileWithUIDGID(filePath, iUID, iGID, "testing writeFileWithUIDGID file")
+			if tc.wantErr {
+				require.Error(t, err, "Expected an error but got none")
+				return
+			}
+			require.NoError(t, err, "Expected no error but got one")
+
+			s, err := os.Stat(filePath)
+			require.NoError(t, err, "Failed when fetching info of the written file")
+
+			//nolint:forcetypeassert // This happens in a controlled environment
+			gotUID := s.Sys().(*syscall.Stat_t).Uid
+			//nolint:forcetypeassert // This happens in a controlled environment
+			gotGID := s.Sys().(*syscall.Stat_t).Gid
+
+			require.Equal(t, iUID, int(gotUID), "Expected UID to be the same")
+			require.Equal(t, iGID, int(gotGID), "Expected GID to be the same")
+
+			testutils.CompareTreesWithFiltering(t, path, filepath.Join("testdata", t.Name(), "golden"), Update)
 		})
 	}
 }
