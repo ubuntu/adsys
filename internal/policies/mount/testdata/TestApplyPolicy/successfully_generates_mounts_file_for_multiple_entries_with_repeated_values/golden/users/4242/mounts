@@ -1,7 +1,0 @@
-rpt://repeated.com/repeatedmount
-nfs://not-repeated/mount
-smb://something.com/some-mount
-nfs://otherdomain.com/other-mount
-nfs://domain.com/mountpath
-smb://testing.com/test/mount
-nfs://chaos.com/none/mount
