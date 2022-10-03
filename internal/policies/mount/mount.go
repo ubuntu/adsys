@@ -25,12 +25,18 @@ import (
 type options struct {
 	runDir       string
 	systemctlCmd []string
-	perm         os.FileMode
 	userLookup   func(string) (*user.User, error)
 }
 
 // Option represents an optional function that is able to alter a default behavior used in mount.
 type Option func(*options)
+
+// WithRunDir overrides the default path for the run directory.
+func WithRunDir(p string) Option {
+	return func(o *options) {
+		o.runDir = p
+	}
+}
 
 // Manager holds information needed for handling the mount policies.
 type Manager struct {
@@ -49,7 +55,6 @@ func New(opts ...Option) (m *Manager, err error) {
 	o := options{
 		runDir:     consts.DefaultRunDir,
 		userLookup: user.Lookup,
-		perm:       0750,
 	}
 
 	for _, opt := range opts {
@@ -58,7 +63,7 @@ func New(opts ...Option) (m *Manager, err error) {
 
 	// Multiple users will be in users/ subdirectory. Create the main one.
 	// #nosec G301 - multiple users will be in users/ subdirectory, we want all of them to be able to access its own subdirectory.
-	if err := os.MkdirAll(filepath.Join(o.runDir, "users"), o.perm); err != nil {
+	if err := os.MkdirAll(filepath.Join(o.runDir, "users"), 0750); err != nil {
 		return nil, err
 	}
 
@@ -75,43 +80,59 @@ func New(opts ...Option) (m *Manager, err error) {
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't apply mount policy to %s"), objectName)
 
-	log.Debugf(ctx, "Applying mount policy to %s", objectName)
-
-	if isComputer {
-		return fmt.Errorf(i18n.G("computer mounts are currently not supported"))
+	if len(entries) == 0 {
+		return nil
 	}
 
+	log.Debugf(ctx, "Applying mount policy to %s", objectName)
+
+	// Mutexes are per user1, user2, computer
+	m.muMu.Lock()
+	if _, exists := m.mountsMu[objectName]; !exists {
+		m.mountsMu[objectName] = &sync.Mutex{}
+	}
+	m.muMu.Unlock()
+	m.mountsMu[objectName].Lock()
+	defer m.mountsMu[objectName].Unlock()
+
+	for _, entry := range entries {
+		switch entry.Key {
+		case "user-mounts":
+			if isComputer {
+				break
+			}
+
+			if e := m.applyUserPolicy(ctx, objectName, entry); e != nil {
+				err = e
+			}
+
+		default:
+			log.Debugf(ctx, "Key %q is currently not supported by the mount manager", entry.Key)
+		}
+	}
+
+	return err
+}
+
+func (m *Manager) applyUserPolicy(ctx context.Context, username string, entry entry.Entry) (err error) {
 	var uid, gid int
-	usr, err := m.userLookup(objectName)
+	usr, err := m.userLookup(username)
 	if err != nil {
 		return fmt.Errorf(i18n.G("could not retrieve user for %q: %w"), err)
 	}
 	if uid, err = strconv.Atoi(usr.Uid); err != nil {
-		return fmt.Errorf(i18n.G("couldn't convert %q to a valid uid for %q"), usr.Uid, objectName)
+		return fmt.Errorf(i18n.G("couldn't convert %q to a valid uid for %q"), usr.Uid, username)
 	}
 	if gid, err = strconv.Atoi(usr.Gid); err != nil {
-		return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), usr.Gid, objectName)
+		return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), usr.Gid, username)
 	}
 
 	objectPath := filepath.Join(m.runDir, "users", usr.Uid)
 	mountsPath := filepath.Join(objectPath, "mounts")
 
-	// Mutexes are per user1, user2, computer
-	m.muMu.Lock()
-	if _, exists := m.mountsMu[mountsPath]; !exists {
-		m.mountsMu[mountsPath] = &sync.Mutex{}
-	}
-	m.muMu.Unlock()
-	m.mountsMu[mountsPath].Lock()
-	defer m.mountsMu[mountsPath].Unlock()
-
 	// Removes the current mounts file, if it exists, before continuing applying the policy.
 	if err = os.Remove(mountsPath); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
-	}
-
-	if len(entries) == 0 {
-		return nil
 	}
 
 	// This creates userDir directory.
@@ -120,47 +141,52 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf(i18n.G("can't create mounts directory %q: %v"), objectPath, err)
 	}
 
-	if err = writeMountsFile(mountsPath, entries); err != nil {
-		return err
+	s := strings.Join(parseEntryValues(entry), "\n")
+	if s == "" {
+		return nil
 	}
 
-	// Fix the ownership of the directory and the mounts file.
-	if err = chown(mountsPath, nil, uid, gid); err != nil {
-		// nolint:errcheck // We don't care about the error, as we are already returning another more important one.
-		_ = os.Remove(mountsPath)
+	if err = writeFileWithUIDGID(mountsPath, uid, gid, s); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// writeMountsFile writes the mounts file required for the user mount systemd user unit.
-// The function trims whitespaces and tabs and deduplicates values before writing to the file.
-func writeMountsFile(mountsPath string, entries []entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed when writing mounts file %s"), mountsPath)
+// parseEntryValues parses the entry value, trimming whitespaces and removing duplicates.
+func parseEntryValues(entry entry.Entry) (p []string) {
+	if entry.Err != nil {
+		return nil
+	}
 
 	seen := make(map[string]struct{})
-	p := []string{}
-	for _, entry := range entries {
-		if entry.Err != nil {
+	for _, v := range strings.Split(entry.Value, "\n") {
+		v := strings.TrimSpace(v)
+		if _, ok := seen[v]; ok || v == "" {
 			continue
 		}
-
-		for _, v := range strings.Split(entry.Value, "\n") {
-			v := strings.TrimSpace(v)
-			if _, ok := seen[v]; ok || v == "" {
-				continue
-			}
-			p = append(p, v)
-			seen[v] = struct{}{}
-		}
+		p = append(p, v)
+		seen[v] = struct{}{}
 	}
+
+	return p
+}
+
+// writeFileWithUIDGID writes the content into the specified path and changes its ownership to the specified uid/gid.
+func writeFileWithUIDGID(path string, uid, gid int, content string) (err error) {
+	defer decorate.OnError(&err, i18n.G("failed when writing file %s"), path)
 
 	// #nosec G306. This should be world-readable.
-	if err := os.WriteFile(mountsPath+".new", []byte(strings.Join(p, "\n")+"\n"), 0600); err != nil {
+	if err = os.WriteFile(path+".new", []byte(content+"\n"), 0600); err != nil {
 		return err
 	}
-	if err := os.Rename(mountsPath+".new", mountsPath); err != nil {
+
+	// Fixes the file ownership before renaming it.
+	if err = chown(path+".new", nil, uid, gid); err != nil {
+		return err
+	}
+
+	if err = os.Rename(path+".new", path); err != nil {
 		return err
 	}
 
