@@ -17,6 +17,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/policies/gdm"
+	"github.com/ubuntu/adsys/internal/policies/mount"
 	"github.com/ubuntu/adsys/internal/policies/privilege"
 	"github.com/ubuntu/adsys/internal/policies/scripts"
 	"golang.org/x/sync/errgroup"
@@ -29,6 +30,7 @@ type Manager struct {
 	dconf     *dconf.Manager
 	privilege *privilege.Manager
 	scripts   *scripts.Manager
+	mount     *mount.Manager
 	gdm       *gdm.Manager
 
 	subscriptionDbus dbus.BusObject
@@ -120,6 +122,12 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		return nil, err
 	}
 
+	// mount manager
+	mountManager, err := mount.New(mount.WithRunDir(args.runDir))
+	if err != nil {
+		return nil, err
+	}
+
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {
 		if args.gdm, err = gdm.New(gdm.WithDconf(dconfManager)); err != nil {
@@ -141,6 +149,7 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		dconf:     dconfManager,
 		privilege: privilegeManager,
 		scripts:   scriptsManager,
+		mount:     mountManager,
 		gdm:       args.gdm,
 
 		subscriptionDbus: subscriptionDbus,
@@ -166,6 +175,8 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	g.Go(func() error {
 		return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"], pols.SaveAssetsTo)
 	})
+	g.Go(func() error { return m.mount.ApplyPolicy(ctx, objectName, isComputer, rules["mount"]) })
+
 	// TODO g.Go(func() error { return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"]) })
 	if err := g.Wait(); err != nil {
 		return err
@@ -286,6 +297,7 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) {
 
 	rules["privilege"] = nil
 	rules["scripts"] = nil
+	rules["mount"] = nil
 }
 
 // GetStatus returns dynamic part of our manager instance like subscription status.
