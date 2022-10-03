@@ -26,6 +26,7 @@
       <string id="UbuntuDisplayPowerManagement">Power Management</string>
       <string id="UbuntuDisplaySessionManagement">Session management</string>
       <string id="UbuntuDisplayUserScripts">User Scripts</string>
+      <string id="UbuntuDisplayUserDriveMapping">User Drive Mapping</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Whether toolkits should load accessibility related modules.
 
 - Type: dconf
@@ -1185,6 +1186,28 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuDisplayUser2210ScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2204ScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2004ScriptsLogoff">Logoff scripts</string>
+      <string id="UbuntuExplainTextUserMountUserMounts">Define mount points that will be mounted for the client.
+We will add one mount per line, the order of the mounts will be according to the order the mount points were listed in the policy, removing duplicates.
+The mounts listed will be appended to the list of mounts referenced higher in the GPO hierarchy.
+Anonymous and Kerberos validated mounts will be handled automatically.
+
+Values should be in the format: 
+        protocol://&lt;hostname-or-ip&gt;/mountpath 
+
+And anonymous mounts should have a prefix tag [anonymous] to indicate them, e.g:
+        [anonymous]protocol://&lt;hostname-or-ip&gt;/mountpath
+
+
+- Type: mount
+- Key: /user-mounts
+
+Supported on Ubuntu 20.04, 22.04, 22.10.
+
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
+      <string id="UbuntuDisplayUserAllMountUserMounts">Mount points for the client</string>
+      <string id="UbuntuDisplayUser2210MountUserMounts">Mount points for the client</string>
+      <string id="UbuntuDisplayUser2204MountUserMounts">Mount points for the client</string>
+      <string id="UbuntuDisplayUser2004MountUserMounts">Mount points for the client</string>
     </stringTable>
 
     <presentationTable>
@@ -2094,6 +2117,22 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <checkBox refId="UbuntuOverrideElemUser2004ScriptsLogoff" defaultChecked="false">Override value for 20.04:</checkBox>
         
         <multiTextBox refId="UbuntuElemUser2004ScriptsLogoff" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationUserMountUserMounts">
+        <text>Mount points for the client</text>
+        <multiTextBox refId="UbuntuElemUserAllMountUserMounts" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2210MountUserMounts" defaultChecked="false">Override value for 22.10:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2210MountUserMounts" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2204MountUserMounts" defaultChecked="false">Override value for 22.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2204MountUserMounts" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2004MountUserMounts" defaultChecked="false">Override value for 20.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2004MountUserMounts" defaultHeight="5" />
       </presentation>
     </presentationTable>
 
