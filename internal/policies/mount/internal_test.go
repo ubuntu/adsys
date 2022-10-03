@@ -47,7 +47,7 @@ func TestParseEntryValues(t *testing.T) {
 			m, err := yaml.Marshal(c)
 			require.NoError(t, err, "Setup: Failed to marshal the result")
 
-			os.WriteFile(gotPath+"/parsed_values", m, 0600)
+			err = os.WriteFile(filepath.Join(gotPath, "parsed_values"), m, 0600)
 			require.NoError(t, err, "Setup: Failed to write the result")
 
 			goldenPath := filepath.Join("testdata", t.Name(), "golden")

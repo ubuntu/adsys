@@ -115,6 +115,10 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 }
 
 func (m *Manager) applyUserPolicy(ctx context.Context, username string, entry entry.Entry) (err error) {
+	defer decorate.OnError(&err, i18n.G("failed to apply policy for user %q"), username)
+
+	log.Debugf(ctx, "Applying mount policy to user %q", username)
+
 	var uid, gid int
 	usr, err := m.userLookup(username)
 	if err != nil {

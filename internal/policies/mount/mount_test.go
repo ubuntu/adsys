@@ -197,7 +197,9 @@ func TestApplyUserPolicy(t *testing.T) {
 					iGID, err := strconv.Atoi(tc.userReturnedGID)
 					require.NoError(t, err, "Setup: Failed to convert gid to int")
 
-					os.Chown(filepath.Join(testRunDir, "users", tc.userReturnedGID, "mounts"), iUID+1, iGID+1)
+					err = os.Chown(filepath.Join(testRunDir, "users", tc.userReturnedGID, "mounts"), iUID+1, iGID+1)
+					require.NoError(t, err, "Setup: Failed to change ownership of the file for the tests.")
+
 					t.Cleanup(func() {
 						//nolint:errcheck // This happens in a controlled environment
 						_ = os.Chown(filepath.Join(testRunDir, "users", tc.userReturnedGID, "mounts"), iUID, iGID)
