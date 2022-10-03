@@ -1,0 +1,19 @@
+- key: "/user-mounts"
+  displayname: "Mount points for the client"
+  explaintext: |
+    Define mount points that will be mounted for the client.
+    We will add one mount per line, the order of the mounts will be according to the order the mount points were listed in the policy, removing duplicates.
+    The mounts listed will be appended to the list of mounts referenced higher in the GPO hierarchy.
+    Anonymous and Kerberos validated mounts will be handled automatically.
+
+    Values should be in the format: 
+            protocol://<hostname-or-ip>/mountpath 
+    
+    And anonymous mounts should have a prefix tag [anonymous] to indicate them, e.g:
+            [anonymous]protocol://<hostname-or-ip>/mountpath
+    
+  elementtype: "multiText"
+  release: "any"
+  type: "mount"
+  meta:
+    strategy: "append"
