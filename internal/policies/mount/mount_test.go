@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -37,7 +36,7 @@ func TestNew(t *testing.T) {
 				testutils.MakeReadOnly(t, runDir)
 			}
 
-			_, err := mount.New(mount.WithRunDir(runDir))
+			_, err := mount.New(runDir)
 			if tc.wantErr {
 				require.Error(t, err, "Expected an error when creating manager but got none.")
 				return
@@ -51,172 +50,138 @@ func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		entries    []entry.Entry
+		entries    []string
 		key        string
+		objectName string
 		isComputer bool
 
-		noEntries bool
-	}{
-		"successfully applies policy with valid key": {key: "user-mounts"},
+		secondCall []string
 
-		"does nothing when trying to apply policy with user key and isComputer is set": {key: "user-mounts", isComputer: true},
-		"does nothing when trying to policy with unsupported key":                      {key: "not-supported-yet"},
-		"does nothing when trying to apply policy with no entries":                     {noEntries: true},
-	}
-
-	for name, tc := range tests {
-		tc := tc
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			if tc.entries == nil && !tc.noEntries {
-				e := mount.EntriesForTests["entry with one value"]
-				e.Key = tc.key
-				tc.entries = []entry.Entry{e}
-			}
-
-			runDir := t.TempDir()
-			opts := []mount.Option{mount.WithRunDir(runDir)}
-
-			// nolint:errcheck // This happens in a controlled test environment.
-			u, _ := user.Current()
-
-			if tc.key == "user-mounts" {
-				opts = append(opts, mount.WithUserLookup(func(s string) (*user.User, error) {
-					return &user.User{Uid: u.Uid, Gid: u.Gid}, nil
-				}))
-			}
-
-			m, err := mount.New(opts...)
-			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
-
-			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.isComputer, tc.entries)
-			require.NoError(t, err, "Expected no error but got one")
-
-			if tc.key == "user-mounts" {
-				makeIndependentOfCurrentUID(t, runDir, u.Uid)
-			}
-			testutils.CompareTreesWithFiltering(t, runDir, filepath.Join("testdata", t.Name(), "users"), mount.Update)
-		})
-	}
-}
-
-func TestApplyUserPolicy(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		entry      string
-		objectName string
-		computer   bool
-
-		readOnlyUserDir bool
-		secondCall      string
-		userReturnedUID string
-		userReturnedGID string
+		// User specific
+		readOnlyUsersDir  bool
+		userReturnedUID   string
+		userReturnedGID   string
+		pathAlreadyExists bool
 
 		wantErr bool
 	}{
-		// Single entry cases.
-		"successfully generates mounts file for entry with value":            {},
-		"successfully generates mounts file for entry with multiple values":  {entry: "entry with multiple values"},
-		"successfully generates mounts file for entry with repeatead values": {entry: "entry with repeatead values"},
+		// USER // Single entry cases.
 
-		// Special cases.
-		"successfully generates mounts file with anonymous values": {entry: "entry with anonymous tags"},
-		"generates no file for errored entry":                      {entry: "errored entry"},
+		"successfully apply policy for entry with one value":        {},
+		"successfully apply policy for entry with multiple values":  {entries: []string{"entry with multiple values"}},
+		"successfully apply policy for entry with repeatead values": {entries: []string{"entry with repeatead values"}},
 
-		// Badly formatted entries.
-		"successfully generates mounts file trimming whitespaces":           {entry: "entry with linebreaks and spaces"},
-		"successfully generates mounts file trimming sequential linebreaks": {entry: "entry with multiple linebreaks"},
-		"generates no file if the entry is empty":                           {entry: "entry with no value"},
-		"generates no file if there are no entries":                         {entry: "no entries"},
+		// USER // Special cases.
+		"successfully apply policy with anonymous values":                                   {entries: []string{"entry with anonymous tags"}},
+		"generates no file for errored entry":                                               {entries: []string{"errored entry"}},
+		"generates no file when trying to apply policy with user key and isComputer is set": {isComputer: true},
 
-		// Policy refresh.
-		"mount file is removed on refreshing policy with no entries": {secondCall: "no entries"},
-		"mount file is updated on refreshing policy with an entry":   {secondCall: "entry with multiple values"},
+		// USER // Badly formatted entries.
+		"successfully apply policy trimming whitespaces":           {entries: []string{"entry with linebreaks and spaces"}},
+		"successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}},
+		"generates no file if the entry is empty":                  {entries: []string{"entry with no value"}},
+		"generates no file if there are no entries":                {entries: []string{"no entries"}},
 
-		// Error cases.
-		"error when user is not found":               {objectName: "dont exist", wantErr: true},
-		"error when user has invalid uid":            {userReturnedUID: "invalid", wantErr: true},
-		"error when user has invalid gid":            {userReturnedGID: "invalid", wantErr: true},
-		"error when userDir has invalid permissions": {readOnlyUserDir: true, wantErr: true},
+		// USER // Policy refresh.
+		"mount file is removed on refreshing policy with no entries": {secondCall: []string{"no entries"}},
+		"mount file is updated on refreshing policy with an entry":   {secondCall: []string{"entry with multiple values"}},
 
-		// "error when updating policy and file already exists with wrong ownership": {secondCall: "entry with multiple values", wantErr: true},
+		// GENERIC  // Special cases.
+		"does nothing when trying to policy with unsupported key":  {key: "not-supported"},
+		"does nothing when trying to apply policy with no entries": {entries: []string{"no entries"}},
+
+		// USER // Error cases.
+		"error when user is not found":                  {objectName: "dont exist", wantErr: true},
+		"error when user has invalid uid":               {userReturnedUID: "invalid", wantErr: true},
+		"error when user has invalid gid":               {userReturnedGID: "invalid", wantErr: true},
+		"error when userDir has invalid permissions":    {readOnlyUsersDir: true, wantErr: true},
+		"error when path already exists as a directory": {pathAlreadyExists: true, wantErr: true},
 	}
+
+	u, err := user.Current()
+	require.NoError(t, err, "Setup: failed to get current user")
 
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			testRunDir := t.TempDir()
+			entries := []entry.Entry{}
+			if tc.entries == nil {
+				tc.entries = []string{"entry with one value"}
+			}
 
-			opts := []mount.Option{mount.WithRunDir(testRunDir)}
+			if tc.key == "" {
+				tc.key = "user-mounts"
+			}
 
-			usr, _ := user.Current()
-			if tc.objectName == "" {
+			for _, v := range tc.entries {
+				if v == "no entries" {
+					break
+				}
+				e := mount.EntriesForTests[v]
+				e.Key = tc.key
+				entries = append(entries, e)
+			}
+
+			opts := []mount.Option{}
+			if tc.key == "user-mounts" && tc.objectName == "" {
 				if tc.userReturnedUID == "" {
-					tc.userReturnedUID = usr.Uid
+					tc.userReturnedUID = u.Uid
 				}
 				if tc.userReturnedGID == "" {
-					tc.userReturnedGID = usr.Gid
+					tc.userReturnedGID = u.Gid
 				}
 
 				tc.objectName = "ubuntu"
-
 				opts = append(opts, mount.WithUserLookup(func(string) (*user.User, error) {
 					return &user.User{Uid: tc.userReturnedUID, Gid: tc.userReturnedGID}, nil
 				}))
 			}
 
-			testEntry := mount.EntriesForTests["entry with one value"]
-			if tc.entry != "" {
-				testEntry = mount.EntriesForTests[tc.entry]
-			}
-
-			if tc.readOnlyUserDir {
-				err := os.MkdirAll(filepath.Join(testRunDir, "users"), 0750)
+			runDir := t.TempDir()
+			if tc.readOnlyUsersDir {
+				err := os.MkdirAll(filepath.Join(runDir, "users"), 0750)
 				require.NoError(t, err, "Setup: Expected no error when creating users dir for tests.")
-				testutils.MakeReadOnly(t, filepath.Join(testRunDir, "users"))
+				testutils.MakeReadOnly(t, filepath.Join(runDir, "users"))
 			}
 
-			m, err := mount.New(opts...)
-			require.NoError(t, err, "Setup: Expected no error when creating manager but got one.")
+			if tc.pathAlreadyExists {
+				err := os.MkdirAll(filepath.Join(runDir, "users", u.Uid, "mounts"), 0750)
+				require.NoError(t, err, "Setup: Expected no error when creating mounts dir for tests.")
+				err = os.WriteFile(filepath.Join(runDir, "users", u.Uid, "mounts", "exists"), []byte("already exists."), 0600)
+				require.NoError(t, err, "Setup: Expected no error when filling mounts dir for tests.")
+			}
 
-			err = m.ApplyUserPolicy(context.Background(), tc.objectName, testEntry)
+			m, err := mount.New(runDir, opts...)
+			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
+
+			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.isComputer, entries)
 			if tc.wantErr {
-				require.Error(t, err, "Expected an error but got none")
+				require.Error(t, err, "ApplyPolicy should have returned an error but did not")
 				return
 			}
-			require.NoError(t, err, "Expected no error but got one")
+			require.NoError(t, err, "ApplyPolicy should not have returned an error but did")
 
-			if tc.secondCall != "" {
-				if tc.wantErr {
-					iUID, err := strconv.Atoi(tc.userReturnedUID)
-					require.NoError(t, err, "Setup: Failed to convert uid to int")
-					iGID, err := strconv.Atoi(tc.userReturnedGID)
-					require.NoError(t, err, "Setup: Failed to convert gid to int")
-
-					err = os.Chown(filepath.Join(testRunDir, "users", tc.userReturnedGID, "mounts"), iUID+1, iGID+1)
-					require.NoError(t, err, "Setup: Failed to change ownership of the file for the tests.")
-
-					t.Cleanup(func() {
-						//nolint:errcheck // This happens in a controlled environment
-						_ = os.Chown(filepath.Join(testRunDir, "users", tc.userReturnedGID, "mounts"), iUID, iGID)
-					})
+			if tc.secondCall != nil {
+				secondEntries := []entry.Entry{}
+				for _, v := range tc.secondCall {
+					secondEntries = append(secondEntries, mount.EntriesForTests[v])
 				}
 
-				err = m.ApplyUserPolicy(context.Background(), tc.objectName, mount.EntriesForTests[tc.secondCall])
+				err = m.ApplyPolicy(context.Background(), tc.objectName, tc.isComputer, secondEntries)
 				if tc.wantErr {
-					require.Error(t, err, "Expected an error but got none")
+					require.Error(t, err, "Second call of ApplyPolicy should have returned an error but did not")
 					return
 				}
-				require.NoError(t, err, "Expected no error on second apply call but got one")
+				require.NoError(t, err, "Second call of ApplyPolicy should not have returned an error but did")
 			}
 
-			goldenPath := filepath.Join("testdata", t.Name(), "golden")
-			makeIndependentOfCurrentUID(t, testRunDir, usr.Uid)
-			testutils.CompareTreesWithFiltering(t, testRunDir, goldenPath, mount.Update)
+			if tc.key == "user-mounts" {
+				makeIndependentOfCurrentUID(t, runDir, u.Uid)
+			}
+			goldPath := filepath.Join("testdata", t.Name(), "users")
+			testutils.CompareTreesWithFiltering(t, runDir, goldPath, mount.Update)
 		})
 	}
 }
