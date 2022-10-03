@@ -23,6 +23,7 @@
       <string id="UbuntuDisplayClientManagement">Client management</string>
       <string id="UbuntuDisplayPrivilegeAuthorization">Privilege Authorization</string>
       <string id="UbuntuDisplayComputerScripts">Computer Scripts</string>
+      <string id="UbuntuDisplaySystemWideApplicationConfinement">System-wide application confinement</string>
       <string id="UbuntuDisplayPowerManagement">Power Management</string>
       <string id="UbuntuDisplaySessionManagement">Session management</string>
       <string id="UbuntuDisplayUserScripts">User Scripts</string>
@@ -860,6 +861,29 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuDisplayMachine2210ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2204ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2004ScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuExplainTextMachineApparmorApparmorMachine">Define AppArmor profiles to be parsed and loaded on client machines.
+These profiles are ordered, one by line, and relative to the SYSVOL/apparmor/ubuntu/ directory.
+On the client machine, computer profiles are stored in /etc/apparmor.d/adsys/machine, thus the administrator can reference abstractions and tunables shipped with the client distribution of AppArmor.
+Files can be included in each other either using a path relative to the current directory of the profile (include &#34;path/to/profile&#34;), or relying on the include path of AppArmor (include &lt;adsys/machine/path/to/profile&gt;).
+
+Profiles from this GPO will be appended to the list of profiles referenced higher in the GPO hierarchy.
+
+
+- Type: apparmor
+- Key: /apparmor-machine
+
+Note: -
+ * Enabled: The profiles in the text entry are applied on the client machine.
+ * Disabled: The profiles are removed from the target machine, and any related rules are unloaded.
+
+
+Supported on Ubuntu 20.04, 22.04, 22.10.
+
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
+      <string id="UbuntuDisplayMachineAllApparmorApparmorMachine">AppArmor</string>
+      <string id="UbuntuDisplayMachine2210ApparmorApparmorMachine">AppArmor</string>
+      <string id="UbuntuDisplayMachine2204ApparmorApparmorMachine">AppArmor</string>
+      <string id="UbuntuDisplayMachine2004ApparmorApparmorMachine">AppArmor</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">If the ambient light sensor functionality is enabled.
 
 - Type: dconf
@@ -1921,6 +1945,22 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <checkBox refId="UbuntuOverrideElemMachine2004ScriptsShutdown" defaultChecked="false">Override value for 20.04:</checkBox>
         
         <multiTextBox refId="UbuntuElemMachine2004ScriptsShutdown" defaultHeight="5" />
+      </presentation>
+      <presentation id="UbuntuPresentationMachineApparmorApparmorMachine">
+        <text>AppArmor</text>
+        <multiTextBox refId="UbuntuElemMachineAllApparmorApparmorMachine" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210ApparmorApparmorMachine" defaultChecked="false">Override value for 22.10:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2210ApparmorApparmorMachine" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204ApparmorApparmorMachine" defaultChecked="false">Override value for 22.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2204ApparmorApparmorMachine" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004ApparmorApparmorMachine" defaultChecked="false">Override value for 20.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2004ApparmorApparmorMachine" defaultHeight="5" />
       </presentation>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">
         <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Enable the ALS sensor</checkBox>

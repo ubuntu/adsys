@@ -59,6 +59,9 @@
     <category name="UbuntuComputerScripts" displayName="$(string.UbuntuDisplayComputerScripts)">
       <parentCategory ref="UbuntuClientManagement" />
     </category>
+    <category name="UbuntuSystemWideApplicationConfinement" displayName="$(string.UbuntuDisplaySystemWideApplicationConfinement)">
+      <parentCategory ref="UbuntuClientManagement" />
+    </category>
     <category name="UbuntuPowerManagement" displayName="$(string.UbuntuDisplayPowerManagement)">
       <parentCategory ref="UbuntuClientManagement" />
     </category>
@@ -2281,6 +2284,30 @@
           <falseValue><string>false</string></falseValue>
         </boolean>
         <multiText id="UbuntuElemMachine2004ScriptsShutdown" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineApparmorApparmorMachine" class="Machine" displayName="$(string.UbuntuDisplayMachineAllApparmorApparmorMachine)" explainText="$(string.UbuntuExplainTextMachineApparmorApparmorMachine)" presentation="$(presentation.UbuntuPresentationMachineApparmorApparmorMachine)" key="Software\Policies\Ubuntu\apparmor\apparmor-machine" valueName="metaValues">
+      <parentCategory ref="UbuntuSystemWideApplicationConfinement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemMachineAllApparmorApparmorMachine" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2210ApparmorApparmorMachine" valueName="Override22.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2210ApparmorApparmorMachine" valueName="22.10" />
+        <boolean id="UbuntuOverrideElemMachine2204ApparmorApparmorMachine" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2204ApparmorApparmorMachine" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004ApparmorApparmorMachine" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2004ApparmorApparmorMachine" valueName="20.04" />
       </elements>
     </policy>
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\ambient-enabled" valueName="metaValues">
