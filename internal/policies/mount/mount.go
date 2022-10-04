@@ -132,7 +132,7 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 
 	s := strings.Join(parseEntryValues(entry), "\n")
 	if s == "" {
-		if err = m.cleanupMountsFile(ctx, username); err != nil {
+		if err = m.cleanupMountsFile(ctx, u.Uid); err != nil {
 			return err
 		}
 		return nil
