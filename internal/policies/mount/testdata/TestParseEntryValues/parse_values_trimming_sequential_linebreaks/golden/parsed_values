@@ -1,2 +1,2 @@
-- protocol://domain.com/mounpath
-- smb://otherdomain.com/mount/path
+protocol://domain.com/mounpath
+smb://otherdomain.com/mount/path
