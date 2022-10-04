@@ -94,11 +94,14 @@ func TestApplyPolicy(t *testing.T) {
 
 		/***************************** USER ****************************/
 		// Error cases.
-		"error when user is not found":                  {objectName: "dont exist", wantErr: true},
-		"error when user has invalid uid":               {userReturnedUID: "invalid", wantErr: true},
-		"error when user has invalid gid":               {userReturnedGID: "invalid", wantErr: true},
-		"error when userDir has invalid permissions":    {readOnlyUsersDir: true, wantErr: true},
-		"error when path already exists as a directory": {pathAlreadyExists: true, wantErr: true},
+		"error when user is not found":                                               {objectName: "dont exist", wantErr: true},
+		"error when user has invalid uid":                                            {userReturnedUID: "invalid", wantErr: true},
+		"error when user has invalid gid":                                            {userReturnedGID: "invalid", wantErr: true},
+		"error when userDir has invalid permissions":                                 {readOnlyUsersDir: true, wantErr: true},
+		"error when path already exists as a directory":                              {pathAlreadyExists: true, wantErr: true},
+		"error when cleanup with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
+		"error when cleanup with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
+		"error when cleanup with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
 	}
 
 	u, err := user.Current()
@@ -152,6 +155,10 @@ func TestApplyPolicy(t *testing.T) {
 			if tc.pathAlreadyExists {
 				err := os.MkdirAll(filepath.Join(runDir, "users", u.Uid, "mounts"), 0750)
 				require.NoError(t, err, "Setup: Expected no error when creating mounts dir for tests.")
+				// In order to force the failure, we need to add a file in the directory to make os.Remove return
+				// an error when trying to remove a non empty directory.
+				err = os.WriteFile(filepath.Join(runDir, "users", u.Uid, "mounts", "not_empty"), []byte("not empty"), 0600)
+				require.NoError(t, err, "Setup: Expected to create file inside already existent path for tests.")
 			}
 
 			m, err := mount.New(runDir, opts...)
