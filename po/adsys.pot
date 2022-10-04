@@ -452,11 +452,11 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/manager.go:198
+#: internal/policies/manager.go:209
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:206
+#: internal/policies/manager.go:217
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -709,6 +709,11 @@ msgstr ""
 msgid "can't apply gdm policy"
 msgstr ""
 
+#: internal/policies/mount/mount.go:71
+#, c-format
+msgid "can't apply mount policy to %s"
+msgstr ""
+
 #: internal/policies/privilege/privilege.go:58
 #, c-format
 msgid "can't apply privilege policy to %s"
@@ -733,7 +738,8 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/policies.go:434 internal/policies/scripts/scripts.go:344
+#: internal/policies/mount/mount.go:200 internal/policies/policies.go:434
+#: internal/policies/scripts/scripts.go:344
 msgid "can't chown %q"
 msgstr ""
 
@@ -754,7 +760,7 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:90
+#: internal/policies/manager.go:92
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
@@ -772,6 +778,10 @@ msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:455
 msgid "can't create destination directory for AD policies: %v"
+msgstr ""
+
+#: internal/policies/mount/mount.go:191
+msgid "can't create directory %q: %v"
 msgstr ""
 
 #: internal/policies/scripts/scripts.go:326
@@ -797,6 +807,10 @@ msgstr ""
 
 #: internal/ad/ad.go:409
 msgid "can't create symlink for caching"
+msgstr ""
+
+#: internal/policies/mount/mount.go:130
+msgid "can't create user directory %q for %q: %v"
 msgstr ""
 
 #: internal/policies/policies.go:50
@@ -1007,11 +1021,16 @@ msgstr ""
 msgid "could not read chapter %q: %v"
 msgstr ""
 
+#: internal/policies/mount/mount.go:116
+msgid "could not retrieve user for %q: %w"
+msgstr ""
+
+#: internal/policies/mount/mount.go:122
 #: internal/policies/scripts/scripts.go:108
 msgid "couldn't convert %q to a valid gid for %q"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:137
+#: internal/authorizer/authorizer.go:137 internal/policies/mount/mount.go:119
 #: internal/policies/scripts/scripts.go:105
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
@@ -1152,7 +1171,11 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/manager.go:149
+#: internal/policies/mount/mount.go:109
+msgid "failed to apply policy for user %q"
+msgstr ""
+
+#: internal/policies/manager.go:158
 msgid "failed to apply policy to %q"
 msgstr ""
 
@@ -1160,7 +1183,11 @@ msgstr ""
 msgid "failed to change directories to watch"
 msgstr ""
 
-#: internal/policies/manager.go:183
+#: internal/policies/mount/mount.go:45
+msgid "failed to create new mount manager"
+msgstr ""
+
+#: internal/policies/manager.go:194
 msgid "failed to dump policies for %q"
 msgstr ""
 
@@ -1173,7 +1200,7 @@ msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:223
+#: internal/policies/manager.go:234
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -1253,6 +1280,11 @@ msgstr ""
 
 #: internal/watcher/watcher.go:203
 msgid "failed to watch directory %q: %v"
+msgstr ""
+
+#: internal/policies/mount/mount.go:169
+#, c-format
+msgid "failed when writing file %s"
 msgstr ""
 
 #: cmd/adwatchd/commands/run.go:62
@@ -1369,7 +1401,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:201 internal/policies/manager.go:212
+#: internal/policies/manager.go:212 internal/policies/manager.go:223
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -1416,7 +1448,7 @@ msgstr ""
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:237
+#: internal/policies/manager.go:248
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
