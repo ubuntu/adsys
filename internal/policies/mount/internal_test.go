@@ -6,11 +6,11 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/testutils"
-	"gopkg.in/yaml.v3"
 )
 
 var Update bool
@@ -43,10 +43,7 @@ func TestParseEntryValues(t *testing.T) {
 			got := parseEntryValues(EntriesForTests[tc.entry])
 
 			gotPath := t.TempDir()
-			marshaledGot, err := yaml.Marshal(got)
-			require.NoError(t, err, "Setup: Failed to marshal the result")
-
-			err = os.WriteFile(filepath.Join(gotPath, "parsed_values"), marshaledGot, 0600)
+			err := os.WriteFile(filepath.Join(gotPath, "parsed_values"), []byte(strings.Join(got, "\n")), 0600)
 			require.NoError(t, err, "Setup: Failed to write the result")
 
 			goldenPath := filepath.Join("testdata", t.Name(), "golden")
