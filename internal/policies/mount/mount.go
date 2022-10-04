@@ -71,6 +71,9 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	defer decorate.OnError(&err, i18n.G("can't apply mount policy to %s"), objectName)
 
 	if len(entries) == 0 {
+		if err := m.cleanup(ctx, objectName, isComputer); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -85,58 +88,53 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	m.mountsMu[objectName].Lock()
 	defer m.mountsMu[objectName].Unlock()
 
-	for _, entry := range entries {
-		switch entry.Key {
-		case "user-mounts":
-			if isComputer {
-				break
-			}
+	if !isComputer {
+		for _, entry := range entries {
+			switch entry.Key {
+			case "user-mounts":
+				if e := m.applyUserMountsPolicy(ctx, objectName, entry); e != nil {
+					err = e
+				}
 
-			if e := m.applyUserPolicy(ctx, objectName, entry); e != nil {
-				err = e
+			default:
+				log.Debugf(ctx, "Key %q is currently not supported by the mount manager", entry.Key)
 			}
-
-		default:
-			log.Debugf(ctx, "Key %q is currently not supported by the mount manager", entry.Key)
 		}
 	}
 
 	return err
 }
 
-func (m *Manager) applyUserPolicy(ctx context.Context, username string, entry entry.Entry) (err error) {
+func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, entry entry.Entry) (err error) {
 	defer decorate.OnError(&err, i18n.G("failed to apply policy for user %q"), username)
 
 	log.Debugf(ctx, "Applying mount policy to user %q", username)
 
 	var uid, gid int
-	usr, err := m.userLookup(username)
+	u, err := m.userLookup(username)
 	if err != nil {
 		return fmt.Errorf(i18n.G("could not retrieve user for %q: %w"), err)
 	}
-	if uid, err = strconv.Atoi(usr.Uid); err != nil {
-		return fmt.Errorf(i18n.G("couldn't convert %q to a valid uid for %q"), usr.Uid, username)
+	if uid, err = strconv.Atoi(u.Uid); err != nil {
+		return fmt.Errorf(i18n.G("couldn't convert %q to a valid uid for %q"), u.Uid, username)
 	}
-	if gid, err = strconv.Atoi(usr.Gid); err != nil {
-		return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), usr.Gid, username)
+	if gid, err = strconv.Atoi(u.Gid); err != nil {
+		return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), u.Gid, username)
 	}
 
-	objectPath := filepath.Join(m.runDir, "users", usr.Uid)
+	objectPath := filepath.Join(m.runDir, "users", u.Uid)
 	mountsPath := filepath.Join(objectPath, "mounts")
 
-	// Removes the current mounts file, if it exists, before continuing applying the policy.
-	if err = os.Remove(mountsPath); err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
-	}
-
-	// This creates userDir directory.
-	// We chown userDir to uid:gid of the user. Nothing is done for the machine
+	// This creates the user directory and set its ownership to the current user.
 	if err := mkdirAllWithUIDGID(objectPath, uid, gid); err != nil {
 		return fmt.Errorf(i18n.G("can't create user directory %q for %q: %v"), objectPath, username, err)
 	}
 
 	s := strings.Join(parseEntryValues(entry), "\n")
 	if s == "" {
+		if err = m.cleanupMountsFile(ctx, username); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -212,4 +210,36 @@ func chown(p string, f *os.File, uid, gid int) (err error) {
 	}
 
 	return f.Chown(uid, gid)
+}
+
+// cleanup removes the files generated when applying the mount policy to an object.
+func (m *Manager) cleanup(ctx context.Context, objectName string, isComputer bool) (err error) {
+	defer decorate.OnError(&err, "failed to clean up mount policy files for %q", objectName)
+
+	log.Debugf(ctx, "Cleaning up mount policy files for %q", objectName)
+
+	if !isComputer {
+		var u *user.User
+		if u, err = m.userLookup(objectName); err != nil {
+			return err
+		}
+		err = m.cleanupMountsFile(ctx, u.Uid)
+	}
+	return err
+}
+
+// cleanupMountsFile removes the mounts file, if there is any, created for the user with the specified uid.
+func (m *Manager) cleanupMountsFile(ctx context.Context, uid string) (err error) {
+	defer decorate.OnError(&err, "failed to clean up mounts file")
+
+	log.Debugf(ctx, "Cleaning up mounts file for user with uid %q", uid)
+
+	p := filepath.Join(m.runDir, "users", uid, "mounts")
+
+	// Since the function might be called even if there is not a mounts file, we
+	// must ignore the ErrNotExist returned by os.Remove.
+	if err := os.Remove(p); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return nil
 }
