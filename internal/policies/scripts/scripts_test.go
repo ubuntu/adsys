@@ -178,7 +178,7 @@ func TestApplyPolicy(t *testing.T) {
 	}
 }
 
-// makeCurrentUIDIndepmakeIndependentOfCurrentUIDendent renames any file or directory which exactly match uid in path and replace it with 4242.
+// makeIndependentOfCurrentUID renames any file or directory which exactly match uid in path and replace it with 4242.
 func makeIndependentOfCurrentUID(t *testing.T, path string, uid string) {
 	t.Helper()
 
