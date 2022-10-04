@@ -70,13 +70,6 @@ func New(runDir string, opts ...Option) (m *Manager, err error) {
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't apply mount policy to %s"), objectName)
 
-	if len(entries) == 0 {
-		if err := m.cleanup(ctx, objectName, isComputer); err != nil {
-			return err
-		}
-		return nil
-	}
-
 	log.Debugf(ctx, "Applying mount policy to %s", objectName)
 
 	// Mutexes are per user1, user2, computer
@@ -87,6 +80,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	m.muMu.Unlock()
 	m.mountsMu[objectName].Lock()
 	defer m.mountsMu[objectName].Unlock()
+
+	if len(entries) == 0 {
+		if err := m.cleanup(ctx, objectName, isComputer); err != nil {
+			return err
+		}
+		return nil
+	}
 
 	if !isComputer {
 		for _, entry := range entries {
