@@ -72,7 +72,7 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 
 		"error when invalid uid":                               {uid: "-150", wantErr: true},
 		"error when invalid gid":                               {gid: "-150", wantErr: true},
-		"fails when writing on a dir with invalid permissions": {readOnlyDir: true, wantErr: true},
+		"error when writing on a dir with invalid permissions": {readOnlyDir: true, wantErr: true},
 		"error when path already exists as a directory":        {pathAlreadyExists: true, wantErr: true},
 	}
 
@@ -112,7 +112,7 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 				require.NoError(t, err, "Setup: Failed to set up pre existent directory for testing")
 
 				t.Cleanup(func() {
-					//nolint:errcheck // This happens in a controlled environment
+					//nolint:errcheck // We created the folder for the test, so we know this function will not return an error.
 					_ = os.Remove(filePath)
 				})
 			}
