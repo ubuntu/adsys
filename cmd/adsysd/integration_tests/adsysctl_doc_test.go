@@ -45,8 +45,8 @@ func TestDocChapter(t *testing.T) {
 		"Get documentation is always authorized": {systemAnswer: "polkit_no", chapter: baseName},
 
 		// Error cases
-		"Daemon not responding":                        {daemonNotStarted: true, wantErr: true},
-		"Nonexistent chapter":                          {chapter: "nonexistent-chapter", wantErr: true},
+		"Error on daemon not responding":               {daemonNotStarted: true, wantErr: true},
+		"Error on nonexistent chapter":                 {chapter: "nonexistent-chapter", wantErr: true},
 		"Error on exact name matching with wrong case": {chapter: fullName, modifyCase: true, wantErr: true},
 		"Error on documentation in unknown format":     {format: "unknown format", wantErr: true},
 	}

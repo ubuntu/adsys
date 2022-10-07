@@ -32,12 +32,13 @@ func TestPolicyAdmx(t *testing.T) {
 
 		"Accept distro option": {arg: "lts-only", distroOption: "Ubuntu", systemAnswer: "polkit_yes"},
 
-		"Need one valid argument": {systemAnswer: "polkit_yes", wantErr: true},
-
 		"Admx generation is always allowed": {arg: "lts-only", systemAnswer: "polkit_no"},
-		"Fail on non stored distro":         {arg: "lts-only", distroOption: "Tartanpion", systemAnswer: "polkit_yes", wantErr: true},
-		"Fail on invalid arg":               {arg: "something", systemAnswer: "polkit_yes", wantErr: true},
-		"Daemon not responding":             {arg: "lts-only", daemonNotStarted: true, wantErr: true},
+
+		// Error cases
+		"Error on none valid argument":   {systemAnswer: "polkit_yes", wantErr: true},
+		"Error on invalid arg":           {arg: "something", systemAnswer: "polkit_yes", wantErr: true},
+		"Error on non stored distro":     {arg: "lts-only", distroOption: "Tartanpion", systemAnswer: "polkit_yes", wantErr: true},
+		"Error on daemon not responding": {arg: "lts-only", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -560,10 +561,10 @@ func TestPolicyUpdate(t *testing.T) {
 			}},
 
 		// Error cases
-		"User needs machine to be updated": {wantErr: true},
-		"Polkit denied updating self":      {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating other":     {systemAnswer: "polkit_no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating machine":   {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
+		"Error on trying to apply user policies before updating the machine": {wantErr: true},
+		"Error on Polkit denying updating self":                              {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
+		"Error on Polkit denying updating other":                             {systemAnswer: "polkit_no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
+		"Error on Polkit denying updating machine":                           {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
 		"Error on dynamic AD returning nothing": {
 			initState:             "localhost-uptodate",
 			dynamicADServerDomain: "online_no_active_server",
