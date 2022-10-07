@@ -444,6 +444,10 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
+#: internal/policies/apparmor/apparmor.go:110
+msgid "No valid entry found for the apparmor machine policy"
+msgstr ""
+
 #: internal/adsysservice/service.go:134
 msgid "None"
 msgstr ""
@@ -452,11 +456,11 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/manager.go:209
+#: internal/policies/manager.go:226
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:217
+#: internal/policies/manager.go:234
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -696,8 +700,26 @@ msgstr ""
 msgid "another instance of the %s service is already running"
 msgstr ""
 
+#. objectDir = "users"
+#: internal/policies/apparmor/apparmor.go:72
+msgid "apparmor policies are currently only supported for computers"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:254
+msgid "apparmor profile %q is a directory and not a file"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:251
+msgid "apparmor profile %q is not accessible: %w"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:188
 msgid "call to polkit failed: %v"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:66
+#, c-format
+msgid "can't apply apparmor policy to %s"
 msgstr ""
 
 #: internal/policies/dconf/dconf.go:62
@@ -760,12 +782,16 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:92
+#: internal/policies/manager.go:103
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:466 internal/ad/admxgen/admxgen.go:479
 msgid "can't create admx file: %v"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:115
+msgid "can't create apparmor directory %q: %v"
 msgstr ""
 
 #: internal/adsysservice/client.go:26
@@ -908,6 +934,24 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
+#: internal/policies/apparmor/apparmor.go:125
+msgid "can't remove new apparmor directory %q: %v"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:121
+#: internal/policies/apparmor/apparmor.go:172
+msgid "can't remove old apparmor directory %q: %v"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:270
+msgid "can't remove unused apparmor assets"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:137
+#: internal/policies/apparmor/apparmor.go:143
+msgid "can't rename apparmor directory %q to %q: %v"
+msgstr ""
+
 #: internal/policies/scripts/scripts.go:244
 #, c-format
 msgid "can't run scripts listed in %s"
@@ -942,6 +986,10 @@ msgstr ""
 
 #: internal/watcher/watcher.go:152
 msgid "can't stop service"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:200
+msgid "can't unload apparmor rules"
 msgstr ""
 
 #: internal/watcher/watcher.go:170
@@ -1175,7 +1223,7 @@ msgstr ""
 msgid "failed to apply policy for user %q"
 msgstr ""
 
-#: internal/policies/manager.go:158
+#: internal/policies/manager.go:174
 msgid "failed to apply policy to %q"
 msgstr ""
 
@@ -1187,7 +1235,7 @@ msgstr ""
 msgid "failed to create new mount manager"
 msgstr ""
 
-#: internal/policies/manager.go:194
+#: internal/policies/manager.go:211
 msgid "failed to dump policies for %q"
 msgstr ""
 
@@ -1200,7 +1248,7 @@ msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:234
+#: internal/policies/manager.go:251
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -1210,6 +1258,12 @@ msgstr ""
 
 #: internal/watchdservice/watchdservice.go:347
 msgid "failed to install service"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:166
+msgid ""
+"failed to load apparmor rules: %w\n"
+"%s"
 msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:275
@@ -1272,6 +1326,12 @@ msgstr ""
 
 #: internal/watchdservice/watchdservice.go:365
 msgid "failed to uninstall service"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:228
+msgid ""
+"failed to unload apparmor rules: %w\n"
+"%s"
 msgstr ""
 
 #: cmd/adwatchd/commands/main.go:115
@@ -1401,7 +1461,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:212 internal/policies/manager.go:223
+#: internal/policies/manager.go:229 internal/policies/manager.go:240
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -1448,7 +1508,7 @@ msgstr ""
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:248
+#: internal/policies/manager.go:265
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
