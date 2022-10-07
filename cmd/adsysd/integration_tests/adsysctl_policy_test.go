@@ -561,10 +561,10 @@ func TestPolicyUpdate(t *testing.T) {
 			}},
 
 		// Error cases
-		"Error on trying to apply user policies before updating the machine": {wantErr: true},
-		"Error on Polkit denying updating self":                              {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
-		"Error on Polkit denying updating other":                             {systemAnswer: "polkit_no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
-		"Error on Polkit denying updating machine":                           {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
+		"Error on applying user policies before updating the machine": {wantErr: true},
+		"Error on Polkit denying updating self":                       {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
+		"Error on Polkit denying updating other":                      {systemAnswer: "polkit_no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
+		"Error on Polkit denying updating machine":                    {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
 		"Error on dynamic AD returning nothing": {
 			initState:             "localhost-uptodate",
 			dynamicADServerDomain: "online_no_active_server",
