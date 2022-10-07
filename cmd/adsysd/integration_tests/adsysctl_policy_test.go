@@ -595,6 +595,25 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// This is will make the scripts fail as well, sadly. But currently there's
+		// no way to fail only the mount manager, we should look at it.
+		"Error on mount apply failing": {
+			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{src: "UserIntegrationTest@example.com.krb5"},
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			readOnlyDirs: []string{
+				"run/users",
+			},
+			wantErr: true,
+		},
 		"Error on host is offline, without policies": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
