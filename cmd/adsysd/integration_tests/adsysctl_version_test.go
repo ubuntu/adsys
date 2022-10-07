@@ -17,7 +17,9 @@ func TestVersion(t *testing.T) {
 	}{
 		"Get client version":           {systemAnswer: "polkit_yes"},
 		"Version is always authorized": {systemAnswer: "polkit_no"},
-		"Daemon not responding":        {daemonNotStarted: true, wantErr: true},
+
+		// Error cases
+		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
