@@ -152,7 +152,7 @@ func TestApplyPolicy(t *testing.T) {
 				systemctlCmd = append(systemctlCmd, "-Exit1-")
 			}
 
-			sat := sat{err: tc.saveAssetsError}
+			mockAssetsDumper := testutils.MockAssetsDumper{T: t, Err: tc.saveAssetsError, Path: "scripts/"}
 
 			m, err := scripts.New(runDir,
 				scripts.WithSystemCtlCmd(systemctlCmd),
@@ -164,7 +164,7 @@ func TestApplyPolicy(t *testing.T) {
 				testutils.MakeReadOnly(t, filepath.Join(runDir, "users"))
 			}
 
-			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.computer, tc.entries, sat.mockSaveAssetsTo)
+			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.computer, tc.entries, mockAssetsDumper.SaveAssetsTo)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")
 				return
@@ -311,21 +311,6 @@ func TestMockSystemCtl(t *testing.T) {
 		fmt.Println("EXIT 1 requested in mock")
 		os.Exit(1)
 	}
-}
-
-type sat struct {
-	err bool
-}
-
-// mockSaveAssetsTo returns a static mock directory with scripts.
-func (s sat) mockSaveAssetsTo(ctx context.Context, relSrc, dest string, uid int, gid int) (err error) {
-	if s.err {
-		return errors.New("mockSaveAssetsTo error")
-	}
-	if relSrc != "scripts/" {
-		return fmt.Errorf("mockSaveAssetsTo: unexpected relSrc: %q", relSrc)
-	}
-	return shutil.CopyTree("testdata/sysvol-scripts", dest, nil)
 }
 
 func mockSystemCtlCmd(t *testing.T, args ...string) []string {
