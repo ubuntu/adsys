@@ -51,6 +51,8 @@ const (
 	DefaultSudoersDir = "/etc/sudoers.d"
 	// DefaultPolicyKitDir is the default directory for policykit configuration and rules.
 	DefaultPolicyKitDir = "/etc/polkit-1"
+	// DefaultApparmorDir is the default directory for apparmor configuration.
+	DefaultApparmorDir = "/etc/apparmor.d/adsys"
 
 	// SSSDDbusRegisteredName is the well-known name used on dbus.
 	SSSDDbusRegisteredName = "org.freedesktop.sssd.infopipe"

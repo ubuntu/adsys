@@ -13,6 +13,7 @@ import (
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies/apparmor"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/policies/gdm"
@@ -31,6 +32,7 @@ type Manager struct {
 	scripts   *scripts.Manager
 	mount     *mount.Manager
 	gdm       *gdm.Manager
+	apparmor  *apparmor.Manager
 
 	subscriptionDbus dbus.BusObject
 }
@@ -41,6 +43,7 @@ type options struct {
 	sudoersDir   string
 	policyKitDir string
 	runDir       string
+	apparmorDir  string
 	gdm          *gdm.Manager
 }
 
@@ -87,15 +90,24 @@ func WithRunDir(p string) Option {
 	}
 }
 
+// WithApparmorDir specifies a personalized apparmor directory.
+func WithApparmorDir(p string) Option {
+	return func(o *options) error {
+		o.apparmorDir = p
+		return nil
+	}
+}
+
 // NewManager returns a new manager with all default policy handlers.
 func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
 
 	// defaults
 	args := options{
-		cacheDir: consts.DefaultCacheDir,
-		runDir:   consts.DefaultRunDir,
-		gdm:      nil,
+		cacheDir:    consts.DefaultCacheDir,
+		runDir:      consts.DefaultRunDir,
+		apparmorDir: consts.DefaultApparmorDir,
+		gdm:         nil,
 	}
 	// applied options (including dconf manager used by gdm)
 	for _, o := range opts {
@@ -124,6 +136,9 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		return nil, err
 	}
 
+	// apparmor manager
+	apparmorManager := apparmor.New(args.apparmorDir)
+
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {
 		if args.gdm, err = gdm.New(gdm.WithDconf(dconfManager)); err != nil {
@@ -146,6 +161,7 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 		privilege: privilegeManager,
 		scripts:   scriptsManager,
 		mount:     mountManager,
+		apparmor:  apparmorManager,
 		gdm:       args.gdm,
 
 		subscriptionDbus: subscriptionDbus,
@@ -171,8 +187,9 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 		return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"], pols.SaveAssetsTo)
 	})
 	g.Go(func() error { return m.mount.ApplyPolicy(ctx, objectName, isComputer, rules["mount"]) })
-
-	// TODO g.Go(func() error { return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"]) })
+	g.Go(func() error {
+		return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"], pols.SaveAssetsTo)
+	})
 	if err := g.Wait(); err != nil {
 		return err
 	}
@@ -289,4 +306,5 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) {
 	rules["privilege"] = nil
 	rules["scripts"] = nil
 	rules["mount"] = nil
+	rules["apparmor"] = nil
 }

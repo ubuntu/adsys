@@ -1,0 +1,6 @@
+-R
+#TMPDIR#/machine/nested/usr.bin.absent
+#TMPDIR#/machine/nested/usr.bin.baz
+#TMPDIR#/machine/usr.bin.absent
+#TMPDIR#/machine/usr.bin.bar
+#TMPDIR#/machine/usr.bin.foo
