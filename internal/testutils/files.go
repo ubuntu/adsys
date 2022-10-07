@@ -98,7 +98,12 @@ func MakeReadOnly(t *testing.T, dest string) {
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := os.Chmod(dest, mode)
+		_, err := os.Stat(dest)
+		if errors.Is(err, os.ErrNotExist) {
+			return
+		}
+
+		err = os.Chmod(dest, mode)
 		require.NoError(t, err)
 	})
 }
