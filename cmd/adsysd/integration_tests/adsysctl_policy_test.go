@@ -928,7 +928,7 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "users"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", hostname), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "machine"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "machine"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "machine"), update)
 		})
 	}
 }
