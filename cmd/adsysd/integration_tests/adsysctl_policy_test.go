@@ -596,6 +596,14 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		"Error on mount apply failing": {
+			initState: "localhost-uptodate",
+			readOnlyDirs: []string{
+				// In order to make the mount manager fail, we need create a not empty mounts directory inside the user folder.
+				fmt.Sprintf("run/users/%s/mounts", currentUID),
+			},
+			wantErr: true,
+		},
 		"Error on host is offline, without policies": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
@@ -833,6 +841,8 @@ func TestPolicyUpdate(t *testing.T) {
 			// Some tests will need read only dirs to create failures
 			for _, k := range tc.readOnlyDirs {
 				require.NoError(t, os.MkdirAll(filepath.Join(adsysDir, k), 0750), "Setup: could not create read only dir")
+				// Some tests will need the read only dirs to not be empty in order to fail
+				require.NoError(t, os.WriteFile(filepath.Join(adsysDir, k, "filler"), []byte("lorem ipsum"), 0600), "Setup: could not create filler file")
 				testutils.MakeReadOnly(t, filepath.Join(adsysDir, k))
 			}
 
