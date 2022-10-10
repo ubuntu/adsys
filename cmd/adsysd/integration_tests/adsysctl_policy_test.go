@@ -810,11 +810,19 @@ func TestPolicyUpdate(t *testing.T) {
 				require.NoError(t, err, "Setup: could not remove adsysDir")
 				err := shutil.CopyTree(filepath.Join("testdata", "PolicyUpdate", "states", tc.initState), adsysDir, &shutil.CopyTreeOptions{CopyFunction: shutil.Copy})
 				require.NoError(t, err, "Setup: could not copy initial state")
-				// rename HOST directory in destination:
+
+				// rename HOST and CURRENT_UID directory in destination:
 				// CopyTree does not use its CopyFunction for directories.
 				src := filepath.Join(adsysDir, "cache", "policies", "HOST")
 				dst := strings.ReplaceAll(src, "HOST", hostname)
 				require.NoError(t, os.Rename(src, dst), "Setup: can't renamed HOST directory to current hostname")
+
+				src = filepath.Join(adsysDir, "run", "users", "CURRENT_UID")
+				dst = strings.ReplaceAll(src, "CURRENT_UID", currentUID)
+				if _, err := os.Stat(src); err == nil {
+					require.NoError(t, os.Rename(src, dst),
+						"Setup: can't rename current user directory to generic CURRENT_UID")
+				}
 			}
 
 			// Some tests will need some initial state assets
