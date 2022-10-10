@@ -28,11 +28,13 @@ func TestServiceStop(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Stop daemon":           {daemonAnswer: "polkit_yes"},
-		"Stop daemon denied":    {daemonAnswer: "polkit_no", wantErr: true},
-		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
+		"Stop daemon": {daemonAnswer: "polkit_yes"},
 
 		"Force stop doesn’t exit on error": {daemonAnswer: "polkit_yes", force: true, wantErr: false},
+
+		// Error cases
+		"Error on stop daemon denied":    {daemonAnswer: "polkit_no", wantErr: true},
+		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -154,14 +156,15 @@ func TestServiceCat(t *testing.T) {
 		wantErr bool
 	}{
 		"Cat other clients and daemon - cover daemon": {systemAnswer: "polkit_yes"},
-		"Cat denied - cover daemon":                   {systemAnswer: "polkit_no", wantErr: true},
-		"Daemon not responding - cover daemon":        {daemonNotStarted: true, wantErr: true},
-
 		"Cat other clients and daemon - cover client": {systemAnswer: "polkit_yes", coverCatClient: true},
-		"Cat denied - cover client":                   {systemAnswer: "polkit_no", coverCatClient: true, wantErr: true},
-		"Daemon not responding - cover client":        {daemonNotStarted: true, coverCatClient: true, wantErr: true},
 
 		"Multiple cats": {multipleCats: true, systemAnswer: "polkit_yes"},
+
+		// Error cases
+		"Error on cat denied - cover daemon":            {systemAnswer: "polkit_no", wantErr: true},
+		"Error on cat denied - cover client":            {systemAnswer: "polkit_no", coverCatClient: true, wantErr: true},
+		"Error on daemon not responding - cover daemon": {daemonNotStarted: true, wantErr: true},
+		"Error on daemon not responding - cover client": {daemonNotStarted: true, coverCatClient: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -292,6 +295,7 @@ func TestServiceStatus(t *testing.T) {
 		// Ubuntu pro subscription
 		"Ubuntu Pro subscription is not active": {systemAnswer: "subscription_disabled"},
 
+		// Error cases
 		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {

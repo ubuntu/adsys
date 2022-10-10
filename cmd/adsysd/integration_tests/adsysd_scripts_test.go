@@ -34,6 +34,7 @@ func TestAdsysdRunScripts(t *testing.T) {
 		"one missing script is allowed":           {orderFile: "script-missing"},
 		"failing script is allowed":               {orderFile: "script-failing"},
 
+		// Error cases
 		"error on order file not existing": {orderFile: "missing", wantErr: true},
 		"error on directory not ready":     {orderFile: "simple", notready: true, wantErr: true},
 	}

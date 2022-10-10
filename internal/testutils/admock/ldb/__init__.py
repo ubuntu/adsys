@@ -18,7 +18,7 @@ accounts = {}
 # OU=RnD,OU=IT Dept,DC=domain,DC=com
 
 #  /example
-#            -- Default Domain Policy    <- UserAtRoot
+#            -- {31B2F340-016D-11D2-945F-00C04FB984F9} "Default Domain Policy"    <- UserAtRoot
 #  /example/IT
 ##            -- IT GPO
 #  /example/IT/ITDep1                   <- hostname1   <- hostnameWithTru // truncated computer name

@@ -1,7 +1,7 @@
 gpos:
-- id: '{75545F76-DEC2-4ADA-B7B8-D5209FD48727}'
-  name: GPO for Integration Test User
-  rules:
+  - id: "{75545F76-DEC2-4ADA-B7B8-D5209FD48727}"
+    name: GPO for Integration Test User
+    rules:
       dconf:
         - key: org/gnome/desktop/background/picture-options
           value: none
@@ -25,9 +25,9 @@ gpos:
       scripts:
         - key: logon
           value: |
-            script-user-logon
+            old-dir/old-other-script
           disabled: false
           strategy: append
-- id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
-  name: Default Domain Policy
-  rules: {}
+  - id: "{31B2F340-016D-11D2-945F-00C04FB984F9}"
+    name: Default Domain Policy
+    rules: {}

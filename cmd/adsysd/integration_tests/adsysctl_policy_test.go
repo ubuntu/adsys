@@ -32,12 +32,13 @@ func TestPolicyAdmx(t *testing.T) {
 
 		"Accept distro option": {arg: "lts-only", distroOption: "Ubuntu", systemAnswer: "polkit_yes"},
 
-		"Need one valid argument": {systemAnswer: "polkit_yes", wantErr: true},
-
 		"Admx generation is always allowed": {arg: "lts-only", systemAnswer: "polkit_no"},
-		"Fail on non stored distro":         {arg: "lts-only", distroOption: "Tartanpion", systemAnswer: "polkit_yes", wantErr: true},
-		"Fail on invalid arg":               {arg: "something", systemAnswer: "polkit_yes", wantErr: true},
-		"Daemon not responding":             {arg: "lts-only", daemonNotStarted: true, wantErr: true},
+
+		// Error cases
+		"Error on none valid argument":   {systemAnswer: "polkit_yes", wantErr: true},
+		"Error on invalid arg":           {arg: "something", systemAnswer: "polkit_yes", wantErr: true},
+		"Error on non stored distro":     {arg: "lts-only", distroOption: "Tartanpion", systemAnswer: "polkit_yes", wantErr: true},
+		"Error on daemon not responding": {arg: "lts-only", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -235,11 +236,11 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "localhost-uptodate",
 		},
 		"Other user, first time": {
-			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@example.com.krb5"},
+				{src: "userintegrationtest@example.com.krb5"},
 				{
 					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
@@ -272,12 +273,12 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"Other user, update old data": {
-			args:       []string{"userintegrationtest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "old-data",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "UserIntegrationTest@example.com.krb5",
+					src:          "userintegrationtest@example.com.krb5",
 					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
@@ -287,12 +288,12 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			}},
 		"Other user with mixed case, update old data": {
-			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"UserIntegrationTest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "old-data",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "UserIntegrationTest@example.com.krb5",
+					src:          "userintegrationtest@example.com.krb5",
 					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
@@ -330,7 +331,7 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "UserIntegrationTest@example.com.krb5",
+					src:          "userintegrationtest@example.com.krb5",
 					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
@@ -460,6 +461,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"dconf/profile/gdm",
 				"sudoers.d",
 				"polkit-1",
+				"run/machine",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -473,15 +475,15 @@ func TestPolicyUpdate(t *testing.T) {
 			args:                  []string{"-m"},
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
-			// clean gpos cache, but keep machine ones and user policies
+			// clean gpos for machine cache, but keep machine ones and user policies
 			clearDirs: []string{
 				"dconf/db/machine.d",
 				"dconf/profile/gdm",
 				"sudoers.d",
 				"polkit-1",
+				"run/machine",
 				"cache/sysvol/Policies/{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}",
-				"cache/sysvol/Policies/{B8D10A86-0B78-4899-91AF-6F0124ECEB48}",
-				"cache/sysvol/Policies/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
+				"cache/sysvol/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -509,11 +511,11 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"KRB5CCNAME is ignored when requesting ticket on other user": {
-			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "NonexistentTicket.krb5",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@example.com.krb5"},
+				{src: "userintegrationtest@example.com.krb5"},
 				{
 					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
@@ -560,10 +562,10 @@ func TestPolicyUpdate(t *testing.T) {
 			}},
 
 		// Error cases
-		"User needs machine to be updated": {wantErr: true},
-		"Polkit denied updating self":      {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating other":     {systemAnswer: "polkit_no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
-		"Polkit denied updating machine":   {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
+		"Error on applying user policies before updating the machine": {wantErr: true},
+		"Error on Polkit denying updating self":                       {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
+		"Error on Polkit denying updating other":                      {systemAnswer: "polkit_no", args: []string{"userintegrationtest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
+		"Error on Polkit denying updating machine":                    {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
 		"Error on dynamic AD returning nothing": {
 			initState:             "localhost-uptodate",
 			dynamicADServerDomain: "online_no_active_server",
@@ -603,6 +605,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"dconf/profile/adsystestuser@example.com",
 				"sudoers.d",
 				"polkit-1",
+				"run",
 				"cache/policies/adsystestuser@example.com",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
@@ -625,11 +628,11 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr:    true,
 		},
 		"Error on non-existent ticket provided": {
-			args:       []string{"UserIntegrationTest@example.com", "NonexistentTicket.krb5"},
+			args:       []string{"userintegrationtest@example.com", "NonexistentTicket.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@example.com.krb5"},
+				{src: "userintegrationtest@example.com.krb5"},
 				{
 					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
@@ -654,12 +657,12 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr: true,
 		},
 		"Error on invalid ticket provided": {
-			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@example.com.krb5",
+					src:     "userintegrationtest@example.com.krb5",
 					invalid: true,
 				},
 				{
@@ -697,12 +700,12 @@ func TestPolicyUpdate(t *testing.T) {
 		},
 		// Incompatible options
 		"Error on all and specific user requested": {
-			args:       []string{"--all", "UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"--all", "userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@example.com.krb5",
+					src:     "userintegrationtest@example.com.krb5",
 					invalid: true,
 				},
 				{
@@ -726,12 +729,12 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr: true,
 		},
 		"Error computer and specific user requested": {
-			args:       []string{"-m", "UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"-m", "userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@example.com.krb5",
+					src:     "userintegrationtest@example.com.krb5",
 					invalid: true,
 				},
 				{
@@ -768,7 +771,7 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 				{
 					// dangling adsys symlink for this user
-					//src:          "UserIntegrationTest@example.com.krb5",
+					//src:          "userintegrationtest@example.com.krb5",
 					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
@@ -807,11 +810,19 @@ func TestPolicyUpdate(t *testing.T) {
 				require.NoError(t, err, "Setup: could not remove adsysDir")
 				err := shutil.CopyTree(filepath.Join("testdata", "PolicyUpdate", "states", tc.initState), adsysDir, &shutil.CopyTreeOptions{CopyFunction: shutil.Copy})
 				require.NoError(t, err, "Setup: could not copy initial state")
-				// rename HOST directory in destination:
+
+				// rename HOST and CURRENT_UID directory in destination:
 				// CopyTree does not use its CopyFunction for directories.
 				src := filepath.Join(adsysDir, "cache", "policies", "HOST")
 				dst := strings.ReplaceAll(src, "HOST", hostname)
 				require.NoError(t, os.Rename(src, dst), "Setup: can't renamed HOST directory to current hostname")
+
+				src = filepath.Join(adsysDir, "run", "users", "CURRENT_UID")
+				dst = strings.ReplaceAll(src, "CURRENT_UID", currentUID)
+				if _, err := os.Stat(src); err == nil {
+					require.NoError(t, os.Rename(src, dst),
+						"Setup: can't rename current user directory to generic CURRENT_UID")
+				}
 			}
 
 			// Some tests will need some initial state assets
@@ -928,7 +939,7 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "users"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", hostname), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "machine"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "machine"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "machine"), update)
 		})
 	}
 }
