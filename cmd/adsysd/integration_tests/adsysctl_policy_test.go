@@ -461,6 +461,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"dconf/profile/gdm",
 				"sudoers.d",
 				"polkit-1",
+				"run/machine",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -474,15 +475,15 @@ func TestPolicyUpdate(t *testing.T) {
 			args:                  []string{"-m"},
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
-			// clean gpos cache, but keep machine ones and user policies
+			// clean gpos for machine cache, but keep machine ones and user policies
 			clearDirs: []string{
 				"dconf/db/machine.d",
 				"dconf/profile/gdm",
 				"sudoers.d",
 				"polkit-1",
+				"run/machine",
 				"cache/sysvol/Policies/{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}",
-				"cache/sysvol/Policies/{B8D10A86-0B78-4899-91AF-6F0124ECEB48}",
-				"cache/sysvol/Policies/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",
+				"cache/sysvol/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -604,6 +605,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"dconf/profile/adsystestuser@example.com",
 				"sudoers.d",
 				"polkit-1",
+				"run",
 				"cache/policies/adsystestuser@example.com",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
