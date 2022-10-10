@@ -236,11 +236,11 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "localhost-uptodate",
 		},
 		"Other user, first time": {
-			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@example.com.krb5"},
+				{src: "userintegrationtest@example.com.krb5"},
 				{
 					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
@@ -273,12 +273,12 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"Other user, update old data": {
-			args:       []string{"userintegrationtest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "old-data",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "UserIntegrationTest@example.com.krb5",
+					src:          "userintegrationtest@example.com.krb5",
 					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
@@ -288,12 +288,12 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			}},
 		"Other user with mixed case, update old data": {
-			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"UserIntegrationTest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "old-data",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "UserIntegrationTest@example.com.krb5",
+					src:          "userintegrationtest@example.com.krb5",
 					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
@@ -331,7 +331,7 @@ func TestPolicyUpdate(t *testing.T) {
 					adsysSymlink: currentUser,
 				},
 				{
-					src:          "UserIntegrationTest@example.com.krb5",
+					src:          "userintegrationtest@example.com.krb5",
 					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
@@ -511,11 +511,11 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"KRB5CCNAME is ignored when requesting ticket on other user": {
-			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "NonexistentTicket.krb5",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@example.com.krb5"},
+				{src: "userintegrationtest@example.com.krb5"},
 				{
 					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
@@ -564,7 +564,7 @@ func TestPolicyUpdate(t *testing.T) {
 		// Error cases
 		"Error on applying user policies before updating the machine": {wantErr: true},
 		"Error on Polkit denying updating self":                       {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
-		"Error on Polkit denying updating other":                      {systemAnswer: "polkit_no", args: []string{"UserIntegrationTest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
+		"Error on Polkit denying updating other":                      {systemAnswer: "polkit_no", args: []string{"userintegrationtest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
 		"Error on Polkit denying updating machine":                    {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
 		"Error on dynamic AD returning nothing": {
 			initState:             "localhost-uptodate",
@@ -628,11 +628,11 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr:    true,
 		},
 		"Error on non-existent ticket provided": {
-			args:       []string{"UserIntegrationTest@example.com", "NonexistentTicket.krb5"},
+			args:       []string{"userintegrationtest@example.com", "NonexistentTicket.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{src: "UserIntegrationTest@example.com.krb5"},
+				{src: "userintegrationtest@example.com.krb5"},
 				{
 					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
@@ -657,12 +657,12 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr: true,
 		},
 		"Error on invalid ticket provided": {
-			args:       []string{"UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@example.com.krb5",
+					src:     "userintegrationtest@example.com.krb5",
 					invalid: true,
 				},
 				{
@@ -700,12 +700,12 @@ func TestPolicyUpdate(t *testing.T) {
 		},
 		// Incompatible options
 		"Error on all and specific user requested": {
-			args:       []string{"--all", "UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"--all", "userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@example.com.krb5",
+					src:     "userintegrationtest@example.com.krb5",
 					invalid: true,
 				},
 				{
@@ -729,12 +729,12 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr: true,
 		},
 		"Error computer and specific user requested": {
-			args:       []string{"-m", "UserIntegrationTest@example.com", "UserIntegrationTest@example.com.krb5"},
+			args:       []string{"-m", "userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:     "UserIntegrationTest@example.com.krb5",
+					src:     "userintegrationtest@example.com.krb5",
 					invalid: true,
 				},
 				{
@@ -771,7 +771,7 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 				{
 					// dangling adsys symlink for this user
-					//src:          "UserIntegrationTest@example.com.krb5",
+					//src:          "userintegrationtest@example.com.krb5",
 					adsysSymlink: "userintegrationtest@example.com",
 				},
 				{
