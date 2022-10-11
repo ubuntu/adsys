@@ -1,3 +1,4 @@
 protocol://example.com/it/mount/path
 protocol://example.com/all/other/mount/path
+protocol://example.com/all/another/path
 protocol://example.com/rnd/mount/path
