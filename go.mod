@@ -13,7 +13,7 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/golang/protobuf v1.5.2
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
-	github.com/kardianos/service v1.2.1
+	github.com/kardianos/service v1.2.2
 	github.com/muesli/termenv v0.11.1-0.20220212125758-44cd13922739
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
 	github.com/sirupsen/logrus v1.9.0
