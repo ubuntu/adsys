@@ -602,7 +602,7 @@ func TestPolicyUpdate(t *testing.T) {
 			clearDirs: []string{
 				fmt.Sprintf("run/users/%s/mounts", currentUID),
 			},
-			// This generates an error when the used path already exists as a directory
+			// This generates an error when the used path already exists as a directory instead of a file.
 			addDirs: []string{
 				fmt.Sprintf("run/users/%s/mounts/", currentUID),
 			},
