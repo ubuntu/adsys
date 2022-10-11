@@ -225,7 +225,7 @@ func TestPolicyUpdate(t *testing.T) {
 		krb5ccname            string
 		krb5ccNamesState      []krb5ccNamesWithState
 		clearDirs             []string // Removes already generated system files eg dconf db, apparmor profiles, ...
-		addPaths              []string
+		addDirs               []string
 		readOnlyDirs          []string
 		dynamicADServerDomain string
 		defaultADDomainSuffix string
@@ -603,7 +603,7 @@ func TestPolicyUpdate(t *testing.T) {
 				fmt.Sprintf("run/users/%s/mounts", currentUID),
 			},
 			// This generates an error when the used path already exists as a directory
-			addPaths: []string{
+			addDirs: []string{
 				fmt.Sprintf("run/users/%s/mounts/", currentUID),
 			},
 			wantErr: true,
@@ -844,10 +844,8 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 
 			// Some tests will need some additional paths to be created
-			for _, k := range tc.addPaths {
+			for _, k := range tc.addDirs {
 				testutils.CreatePath(t, filepath.Join(adsysDir, k)+"/")
-				_, err := os.Stat(filepath.Join(adsysDir, k))
-				require.NoError(t, err, "Setup: could not create requested path %s", filepath.Join(adsysDir, k))
 			}
 
 			// Some tests will need read only dirs to create failures
