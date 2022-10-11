@@ -58,6 +58,12 @@ gpos:
               'org.gnome.Nautilus.desktop'
           disabled: false
           meta: as
+      mount:
+        - key: user-mounts
+          value: |
+            protocol://example.com/current-old/old-mount
+          disabled: false
+          strategy: append
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy
   rules: {}
