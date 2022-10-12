@@ -141,3 +141,5 @@ fn mount_handled_callback(res: Result<(), glib::Error>) {
         Err(e) => debug!("Failed when handling mount: {}", e),
     }
 }
+
+mod test;
