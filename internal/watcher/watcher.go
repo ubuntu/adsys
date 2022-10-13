@@ -225,7 +225,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 				continue
 			}
 
-			if event.Op&fsnotify.Create == fsnotify.Create {
+			if event.Has(fsnotify.Create) {
 				fileInfo, err := os.Stat(event.Name)
 				if err != nil {
 					log.Warningf(ctx, i18n.G("Failed to stat: %s"), err)
@@ -245,16 +245,15 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			}
 
 			// Remove deleted or renamed files/directories from the watch list.
-			if event.Op&fsnotify.Remove == fsnotify.Remove || event.Op&fsnotify.Rename == fsnotify.Rename {
+			if event.Has(fsnotify.Remove) || event.Has(fsnotify.Rename) {
 				if err := fsWatcher.Remove(event.Name); err != nil {
 					log.Debugf(ctx, i18n.G("Failed to remove watcher on %q: %s"), event.Name, err)
 				}
 			}
 
 			// Check there is something to update
-			if !(event.Op&fsnotify.Write == fsnotify.Write ||
-				event.Op&fsnotify.Create == fsnotify.Create || // Rename is always followed by a Create.
-				event.Op&fsnotify.Remove == fsnotify.Remove) {
+			// Rename is always followed by a Create.
+			if !(event.Has(fsnotify.Write) || event.Has(fsnotify.Create) || event.Has(fsnotify.Remove)) {
 				continue
 			}
 
