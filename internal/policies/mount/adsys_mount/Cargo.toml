@@ -1,5 +1,6 @@
 [package]
 name = "adsys_mount"
+description = "Binary for handling the user mounts policy of adsys.\nThis is not meant to be executed manually."
 version = "0.1.0"
 edition = "2021"
 
@@ -8,7 +9,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.65"
 clap = { version = "4.0.13", features = ["derive"] }
-gio = "0.15.12"
-glib = "0.15.12"
+gio = { git = "https://github.com/gtk-rs/gtk-rs-core.git", package = "gio" }
+glib = { git = "https://github.com/gtk-rs/gtk-rs-core.git", package = "glib" }
 log = "0.4.17"
 thiserror = "1.0.37"
