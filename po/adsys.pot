@@ -220,11 +220,26 @@ msgstr ""
 msgid "Any user always authorized"
 msgstr ""
 
+#. Otherwise, just let the user know
+#: internal/policies/apparmor/apparmor.go:107
+msgid "Apparmor is not available on this system: %v"
+msgstr ""
+
+#. objectDir = "users"
+#: internal/policies/apparmor/apparmor.go:84
+msgid "Apparmor policies are currently only supported for computers"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:117
+#, c-format
+msgid "Applying apparmor policy to %s"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:150
 msgid "Authorized as being administrator"
 msgstr ""
 
-#: internal/watcher/watcher.go:367
+#: internal/watcher/watcher.go:366
 #, c-format
 msgid "Bumping version for %s"
 msgstr ""
@@ -300,8 +315,20 @@ msgstr ""
 msgid "Couldn't connect to %s daemon: %v"
 msgstr ""
 
+#: internal/policies/apparmor/apparmor.go:358
+msgid "Couldn't remove new apparmor directory: %v"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:362
+msgid "Couldn't restore previous apparmor directory: %v"
+msgstr ""
+
 #: internal/grpc/logstreamer/server.go:44
 msgid "Couldn't send initial connection log to client"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:308
+msgid "Couldn't write to apparmor parser stdin: %v"
 msgstr ""
 
 #: cmd/admxgen/main.go:92
@@ -353,7 +380,7 @@ msgstr ""
 msgid "Failed add watcher on %q: %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:359
+#: internal/watcher/watcher.go:358
 #, c-format
 msgid "Failed to bump %s version: %s"
 msgstr ""
@@ -402,7 +429,7 @@ msgstr ""
 msgid "Getting status from service"
 msgstr ""
 
-#: internal/watcher/watcher.go:293
+#: internal/watcher/watcher.go:292
 msgid "Got event error: %v"
 msgstr ""
 
@@ -444,7 +471,7 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:110
+#: internal/policies/apparmor/apparmor.go:122
 msgid "No valid entry found for the apparmor machine policy"
 msgstr ""
 
@@ -630,6 +657,10 @@ msgstr ""
 msgid "Uninstalls the service"
 msgstr ""
 
+#: internal/policies/apparmor/apparmor.go:295
+msgid "Unloading %d apparmor policies: %v"
+msgstr ""
+
 #: internal/watchdtui/watchdtui.go:468
 msgid "Update"
 msgstr ""
@@ -660,16 +691,16 @@ msgstr ""
 msgid "Watched directories: "
 msgstr ""
 
-#: internal/watcher/watcher.go:302
+#: internal/watcher/watcher.go:301
 msgid "Watcher stopped"
 msgstr ""
 
-#: internal/watcher/watcher.go:315
+#: internal/watcher/watcher.go:314
 #, c-format
 msgid "Watching %s and children"
 msgstr ""
 
-#: internal/watcher/watcher.go:321
+#: internal/watcher/watcher.go:320
 msgid "Watching: %v"
 msgstr ""
 
@@ -700,16 +731,11 @@ msgstr ""
 msgid "another instance of the %s service is already running"
 msgstr ""
 
-#. objectDir = "users"
-#: internal/policies/apparmor/apparmor.go:72
-msgid "apparmor policies are currently only supported for computers"
-msgstr ""
-
-#: internal/policies/apparmor/apparmor.go:254
+#: internal/policies/apparmor/apparmor.go:382
 msgid "apparmor profile %q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:251
+#: internal/policies/apparmor/apparmor.go:379
 msgid "apparmor profile %q is not accessible: %w"
 msgstr ""
 
@@ -717,7 +743,7 @@ msgstr ""
 msgid "call to polkit failed: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:66
+#: internal/policies/apparmor/apparmor.go:78
 #, c-format
 msgid "can't apply apparmor policy to %s"
 msgstr ""
@@ -746,7 +772,7 @@ msgstr ""
 msgid "can't apply scripts policy to %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:366
+#: internal/watcher/watcher.go:365
 #, c-format
 msgid "can't bump version for %s"
 msgstr ""
@@ -790,7 +816,7 @@ msgstr ""
 msgid "can't create admx file: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:115
+#: internal/policies/apparmor/apparmor.go:127
 msgid "can't create apparmor directory %q: %v"
 msgstr ""
 
@@ -922,6 +948,10 @@ msgstr ""
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
+#: internal/policies/apparmor/apparmor.go:322
+msgid "can't parse loaded apparmor policies"
+msgstr ""
+
 #: internal/ad/registry/registry.go:55
 msgid "can't parse policy"
 msgstr ""
@@ -934,21 +964,21 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:125
+#: internal/policies/apparmor/apparmor.go:155
 msgid "can't remove new apparmor directory %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:121
-#: internal/policies/apparmor/apparmor.go:172
+#: internal/policies/apparmor/apparmor.go:151
+#: internal/policies/apparmor/apparmor.go:215
 msgid "can't remove old apparmor directory %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:270
+#: internal/policies/apparmor/apparmor.go:398
 msgid "can't remove unused apparmor assets"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:137
-#: internal/policies/apparmor/apparmor.go:143
+#: internal/policies/apparmor/apparmor.go:167
+#: internal/policies/apparmor/apparmor.go:173
 msgid "can't rename apparmor directory %q to %q: %v"
 msgstr ""
 
@@ -988,7 +1018,7 @@ msgstr ""
 msgid "can't stop service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:200
+#: internal/policies/apparmor/apparmor.go:226
 msgid "can't unload apparmor rules"
 msgstr ""
 
@@ -1001,7 +1031,7 @@ msgstr ""
 msgid "can't update user profile %s"
 msgstr ""
 
-#: internal/watcher/watcher.go:314
+#: internal/watcher/watcher.go:313
 #, c-format
 msgid "can't watch directory and children of %s"
 msgstr ""
@@ -1145,7 +1175,7 @@ msgstr ""
 msgid "enum id %s referenced by %s doesn't exist in list of enums"
 msgstr ""
 
-#: internal/watcher/watcher.go:373
+#: internal/watcher/watcher.go:372
 msgid "error loading ini contents: %v, creating a new file"
 msgstr ""
 
@@ -1243,6 +1273,12 @@ msgstr ""
 msgid "failed to find default domain in sssd.conf and domain is not provided"
 msgstr ""
 
+#: internal/policies/apparmor/apparmor.go:273
+msgid ""
+"failed to get apparmor policies: %w\n"
+"%s"
+msgstr ""
+
 #: internal/config/watchd/watchd.go:110
 msgid ""
 "failed to get executable path, using relative path for default config: %v"
@@ -1260,7 +1296,7 @@ msgstr ""
 msgid "failed to install service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:166
+#: internal/policies/apparmor/apparmor.go:209
 msgid ""
 "failed to load apparmor rules: %w\n"
 "%s"
@@ -1272,6 +1308,10 @@ msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:265
 msgid "failed to marshal enabled meta data"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:326
+msgid "failed to open %q: %w"
 msgstr ""
 
 #: internal/ad/ad.go:393
@@ -1328,9 +1368,9 @@ msgstr ""
 msgid "failed to uninstall service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:228
+#: internal/policies/apparmor/apparmor.go:314
 msgid ""
-"failed to unload apparmor rules: %w\n"
+"failed to unload apparmor policies: %w\n"
 "%s"
 msgstr ""
 
@@ -1469,7 +1509,7 @@ msgstr ""
 msgid "no relSrc provided to look into database archive"
 msgstr ""
 
-#: internal/watcher/watcher.go:348
+#: internal/watcher/watcher.go:347
 #, c-format
 msgid "no root directory matching %s found"
 msgstr ""
