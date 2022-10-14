@@ -9,7 +9,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -236,18 +235,8 @@ func TestAdsysGPOList(t *testing.T) {
 			require.NoErrorf(t, err, "adsys-gpostlist should exit successfully: %v", string(got))
 			assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpostlist returns expected exit code")
 
-			// check collected output between FormatGPO calls
-			goldPath := filepath.Join("testdata", "adsys-gpolist", "golden", testutils.NormalizeGoldenName(t, name))
-			// Update golden file
-			if ad.Update {
-				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, got, 0600)
-				require.NoError(t, err, "Cannot write golden file")
-			}
-			want, err := os.ReadFile(goldPath)
-			require.NoError(t, err, "Cannot load policy golden file")
-
-			require.Equal(t, string(want), string(got), "adsys-gpolist expected output")
+			want := testutils.LoadWithUpdateFromGolden(t, string(got))
+			require.Equal(t, want, string(got), "adsys-gpolist expected output")
 		})
 	}
 }
