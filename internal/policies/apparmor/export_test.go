@@ -6,3 +6,10 @@ func WithApparmorParserCmd(cmd []string) Option {
 		o.apparmorParserCmd = cmd
 	}
 }
+
+// WithLoadedPoliciesFile overrides the default location for the loaded policies file.
+func WithLoadedPoliciesFile(path string) Option {
+	return func(o *options) {
+		o.loadedPoliciesFile = path
+	}
+}

@@ -1,7 +1,7 @@
--Exit1-
--R
-#TMPDIR#/machine/nested/usr.bin.absent
+-Exit1-N
+-N
 #TMPDIR#/machine/nested/usr.bin.baz
+#TMPDIR#/machine/nested/usr.bin.nested.absent
 #TMPDIR#/machine/usr.bin.absent
 #TMPDIR#/machine/usr.bin.bar
 #TMPDIR#/machine/usr.bin.foo

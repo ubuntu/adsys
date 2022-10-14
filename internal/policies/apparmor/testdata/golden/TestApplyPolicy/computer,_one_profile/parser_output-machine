@@ -1,2 +1,7 @@
+-N
+#TMPDIR#/machine/usr.bin.foo
 -r
+-W
+-L
+/var/cache/adsys/apparmor
 #TMPDIR#/machine/usr.bin.foo

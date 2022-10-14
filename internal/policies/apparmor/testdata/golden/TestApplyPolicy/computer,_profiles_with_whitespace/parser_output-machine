@@ -1,4 +1,11 @@
+-N
+#TMPDIR#/machine/usr.bin.foo
+#TMPDIR#/machine/usr.bin.bar
+#TMPDIR#/machine/nested/usr.bin.baz
 -r
+-W
+-L
+/var/cache/adsys/apparmor
 #TMPDIR#/machine/usr.bin.foo
 #TMPDIR#/machine/usr.bin.bar
 #TMPDIR#/machine/nested/usr.bin.baz
