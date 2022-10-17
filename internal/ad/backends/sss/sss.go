@@ -1,0 +1,138 @@
+// Package sss is the sssd backend for fetching AD active configuration and online status.
+package sss
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"path/filepath"
+	"strings"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/consts"
+	"github.com/ubuntu/adsys/internal/decorate"
+	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	"github.com/ubuntu/adsys/internal/i18n"
+	"gopkg.in/ini.v1"
+)
+
+// SSS is the backend object with domain and url information.
+type SSS struct {
+	domain              string
+	domainDbus          dbus.BusObject
+	serverURL           string
+	hostKrb5CCNAME      string
+	defaultDomainSuffix string
+
+	config Config
+}
+
+// Config for sss backend.
+type Config struct {
+	Conf     string `mapstructure:"config"`
+	CacheDir string `mapstructure:"cache_dir"`
+}
+
+// New returns a sss backend loaded from Config.
+func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
+	defer decorate.OnError(&err, i18n.G("can't get domain configuration from %+v"), c)
+
+	log.Debug(ctx, "Loading SSS configuration for AD backend")
+
+	if c.Conf == "" {
+		c.Conf = consts.DefaultSSSConf
+	}
+	if c.CacheDir == "" {
+		c.CacheDir = consts.DefaultSSSCacheDir
+	}
+
+	cfg, err := ini.Load(c.Conf)
+	if err != nil {
+		return SSS{}, err
+	}
+	defaultDomainSuffix := cfg.Section("sssd").Key("default_domain_suffix").String()
+
+	// Take first domain as domain for machine and all users
+	sssdDomain := strings.Split(cfg.Section("sssd").Key("domains").String(), ",")[0]
+	if sssdDomain == "" {
+		return SSS{}, errors.New(i18n.G("failed to find default sssd domain in sssd.conf"))
+	}
+	domain := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_domain").String()
+	if domain == "" {
+		return SSS{}, fmt.Errorf(i18n.G("could not find AD domain name corresponding to %q"), sssdDomain)
+	}
+
+	if defaultDomainSuffix == "" {
+		defaultDomainSuffix = domain
+	}
+
+	domainDbus := bus.Object(consts.SSSDDbusRegisteredName,
+		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, strings.ReplaceAll(domain, ".", "_2e"))))
+
+	// Server url
+	serverURL := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_server").String()
+	if serverURL == "" {
+		log.Debugf(ctx, "Triggering autodiscovery of AD server triggered because sssd.conf does not provide an ad_server for %q", sssdDomain)
+		// Try to update from SSSD the current active AD server
+		msg := fmt.Sprintf(i18n.G("error while trying to look up AD server address on SSSD for %q"), domain)
+		err := domainDbus.Call(consts.SSSDDbusInterface+".ActiveServer", 0, "AD").Store(&serverURL)
+		if err != nil {
+			return SSS{}, fmt.Errorf(i18n.G("%s: %v"), msg, err)
+		}
+		if serverURL == "" {
+			return SSS{}, fmt.Errorf(i18n.G("%s: no active server found"), msg)
+		}
+	}
+	if !strings.HasPrefix(serverURL, "ldap://") {
+		serverURL = fmt.Sprintf("ldap://%s", serverURL)
+	}
+
+	// local machine sssd krb5 cache
+	hostKrb5CCNAME := filepath.Join(c.CacheDir, "ccache_"+strings.ToUpper(domain))
+
+	return SSS{
+		domain:              domain,
+		domainDbus:          domainDbus,
+		serverURL:           serverURL,
+		hostKrb5CCNAME:      hostKrb5CCNAME,
+		defaultDomainSuffix: defaultDomainSuffix,
+
+		config: c,
+	}, nil
+}
+
+// Domain returns current server domain.
+func (sss SSS) Domain() string {
+	return sss.domain
+}
+
+// ServerURL returns current server URL.
+func (sss SSS) ServerURL() string {
+	return sss.serverURL
+}
+
+// HostKrb5CCNAME returns the absolute path of the machine krb5 ticket.
+func (sss SSS) HostKrb5CCNAME() string {
+	return sss.hostKrb5CCNAME
+}
+
+// DefaultDomainSuffix returns current default domain suffix.
+func (sss SSS) DefaultDomainSuffix() string {
+	return sss.defaultDomainSuffix
+}
+
+// IsOnline refresh and returns if we are online.
+func (sss SSS) IsOnline() (bool, error) {
+	var online bool
+	if err := sss.domainDbus.Call(consts.SSSDDbusInterface+".IsOnline", 0).Store(&online); err != nil {
+		return false, fmt.Errorf(i18n.G("failed to retrieve offline state from SSSD: %v"), err)
+	}
+	return online, nil
+}
+
+// Config returns a stringified configuration for SSSD backend.
+func (sss SSS) Config() string {
+	return fmt.Sprintf(`Current backend is SSSD
+Configuration: %s
+Cache: %s`, sss.config.Conf, sss.config.CacheDir)
+}
