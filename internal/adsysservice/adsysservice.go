@@ -3,16 +3,15 @@ package adsysservice
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/ad"
+	"github.com/ubuntu/adsys/internal/ad/backends/sss"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/daemon"
@@ -24,7 +23,6 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
 	"google.golang.org/grpc"
-	"gopkg.in/ini.v1"
 )
 
 // Service is used to implement adsys.ServiceServer.
@@ -51,24 +49,19 @@ type state struct {
 	sudoersDir   string
 	policyKitDir string
 	apparmorDir  string
-	sssCacheDir  string
-	sssConf      string
-
-	adDomain string
 }
 
 type options struct {
-	cacheDir            string
-	runDir              string
-	dconfDir            string
-	sudoersDir          string
-	policyKitDir        string
-	sssCacheDir         string
-	apparmorDir         string
-	apparmorFsDir       string
-	sssdConf            string
-	defaultDomainSuffix string
-	authorizer          authorizerer
+	cacheDir      string
+	runDir        string
+	dconfDir      string
+	sudoersDir    string
+	policyKitDir  string
+	apparmorDir   string
+	apparmorFsDir string
+	adBackend     string
+	sssConfig     sss.Config
+	authorizer    authorizerer
 }
 type option func(*options) error
 
@@ -133,18 +126,18 @@ func WithApparmorFsDir(p string) func(o *options) error {
 	}
 }
 
-// WithSSSCacheDir specifies a personalized /.
-func WithSSSCacheDir(p string) func(o *options) error {
+// WithADBackend specifies our specific backend to select.
+func WithADBackend(backend string) func(o *options) error {
 	return func(o *options) error {
-		o.sssCacheDir = p
+		o.adBackend = backend
 		return nil
 	}
 }
 
-// WithDefaultDomainSuffix specifies a personalized default domain suffix.
-func WithDefaultDomainSuffix(d string) func(o *options) error {
+// WithSSSConfig specifies our specific sss options to override.
+func WithSSSConfig(c sss.Config) func(o *options) error {
 	return func(o *options) error {
-		o.defaultDomainSuffix = d
+		o.sssConfig = c
 		return nil
 	}
 }
@@ -152,13 +145,11 @@ func WithDefaultDomainSuffix(d string) func(o *options) error {
 // New returns a new instance of an AD service.
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
-func New(ctx context.Context, url, domain string, opts ...option) (s *Service, err error) {
+func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	defer decorate.OnError(&err, i18n.G("couldn't create adsys service"))
 
 	// defaults
-	args := options{
-		sssdConf: consts.DefaultSSSConf,
-	}
+	args := options{}
 	// applied options
 	for _, o := range opts {
 		if err := o(&args); err != nil {
@@ -198,11 +189,6 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		return nil, err
 	}
 
-	url, domain, defaultDomainSuffix, err := loadServerInfo(args.sssdConf, url, domain, args.defaultDomainSuffix)
-	if err != nil {
-		return nil, err
-	}
-
 	var adOptions []ad.Option
 	if args.cacheDir != "" {
 		adOptions = append(adOptions, ad.WithCacheDir(args.cacheDir))
@@ -210,17 +196,28 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if args.runDir != "" {
 		adOptions = append(adOptions, ad.WithRunDir(args.runDir))
 	}
-	if args.sssCacheDir != "" {
-		adOptions = append(adOptions, ad.WithSSSCacheDir(args.sssCacheDir))
+
+	// AD Backend selection
+	var adBackend ad.Backend
+	switch args.adBackend {
+	default:
+		log.Warning(ctx, "Unknown configured backend %q. Defaulting to sssd.", args.adBackend)
+		fallthrough
+	case "":
+		fallthrough
+	case "sssd":
+		adBackend, err = sss.New(ctx, args.sssConfig, bus)
+	case "winbind":
+
 	}
-	if defaultDomainSuffix != "" {
-		adOptions = append(adOptions, ad.WithDefaultDomainSuffix(defaultDomainSuffix))
+	if err != nil {
+		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %s"), err)
 	}
-	adc, err := ad.New(ctx, url, domain, bus, adOptions...)
+
+	adc, err := ad.New(ctx, bus, adBackend, adOptions...)
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf(ctx, "AD domain: %q, server from configuration: %q", domain, url)
 
 	if args.authorizer == nil {
 		args.authorizer, err = authorizer.New(bus)
@@ -271,51 +268,10 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 			policyKitDir: args.policyKitDir,
 			runDir:       args.runDir,
 			apparmorDir:  args.apparmorDir,
-			sssCacheDir:  args.sssCacheDir,
-			adDomain:     domain,
 		},
 		initSystemTime: initSysTime,
 		bus:            bus,
 	}, nil
-}
-
-func loadServerInfo(sssdConf, url, domain, defaultDomainSuffix string) (rurl string, rdomain string, rdefaultDomainSuffix string, err error) {
-	defer decorate.OnError(&err, i18n.G("can't load server info from %s"), sssdConf)
-
-	if url != "" && domain != "" && defaultDomainSuffix != "" {
-		return url, domain, defaultDomainSuffix, nil
-	}
-
-	cfg, err := ini.Load(sssdConf)
-	if err != nil {
-		// Return parameters to server if we have a domain.
-		// In case url is empty, we will try auto discovery.
-		if domain != "" {
-			return url, domain, defaultDomainSuffix, nil
-		}
-		return "", "", "", fmt.Errorf(i18n.G("can't read sssd.conf and no url or domain provided: %v"), err)
-	}
-	if defaultDomainSuffix == "" {
-		defaultDomainSuffix = cfg.Section("sssd").Key("default_domain_suffix").String()
-	}
-	if domain == "" {
-		domain = strings.Split(cfg.Section("sssd").Key("domains").String(), ",")[0]
-		if domain == "" {
-			return "", "", "", errors.New(i18n.G("failed to find default domain in sssd.conf and domain is not provided"))
-		}
-	}
-	// domain is either domain section provided by the user or read in sssd.conf
-	adDomain := cfg.Section(fmt.Sprintf("domain/%s", domain)).Key("ad_domain").String()
-
-	if url == "" {
-		url = cfg.Section(fmt.Sprintf("domain/%s", domain)).Key("ad_server").String()
-	}
-
-	if adDomain != "" {
-		domain = adDomain
-	}
-
-	return url, domain, defaultDomainSuffix, nil
 }
 
 // RegisterGRPCServer registers our service with the new interceptor chains.

@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ubuntu/adsys/internal/ad/backends/sss"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
@@ -43,14 +44,13 @@ type daemonConfig struct {
 	DconfDir      string `mapstructure:"dconf_dir"`
 	SudoersDir    string `mapstructure:"sudoers_dir"`
 	PolicyKitDir  string `mapstructure:"policykit_dir"`
-	SSSCacheDir   string `mapstructure:"sss_cache_dir"`
 	ApparmorDir   string `mapstructure:"apparmor_dir"`
 	ApparmorFsDir string `mapstructure:"apparmorfs_dir"`
 
-	ServiceTimeout        int    `mapstructure:"service_timeout"`
-	ADServer              string `mapstructure:"ad_server"`
-	ADDomain              string `mapstructure:"ad_domain"`
-	ADDefaultDomainSuffix string `mapstructure:"ad_default_domain_suffix"`
+	AdBackend  string     `mapstructure:"ad_backend"`
+	SSSdConfig sss.Config `mapstructure:"sssd"`
+
+	ServiceTimeout int `mapstructure:"service_timeout"`
 }
 
 // New registers commands and return a new App.
@@ -106,16 +106,16 @@ func New() *App {
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
-			adsys, err := adsysservice.New(context.Background(), a.config.ADServer, a.config.ADDomain,
+			adsys, err := adsysservice.New(context.Background(),
 				adsysservice.WithCacheDir(a.config.CacheDir),
 				adsysservice.WithRunDir(a.config.RunDir),
 				adsysservice.WithDconfDir(a.config.DconfDir),
 				adsysservice.WithSudoersDir(a.config.SudoersDir),
 				adsysservice.WithPolicyKitDir(a.config.PolicyKitDir),
-				adsysservice.WithSSSCacheDir(a.config.SSSCacheDir),
 				adsysservice.WithApparmorDir(a.config.ApparmorDir),
 				adsysservice.WithApparmorFsDir(a.config.ApparmorFsDir),
-				adsysservice.WithDefaultDomainSuffix(a.config.ADDefaultDomainSuffix),
+				adsysservice.WithADBackend(a.config.AdBackend),
+				adsysservice.WithSSSConfig(a.config.SSSdConfig),
 			)
 			if err != nil {
 				close(a.ready)
@@ -151,12 +151,12 @@ func New() *App {
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
 	decorate.LogOnError(a.viper.BindPFlag("service_timeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
-	a.rootCmd.PersistentFlags().StringP("ad-server", "S", "", i18n.G("URL of the Active Directory server. This overrides parsing sssd.conf."))
-	decorate.LogOnError(a.viper.BindPFlag("ad_server", a.rootCmd.PersistentFlags().Lookup("ad-server")))
-	a.rootCmd.PersistentFlags().StringP("ad-domain", "D", "", i18n.G("AD domain to use. This overrides parsing sssd.conf"))
-	decorate.LogOnError(a.viper.BindPFlag("ad_domain", a.rootCmd.PersistentFlags().Lookup("ad-domain")))
-	a.rootCmd.PersistentFlags().StringP("ad-default-domain-suffix", "", "", i18n.G("AD default domain suffix to use. This overrides parsing sssd.conf."))
-	decorate.LogOnError(a.viper.BindPFlag("ad_default_domain_suffix", a.rootCmd.PersistentFlags().Lookup("ad-default-domain-suffix")))
+	a.rootCmd.PersistentFlags().StringP("ad-backend", "", "sssd", i18n.G("Active Directory authentication backend"))
+	decorate.LogOnError(a.viper.BindPFlag("ad_backend", a.rootCmd.PersistentFlags().Lookup("ad-backend")))
+	a.rootCmd.PersistentFlags().StringP("sssd.config", "", consts.DefaultSSSConf, i18n.G("SSSd config file path"))
+	decorate.LogOnError(a.viper.BindPFlag("sssd.config", a.rootCmd.PersistentFlags().Lookup("sssd.config")))
+	a.rootCmd.PersistentFlags().StringP("sssd.cache-dir", "", consts.DefaultSSSConf, i18n.G("SSSd cache directory"))
+	decorate.LogOnError(a.viper.BindPFlag("sssd.cache_dir", a.rootCmd.PersistentFlags().Lookup("sssd.cache-dir")))
 
 	// subcommands
 	a.installVersion()

@@ -39,12 +39,6 @@ const (
 	// AdysMachineScriptsServiceName is the machine script systemd service.
 	AdysMachineScriptsServiceName = "adsys-machine-scripts.service"
 
-	// SSSD related properties.
-
-	// DefaultSSSCacheDir is the default sssd cache dir.
-	DefaultSSSCacheDir = "/var/lib/sss/db"
-	// DefaultSSSConf is the default sssd.conf location.
-	DefaultSSSConf = "/etc/sssd/sssd.conf"
 	// DefaultDconfDir is the default dconf directory.
 	DefaultDconfDir = "/etc/dconf"
 	// DefaultSudoersDir is the default directory for sudoers configuration.
@@ -54,6 +48,12 @@ const (
 	// DefaultApparmorDir is the default directory for apparmor configuration.
 	DefaultApparmorDir = "/etc/apparmor.d/adsys"
 
+	/* SSSD related properties. */
+
+	// DefaultSSSCacheDir is the default sssd cache dir.
+	DefaultSSSCacheDir = "/var/lib/sss/db"
+	// DefaultSSSConf is the default sssd.conf location.
+	DefaultSSSConf = "/etc/sssd/sssd.conf"
 	// SSSDDbusRegisteredName is the well-known name used on dbus.
 	SSSDDbusRegisteredName = "org.freedesktop.sssd.infopipe"
 	// SSSDDbusBaseObjectPath is the path under which all domains are registered.

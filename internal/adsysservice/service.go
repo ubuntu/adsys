@@ -76,12 +76,6 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 	if state.policyKitDir == "" {
 		state.policyKitDir = consts.DefaultPolicyKitDir
 	}
-	if state.sssCacheDir == "" {
-		state.sssCacheDir = consts.DefaultSSSCacheDir
-	}
-	if state.sssConf == "" {
-		state.sssConf = consts.DefaultSSSConf
-	}
 	if state.apparmorDir == "" {
 		state.apparmorDir = consts.DefaultApparmorDir
 	}
@@ -96,15 +90,7 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 		}
 	}
 
-	var offline string
-	adServerURL, isOffline := s.adc.GetStatus()
-	if isOffline {
-		offline = fmt.Sprint(i18n.G("**Offline mode** using cached policies\n\n"))
-	}
-
-	if adServerURL == "" {
-		adServerURL = i18n.G("N/A")
-	}
+	adInfo := s.adc.GetInfo(stream.Context())
 
 	timeLayout := "Mon Jan 2 15:04"
 
@@ -144,19 +130,14 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 		ubuntuProStatus = i18n.G("Ubuntu Pro subscription active.")
 	}
 
-	status := fmt.Sprintf(i18n.G(`%s%s
+	status := fmt.Sprintf(i18n.G(`%s
 %s
 Next Refresh: %s
 
 %s
 
 Active Directory:
-  Server: %s
-  Domain: %s
-
-SSS:
-  Configuration: %s
-  Cache directory: %s
+  %s
 
 Daemon:
   Timeout after %s
@@ -166,10 +147,9 @@ Daemon:
   Dconf path: %s
   Sudoers path: %s
   PolicyKit path: %s
-  Apparmor path: %s`), offline, updateMachine, updateUsers, nextRefresh,
+  Apparmor path: %s`), updateMachine, updateUsers, nextRefresh,
 		ubuntuProStatus,
-		adServerURL, state.adDomain,
-		state.sssConf, state.sssCacheDir,
+		strings.Join(strings.Split(adInfo, "\n"), "\n  "),
 		timeout, socket, state.cacheDir, state.runDir, state.dconfDir,
 		state.sudoersDir, state.policyKitDir, state.apparmorDir)
 
