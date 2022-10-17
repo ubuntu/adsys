@@ -1,0 +1,3 @@
+backend static config
+Domain: example.com
+Server URL: ldap://myserver.example.com

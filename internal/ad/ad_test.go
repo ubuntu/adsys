@@ -1068,6 +1068,38 @@ func TestListUsersFromCache(t *testing.T) {
 	}
 }
 
+func TestGetInfo(t *testing.T) {
+	t.Parallel()
+
+	bus := testutils.NewDbusConn(t)
+
+	tests := map[string]struct {
+		online      bool
+		errIsOnline bool
+	}{
+		"Info reported from backend, online":  {online: true},
+		"Info reported from backend, offline": {online: false},
+
+		"Report unknown state if IsOnline calls fail": {errIsOnline: true},
+	}
+
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			adc, err := ad.New(context.Background(), bus,
+				mock.Backend{Dom: "example.com", ServURL: "ldap://myserver.example.com",
+					Online: tc.online, ErrIsOnline: tc.errIsOnline},
+				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()))
+			require.NoError(t, err, "Setup: New should return no error")
+
+			msg := adc.GetInfo(context.Background())
+			testutils.LoadWithUpdateFromGolden(t, msg)
+		})
+	}
+}
+
 func TestNormalizeTargetName(t *testing.T) {
 	t.Parallel()
 

@@ -1,0 +1,4 @@
+backend static config
+**Offline mode** using cached policies
+Domain: example.com
+Server URL: ldap://myserver.example.com
