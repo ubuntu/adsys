@@ -40,7 +40,7 @@ const (
 	// UserObject is a user representation in AD.
 	UserObject ObjectClass = "user"
 	// ComputerObject is a computer representation in AD.
-	ComputerObject = "computer"
+	ComputerObject ObjectClass = "computer"
 )
 
 type gpo downloadable
