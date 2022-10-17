@@ -28,7 +28,7 @@ require (
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 	golang.org/x/sys v0.0.0-20220908164124-27713097b956
 	golang.org/x/text v0.3.8
-	google.golang.org/grpc v1.50.0
+	google.golang.org/grpc v1.50.1
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/ini.v1 v1.67.0
