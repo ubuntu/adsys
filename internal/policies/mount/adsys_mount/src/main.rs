@@ -79,7 +79,7 @@ fn main() -> Result<(), AdysMountError> {
 
     // Clones the variables that are going to be moved into the closure.
     let g_loop_clone = g_loop.clone();
-    let mu_clone = mu.clone();
+    let mu_clone = Arc::clone(&mu);
 
     // Attaches the receiver to the main context, along with a closure that is called everytime there is a new message in the channel.
     rx.attach(Some(&g_ctx), move |x| {
@@ -153,15 +153,18 @@ fn handle_mount(entry: MountEntry, tx: glib::SyncSender<Msg>) {
     let f = gio::File::for_uri(&entry.mount_path);
 
     let mount_op = gio::MountOperation::new();
+
+    let mut cb: fn(&gio::MountOperation, &str, &str, &str, gio::AskPasswordFlags) = krbc_cb;
     if entry.is_anonymous {
-        debug!("Anonymous mount requested");
+        debug!("Anonymous mount requested for {}", entry.mount_path);
         mount_op.set_anonymous(true);
+        cb = anonymous_cb;
     }
 
-    mount_op.connect_ask_password(ask_password_callback);
+    mount_op.connect_ask_password(cb);
 
     // Callback invoked by gio after setting up the mount.
-    let callback = move |r: Result<(), glib::Error>| {
+    let mount_handled_cb = move |r: Result<(), glib::Error>| {
         let msg = match r {
             Ok(_) => Msg {
                 path: entry.mount_path,
@@ -183,35 +186,38 @@ fn handle_mount(entry: MountEntry, tx: glib::SyncSender<Msg>) {
         gio::MountMountFlags::NONE,
         Some(&mount_op),
         gio::Cancellable::NONE,
-        callback,
+        mount_handled_cb,
     );
 }
 
 /// Callback invoked by gio when mounting an entry.
-fn ask_password_callback(
+fn krbc_cb(mount_op: &gio::MountOperation, _: &str, _: &str, _: &str, _: gio::AskPasswordFlags) {
+    match std::env::var("KRB5CCNAME") {
+        Ok(_) => {
+            mount_op.reply(gio::MountOperationResult::Handled);
+        }
+        Err(_) => {
+            error!("Kerberos ticket not available in the machine");
+            mount_op.reply(gio::MountOperationResult::Aborted);
+        }
+    };
+}
+
+// Checks if anonymous mounts are supported by the provider.
+fn anonymous_cb(
     mount_op: &gio::MountOperation,
     _: &str,
     _: &str,
     _: &str,
     flags: gio::AskPasswordFlags,
 ) {
-    // Checks if anonymous mounts are supported by the provider.
-    if !flags.contains(gio::AskPasswordFlags::ANONYMOUS_SUPPORTED) && mount_op.is_anonymous() {
-        warn!("Anonymous mounts are not supported by the provider.");
-        mount_op.reply(gio::MountOperationResult::Aborted);
+    if flags.contains(gio::AskPasswordFlags::ANONYMOUS_SUPPORTED) {
+        mount_op.reply(gio::MountOperationResult::Handled);
         return;
     }
 
-    // Checks if password authentication is required.
-    if flags.contains(gio::AskPasswordFlags::NEED_PASSWORD) && !mount_op.is_anonymous() {
-        warn!(
-            "Password authentication is required by the provider, but is not supported by adsys."
-        );
-        mount_op.reply(gio::MountOperationResult::Aborted);
-        return;
-    }
-
-    mount_op.reply(gio::MountOperationResult::Handled);
+    warn!("Anonymous mounts are not supported by the provider");
+    mount_op.reply(gio::MountOperationResult::Aborted)
 }
 
 mod test;
