@@ -65,8 +65,9 @@ func TestApplyPolicy(t *testing.T) {
 		"user, one profile": {entries: []entry.Entry{{Key: "apparmor-user", Value: "usr.bin.foo"}}, user: true, noParserOutput: true},
 
 		// other edge cases
-		"no apparmor_parser and no entries": {entries: []entry.Entry{}, noApparmorParser: true, noParserOutput: true},
-		"no apparmor_parser and entries":    {noApparmorParser: true, noParserOutput: true, wantErr: true},
+		"no apparmor_parser and no entries":       {entries: []entry.Entry{}, noApparmorParser: true, noParserOutput: true},
+		"no apparmor_parser and entries":          {noApparmorParser: true, noParserOutput: true, wantErr: true},
+		"read-only root directory and no entries": {entries: []entry.Entry{}, readOnlyApparmorDir: ".", noParserOutput: true},
 
 		// error cases
 		"error on loading profiles failing":                {apparmorParserError: "-r", wantErr: true},
@@ -80,7 +81,6 @@ func TestApplyPolicy(t *testing.T) {
 		"error on absent profile":                          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.nonexistent"}}, noParserOutput: true, wantErr: true},
 		"error on absent loaded policies file":             {entries: []entry.Entry{}, destAlreadyExists: "machine", existingLoadedPolicies: []string{"parseError"}, noParserOutput: true, wantErr: true},
 		"error on file as a directory":                     {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo/notadir"}}, noParserOutput: true, wantErr: true},
-		"error on read-only root directory, no entries":    {entries: []entry.Entry{}, readOnlyApparmorDir: ".", noParserOutput: true, wantErr: true},
 		"error on read-only root directory with entries":   {readOnlyApparmorDir: ".", noParserOutput: true, wantErr: true},
 		"error on read-only machine directory":             {destAlreadyExists: "machine", readOnlyApparmorDir: "machine", noParserOutput: true, wantErr: true},
 		"error on read-only machine directory, no entries": {entries: []entry.Entry{}, destAlreadyExists: "machine", readOnlyApparmorDir: "machine/nested", noParserOutput: true, wantErr: true},

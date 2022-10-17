@@ -61,6 +61,8 @@ const (
 	// SSSDDbusInterface is the interface we are using for access dbus methods.
 	SSSDDbusInterface = "org.freedesktop.sssd.infopipe.Domains.Domain"
 
+	/* Ubuntu Advantage properties. */
+
 	// SubscriptionDbusRegisteredName is the well-known name of UA on dbus.
 	SubscriptionDbusRegisteredName = "com.canonical.UbuntuAdvantage"
 	// SubscriptionDbusObjectPath  is the path under which our AD service is registered.

@@ -449,11 +449,11 @@ func TestFetchTweakSysvolCacheDir(t *testing.T) {
 	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
-		removeSysvolCacheDir bool
-		roSysvolCacheDir     bool
+		removeSysvolCacheDir     bool
+		roSysvolPoliciesCacheDir bool
 	}{
 		"SysvolCacheDir doesn't exist": {removeSysvolCacheDir: true},
-		"SysvolCacheDir is read only":  {roSysvolCacheDir: true},
+		"SysvolCacheDir is read only":  {roSysvolPoliciesCacheDir: true},
 	}
 
 	for name, tc := range tests {
@@ -469,8 +469,8 @@ func TestFetchTweakSysvolCacheDir(t *testing.T) {
 			if tc.removeSysvolCacheDir {
 				require.NoError(t, os.RemoveAll(adc.sysvolCacheDir), "Setup: can’t remove sysvolCacheDir")
 			}
-			if tc.roSysvolCacheDir {
-				testutils.MakeReadOnly(t, adc.sysvolCacheDir)
+			if tc.roSysvolPoliciesCacheDir {
+				testutils.MakeReadOnly(t, filepath.Join(adc.sysvolCacheDir, "Policies"))
 			}
 
 			assetsRefreshed, err := adc.fetch(context.Background(), "", map[string]string{"gpo1-name": fmt.Sprintf("smb://localhost:%d/SYSVOL/fakegpo.com/Policies/gpo1", SmbPort)})
