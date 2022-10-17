@@ -1,0 +1,8 @@
+* Domain(): example.com
+* ServerURL(): ldap://dynamic_active_server.example.com
+* HostKrb5CCNAME(): /var/lib/sss/db/ccache_EXAMPLE.COM
+* DefaultDomainSuffix(): otherdomainsuffix.com
+* Config():
+Current backend is SSSD
+Configuration: testdata/configs/example.com-with-default-domain-suffix
+Cache: /var/lib/sss/db
