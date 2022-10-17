@@ -24,8 +24,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var Update bool
-
 func TestFetch(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
@@ -570,7 +568,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 const SmbPort = 1445
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&Update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	// Don’t setup samba or sssd for mock helpers
