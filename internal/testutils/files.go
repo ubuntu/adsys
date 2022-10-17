@@ -84,7 +84,11 @@ func MakeReadOnly(t *testing.T, dest string) {
 	require.NoError(t, err, "Cannot stat %s", dest)
 	mode := fi.Mode()
 
-	err = os.Chmod(dest, 0444)
+	var perms fs.FileMode = 0444
+	if fi.IsDir() {
+		perms = 0555
+	}
+	err = os.Chmod(dest, perms)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
