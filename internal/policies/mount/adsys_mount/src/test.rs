@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests {
     use crate::{parse_entries, MountEntry};
+
+    /// Tests parse_entries function.
     #[test]
     fn test_parse_entries() {
         let want: Vec<MountEntry> = vec![
