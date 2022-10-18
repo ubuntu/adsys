@@ -213,7 +213,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return err
 	}
 
-	if len(filesToLoad) > 0 {
+	if len(filesToLoad) > 0 && os.Getenv("ADSYS_SKIP_ROOT_CALLS") == "" {
 		// Run apparmor_parser on the files to load, relying on apparmor's caching mechanism
 		apparmorParserCmd := append(m.apparmorParserCmd, []string{"-r", "-W", "-L", m.apparmorCacheDir}...)
 		apparmorParserCmd = append(apparmorParserCmd, filesToLoad...)

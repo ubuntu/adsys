@@ -250,6 +250,7 @@ func TestPolicyUpdate(t *testing.T) {
 			}},
 		"Machine, first time": {
 			args:       []string{"-m"},
+			addPaths:   []string{"apparmorfs/profiles"},
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -947,6 +948,7 @@ func TestPolicyUpdate(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "dconf"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "sudoers.d"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "polkit-1"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "apparmor.d", "adsys"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "apparmor.d", "adsys"), update)
 
 			// Current user can have different UID depending on where it’s running. We can’t mock it as we rely on current uid
 			// in the process for authorization check. Just make it generic.

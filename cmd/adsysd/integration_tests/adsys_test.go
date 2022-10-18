@@ -220,7 +220,9 @@ dconf_dir: %s/dconf
 sudoers_dir: %s/sudoers.d
 policykit_dir: %s/polkit-1
 sss_cache_dir: %s/sss_cache
-`, dir, dir, dir, dir, dir, dir, dir)), 0600)
+apparmor_dir: %s/apparmor.d/adsys
+apparmorfs_dir: %s/apparmorfs
+`, dir, dir, dir, dir, dir, dir, dir, dir, dir)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0750), "Setup: should create dconf dir")
