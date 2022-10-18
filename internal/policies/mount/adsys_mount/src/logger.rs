@@ -1,3 +1,5 @@
+use chrono::Utc;
+
 use log::{Level, Log};
 #[derive(Debug)]
 pub struct Logger {}
@@ -9,7 +11,12 @@ impl Log for Logger {
 
     fn log(&self, record: &log::Record) {
         if self.enabled(record.metadata()) {
-            eprintln!("{} - {}", record.level(), record.args());
+            eprintln!(
+                "{} - {}: {}",
+                Utc::now().format("%d/%m/%Y %H:%M:%S"),
+                record.level(),
+                record.args()
+            );
         }
     }
 
