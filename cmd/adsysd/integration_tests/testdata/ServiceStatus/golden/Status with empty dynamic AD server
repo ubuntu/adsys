@@ -22,3 +22,4 @@ Daemon:
   Dconf path: /tmp/dconf
   Sudoers path: /tmp/sudoers.d
   PolicyKit path: /tmp/polkit-1
+  Apparmor path: /tmp/adsys

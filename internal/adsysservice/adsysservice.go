@@ -45,15 +45,14 @@ type Service struct {
 }
 
 type state struct {
-	cacheDir      string
-	runDir        string
-	dconfDir      string
-	sudoersDir    string
-	policyKitDir  string
-	apparmorDir   string
-	apparmorFsDir string
-	sssCacheDir   string
-	sssConf       string
+	cacheDir     string
+	runDir       string
+	dconfDir     string
+	sudoersDir   string
+	policyKitDir string
+	apparmorDir  string
+	sssCacheDir  string
+	sssConf      string
 
 	adDomain string
 }
@@ -266,15 +265,14 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		policyManager: m,
 		authorizer:    args.authorizer,
 		state: state{
-			cacheDir:      args.cacheDir,
-			dconfDir:      args.dconfDir,
-			sudoersDir:    args.sudoersDir,
-			policyKitDir:  args.policyKitDir,
-			runDir:        args.runDir,
-			apparmorDir:   args.apparmorDir,
-			apparmorFsDir: args.apparmorFsDir,
-			sssCacheDir:   args.sssCacheDir,
-			adDomain:      domain,
+			cacheDir:     args.cacheDir,
+			dconfDir:     args.dconfDir,
+			sudoersDir:   args.sudoersDir,
+			policyKitDir: args.policyKitDir,
+			runDir:       args.runDir,
+			apparmorDir:  args.apparmorDir,
+			sssCacheDir:  args.sssCacheDir,
+			adDomain:     domain,
 		},
 		initSystemTime: initSysTime,
 		bus:            bus,
