@@ -48,6 +48,7 @@ enum MountStatus {
 fn main() -> Result<(), AdysMountError> {
     let args = Args::parse();
 
+    // Creates the logger and sets its level to Debug.
     if let Ok(()) = log::set_logger(&Logger {}) {
         log::set_max_level(log::LevelFilter::Debug);
     }
@@ -96,6 +97,7 @@ fn main() -> Result<(), AdysMountError> {
         mounts_left -= 1;
         glib::Continue(match mounts_left {
             0 => {
+                // Ends the main loop if there are no more mounts left.
                 g_loop_clone.quit();
                 false
             }
@@ -198,6 +200,7 @@ fn handle_mount(entry: MountEntry, tx: glib::Sender<Msg>) {
     );
 }
 
+/// Callback that is invoked by gio when prompted for password.
 fn ask_password_cb(
     mount_op: &gio::MountOperation,
     _: &str,
@@ -208,6 +211,7 @@ fn ask_password_cb(
     if mount_op.is_anonymous() && flags.contains(gio::AskPasswordFlags::ANONYMOUS_SUPPORTED) {
         unsafe {
             if let Some(data) = mount_op.data("state") {
+                // Ensures that we only try anonymous access once.
                 if let MountStatus::Asked = *(data.as_ptr()) {
                     warn!("Anonymous access denied.");
                     mount_op.reply(gio::MountOperationResult::Aborted);
@@ -218,6 +222,7 @@ fn ask_password_cb(
                 mount_op.reply(gio::MountOperationResult::Handled);
             }
         }
+    // Checks if the machine has a kerberos ticket defined.
     } else if std::env::var("KRB5CCNAME").is_ok() {
         debug!("Kerberos ticket found on the machine.");
         mount_op.reply(gio::MountOperationResult::Handled);
