@@ -609,6 +609,20 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		"Error on apparmor apply failing": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState: "localhost-uptodate",
+			// this generates an error when dumping assets to machine.new
+			readOnlyDirs: []string{"apparmor.d/adsys"},
+			wantErr:      true,
+		},
 		"Error on host is offline, without policies": {
 			dynamicADServerDomain: "offline",
 			initState:             "old-data",
