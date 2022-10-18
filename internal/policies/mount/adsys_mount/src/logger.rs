@@ -1,6 +1,7 @@
 use chrono::Utc;
 
 use log::{Level, Log};
+/// Logger used by adsys_mount to provide context about the mount process.
 #[derive(Debug)]
 pub struct Logger {}
 
