@@ -2,14 +2,20 @@ package adsysservice_test
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/godbus/dbus/v5"
+	"github.com/godbus/dbus/v5/introspect"
+	"github.com/godbus/dbus/v5/prop"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/ad/backends/sss"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/authorizer"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -24,15 +30,21 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
+		backend  string
 		sssdConf string
 
 		roDir             string
 		existingAdsysDirs bool
 
-		wantNewErr bool
+		wantBackend string
+		wantNewErr  bool
 	}{
-		"New and Quit succeeds as expected, first run": {},
-		"Adsys directory can already exists":           {existingAdsysDirs: true},
+		"New and Quit succeeds and defaults to sssd, first run": {wantBackend: "sssd"},
+		"Adsys directory can already exists":                    {existingAdsysDirs: true, wantBackend: "sssd"},
+
+		// Backend selection
+		"Unknown backend defaults to sssd": {backend: "unknown-backend", wantBackend: "sssd"},
+		"Select sssd backend explicitly":   {backend: "sssd", wantBackend: "sssd"},
 
 		// Error cases
 		"Error on failure to create run directory":       {roDir: "parentrun", wantNewErr: true},
@@ -84,6 +96,10 @@ func TestNew(t *testing.T) {
 				adsysservice.WithSSSConfig(sssdConfig),
 			}
 
+			if tc.backend != "" {
+				options = append(options, adsysservice.WithADBackend(tc.backend))
+			}
+
 			s, err := adsysservice.New(context.Background(), options...)
 			if tc.wantNewErr {
 				require.Error(t, err, "New should return an error but did not")
@@ -91,12 +107,107 @@ func TestNew(t *testing.T) {
 			}
 			require.NoError(t, err, "New should not return an error")
 
-			s.Quit(context.Background())
+			// This needs to be last as it closes the underlying dbus connection
+			defer s.Quit(context.Background())
 
 			_, err = os.Stat(adsysCacheDir)
 			require.NoError(t, err, "adsys cache directory exists as expected")
 			_, err = os.Stat(adsysRunDir)
 			require.NoError(t, err, "adsys run directory exists as expected")
+
+			require.Equal(t, tc.wantBackend, s.SelectedBackend(), "Backend is the expected one")
 		})
 	}
+}
+
+func TestMain(m *testing.M) {
+	// export SSSD domain
+	defer testutils.StartLocalSystemBus()()
+
+	conn, err := dbus.SystemBusPrivate()
+	if err != nil {
+		log.Fatalf("Setup: can't get a private system bus: %v", err)
+	}
+	defer func() {
+		if err = conn.Close(); err != nil {
+			log.Fatalf("Teardown: can't close system dbus connection: %v", err)
+		}
+	}()
+	if err = conn.Auth(nil); err != nil {
+		log.Fatalf("Setup: can't auth on private system bus: %v", err)
+	}
+	if err = conn.Hello(); err != nil {
+		log.Fatalf("Setup: can't send hello message on private system bus: %v", err)
+	}
+	intro := fmt.Sprintf(`
+	<node>
+		<interface name="%s">
+			<method name="ActiveServer">
+				<arg direction="in" type="s"/>
+				<arg direction="out" type="s"/>
+			</method>
+			<method name="IsOnline">
+				<arg direction="out" type="b"/>
+			</method>
+		</interface>̀%s</node>`, consts.SSSDDbusInterface, introspect.IntrospectDataString)
+
+	endpoint := "example_2ecom"
+	ssss := sssdbus{}
+	if err := conn.Export(ssss, dbus.ObjectPath(consts.SSSDDbusBaseObjectPath+"/"+endpoint), consts.SSSDDbusInterface); err != nil {
+		log.Fatalf("Setup: could not export %s %v", endpoint, err)
+	}
+	if err := conn.Export(introspect.Introspectable(intro), dbus.ObjectPath(consts.SSSDDbusBaseObjectPath+"/"+endpoint),
+		"org.freedesktop.DBus.Introspectable"); err != nil {
+		log.Fatalf("Setup: could not export introspectable for %s: %v", endpoint, err)
+	}
+	reply, err := conn.RequestName(consts.SSSDDbusRegisteredName, dbus.NameFlagDoNotQueue)
+	if err != nil {
+		log.Fatalf("Setup: Failed to acquire sssd name on local system bus: %v", err)
+	}
+	if reply != dbus.RequestNameReplyPrimaryOwner {
+		log.Fatalf("Setup: Failed to acquire sssd name on local system bus: name is already taken")
+	}
+
+	// systemd starts time
+	propsSpec := map[string]map[string]*prop.Prop{
+		"org.freedesktop.systemd1.Manager": {
+			"GeneratorsStartTimestamp": {
+				Value:    uint64(1234),
+				Writable: false,
+				Emit:     prop.EmitTrue,
+				Callback: func(c *prop.Change) *dbus.Error {
+					return nil
+				},
+			},
+		},
+	}
+	err = conn.Export(struct{}{}, "/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager")
+	if err != nil {
+		log.Fatalf("Setup: Failed to export systemd object on local system bus: %v", err)
+	}
+	_, err = prop.Export(conn, "/org/freedesktop/systemd1", propsSpec)
+	if err != nil {
+		log.Fatalf("Setup: Failed to export property for systemd object on local system bus: %v", err)
+	}
+	reply, err = conn.RequestName("org.freedesktop.systemd1", dbus.NameFlagDoNotQueue)
+	if err != nil {
+		log.Fatalf("Setup: Failed to acquire systemd name on local system bus: %v", err)
+	}
+	if reply != dbus.RequestNameReplyPrimaryOwner {
+		log.Fatalf("Setup: Failed to acquire systemd name on local system bus: name is already taken")
+	}
+
+	m.Run()
+}
+
+type systemd struct{}
+
+type sssdbus struct{}
+
+func (s sssdbus) ActiveServer(_ string) (string, *dbus.Error) {
+	return "", dbus.NewError("something.sssd.Error", []interface{}{"This is not used"})
+}
+
+func (s sssdbus) IsOnline() (bool, *dbus.Error) {
+	return true, nil
 }
