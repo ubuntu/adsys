@@ -201,7 +201,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	var adBackend ad.Backend
 	switch args.adBackend {
 	default:
-		log.Warning(ctx, "Unknown configured backend %q. Defaulting to sssd.", args.adBackend)
+		log.Warningf(ctx, "Unknown configured backend %q. Defaulting to sssd.", args.adBackend)
 		fallthrough
 	case "":
 		fallthrough
@@ -306,7 +306,7 @@ func initSystemTime(bus *dbus.Conn) *time.Time {
 	}
 	start, ok := val.Value().(uint64)
 	if !ok {
-		log.Warningf(context.Background(), "invalid next system startup time: %q", val.Value())
+		log.Warningf(context.Background(), "invalid next system startup time: %v", val.Value())
 		return nil
 	}
 
