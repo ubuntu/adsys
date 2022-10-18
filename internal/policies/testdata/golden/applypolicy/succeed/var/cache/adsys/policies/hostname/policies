@@ -2,6 +2,13 @@ gpos:
     - id: '{GPOId}'
       name: GPOName
       rules:
+        apparmor:
+            - key: apparmor-machine
+              value: |
+                usr.bin.foo
+                usr.bin.bar
+                nested/usr.bin.baz
+              disabled: false
         dconf:
             - key: path/to/key1
               value: ValueOfKey1

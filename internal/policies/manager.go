@@ -38,13 +38,16 @@ type Manager struct {
 }
 
 type options struct {
-	cacheDir     string
-	dconfDir     string
-	sudoersDir   string
-	policyKitDir string
-	runDir       string
-	apparmorDir  string
-	gdm          *gdm.Manager
+	cacheDir      string
+	dconfDir      string
+	sudoersDir    string
+	policyKitDir  string
+	runDir        string
+	apparmorDir   string
+	apparmorFsDir string
+	gdm           *gdm.Manager
+
+	apparmorParserCmd []string
 }
 
 // Option reprents an optional function to change Policies behavior.
@@ -98,6 +101,23 @@ func WithApparmorDir(p string) Option {
 	}
 }
 
+// WithApparmorParserCmd overrides the default apparmor_parser command.
+func WithApparmorParserCmd(p []string) Option {
+	return func(o *options) error {
+		o.apparmorParserCmd = p
+		return nil
+	}
+}
+
+// WithApparmorFsDir specifies a personalized directory for the apparmor
+// security filesystem.
+func WithApparmorFsDir(p string) Option {
+	return func(o *options) error {
+		o.apparmorFsDir = p
+		return nil
+	}
+}
+
 // NewManager returns a new manager with all default policy handlers.
 func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
@@ -137,7 +157,14 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 	}
 
 	// apparmor manager
-	apparmorManager := apparmor.New(args.apparmorDir)
+	var apparmorOptions []apparmor.Option
+	if args.apparmorParserCmd != nil {
+		apparmorOptions = append(apparmorOptions, apparmor.WithApparmorParserCmd(args.apparmorParserCmd))
+	}
+	if args.apparmorFsDir != "" {
+		apparmorOptions = append(apparmorOptions, apparmor.WithApparmorFsDir(args.apparmorFsDir))
+	}
+	apparmorManager := apparmor.New(args.apparmorDir, apparmorOptions...)
 
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {

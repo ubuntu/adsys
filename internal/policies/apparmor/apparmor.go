@@ -20,6 +20,21 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// WithApparmorParserCmd overrides the default apparmor_parser command.
+func WithApparmorParserCmd(cmd []string) Option {
+	return func(o *options) {
+		o.apparmorParserCmd = cmd
+	}
+}
+
+// WithApparmorFsDir specifies a personalized directory for the apparmor
+// security filesystem.
+func WithApparmorFsDir(path string) Option {
+	return func(o *options) {
+		o.apparmorFsDir = path
+	}
+}
+
 // Manager prevents running multiple apparmor update processes in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
 	apparmorDir        string
@@ -32,8 +47,8 @@ type Manager struct {
 }
 
 type options struct {
-	apparmorParserCmd  []string
-	loadedPoliciesFile string
+	apparmorParserCmd []string
+	apparmorFsDir     string
 }
 
 // Option reprents an optional function to change the apparmor manager.
@@ -43,8 +58,8 @@ type Option func(*options)
 func New(apparmorDir string, opts ...Option) *Manager {
 	// defaults
 	args := options{
-		apparmorParserCmd:  []string{"apparmor_parser"},
-		loadedPoliciesFile: "/sys/kernel/security/apparmor/profiles",
+		apparmorParserCmd: []string{"apparmor_parser"},
+		apparmorFsDir:     "/sys/kernel/security/apparmor",
 	}
 	// applied options
 	for _, o := range opts {
@@ -56,7 +71,7 @@ func New(apparmorDir string, opts ...Option) *Manager {
 		apparmorDir:        apparmorDir,
 		apparmorCacheDir:   filepath.Join(consts.DefaultCacheDir, "apparmor"),
 		apparmorParserCmd:  args.apparmorParserCmd,
-		loadedPoliciesFile: args.loadedPoliciesFile,
+		loadedPoliciesFile: filepath.Join(args.apparmorFsDir, "profiles"),
 	}
 }
 

@@ -36,3 +36,9 @@ gpos:
     - key: logoff
       value: |
           otherfolder/script-user-logoff
+    apparmor:
+    - key: apparmor-machine
+      value: |
+          usr.bin.foo
+          usr.bin.bar
+          nested/usr.bin.baz
