@@ -148,7 +148,7 @@ func TestIsOnline(t *testing.T) {
 	}
 }
 
-type sssdus struct {
+type sssdbus struct {
 	endpoint       string
 	offline        bool
 	noActiveServer bool
@@ -157,7 +157,7 @@ type sssdus struct {
 	isOnlineErr     bool
 }
 
-func (s sssdus) ActiveServer(_ string) (string, *dbus.Error) {
+func (s sssdbus) ActiveServer(_ string) (string, *dbus.Error) {
 	if s.noActiveServer {
 		return "", nil
 	}
@@ -167,7 +167,7 @@ func (s sssdus) ActiveServer(_ string) (string, *dbus.Error) {
 	return "dynamic_active_server." + strings.ReplaceAll(s.endpoint, "_2e", "."), nil
 }
 
-func (s sssdus) IsOnline() (bool, *dbus.Error) {
+func (s sssdbus) IsOnline() (bool, *dbus.Error) {
 	if s.isOnlineErr {
 		return false, dbus.NewError("something.sssd.Error", []interface{}{"IsOnline dbus call Error"})
 	}
@@ -214,7 +214,7 @@ func TestMain(m *testing.M) {
 			</method>
 		</interface>̀%s</node>`, consts.SSSDDbusInterface, introspect.IntrospectDataString)
 
-	for _, s := range []sssdus{
+	for _, s := range []sssdbus{
 		{
 			endpoint: "example_2ecom",
 		},
