@@ -8,6 +8,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.65"
+chrono = "0.4.22"
 clap = { version = "4.0.13", features = ["derive"] }
 gio = { git = "https://github.com/gtk-rs/gtk-rs-core.git", package = "gio" }
 glib = { git = "https://github.com/gtk-rs/gtk-rs-core.git", package = "glib" }
