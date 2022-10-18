@@ -3,6 +3,7 @@ use gio::{
     self,
     traits::{FileExt, MountOperationExt},
 };
+use glib::ObjectExt;
 use log::{debug, error, warn};
 use std::{
     fs,
@@ -40,6 +41,7 @@ struct Msg {
 #[derive(Debug)]
 enum MountStatus {
     Done,
+    Asked,
     Error(glib::Error),
 }
 
@@ -62,7 +64,7 @@ fn main() -> Result<(), AdysMountError> {
 
     // Setting up the channel used for communication between the mount operations and the main function.
     let g_ctx = glib::MainContext::default();
-    let (tx, rx) = glib::MainContext::sync_channel(glib::PRIORITY_DEFAULT, parsed_entries.len());
+    let (tx, rx) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
     // Grabs the ammount of mounts to be done before passing the ownership of parsed_entries.
     let mut mounts_left = parsed_entries.len();
@@ -89,6 +91,7 @@ fn main() -> Result<(), AdysMountError> {
                 warn!("Failed when mounting {}", x.path);
                 mu_clone.lock().unwrap().push(x);
             }
+            _ => {}
         };
         mounts_left -= 1;
         glib::Continue(match mounts_left {
@@ -103,16 +106,24 @@ fn main() -> Result<(), AdysMountError> {
     g_loop.run();
 
     // Evaluates the arc content to check if at least one operation failed.
-    if mu.lock().unwrap().len() != 0 {
-        for err in mu.lock().unwrap().iter() {
+    let mut had_error = false;
+    let errors = mu.lock().unwrap();
+    if errors.len() != 0 {
+        for err in errors.iter() {
             if let MountStatus::Error(e) = &err.status {
-                warn!("Mount process for {} failed: {}", err.path, e)
+                warn!("Mount process for {} failed: {}", err.path, e);
+
+                // Ensures that the function will not error out if the location was already mounted.
+                if !e.matches(gio::IOErrorEnum::AlreadyMounted) {
+                    had_error = true;
+                }
             }
         }
-
-        return Err(AdysMountError::MountError);
     }
 
+    if had_error {
+        return Err(AdysMountError::MountError);
+    }
     Ok(())
 }
 
@@ -142,26 +153,23 @@ fn parse_entries(path: &String) -> Result<Vec<MountEntry>, std::io::Error> {
         });
     }
 
-    // The idiomatic way to return from a function in Rust is with tail expressions
     Ok(parsed_entries)
 }
 
 /// Handles the mount operation to mount the specified entry.
-fn handle_mount(entry: MountEntry, tx: glib::SyncSender<Msg>) {
+fn handle_mount(entry: MountEntry, tx: glib::Sender<Msg>) {
     debug!("Mounting entry {}", entry.mount_path);
 
     let f = gio::File::for_uri(&entry.mount_path);
 
     let mount_op = gio::MountOperation::new();
 
-    let mut cb: fn(&gio::MountOperation, &str, &str, &str, gio::AskPasswordFlags) = krbc_cb;
     if entry.is_anonymous {
         debug!("Anonymous mount requested for {}", entry.mount_path);
         mount_op.set_anonymous(true);
-        cb = anonymous_cb;
     }
 
-    mount_op.connect_ask_password(cb);
+    mount_op.connect_ask_password(ask_password_cb);
 
     // Callback invoked by gio after setting up the mount.
     let mount_handled_cb = move |r: Result<(), glib::Error>| {
@@ -171,7 +179,7 @@ fn handle_mount(entry: MountEntry, tx: glib::SyncSender<Msg>) {
                 status: MountStatus::Done,
             },
             Err(e) => Msg {
-                path: entry.mount_path.clone(),
+                path: entry.mount_path,
                 status: MountStatus::Error(e),
             },
         };
@@ -190,34 +198,33 @@ fn handle_mount(entry: MountEntry, tx: glib::SyncSender<Msg>) {
     );
 }
 
-/// Callback invoked by gio when mounting an entry.
-fn krbc_cb(mount_op: &gio::MountOperation, _: &str, _: &str, _: &str, _: gio::AskPasswordFlags) {
-    match std::env::var("KRB5CCNAME") {
-        Ok(_) => {
-            mount_op.reply(gio::MountOperationResult::Handled);
-        }
-        Err(_) => {
-            error!("Kerberos ticket not available in the machine");
-            mount_op.reply(gio::MountOperationResult::Aborted);
-        }
-    };
-}
-
-// Checks if anonymous mounts are supported by the provider.
-fn anonymous_cb(
+fn ask_password_cb(
     mount_op: &gio::MountOperation,
     _: &str,
     _: &str,
     _: &str,
     flags: gio::AskPasswordFlags,
 ) {
-    if flags.contains(gio::AskPasswordFlags::ANONYMOUS_SUPPORTED) {
+    if mount_op.is_anonymous() && flags.contains(gio::AskPasswordFlags::ANONYMOUS_SUPPORTED) {
+        unsafe {
+            if let Some(data) = mount_op.data("state") {
+                if let MountStatus::Asked = *(data.as_ptr()) {
+                    warn!("Anonymous access denied.");
+                    mount_op.reply(gio::MountOperationResult::Aborted);
+                }
+            } else {
+                debug!("Anonymous is supported by the provider.");
+                mount_op.set_data("state", MountStatus::Asked);
+                mount_op.reply(gio::MountOperationResult::Handled);
+            }
+        }
+    } else if std::env::var("KRB5CCNAME").is_ok() {
+        debug!("Kerberos ticket found on the machine.");
         mount_op.reply(gio::MountOperationResult::Handled);
-        return;
+    } else {
+        warn!("Kerberos ticket not available on the machine.");
+        mount_op.reply(gio::MountOperationResult::Aborted);
     }
-
-    warn!("Anonymous mounts are not supported by the provider");
-    mount_op.reply(gio::MountOperationResult::Aborted)
 }
 
 mod test;
