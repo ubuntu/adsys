@@ -45,13 +45,15 @@ type Service struct {
 }
 
 type state struct {
-	cacheDir     string
-	runDir       string
-	dconfDir     string
-	sudoersDir   string
-	policyKitDir string
-	sssCacheDir  string
-	sssConf      string
+	cacheDir      string
+	runDir        string
+	dconfDir      string
+	sudoersDir    string
+	policyKitDir  string
+	apparmorDir   string
+	apparmorFsDir string
+	sssCacheDir   string
+	sssConf       string
 
 	adDomain string
 }
@@ -63,6 +65,8 @@ type options struct {
 	sudoersDir          string
 	policyKitDir        string
 	sssCacheDir         string
+	apparmorDir         string
+	apparmorFsDir       string
 	sssdConf            string
 	defaultDomainSuffix string
 	authorizer          authorizerer
@@ -109,6 +113,23 @@ func WithSudoersDir(p string) func(o *options) error {
 func WithPolicyKitDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.policyKitDir = p
+		return nil
+	}
+}
+
+// WithApparmorDir specifies a personalized apparmor directory.
+func WithApparmorDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.apparmorDir = p
+		return nil
+	}
+}
+
+// WithApparmorFsDir specifies a personalized directory for the apparmor
+// security filesystem.
+func WithApparmorFsDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.apparmorFsDir = p
 		return nil
 	}
 }
@@ -226,6 +247,12 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 	if args.runDir != "" {
 		policyOptions = append(policyOptions, policies.WithRunDir(args.runDir))
 	}
+	if args.apparmorDir != "" {
+		policyOptions = append(policyOptions, policies.WithApparmorDir(args.apparmorDir))
+	}
+	if args.apparmorFsDir != "" {
+		policyOptions = append(policyOptions, policies.WithApparmorFsDir(args.apparmorFsDir))
+	}
 	m, err := policies.NewManager(bus, policyOptions...)
 	if err != nil {
 		return nil, err
@@ -239,13 +266,15 @@ func New(ctx context.Context, url, domain string, opts ...option) (s *Service, e
 		policyManager: m,
 		authorizer:    args.authorizer,
 		state: state{
-			cacheDir:     args.cacheDir,
-			dconfDir:     args.dconfDir,
-			sudoersDir:   args.sudoersDir,
-			policyKitDir: args.policyKitDir,
-			runDir:       args.runDir,
-			sssCacheDir:  args.sssCacheDir,
-			adDomain:     domain,
+			cacheDir:      args.cacheDir,
+			dconfDir:      args.dconfDir,
+			sudoersDir:    args.sudoersDir,
+			policyKitDir:  args.policyKitDir,
+			runDir:        args.runDir,
+			apparmorDir:   args.apparmorDir,
+			apparmorFsDir: args.apparmorFsDir,
+			sssCacheDir:   args.sssCacheDir,
+			adDomain:      domain,
 		},
 		initSystemTime: initSysTime,
 		bus:            bus,
