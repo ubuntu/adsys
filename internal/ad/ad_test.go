@@ -473,7 +473,7 @@ func TestGetPolicies(t *testing.T) {
 			gpoListArgs: []string{"gpoonly.com", "bob:standard"},
 			wantErr:     true,
 		},
-		"Backend IsOnline call failed": {
+		"Error on backend IsOnline call failed": {
 			backend: mock.Backend{
 				Dom:         "gpoonly.com",
 				Online:      true,
