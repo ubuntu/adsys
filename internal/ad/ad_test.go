@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/ad"
+	"github.com/ubuntu/adsys/internal/ad/backends"
 	"github.com/ubuntu/adsys/internal/ad/backends/mock"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -27,17 +28,20 @@ func TestNew(t *testing.T) {
 	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
-		sysvolCacheDirExists bool
-		cacheDirRO           bool
-		runDirRO             bool
+		sysvolCacheDirExists  bool
+		cacheDirRO            bool
+		runDirRO              bool
+		backendServerURLError error
 
 		wantErr bool
 	}{
-		"create KRB5 and Sysvol cache directory": {},
+		"create KRB5 and Sysvol cache directory":                {},
+		"no active server in backend does not fail ad creation": {backendServerURLError: backends.ErrorNoActiveServer},
 
 		"failed to create KRB5 cache directory":     {runDirRO: true, wantErr: true},
 		"failed to create Sysvol cache directory":   {cacheDirRO: true, wantErr: true},
 		"failed to create Policies cache directory": {sysvolCacheDirExists: true, cacheDirRO: true, wantErr: true},
+		"error on backend ServerURL random failure": {backendServerURLError: errors.New("Some failure on ServerURL"), wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -56,7 +60,7 @@ func TestNew(t *testing.T) {
 				testutils.MakeReadOnly(t, cacheDir)
 			}
 
-			adc, err := ad.New(context.Background(), bus, mock.Backend{},
+			adc, err := ad.New(context.Background(), bus, mock.Backend{ErrServerURL: tc.backendServerURLError},
 				ad.WithRunDir(runDir),
 				ad.WithCacheDir(cacheDir))
 			if tc.wantErr {
@@ -457,6 +461,16 @@ func TestGetPolicies(t *testing.T) {
 				Online:             true,
 			},
 			gpoListArgs: []string{"gpoonly.com", hostname + ":standard"},
+			wantErr:     true,
+		},
+		"Error on backend ServerURL call failed": {
+			backend: mock.Backend{
+				Dom:    "gpoonly.com",
+				Online: true,
+				// This error is skipped by New(), but not by GetPolicies
+				ErrServerURL: backends.ErrorNoActiveServer,
+			},
+			gpoListArgs: []string{"gpoonly.com", "bob:standard"},
 			wantErr:     true,
 		},
 		"Backend IsOnline call failed": {
@@ -1074,13 +1088,16 @@ func TestGetInfo(t *testing.T) {
 	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
-		online      bool
-		errIsOnline bool
+		online       bool
+		errIsOnline  bool
+		ErrServerURL error
 	}{
 		"Info reported from backend, online":  {online: true},
 		"Info reported from backend, offline": {online: false},
 
 		"Report unknown state if IsOnline calls fail": {errIsOnline: true},
+		// This error is skipped by New(), but not by GetInfo
+		"Report unknown state if ServerURL calls fail": {ErrServerURL: backends.ErrorNoActiveServer},
 	}
 
 	for name, tc := range tests {
@@ -1089,8 +1106,10 @@ func TestGetInfo(t *testing.T) {
 			t.Parallel()
 
 			adc, err := ad.New(context.Background(), bus,
-				mock.Backend{Dom: "example.com", ServURL: "ldap://myserver.example.com",
-					Online: tc.online, ErrIsOnline: tc.errIsOnline},
+				mock.Backend{
+					Dom: "example.com", ServURL: "ldap://myserver.example.com",
+					Online:      tc.online,
+					ErrIsOnline: tc.errIsOnline, ErrServerURL: tc.ErrServerURL},
 				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()))
 			require.NoError(t, err, "Setup: New should return no error")
 

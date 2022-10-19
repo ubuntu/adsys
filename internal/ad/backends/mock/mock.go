@@ -1,7 +1,10 @@
 // Package mock gives a mock backend to tweak its usage.
 package mock
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 // Backend is a mock backend where we control some returned value.
 type Backend struct {
@@ -9,8 +12,9 @@ type Backend struct {
 	ServURL            string
 	HostKrb5CCNAMEPath string
 
-	Online      bool
-	ErrIsOnline bool
+	Online       bool
+	ErrIsOnline  bool
+	ErrServerURL error
 }
 
 // Domain returns current server domain.
@@ -22,8 +26,11 @@ func (m Backend) Domain() string {
 // It returns first any static configuration and goes dynamic if the backend provides this.
 // If the dynamic lookup worked, but there is still no server URL found (for instance, backend
 // if offline), the error raised is of type ErrorNoActiveServer.
-func (m Backend) ServerURL() string {
-	return m.ServURL
+func (m Backend) ServerURL(context.Context) (string, error) {
+	if m.ErrServerURL != nil {
+		return "", m.ErrServerURL
+	}
+	return m.ServURL, nil
 }
 
 // HostKrb5CCNAME returns the absolute path of the machine krb5 ticket.

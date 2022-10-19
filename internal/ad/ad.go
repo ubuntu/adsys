@@ -151,7 +151,7 @@ func New(ctx context.Context, bus *dbus.Conn, configBackend backends.Backend, op
 	domain := configBackend.Domain()
 	serverURL, err := configBackend.ServerURL(ctx)
 	if err != nil && !errors.Is(err, backends.ErrorNoActiveServer) {
-		return nil, err
+		return nil, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)
 	}
 	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, serverURL)
 
@@ -226,7 +226,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// We need an AD LDAP url to connect to
 	adServerURL, err := ad.configBackend.ServerURL(ctx)
 	if err != nil {
-		return policies.Policies{}, err
+		return policies.Policies{}, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)
 	}
 
 	// Otherwise, try fetching the GPO list from LDAP
