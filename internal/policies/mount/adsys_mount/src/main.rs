@@ -14,7 +14,7 @@ mod logger; // Includes our logger implementation from the logger.rs file;
 use logger::Logger;
 
 mod error; // Includes our error implementation from the error.rs file;
-use error::AdysMountError;
+use error::AdsysMountError;
 
 /// Arguments required to run this binary
 #[derive(Debug, clap::Parser)]
@@ -45,7 +45,7 @@ enum MountStatus {
     Error(glib::Error),
 }
 
-fn main() -> Result<(), AdysMountError> {
+fn main() -> Result<(), AdsysMountError> {
     let args = Args::parse();
 
     // Creates the logger and sets its level to Debug.
@@ -59,7 +59,7 @@ fn main() -> Result<(), AdysMountError> {
         Ok(v) => v,
         Err(e) => {
             error!("Error when parsing entries: {}", e);
-            return Err(AdysMountError::ParseError);
+            return Err(AdsysMountError::ParseError);
         }
     };
 
@@ -124,7 +124,7 @@ fn main() -> Result<(), AdysMountError> {
     }
 
     if had_error {
-        return Err(AdysMountError::MountError);
+        return Err(AdsysMountError::MountError);
     }
     Ok(())
 }
