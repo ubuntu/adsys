@@ -31,7 +31,7 @@ func (a *App) installPolicy() {
 	mainCmd := &cobra.Command{
 		Use:   "admx lts-only|all",
 		Short: i18n.G("Dump windows policy definitions"),
-		Args:  cobra.ExactValidArgs(1),
+		Args:  cobra.ExactArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
