@@ -80,8 +80,6 @@ type options struct {
 	runDir    string
 	cacheDir  string
 
-	configBackend backends.Backend
-
 	withoutKerberos bool
 	gpoListCmd      []string
 }
@@ -150,7 +148,7 @@ func New(ctx context.Context, bus *dbus.Conn, configBackend backends.Backend, op
 
 	domain := configBackend.Domain()
 	serverURL, err := configBackend.ServerURL(ctx)
-	if err != nil && !errors.Is(err, backends.ErrorNoActiveServer) {
+	if err != nil && !errors.Is(err, backends.ErrNoActiveServer) {
 		return nil, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)
 	}
 	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, serverURL)

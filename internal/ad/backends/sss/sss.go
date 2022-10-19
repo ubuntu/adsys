@@ -114,7 +114,7 @@ func (sss SSS) ServerURL(ctx context.Context) (serverURL string, err error) {
 		return "", err
 	}
 	if serverURL == "" {
-		return "", backends.ErrorNoActiveServer
+		return "", backends.ErrNoActiveServer
 	}
 
 	if !strings.HasPrefix(serverURL, "ldap://") {

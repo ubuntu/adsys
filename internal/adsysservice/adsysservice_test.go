@@ -192,8 +192,6 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-type systemd struct{}
-
 type sssdbus struct{}
 
 func (s sssdbus) ActiveServer(_ string) (string, *dbus.Error) {

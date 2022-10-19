@@ -209,7 +209,6 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	case "sssd":
 		adBackend, err = sss.New(ctx, args.sssConfig, bus)
 	case "winbind":
-
 	}
 	if err != nil {
 		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %s"), err)

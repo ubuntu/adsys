@@ -1,4 +1,4 @@
-// package backends is the common interface and errors supported by ad backends.
+// Package backends is the common interface and errors supported by ad backends.
 package backends
 
 import (
@@ -28,7 +28,7 @@ type Backend interface {
 }
 
 var (
-	// ErrorNoActiveServer is an error receive when there is no active server and no static configuration
+	// ErrNoActiveServer is an error receive when there is no active server and no static configuration
 	// This is received in ServerURL.
-	ErrorNoActiveServer = errors.New(i18n.G("no active server found"))
+	ErrNoActiveServer = errors.New(i18n.G("no active server found"))
 )

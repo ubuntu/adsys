@@ -36,7 +36,7 @@ func TestNew(t *testing.T) {
 		wantErr bool
 	}{
 		"create KRB5 and Sysvol cache directory":                {},
-		"no active server in backend does not fail ad creation": {backendServerURLError: backends.ErrorNoActiveServer},
+		"no active server in backend does not fail ad creation": {backendServerURLError: backends.ErrNoActiveServer},
 
 		"failed to create KRB5 cache directory":     {runDirRO: true, wantErr: true},
 		"failed to create Sysvol cache directory":   {cacheDirRO: true, wantErr: true},
@@ -50,7 +50,7 @@ func TestNew(t *testing.T) {
 			runDir, cacheDir := t.TempDir(), t.TempDir()
 
 			if tc.sysvolCacheDirExists {
-				require.NoError(t, os.MkdirAll(filepath.Join(cacheDir, "sysvol", "Policies"), 0755),
+				require.NoError(t, os.MkdirAll(filepath.Join(cacheDir, "sysvol", "Policies"), 0750),
 					"Setup: create pre-existing policies cache directory")
 			}
 			if tc.runDirRO {
@@ -468,7 +468,7 @@ func TestGetPolicies(t *testing.T) {
 				Dom:    "gpoonly.com",
 				Online: true,
 				// This error is skipped by New(), but not by GetPolicies
-				ErrServerURL: backends.ErrorNoActiveServer,
+				ErrServerURL: backends.ErrNoActiveServer,
 			},
 			gpoListArgs: []string{"gpoonly.com", "bob:standard"},
 			wantErr:     true,
@@ -1097,7 +1097,7 @@ func TestGetInfo(t *testing.T) {
 
 		"Report unknown state if IsOnline calls fail": {errIsOnline: true},
 		// This error is skipped by New(), but not by GetInfo
-		"Report unknown state if ServerURL calls fail": {ErrServerURL: backends.ErrorNoActiveServer},
+		"Report unknown state if ServerURL calls fail": {ErrServerURL: backends.ErrNoActiveServer},
 	}
 
 	for name, tc := range tests {
