@@ -1,0 +1,5 @@
+[sssd]
+domains = offline
+
+[domain/offline]
+ad_domain = offline

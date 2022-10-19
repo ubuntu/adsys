@@ -7,12 +7,11 @@ Next Refresh: Tue May 25 14:55
 Ubuntu Pro subscription active.
 
 Active Directory:
-  Server: N/A
+  Current backend is SSSD
+  Configuration: testdata/sssd-configs/sssd.conf-online_no_active_server
+  Cache: /tmp/sss_cache
   Domain: online_no_active_server
-
-SSS:
-  Configuration: /etc/sssd/sssd.conf
-  Cache directory: /tmp/sss_cache
+  Server URL: Unknown
 
 Daemon:
   Timeout after 30s

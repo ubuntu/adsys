@@ -1,0 +1,5 @@
+[sssd]
+domains = online_no_active_server
+
+[domain/online_no_active_server]
+ad_domain = online_no_active_server
