@@ -76,7 +76,7 @@ func New(runDir string, opts ...Option) (m *Manager, err error) {
 	if err := os.MkdirAll(filepath.Join(runDir, "users"), 0755); err != nil {
 		return nil, err
 	}
-	if err := os.MkdirAll(filepath.Join(runDir, "machine"), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Join(runDir, "machine"), 0750); err != nil {
 		return nil, err
 	}
 
