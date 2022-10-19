@@ -51,6 +51,9 @@ func TestNew(t *testing.T) {
 				return
 			}
 			require.NoError(t, err, "New failed but shouldn't have")
+
+			require.DirExists(t, filepath.Join(runDir, "users"), "users directory in run has been created")
+			require.DirExists(t, filepath.Join(runDir, "machine"), "machine directory in run has been created")
 		})
 	}
 }
