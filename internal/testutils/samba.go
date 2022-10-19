@@ -54,7 +54,7 @@ func SetupSmb(port int, sysvolDir string) func() {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
 		}
 
-		// killing process on ppcel64 doesn't close stderr, delay the killing after ReadAll started.
+		// killing process on ppc64el doesn't close stderr, delay the killing after ReadAll started.
 		go func() {
 			time.Sleep(100 * time.Millisecond)
 			if err := stderr.Close(); err != nil {
