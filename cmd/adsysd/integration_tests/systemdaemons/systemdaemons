@@ -129,6 +129,7 @@ def sssd_on_bus(bus: dbus.Bus) -> None:
         {},
         [
             ("IsOnline", "", "b", "ret = False"),
+            ("ActiveServer", "s", "s", 'ret = ""'),
         ])
 
     main_object.AddObject(
