@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/ad/backends"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	"github.com/ubuntu/adsys/internal/ad/registry"
 	"github.com/ubuntu/adsys/internal/consts"
@@ -59,7 +60,7 @@ type downloadable struct {
 // AD structure to manage call concurrency.
 type AD struct {
 	hostname      string
-	configBackend Backend
+	configBackend backends.Backend
 
 	versionID        string
 	sysvolCacheDir   string
@@ -79,7 +80,7 @@ type options struct {
 	runDir    string
 	cacheDir  string
 
-	configBackend Backend
+	configBackend backends.Backend
 
 	withoutKerberos bool
 	gpoListCmd      []string
@@ -111,7 +112,7 @@ func WithRunDir(runDir string) Option {
 var AdsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab.
-func New(ctx context.Context, bus *dbus.Conn, configBackend Backend, opts ...Option) (ad *AD, err error) {
+func New(ctx context.Context, bus *dbus.Conn, configBackend backends.Backend, opts ...Option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
 	versionID, err := adcommon.GetVersionID("/")
@@ -148,7 +149,11 @@ func New(ctx context.Context, bus *dbus.Conn, configBackend Backend, opts ...Opt
 	}
 
 	domain := configBackend.Domain()
-	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, configBackend.ServerURL())
+	serverURL, err := configBackend.ServerURL(ctx)
+	if err != nil && !errors.Is(err, backends.ErrorNoActiveServer) {
+		return nil, err
+	}
+	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, serverURL)
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -219,7 +224,10 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	// We need an AD LDAP url to connect to
-	adServerURL := ad.configBackend.ServerURL()
+	adServerURL, err := ad.configBackend.ServerURL(ctx)
+	if err != nil {
+		return policies.Policies{}, err
+	}
 
 	// Otherwise, try fetching the GPO list from LDAP
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
@@ -509,7 +517,10 @@ func (ad *AD) GetInfo(ctx context.Context) (msg string) {
 		online = fmt.Sprint(i18n.G("**Offline mode** using cached policies\n"))
 	}
 	domain := ad.configBackend.Domain()
-	server := ad.configBackend.ServerURL()
+	server, err := ad.configBackend.ServerURL(ctx)
+	if err != nil {
+		server = "Unknown"
+	}
 
 	return fmt.Sprintf(i18n.G("%s\n%sDomain: %s\nServer URL: %s"), config, online, domain, server)
 }

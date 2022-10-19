@@ -19,6 +19,9 @@ func (m Backend) Domain() string {
 }
 
 // ServerURL returns current server URL.
+// It returns first any static configuration and goes dynamic if the backend provides this.
+// If the dynamic lookup worked, but there is still no server URL found (for instance, backend
+// if offline), the error raised is of type ErrorNoActiveServer.
 func (m Backend) ServerURL() string {
 	return m.ServURL
 }

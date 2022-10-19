@@ -11,6 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/ad"
+	"github.com/ubuntu/adsys/internal/ad/backends"
 	"github.com/ubuntu/adsys/internal/ad/backends/sss"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/consts"
@@ -198,7 +199,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	}
 
 	// AD Backend selection
-	var adBackend ad.Backend
+	var adBackend backends.Backend
 	switch args.adBackend {
 	default:
 		log.Warningf(ctx, "Unknown configured backend %q. Defaulting to sssd.", args.adBackend)
