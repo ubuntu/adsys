@@ -155,7 +155,7 @@ func New() *App {
 	decorate.LogOnError(a.viper.BindPFlag("ad_backend", a.rootCmd.PersistentFlags().Lookup("ad-backend")))
 	a.rootCmd.PersistentFlags().StringP("sssd.config", "", consts.DefaultSSSConf, i18n.G("SSSd config file path"))
 	decorate.LogOnError(a.viper.BindPFlag("sssd.config", a.rootCmd.PersistentFlags().Lookup("sssd.config")))
-	a.rootCmd.PersistentFlags().StringP("sssd.cache-dir", "", consts.DefaultSSSConf, i18n.G("SSSd cache directory"))
+	a.rootCmd.PersistentFlags().StringP("sssd.cache-dir", "", consts.DefaultSSSCacheDir, i18n.G("SSSd cache directory"))
 	decorate.LogOnError(a.viper.BindPFlag("sssd.cache_dir", a.rootCmd.PersistentFlags().Lookup("sssd.cache-dir")))
 
 	// subcommands
