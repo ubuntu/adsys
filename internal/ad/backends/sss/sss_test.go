@@ -21,7 +21,7 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-func TestNew(t *testing.T) {
+func TestSSSD(t *testing.T) {
 	t.Parallel()
 
 	bus := testutils.NewDbusConn(t)
@@ -40,10 +40,12 @@ func TestNew(t *testing.T) {
 		"Ad server defined in config does not need active server":     {sssdConf: "no-active-server-example.com-with-server"},
 		"Ad server starting with ldap prefix does not stutter":        {sssdConf: "example.com-with-server-start-ldap"},
 
+		// IsOnline case
+		"Is not online": {sssdConf: "offline-example.com"},
+
 		// Special cases
-		"SSSd domain can not match ad domain":                      {sssdConf: "domain-no-match-addomain"},
-		"DBUS service not needed when we don’t need active server": {sssdConf: "domain-without-dbus.example.com-with-server"},
-		"Default domain suffix is read":                            {sssdConf: "example.com-with-default-domain-suffix"},
+		"SSSd domain can not match ad domain": {sssdConf: "domain-no-match-addomain"},
+		"Default domain suffix is read":       {sssdConf: "example.com-with-default-domain-suffix"},
 
 		// Special cases for config parameters
 		"Regular config, with cache dir": {sssdConf: "example.com", sssdCacheDir: "/some/specific/cachedir"},
@@ -51,15 +53,23 @@ func TestNew(t *testing.T) {
 		// So, it can fails or work. Decide depending on the file existence.
 		"No sssd conf loads the default": {sssdConf: ""},
 
+		// ServerURL error cases (this doesn't fail New)
+		"ServerURL() does not fail when we do not need an active server":        {sssdConf: "domain-without-dbus.example.com-with-server"},
+		"Error returned by ServerURL() on no config nor active server provided": {sssdConf: "no-active-server-example.com"},
+		"Error returned by ServerURL() when calls is erroring out":              {sssdConf: "active-server-err.example.com"},
+
+		// IsOnline error case (this doesn't fail New)
+		"Error returned by IsOnline()  when calls is erroring out": {sssdConf: "is-online-err-example.com"},
+
+		// Common ServerURL and IsOnline error cases (this doesn't fail New)
+		"Error returned by ServerURL() and IsOnline() when DBUS has no object": {sssdConf: "domain-without-dbus.example.com"},
+
 		// Error cases
-		"Error on sssd conf does not exists":                    {sssdConf: "does_no_exists", wantErr: true},
-		"Error on no domains field":                             {sssdConf: "no-domains", wantErr: true},
-		"Error on empty domains field":                          {sssdConf: "empty-domains", wantErr: true},
-		"Error on no sssd section":                              {sssdConf: "no-sssd-section", wantErr: true},
-		"Error on sssd domain section missing":                  {sssdConf: "sssddomain-missing", wantErr: true},
-		"Error on no config nor active server provided":         {sssdConf: "no-active-server-example.com", wantErr: true},
-		"Error on active server erroring out":                   {sssdConf: "active-server-err.example.com", wantErr: true},
-		"Error on no DBUS service when active server is needed": {sssdConf: "domain-without-dbus.example.com", wantErr: true},
+		"Error on sssd conf does not exists":   {sssdConf: "does_no_exists", wantErr: true},
+		"Error on no domains field":            {sssdConf: "no-domains", wantErr: true},
+		"Error on empty domains field":         {sssdConf: "empty-domains", wantErr: true},
+		"Error on no sssd section":             {sssdConf: "no-sssd-section", wantErr: true},
+		"Error on sssd domain section missing": {sssdConf: "sssddomain-missing", wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -94,56 +104,27 @@ func TestNew(t *testing.T) {
 
 			var got bytes.Buffer
 			got.WriteString(fmt.Sprintf("* Domain(): %s\n", sssd.Domain()))
-			got.WriteString(fmt.Sprintf("* ServerURL(): %s\n", sssd.ServerURL()))
+
+			serverURL, err := sssd.ServerURL(context.Background())
+			serverLine := fmt.Sprintf("* ServerURL(): %s\n", serverURL)
+			if err != nil {
+				serverLine = fmt.Sprintf("* ServerURL ERROR(): %s\n", err)
+			}
+			got.WriteString(serverLine)
+
+			isOnline, err := sssd.IsOnline()
+			isOnlineLine := fmt.Sprintf("* IsOnline(): %t\n", isOnline)
+			if err != nil {
+				isOnlineLine = fmt.Sprintf("* IsOnline ERROR(): %s\n", err)
+			}
+			got.WriteString(isOnlineLine)
+
 			got.WriteString(fmt.Sprintf("* HostKrb5CCNAME(): %s\n", sssd.HostKrb5CCNAME()))
 			got.WriteString(fmt.Sprintf("* DefaultDomainSuffix(): %s\n", sssd.DefaultDomainSuffix()))
 			got.WriteString(fmt.Sprintf("* Config():\n%s\n", sssd.Config()))
 
 			want := testutils.LoadWithUpdateFromGolden(t, got.String())
 			require.Equal(t, want, got.String(), "Got expected loaded values in sssd config object")
-		})
-	}
-}
-
-func TestIsOnline(t *testing.T) {
-	t.Parallel()
-
-	bus := testutils.NewDbusConn(t)
-
-	tests := map[string]struct {
-		sssdConf string
-
-		wantOnline bool
-		wantErr    bool
-	}{
-		"Is online":     {sssdConf: "example.com", wantOnline: true},
-		"Is not online": {sssdConf: "offline-example.com", wantOnline: false},
-
-		// Error cases
-		"Error on IsOnline dbus call failing":                   {sssdConf: "is-online-err-example.com", wantErr: true},
-		"Error on no DBUS service when IsOnline dbus is called": {sssdConf: "domain-without-dbus.example.com-with-server", wantErr: true},
-	}
-
-	for name, tc := range tests {
-		tc := tc
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			config := sss.Config{
-				Conf: filepath.Join("testdata", "configs", tc.sssdConf),
-			}
-
-			sssd, err := sss.New(context.Background(), config, bus)
-			require.NoError(t, err, "New should return no error")
-
-			got, err := sssd.IsOnline()
-			if tc.wantErr {
-				require.Error(t, err, "IsOnline should have errored out")
-				return
-			}
-			require.NoError(t, err, "IsOnline should return no error")
-
-			require.Equal(t, tc.wantOnline, got, "IsOnline should return expected online state")
 		})
 	}
 }

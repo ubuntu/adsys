@@ -1,8 +1,9 @@
 * Domain(): example.com
-* ServerURL(): ldap://dynamic_active_server.example.com
+* ServerURL(): ldap://mystaticserver.example.com
+* IsOnline(): true
 * HostKrb5CCNAME(): /var/lib/sss/db/ccache_EXAMPLE.COM
 * DefaultDomainSuffix(): example.com
 * Config():
 Current backend is SSSD
-Configuration: testdata/configs/domain-no-match-addomain
+Configuration: testdata/configs/example.com-with-server
 Cache: /var/lib/sss/db

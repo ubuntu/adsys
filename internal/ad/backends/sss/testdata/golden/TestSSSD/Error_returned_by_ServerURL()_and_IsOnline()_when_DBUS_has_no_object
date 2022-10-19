@@ -1,0 +1,9 @@
+* Domain(): domain-without-dbus.example
+* ServerURL ERROR(): error while trying to look up AD server address on SSSD for "domain-without-dbus.example": dbus: invalid message: invalid path name
+* IsOnline ERROR(): failed to retrieve offline state from SSSD: dbus: invalid message: invalid path name
+* HostKrb5CCNAME(): /var/lib/sss/db/ccache_DOMAIN-WITHOUT-DBUS.EXAMPLE
+* DefaultDomainSuffix(): domain-without-dbus.example
+* Config():
+Current backend is SSSD
+Configuration: testdata/configs/domain-without-dbus.example.com
+Cache: /var/lib/sss/db
