@@ -133,8 +133,8 @@ func TestApplyPolicy(t *testing.T) {
 
 			m := apparmor.New(apparmorDir,
 				apparmor.WithApparmorParserCmd(apparmorParserCmd),
-				apparmor.WithLoadedPoliciesFile(loadedPoliciesFile),
-			)
+				apparmor.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)))
+
 			err := m.ApplyPolicy(context.Background(), "ubuntu", !tc.user, tc.entries, mockAssetsDumper.SaveAssetsTo)
 			if tc.wantErr {
 				// We don't return here as we want to check that the apparmor
@@ -307,7 +307,7 @@ func mockLoadedPoliciesFile(t *testing.T, policies []string) string {
 
 	// The contents of this file are cross-referenced with the apparmor.d/adsys
 	// directory structure in order to determine which of the policies are loaded.
-	path := filepath.Join(t.TempDir(), "loaded-policies")
+	path := filepath.Join(t.TempDir(), "profiles")
 	err := os.WriteFile(path, []byte(strings.Join(policies, " (enforce)\n")+" (enforce)\n"), 0600)
 	require.NoError(t, err, "Setup: Can't write loaded policies file")
 	return path
