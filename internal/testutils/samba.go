@@ -54,9 +54,13 @@ func SetupSmb(port int, sysvolDir string) func() {
 			log.Fatalf("Setup: failed to kill smbd process: %v", err)
 		}
 
-		if err := stderr.Close(); err != nil {
-			log.Fatalf("Setup: failed to close stderr on smbd process: %v", err)
-		}
+		// killing process on ppc64el doesn't close stderr, delay the killing after ReadAll started.
+		go func() {
+			time.Sleep(100 * time.Millisecond)
+			if err := stderr.Close(); err != nil {
+				log.Fatalf("Setup: failed to close stderr on smbd process: %v", err)
+			}
+		}()
 
 		d, err := io.ReadAll(stderr)
 		if err != nil {
