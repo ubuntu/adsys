@@ -275,8 +275,9 @@ socket: %s
 cache_dir: %s
 run_dir: %s
 service_timeout: %d
-ad_server: example.com
-ad_domain: ldap://adc.example.com
+
+sssd:
+  config: testdata/sssd.conf
 `,
 		verbose,
 		filepath.Join(dir, socketName),
@@ -326,8 +327,9 @@ func prepareEnv(t *testing.T) {
 	testutils.Setenv(t, "ADSYS_SOCKET", filepath.Join(dir, "socket"))
 	testutils.Setenv(t, "ADSYS_CACHE_DIR", filepath.Join(dir, "cache"))
 	testutils.Setenv(t, "ADSYS_RUN_DIR", filepath.Join(dir, "run"))
-	testutils.Setenv(t, "ADSYS_AD_SERVER", "ldap://adserver")
-	testutils.Setenv(t, "ADSYS_AD_DOMAIN", "adserver.domain")
+
+	// This is to make ad.New() (and so adsysservice) instantiable
+	testutils.Setenv(t, "ADSYS_SSSD.CONFIG", "testdata/sssd.conf")
 }
 
 // changeArgs allows changing command line arguments and return a function to restore it.
