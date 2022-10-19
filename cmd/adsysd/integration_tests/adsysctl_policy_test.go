@@ -464,6 +464,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"sudoers.d",
 				"polkit-1",
 				"run/machine",
+				"apparmor.d/adsys/machine",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -484,6 +485,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"sudoers.d",
 				"polkit-1",
 				"run/machine",
+				"apparmor.d/adsys/machine",
 				"cache/sysvol/Policies/{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}",
 				"cache/sysvol/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}",
 			},
