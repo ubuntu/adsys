@@ -14,17 +14,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/ad/backends/sss"
 	"github.com/ubuntu/adsys/internal/adsysservice"
-	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
-
-type mockAuthorizer struct {
-}
-
-func (mockAuthorizer) IsAllowedFromContext(context.Context, authorizer.Action) error {
-	return nil
-}
 
 func TestNew(t *testing.T) {
 	t.Parallel()
