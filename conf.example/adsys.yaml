@@ -12,6 +12,8 @@ dconf_dir: /etc/dconf
 sudoers_dir: /etc/sudoers.d
 policykit_dir: /etc/polkit-1
 sss_cache_dir: /var/lib/sss/db
+apparmor_dir: /etc/apparmor.d/adsys
+apparmorfs_dir: /sys/kernel/security/apparmor
 
 # Client only configuration
 client_timeout: 60

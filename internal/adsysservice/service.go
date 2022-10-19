@@ -82,6 +82,9 @@ func (s *Service) Status(r *adsys.Empty, stream adsys.Service_StatusServer) (err
 	if state.sssConf == "" {
 		state.sssConf = consts.DefaultSSSConf
 	}
+	if state.apparmorDir == "" {
+		state.apparmorDir = consts.DefaultApparmorDir
+	}
 
 	timeout := i18n.G("unknown")
 	socket := i18n.G("unknown")
@@ -162,12 +165,13 @@ Daemon:
   Run path: %s
   Dconf path: %s
   Sudoers path: %s
-  PolicyKit path: %s`), offline, updateMachine, updateUsers, nextRefresh,
+  PolicyKit path: %s
+  Apparmor path: %s`), offline, updateMachine, updateUsers, nextRefresh,
 		ubuntuProStatus,
 		adServerURL, state.adDomain,
 		state.sssConf, state.sssCacheDir,
 		timeout, socket, state.cacheDir, state.runDir, state.dconfDir,
-		state.sudoersDir, state.policyKitDir)
+		state.sudoersDir, state.policyKitDir, state.apparmorDir)
 
 	if err := stream.Send(&adsys.StringResponse{
 		Msg: status,

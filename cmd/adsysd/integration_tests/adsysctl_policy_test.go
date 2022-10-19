@@ -225,7 +225,7 @@ func TestPolicyUpdate(t *testing.T) {
 		krb5ccname            string
 		krb5ccNamesState      []krb5ccNamesWithState
 		clearDirs             []string // Removes already generated system files eg dconf db, apparmor profiles, ...
-		addDirs               []string
+		addPaths              []string
 		readOnlyDirs          []string
 		dynamicADServerDomain string
 		defaultADDomainSuffix string
@@ -250,6 +250,7 @@ func TestPolicyUpdate(t *testing.T) {
 			}},
 		"Machine, first time": {
 			args:       []string{"-m"},
+			addPaths:   []string{"apparmorfs/profiles"},
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -463,6 +464,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"sudoers.d",
 				"polkit-1",
 				"run/machine",
+				"apparmor.d/adsys/machine",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -483,6 +485,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"sudoers.d",
 				"polkit-1",
 				"run/machine",
+				"apparmor.d/adsys/machine",
 				"cache/sysvol/Policies/{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}",
 				"cache/sysvol/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}",
 			},
@@ -603,10 +606,24 @@ func TestPolicyUpdate(t *testing.T) {
 				fmt.Sprintf("run/users/%s/mounts", currentUID),
 			},
 			// This generates an error when the used path already exists as a directory instead of a file.
-			addDirs: []string{
+			addPaths: []string{
 				fmt.Sprintf("run/users/%s/mounts/", currentUID),
 			},
 			wantErr: true,
+		},
+		"Error on apparmor apply failing": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState: "localhost-uptodate",
+			// this generates an error when dumping assets to machine.new
+			readOnlyDirs: []string{"apparmor.d/adsys"},
+			wantErr:      true,
 		},
 		"Error on host is offline, without policies": {
 			dynamicADServerDomain: "offline",
@@ -844,8 +861,8 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 
 			// Some tests will need some additional paths to be created
-			for _, k := range tc.addDirs {
-				testutils.CreatePath(t, filepath.Join(adsysDir, k)+"/")
+			for _, k := range tc.addPaths {
+				testutils.CreatePath(t, adsysDir+"/"+k)
 			}
 
 			// Some tests will need read only dirs to create failures
@@ -947,6 +964,7 @@ func TestPolicyUpdate(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "dconf"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "sudoers.d"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "polkit-1"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "apparmor.d", "adsys"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "apparmor.d", "adsys"), update)
 
 			// Current user can have different UID depending on where it’s running. We can’t mock it as we rely on current uid
 			// in the process for authorization check. Just make it generic.
