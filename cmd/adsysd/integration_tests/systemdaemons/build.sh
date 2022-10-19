@@ -6,6 +6,6 @@
 # no_startup_time, invalid_startup_time, no_nextrefresh_time, invalid_nextrefresh_time
 set -eu
 
-rootdir="$(realpath $(dirname $(realpath $0))/../../../)"
+rootdir="$(realpath $(dirname $(realpath $0))/../../../..)"
 cd ${rootdir}
-docker build -t ghcr.io/ubuntu/adsys/systemdaemons:0.1 -f cmd/integration_tests/systemdaemons/Dockerfile .
+docker build -t ghcr.io/ubuntu/adsys/systemdaemons:0.1 -f cmd/adsysd/integration_tests/systemdaemons/Dockerfile .
