@@ -15,7 +15,14 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if os.Getenv("ADWATCHD_SKIP_INTEGRATION_TESTS") != "" || os.Getenv("ADSYS_SKIP_SUDO_TESTS") != "" {
+	// We use > 0 to allow Windows to pass through
+	if os.Geteuid() > 0 {
+		fmt.Println("Test has to be run as root, skipping...")
+		return
+	}
+
+	// This is used for skipping race tests in CI
+	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
 		fmt.Println("Integration tests skipped as requested")
 		return
 	}
