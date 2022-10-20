@@ -211,7 +211,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	case "winbind":
 	}
 	if err != nil {
-		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %s"), err)
+		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %v"), err)
 	}
 
 	adc, err := ad.New(ctx, bus, adBackend, adOptions...)
