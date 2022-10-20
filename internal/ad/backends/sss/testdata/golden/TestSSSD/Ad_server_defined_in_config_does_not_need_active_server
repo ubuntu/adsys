@@ -1,0 +1,9 @@
+* Domain(): noactiveserver.example.com
+* ServerURL(): ldap://mystaticserver.example.com
+* IsOnline(): true
+* HostKrb5CCNAME(): /var/lib/sss/db/ccache_NOACTIVESERVER.EXAMPLE.COM
+* DefaultDomainSuffix(): noactiveserver.example.com
+* Config():
+Current backend is SSSD
+Configuration: testdata/configs/no-active-server-example.com-with-server
+Cache: /var/lib/sss/db

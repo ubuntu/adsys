@@ -1,0 +1,9 @@
+* Domain(): domain-without-dbus.example
+* ServerURL(): ldap://mystaticserver.example.com
+* IsOnline ERROR(): failed to retrieve offline state from SSSD: dbus: invalid message: invalid path name
+* HostKrb5CCNAME(): /var/lib/sss/db/ccache_DOMAIN-WITHOUT-DBUS.EXAMPLE
+* DefaultDomainSuffix(): domain-without-dbus.example
+* Config():
+Current backend is SSSD
+Configuration: testdata/configs/domain-without-dbus.example.com-with-server
+Cache: /var/lib/sss/db

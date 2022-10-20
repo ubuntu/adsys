@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/ad/backends"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	"github.com/ubuntu/adsys/internal/ad/registry"
 	"github.com/ubuntu/adsys/internal/consts"
@@ -58,19 +59,13 @@ type downloadable struct {
 
 // AD structure to manage call concurrency.
 type AD struct {
-	isOffline bool
-
-	hostname            string
-	url                 string
-	defaultDomainSuffix string
+	hostname      string
+	configBackend backends.Backend
 
 	versionID        string
 	sysvolCacheDir   string
 	policiesCacheDir string
 	krb5CacheDir     string
-	sssCCName        string
-
-	sssdDbus dbus.BusObject
 
 	downloadables map[string]*downloadable
 	sync.RWMutex
@@ -81,13 +76,12 @@ type AD struct {
 }
 
 type options struct {
-	versionID           string
-	runDir              string
-	cacheDir            string
-	sssCacheDir         string
-	defaultDomainSuffix string
-	withoutKerberos     bool
-	gpoListCmd          []string
+	versionID string
+	runDir    string
+	cacheDir  string
+
+	withoutKerberos bool
+	gpoListCmd      []string
 }
 
 // Option reprents an optional function to change AD behavior.
@@ -109,22 +103,6 @@ func WithRunDir(runDir string) Option {
 	}
 }
 
-// WithSSSCacheDir specifies which cache directory to use for SSS.
-func WithSSSCacheDir(cacheDir string) Option {
-	return func(o *options) error {
-		o.sssCacheDir = cacheDir
-		return nil
-	}
-}
-
-// WithDefaultDomainSuffix specifies a default domain suffix we provide.
-func WithDefaultDomainSuffix(defaultDomainSuffix string) Option {
-	return func(o *options) error {
-		o.defaultDomainSuffix = defaultDomainSuffix
-		return nil
-	}
-}
-
 // AdsysGpoListCode is the embedded script which request
 // Samba to get our GPO list for the given object.
 //
@@ -132,7 +110,7 @@ func WithDefaultDomainSuffix(defaultDomainSuffix string) Option {
 var AdsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab.
-func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option) (ad *AD, err error) {
+func New(ctx context.Context, bus *dbus.Conn, configBackend backends.Backend, opts ...Option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
 	versionID, err := adcommon.GetVersionID("/")
@@ -142,11 +120,10 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 
 	// defaults
 	args := options{
-		runDir:      consts.DefaultRunDir,
-		cacheDir:    consts.DefaultCacheDir,
-		sssCacheDir: consts.DefaultSSSCacheDir,
-		gpoListCmd:  []string{"python3", "-c", AdsysGpoListCode},
-		versionID:   versionID,
+		runDir:     consts.DefaultRunDir,
+		cacheDir:   consts.DefaultCacheDir,
+		gpoListCmd: []string{"python3", "-c", AdsysGpoListCode},
+		versionID:  versionID,
 	}
 	// applied options
 	for _, o := range opts {
@@ -169,6 +146,13 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 		return nil, err
 	}
 
+	domain := configBackend.Domain()
+	serverURL, err := configBackend.ServerURL(ctx)
+	if err != nil && !errors.Is(err, backends.ErrNoActiveServer) {
+		return nil, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)
+	}
+	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, serverURL)
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -176,28 +160,16 @@ func New(ctx context.Context, url, domain string, bus *dbus.Conn, opts ...Option
 	// for misconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
 	hostname = strings.TrimSuffix(hostname, "."+domain)
 
-	// local machine sssd krb5 cache
-	sssCCName := filepath.Join(args.sssCacheDir, "ccache_"+strings.ToUpper(domain))
-
-	sssdDbus := bus.Object(consts.SSSDDbusRegisteredName,
-		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, strings.ReplaceAll(domain, ".", "_2e"))))
-
-	if url != "" && !strings.HasPrefix(url, "ldap://") {
-		url = fmt.Sprintf("ldap://%s", url)
-	}
-
 	return &AD{
-		hostname:            hostname,
-		url:                 url,
-		defaultDomainSuffix: args.defaultDomainSuffix,
-		versionID:           args.versionID,
-		sysvolCacheDir:      sysvolCacheDir,
-		policiesCacheDir:    policiesCacheDir,
-		krb5CacheDir:        krb5CacheDir,
-		sssCCName:           sssCCName,
-		sssdDbus:            sssdDbus,
-		downloadables:       make(map[string]*downloadable),
-		gpoListCmd:          args.gpoListCmd,
+		hostname:         hostname,
+		configBackend:    configBackend,
+		versionID:        args.versionID,
+		sysvolCacheDir:   sysvolCacheDir,
+		policiesCacheDir: policiesCacheDir,
+		krb5CacheDir:     krb5CacheDir,
+
+		downloadables: make(map[string]*downloadable),
+		gpoListCmd:    args.gpoListCmd,
 	}, nil
 }
 
@@ -226,7 +198,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		src := userKrb5CCName
 		// there is no env var for machine: get sss ccache
 		if objectClass == ComputerObject {
-			src = ad.sssCCName
+			src = ad.configBackend.HostKrb5CCNAME()
 		}
 		if err := ad.ensureKrb5CCName(src, krb5CCPath); err != nil {
 			return pols, err
@@ -234,12 +206,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	var online bool
-	if err := ad.sssdDbus.Call(consts.SSSDDbusInterface+".IsOnline", 0).Store(&online); err != nil {
-		return pols, fmt.Errorf(i18n.G("failed to retrieve offline state from SSSD: %v"), err)
+	if online, err = ad.configBackend.IsOnline(); err != nil {
+		return pols, err
 	}
-	ad.Lock()
-	ad.isOffline = !online
-	ad.Unlock()
 
 	// If sssd returns that we are offline, returns the cache list of GPOs if present
 	if !online {
@@ -253,24 +222,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	// We need an AD LDAP url to connect to
-	adServerURL, _ := ad.GetStatus()
-	if adServerURL == "" {
-		log.Debug(ctx, "Triggering autodiscovery of AD server triggered because sssd.conf or manual url not provided")
-		// Try to update from SSSD the current active AD server
-		msg := i18n.G("error while trying to look up AD server address on SSSD")
-		err := ad.sssdDbus.Call(consts.SSSDDbusInterface+".ActiveServer", 0, "AD").Store(&adServerURL)
-		if err != nil {
-			return pols, fmt.Errorf(i18n.G("%s: %v"), msg, err)
-		}
-		if adServerURL == "" {
-			return pols, fmt.Errorf(i18n.G("%s: no active server found"), msg)
-		}
-		if !strings.HasPrefix(adServerURL, "ldap://") {
-			adServerURL = fmt.Sprintf("ldap://%s", adServerURL)
-		}
-		ad.Lock()
-		ad.url = adServerURL
-		ad.Unlock()
+	adServerURL, err := ad.configBackend.ServerURL(ctx)
+	if err != nil {
+		return policies.Policies{}, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)
 	}
 
 	// Otherwise, try fetching the GPO list from LDAP
@@ -547,11 +501,26 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 	return r, nil
 }
 
-// GetStatus returns dynamic part of our AD instance like offline state and active server for AD ldap.
-func (ad *AD) GetStatus() (adServerURL string, isOffline bool) {
-	ad.RLock()
-	defer ad.RUnlock()
-	return ad.url, ad.isOffline
+// GetInfo returns all information from the selected backend: static and dynamic part.
+func (ad *AD) GetInfo(ctx context.Context) (msg string) {
+	// static part
+	config := ad.configBackend.Config()
+
+	// dynamic info
+	var online string
+	if isOnline, err := ad.configBackend.IsOnline(); err != nil {
+		log.Warning(ctx, err)
+		online = fmt.Sprint(i18n.G("**Can't check if we have an active connection**\n"))
+	} else if !isOnline {
+		online = fmt.Sprint(i18n.G("**Offline mode** using cached policies\n"))
+	}
+	domain := ad.configBackend.Domain()
+	server, err := ad.configBackend.ServerURL(ctx)
+	if err != nil {
+		server = "Unknown"
+	}
+
+	return fmt.Sprintf(i18n.G("%s\n%sDomain: %s\nServer URL: %s"), config, online, domain, server)
 }
 
 // NormalizeTargetName transforms and lowercases User or DOMAIN\User to user@domain.
@@ -587,11 +556,11 @@ func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClas
 	default:
 		return "", fmt.Errorf(i18n.G(`only one \ is permitted in domain\username. Got: %s`), target)
 	}
-	if domainSuffix == "" && ad.defaultDomainSuffix == "" {
+	if domainSuffix == "" && ad.configBackend.DefaultDomainSuffix() == "" {
 		return "", fmt.Errorf(i18n.G(`no domain provided for user %q and no default domain in sssd.conf`), target)
 	}
 	if domainSuffix == "" {
-		domainSuffix = ad.defaultDomainSuffix
+		domainSuffix = ad.configBackend.DefaultDomainSuffix()
 	}
 
 	target = fmt.Sprintf("%s@%s", baseUser, domainSuffix)

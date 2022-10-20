@@ -1,20 +1,22 @@
 package adsysservice
 
-// WithMockAuthorizer specifies a personalized authorizer.
-func WithMockAuthorizer(auth authorizerer) func(o *options) error {
-	return func(o *options) error {
-		o.authorizer = auth
-		return nil
-	}
-}
-
-// WithSSSdConf specifies a personalized sssd.conf.
-func WithSSSdConf(p string) func(o *options) error {
-	return func(o *options) error {
-		o.sssdConf = p
-		return nil
-	}
-}
+import (
+	"context"
+	"strings"
+)
 
 // Option type exported for tests.
 type Option = option
+
+// SelectedBackend returns currently selected backend for tests.
+// It's based on string comparison in the info message.
+func (s *Service) SelectedBackend() string {
+	info := s.adc.GetInfo(context.Background())
+
+	backend := "unknown"
+	if strings.Contains(info, "sssd") {
+		backend = "sssd"
+	}
+
+	return backend
+}

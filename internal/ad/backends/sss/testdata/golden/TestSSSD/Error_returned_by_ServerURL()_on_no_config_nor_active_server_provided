@@ -1,0 +1,9 @@
+* Domain(): noactiveserver.example.com
+* ServerURL ERROR(): error while trying to look up AD server address on SSSD for "noactiveserver.example.com": no active server found
+* IsOnline(): true
+* HostKrb5CCNAME(): /var/lib/sss/db/ccache_NOACTIVESERVER.EXAMPLE.COM
+* DefaultDomainSuffix(): noactiveserver.example.com
+* Config():
+Current backend is SSSD
+Configuration: testdata/configs/no-active-server-example.com
+Cache: /var/lib/sss/db

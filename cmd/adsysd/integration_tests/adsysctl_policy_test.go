@@ -88,12 +88,11 @@ func TestPolicyApplied(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get current hostname")
 
 	tests := map[string]struct {
-		args                  []string
-		defaultADDomainSuffix string
-		systemAnswer          string
-		daemonNotStarted      bool
-		userGPORules          string
-		noMachineGPORules     bool
+		args              []string
+		systemAnswer      string
+		daemonNotStarted  bool
+		userGPORules      string
+		noMachineGPORules bool
 
 		wantErr bool
 	}{
@@ -109,7 +108,7 @@ func TestPolicyApplied(t *testing.T) {
 
 		// User options
 		`Current user with domain\username`:           {args: []string{`example.com\adsystestuser`}},
-		`Current user with default domain completion`: {args: []string{`adsystestuser`}, defaultADDomainSuffix: "example.com"},
+		`Current user with default domain completion`: {args: []string{`adsystestuser`}},
 
 		// Error cases
 		"Machine cache not available":                             {noMachineGPORules: true, wantErr: true},
@@ -154,13 +153,7 @@ func TestPolicyApplied(t *testing.T) {
 					"Setup: failed to copy user policies cache")
 			}
 			conf := createConf(t, dir)
-			if tc.defaultADDomainSuffix != "" {
-				content, err := os.ReadFile(conf)
-				require.NoError(t, err, "Setup: can't read configuration file")
-				content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
-				err = os.WriteFile(conf, content, 0600)
-				require.NoError(t, err, "Setup: can't rewrite configuration file")
-			}
+
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
 			}
@@ -219,16 +212,15 @@ func TestPolicyUpdate(t *testing.T) {
 	}
 
 	tests := map[string]struct {
-		args                  []string
-		initState             string
-		systemAnswer          string
-		krb5ccname            string
-		krb5ccNamesState      []krb5ccNamesWithState
-		clearDirs             []string // Removes already generated system files eg dconf db, apparmor profiles, ...
-		addPaths              []string
-		readOnlyDirs          []string
-		dynamicADServerDomain string
-		defaultADDomainSuffix string
+		args             []string
+		initState        string
+		sssdConf         string
+		systemAnswer     string
+		krb5ccname       string
+		krb5ccNamesState []krb5ccNamesWithState
+		clearDirs        []string // Removes already generated system files eg dconf db, apparmor profiles, ...
+		addPaths         []string
+		readOnlyDirs     []string
 
 		wantErr bool
 	}{
@@ -372,16 +364,16 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 
-		// Dynamic AD server
-		"Current user, dynamic AD server": {
-			initState:             "localhost-uptodate",
-			dynamicADServerDomain: "example.com",
+		// Static AD server
+		"Current user, static AD server": {
+			sssdConf:  "sssd.conf-example.com_static-server",
+			initState: "localhost-uptodate",
 		},
 
 		// no AD connection
 		"Host is offline, get user from cache (no update)": {
-			dynamicADServerDomain: "offline",
-			initState:             "old-data",
+			sssdConf:  "sssd.conf-offline",
+			initState: "old-data",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
 					src:          currentUser + ".krb5",
@@ -395,8 +387,8 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"Host is offline, regenerate user from old data": {
-			dynamicADServerDomain: "offline",
-			initState:             "old-data",
+			sssdConf:  "sssd.conf-offline",
+			initState: "old-data",
 			// clean generate dconf dbs and privilege files to regenerate
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
@@ -416,8 +408,8 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"Host is offline, sysvol cache is cleared, use user cache": {
-			dynamicADServerDomain: "offline",
-			initState:             "old-data",
+			sssdConf:  "sssd.conf-offline",
+			initState: "old-data",
 			// clean sysvol cache, but keep machine ones and user policies
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
@@ -442,9 +434,9 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"Host is offline, get machine from cache (no update)": {
-			args:                  []string{"-m"},
-			dynamicADServerDomain: "offline",
-			initState:             "old-data",
+			args:      []string{"-m"},
+			sssdConf:  "sssd.conf-offline",
+			initState: "old-data",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
 					src:          "ccache_EXAMPLE.COM",
@@ -454,9 +446,9 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"Host is offline, regenerate machine from old data": {
-			args:                  []string{"-m"},
-			dynamicADServerDomain: "offline",
-			initState:             "old-data",
+			args:      []string{"-m"},
+			sssdConf:  "sssd.conf-offline",
+			initState: "old-data",
 			// clean generate dconf dbs and privilege files to regenerate
 			clearDirs: []string{
 				"dconf/db/machine.d",
@@ -475,9 +467,9 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 		},
 		"Host is offline, mach gpos cache is cleared, with policies cache": {
-			args:                  []string{"-m"},
-			dynamicADServerDomain: "offline",
-			initState:             "old-data",
+			args:      []string{"-m"},
+			sssdConf:  "sssd.conf-offline",
+			initState: "old-data",
 			// clean gpos for machine cache, but keep machine ones and user policies
 			clearDirs: []string{
 				"dconf/db/machine.d",
@@ -548,9 +540,8 @@ func TestPolicyUpdate(t *testing.T) {
 			args:      []string{`example.com\adsystestuser`, "adsystestuser@example.com.krb5"},
 		},
 		`Current user with default domain completion`: {
-			initState:             "localhost-uptodate",
-			args:                  []string{`adsystestuser`, "adsystestuser@example.com.krb5"},
-			defaultADDomainSuffix: "example.com",
+			initState: "localhost-uptodate",
+			args:      []string{`adsystestuser`, "adsystestuser@example.com.krb5"},
 		},
 
 		// subscriptions
@@ -571,9 +562,9 @@ func TestPolicyUpdate(t *testing.T) {
 		"Error on Polkit denying updating other":                      {systemAnswer: "polkit_no", args: []string{"userintegrationtest@example.com", "FIXME"}, initState: "localhost-uptodate", wantErr: true},
 		"Error on Polkit denying updating machine":                    {systemAnswer: "polkit_no", args: []string{"-m"}, wantErr: true},
 		"Error on dynamic AD returning nothing": {
-			initState:             "localhost-uptodate",
-			dynamicADServerDomain: "online_no_active_server",
-			wantErr:               true,
+			initState: "localhost-uptodate",
+			sssdConf:  "sssd.conf-online_no_active_server",
+			wantErr:   true,
 		},
 		"Error on dconf apply failing": {
 			initState: "localhost-uptodate",
@@ -626,8 +617,8 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr:      true,
 		},
 		"Error on host is offline, without policies": {
-			dynamicADServerDomain: "offline",
-			initState:             "old-data",
+			sssdConf:  "sssd.conf-offline",
+			initState: "old-data",
 			// clean gpos rules, but sysvol/ directory
 			clearDirs: []string{
 				"dconf/db/adsystestuser@example.com.d",
@@ -927,18 +918,11 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 
 			conf := createConf(t, adsysDir)
-			if tc.dynamicADServerDomain != "" || tc.defaultADDomainSuffix != "" {
+			if tc.sssdConf != "" {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
-				if tc.dynamicADServerDomain != "" {
-					content = bytes.Replace(content, []byte("ad_domain: example.com"), []byte(fmt.Sprintf("ad_domain: %s", tc.dynamicADServerDomain)), 1)
-					if tc.dynamicADServerDomain != "offline" {
-						content = bytes.Replace(content, []byte("ad_server: adc.example.com"), []byte(""), 1)
-					}
-				}
-				if tc.defaultADDomainSuffix != "" {
-					content = append(content, []byte("\nad_default_domain_suffix: example.com")...)
-				}
+				content = bytes.Replace(content, []byte("testdata/sssd-configs/sssd.conf-example.com"),
+					[]byte(fmt.Sprintf("testdata/sssd-configs/%s", tc.sssdConf)), 1)
 				err = os.WriteFile(conf, content, 0600)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}

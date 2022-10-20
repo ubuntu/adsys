@@ -14,13 +14,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/godbus/dbus/v5"
-	"github.com/godbus/dbus/v5/introspect"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
-	"github.com/ubuntu/adsys/internal/consts"
+	"github.com/ubuntu/adsys/internal/ad/backends/mock"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -277,8 +275,9 @@ func TestFetch(t *testing.T) {
 				tc.adDomain = "fakegpo.com"
 			}
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", tc.adDomain, bus,
-				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
+			adc, err := New(context.Background(), bus,
+				mock.Backend{},
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -412,8 +411,8 @@ func TestFetchWithUnreadableFile(t *testing.T) {
 
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "fakegpo.com", bus,
-				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
+			adc, err := New(context.Background(), bus, mock.Backend{},
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.withExistingGPO {
@@ -462,8 +461,8 @@ func TestFetchTweakSysvolCacheDir(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			dest, rundir := t.TempDir(), t.TempDir()
-			adc, err := New(context.Background(), "ldap://UNUSED:1636/", "fakegpo.com", bus,
-				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
+			adc, err := New(context.Background(), bus, mock.Backend{},
+				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.removeSysvolCacheDir {
@@ -489,8 +488,8 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
-		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
+	adc, err := New(context.Background(), bus, mock.Backend{},
+		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 	require.NoError(t, err, "Setup: cannot create ad object")
 
 	// ensure the GPO is already downloaded with an older version to force redownload
@@ -538,8 +537,8 @@ func TestParseGPOConcurrent(t *testing.T) {
 
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), "ldap://UNUSED:1636/", "gpoonly.com", bus,
-		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos(), WithSSSCacheDir("testdata/sss/db"))
+	adc, err := New(context.Background(), bus, mock.Backend{},
+		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 	require.NoError(t, err, "Setup: cannot create ad object")
 
 	// Fetch the GPO to set it up
@@ -611,90 +610,6 @@ func TestMain(m *testing.M) {
 	}
 	defer testutils.SetupSmb(SmbPort, sysvolDir)()
 
-	// export SSSD domains
-	defer testutils.StartLocalSystemBus()()
-
-	conn, err := dbus.SystemBusPrivate()
-	if err != nil {
-		log.Fatalf("Setup: can't get a private system bus: %v", err)
-	}
-	defer func() {
-		if err = conn.Close(); err != nil {
-			log.Fatalf("Teardown: can't close system dbus connection: %v", err)
-		}
-	}()
-	if err = conn.Auth(nil); err != nil {
-		log.Fatalf("Setup: can't auth on private system bus: %v", err)
-	}
-	if err = conn.Hello(); err != nil {
-		log.Fatalf("Setup: can't send hello message on private system bus: %v", err)
-	}
-
-	intro := fmt.Sprintf(`
-	<node>
-		<interface name="%s">
-			<method name="ActiveServer">
-				<arg direction="in" type="s"/>
-				<arg direction="out" type="s"/>
-			</method>
-			<method name="IsOnline">
-				<arg direction="out" type="b"/>
-			</method>
-		</interface>̀%s</node>`, consts.SSSDDbusInterface, introspect.IntrospectDataString)
-
-	for _, s := range []sssd{
-		{
-			endpoint: "gpoonly_2ecom",
-			domain:   "gpoonly.com",
-			online:   true,
-		},
-		{
-			endpoint: "assetsandgpo_2ecom",
-			domain:   "assetsandgpo.com",
-			online:   true,
-		},
-		{
-			endpoint: "assetsonly_2ecom",
-			domain:   "assetsonly.com",
-			online:   true,
-		},
-		{
-			endpoint: "assetsdirisfile_2ecom",
-			domain:   "assetsdirisfile.com",
-			online:   true,
-		},
-		{
-			endpoint: "offline",
-			domain:   "offline.com",
-			online:   false,
-		},
-		{
-			endpoint: "fakegpo_2ecom",
-			domain:   "fakegpo.com",
-			online:   true,
-		},
-		{
-			endpoint: "emptyserver",
-			domain:   "",
-			online:   true,
-		},
-	} {
-		if err := conn.Export(s, dbus.ObjectPath(consts.SSSDDbusBaseObjectPath+"/"+s.endpoint), consts.SSSDDbusInterface); err != nil {
-			log.Fatalf("Setup: could not export %s %v", s.endpoint, err)
-		}
-		if err := conn.Export(introspect.Introspectable(intro), dbus.ObjectPath(consts.SSSDDbusBaseObjectPath+"/"+s.endpoint),
-			"org.freedesktop.DBus.Introspectable"); err != nil {
-			log.Fatalf("Setup: could not export introspectable for %s: %v", s.endpoint, err)
-		}
-	}
-	reply, err := conn.RequestName(consts.SSSDDbusRegisteredName, dbus.NameFlagDoNotQueue)
-	if err != nil {
-		log.Fatalf("Setup: Failed to acquire sssd name on local system bus: %v", err)
-	}
-	if reply != dbus.RequestNameReplyPrimaryOwner {
-		log.Fatalf("Setup: Failed to acquire sssd name on local system bus: name is already taken")
-	}
-
 	m.Run()
 	testutils.MergeCoverages()
 }
@@ -728,21 +643,4 @@ func md5Tree(t *testing.T, dir string) map[string]string {
 	}
 
 	return r
-}
-
-type sssd struct {
-	endpoint string
-	domain   string
-	online   bool
-}
-
-func (s sssd) ActiveServer(_ string) (string, *dbus.Error) {
-	if s.domain == "" {
-		return "", nil
-	}
-	return "myserver." + s.domain, nil
-}
-
-func (s sssd) IsOnline() (bool, *dbus.Error) {
-	return s.online, nil
 }

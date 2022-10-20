@@ -1,0 +1,5 @@
+[sssd]
+domains = my_sss_domain_name
+
+[domain/my_sss_domain_name]
+ad_domain = example.com

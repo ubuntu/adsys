@@ -212,14 +212,19 @@ socket: %s/socket
 cache_dir: %s/cache
 run_dir: %s/run
 service_timeout: 30
-ad_server: adc.example.com
-ad_domain: example.com
+
+# Backend selection: sssd (default) or winbind
+ad_backend: sssd
+
+# SSSd configuration
+sssd:
+  config: testdata/sssd-configs/sssd.conf-example.com
+  cache_dir: %s/sss_cache
 
 # Those are more for tests
 dconf_dir: %s/dconf
 sudoers_dir: %s/sudoers.d
 policykit_dir: %s/polkit-1
-sss_cache_dir: %s/sss_cache
 apparmor_dir: %s/apparmor.d/adsys
 apparmorfs_dir: %s/apparmorfs
 `, dir, dir, dir, dir, dir, dir, dir, dir, dir)), 0600)

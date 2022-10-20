@@ -7,12 +7,11 @@ Next Refresh: Tue May 25 14:55
 Ubuntu Pro subscription is not active on this machine. Some policies won't be applied.
 
 Active Directory:
-  Server: ldap://adc.example.com
+  Current backend is SSSD
+  Configuration: testdata/sssd-configs/sssd.conf-example.com
+  Cache: /tmp/sss_cache
   Domain: example.com
-
-SSS:
-  Configuration: /etc/sssd/sssd.conf
-  Cache directory: /tmp/sss_cache
+  Server URL: ldap://adc.example.com
 
 Daemon:
   Timeout after 30s

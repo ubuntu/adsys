@@ -270,21 +270,21 @@ func TestServiceStatus(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get current user")
 
 	tests := map[string]struct {
-		systemAnswer          string
-		daemonNotStarted      bool
-		noCacheUsersMachine   bool
-		krb5ccNoCache         bool
-		dynamicADServerDomain string
+		systemAnswer        string
+		sssdConf            string
+		daemonNotStarted    bool
+		noCacheUsersMachine bool
+		krb5ccNoCache       bool
 
 		wantErr bool
 	}{
 		"Status with users and machines":          {systemAnswer: "polkit_yes"},
-		"Status offline cache":                    {dynamicADServerDomain: "offline", systemAnswer: "polkit_yes"},
+		"Status offline cache":                    {sssdConf: "sssd.conf-offline", systemAnswer: "polkit_yes"},
 		"Status no user connected and no machine": {noCacheUsersMachine: true, systemAnswer: "polkit_yes"},
 		"Status is always authorized":             {systemAnswer: "polkit_no"},
 		"Status on user connected with no cache":  {krb5ccNoCache: true, systemAnswer: "polkit_yes"},
-		"Status with dynamic AD server":           {dynamicADServerDomain: "example.com", systemAnswer: "polkit_yes"},
-		"Status with empty dynamic AD server":     {dynamicADServerDomain: "online_no_active_server", systemAnswer: "polkit_yes"},
+		"Status with static AD server":            {sssdConf: "sssd.conf-example.com_static-server", systemAnswer: "polkit_yes"},
+		"Status with empty dynamic AD server":     {sssdConf: "sssd.conf-online_no_active_server", systemAnswer: "polkit_yes"},
 
 		// Refresh time exception
 		"No startup time leads to unknown refresh time":           {systemAnswer: "no_startup_time"},
@@ -306,19 +306,17 @@ func TestServiceStatus(t *testing.T) {
 			adsysDir := t.TempDir()
 			cachedPoliciesDir := filepath.Join(adsysDir, "cache", "policies")
 			conf := createConf(t, adsysDir)
-			if tc.dynamicADServerDomain != "" {
+			if tc.sssdConf != "" {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
-				content = bytes.Replace(content, []byte("ad_domain: example.com"), []byte(fmt.Sprintf("ad_domain: %s", tc.dynamicADServerDomain)), 1)
-				if tc.dynamicADServerDomain != "offline" {
-					content = bytes.Replace(content, []byte("ad_server: adc.example.com"), []byte(""), 1)
-				}
+				content = bytes.Replace(content, []byte("testdata/sssd-configs/sssd.conf-example.com"),
+					[]byte(fmt.Sprintf("testdata/sssd-configs/%s", tc.sssdConf)), 1)
 				err = os.WriteFile(conf, content, 0600)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
 
 			// copy machine gpo rules for first update
-			if !tc.noCacheUsersMachine || tc.dynamicADServerDomain != "" {
+			if !tc.noCacheUsersMachine {
 				err := os.MkdirAll(cachedPoliciesDir, 0700)
 				require.NoError(t, err, "Setup: couldn't create policies directory: %v", err)
 				require.NoError(t,
@@ -331,13 +329,6 @@ func TestServiceStatus(t *testing.T) {
 
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
-			}
-
-			// Update will refresh the status of offline/online and active AD server
-			_, err := runClient(t, conf, "policy", "update", "--all")
-			// the other fetch will error out as there is no server
-			if tc.dynamicADServerDomain == "offline" {
-				require.NoError(t, err, "Setup: can't turn the daemon offline with first update")
 			}
 
 			// Create users krb5cc and GPO caches
