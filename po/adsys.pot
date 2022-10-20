@@ -35,11 +35,11 @@ msgid ""
 "Service already exists and will be reconfigured\n"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:292
+#: internal/policies/scripts/scripts.go:295
 msgid "%q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:252
+#: internal/policies/scripts/scripts.go:255
 msgid "%q is not ready to execute scripts"
 msgstr ""
 
@@ -60,6 +60,14 @@ msgid ""
 "%s\n"
 "\n"
 "Note: %s"
+msgstr ""
+
+#: internal/ad/ad.go:523
+#, c-format
+msgid ""
+"%s\n"
+"%sDomain: %s\n"
+"Server URL: %s"
 msgstr ""
 
 #: internal/watchdtui/watchdtui.go:476
@@ -104,12 +112,12 @@ msgstr ""
 msgid "%s will be the absolute path"
 msgstr ""
 
-#: internal/adsysservice/service.go:130
+#: internal/adsysservice/service.go:119
 #, c-format
 msgid "%s, no gpo applied found"
 msgstr ""
 
-#: internal/adsysservice/service.go:115
+#: internal/adsysservice/service.go:104
 #, c-format
 msgid "%s, updated on %s"
 msgstr ""
@@ -124,7 +132,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:263 internal/ad/ad.go:491 internal/ad/ad.go:503
+#: internal/ad/ad.go:445 internal/ad/ad.go:457
 msgid "%s: %v"
 msgstr ""
 
@@ -153,15 +161,12 @@ msgstr ""
 msgid "%s: is not a directory"
 msgstr ""
 
-#: internal/ad/ad.go:266
-#, c-format
-msgid "%s: no active server found"
+#: internal/ad/ad.go:513
+msgid "**Can't check if we have an active connection**\n"
 msgstr ""
 
-#: internal/adsysservice/service.go:99
-msgid ""
-"**Offline mode** using cached policies\n"
-"\n"
+#: internal/ad/ad.go:515
+msgid "**Offline mode** using cached policies\n"
 msgstr ""
 
 #: internal/ad/admxgen/admxgen.go:205
@@ -183,24 +188,20 @@ msgstr ""
 msgid "- error on %s: %v"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:154
-msgid "AD default domain suffix to use. This overrides parsing sssd.conf."
-msgstr ""
-
-#: cmd/adsysd/daemon/daemon.go:152
-msgid "AD domain to use. This overrides parsing sssd.conf"
-msgstr ""
-
 #: cmd/adsysd/client/client.go:45
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:59
+#: cmd/adsysd/daemon/daemon.go:61
 msgid "AD integration daemon"
 msgstr ""
 
 #: cmd/adwatchd/commands/main.go:68
 msgid "AD watch daemon"
+msgstr ""
+
+#: cmd/adsysd/daemon/daemon.go:154
+msgid "Active Directory authentication backend"
 msgstr ""
 
 #: internal/cmdhandler/cmdhandler.go:38
@@ -221,16 +222,16 @@ msgid "Any user always authorized"
 msgstr ""
 
 #. Otherwise, just let the user know
-#: internal/policies/apparmor/apparmor.go:107
+#: internal/policies/apparmor/apparmor.go:122
 msgid "Apparmor is not available on this system: %v"
 msgstr ""
 
 #. objectDir = "users"
-#: internal/policies/apparmor/apparmor.go:84
+#: internal/policies/apparmor/apparmor.go:99
 msgid "Apparmor policies are currently only supported for computers"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:117
+#: internal/policies/apparmor/apparmor.go:132
 #, c-format
 msgid "Applying apparmor policy to %s"
 msgstr ""
@@ -249,11 +250,11 @@ msgstr ""
 msgid "Calling quit on a non-interactive service is useless"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:312
+#: internal/adsysservice/adsysservice.go:295
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:122
+#: internal/adsysservice/service.go:111
 msgid "Can't get connected users"
 msgstr ""
 
@@ -281,7 +282,7 @@ msgstr ""
 msgid "Config file: %s\n"
 msgstr ""
 
-#: internal/adsysservice/service.go:125
+#: internal/adsysservice/service.go:114
 msgid "Connected users:"
 msgstr ""
 
@@ -315,11 +316,11 @@ msgstr ""
 msgid "Couldn't connect to %s daemon: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:358
+#: internal/policies/apparmor/apparmor.go:373
 msgid "Couldn't remove new apparmor directory: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:362
+#: internal/policies/apparmor/apparmor.go:377
 msgid "Couldn't restore previous apparmor directory: %v"
 msgstr ""
 
@@ -327,7 +328,7 @@ msgstr ""
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:308
+#: internal/policies/apparmor/apparmor.go:323
 msgid "Couldn't write to apparmor parser stdin: %v"
 msgstr ""
 
@@ -449,11 +450,11 @@ msgstr ""
 msgid "Installs the service"
 msgstr ""
 
-#: internal/adsysservice/service.go:119
+#: internal/adsysservice/service.go:108
 msgid "Machine"
 msgstr ""
 
-#: internal/adsysservice/service.go:116
+#: internal/adsysservice/service.go:105
 msgid "Machine, no gpo applied found"
 msgstr ""
 
@@ -462,20 +463,16 @@ msgstr ""
 msgid "Manages the %s service"
 msgstr ""
 
-#: internal/adsysservice/service.go:103
-msgid "N/A"
-msgstr ""
-
 #: internal/grpc/logstreamer/server.go:46
 #, c-format
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:122
+#: internal/policies/apparmor/apparmor.go:137
 msgid "No valid entry found for the apparmor machine policy"
 msgstr ""
 
-#: internal/adsysservice/service.go:134
+#: internal/adsysservice/service.go:123
 msgid "None"
 msgstr ""
 
@@ -483,11 +480,11 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/manager.go:226
+#: internal/policies/manager.go:253
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:234
+#: internal/policies/manager.go:261
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -561,6 +558,14 @@ msgstr ""
 msgid "Runs scripts in the given subdirectory"
 msgstr ""
 
+#: cmd/adsysd/daemon/daemon.go:158
+msgid "SSSd cache directory"
+msgstr ""
+
+#: cmd/adsysd/daemon/daemon.go:156
+msgid "SSSd config file path"
+msgstr ""
+
 #: internal/watchdtui/watchdtui.go:484
 msgid "Service adwatchd was successfully installed and is now running."
 msgstr ""
@@ -626,19 +631,15 @@ msgstr ""
 msgid "Supported on %s %s"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:150
-msgid "URL of the Active Directory server. This overrides parsing sssd.conf."
-msgstr ""
-
 #: internal/watchdtui/watchdtui.go:489
 msgid "Ubuntu AD Watch Daemon Installer"
 msgstr ""
 
-#: internal/adsysservice/service.go:141
+#: internal/adsysservice/service.go:130
 msgid "Ubuntu Pro subscription active."
 msgstr ""
 
-#: internal/adsysservice/service.go:138
+#: internal/adsysservice/service.go:127
 msgid ""
 "Ubuntu Pro subscription is not active on this machine. Some policies won't "
 "be applied."
@@ -657,7 +658,7 @@ msgstr ""
 msgid "Uninstalls the service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:295
+#: internal/policies/apparmor/apparmor.go:310
 msgid "Unloading %d apparmor policies: %v"
 msgstr ""
 
@@ -731,11 +732,11 @@ msgstr ""
 msgid "another instance of the %s service is already running"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:382
+#: internal/policies/apparmor/apparmor.go:397
 msgid "apparmor profile %q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:379
+#: internal/policies/apparmor/apparmor.go:394
 msgid "apparmor profile %q is not accessible: %w"
 msgstr ""
 
@@ -743,7 +744,7 @@ msgstr ""
 msgid "call to polkit failed: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:78
+#: internal/policies/apparmor/apparmor.go:93
 #, c-format
 msgid "can't apply apparmor policy to %s"
 msgstr ""
@@ -767,7 +768,7 @@ msgstr ""
 msgid "can't apply privilege policy to %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:93
+#: internal/policies/scripts/scripts.go:96
 #, c-format
 msgid "can't apply scripts policy to %s"
 msgstr ""
@@ -777,7 +778,7 @@ msgstr ""
 msgid "can't bump version for %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:181
+#: internal/policies/scripts/scripts.go:184
 msgid "can't change mode of script %qto %o: %v"
 msgstr ""
 
@@ -787,7 +788,7 @@ msgid "can't check if %s needs refreshing"
 msgstr ""
 
 #: internal/policies/mount/mount.go:200 internal/policies/policies.go:434
-#: internal/policies/scripts/scripts.go:344
+#: internal/policies/scripts/scripts.go:347
 msgid "can't chown %q"
 msgstr ""
 
@@ -800,7 +801,7 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/ad/ad.go:136
+#: internal/ad/ad.go:114
 msgid "can't create Active Directory object"
 msgstr ""
 
@@ -808,7 +809,7 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:103
+#: internal/policies/manager.go:123
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
@@ -816,7 +817,7 @@ msgstr ""
 msgid "can't create admx file: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:127
+#: internal/policies/apparmor/apparmor.go:142
 msgid "can't create apparmor directory %q: %v"
 msgstr ""
 
@@ -836,7 +837,7 @@ msgstr ""
 msgid "can't create directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:326
+#: internal/policies/scripts/scripts.go:329
 msgid "can't create flag file %q"
 msgstr ""
 
@@ -844,12 +845,12 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:147
+#: internal/policies/scripts/scripts.go:150
 msgid "can't create object directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:150
-#: internal/policies/scripts/scripts.go:319
+#: internal/policies/scripts/scripts.go:153
+#: internal/policies/scripts/scripts.go:322
 msgid "can't create scripts directory %q: %v"
 msgstr ""
 
@@ -857,7 +858,7 @@ msgstr ""
 msgid "can't create scripts manager"
 msgstr ""
 
-#: internal/ad/ad.go:409
+#: internal/ad/ad.go:363
 msgid "can't create symlink for caching"
 msgstr ""
 
@@ -897,7 +898,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:416
+#: internal/ad/ad.go:370
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -906,12 +907,20 @@ msgstr ""
 msgid "can't get cached policies from %s"
 msgstr ""
 
+#: internal/ad/ad.go:152 internal/ad/ad.go:227
+msgid "can't get current Server URL: %w"
+msgstr ""
+
+#: internal/ad/backends/sss/sss.go:40
+msgid "can't get domain configuration from %+v"
+msgstr ""
+
 #: internal/policies/privilege/privilege.go:241
 #, c-format
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:212
+#: internal/ad/ad.go:184
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -923,7 +932,7 @@ msgstr ""
 msgid "can't install command flag bindings: %v"
 msgstr ""
 
-#: internal/ad/ad.go:384
+#: internal/ad/ad.go:338
 msgid "can't list users from cache"
 msgstr ""
 
@@ -939,16 +948,11 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:256
-#, c-format
-msgid "can't load server info from %s"
-msgstr ""
-
 #: internal/policies/dconf/dconf.go:421
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:322
+#: internal/policies/apparmor/apparmor.go:337
 msgid "can't parse loaded apparmor policies"
 msgstr ""
 
@@ -956,33 +960,29 @@ msgstr ""
 msgid "can't parse policy"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:269
-msgid "can't read sssd.conf and no url or domain provided: %v"
-msgstr ""
-
 #: internal/stdforward/stdforward.go:69
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:155
+#: internal/policies/apparmor/apparmor.go:170
 msgid "can't remove new apparmor directory %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:151
-#: internal/policies/apparmor/apparmor.go:215
+#: internal/policies/apparmor/apparmor.go:166
+#: internal/policies/apparmor/apparmor.go:230
 msgid "can't remove old apparmor directory %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:398
+#: internal/policies/apparmor/apparmor.go:413
 msgid "can't remove unused apparmor assets"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:167
-#: internal/policies/apparmor/apparmor.go:173
+#: internal/policies/apparmor/apparmor.go:182
+#: internal/policies/apparmor/apparmor.go:188
 msgid "can't rename apparmor directory %q to %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:244
+#: internal/policies/scripts/scripts.go:247
 #, c-format
 msgid "can't run scripts listed in %s"
 msgstr ""
@@ -1018,7 +1018,7 @@ msgstr ""
 msgid "can't stop service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:226
+#: internal/policies/apparmor/apparmor.go:241
 msgid "can't unload apparmor rules"
 msgstr ""
 
@@ -1072,7 +1072,7 @@ msgstr ""
 msgid "could not close directory: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:230
+#: internal/adsysservice/service.go:214
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
@@ -1080,9 +1080,17 @@ msgstr ""
 msgid "could not find %s unit on systemd bus: no service installed? %v"
 msgstr ""
 
+#: internal/ad/backends/sss/sss.go:64
+msgid "could not find AD domain name corresponding to %q"
+msgstr ""
+
 #: cmd/adsysd/integration_tests/adsysctl_doc_test.go:224
 #, c-format
 msgid "could not find chapter starting with %s"
+msgstr ""
+
+#: internal/adsysservice/adsysservice.go:214
+msgid "could not initialize AD backend: %v"
 msgstr ""
 
 #: internal/watcher/watcher.go:196
@@ -1104,16 +1112,16 @@ msgid "could not retrieve user for %q: %w"
 msgstr ""
 
 #: internal/policies/mount/mount.go:122
-#: internal/policies/scripts/scripts.go:108
+#: internal/policies/scripts/scripts.go:111
 msgid "couldn't convert %q to a valid gid for %q"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:137 internal/policies/mount/mount.go:119
-#: internal/policies/scripts/scripts.go:105
+#: internal/policies/scripts/scripts.go:108
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:136
+#: internal/adsysservice/adsysservice.go:150
 msgid "couldn't create adsys service"
 msgstr ""
 
@@ -1122,7 +1130,7 @@ msgid "couldn't open stat file for process: %v"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:133
-#: internal/policies/scripts/scripts.go:102
+#: internal/policies/scripts/scripts.go:105
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
@@ -1146,11 +1154,11 @@ msgstr ""
 msgid "directory %q does not exist"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:142
+#: cmd/adsysd/daemon/daemon.go:146
 msgid "directory where ADsys caches GPOs downloads and policies."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:144
+#: cmd/adsysd/daemon/daemon.go:148
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
@@ -1220,7 +1228,7 @@ msgstr ""
 msgid "error while loading schemas"
 msgstr ""
 
-#: internal/adsysservice/service.go:217
+#: internal/adsysservice/service.go:201
 msgid "error while trying to determine next refresh time"
 msgstr ""
 
@@ -1228,16 +1236,15 @@ msgstr ""
 msgid "error while trying to display daemon output"
 msgstr ""
 
-#: internal/adsysservice/service.go:196
+#: internal/adsysservice/service.go:180
 msgid "error while trying to get the list of active users"
 msgstr ""
 
-#. Try to update from SSSD the current active AD server
-#: internal/ad/ad.go:260
-msgid "error while trying to look up AD server address on SSSD"
+#: internal/ad/backends/sss/sss.go:105
+msgid "error while trying to look up AD server address on SSSD for %q"
 msgstr ""
 
-#: internal/adsysservice/service.go:184
+#: internal/adsysservice/service.go:168
 msgid "error while trying to stop daemon"
 msgstr ""
 
@@ -1253,7 +1260,7 @@ msgstr ""
 msgid "failed to apply policy for user %q"
 msgstr ""
 
-#: internal/policies/manager.go:174
+#: internal/policies/manager.go:201
 msgid "failed to apply policy to %q"
 msgstr ""
 
@@ -1265,15 +1272,15 @@ msgstr ""
 msgid "failed to create new mount manager"
 msgstr ""
 
-#: internal/policies/manager.go:211
+#: internal/policies/manager.go:238
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:277
-msgid "failed to find default domain in sssd.conf and domain is not provided"
+#: internal/ad/backends/sss/sss.go:60
+msgid "failed to find default sssd domain in sssd.conf"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:273
+#: internal/policies/apparmor/apparmor.go:288
 msgid ""
 "failed to get apparmor policies: %w\n"
 "%s"
@@ -1284,7 +1291,7 @@ msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:251
+#: internal/policies/manager.go:278
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -1296,7 +1303,7 @@ msgstr ""
 msgid "failed to install service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:209
+#: internal/policies/apparmor/apparmor.go:224
 msgid ""
 "failed to load apparmor rules: %w\n"
 "%s"
@@ -1310,11 +1317,11 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:326
+#: internal/policies/apparmor/apparmor.go:341
 msgid "failed to open %q: %w"
 msgstr ""
 
-#: internal/ad/ad.go:393
+#: internal/ad/ad.go:347
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -1330,7 +1337,7 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:427
+#: internal/ad/ad.go:381
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -1338,7 +1345,7 @@ msgstr ""
 msgid "failed to restart service"
 msgstr ""
 
-#: internal/ad/ad.go:238
+#: internal/ad/backends/sss/sss.go:141
 msgid "failed to retrieve offline state from SSSD: %v"
 msgstr ""
 
@@ -1346,7 +1353,7 @@ msgstr ""
 msgid "failed to retrieve status for service"
 msgstr ""
 
-#: internal/ad/ad.go:294
+#: internal/ad/ad.go:248
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -1368,7 +1375,7 @@ msgstr ""
 msgid "failed to uninstall service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:314
+#: internal/policies/apparmor/apparmor.go:329
 msgid ""
 "failed to unload apparmor policies: %w\n"
 "%s"
@@ -1409,7 +1416,7 @@ msgid ""
 ". Please use the StreamClientInterceptor: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:234
+#: internal/adsysservice/service.go:218
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
@@ -1435,7 +1442,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:248
+#: internal/ad/ad.go:217
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -1477,11 +1484,17 @@ msgstr ""
 msgid "needs at least one directory to watch"
 msgstr ""
 
+#. ErrNoActiveServer is an error receive when there is no active server and no static configuration
+#. This is received in ServerURL.
+#: internal/ad/backends/backend.go:33
+msgid "no active server found"
+msgstr ""
+
 #: internal/policies/policies.go:226
 msgid "no assets attached"
 msgstr ""
 
-#: internal/adsysservice/service.go:220
+#: internal/adsysservice/service.go:204
 msgid "no boot system time found"
 msgstr ""
 
@@ -1501,7 +1514,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:229 internal/policies/manager.go:240
+#: internal/policies/manager.go:256 internal/policies/manager.go:267
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -1548,7 +1561,7 @@ msgstr ""
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:265
+#: internal/policies/manager.go:292
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
@@ -1564,7 +1577,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:222
+#: internal/ad/ad.go:194
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -1582,11 +1595,11 @@ msgstr ""
 msgid "running"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:175
+#: internal/policies/scripts/scripts.go:178
 msgid "script %q doesn't exist in SYSVOL scripts/ subdirectory"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:178
+#: internal/policies/scripts/scripts.go:181
 msgid "script %q is a directory and not a file to execute"
 msgstr ""
 
@@ -1632,7 +1645,7 @@ msgid ""
 "no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:147
+#: cmd/adsysd/daemon/daemon.go:151
 msgid ""
 "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
@@ -1658,8 +1671,8 @@ msgstr ""
 msgid "unexpected socket type"
 msgstr ""
 
-#: internal/adsysservice/service.go:86 internal/adsysservice/service.go:87
-#: internal/adsysservice/service.go:108
+#: internal/adsysservice/service.go:83 internal/adsysservice/service.go:84
+#: internal/adsysservice/service.go:97
 #: internal/watchdservice/watchdservice.go:249
 msgid "unknown"
 msgstr ""
@@ -1672,6 +1685,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:217
+#: internal/ad/ad.go:189
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
