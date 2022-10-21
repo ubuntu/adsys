@@ -138,17 +138,17 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 	}
 
 	var err error
-	var gotContent map[string]string
+	var gotContent map[string]treeAttrs
 	if _, err := os.Stat(p); err == nil {
-		gotContent, err = treeContent(t, p, []byte("GVariant"))
+		gotContent, err = treeContentAndAttrs(t, p, []byte("GVariant"))
 		if err != nil {
 			t.Fatalf("No generated content: %v", err)
 		}
 	}
 
-	var goldContent map[string]string
+	var goldContent map[string]treeAttrs
 	if _, err := os.Stat(goldPath); err == nil {
-		goldContent, err = treeContent(t, goldPath, nil)
+		goldContent, err = treeContentAndAttrs(t, goldPath, nil)
 		if err != nil {
 			t.Fatalf("No golden directory found: %v", err)
 		}
@@ -215,12 +215,19 @@ func addEmptyMarker(p string) error {
 	return err
 }
 
-// treeContent builds a recursive file list of dir with their content
+// treeAttrs are the attributes to take into consideration when comparing each file.
+type treeAttrs struct {
+	content    string
+	path       string
+	executable bool
+}
+
+// treeContentAndAttrs builds a recursive file list of dir with their content and other attributes.
 // It can ignore files starting with ignoreHeaders.
-func treeContent(t *testing.T, dir string, ignoreHeaders []byte) (map[string]string, error) {
+func treeContentAndAttrs(t *testing.T, dir string, ignoreHeaders []byte) (map[string]treeAttrs, error) {
 	t.Helper()
 
-	r := make(map[string]string)
+	r := make(map[string]treeAttrs)
 
 	err := filepath.WalkDir(dir, func(path string, de fs.DirEntry, err error) error {
 		if err != nil {
@@ -233,6 +240,8 @@ func treeContent(t *testing.T, dir string, ignoreHeaders []byte) (map[string]str
 		}
 
 		content := ""
+		info, err := os.Stat(path)
+		require.NoError(t, err, "Cannot stat %s", path)
 		if !de.IsDir() {
 			d, err := os.ReadFile(path)
 			if err != nil {
@@ -244,7 +253,8 @@ func treeContent(t *testing.T, dir string, ignoreHeaders []byte) (map[string]str
 			}
 			content = string(d)
 		}
-		r[strings.TrimPrefix(path, dir)] = content
+		trimmedPath := strings.TrimPrefix(path, dir)
+		r[trimmedPath] = treeAttrs{content, strings.TrimPrefix(path, dir), info.Mode()&0111 != 0}
 		return nil
 	})
 	if err != nil {
