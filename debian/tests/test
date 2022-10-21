@@ -13,7 +13,6 @@ case $1 in
     no-sudo)
         echo "Running non-root tests..."
         export ADSYS_SKIP_INTEGRATION_TESTS=1
-        export ADSYS_SKIP_SUDO_TESTS=1
         PACKAGES_TO_TEST=./...
         ;;
     sudo)

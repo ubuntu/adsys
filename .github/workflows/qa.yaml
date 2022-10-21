@@ -74,7 +74,7 @@ jobs:
         run: |
           set -eu
 
-          ADSYS_SKIP_SUDO_TESTS=1 go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=count ./...
+          go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=count ./...
 
           # Run integration tests that need sudo
           # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
@@ -85,7 +85,7 @@ jobs:
           grep -hv -e "mode: set" -e "testutils" -e "pb.go:" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
       - name: Run tests (with race detector)
         run: |
-          ADSYS_SKIP_SUDO_TESTS=1 go test -race ./...
+          go test -race ./...
           # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
           sudo -E $(which go) test -race ${{ env.sudo_packages }}
       - name: Upload coverage to Codecov
@@ -123,7 +123,7 @@ jobs:
         run: go test ${{ env.packages }}
       - name: Run tests (with race detector)
         env:
-          ADWATCHD_SKIP_INTEGRATION_TESTS: 1
+          ADSYS_SKIP_INTEGRATION_TESTS: 1
         run: go test -race ${{ env.packages }}
         # There are some cryptic "The pipe has been closed" errors on Windows
         # that arise from running the tests with the race detector enabled. We

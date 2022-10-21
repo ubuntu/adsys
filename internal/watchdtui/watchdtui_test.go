@@ -419,9 +419,11 @@ func TestInteractiveInput(t *testing.T) {
 }
 
 func TestInteractiveInstall(t *testing.T) {
-	if os.Getenv("ADWATCHD_SKIP_INTEGRATION_TESTS") != "" || os.Getenv("ADSYS_SKIP_SUDO_TESTS") != "" {
+	testutils.SkipUnlessRoot(t)
+
+	// This is used for skipping race tests in Windows CI
+	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
 		t.Skip("Integration tests skipped as requested")
-		return
 	}
 
 	svc, err := watchdservice.New(context.Background())
@@ -465,9 +467,11 @@ func TestInteractiveInstall(t *testing.T) {
 }
 
 func TestInteractiveUpdate(t *testing.T) {
-	if os.Getenv("ADWATCHD_SKIP_INTEGRATION_TESTS") != "" || os.Getenv("ADSYS_SKIP_SUDO_TESTS") != "" {
+	testutils.SkipUnlessRoot(t)
+
+	// This is used for skipping race tests in CI
+	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
 		t.Skip("Integration tests skipped as requested")
-		return
 	}
 
 	tests := map[string]struct {
