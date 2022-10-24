@@ -282,3 +282,15 @@ func ignoreDconfDB(src string, entries []os.FileInfo) []string {
 	}
 	return r
 }
+
+// markForTestCache list all root directories/files so that they are marked in the test cache.
+func markForTestCache(t *testing.T, roots []string) {
+	t.Helper()
+
+	for _, root := range roots {
+		err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+			return nil
+		})
+		require.NoError(t, err, "Setup: listing input files for caching handling")
+	}
+}
