@@ -291,6 +291,6 @@ func markForTestCache(t *testing.T, roots []string) {
 		err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 			return nil
 		})
-		require.NoError(t, err, "Setup: listing input files for caching handling")
+		require.NoError(t, err, "Setup: Error when listing input files for caching handling")
 	}
 }
