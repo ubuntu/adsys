@@ -96,7 +96,16 @@ exec python3-coverage run -a %s $@
 
 		coverDir := filepath.Dir(goCoverProfile)
 
-		inF, err := os.Open(filepath.Clean(filepath.Join(coverDir, strings.ReplaceAll(tracedFile, "/", "_")+",cover")))
+		// Convert to golang compatible cover format
+		// The file will be transform with char_hexadecimal_filename_ext,cover if there is any / in the name.
+		// Matching it with global by filename.
+		endCoverFileName := strings.ReplaceAll(filepath.Base(tracedFile), ".", "_") + ",cover"
+		founds, err := filepath.Glob(filepath.Clean(filepath.Join(coverDir, "*"+endCoverFileName)))
+		require.NoError(t, err, "Teardown: glob pattern should be correct")
+		if len(founds) != 1 {
+			t.Fatalf("We should have one matching cover profile for python matching our pattern, got: %d", len(founds))
+		}
+		inF, err := os.Open(founds[0])
 		require.NoErrorf(t, err, "Teardown: failed opening python cover file: %s", err)
 		defer func() { assert.NoError(t, inF.Close(), "Teardown: can’t close python cover file") }()
 
