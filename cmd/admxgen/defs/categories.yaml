@@ -145,6 +145,10 @@ categories:
         policies:
           - "/logon"
           - "/logoff"
+      - displayname: "User application confinement"
+        defaultpolicyclass: "User"
+        policies:
+          - "/apparmor-users"
       - displayname: "User Drive Mapping"
         defaultpolicyclass: "User"
         policies:
