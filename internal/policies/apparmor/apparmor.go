@@ -4,6 +4,7 @@ package apparmor
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/decorate"
@@ -93,11 +95,8 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	defer decorate.OnError(&err, i18n.G("can't apply apparmor policy to %s"), objectName)
 
 	objectDir := "machine"
-	// TODO: add user support
 	if !isComputer {
-		// objectDir = "users"
-		log.Warningf(ctx, i18n.G("Apparmor policies are currently only supported for computers"))
-		return nil
+		objectDir = "users"
 	}
 	apparmorPath := filepath.Join(m.apparmorDir, objectDir)
 
@@ -125,22 +124,30 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	m.apparmorParserCmd[0] = absPath
 
 	// If we have no entries, attempt to unload them and remove the apparmor directory
-	if len(entries) == 0 {
-		return m.unloadAllRules(ctx, apparmorPath)
+	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == fmt.Sprintf("apparmor-%s", objectDir) })
+	if idx == -1 || entries[idx].Disabled {
+		log.Debugf(ctx, fmt.Sprintf(i18n.G("No entries found for the apparmor %s policy"), objectDir))
+		return m.unloadAllRules(ctx, objectName, isComputer)
 	}
 
-	log.Debugf(ctx, i18n.G("Applying apparmor policy to %s"), objectName)
-
-	// Return early if we cannot find a valid policy entry
-	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == "apparmor-machine" })
-	if idx == -1 {
-		log.Warning(ctx, i18n.G("No valid entry found for the apparmor machine policy"))
-		return nil
-	}
-
+	log.Debugf(ctx, i18n.G("Applying apparmor %s policy to %s"), objectDir, objectName)
 	if err := os.MkdirAll(apparmorPath, 0750); err != nil {
 		return fmt.Errorf(i18n.G("can't create apparmor directory %q: %v"), apparmorPath, err)
 	}
+
+	switch objectDir {
+	case "machine":
+		err = m.applyMachinePolicy(ctx, entries[idx], apparmorPath, assetsDumper)
+	case "users":
+		err = m.applyUserPolicy(ctx, entries[idx], apparmorPath, objectName, assetsDumper)
+	}
+
+	return err
+}
+
+// applyUserPolicy applies apparmor policies for the machine object.
+func (m *Manager) applyMachinePolicy(ctx context.Context, e entry.Entry, apparmorPath string, assetsDumper AssetsDumper) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't apply machine policy"))
 
 	existingProfiles, err := filesInDir(apparmorPath)
 	if err != nil {
@@ -188,7 +195,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf(i18n.G("can't rename apparmor directory %q to %q: %v"), newApparmorPath, apparmorPath, err)
 	}
 
-	e := entries[idx]
 	// Get the list of files to run apparmor_parser on
 	filesToLoad, err := filesFromEntry(e, apparmorPath)
 	if err != nil {
@@ -229,17 +235,93 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	if err := os.RemoveAll(oldApparmorPath); err != nil {
 		return fmt.Errorf(i18n.G("can't remove old apparmor directory %q: %v"), oldApparmorPath, err)
 	}
+	return nil
+}
 
+// applyUserPolicy applies apparmor policies for the user object.
+func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPath string, username string, assetsDumper AssetsDumper) (err error) {
+	defer decorate.OnError(&err, i18n.G("can't apply user policy"))
+
+	// Create a temporary filepath to be used by the assets dumper and dump all
+	// assets in order to get our user policy
+	tmpdir := filepath.Join(os.TempDir(), fmt.Sprintf("adsys_apparmor_user_%s_%d", username, time.Now().UnixNano()))
+	if err := assetsDumper(ctx, "apparmor/", tmpdir, -1, -1); err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmpdir)
+	profilePaths, err := filesFromEntry(e, tmpdir)
+	if err != nil {
+		return err
+	}
+
+	// The user policy is always a single file
+	if len(profilePaths) != 1 {
+		return fmt.Errorf(i18n.G("expected exactly one profile, got %d"), len(profilePaths))
+	}
+	profilePath := profilePaths[0]
+	profileContents, err := os.ReadFile(profilePath)
+	if err != nil {
+		return err
+	}
+
+	// Wrap the contents in a profile declaration with the username as the profile name
+	parsedProfile := fmt.Sprintf("^%s {\n%s\n}\n", username, strings.TrimSpace(string(profileContents)))
+
+	// Write the profile to the user's apparmor directory, getting the previous
+	// contents if available
+	oldContent, changed, err := writeIfChanged(filepath.Join(apparmorPath, username), parsedProfile)
+	if err != nil {
+		return err
+	}
+	if !changed {
+		return nil
+	}
+
+	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
+		return nil
+	}
+
+	// Reload apparmor machine profiles to ensure that updates to the user policy are applied
+	existingProfiles, err := filesInDir(filepath.Join(m.apparmorDir, "machine"))
+	if errors.Is(err, os.ErrNotExist) {
+		log.Warningf(ctx, i18n.G("No apparmor machine profiles configured for this machine, skipping reload"))
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	apparmorParserCmd := append(m.apparmorParserCmd, []string{"-r", "-W", "-L", m.apparmorCacheDir}...)
+	apparmorParserCmd = append(apparmorParserCmd, existingProfiles...)
+
+	// #nosec G204 - We are in control of the arguments
+	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		// Restore the old content
+		var restoreErr error
+		if len(oldContent) == 0 {
+			restoreErr = os.Remove(filepath.Join(apparmorPath, username))
+		} else {
+			restoreErr = os.WriteFile(filepath.Join(apparmorPath, username), oldContent, 0600)
+		}
+		if restoreErr != nil {
+			log.Warningf(ctx, i18n.G("Failed to restore old apparmor user profile: %v"), restoreErr)
+		}
+
+		// Return the execution error
+		return fmt.Errorf(i18n.G("failed to load apparmor rules: %w\n%s"), err, string(out))
+	}
 	return nil
 }
 
 // unloadAllRules unloads all apparmor rules in the given directory that are
 // currently loaded in the system (present in the apparmorfs profiles file) and
 // removes the directory.
+// If isComputer is true, only rules pertaining to the given user are unloaded.
 // No action is taken if the directory doesn't exist.
-func (m *Manager) unloadAllRules(ctx context.Context, apparmorPath string) (err error) {
+func (m *Manager) unloadAllRules(ctx context.Context, objectName string, isComputer bool) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't unload apparmor rules"))
 
+	apparmorPath := filepath.Join(m.apparmorDir, "machine")
 	// Nothing to do if the directory doesn't exist
 	if _, err := os.Stat(apparmorPath); err != nil && os.IsNotExist(err) {
 		return nil
@@ -260,13 +342,30 @@ func (m *Manager) unloadAllRules(ctx context.Context, apparmorPath string) (err 
 		return err
 	}
 	policies = intersection(policies, prevLoadedPolicies)
+	pathToRemove := apparmorPath
+
+	// Only remove user-specific policies if we're unloading the user part
+	// These look like the following:
+	// /usr/bin/su//administrator@warthogs.biz (enforce)
+	// /usr/bin/su//anotheruser@warthogs.biz (enforce)
+	if !isComputer {
+		pathToRemove = filepath.Join(m.apparmorDir, "users", objectName)
+		i := 0
+		for _, policy := range policies {
+			if strings.HasSuffix(policy, fmt.Sprintf("//%s", objectName)) {
+				policies[i] = policy
+				i++
+			}
+		}
+		policies = policies[:i]
+	}
 
 	if err := m.unloadPolicies(ctx, policies); err != nil {
 		return err
 	}
 
 	// Unloading succeeded, remove apparmor policy dir
-	if err := os.RemoveAll(apparmorPath); err != nil {
+	if err := os.RemoveAll(pathToRemove); err != nil {
 		return err
 	}
 	return nil
@@ -490,4 +589,23 @@ func intersection(a, b []string) []string {
 	}
 
 	return set
+}
+
+// writeIfChanged will only write to path if content is different from current content.
+func writeIfChanged(path string, content string) (oldContent []byte, changed bool, err error) {
+	defer decorate.OnError(&err, i18n.G("can't save %s"), path)
+
+	oldContent, err = os.ReadFile(path)
+	if err == nil && string(oldContent) == content {
+		return oldContent, false, nil
+	}
+
+	if err := os.WriteFile(path+".new", []byte(content), 0600); err != nil {
+		return nil, true, err
+	}
+	if err := os.Rename(path+".new", path); err != nil {
+		return nil, true, err
+	}
+
+	return oldContent, true, nil
 }
