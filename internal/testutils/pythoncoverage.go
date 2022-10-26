@@ -91,8 +91,6 @@ exec python3-coverage run -a %s $@
 		require.NoErrorf(t, err, "Teardown: can’t combine python coverage: %v", string(out))
 
 		// Convert to golang compatible cover format
-		// search for go.mod to file fqdnFile
-		fqdnFile := fqdnToPath(t, include)
 
 		coverDir := filepath.Dir(goCoverProfile)
 
@@ -114,10 +112,12 @@ exec python3-coverage run -a %s $@
 		require.NoErrorf(t, err, "Teardown: failed opening output golang compatible cover file: %s", err)
 		defer func() { assert.NoError(t, outF.Close(), "Teardown: can’t close golang compatible cover file") }()
 
-		var line int
+		// search for go.mod to file fqdnFile
+		fqdnFile := fqdnToPath(t, include)
+		var lineNum int
 		scanner := bufio.NewScanner(inF)
 		for scanner.Scan() {
-			line++
+			lineNum++
 			txt := scanner.Text()
 			if txt == "" {
 				continue
@@ -132,8 +132,7 @@ exec python3-coverage run -a %s $@
 				continue
 			}
 
-			_, err := outF.Write([]byte(fmt.Sprintf("%s:%d.1,%d.%d 1 %s\n", fqdnFile, line, line, len(txt), covered)))
-			require.NoErrorf(t, err, "Teardown: can't write to golang compatible cover file : %s", err)
+			writeGoCoverageLine(t, outF, fqdnFile, lineNum, len(txt), covered)
 		}
 
 		if err := scanner.Err(); err != nil {
@@ -145,36 +144,4 @@ exec python3-coverage run -a %s $@
 	})
 
 	return true
-}
-
-// fqdnToPath allows to return the fqdn path for this file relative to go.mod.
-func fqdnToPath(t *testing.T, path string) string {
-	t.Helper()
-
-	srcPath, err := filepath.Abs(path)
-	require.NoError(t, err, "can't calculate absolute path")
-
-	d := srcPath
-	for d != "/" {
-		f, err := os.Open(filepath.Clean(filepath.Join(d, "go.mod")))
-		if err != nil {
-			d = filepath.Dir(d)
-			continue
-		}
-		defer func() { assert.NoError(t, f.Close(), "Setup: can’t close go.mod") }()
-
-		r := bufio.NewReader(f)
-		l, err := r.ReadString('\n')
-		require.NoError(t, err, "can't read go.mod first line")
-		if !strings.HasPrefix(l, "module ") {
-			t.Fatal(`Setup: failed to find "module" line in go.mod`)
-		}
-
-		prefix := strings.TrimSpace(strings.TrimPrefix(l, "module "))
-		relpath := strings.TrimPrefix(srcPath, d)
-		return filepath.Join(prefix, relpath)
-	}
-
-	t.Fatal("failed to find go.mod")
-	return ""
 }
