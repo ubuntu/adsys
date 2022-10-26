@@ -2,7 +2,7 @@
   displayname: "Startup scripts"
   explaintext: |
     Define scripts that are executed on machine boot, once the GPO is downloaded.
-    Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+    Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
     Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
   elementtype: "multiText"
   note: |
@@ -19,7 +19,7 @@
   displayname: "Shutdown scripts"
   explaintext: |
     Define scripts that are executed on machine poweroff.
-    Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+    Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
     Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
   elementtype: "multiText"
   note: |
@@ -36,7 +36,7 @@
   displayname: "Logon scripts"
   explaintext: |
     Define scripts that are executed the first time an user logon until it exits from all sessions.
-    Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+    Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
     Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
   elementtype: "multiText"
   release: "any"
@@ -53,7 +53,7 @@
   displayname: "Logoff scripts"
   explaintext: |
     Define scripts that are executed when the user exits from last session.
-    Those scripts are ordered, one by line, and relative to SYSVOL/scripts/ubuntu/ directory.
+    Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
     Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
   elementtype: "multiText"
   note: |

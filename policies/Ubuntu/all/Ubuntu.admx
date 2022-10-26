@@ -71,6 +71,9 @@
     <category name="UbuntuUserScripts" displayName="$(string.UbuntuDisplayUserScripts)">
       <parentCategory ref="UbuntuSessionManagement" />
     </category>
+    <category name="UbuntuUserApplicationConfinement" displayName="$(string.UbuntuDisplayUserApplicationConfinement)">
+      <parentCategory ref="UbuntuSessionManagement" />
+    </category>
     <category name="UbuntuUserDriveMapping" displayName="$(string.UbuntuDisplayUserDriveMapping)">
       <parentCategory ref="UbuntuSessionManagement" />
     </category>
@@ -3347,6 +3350,30 @@
           <falseValue><string>false</string></falseValue>
         </boolean>
         <multiText id="UbuntuElemUser2004ScriptsLogoff" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuUserApparmorApparmorUsers" class="User" displayName="$(string.UbuntuDisplayUserAllApparmorApparmorUsers)" explainText="$(string.UbuntuExplainTextUserApparmorApparmorUsers)" presentation="$(presentation.UbuntuPresentationUserApparmorApparmorUsers)" key="Software\Policies\Ubuntu\apparmor\apparmor-users" valueName="metaValues">
+      <parentCategory ref="UbuntuUserApplicationConfinement" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemUserAllApparmorApparmorUsers" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2210ApparmorApparmorUsers" valueName="Override22.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2210ApparmorApparmorUsers" valueName="22.10" />
+        <boolean id="UbuntuOverrideElemUser2204ApparmorApparmorUsers" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2204ApparmorApparmorUsers" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemUser2004ApparmorApparmorUsers" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2004ApparmorApparmorUsers" valueName="20.04" />
       </elements>
     </policy>
     <policy name="UbuntuUserMountUserMounts" class="User" displayName="$(string.UbuntuDisplayUserAllMountUserMounts)" explainText="$(string.UbuntuExplainTextUserMountUserMounts)" presentation="$(presentation.UbuntuPresentationUserMountUserMounts)" key="Software\Policies\Ubuntu\mount\user-mounts" valueName="metaValues">
