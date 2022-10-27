@@ -7,8 +7,8 @@
 -N
 #TMPDIR#/machine/usr.bin.foo
 -R
-/usr/bin/bar {}
-/usr/bin/baz {}
+profile /usr/bin/bar {}
+profile /usr/bin/baz {}
 -r
 -W
 -L

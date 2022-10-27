@@ -5,6 +5,6 @@
 #TMPDIR#/machine/usr.bin.bar
 #TMPDIR#/machine/usr.bin.foo
 -R
-/usr/bin/bar {}
-/usr/bin/baz {}
-/usr/bin/foo {}
+profile /usr/bin/bar {}
+profile /usr/bin/baz {}
+profile /usr/bin/foo {}

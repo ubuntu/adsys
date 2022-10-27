@@ -422,7 +422,7 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 		defer stdin.Close()
 		for _, policy := range policies {
 			// For each policy, declare an empty block to remove it.
-			if _, err := io.WriteString(stdin, fmt.Sprintf("%s {}\n", policy)); err != nil {
+			if _, err := io.WriteString(stdin, fmt.Sprintf("profile %s {}\n", policy)); err != nil {
 				log.Warningf(ctx, i18n.G("Couldn't write to apparmor parser stdin: %v"), err)
 			}
 		}
