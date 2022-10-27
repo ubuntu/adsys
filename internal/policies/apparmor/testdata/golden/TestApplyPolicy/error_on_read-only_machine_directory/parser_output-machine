@@ -1,0 +1,15 @@
+-N
+#TMPDIR#/machine/nested/usr.bin.baz
+#TMPDIR#/machine/nested/usr.bin.nested.absent
+#TMPDIR#/machine/pam_binaries
+#TMPDIR#/machine/pam_roles
+#TMPDIR#/machine/usr.bin.absent
+#TMPDIR#/machine/usr.bin.bar
+#TMPDIR#/machine/usr.bin.foo
+-N
+#TMPDIR#/machine/usr.bin.foo
+-r
+-W
+-L
+/var/cache/adsys/apparmor
+#TMPDIR#/machine/usr.bin.foo

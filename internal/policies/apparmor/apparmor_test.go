@@ -33,7 +33,7 @@ func TestApplyPolicy(t *testing.T) {
 		user    bool
 
 		noParserOutput         bool
-		destAlreadyExists      string
+		destsAlreadyExist      []string // first item refers to the /machine path, second to the /user path
 		readOnlyApparmorDir    string
 		noApparmorParser       bool
 		existingLoadedPolicies []string
@@ -52,12 +52,12 @@ func TestApplyPolicy(t *testing.T) {
 		"computer, profiles with whitespace":       {entries: []entry.Entry{{Key: "apparmor-machine", Value: " usr.bin.foo\n\n usr.bin.bar   \nnested/usr.bin.baz "}}},
 		"computer, whitespace-only value":          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "       "}}, noParserOutput: true},
 		"computer, only blank profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "\n\n\n"}}, noParserOutput: true},
-		"computer, previous profiles are unloaded": {destAlreadyExists: "machine", existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
-		"existing .old directory is removed":       {destAlreadyExists: "machine.old", noParserOutput: true},
-		"existing .new directory is removed":       {destAlreadyExists: "machine.new", noParserOutput: true},
+		"computer, previous profiles are unloaded": {destsAlreadyExist: []string{"machine", ""}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
+		"existing .old directory is removed":       {destsAlreadyExist: []string{"machine.old", ""}},
+		"existing .new directory is removed":       {destsAlreadyExist: []string{"machine.new", ""}},
 
 		// shared cases
-		"no profiles, existing rules are removed": {entries: []entry.Entry{}, destAlreadyExists: "machine", existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
+		"no profiles, existing rules are removed": {entries: []entry.Entry{}, destsAlreadyExist: []string{"machine", ""}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
 		"no profiles, apparmor directory absent":  {entries: []entry.Entry{}, noParserOutput: true},
 		"unexpected entry key":                    {entries: []entry.Entry{{Key: "apparmor-foo", Value: "usr.bin.foo"}}, noParserOutput: true},
 
@@ -72,20 +72,20 @@ func TestApplyPolicy(t *testing.T) {
 		// error cases
 		"error on loading profiles failing":                {apparmorParserError: "-r", wantErr: true},
 		"error on preprocessing new profiles failing":      {apparmorParserError: "-N", wantErr: true},
-		"error on preprocessing old profiles failing":      {destAlreadyExists: "machine", existingLoadedPolicies: []string{"/usr/bin/foo"}, apparmorParserError: "-N", wantErr: true},
-		"error on unloading all profiles failing":          {entries: []entry.Entry{}, destAlreadyExists: "machine", existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}, apparmorParserError: "-R", wantErr: true},
-		"error on unloading old profiles failing":          {destAlreadyExists: "machine", existingLoadedPolicies: []string{"/usr/bin/bar", "/usr/bin/baz"}, apparmorParserError: "-R", wantErr: true},
+		"error on preprocessing old profiles failing":      {destsAlreadyExist: []string{"machine", ""}, existingLoadedPolicies: []string{"/usr/bin/foo"}, apparmorParserError: "-N", wantErr: true},
+		"error on unloading all profiles failing":          {entries: []entry.Entry{}, destsAlreadyExist: []string{"machine", ""}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}, apparmorParserError: "-R", wantErr: true},
+		"error on unloading old profiles failing":          {destsAlreadyExist: []string{"machine", ""}, existingLoadedPolicies: []string{"/usr/bin/bar", "/usr/bin/baz"}, apparmorParserError: "-R", wantErr: true},
 		"error on save assets dumping failing":             {noParserOutput: true, saveAssetsError: true, wantErr: true},
 		"error on removing unused assets after dump":       {noParserOutput: true, removeUnusedAssetsError: true, wantErr: true},
 		"error on profile being a directory":               {entries: []entry.Entry{{Key: "apparmor-machine", Value: "nested/"}}, noParserOutput: true, wantErr: true},
 		"error on absent profile":                          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.nonexistent"}}, noParserOutput: true, wantErr: true},
-		"error on absent loaded policies file":             {entries: []entry.Entry{}, destAlreadyExists: "machine", existingLoadedPolicies: []string{"parseError"}, noParserOutput: true, wantErr: true},
+		"error on absent loaded policies file":             {entries: []entry.Entry{}, destsAlreadyExist: []string{"machine", ""}, existingLoadedPolicies: []string{"parseError"}, noParserOutput: true, wantErr: true},
 		"error on file as a directory":                     {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo/notadir"}}, noParserOutput: true, wantErr: true},
 		"error on read-only root directory with entries":   {readOnlyApparmorDir: ".", noParserOutput: true, wantErr: true},
-		"error on read-only machine directory":             {destAlreadyExists: "machine", readOnlyApparmorDir: "machine", noParserOutput: true, wantErr: true},
-		"error on read-only machine directory, no entries": {entries: []entry.Entry{}, destAlreadyExists: "machine", readOnlyApparmorDir: "machine/nested", noParserOutput: true, wantErr: true},
-		"error on read-only .old directory":                {destAlreadyExists: "machine.old", readOnlyApparmorDir: "machine.old", noParserOutput: true, wantErr: true},
-		"error on read-only .new directory":                {destAlreadyExists: "machine.new", readOnlyApparmorDir: "machine.new", noParserOutput: true, wantErr: true},
+		"error on read-only machine directory":             {destsAlreadyExist: []string{"machine", ""}, readOnlyApparmorDir: "machine", wantErr: true},
+		"error on read-only machine directory, no entries": {entries: []entry.Entry{}, destsAlreadyExist: []string{"machine", ""}, readOnlyApparmorDir: "machine/nested", wantErr: true},
+		"error on read-only .old directory":                {destsAlreadyExist: []string{"machine.old", ""}, readOnlyApparmorDir: "machine.old", noParserOutput: true, wantErr: true},
+		"error on read-only .new directory":                {destsAlreadyExist: []string{"machine.new", ""}, readOnlyApparmorDir: "machine.new", noParserOutput: true, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -113,18 +113,24 @@ func TestApplyPolicy(t *testing.T) {
 				apparmorParserCmd = append(apparmorParserCmd, fmt.Sprintf("-Exit1%s", tc.apparmorParserError))
 			}
 
-			object := "machine"
-			if tc.user {
-				object = "users"
-			}
-
-			if tc.destAlreadyExists != "" {
+			if tc.destsAlreadyExist != nil {
 				require.NoError(t, os.RemoveAll(apparmorDir), "Setup: can't remove apparmor dir before filing it")
-				require.NoError(t,
-					shutil.CopyTree(
-						filepath.Join("testdata", "apparmor_dir", object), filepath.Join(apparmorDir, tc.destAlreadyExists),
-						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
-					"Setup: can't create initial apparmor dir profiles content")
+				// machine directory
+				if tc.destsAlreadyExist[0] != "" {
+					require.NoError(t,
+						shutil.CopyTree(
+							filepath.Join("testdata", "apparmor_dir", "machine"), filepath.Join(apparmorDir, tc.destsAlreadyExist[0]),
+							&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+						"Setup: can't create initial apparmor dir machine profiles content")
+				}
+				// users directory
+				if tc.destsAlreadyExist[1] != "" {
+					require.NoError(t,
+						shutil.CopyTree(
+							filepath.Join("testdata", "apparmor_dir", "users"), filepath.Join(apparmorDir, tc.destsAlreadyExist[1]),
+							&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
+						"Setup: can't create initial apparmor dir user profiles content")
+				}
 			}
 			if tc.readOnlyApparmorDir != "" {
 				testutils.MakeReadOnly(t, filepath.Join(apparmorDir, tc.readOnlyApparmorDir))
@@ -168,15 +174,15 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			testutils.CompareTreesWithFiltering(t, apparmorDir, filepath.Join("testdata", "golden", testutils.NormalizeGoldenName(t, t.Name()), "etc", "apparmor.d", "adsys"), update)
 
-			// Return early if we don't want to check apparmor_parser output for
-			// whatever reason (e.g. command did not execute, returned an error before etc.)
-			if tc.noParserOutput {
-				return
-			}
-
 			// Check that apparmor_parser was called with the expected arguments
 			goldPath := filepath.Join("testdata", "golden", testutils.NormalizeGoldenName(t, t.Name()), fmt.Sprintf("parser_output-%s", userOrMachine(tc.user)))
 			got, err := os.ReadFile(parserCmdOutputFile)
+			// Return early if we don't want to check apparmor_parser output for
+			// whatever reason (e.g. command did not execute, returned an error before etc.)
+			if tc.noParserOutput {
+				require.Error(t, err, "Setup: No apparmor_parser output requested but we got some")
+				return
+			}
 			require.NoError(t, err, "Setup: Can't read parser output file")
 			got = []byte(normalizeOutput(t, string(got), apparmorDir))
 			if update {
