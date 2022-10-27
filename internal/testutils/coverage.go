@@ -84,7 +84,7 @@ func WantCoverage() bool {
 func appendToFile(src, dst string) error {
 	f, err := os.Open(filepath.Clean(src))
 	if err != nil {
-		return fmt.Errorf("can't open coverage file named: %w", err)
+		return fmt.Errorf("can't open coverage file: %w", err)
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
