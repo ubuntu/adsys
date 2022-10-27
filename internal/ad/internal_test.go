@@ -573,7 +573,6 @@ func TestMain(m *testing.M) {
 	// Don’t setup samba or sssd for mock helpers
 	if strings.Contains(strings.Join(os.Args, " "), "TestMock") {
 		m.Run()
-		testutils.MergeCoverages()
 		return
 	}
 

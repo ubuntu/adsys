@@ -25,8 +25,8 @@ var python3Mock string
 func PythonCoverageToGoFormat(t *testing.T, include string, commandOnStdin bool) (coverageOn bool) {
 	t.Helper()
 
-	goCoverProfile := testCoverageFile()
-	if goCoverProfile == "" {
+	testGoCoverage := TrackTestCoverage(t)
+	if testGoCoverage == "" {
 		return false
 	}
 
@@ -34,8 +34,7 @@ func PythonCoverageToGoFormat(t *testing.T, include string, commandOnStdin bool)
 	_, err := exec.LookPath(coverageCmd)
 	require.NoErrorf(t, err, "Setup: coverage requested and no %s executable found in $PATH for python code", coverageCmd)
 
-	coverDir := filepath.Dir(goCoverProfile)
-	pythonCoverageFile := filepath.Join(coverDir, "pythoncode.coverage")
+	pythonCoverageFile := testGoCoverage + ".pythoncode.coverage"
 	err = os.Setenv("COVERAGE_FILE", pythonCoverageFile)
 	require.NoError(t, err, "Setup: can’t set python coverage")
 
@@ -86,13 +85,10 @@ exec python3-coverage run -a %s $@
 		}
 
 		// Convert to text format
+		coverDir := filepath.Dir(testGoCoverage)
 		// #nosec G204 - we have a const for coverageCmd
 		out, err := exec.Command(coverageCmd, "annotate", "-d", coverDir, "--include", tracedFile).CombinedOutput()
 		require.NoErrorf(t, err, "Teardown: can’t combine python coverage: %v", string(out))
-
-		// Convert to golang compatible cover format
-
-		coverDir := filepath.Dir(goCoverProfile)
 
 		// Convert to golang compatible cover format
 		// The file will be transform with char_hexadecimal_filename_ext,cover if there is any / in the name.
@@ -107,8 +103,7 @@ exec python3-coverage run -a %s $@
 		require.NoErrorf(t, err, "Teardown: failed opening python cover file: %s", err)
 		defer func() { assert.NoError(t, inF.Close(), "Teardown: can’t close python cover file") }()
 
-		golangInclude := filepath.Join(coverDir, t.Name()+".gocover")
-		outF, err := os.Create(golangInclude)
+		outF, err := os.Create(testGoCoverage)
 		require.NoErrorf(t, err, "Teardown: failed opening output golang compatible cover file: %s", err)
 		defer func() { assert.NoError(t, outF.Close(), "Teardown: can’t close golang compatible cover file") }()
 
@@ -138,9 +133,6 @@ exec python3-coverage run -a %s $@
 		if err := scanner.Err(); err != nil {
 			t.Fatal(err)
 		}
-
-		// append to merge that file when tests are done
-		AddCoverageFile(golangInclude)
 	})
 
 	return true
