@@ -2,6 +2,7 @@
 package adsysmount_test
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"testing"
@@ -14,23 +15,24 @@ func TestRust(t *testing.T) {
 
 	// properly inform Go about which files to use for cache by reading input files.
 	testutils.MarkRustFilesForTestCache(t)
+	env, target := testutils.TrackRustCoverage(t)
 
-	cmd := exec.Command("cargo", "test")
+	// nolint:gosec // G204 we define our target ourself
+	cmd := exec.Command("cargo", "test", "--target-dir", target)
+	cmd.Env = append(os.Environ(), env...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
 	if err := cmd.Run(); err != nil {
 		t.Fail()
 	}
 }
 
 func TestMain(m *testing.M) {
-	canRun, withCoverage := testutils.CanRunRustTests()
-	if !canRun {
+	if err := testutils.CanRunRustTests(testutils.WantCoverage()); err != nil {
+		fmt.Fprintf(os.Stderr, "Can't run Rust tests: %v\n", err)
 		os.Exit(1)
 	}
 
-	_ = withCoverage
-
 	m.Run()
+	testutils.MergeCoverages()
 }
