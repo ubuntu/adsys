@@ -383,6 +383,7 @@ func (m *Manager) policiesFromFiles(ctx context.Context, profiles []string) (pol
 	apparmorParserCmd := append(m.apparmorParserCmd, "-N")
 	apparmorParserCmd = append(apparmorParserCmd, profiles...)
 	// #nosec G204 - We are in control of the arguments
+	// TODO capture stderr separately and log it/error
 	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
 	cmd.Dir = m.apparmorDir
 	out, err := cmd.CombinedOutput()

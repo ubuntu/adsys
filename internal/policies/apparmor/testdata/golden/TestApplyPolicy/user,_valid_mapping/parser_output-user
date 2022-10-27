@@ -1,5 +1,7 @@
--Exit1-R
--N
+-r
+-W
+-L
+/var/cache/adsys/apparmor
 #TMPDIR#/machine/nested/usr.bin.baz
 #TMPDIR#/machine/nested/usr.bin.nested.absent
 #TMPDIR#/machine/pam_binaries
@@ -7,8 +9,3 @@
 #TMPDIR#/machine/usr.bin.absent
 #TMPDIR#/machine/usr.bin.bar
 #TMPDIR#/machine/usr.bin.foo
--Exit1-R
--R
-profile /usr/bin/bar {}
-profile /usr/bin/baz {}
-profile /usr/bin/foo {}
