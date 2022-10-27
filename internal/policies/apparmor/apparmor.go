@@ -226,6 +226,7 @@ func (m *Manager) applyMachinePolicy(ctx context.Context, e entry.Entry, apparmo
 
 		// #nosec G204 - We are in control of the arguments
 		cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
+		cmd.Dir = m.apparmorDir
 		if out, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf(i18n.G("failed to load apparmor rules: %w\n%s"), err, string(out))
 		}
@@ -295,6 +296,7 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 
 	// #nosec G204 - We are in control of the arguments
 	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
+	cmd.Dir = m.apparmorDir
 	if out, err := cmd.CombinedOutput(); err != nil {
 		// Restore the old content
 		var restoreErr error
@@ -382,6 +384,7 @@ func (m *Manager) policiesFromFiles(ctx context.Context, profiles []string) (pol
 	apparmorParserCmd = append(apparmorParserCmd, profiles...)
 	// #nosec G204 - We are in control of the arguments
 	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
+	cmd.Dir = m.apparmorDir
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, fmt.Errorf(i18n.G("failed to get apparmor policies: %w\n%s"), err, string(out))
@@ -410,6 +413,7 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 	apparmorParserCmd := append(m.apparmorParserCmd, "-R")
 	// #nosec G204 - We are in control of the arguments
 	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
+	cmd.Dir = m.apparmorDir
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return err
