@@ -4,13 +4,14 @@ on:
     branches:
       - main
     tags:
-      - '*'
+      - "*"
   pull_request:
 
 env:
   apt_dependencies: >-
     ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
     libwbclient-dev pkg-config protobuf-compiler python3-coverage samba sudo
+    libglib2.0-dev
 
 jobs:
   quality:
@@ -53,6 +54,17 @@ jobs:
       - name: Building
         run: go build ./...
         if: ${{ always() }}
+      - name: Install cargo (stable)
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+        if: ${{ always() }}
+      - name: Building rust code
+        run: |
+          set -eu
+          # mount manager handler
+          cargo build --manifest-path ./internal/policies/mount/adsys_mount/Cargo.toml
+        if: ${{ always() }}
 
   tests:
     name: Tests
@@ -75,6 +87,13 @@ jobs:
 
           echo "${{ github.token }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
           docker pull docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1
+      - name: Install cargo (nightly to get coverage)
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - name: Install grcov
+        run: cargo install grcov
       - name: Run tests
         run: |
           set -eu
