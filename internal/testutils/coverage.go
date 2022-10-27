@@ -24,10 +24,10 @@ var (
 )
 
 // TrackTestCoverage starts tracking coverage in a dedicated file based on current test name.
-// This filewill be merged to the current coverage main file.
+// This file will be merged to the current coverage main file.
 // It’s up to the test use the returned path to file golang-compatible cover format content.
 // To collect all coverages, then MergeCoverages() should be called after m.Run().
-// If coverage is not enable, nothing is done.
+// If coverage is not enabled, nothing is done.
 func TrackTestCoverage(t *testing.T) (testCoverFile string) {
 	t.Helper()
 
@@ -57,19 +57,19 @@ func TrackTestCoverage(t *testing.T) (testCoverFile string) {
 
 // MergeCoverages append all coverage files marked for merging to main Go Cover Profile.
 // This has to be called after m.Run() in TestMain so that the main go cover profile is created.
-// This has no action of profile is not enabled.
+// This has no action if profiling is not enabled.
 func MergeCoverages() {
 	coveragesToMergeMu.Lock()
 	defer coveragesToMergeMu.Unlock()
 	for _, cov := range coveragesToMerge {
 		if err := appendToFile(cov, goMainCoverProfile); err != nil {
-			log.Fatalf("Teardown: can’t inject coverage to golang one: %v", err)
+			log.Fatalf("Teardown: can’t inject coverage into the golang one: %v", err)
 		}
 	}
 	coveragesToMerge = nil
 }
 
-// WantCoverage returns if coverage was requested in test.
+// WantCoverage returns true if coverage was requested in test.
 func WantCoverage() bool {
 	for _, arg := range os.Args {
 		if !strings.HasPrefix(arg, "-test.coverprofile=") {
