@@ -1079,15 +1079,16 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 			}
 			hasExplicitTestAsRunArg = true
 		}
-		// Cover subprocess in a different file that we will merge when the test ends
 		if strings.HasPrefix(arg, "-test.coverprofile=") {
-			coverage := strings.TrimPrefix(arg, "-test.coverprofile=")
-			coverage = fmt.Sprintf("%s.%s", coverage, strings.ToLower(t.Name()))
-			arg = fmt.Sprintf("-test.coverprofile=%s", coverage)
-			testutils.AddCoverageFile(coverage)
+			continue
 		}
 		subArgs = append(subArgs, arg)
 	}
+	// Cover subprocess in a different file that we will merge when the test ends
+	if testCoverFile := testutils.TrackTestCoverage(t); testCoverFile != "" {
+		subArgs = append(subArgs, "-test.coverprofile="+testCoverFile)
+	}
+
 	if !hasExplicitTestAsRunArg {
 		subArgs = append(subArgs, fmt.Sprintf("-test.run=%s", t.Name()))
 	}

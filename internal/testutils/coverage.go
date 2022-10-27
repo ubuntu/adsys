@@ -16,45 +16,75 @@ import (
 )
 
 var (
-	goCoverProfile   string
-	coveragesToMerge []string
-	onceCovFile      sync.Once
+	goMainCoverProfile     string
+	goMainCoverProfileOnce sync.Once
+
+	coveragesToMerge   []string
+	coveragesToMergeMu sync.Mutex
 )
 
-// AddCoverageFile append cov to the list of file to merge when calling MergeCoverages.
-func AddCoverageFile(cov string) {
-	onceCovFile.Do(func() {
-		goCoverProfile = testCoverageFile()
+// TrackTestCoverage starts tracking coverage in a dedicated file based on current test name.
+// This filewill be merged to the current coverage main file.
+// It’s up to the test use the returned path to file golang-compatible cover format content.
+// To collect all coverages, then MergeCoverages() should be called after m.Run().
+// If coverage is not enable, nothing is done.
+func TrackTestCoverage(t *testing.T) (testCoverFile string) {
+	t.Helper()
+
+	goMainCoverProfileOnce.Do(func() {
+		for _, arg := range os.Args {
+			if !strings.HasPrefix(arg, "-test.coverprofile=") {
+				continue
+			}
+			goMainCoverProfile = strings.TrimPrefix(arg, "-test.coverprofile=")
+		}
 	})
-	coveragesToMerge = append(coveragesToMerge, cov)
+
+	if goMainCoverProfile == "" {
+		return ""
+	}
+
+	coverAbsPath, err := filepath.Abs(goMainCoverProfile)
+	require.NoError(t, err, "Setup: can't transform go cover profile to absolute path")
+
+	testCoverFile = fmt.Sprintf("%s.%s", coverAbsPath, strings.ReplaceAll(t.Name(), "/", "_"))
+	coveragesToMergeMu.Lock()
+	defer coveragesToMergeMu.Unlock()
+	coveragesToMerge = append(coveragesToMerge, testCoverFile)
+
+	return testCoverFile
 }
 
 // MergeCoverages append all coverage files marked for merging to main Go Cover Profile.
+// This has to be called after m.Run() in TestMain so that the main go cover profile is created.
+// This has no action of profile is not enabled.
 func MergeCoverages() {
+	coveragesToMergeMu.Lock()
+	defer coveragesToMergeMu.Unlock()
 	for _, cov := range coveragesToMerge {
-		if err := appendToFile(cov, goCoverProfile); err != nil {
-			log.Fatalf("can’t inject coverage to golang one: %v", err)
+		if err := appendToFile(cov, goMainCoverProfile); err != nil {
+			log.Fatalf("Teardown: can’t inject coverage to golang one: %v", err)
 		}
 	}
+	coveragesToMerge = nil
 }
 
-// testCoverageFile returns the coverprofile file relative path.
-// It returns nothing if coverage is not enabled.
-func testCoverageFile() string {
+// WantCoverage returns if coverage was requested in test.
+func WantCoverage() bool {
 	for _, arg := range os.Args {
 		if !strings.HasPrefix(arg, "-test.coverprofile=") {
 			continue
 		}
-		return strings.TrimPrefix(arg, "-test.coverprofile=")
+		return true
 	}
-	return ""
+	return false
 }
 
 // appendToFile appends src to the dst coverprofile file at the end.
 func appendToFile(src, dst string) error {
 	f, err := os.Open(filepath.Clean(src))
 	if err != nil {
-		return fmt.Errorf("can't open python coverage file named: %w", err)
+		return fmt.Errorf("can't open coverage file named: %w", err)
 	}
 	defer func() {
 		if err := f.Close(); err != nil {
