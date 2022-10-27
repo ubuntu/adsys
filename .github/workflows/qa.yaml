@@ -4,7 +4,7 @@ on:
     branches:
       - main
     tags:
-      - '*'
+      - "*"
   pull_request:
 
 jobs:
@@ -17,6 +17,8 @@ jobs:
         run: |
           DEBIAN_FRONTEND=noninteractive apt update
           DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc pkg-config libsmbclient-dev
+          # Rust/cargo dependencies
+          DEBIAN_FRONTEND=noninteractive apt install -y curl libglib2.0-dev
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3
@@ -48,6 +50,17 @@ jobs:
       - name: Building
         run: go build ./...
         if: ${{ always() }}
+      - name: Install cargo (stable)
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+        if: ${{ always() }}
+      - name: Building rust code
+        run: |
+          set -eu
+          # mount manager handler
+          cargo build --manifest-path ./internal/policies/mount/adsys_mount/Cargo.toml
+        if: ${{ always() }}
 
   tests:
     name: Tests
@@ -62,6 +75,8 @@ jobs:
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper curl
+          # Rust dependencies
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y libglib2.0-dev
       - name: Set required environment variables
         run: echo "SUDO_PACKAGES=$(cat debian/tests/.sudo-packages)" >> $GITHUB_ENV
       - name: Authenticate to docker local registry and pull image with our token
@@ -70,6 +85,13 @@ jobs:
 
           echo "${{ github.token }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
           docker pull docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1
+      - name: Install cargo (nightly to get coverage)
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - name: Install grcov
+        run: cargo install grcov
       - name: Run tests
         run: |
           set -eu
