@@ -3,6 +3,7 @@ package apparmor
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -382,18 +383,24 @@ func (m *Manager) policiesFromFiles(ctx context.Context, profiles []string) (pol
 
 	apparmorParserCmd := append(m.apparmorParserCmd, "-N")
 	apparmorParserCmd = append(apparmorParserCmd, profiles...)
+	var outb, errb bytes.Buffer
 	// #nosec G204 - We are in control of the arguments
-	// TODO capture stderr separately and log it/error
 	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
 	cmd.Dir = m.apparmorDir
-	out, err := cmd.CombinedOutput()
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+	err = cmd.Run()
 	if err != nil {
-		return nil, fmt.Errorf(i18n.G("failed to get apparmor policies: %w\n%s"), err, string(out))
+		return nil, fmt.Errorf(i18n.G("failed to get apparmor policies: %w\n%s"), err, errb.String())
+	}
+	// Execution succeeded but we still got something on stderr, let the user know
+	if errb.Len() > 0 {
+		log.Warningf(ctx, i18n.G(`Got stderr output from apparmor_parser:
+%s`), errb.String())
 	}
 
-	for _, line := range strings.Split(string(out), "\n") {
+	for _, line := range strings.Split(outb.String(), "\n") {
 		policy := strings.TrimSpace(line)
-		// If onlyLoaded is true, only policies currently loaded in the system are returned.
 		if policy == "" {
 			continue
 		}
