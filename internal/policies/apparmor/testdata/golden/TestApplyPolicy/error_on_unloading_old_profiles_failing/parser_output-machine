@@ -10,5 +10,5 @@
 #TMPDIR#/machine/usr.bin.foo
 -Exit1-R
 -R
-/usr/bin/bar {}
-/usr/bin/baz {}
+profile /usr/bin/bar {}
+profile /usr/bin/baz {}

@@ -1,0 +1,6 @@
+-r
+-W
+-L
+/var/cache/adsys/apparmor
+#TMPDIR#/machine/pam_binaries
+#TMPDIR#/machine/pam_roles

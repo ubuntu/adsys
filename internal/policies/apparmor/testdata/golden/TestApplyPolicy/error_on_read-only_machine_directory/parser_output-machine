@@ -4,7 +4,10 @@
 #TMPDIR#/machine/usr.bin.absent
 #TMPDIR#/machine/usr.bin.bar
 #TMPDIR#/machine/usr.bin.foo
--R
-profile /usr/bin/bar {}
-profile /usr/bin/baz {}
-profile /usr/bin/foo {}
+-N
+#TMPDIR#/machine/usr.bin.foo
+-r
+-W
+-L
+/var/cache/adsys/apparmor
+#TMPDIR#/machine/usr.bin.foo
