@@ -226,14 +226,9 @@ msgstr ""
 msgid "Apparmor is not available on this system: %v"
 msgstr ""
 
-#. objectDir = "users"
-#: internal/policies/apparmor/apparmor.go:99
-msgid "Apparmor policies are currently only supported for computers"
-msgstr ""
-
-#: internal/policies/apparmor/apparmor.go:132
+#: internal/policies/apparmor/apparmor.go:134
 #, c-format
-msgid "Applying apparmor policy to %s"
+msgid "Applying apparmor %s policy to %s"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:150
@@ -316,11 +311,11 @@ msgstr ""
 msgid "Couldn't connect to %s daemon: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:373
+#: internal/policies/apparmor/apparmor.go:484
 msgid "Couldn't remove new apparmor directory: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:377
+#: internal/policies/apparmor/apparmor.go:488
 msgid "Couldn't restore previous apparmor directory: %v"
 msgstr ""
 
@@ -328,7 +323,7 @@ msgstr ""
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:323
+#: internal/policies/apparmor/apparmor.go:434
 msgid "Couldn't write to apparmor parser stdin: %v"
 msgstr ""
 
@@ -397,6 +392,10 @@ msgstr ""
 
 #: internal/watcher/watcher.go:250
 msgid "Failed to remove watcher on %q: %s"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:310
+msgid "Failed to restore old apparmor user profile: %v"
 msgstr ""
 
 #: internal/watcher/watcher.go:231
@@ -468,8 +467,14 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:137
-msgid "No valid entry found for the apparmor machine policy"
+#: internal/policies/apparmor/apparmor.go:289
+msgid ""
+"No apparmor machine profiles configured for this machine, skipping reload"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:130
+#, c-format
+msgid "No entries found for the apparmor %s policy"
 msgstr ""
 
 #: internal/adsysservice/service.go:123
@@ -658,7 +663,7 @@ msgstr ""
 msgid "Uninstalls the service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:310
+#: internal/policies/apparmor/apparmor.go:420
 msgid "Unloading %d apparmor policies: %v"
 msgstr ""
 
@@ -732,11 +737,11 @@ msgstr ""
 msgid "another instance of the %s service is already running"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:397
+#: internal/policies/apparmor/apparmor.go:508
 msgid "apparmor profile %q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:394
+#: internal/policies/apparmor/apparmor.go:505
 msgid "apparmor profile %q is not accessible: %w"
 msgstr ""
 
@@ -744,7 +749,7 @@ msgstr ""
 msgid "call to polkit failed: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:93
+#: internal/policies/apparmor/apparmor.go:96
 #, c-format
 msgid "can't apply apparmor policy to %s"
 msgstr ""
@@ -756,6 +761,10 @@ msgstr ""
 
 #: internal/policies/gdm/gdm.go:58
 msgid "can't apply gdm policy"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:151
+msgid "can't apply machine policy"
 msgstr ""
 
 #: internal/policies/mount/mount.go:71
@@ -771,6 +780,10 @@ msgstr ""
 #: internal/policies/scripts/scripts.go:96
 #, c-format
 msgid "can't apply scripts policy to %s"
+msgstr ""
+
+#: internal/policies/apparmor/apparmor.go:245
+msgid "can't apply user policy"
 msgstr ""
 
 #: internal/watcher/watcher.go:365
@@ -817,7 +830,7 @@ msgstr ""
 msgid "can't create admx file: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:142
+#: internal/policies/apparmor/apparmor.go:136
 msgid "can't create apparmor directory %q: %v"
 msgstr ""
 
@@ -952,7 +965,7 @@ msgstr ""
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:337
+#: internal/policies/apparmor/apparmor.go:448
 msgid "can't parse loaded apparmor policies"
 msgstr ""
 
@@ -964,21 +977,21 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:170
+#: internal/policies/apparmor/apparmor.go:178
 msgid "can't remove new apparmor directory %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:166
-#: internal/policies/apparmor/apparmor.go:230
+#: internal/policies/apparmor/apparmor.go:174
+#: internal/policies/apparmor/apparmor.go:238
 msgid "can't remove old apparmor directory %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:413
+#: internal/policies/apparmor/apparmor.go:524
 msgid "can't remove unused apparmor assets"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:182
-#: internal/policies/apparmor/apparmor.go:188
+#: internal/policies/apparmor/apparmor.go:190
+#: internal/policies/apparmor/apparmor.go:196
 msgid "can't rename apparmor directory %q to %q: %v"
 msgstr ""
 
@@ -987,6 +1000,7 @@ msgstr ""
 msgid "can't run scripts listed in %s"
 msgstr ""
 
+#: internal/policies/apparmor/apparmor.go:608
 #: internal/policies/dconf/dconf.go:197
 #, c-format
 msgid "can't save %s"
@@ -1018,7 +1032,7 @@ msgstr ""
 msgid "can't stop service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:241
+#: internal/policies/apparmor/apparmor.go:325
 msgid "can't unload apparmor rules"
 msgstr ""
 
@@ -1252,6 +1266,11 @@ msgstr ""
 msgid "error while updating policy"
 msgstr ""
 
+#: internal/policies/apparmor/apparmor.go:261
+#, c-format
+msgid "expected exactly one profile, got %d"
+msgstr ""
+
 #: internal/ad/admxgen/files.go:34
 msgid "failed to access definition files: %w"
 msgstr ""
@@ -1280,7 +1299,7 @@ msgstr ""
 msgid "failed to find default sssd domain in sssd.conf"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:288
+#: internal/policies/apparmor/apparmor.go:394
 msgid ""
 "failed to get apparmor policies: %w\n"
 "%s"
@@ -1303,7 +1322,9 @@ msgstr ""
 msgid "failed to install service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:224
+#. Return the execution error
+#: internal/policies/apparmor/apparmor.go:232
+#: internal/policies/apparmor/apparmor.go:314
 msgid ""
 "failed to load apparmor rules: %w\n"
 "%s"
@@ -1317,7 +1338,7 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:341
+#: internal/policies/apparmor/apparmor.go:452
 msgid "failed to open %q: %w"
 msgstr ""
 
@@ -1375,7 +1396,7 @@ msgstr ""
 msgid "failed to uninstall service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:329
+#: internal/policies/apparmor/apparmor.go:440
 msgid ""
 "failed to unload apparmor policies: %w\n"
 "%s"
