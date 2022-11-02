@@ -1,10 +1,8 @@
-#!/usr/bin/python3
-
 """
 This script is used to mock the systemd daemon and several system services used by adsysd
 """
 
-import argparse
+from argparse import Namespace
 import os
 import sys
 from subprocess import Popen
@@ -17,52 +15,44 @@ from dbusmock.templates import systemd
 
 from gi.repository import GLib
 
-# Real system
-DBUS_SOCKET_PATH = "/dbus/system_bus_socket"
-POLKIT_PATH = "/usr/lib/policykit-1/polkitd"
-ADSYS_POLICY_PATH_SRC = "/usr/share/polkit-1/actions.orig/com.ubuntu.adsys.policy"
-ADSYS_POLICY_PATH_DST = "/usr/share/polkit-1/actions/com.ubuntu.adsys.policy"
-
+DBUS_SYSTEM_SOCKET_PATH = "/dbus/system_bus_socket"
 # For testing purpose
-#DBUS_SOCKET_PATH = "/tmp/system_bus_socket"
-#POLKIT_PATH = "/usr/libexec/polkitd"
-#ADSYS_POLICY_PATH_SRC = "/tmp/actions.orig/com.ubuntu.adsys.policy"
-#ADSYS_POLICY_PATH_DST = "/tmp/actions/com.ubuntu.adsys.policy"
+# DBUS_SYSTEM_SOCKET_PATH = "/tmp/system_bus_socket"
 
 
-def main() -> int:
-    """main routine"""
+def start_system_bus() -> dbus.Bus:
+    """ starts system bus and returned the new bus """
 
-    parser = argparse.ArgumentParser(description="systemd mock")
-    parser.add_argument(
-        "mode", type=str,
-         choices = [
-             "polkit_yes", "polkit_no",
-             "no_startup_time", "invalid_startup_time",
-             "no_nextrefresh_time", "invalid_nextrefresh_time",
-             "subscription_disabled"])
+    conf = tempfile.NamedTemporaryFile(prefix='dbusmock_cfg')
+    conf.write('''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>system</type>
+  <keep_umask/>
+  <listen>unix:path={}</listen>
 
-    args = parser.parse_args()
+  <policy context="default">
+    <allow user="*"/>
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
 
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+</busconfig>
+'''.format(DBUS_SYSTEM_SOCKET_PATH).encode())
 
-    bus = start_system_bus()
+    conf.flush()
 
-    main_loop = GLib.MainLoop()
-    # quit mock when the bus is going down
-    bus.add_signal_receiver(main_loop.quit, signal_name="Disconnected",
-                            path="/org/freedesktop/DBus/Local",
-                            dbus_interface="org.freedesktop.DBus.Local")
+    (_, addr) = dbusmock.DBusTestCase.start_dbus(conf=conf.name)
+    os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
+    return dbusmock.DBusTestCase.get_dbus(True)
 
-    systemd_on_bus(bus, args.mode)
+
+def run_system_mocks(bus: dbus.Bus, mode: str) -> None:
+    systemd_on_bus(bus, mode)
     sssd_on_bus(bus)
-    ubuntu_advantage_on_bus(bus, args.mode)
-    polkitd = allow_adsys_and_start_polkitd_in_bg(args.mode)
+    ubuntu_advantage_on_bus(bus, mode)
 
-    main_loop.run()
-    polkitd.terminate()
-
-    return 0
 
 def systemd_on_bus(bus: dbus.Bus, mode: str) -> None:
     """ Installs systemd mock on dbus and sets up the adsys scripts and refresh timer services """
@@ -89,7 +79,8 @@ def systemd_on_bus(bus: dbus.Bus, mode: str) -> None:
     elif mode == "invalid_nextrefresh_time":
         next_refresh_time = dbus.String("invalid")
 
-    main_object.AddProperty(systemd.MAIN_IFACE, "GeneratorsStartTimestamp", startup_time)
+    main_object.AddProperty(
+        systemd.MAIN_IFACE, "GeneratorsStartTimestamp", startup_time)
 
     main_object.AddObject(
         "/org/freedesktop/systemd1/unit/adsys_2dgpo_2drefresh_2etimer",
@@ -163,53 +154,3 @@ def ubuntu_advantage_on_bus(bus: dbus.bus, mode: str) -> None:
         {"Attached": subscription_state},
         "/tmp/ubuntu-advantage-mock.log",
         False)
-
-
-def allow_adsys_and_start_polkitd_in_bg(mode: str) -> Popen:
-    """Replace adsys policy depending on mode and starts polkitd in background"""
-
-    allow = "yes"
-    if mode == "polkit_no":
-        allow = "no"
-
-    with open(ADSYS_POLICY_PATH_SRC, "r") as r:
-        with open(ADSYS_POLICY_PATH_DST, "w") as w:
-            for line in r:
-                for token in ["<allow_any>", "<allow_inactive>", "<allow_active>"]:
-                    if not token in line:
-                        continue
-                    line = "      " + token + allow + "</" + token[1:] + "\n"
-                w.write(line)
-    return Popen([POLKIT_PATH])
-
-
-def start_system_bus() -> dbus.Bus:
-    """ starts system bus and returned the new bus """
-
-    conf = tempfile.NamedTemporaryFile(prefix='dbusmock_cfg')
-    conf.write('''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
-"http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
-<busconfig>
-  <type>system</type>
-  <keep_umask/>
-  <listen>unix:path={}</listen>
-
-  <policy context="default">
-    <allow user="*"/>
-    <allow send_destination="*" eavesdrop="true"/>
-    <allow eavesdrop="true"/>
-    <allow own="*"/>
-  </policy>
-
-</busconfig>
-'''.format(DBUS_SOCKET_PATH).encode())
-
-    conf.flush()
-
-    (_, addr) = dbusmock.DBusTestCase.start_dbus(conf=conf.name)
-    os.environ['DBUS_SYSTEM_BUS_ADDRESS'] = addr
-    return dbusmock.DBusTestCase.get_dbus(True)
-
-
-if __name__ == "__main__":
-    sys.exit(main())
