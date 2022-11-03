@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter, Result};
 use thiserror::Error;
 
 /// Our own error type
@@ -10,8 +11,8 @@ pub enum AdsysMountError {
     MountError = 1,
     ParseError = 2,
 }
-impl std::fmt::Display for AdsysMountError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl Display for AdsysMountError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(f, "Process exited with error code: {:#?}", self)
     }
 }
