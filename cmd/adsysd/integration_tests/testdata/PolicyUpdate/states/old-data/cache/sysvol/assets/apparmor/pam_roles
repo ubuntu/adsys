@@ -1,0 +1,7 @@
+profile confined_user {
+  /usr/bin/** mrPix,
+}
+
+profile default_user {
+  /usr/bin/** mrPix,
+}

@@ -1,0 +1,6 @@
+^userintegrationtest@example.com {
+/etc/environment r,
+@{HOMEDIRS}/.xauth* w,
+/usr/bin/{,b,d,rb}ash Ux,
+/usr/bin/{c,k,tc}sh Ux,
+}
