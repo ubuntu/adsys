@@ -3,6 +3,7 @@ import dbusmock
 
 
 class VfsMountTrackerMock(dbusmock.DBusMockObject):
+
     def __init__(self, bus: dbus.Bus, bus_name: str, path: str, interface: str, props: dbusmock.mockobject.PropsType,
                  logfile: dbusmock.mockobject.Optional[str] = None, is_object_manager: bool = False) -> None:
         super().__init__(bus_name, path, interface, props, logfile, is_object_manager)
@@ -10,6 +11,7 @@ class VfsMountTrackerMock(dbusmock.DBusMockObject):
 
     @dbus.service.method(dbus_interface='org.gtk.vfs.MountTracker', out_signature='a(ssasib)')
     def ListMountableInfo(self):
+        # Add service not available case
         return [('smb-share', 'smb', [], 0, False), ('nfs', 'nfs', [], 0, False)]
 
     @dbus.service.method(dbus_interface='org.gtk.vfs.MountTracker', in_signature='(aya{say})(so)')
@@ -22,20 +24,20 @@ class VfsMountTrackerMock(dbusmock.DBusMockObject):
             'org.gtk.vfs.MountOperation',
             'AskPassword',
             'sssu',
-            ('message', 'denison', 'WORKGROUP', 31)
+            ('message', 'ubuntu', 'WORKGROUP', 31)
         )
 
         self.Mounted(
             mount_source[0],
             mount_source[1],
-            'anon_share on localhost',
-            'smb-share:server=localhost,share=anon_share',
+            'anon_share on localhost',  # Should be dynamic
+            'smb-share:server=localhost,share=anon_share',  # Should be dynamic
             '',
             '. GThemedIcon folder-remote folder folder-remote-symbolic folder-symbolic',
             '. GThemedIcon folder-remote-symbolic folder-symbolic folder-remote folder',
             '',
             True,
-            b'/run/user/1000/gvfs/smb-share:server=localhost,share=anon_share',
+            b'/run/user/1000/gvfs/smb-share:server=localhost,share=anon_share',  # Should be dynamic
             mount_spec,
             b'/'
         )
