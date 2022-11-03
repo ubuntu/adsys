@@ -1,5 +1,10 @@
 #! /usr/bin/python3
 
+"""
+This script is used to mock the session & the system buses and some of its
+objects that are used by adsys.
+"""
+
 import argparse
 import dbus
 from sys import exit
@@ -17,9 +22,25 @@ ADSYS_POLICY_PATH_DST = "/usr/share/polkit-1/actions/com.ubuntu.adsys.policy"
 # ADSYS_POLICY_PATH_SRC = "/tmp/actions.orig/com.ubuntu.adsys.policy"
 # ADSYS_POLICY_PATH_DST = "/tmp/actions/com.ubuntu.adsys.policy"
 
+DBUS_CONF_TEMPLATE = '''\
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <type>{}</type>
+  <keep_umask/>
+  <listen>unix:path={}</listen>
+  <policy context="default">
+    <allow user="*"/>
+    <allow send_destination="*" eavesdrop="true"/>
+    <allow eavesdrop="true"/>
+    <allow own="*"/>
+  </policy>
+</busconfig>
+'''
+
 
 def main() -> int:
-    """main routine"""
+    """ Configures and starts the requested daemons """
 
     parser = argparse.ArgumentParser(description="dbus mocks")
     parser.add_argument(
@@ -43,20 +64,19 @@ def main() -> int:
     bus_type = args.type
 
     if bus_type == 'system' or bus_type == 'all':
-        system_bus = start_system_bus()
+        system_bus = start_system_bus(DBUS_CONF_TEMPLATE)
         run_system_mocks(system_bus, args.mode)
         system_bus.add_signal_receiver(main_loop.quit, signal_name="Disconnected",
                                        path="/org/freedesktop/DBus/Local",
                                        dbus_interface="org.freedesktop.DBus.Local")
 
     if bus_type == 'session' or bus_type == 'all':
-        session_bus = start_session_bus()
+        session_bus = start_session_bus(DBUS_CONF_TEMPLATE)
         run_session_mocks(session_bus)
         session_bus.add_signal_receiver(main_loop.quit, signal_name="Disconnected",
                                         path="/org/freedesktop/DBus/Local",
                                         dbus_interface="org.freedesktop.DBus.Local")
 
-    # quit mock when the bus is going down
     polkitd = allow_adsys_and_start_polkitd_in_bg(args.mode)
 
     main_loop.run()
@@ -67,7 +87,7 @@ def main() -> int:
 
 
 def allow_adsys_and_start_polkitd_in_bg(mode: str) -> Popen:
-    """Replace adsys policy depending on mode and starts polkitd in background"""
+    """ Replace adsys policy depending on mode and starts polkitd in background """
 
     allow = "yes"
     if mode == "polkit_no":

@@ -1,7 +1,3 @@
-"""
-This script is used to mock the session bus and some of its objects that
-are used by adsys.
-"""
 import os
 import tempfile
 
@@ -11,8 +7,6 @@ import dbus.mainloop.glib
 import dbusmock
 import dbusmock.mockobject
 
-from gi.repository import GLib
-
 from vfs_mocks import VfsMountTrackerMock
 
 DBUS_SESSION_SOCKET_PATH = '/dbus/session_bus_socket'
@@ -20,24 +14,18 @@ DBUS_SESSION_SOCKET_PATH = '/dbus/session_bus_socket'
 # DBUS_SESSION_SOCKET_PATH = '/tmp/session_bus_socket'
 
 
-def start_session_bus() -> dbus.Bus:
-    """ starts system bus and returned the new bus """
+def start_session_bus(conf_template: str) -> dbus.Bus:
+    """Creates and starts a session bus
+
+    Args:
+        conf_template (str): Template to be used as the dbus config.
+
+    Returns:
+        dbus.Bus: Session bus created accordingly to the config provided.
+    """
 
     conf = tempfile.NamedTemporaryFile(prefix='dbusmock_cfg')
-    conf.write('''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
-"http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
-<busconfig>
-  <type>session</type>
-  <keep_umask/>
-  <listen>unix:path={}</listen>
-  <policy context="default">
-    <allow user="*"/>
-    <allow send_destination="*" eavesdrop="true"/>
-    <allow eavesdrop="true"/>
-    <allow own="*"/>
-  </policy>
-</busconfig>
-'''.format(DBUS_SESSION_SOCKET_PATH).encode())
+    conf.write(conf_template).format('session', DBUS_SESSION_SOCKET_PATH).encode()
 
     conf.flush()
 
@@ -47,6 +35,11 @@ def start_session_bus() -> dbus.Bus:
 
 
 def run_session_mocks(session_bus: dbus.Bus):
+    """Starts the session dbus mocks.
+
+    Args:
+        session_bus (dbus.Bus): Bus in which the mocks will run.
+    """
     vfs_service = dbus.service.BusName('org.gtk.vfs.Daemon', session_bus, allow_replacement=True,
                                        replace_existing=True, do_not_queue=True)
 

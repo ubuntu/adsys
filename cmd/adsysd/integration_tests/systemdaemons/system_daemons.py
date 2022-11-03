@@ -1,11 +1,4 @@
-"""
-This script is used to mock the systemd daemon and several system services used by adsysd
-"""
-
-from argparse import Namespace
 import os
-import sys
-from subprocess import Popen
 import tempfile
 
 import dbus
@@ -13,33 +6,24 @@ import dbus.mainloop.glib
 import dbusmock
 from dbusmock.templates import systemd
 
-from gi.repository import GLib
 
 DBUS_SYSTEM_SOCKET_PATH = "/dbus/system_bus_socket"
 # For testing purpose
 # DBUS_SYSTEM_SOCKET_PATH = "/tmp/system_bus_socket"
 
 
-def start_system_bus() -> dbus.Bus:
-    """ starts system bus and returned the new bus """
+def start_system_bus(conf_template: str) -> dbus.Bus:
+    """Creates and starts a system bus
+
+    Args:
+        conf_template (str): Template to be used as the dbus config.
+
+    Returns:
+        dbus.Bus: Session bus created accordingly to the config provided.
+    """
 
     conf = tempfile.NamedTemporaryFile(prefix='dbusmock_cfg')
-    conf.write('''<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
-"http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
-<busconfig>
-  <type>system</type>
-  <keep_umask/>
-  <listen>unix:path={}</listen>
-
-  <policy context="default">
-    <allow user="*"/>
-    <allow send_destination="*" eavesdrop="true"/>
-    <allow eavesdrop="true"/>
-    <allow own="*"/>
-  </policy>
-
-</busconfig>
-'''.format(DBUS_SYSTEM_SOCKET_PATH).encode())
+    conf.write(conf_template).format('system', DBUS_SYSTEM_SOCKET_PATH).encode()
 
     conf.flush()
 
@@ -48,13 +32,19 @@ def start_system_bus() -> dbus.Bus:
     return dbusmock.DBusTestCase.get_dbus(True)
 
 
-def run_system_mocks(bus: dbus.Bus, mode: str) -> None:
+def run_system_mocks(bus: dbus.Bus, mode: str):
+    """Starts the system dbus mocks.
+
+    Args:
+        bus (dbus.Bus): Bus in which the mocks will run.
+        mode (str): Mode used to configure some of the mocks.
+    """
     systemd_on_bus(bus, mode)
     sssd_on_bus(bus)
     ubuntu_advantage_on_bus(bus, mode)
 
 
-def systemd_on_bus(bus: dbus.Bus, mode: str) -> None:
+def systemd_on_bus(bus: dbus.Bus, mode: str):
     """ Installs systemd mock on dbus and sets up the adsys scripts and refresh timer services """
     service = dbus.service.BusName(systemd.BUS_NAME,
                                    bus,
@@ -94,7 +84,7 @@ def systemd_on_bus(bus: dbus.Bus, mode: str) -> None:
     main_object.AddMockUnit("adsys-machine-scripts.service")
 
 
-def sssd_on_bus(bus: dbus.Bus) -> None:
+def sssd_on_bus(bus: dbus.Bus):
     """ Installs sssd mock on the bus """
     service = dbus.service.BusName(
         "org.freedesktop.sssd.infopipe",
@@ -133,7 +123,7 @@ def sssd_on_bus(bus: dbus.Bus) -> None:
         ])
 
 
-def ubuntu_advantage_on_bus(bus: dbus.bus, mode: str) -> None:
+def ubuntu_advantage_on_bus(bus: dbus.bus, mode: str):
     """ Installs ubuntu_advantage mock on the bus """
 
     # Ubuntu Advantage subscription state
