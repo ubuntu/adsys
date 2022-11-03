@@ -1,0 +1,1 @@
+[MountEntry { mount_path: "protocol://domain.com/mount/path", is_anonymous: true }, MountEntry { mount_path: "protocol://domain.com/some/path", is_anonymous: false }, MountEntry { mount_path: "smb://example.com/mount/path", is_anonymous: false }, MountEntry { mount_path: "other_protocol://some.com/other/path", is_anonymous: true }]

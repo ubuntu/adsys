@@ -1,5 +1,0 @@
-protocol://example.com/mount/path
-[anonymous]protocol://example.com/anon/mount
-
-
-anotherprotocol://example.com/another/mount
