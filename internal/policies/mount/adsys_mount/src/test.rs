@@ -1,30 +1,55 @@
 #[cfg(test)]
 mod tests {
-    use crate::{parse_entries, MountEntry};
+    use std::collections::HashMap;
 
-    /// Tests parse_entries function.
+    use crate::{parse_entries, test_utils};
+
     #[test]
-    fn test_parse_entries() {
-        let want: Vec<MountEntry> = vec![
-            MountEntry {
-                mount_path: String::from("protocol://example.com/mount/path"),
-                is_anonymous: false,
-            },
-            MountEntry {
-                mount_path: String::from("protocol://example.com/anon/mount"),
-                is_anonymous: true,
-            },
-            MountEntry {
-                mount_path: String::from("anotherprotocol://example.com/another/mount"),
-                is_anonymous: false,
-            },
-        ];
+    fn test_parse_entries() -> Result<(), std::io::Error> {
+        struct TestCase {
+            file: String,
+        }
 
-        let got = match parse_entries(&"testdata/parse_entries/mounts".to_string()) {
-            Ok(v) => v,
-            Err(e) => panic!("{}", e),
-        };
+        let tests: HashMap<&str, TestCase> = HashMap::from([
+            (
+                "mounts file with one entry",
+                TestCase {
+                    file: "mounts_with_one_entry".to_string(),
+                },
+            ),
+            (
+                "mounts file with multiple entries",
+                TestCase {
+                    file: "mounts_with_multiple_entries".to_string(),
+                },
+            ),
+            (
+                "mounts file with anonymous entries",
+                TestCase {
+                    file: "mounts_with_anonymous_entries".to_string(),
+                },
+            ),
+        ]);
 
-        assert_eq!(want, got);
+        for test in tests.iter() {
+            let testdata = "testdata/test_parse_entries";
+
+            let got = parse_entries(&format!("{}/{}", testdata, (test.1).file))?;
+
+            let want = test_utils::load_and_update_golden(
+                &format!("{}/{}", testdata, "golden"),
+                test.0,
+                &got,
+                false,
+            );
+
+            match want {
+                Ok(w) => {
+                    assert_eq!(w, format!("{:?}", got))
+                }
+                Err(e) => panic!("{}", e),
+            }
+        }
+        Ok(())
     }
 }
