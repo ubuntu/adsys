@@ -7,26 +7,26 @@ mod tests {
     #[test]
     fn test_parse_entries() -> Result<(), std::io::Error> {
         struct TestCase {
-            file: String,
+            file: &'static str,
         }
 
         let tests: HashMap<&str, TestCase> = HashMap::from([
             (
                 "mounts file with one entry",
                 TestCase {
-                    file: "mounts_with_one_entry".to_string(),
+                    file: "mounts_with_one_entry",
                 },
             ),
             (
                 "mounts file with multiple entries",
                 TestCase {
-                    file: "mounts_with_multiple_entries".to_string(),
+                    file: "mounts_with_multiple_entries",
                 },
             ),
             (
                 "mounts file with anonymous entries",
                 TestCase {
-                    file: "mounts_with_anonymous_entries".to_string(),
+                    file: "mounts_with_anonymous_entries",
                 },
             ),
         ]);
@@ -44,9 +44,7 @@ mod tests {
             );
 
             match want {
-                Ok(w) => {
-                    assert_eq!(w, format!("{:?}", got))
-                }
+                Ok(w) => assert_eq!(w, format!("{:?}", got)),
                 Err(e) => panic!("{}", e),
             }
         }
