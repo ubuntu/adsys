@@ -1,5 +1,5 @@
 use clap::Parser;
-use lib::handle_user_mounts;
+use lib::AdsysMountError;
 mod logger;
 
 /// Arguments required to run this binary
@@ -10,7 +10,7 @@ struct Args {
     mounts_file: String,
 }
 
-fn main() -> Result<(), lib::AdsysMountError> {
+fn main() -> Result<(), AdsysMountError> {
     let args = Args::parse();
 
     // Creates the logger and sets its level to Debug.
@@ -18,5 +18,5 @@ fn main() -> Result<(), lib::AdsysMountError> {
         log::set_max_level(log::LevelFilter::Debug);
     }
 
-    handle_user_mounts(&args.mounts_file)
+    lib::handle_user_mounts(&args.mounts_file)
 }
