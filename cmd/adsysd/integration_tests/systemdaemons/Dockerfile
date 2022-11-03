@@ -9,5 +9,6 @@ RUN \
    pip install python-dbusmock
 
 COPY cmd/adsysd/integration_tests/systemdaemons/*.py /
+COPY cmd/adsysd/integration_tests/systemdaemons/run_daemons /
 
-ENTRYPOINT ["/run_daemons.py"]
+ENTRYPOINT ["/run_daemons"]
