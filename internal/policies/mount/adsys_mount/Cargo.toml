@@ -3,14 +3,18 @@ name = "adsys_mount"
 description = "Binary for handling the user mounts policy of adsys.\nThis is not meant to be executed manually."
 version = "0.1.0"
 edition = "2021"
+include = ["src/**/*"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "lib"
+path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.65"
 chrono = "0.4.22"
-clap = { version = "4.0.13", features = ["derive"] }
-gio = "0.15.12"
-glib = "0.15.12"
+clap = { version = "4.0.18", features = ["derive"] }
+gio = "0.16.2"
+glib = "0.16.2"
 log = "0.4.17"
 thiserror = "1.0.37"
