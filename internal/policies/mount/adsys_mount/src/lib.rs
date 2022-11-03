@@ -122,7 +122,7 @@ fn parse_entries(path: &str) -> Result<Vec<MountEntry>, std::io::Error> {
     // The ? operator tries to unwrap the result and, if there is an error, returns it to the caller of this function.
     let content = fs::read_to_string(path)?;
 
-    for p in content.split_terminator('\n') {
+    for p in content.lines() {
         if p.is_empty() {
             continue;
         }
