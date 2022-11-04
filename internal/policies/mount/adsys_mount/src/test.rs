@@ -29,6 +29,18 @@ mod tests {
                     file: "mounts_with_anonymous_entries",
                 },
             ),
+            (
+                "empty mounts file",
+                TestCase {
+                    file: "mounts_with_no_entry",
+                },
+            ),
+            (
+                "mounts file with bad entries",
+                TestCase {
+                    file: "mounts_with_bad_entries",
+                },
+            ),
         ]);
 
         for test in tests.iter() {
@@ -44,7 +56,11 @@ mod tests {
             );
 
             match want {
-                Ok(w) => assert_eq!(w, format!("{:?}", got)),
+                Ok(w) => {
+                    for i in 0..w.len() {
+                        assert_eq!(w[i], got[i]);
+                    }
+                }
                 Err(e) => panic!("{}", e),
             }
         }
