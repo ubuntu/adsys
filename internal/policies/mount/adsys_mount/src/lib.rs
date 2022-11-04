@@ -4,6 +4,7 @@ use gio::{
 };
 use glib::ObjectExt;
 use log::{debug, error, warn};
+use serde::{Deserialize, Serialize};
 use std::{
     fs,
     sync::{Arc, Mutex},
@@ -13,7 +14,7 @@ mod errors;
 pub use errors::AdsysMountError;
 
 /// Represents a mount point read from the mounts file.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct MountEntry {
     mount_path: String,
     is_anonymous: bool,
