@@ -52,6 +52,9 @@ pub fn handle_user_mounts(mounts_file: &str) -> Result<(), AdsysMountError> {
 
     // Grabs the ammount of mounts to be done before passing the ownership of parsed_entries.
     let mut mounts_left = parsed_entries.len();
+    if mounts_left < 1 {
+        return Ok(());
+    }
 
     for entry in parsed_entries {
         handle_mount(entry, tx.clone());
