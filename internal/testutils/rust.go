@@ -88,8 +88,9 @@ func TrackRustCoverage(t *testing.T) (env []string, target string) {
 			"-t", "covdir",
 			"-o", rustJSONCoverage)
 		cmd.Env = append(os.Environ(), "LLVM_PROFILE_FILE="+coverDir)
-		err := cmd.Run()
-		require.NoError(t, err, "Teardown: could not convert coverage to json format")
+
+		out, err := cmd.CombinedOutput()
+		require.NoError(t, err, "Teardown: could not convert coverage to json format: %s", out)
 
 		// Load our converted JSON profile.
 		var results map[string]interface{}
