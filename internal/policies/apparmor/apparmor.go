@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -324,14 +325,21 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 func (m *Manager) unloadAllRules(ctx context.Context, objectName string, isComputer bool) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't unload apparmor rules"))
 
-	apparmorPath := filepath.Join(m.apparmorDir, "machine")
-	// Nothing to do if the directory doesn't exist
-	if _, err := os.Stat(apparmorPath); err != nil && os.IsNotExist(err) {
+	machinePoliciesPath := filepath.Join(m.apparmorDir, "machine")
+	pathToRemove := machinePoliciesPath
+	if !isComputer {
+		pathToRemove = filepath.Join(m.apparmorDir, "users", objectName)
+	}
+	// If there are no machine policies there is nothing to unload
+	if _, err := os.Stat(machinePoliciesPath); err != nil && os.IsNotExist(err) {
+		if err := os.Remove(pathToRemove); !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
 		return nil
 	}
 
 	// Walk the directory and get all the files to unload
-	filesToUnload, err := filesInDir(apparmorPath)
+	filesToUnload, err := filesInDir(machinePoliciesPath)
 	if err != nil {
 		return err
 	}
@@ -345,7 +353,6 @@ func (m *Manager) unloadAllRules(ctx context.Context, objectName string, isCompu
 		return err
 	}
 	policies = intersection(policies, prevLoadedPolicies)
-	pathToRemove := apparmorPath
 
 	// Only remove user-specific policies if we're unloading the user part
 	// These look like the following:

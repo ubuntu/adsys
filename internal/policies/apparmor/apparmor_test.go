@@ -65,6 +65,7 @@ func TestApplyPolicy(t *testing.T) {
 		"user, valid mapping":                                   {destsAlreadyExist: map[string]string{"machine-with-users": "machine"}, entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, user: true},
 		"user, valid mapping, unchanged content":                {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, entries: []entry.Entry{{Key: "apparmor-users", Value: "users/unchanged_user"}}, noParserOutput: true, user: true},
 		"user, no machine profiles":                             {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, user: true},
+		"user, no entries, existing user profile is deleted":    {destsAlreadyExist: map[string]string{"users": "users"}, entries: []entry.Entry{}, noParserOutput: true, user: true},
 		"user, no user profiles, machine profiles are unloaded": {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, existingLoadedPolicies: []string{"/usr/bin/pam_binary//ubuntu"}, user: true},
 		"user, error on empty user profile":                     {entries: []entry.Entry{{Key: "apparmor-users", Value: ""}}, noParserOutput: true, saveAssetsError: true, wantErr: true, user: true},
 		"user, error on save assets failing":                    {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, saveAssetsError: true, wantErr: true, user: true},
