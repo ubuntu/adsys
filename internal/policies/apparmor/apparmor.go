@@ -435,7 +435,14 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 	}
 	go func() {
 		defer stdin.Close()
-		for _, policy := range policies {
+		for index, policy := range policies {
+			// Handle cases where /usr/bin/foo and /usr/bin/foo//USER are both set to be unloaded.
+			// Because unloading the former will also unload the latter we need to skip profiles for
+			// which we've already removed the parent profile.
+			parentPolicy, _, found := strings.Cut(policy, "//")
+			if found && slices.IndexFunc(policies[:index], func(p string) bool { return p == parentPolicy }) != -1 {
+				continue
+			}
 			// For each policy, declare an empty block to remove it.
 			if _, err := io.WriteString(stdin, fmt.Sprintf("profile %s {}\n", policy)); err != nil {
 				log.Warningf(ctx, i18n.G("Couldn't write to apparmor parser stdin: %v"), err)

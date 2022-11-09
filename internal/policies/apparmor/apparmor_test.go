@@ -53,6 +53,7 @@ func TestApplyPolicy(t *testing.T) {
 		"computer, whitespace-only value":          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "       "}}, noParserOutput: true},
 		"computer, only blank profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "\n\n\n"}}, noParserOutput: true},
 		"computer, previous profiles are unloaded": {destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
+		"computer, user policies are unloaded":     {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, entries: []entry.Entry{}, existingLoadedPolicies: []string{"/usr/bin/pam_binary", "/usr/bin/pam_binary//ubuntu", "/usr/bin/pam_binary//DEFAULT"}},
 		"existing .old directory is removed":       {destsAlreadyExist: map[string]string{"only-machine": "machine.old"}},
 		"existing .new directory is removed":       {destsAlreadyExist: map[string]string{"only-machine": "machine.new"}},
 
