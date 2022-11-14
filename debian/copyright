@@ -20,148 +20,214 @@ License: GPL-3
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
 
-Files: internal/policies/ad/adsys-gpolist
+Files: internal/ad/adsys-gpolist
 Copyright: 2020-2021 Canonical Ltd.
            Based on work by Andrew Tridgell 2010 and Amitay Isaacs 2011-2012.
 License: GPL-3+
 
-Files: vendor/github.com/coreos
+Files: vendor/github.com/coreos/*
 Copyright: 2015-2018 CoreOS, Inc. / 2014 Docker, Inc.
 License: Apache-2.0
 
-Files: vendor/github.com/cpuguy83
+Files: vendor/github.com/cpuguy83/*
 Copyright: 2014 Brian Goff
 License: MIT
 
-Files: vendor/github.com/davecgh
+Files: vendor/github.com/davecgh/*
 Copyright: 2012-2016 Dave Collins <dave@davec.name>
 License: ISC
 
-Files: vendor/github.com/fatih
+Files: vendor/github.com/fatih/*
 Copyright: 2013 Fatih Arslan
 License: MIT
 
-Files: vendor/github.com/fsnotify
+Files: vendor/github.com/fsnotify/*
 Copyright: 2010-2015 fsnotify Authors. / The Go Authors.
 License: BSD-3
 
-Files: vendor/github.com/godbus
+Files: vendor/github.com/godbus/*
 Copyright: 2013 Georg Reinke (<guelfey at gmail dot com>), Google
 License: BSD-2
 
-Files: vendor/github.com/golang
+Files: vendor/github.com/golang/*
 Copyright: 2010-2019 The Go Authors.
 License: BSD-3
 
-Files: vendor/github.com/hashicorp
+Files: vendor/github.com/hashicorp/*
 Copyright: HashiCorp
 License: MPL-2.0
 
-Files: vendor/github.com/inconshreveable
+Files: vendor/github.com/inconshreveable/*
 Copyright: 2014 Alan Shreve
 License: Apache-2.0
 
-Files: vendor/github.com/magiconair
+Files: vendor/github.com/magiconair/*
 Copyright: 2013-2018 Frank Schroeder.
 License: BSD-2
 
-Files: vendor/github.com/mattn
+Files: vendor/github.com/mattn/*
 Copyright: 2016 Yasuhiro MATSUMOTO <mattn.jp@gmail.com>
 License: MIT
 
-Files: vendor/github.com/mitchellh
+Files: vendor/github.com/mitchellh/*
 Copyright: 2013 Mitchell Hashimoto
 License: MIT
 
-Files: vendor/github.com/mvo5
+Files: vendor/github.com/mvo5/*
 Copyright: 2013-2019 Michael Vogt
 License: MIT
 
-Files: vendor/github.com/pelletier
+Files: vendor/github.com/pelletier/*
 Copyright: 2013-2017 Thomas Pelletier, Eric Anderton
 License: MIT
 
-Files: vendor/github.com/pmezard
+Files: vendor/github.com/pmezard/*
 Copyright: 2013 Patrick Mezard
 License: BSD-3
 
-Files: vendor/github.com/russross
+Files: vendor/github.com/russross/*
 Copyright: 2011 Russ Ross <russ@russross.com>
 License: BSD-2
 
-Files: vendor/github.com/shurcooL
-Copyright: 2015 Dmitri Shuralyov
-License: MIT
-
-Files: vendor/github.com/sirupsen
+Files: vendor/github.com/sirupsen/*
 Copyright: 2012 Miki Tebeka <miki.tebeka@gmail.com> / 2014 Simon Eskildsen
 License: MIT
 
-Files: vendor/github.com/snapcore/go-gettext
+Files: vendor/github.com/snapcore/go-gettext/*
 Copyright: 2016 Jonas Obrist
 License: BSD-3
 
-Files: vendor/github.com/spf13
+Files: vendor/github.com/spf13/*
 Copyright: 2011 The Go Authors.
            2014-2015 Steve Francia <spf@spf13.com>.
 License: MIT
 
-Files: vendor/github.com/spf13/afero/
+Files: vendor/github.com/spf13/afero/*
 Copyright: 2014-2016 Steve Francia <spf@spf13.com>.
            2015 The Hugo Authors
            2016-present Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>
            2009-2015 The Go Authors.
 License: Apache-2.0
 
-Files: vendor/github.com/spf13/pflag
+Files: vendor/github.com/spf13/pflag/*
 Copyright: 2009-2012 The Go Authors.
            2012 Alex Ogier.
 License: Apache-2.0
 
-Files: vendor/spf13/cobra/
+Files: vendor/github.com/spf13/cobra/*
 Copyright: 2013 Steve Francia <spf@spf13.com>.
            2015 Red Hat Inc.
            2016 French Ben.
 License: Apache-2.0
 
-Files: vendor/github.com/stretchr
+Files: vendor/github.com/stretchr/*
 Copyright: 2012-2020 Mat Ryer
            Tyler Bunnell and contributors.
 License: MIT
 
-Files: vendor/github.com/subosito
+Files: vendor/github.com/subosito/*
 Copyright: 2013 Alif Rachmawadi
 License: MIT
 
-Files: vendor/github.com/termie
+Files: vendor/github.com/termie/*
 Copyright: Andy Smith
 License: MIT
 
-Files: vendor/*golang.org
+Files: vendor/*golang.org/*
 Copyright: 2009-2020 The Go Authors.
 License: BSD-3
 
-Files: vendor/google.golang.org/grpc
+Files: vendor/google.golang.org/grpc/*
 Copyright: 2014-2020 gRPC authors.
 License: Apache-2.0
 
-Files: vendor/gopkg.in/ini.v1
+Files: vendor/gopkg.in/ini.v1/*
 Copyright: 2014-2019 Unknwon.
 License: Apache-2.0
 
-Files: vendor/gopkg.in/yaml.v*
+Files: vendor/gopkg.in/yaml.v*/*
 Copyright: 2011-2019 Canonical Ltd.
 License: Apache-2.0
 
-Files: vendor/gopkg.in/yaml.v3/{apic,emitterc,parserc,readerc,scannerc,writerc,yamlh,yamlprivateh}.go
+Files: vendor/gopkg.in/yaml.v3/apic.go
+       vendor/gopkg.in/yaml.v3/emitterc.go
+       vendor/gopkg.in/yaml.v3/parserc.go
+       vendor/gopkg.in/yaml.v3/readerc.go
+       vendor/gopkg.in/yaml.v3/scannerc.go
+       vendor/gopkg.in/yaml.v3/writerc.go
+       vendor/gopkg.in/yaml.v3/yamlh.go
+       vendor/gopkg.in/yaml.v3/yamlprivateh.go
 Copyright: 2011-2019 Canonical Ltd.
            2006-2011 Kirill Simonov
 License: MIT
 
-Files: vendor/honnef.co/go/tools
-Copyright: 2016-2019 Dominik Honnef
-           2009-2018 The Go Authors.
+Files: vendor/github.com/alecthomas/chroma/*
+Copyright: 2017 Alec Thomas
+License: MIT
+
+Files: vendor/github.com/atotto/clipboard/*
+Copyright: 2013 Ato Araki.
 License: BSD-3
+
+Files: vendor/github.com/aymanbagabas/go-osc52/*
+Copyright: 2022 Ayman Bagabas
+License: MIT
+
+Files: vendor/github.com/aymerick/douceur/*
+Copyright: 2015 Aymerick JEHANNE
+License: MIT
+
+Files: vendor/github.com/charmbracelet/*
+Copyright: 2019-2022 Charmbracelet, Inc
+License: MIT
+
+Files: vendor/github.com/containerd/console/*
+Copyright: The containerd Authors.
+License: Apache-2.0
+
+Files: vendor/github.com/dlclark/regexp2/*
+Copyright: Doug Clark / Microsoft Corporation
+License: MIT
+
+Files: vendor/github.com/gomarkdown/markdown/*
+Copyright: 2018 Krzysztof Kowalczyk / 2018 Authors / 2011 Russ Ross
+License: BSD-2
+
+Files: vendor/github.com/gorilla/css/*
+Copyright: 2013 Gorilla web toolkit
+License: BSD-3
+
+Files: vendor/github.com/kardianos/service/*
+Copyright: 2015 Daniel Theophanes
+License: Zlib
+
+Files: vendor/github.com/lucasb-eyer/go-colorful/*
+Copyright: 2013 Lucas Beyer
+License: MIT
+
+Files: vendor/github.com/microcosm-cc/bluemonday/*
+Copyright: 2014 David Kitchen <david@buro9.com>
+License: BSD-3
+
+Files: vendor/github.com/muesli/*
+Copyright: 2019-2022 Christian Muehlhaeuser
+License: MIT
+
+Files: vendor/github.com/muesli/cancelreader/*
+Copyright: 2022 Erik Geiser and Christian Muehlhaeuser
+License: MIT
+
+Files: vendor/github.com/olekukonko/tablewriter/*
+Copyright: 2014 Oleku Konko
+License: MIT
+
+Files: vendor/github.com/rivo/uniseg/*
+Copyright: 2019 Oliver Kuederle
+License: MIT
+
+Files: vendor/github.com/yuin/*
+Copyright: 2019-2020 Yusuke Inuzuka
+License: MIT
 
 License: Apache-2.0
  Unless required by applicable law or agreed to in writing, software
@@ -245,3 +311,23 @@ License: MPL-2.0
  Comment:
   On Debian systems, the complete text of the Mozilla Public License can
   be found in "/usr/share/common-licenses/MPL-2.0".
+
+License: Zlib
+ This software is provided 'as-is', without any express or implied
+ warranty.  In no event will the authors be held liable for any damages
+ arising from the use of this software.
+ .
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+ .
+ 1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+    appreciated but is not required.
+ 2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+ 3. This notice may not be removed or altered from any source distribution.
+ .
+ Jean-loup Gailly        Mark Adler
+ jloup@gzip.org          madler@alumni.caltech.edu
