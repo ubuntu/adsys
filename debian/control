@@ -33,6 +33,7 @@ Depends: ${shlibs:Depends},
          samba-dsdb-modules,
          sssd,
          sssd-dbus,
+         apparmor,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Description: ${source:Synopsis}
