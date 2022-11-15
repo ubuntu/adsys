@@ -53,6 +53,7 @@ func TestApplyPolicy(t *testing.T) {
 		"computer, whitespace-only value":          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "       "}}, noParserOutput: true},
 		"computer, only blank profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "\n\n\n"}}, noParserOutput: true},
 		"computer, previous profiles are unloaded": {destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
+		"computer, user policies are unloaded":     {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, entries: []entry.Entry{}, existingLoadedPolicies: []string{"/usr/bin/pam_binary", "/usr/bin/pam_binary//ubuntu", "/usr/bin/pam_binary//DEFAULT"}},
 		"existing .old directory is removed":       {destsAlreadyExist: map[string]string{"only-machine": "machine.old"}},
 		"existing .new directory is removed":       {destsAlreadyExist: map[string]string{"only-machine": "machine.new"}},
 
@@ -65,6 +66,7 @@ func TestApplyPolicy(t *testing.T) {
 		"user, valid mapping":                                   {destsAlreadyExist: map[string]string{"machine-with-users": "machine"}, entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, user: true},
 		"user, valid mapping, unchanged content":                {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, entries: []entry.Entry{{Key: "apparmor-users", Value: "users/unchanged_user"}}, noParserOutput: true, user: true},
 		"user, no machine profiles":                             {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, user: true},
+		"user, no entries, existing user profile is deleted":    {destsAlreadyExist: map[string]string{"users": "users"}, entries: []entry.Entry{}, noParserOutput: true, user: true},
 		"user, no user profiles, machine profiles are unloaded": {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, existingLoadedPolicies: []string{"/usr/bin/pam_binary//ubuntu"}, user: true},
 		"user, error on empty user profile":                     {entries: []entry.Entry{{Key: "apparmor-users", Value: ""}}, noParserOutput: true, saveAssetsError: true, wantErr: true, user: true},
 		"user, error on save assets failing":                    {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, saveAssetsError: true, wantErr: true, user: true},

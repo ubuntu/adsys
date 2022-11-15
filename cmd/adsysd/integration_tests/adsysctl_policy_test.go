@@ -394,6 +394,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
 				"run/users/1000",
+				"apparmor.d/adsys/users",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -415,6 +416,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"dconf/db/adsystestuser@example.com.d",
 				"dconf/profile/adsystestuser@example.com",
 				"run/users/1000",
+				"apparmor.d/adsys/users",
 				"cache/sysvol/Policies/{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}",
 				"cache/sysvol/Policies/{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}",
 				"cache/sysvol/Policies/{75545F76-DEC2-4ADA-B7B8-D5209FD48727}",

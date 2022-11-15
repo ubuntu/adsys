@@ -1,0 +1,5 @@
+-N
+#TMPDIR#/machine/pam_binaries
+#TMPDIR#/machine/pam_roles
+-R
+profile /usr/bin/pam_binary {}

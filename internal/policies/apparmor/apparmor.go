@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -324,14 +325,21 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 func (m *Manager) unloadAllRules(ctx context.Context, objectName string, isComputer bool) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't unload apparmor rules"))
 
-	apparmorPath := filepath.Join(m.apparmorDir, "machine")
-	// Nothing to do if the directory doesn't exist
-	if _, err := os.Stat(apparmorPath); err != nil && os.IsNotExist(err) {
+	machinePoliciesPath := filepath.Join(m.apparmorDir, "machine")
+	pathToRemove := machinePoliciesPath
+	if !isComputer {
+		pathToRemove = filepath.Join(m.apparmorDir, "users", objectName)
+	}
+	// If there are no machine policies there is nothing to unload
+	if _, err := os.Stat(machinePoliciesPath); err != nil && os.IsNotExist(err) {
+		if err := os.Remove(pathToRemove); !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
 		return nil
 	}
 
 	// Walk the directory and get all the files to unload
-	filesToUnload, err := filesInDir(apparmorPath)
+	filesToUnload, err := filesInDir(machinePoliciesPath)
 	if err != nil {
 		return err
 	}
@@ -345,7 +353,6 @@ func (m *Manager) unloadAllRules(ctx context.Context, objectName string, isCompu
 		return err
 	}
 	policies = intersection(policies, prevLoadedPolicies)
-	pathToRemove := apparmorPath
 
 	// Only remove user-specific policies if we're unloading the user part
 	// These look like the following:
@@ -428,7 +435,14 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 	}
 	go func() {
 		defer stdin.Close()
-		for _, policy := range policies {
+		for index, policy := range policies {
+			// Handle cases where /usr/bin/foo and /usr/bin/foo//USER are both set to be unloaded.
+			// Because unloading the former will also unload the latter we need to skip profiles for
+			// which we've already removed the parent profile.
+			parentPolicy, _, found := strings.Cut(policy, "//")
+			if found && slices.IndexFunc(policies[:index], func(p string) bool { return p == parentPolicy }) != -1 {
+				continue
+			}
 			// For each policy, declare an empty block to remove it.
 			if _, err := io.WriteString(stdin, fmt.Sprintf("profile %s {}\n", policy)); err != nil {
 				log.Warningf(ctx, i18n.G("Couldn't write to apparmor parser stdin: %v"), err)

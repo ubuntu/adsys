@@ -64,6 +64,9 @@ gpos:
             protocol://example.com/current-old/old-mount
           disabled: false
           strategy: append
+      apparmor:
+        - key: apparmor-users
+          value: users/confined_user
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy
   rules: {}
