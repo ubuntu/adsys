@@ -54,7 +54,7 @@ func TestSSSD(t *testing.T) {
 		"No sssd conf loads the default": {sssdConf: ""},
 
 		// ServerURL error cases (this doesn't fail New)
-		"ServerURL() does not fail when we do not need an active server":        {sssdConf: "domain-without-dbus.example.com-with-server"},
+		"ServerURL() does not fail when we do not need an active server":        {sssdConf: "active-server-err.example.com-with-server"},
 		"Error returned by ServerURL() on no config nor active server provided": {sssdConf: "no-active-server-example.com"},
 		"Error returned by ServerURL() when calls is erroring out":              {sssdConf: "active-server-err.example.com"},
 
