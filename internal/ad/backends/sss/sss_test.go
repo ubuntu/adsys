@@ -44,8 +44,9 @@ func TestSSSD(t *testing.T) {
 		"Is not online": {sssdConf: "offline-example.com"},
 
 		// Special cases
-		"SSSd domain can not match ad domain": {sssdConf: "domain-no-match-addomain"},
-		"Default domain suffix is read":       {sssdConf: "example.com-with-default-domain-suffix"},
+		"Can handle special DNS domain characters": {sssdConf: "special-characters.example.com"},
+		"SSSd domain can not match ad domain":      {sssdConf: "domain-no-match-addomain"},
+		"Default domain suffix is read":            {sssdConf: "example.com-with-default-domain-suffix"},
 
 		// Special cases for config parameters
 		"Regular config, with cache dir": {sssdConf: "example.com", sssdCacheDir: "/some/specific/cachedir"},
@@ -145,7 +146,7 @@ func (s sssdbus) ActiveServer(_ string) (string, *dbus.Error) {
 	if s.activeServerErr {
 		return "", dbus.NewError("something.sssd.Error", []interface{}{"Active Server dbus call Error"})
 	}
-	return "dynamic_active_server." + strings.ReplaceAll(s.endpoint, "_2e", "."), nil
+	return "dynamic_active_server." + strings.ReplaceAll(strings.ReplaceAll(s.endpoint, "_2e", "."), "_2d", "-"), nil
 }
 
 func (s sssdbus) IsOnline() (bool, *dbus.Error) {
@@ -198,6 +199,9 @@ func TestMain(m *testing.M) {
 	for _, s := range []sssdbus{
 		{
 			endpoint: "example_2ecom",
+		},
+		{
+			endpoint: "special_2dcharacters_2eexample_2ecom",
 		},
 		{
 			endpoint: "offline_2eexample_2ecom",
