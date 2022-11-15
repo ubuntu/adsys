@@ -69,7 +69,7 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 	}
 
 	domainDbus := bus.Object(consts.SSSDDbusRegisteredName,
-		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, strings.ReplaceAll(domain, ".", "_2e"))))
+		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, domainToObjectPath(domain))))
 
 	// Server url
 	staticServerURL := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_server").String()
@@ -148,4 +148,20 @@ func (sss SSS) Config() string {
 	return fmt.Sprintf(`Current backend is SSSD
 Configuration: %s
 Cache: %s`, sss.config.Conf, sss.config.CacheDir)
+}
+
+// domainToObjectPath converts a potential dbus object path string to valid hexadecimal-based equivalent as encoded
+// in sssd.
+// The separator in the domain is converted too.
+func domainToObjectPath(s string) string {
+	var r string
+	for _, c := range s {
+		if (c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
+			(c >= 'a' && c <= 'z') || c == '_' {
+			r += string(c)
+			continue
+		}
+		r = fmt.Sprintf("%s_%02x", r, c)
+	}
+	return r
 }
