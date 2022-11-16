@@ -228,6 +228,11 @@ func TestFetch(t *testing.T) {
 			},
 		},
 
+		// Missing version key
+		"remote version entry missing treated as 0": {
+			gpos: []string{"gpt_ini_version_missing"},
+		},
+
 		// Errors
 		"Error unexistant remote gpo": {
 			gpos: []string{"gpo_does_not_exists"}, want: nil, wantErr: true},
@@ -235,8 +240,6 @@ func TestFetch(t *testing.T) {
 			gpos: []string{"missing_gpt_ini"}, want: nil, wantErr: true},
 		"Error remote version NaN": {
 			gpos: []string{"gpt_ini_version_NaN"}, want: nil, wantErr: true},
-		"Error remote version entry missing": {
-			gpos: []string{"gpt_ini_version_missing"}, want: nil, wantErr: true},
 		"Error keeps downloading other GPOS": {
 			gpos:    []string{"missing_gpt_ini", "gpo2"},
 			want:    map[string]string{"Policies/gpo2": "Policies/gpo2"},

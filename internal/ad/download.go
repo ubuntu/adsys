@@ -34,15 +34,12 @@ For each logged in user (sequentially):
 */
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/mvo5/libsmbclient-go"
@@ -51,6 +48,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"golang.org/x/sync/errgroup"
+	"gopkg.in/ini.v1"
 )
 
 /*
@@ -173,7 +171,7 @@ func needsDownload(ctx context.Context, client *libsmbclient.Client, g *download
 	if f, err := os.Open(filepath.Clean(gptIniPath)); err == nil {
 		defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
-		if localVersion, err = getGPOVersion(f); err != nil {
+		if localVersion, err = getGPOVersion(ctx, f, g.name); err != nil {
 			log.Warningf(ctx, "Invalid local GPT.INI for %s: %v\nDownloading it again…", g.name, err)
 		}
 	}
@@ -185,7 +183,7 @@ func needsDownload(ctx context.Context, client *libsmbclient.Client, g *download
 	defer f.Close()
 	// Read() is on *libsmbclient.File, not libsmbclient.File
 	pf := &f
-	if remoteVersion, err = getGPOVersion(pf); err != nil {
+	if remoteVersion, err = getGPOVersion(ctx, pf, g.name); err != nil {
 		return false, err
 	}
 
@@ -196,22 +194,31 @@ func needsDownload(ctx context.Context, client *libsmbclient.Client, g *download
 	return true, nil
 }
 
-func getGPOVersion(r io.Reader) (version int, err error) {
+func getGPOVersion(ctx context.Context, r io.Reader, downloadableName string) (version int, err error) {
 	defer decorate.OnError(&err, i18n.G("invalid remote GPT.INI"))
 
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		t := scanner.Text()
-		if strings.HasPrefix(t, "Version=") {
-			version, err := strconv.Atoi(strings.TrimPrefix(t, "Version="))
-			if err != nil {
-				return 0, fmt.Errorf("version is not an int: %w", err)
-			}
-			return version, nil
-		}
+	buf, err := io.ReadAll(r)
+	if err != nil {
+		return 0, err
 	}
 
-	return 0, errors.New("version not found")
+	cfg, err := ini.Load(buf)
+	if err != nil {
+		return 0, err
+	}
+
+	// If the file exists but doesn't contain a Version key, we log a message and return 0
+	// This is the case for some Default Domain Policy GPOs
+	if !cfg.Section("General").HasKey("Version") {
+		log.Infof(ctx, i18n.G("No version key found in GPT.INI for %s, assuming 0"), downloadableName)
+		return 0, nil
+	}
+
+	version, err = cfg.Section("General").Key("Version").Int()
+	if err != nil {
+		return 0, err
+	}
+	return version, nil
 }
 
 // downloadDir will dl in a temporary directory and only commit it if fully downloaded without any errors.
