@@ -822,6 +822,7 @@ func TestPolicyUpdate(t *testing.T) {
 				tc.systemAnswer = "polkit_yes"
 			}
 			systemAnswer(t, tc.systemAnswer)
+			testutils.PythonCoverageToGoFormat(t, filepath.Join(rootProjectDir, "internal/ad/adsys-gpolist"), true)
 
 			adsysDir := t.TempDir()
 
@@ -1064,8 +1065,6 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 
 	err := exec.Command("pkg-config", "--exists", "nss_wrapper").Run()
 	require.NoError(t, err, "libnss-wrapper is not installed on disk, either skip integration tests or install it")
-
-	testutils.PythonCoverageToGoFormat(t, filepath.Join(rootProjectDir, "internal/ad/adsys-gpolist"), true)
 
 	var subArgs []string
 	// We are going to only reexec ourself: only take options (without -run)
