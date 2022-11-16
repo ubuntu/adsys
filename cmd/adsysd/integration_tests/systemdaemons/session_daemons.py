@@ -25,7 +25,7 @@ def start_session_bus(conf_template: str) -> dbus.Bus:
     """
 
     conf = tempfile.NamedTemporaryFile(prefix='dbusmock_cfg')
-    conf.write(conf_template).format('session', DBUS_SESSION_SOCKET_PATH).encode()
+    conf.write(conf_template.format('session', DBUS_SESSION_SOCKET_PATH).encode())
 
     conf.flush()
 
