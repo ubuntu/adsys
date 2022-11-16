@@ -23,7 +23,7 @@ def start_system_bus(conf_template: str) -> dbus.Bus:
     """
 
     conf = tempfile.NamedTemporaryFile(prefix='dbusmock_cfg')
-    conf.write(conf_template).format('system', DBUS_SYSTEM_SOCKET_PATH).encode()
+    conf.write(conf_template.format('system', DBUS_SYSTEM_SOCKET_PATH).encode())
 
     conf.flush()
 
