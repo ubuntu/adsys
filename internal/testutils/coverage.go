@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -50,6 +51,9 @@ func TrackTestCoverage(t *testing.T) (testCoverFile string) {
 	testCoverFile = fmt.Sprintf("%s.%s", coverAbsPath, strings.ReplaceAll(t.Name(), "/", "_"))
 	coveragesToMergeMu.Lock()
 	defer coveragesToMergeMu.Unlock()
+	if slices.Contains(coveragesToMerge, testCoverFile) {
+		t.Fatalf("Trying to adding a second time %q to the list of file to cover. This will create some overwrite and thus, should be only called once", testCoverFile)
+	}
 	coveragesToMerge = append(coveragesToMerge, testCoverFile)
 
 	return testCoverFile
