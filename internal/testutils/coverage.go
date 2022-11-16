@@ -48,7 +48,9 @@ func TrackTestCoverage(t *testing.T) (testCoverFile string) {
 	coverAbsPath, err := filepath.Abs(goMainCoverProfile)
 	require.NoError(t, err, "Setup: can't transform go cover profile to absolute path")
 
-	testCoverFile = fmt.Sprintf("%s.%s", coverAbsPath, strings.ReplaceAll(t.Name(), "/", "_"))
+	testCoverFile = fmt.Sprintf("%s.%s", coverAbsPath, strings.ReplaceAll(
+		strings.ReplaceAll(t.Name(), "/", "_"),
+		"\\", "_"))
 	coveragesToMergeMu.Lock()
 	defer coveragesToMergeMu.Unlock()
 	if slices.Contains(coveragesToMerge, testCoverFile) {
