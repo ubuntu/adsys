@@ -84,11 +84,11 @@ exec python3-coverage run -a %s $@
 			return
 		}
 
-		// Convert to text format
-		coverDir := filepath.Dir(testGoCoverage)
+		// Convert to text format in a subdirectory named after the python coverage file.
+		coverDir := pythonCoverageFile + ".annotated"
 		// #nosec G204 - we have a const for coverageCmd
 		out, err := exec.Command(coverageCmd, "annotate", "-d", coverDir, "--include", tracedFile).CombinedOutput()
-		require.NoErrorf(t, err, "Teardown: can’t combine python coverage: %v", string(out))
+		require.NoErrorf(t, err, "Teardown: can’t combine python coverage: %s", out)
 
 		// Convert to golang compatible cover format
 		// The file will be transform with char_hexadecimal_filename_ext,cover if there is any / in the name.
