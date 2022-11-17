@@ -1,0 +1,3 @@
+smb://example.com/mount/path
+smb://other.com/other/mount/path
+nfs://some.com/another/mount/path
