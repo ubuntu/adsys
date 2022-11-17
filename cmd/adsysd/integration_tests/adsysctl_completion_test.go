@@ -7,7 +7,7 @@ import (
 )
 
 func TestCompletion(t *testing.T) {
-	systemAnswer(t, "polkit_yes")
+	dbusAnswer(t, "polkit_yes")
 
 	conf := createConf(t)
 	defer runDaemon(t, conf)()

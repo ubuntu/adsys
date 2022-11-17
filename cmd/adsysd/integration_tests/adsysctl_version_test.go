@@ -24,7 +24,7 @@ func TestVersion(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t)
 			if !tc.daemonNotStarted {
