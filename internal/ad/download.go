@@ -157,9 +157,8 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, downloadables map[st
 
 var errNoGPTINI = errors.New("no GPT.INI file")
 
-// needsDownload erturn if the downloadable should be refreshed.
+// needsDownload returns if the downloadable should be refreshed.
 // This is done by comparing GPT.INI Version= content.
-// allowMissing is used to allow the function to return false if the file is missing.
 func needsDownload(ctx context.Context, client *libsmbclient.Client, g *downloadable, localPath string) (updateNeeded bool, err error) {
 	defer decorate.OnError(&err, i18n.G("can't check if %s needs refreshing"), g.name)
 
