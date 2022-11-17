@@ -43,7 +43,7 @@ func TestPolicyAdmx(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {
@@ -124,7 +124,7 @@ func TestPolicyApplied(t *testing.T) {
 			if tc.systemAnswer == "" {
 				tc.systemAnswer = "polkit_yes"
 			}
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 
 			// Reset color that we disable on client when we request --no-color
 			color.NoColor = false
@@ -821,7 +821,7 @@ func TestPolicyUpdate(t *testing.T) {
 			if tc.systemAnswer == "" {
 				tc.systemAnswer = "polkit_yes"
 			}
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 			testutils.PythonCoverageToGoFormat(t, filepath.Join(rootProjectDir, "internal/ad/adsys-gpolist"), true)
 
 			adsysDir := t.TempDir()
@@ -984,7 +984,7 @@ func TestPolicyDebugGPOListScript(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {
@@ -1057,8 +1057,8 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 
 	if os.Getenv("GO_WANT_HELPER_PROCESS") == "1" {
 		// Restore for subprocess the socket to connect to system daemons
-		for _, mode := range systemAnswersModes {
-			systemSockets[mode] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_" + strings.ToUpper(mode))
+		for _, mode := range dbusAnswerModes {
+			dbusSockets[mode] = os.Getenv("DBUS_SYSTEM_BUS_ADDRESS_" + strings.ToUpper(mode))
 		}
 		return false
 	}
@@ -1115,8 +1115,8 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		"NSS_WRAPPER_GROUP=/etc/group",
 	)
 	// dbus addresses to be reset in child
-	for _, mode := range systemAnswersModes {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_%s=%s", strings.ToUpper(mode), systemSockets[mode]))
+	for _, mode := range dbusAnswerModes {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("DBUS_SYSTEM_BUS_ADDRESS_%s=%s", strings.ToUpper(mode), dbusSockets[mode]))
 	}
 
 	cmd.Stderr = os.Stderr
