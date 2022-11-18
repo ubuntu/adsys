@@ -42,8 +42,9 @@ func TestUserMountHandler(t *testing.T) {
 		"error when file doesn't exist":              {mountsFile: "do_not_exist", wantStatus: 1},
 
 		// Authentication errors
-		"error when trying to mount smb without kerberos ticket": {mountsFile: "mounts_with_smb_entry", noKrbTicket: true, wantStatus: 1},
-		"error when trying to mount nfs without kerberos ticket": {mountsFile: "mounts_with_nfs_entry", noKrbTicket: true, wantStatus: 1},
+		"error when trying to mount smb without kerberos ticket":   {mountsFile: "mounts_with_smb_entry", noKrbTicket: true, wantStatus: 1},
+		"error when trying to mount nfs without kerberos ticket":   {mountsFile: "mounts_with_nfs_entry", noKrbTicket: true, wantStatus: 1},
+		"error when anonymous auth is not supported by the server": {mountsFile: "mounts_with_anonymous_smb_entry", sessionAnswer: "anonymous_error", noKrbTicket: true, wantStatus: 1},
 
 		// Bus errors
 		"error when VFS bus is not available": {sessionAnswer: "no_vfs_bus", wantStatus: 1},
