@@ -353,6 +353,11 @@ var (
 		"no_nextrefresh_time",
 		"invalid_nextrefresh_time",
 		"subscription_disabled",
+
+		// This values will only influence the session bus
+		"no_vfs_bus",
+		"list_info_fail",
+		"mount_loc_fail",
 	}
 )
 

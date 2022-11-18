@@ -49,7 +49,10 @@ def main() -> int:
             "polkit_yes", "polkit_no",
             "no_startup_time", "invalid_startup_time",
             "no_nextrefresh_time", "invalid_nextrefresh_time",
-            "subscription_disabled"])
+            "subscription_disabled",
+            "no_vfs_bus", "list_info_fail", "mount_loc_fail",
+        ]
+    )
 
     parser.add_argument(
         '-t', '--type', type=str, default='all',
@@ -72,7 +75,7 @@ def main() -> int:
 
     if bus_type == 'session' or bus_type == 'all':
         session_bus = start_session_bus(DBUS_CONF_TEMPLATE)
-        run_session_mocks(session_bus)
+        run_session_mocks(session_bus, args.mode)
         session_bus.add_signal_receiver(main_loop.quit, signal_name="Disconnected",
                                         path="/org/freedesktop/DBus/Local",
                                         dbus_interface="org.freedesktop.DBus.Local")
