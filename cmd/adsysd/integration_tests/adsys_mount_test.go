@@ -7,16 +7,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestUserMountHandler(t *testing.T) {
 	fixtureDir := filepath.Join("testdata", t.Name())
 
-	binDir := os.Getenv("TEST_RUST_TARGET")
-	if binDir == "" {
-		binDir = t.TempDir()
-	}
-	binPath := setupBinaryForTests(t, binDir)
+	env, target := setupBinaryForTests(t)
 
 	tests := map[string]struct {
 		mountsFile    string
@@ -44,48 +41,67 @@ func TestUserMountHandler(t *testing.T) {
 		"error when file has badly formated entries": {mountsFile: "mounts_with_bad_entries", wantStatus: 1},
 		"error when file doesn't exist":              {mountsFile: "do_not_exist", wantStatus: 1},
 
-		// Errors
+		// Authentication errors
 		"error when trying to mount smb without kerberos ticket": {mountsFile: "mounts_with_smb_entry", noKrbTicket: true, wantStatus: 1},
 		"error when trying to mount nfs without kerberos ticket": {mountsFile: "mounts_with_nfs_entry", noKrbTicket: true, wantStatus: 1},
-		"error when trying to mount unsupported protocol":        {mountsFile: "mounts_with_unsupported_protocol", wantStatus: 1},
-		"error during mount process":                             {mountsFile: "mounts_with_error", wantStatus: 1},
+
+		// Bus errors
+		"error when VFS bus is not available": {sessionAnswer: "no_vfs_bus", wantStatus: 1},
+		"error during ListMountableInfo step": {sessionAnswer: "list_info_fail", wantStatus: 1},
+		"error during MountLocation step":     {sessionAnswer: "mount_loc_fail", wantStatus: 1},
+
+		// Generic errors
+		"error when trying to mount unsupported protocol": {mountsFile: "mounts_with_unsupported_protocol", wantStatus: 1},
+		"error during mount process":                      {mountsFile: "mounts_with_error", wantStatus: 1},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
+			if tc.mountsFile == "" {
+				tc.mountsFile = "mounts_with_smb_entry"
+			}
+
 			if tc.sessionAnswer == "" {
 				tc.sessionAnswer = "polkit_yes"
 			}
 			dbusAnswer(t, tc.sessionAnswer)
 
-			t.Log("Running the binary")
-
 			// #nosec G204: we are in control of the arguments during the tests.
-			cmd := exec.Command(binPath, filepath.Join(fixtureDir, tc.mountsFile))
+			cmd := exec.Command(filepath.Join(target, "debug", "adsys_mount"), filepath.Join(fixtureDir, tc.mountsFile))
+			cmd.Stderr, cmd.Stdout = os.Stderr, os.Stdout
+			cmd.Env = append(os.Environ(), env...)
+
+			// Sets up the kerberos environment variable to emulate a kerberos ticket
 			if !tc.noKrbTicket {
-				cmd.Env = append(os.Environ(), "KRB5CCNAME=kerberos_ticket")
+				cmd.Env = append(cmd.Env, "KRB5CCNAME=kerberos_ticket")
 			}
 
-			out, err := cmd.CombinedOutput()
+			err := cmd.Run()
 			if tc.wantStatus == 0 {
-				require.NoError(t, err, "Expected no error but got one: %v\n%s", err, out)
+				require.NoError(t, err, "Expected no error but got one: %v", err)
 			}
-			require.Equal(t, tc.wantStatus, cmd.ProcessState.ExitCode(), "Exit code is not what was expected:\n%s", out)
+			require.Equal(t, tc.wantStatus, cmd.ProcessState.ExitCode(), "Exit code is not what was expected")
 		})
 	}
 }
 
-func setupBinaryForTests(t *testing.T, targetDir string) (binPath string) {
+func setupBinaryForTests(t *testing.T) (env []string, target string) {
 	t.Helper()
 
 	t.Log("Setting up rust binary")
 
+	rustDir := filepath.Join(rootProjectDir, "internal", "policies", "mount", "adsys_mount")
+
+	testutils.MarkRustFilesForTestCache(t)
+	env, target = testutils.TrackRustCoverage(t)
+
 	// #nosec G204: we control the arguments.
-	cmd := exec.Command("cargo", "build", "--verbose", "--target-dir", targetDir)
-	cmd.Dir = filepath.Join(rootProjectDir, "internal", "policies", "mount", "adsys_mount")
+	cmd := exec.Command("cargo", "build", "--verbose", "--target-dir", target)
+	cmd.Dir = rustDir
+	cmd.Env = append(os.Environ(), env...)
 
 	out, err := cmd.CombinedOutput()
-	require.NoError(t, err, "Setup: Failed to compile rust binary for tests: %v", string(out))
+	require.NoError(t, err, "Setup: Failed to compile rust binary for tests: %s", out)
 
-	return filepath.Join(targetDir, "debug", "adsys_mount")
+	return env, target
 }
