@@ -92,8 +92,8 @@ func setupBinaryForTests(t *testing.T) (env []string, target string) {
 
 	rustDir := filepath.Join(rootProjectDir, "internal", "policies", "mount", "adsys_mount")
 
-	testutils.MarkRustFilesForTestCache(t)
-	env, target = testutils.TrackRustCoverage(t)
+	testutils.MarkRustFilesForTestCache(t, rustDir)
+	env, target = testutils.TrackRustCoverage(t, rustDir)
 
 	// #nosec G204: we control the arguments.
 	cmd := exec.Command("cargo", "build", "--verbose", "--target-dir", target)
