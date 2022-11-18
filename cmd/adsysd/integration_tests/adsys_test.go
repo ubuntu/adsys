@@ -331,6 +331,7 @@ var (
 		"no_vfs_bus",
 		"list_info_fail",
 		"mount_loc_fail",
+		"anonymous_error",
 	}
 )
 
