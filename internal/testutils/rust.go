@@ -16,10 +16,15 @@ import (
 )
 
 // MarkRustFilesForTestCache marks all rust files and related content to be in the Go test caching infra.
-func MarkRustFilesForTestCache(t *testing.T) {
+func MarkRustFilesForTestCache(t *testing.T, rustDir string) {
 	t.Helper()
 
-	markForTestCache(t, []string{"src", "testdata", "Cargo.toml", "Cargo.lock"})
+	markForTestCache(t, []string{
+		filepath.Join(rustDir, "src"),
+		filepath.Join(rustDir, "testdata"),
+		filepath.Join(rustDir, "Cargo.toml"),
+		filepath.Join(rustDir, "Cargo.lock"),
+	})
 }
 
 // CanRunRustTests returns if we can run rust tests via cargo on this machine.
@@ -64,7 +69,7 @@ func CanRunRustTests(coverageWanted bool) (err error) {
 // This then allow coverage to run in parallel, as each subprocess will have its own environment.
 // You will need to call MergeCoverages() after m.Run().
 // If code coverage is not enabled, it still returns an empty slice, but the target can be used.
-func TrackRustCoverage(t *testing.T) (env []string, target string) {
+func TrackRustCoverage(t *testing.T, src string) (env []string, target string) {
 	t.Helper()
 
 	target = os.Getenv("TEST_RUST_TARGET")
@@ -84,7 +89,7 @@ func TrackRustCoverage(t *testing.T) (env []string, target string) {
 		// nolint:gosec // G204 we define what we cover ourself
 		cmd := exec.Command("grcov", coverDir,
 			"--binary-path", filepath.Join(target, "debug"),
-			"-s", ".", "--ignore-not-existing",
+			"-s", src, "--ignore-not-existing",
 			"-t", "covdir",
 			"-o", rustJSONCoverage)
 		cmd.Env = append(os.Environ(), "LLVM_PROFILE_FILE="+coverDir)
@@ -105,7 +110,7 @@ func TrackRustCoverage(t *testing.T) (env []string, target string) {
 		defer func() { assert.NoError(t, outF.Close(), "Teardown: can’t close golang compatible cover file") }()
 
 		// Scan our results to write to it.
-		scan(t, results, fqdnToPath(t, ""), outF)
+		scan(t, results, fqdnToPath(t, src), outF)
 	})
 
 	return []string{"RUSTFLAGS=-Cinstrument-coverage", "LLVM_PROFILE_FILE=" + filepath.Join(coverDir, "rust-%p-%m.profraw")}, target
