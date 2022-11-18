@@ -26,16 +26,21 @@ class VfsMountTrackerMock(dbusmock.DBusMockObject):
         if self.mode == 'mount_loc_fail':
             raise (dbus.DBusException('Failed when calling MountLocation'))
 
-        res = self.bus.call_blocking(
-            mount_source[0],
-            mount_source[1],
-            'org.gtk.vfs.MountOperation',
-            'AskPassword',
-            'sssu',
-            # Since we don't support credentials authentication in the adsys sharing policy,
-            # there's no problem in submitting static values to the AskPasswd call.
-            ('message', 'ubuntu', 'WORKGROUP', 31)
-        )
+        askPasswdCount = 1
+        if self.mode == 'anonymous_error':
+            askPasswdCount = 3
+
+        for _ in range(askPasswdCount):
+            res = self.bus.call_blocking(
+                mount_source[0],
+                mount_source[1],
+                'org.gtk.vfs.MountOperation',
+                'AskPassword',
+                'sssu',
+                # Since we don't support credentials authentication in the adsys sharing policy,
+                # there's no problem in submitting static values to the AskPasswd call.
+                ('message', 'ubuntu', 'WORKGROUP', 31)
+            )
 
         if res[1] == dbus.Boolean(True):
             raise (dbus.DBusException('Authentication failed'))
