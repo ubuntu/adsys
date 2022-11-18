@@ -4,13 +4,18 @@ import dbusmock
 
 class VfsMountTrackerMock(dbusmock.DBusMockObject):
 
-    def __init__(self, bus: dbus.Bus, bus_name: str, path: str, interface: str, props: dbusmock.mockobject.PropsType,
-                 logfile: dbusmock.mockobject.Optional[str] = None, is_object_manager: bool = False) -> None:
+    def __init__(self, bus: dbus.Bus, mode: str, bus_name: str, path: str, interface: str,
+                 props: dbusmock.mockobject.PropsType, logfile: dbusmock.mockobject.Optional[str] = None,
+                 is_object_manager: bool = False) -> None:
         super().__init__(bus_name, path, interface, props, logfile, is_object_manager)
         self.bus = bus
+        self.mode = mode
 
     @dbus.service.method(dbus_interface='org.gtk.vfs.MountTracker', out_signature='a(ssasib)')
     def ListMountableInfo(self):
+        if self.mode == 'list_info_fail':
+            raise (dbus.DBusException('No mountable info available'))
+
         # Add service not available case
         return [('smb-share', 'smb', [], 0, False), ('nfs', 'nfs', [], 0, False)]
 
@@ -18,12 +23,17 @@ class VfsMountTrackerMock(dbusmock.DBusMockObject):
     def MountLocation(self,
                       mount_spec: tuple[list[bytes], dict[str, list[bytes]]],
                       mount_source: tuple[str, dbus.ObjectPath]):
+        if self.mode == 'mount_loc_fail':
+            raise (dbus.DBusException('Failed when calling MountLocation'))
+
         res = self.bus.call_blocking(
             mount_source[0],
             mount_source[1],
             'org.gtk.vfs.MountOperation',
             'AskPassword',
             'sssu',
+            # Since we don't support credentials authentication in the adsys sharing policy,
+            # there's no problem in submitting static values to the AskPasswd call.
             ('message', 'ubuntu', 'WORKGROUP', 31)
         )
 
