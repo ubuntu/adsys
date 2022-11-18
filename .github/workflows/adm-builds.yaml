@@ -77,7 +77,7 @@ jobs:
               releases="${releases}'ubuntu:${r}'"
           done
 
-          echo "::set-output name=matrix::{\"releases\":[${releases}]}"
+          echo "matrix={\"releases\":[${releases}]}" >> $GITHUB_OUTPUT
 
   collect-releases:
     name: Collect supported keys on each releases
@@ -186,7 +186,7 @@ jobs:
       - name: Get output branch for branch name
         id: get-branch-name
         shell: bash
-        run: echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:

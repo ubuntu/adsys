@@ -27,7 +27,7 @@ jobs:
       - name: Get version of golanci-lint to use
         id: cilint-version-fetch
         # This handles "require foo version" and "require (\nfoo version\n)"" formats
-        run: echo "::set-output name=version::$(grep golangci-lint tools/go.mod | rev | cut -f1 -d' ' | rev)"
+        run: echo "version=$(grep golangci-lint tools/go.mod | rev | cut -f1 -d' ' | rev)" >> $GITHUB_OUTPUT
       - name: Code formatting, vet, static checker Security…
         uses: golangci/golangci-lint-action@v3
         with:
