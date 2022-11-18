@@ -7,15 +7,19 @@ import (
 	"os/exec"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestRust(t *testing.T) {
 	t.Parallel()
 
+	d, err := os.Getwd()
+	require.NoError(t, err, "Setup: Failed when fetching current dir.")
+
 	// properly inform Go about which files to use for cache by reading input files.
-	testutils.MarkRustFilesForTestCache(t)
-	env, target := testutils.TrackRustCoverage(t)
+	testutils.MarkRustFilesForTestCache(t, d)
+	env, target := testutils.TrackRustCoverage(t, ".")
 
 	// nolint:gosec // G204 we define our target ourself
 	cmd := exec.Command("cargo", "test", "--target-dir", target)
