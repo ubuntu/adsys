@@ -27,14 +27,11 @@ func TestUserMountHandler(t *testing.T) {
 		"mount successfully smb share": {mountsFile: "mounts_with_smb_entry"},
 
 		// Anonymous entries
-		"mount successfully anonymous nfs entry":                         {mountsFile: "mounts_with_anonymous_nfs_entry"},
-		"mount successfully anonymous smb entry":                         {mountsFile: "mounts_with_anonymous_smb_entry"},
-		"mount successfully anonymous nfs entry without kerberos ticket": {mountsFile: "mounts_with_anonymous_nfs_entry", noKrbTicket: true},
-		"mount successfully anonymous smb entry without kerberos ticket": {mountsFile: "mounts_with_anonymous_smb_entry", noKrbTicket: true},
+		"mount successfully anonymous entry":                         {mountsFile: "mounts_with_anonymous_nfs_entry"},
+		"mount successfully anonymous entry without kerberos ticket": {mountsFile: "mounts_with_anonymous_nfs_entry", noKrbTicket: true},
 
 		// Many entries
-		"mount successfully many entries with nfs protocol":        {mountsFile: "mounts_with_many_nfs_entries"},
-		"mount successfully many entries with smb protocol":        {mountsFile: "mounts_with_many_smb_entries"},
+		"mount successfully many entries with same protocol":       {mountsFile: "mounts_with_many_nfs_entries"},
 		"mount successfully many entries with different protocols": {mountsFile: "mounts_with_many_entries"},
 		"mount successfully many anonymous entries":                {mountsFile: "mounts_with_many_anonymous_entries"},
 
@@ -46,14 +43,13 @@ func TestUserMountHandler(t *testing.T) {
 		"error when file doesn't exist":              {mountsFile: "do_not_exist", wantStatus: 1},
 
 		// Authentication errors
-		"error when trying to mount nfs without kerberos ticket":   {mountsFile: "mounts_with_nfs_entry", noKrbTicket: true, wantStatus: 1},
-		"error when trying to mount smb without kerberos ticket":   {mountsFile: "mounts_with_smb_entry", noKrbTicket: true, wantStatus: 1},
-		"error when anonymous auth is not supported by the server": {mountsFile: "mounts_with_anonymous_smb_entry", sessionAnswer: "gvfs_anonymous_error", noKrbTicket: true, wantStatus: 1},
+		"error when auth is needed but no kerberos ticket is available": {mountsFile: "mounts_with_nfs_entry", noKrbTicket: true, wantStatus: 1},
+		"error when anonymous auth is not supported by the server":      {mountsFile: "mounts_with_anonymous_nfs_entry", sessionAnswer: "gvfs_anonymous_error", noKrbTicket: true, wantStatus: 1},
 
 		// Bus errors
-		"error when VFS bus is not available": {sessionAnswer: "gvfs_no_vfs_bus", wantStatus: 1},
-		"error during ListMountableInfo step": {sessionAnswer: "gvfs_list_info_fail", wantStatus: 1},
-		"error during MountLocation step":     {sessionAnswer: "gvfs_mount_loc_fail", wantStatus: 1},
+		"error when VFS bus is not available": {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_no_vfs_bus", wantStatus: 1},
+		"error during ListMountableInfo step": {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_list_info_fail", wantStatus: 1},
+		"error during MountLocation step":     {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_mount_loc_fail", wantStatus: 1},
 
 		// Generic errors
 		"error when trying to mount unsupported protocol": {mountsFile: "mounts_with_unsupported_protocol", wantStatus: 1},
@@ -62,10 +58,6 @@ func TestUserMountHandler(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			if tc.mountsFile == "" {
-				tc.mountsFile = "mounts_with_smb_entry"
-			}
-
 			if tc.sessionAnswer == "" {
 				tc.sessionAnswer = "polkit_yes"
 			}
