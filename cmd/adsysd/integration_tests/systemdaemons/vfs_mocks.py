@@ -13,7 +13,7 @@ class VfsMountTrackerMock(dbusmock.DBusMockObject):
 
     @dbus.service.method(dbus_interface='org.gtk.vfs.MountTracker', out_signature='a(ssasib)')
     def ListMountableInfo(self):
-        if self.mode == 'list_info_fail':
+        if self.mode == 'gvfs_list_info_fail':
             raise (dbus.DBusException('No mountable info available'))
 
         # Add service not available case
@@ -23,11 +23,11 @@ class VfsMountTrackerMock(dbusmock.DBusMockObject):
     def MountLocation(self,
                       mount_spec: tuple[list[bytes], dict[str, list[bytes]]],
                       mount_source: tuple[str, dbus.ObjectPath]):
-        if self.mode == 'mount_loc_fail':
+        if self.mode == 'gvfs_mount_loc_fail':
             raise (dbus.DBusException('Failed when calling MountLocation'))
 
         askPasswdCount = 1
-        if self.mode == 'anonymous_error':
+        if self.mode == 'gvfs_anonymous_error':
             askPasswdCount = 3
 
         for _ in range(askPasswdCount):
@@ -85,16 +85,32 @@ class VfsMountTrackerMock(dbusmock.DBusMockObject):
     def get_spec_values(self, protocol: str, mount_spec: tuple[list[bytes], dict[str, list[bytes]]]) -> tuple[str, str]:
         server, share = '', ''
 
+        # Mount spec for smb-share when mounting smb://example.com/mount/path
+        # mount_spec [
+        #  "/path" + \0,
+        #  dict {
+        #    "server": "example.com" + \0,
+        #    "share":  "mount" + \0,
+        #    "type":   "smb-share" + \0,
+        #  }
+        # ]
         if protocol == 'smb-share':
             server = ''.join([dbus.String(x) for x in mount_spec[1].get("server")])
             share = ''.join([dbus.String(x) for x in mount_spec[1].get("share")])
 
+        # Mount spec for nfs when mounting nfs://example.com/mount/path
+        # mount_spec [
+        #  "/mount/path" + \0,
+        #  dict {
+        #    "host": "example.com" + \0,
+        #    "type": "nfs" + \0,
+        #  }
         elif protocol == 'nfs':
             server = ''.join([dbus.String(x) for x in mount_spec[1].get("host")])
             share = ''.join([dbus.String(x) for x in mount_spec[0]])
 
-        # Removes the null characters from the string
-        share = share.replace('\0', '')
-        server = server.replace('\0', '')
+        # Removes the trailing null characters from the strings
+        share = share.strip('\0')
+        server = server.strip('\0')
 
         return server, share
