@@ -328,10 +328,10 @@ var (
 		"subscription_disabled",
 
 		// This values will only influence the session bus
-		"no_vfs_bus",
-		"list_info_fail",
-		"mount_loc_fail",
-		"anonymous_error",
+		"gvfs_no_vfs_bus",
+		"gvfs_list_info_fail",
+		"gvfs_mount_loc_fail",
+		"gvfs_anonymous_error",
 	}
 )
 

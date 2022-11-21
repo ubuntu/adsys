@@ -1,0 +1,3 @@
+nfs://domain1.com/mount/path
+nfs://domain1.com/other/mount/path
+nfs://domain2.com/mount/path
