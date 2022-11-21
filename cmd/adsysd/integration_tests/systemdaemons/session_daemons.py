@@ -40,7 +40,7 @@ def run_session_mocks(session_bus: dbus.Bus, mode: str):
     Args:
         session_bus (dbus.Bus): Bus in which the mocks will run.
     """
-    if mode == "no_vfs_bus":
+    if mode == "gvfs_no_vfs_bus":
         return
 
     vfs_service = dbus.service.BusName('org.gtk.vfs.Daemon', session_bus, allow_replacement=True,
