@@ -27,10 +27,14 @@ func TestUserMountHandler(t *testing.T) {
 		"mount successfully smb share": {mountsFile: "mounts_with_smb_entry"},
 
 		// Anonymous entries
-		"mount successfully one anonymous nfs entry": {mountsFile: "mounts_with_anonymous_nfs_entry"},
-		"mount successfully one anonymous smb entry": {mountsFile: "mounts_with_anonymous_smb_entry"},
+		"mount successfully anonymous nfs entry":                         {mountsFile: "mounts_with_anonymous_nfs_entry"},
+		"mount successfully anonymous smb entry":                         {mountsFile: "mounts_with_anonymous_smb_entry"},
+		"mount successfully anonymous nfs entry without kerberos ticket": {mountsFile: "mounts_with_anonymous_nfs_entry", noKrbTicket: true},
+		"mount successfully anonymous smb entry without kerberos ticket": {mountsFile: "mounts_with_anonymous_smb_entry", noKrbTicket: true},
 
 		// Many entries
+		"mount successfully many entries with nfs protocol":        {mountsFile: "mounts_with_many_nfs_entries"},
+		"mount successfully many entries with smb protocol":        {mountsFile: "mounts_with_many_smb_entries"},
 		"mount successfully many entries with different protocols": {mountsFile: "mounts_with_many_entries"},
 		"mount successfully many anonymous entries":                {mountsFile: "mounts_with_many_anonymous_entries"},
 
@@ -42,14 +46,14 @@ func TestUserMountHandler(t *testing.T) {
 		"error when file doesn't exist":              {mountsFile: "do_not_exist", wantStatus: 1},
 
 		// Authentication errors
-		"error when trying to mount smb without kerberos ticket":   {mountsFile: "mounts_with_smb_entry", noKrbTicket: true, wantStatus: 1},
 		"error when trying to mount nfs without kerberos ticket":   {mountsFile: "mounts_with_nfs_entry", noKrbTicket: true, wantStatus: 1},
-		"error when anonymous auth is not supported by the server": {mountsFile: "mounts_with_anonymous_smb_entry", sessionAnswer: "anonymous_error", noKrbTicket: true, wantStatus: 1},
+		"error when trying to mount smb without kerberos ticket":   {mountsFile: "mounts_with_smb_entry", noKrbTicket: true, wantStatus: 1},
+		"error when anonymous auth is not supported by the server": {mountsFile: "mounts_with_anonymous_smb_entry", sessionAnswer: "gvfs_anonymous_error", noKrbTicket: true, wantStatus: 1},
 
 		// Bus errors
-		"error when VFS bus is not available": {sessionAnswer: "no_vfs_bus", wantStatus: 1},
-		"error during ListMountableInfo step": {sessionAnswer: "list_info_fail", wantStatus: 1},
-		"error during MountLocation step":     {sessionAnswer: "mount_loc_fail", wantStatus: 1},
+		"error when VFS bus is not available": {sessionAnswer: "gvfs_no_vfs_bus", wantStatus: 1},
+		"error during ListMountableInfo step": {sessionAnswer: "gvfs_list_info_fail", wantStatus: 1},
+		"error during MountLocation step":     {sessionAnswer: "gvfs_mount_loc_fail", wantStatus: 1},
 
 		// Generic errors
 		"error when trying to mount unsupported protocol": {mountsFile: "mounts_with_unsupported_protocol", wantStatus: 1},
