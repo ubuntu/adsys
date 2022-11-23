@@ -56,7 +56,7 @@ func TestDocChapter(t *testing.T) {
 			if tc.systemAnswer == "" {
 				tc.systemAnswer = "polkit_yes"
 			}
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 
 			if tc.modifyCase {
 				tc.chapter = strings.ToUpper(tc.chapter)
@@ -163,7 +163,7 @@ func TestDocList(t *testing.T) {
 			if tc.systemAnswer == "" {
 				tc.systemAnswer = "polkit_yes"
 			}
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t, "")
 			if !tc.daemonNotStarted {

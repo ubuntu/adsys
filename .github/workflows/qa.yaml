@@ -76,7 +76,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper curl
           # Rust dependencies
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y libglib2.0-dev
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y libglib2.0-dev gvfs
       - name: Set required environment variables
         run: echo "SUDO_PACKAGES=$(cat debian/tests/.sudo-packages)" >> $GITHUB_ENV
       - name: Authenticate to docker local registry and pull image with our token

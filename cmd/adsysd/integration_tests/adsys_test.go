@@ -77,7 +77,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStartAndStopDaemon(t *testing.T) {
-	systemAnswer(t, "polkit_yes")
+	dbusAnswer(t, "polkit_yes")
 
 	conf := createConf(t, "")
 	quit := runDaemon(t, conf)
@@ -317,8 +317,8 @@ func changeAppArgs(t *testing.T, s setterArgs, conf string, args ...string) {
 }
 
 var (
-	systemSockets      = make(map[string]string)
-	systemAnswersModes = []string{
+	dbusSockets     = make(map[string]string)
+	dbusAnswerModes = []string{
 		"polkit_yes",
 		"polkit_no",
 		"no_startup_time",
@@ -326,6 +326,12 @@ var (
 		"no_nextrefresh_time",
 		"invalid_nextrefresh_time",
 		"subscription_disabled",
+
+		// This values will only influence the session bus
+		"gvfs_no_vfs_bus",
+		"gvfs_list_info_fail",
+		"gvfs_mount_loc_fail",
+		"gvfs_anonymous_error",
 	}
 )
 
@@ -351,13 +357,13 @@ func runDaemons() (teardown func()) {
 		log.Fatalf("Setup: couldn't get absolute path for actions: %v", err)
 	}
 
-	dir, err := os.MkdirTemp("/tmp", "adsys-system-daemons.*")
+	dir, err := os.MkdirTemp("/tmp", "adsys-dbus-daemons.*")
 	if err != nil {
 		log.Fatalf("Setup: failed to create temporary directory: %v", err)
 	}
 
 	answers := make(map[string]string)
-	for _, mode := range systemAnswersModes {
+	for _, mode := range dbusAnswerModes {
 		answers[mode] = filepath.Join(dir, mode)
 	}
 
@@ -394,7 +400,7 @@ func runDaemons() (teardown func()) {
 	}
 
 	for a, s := range answers {
-		systemSockets[a] = fmt.Sprintf("unix:path=%s/system_bus_socket", s)
+		dbusSockets[a] = fmt.Sprintf("unix:path=%s", s)
 	}
 
 	// give time for polkit containers to start
@@ -420,7 +426,7 @@ func runDaemons() (teardown func()) {
 	}
 }
 
-// systemAnswer will flip to which polkit and systemd mock to communicate to:
+// dbusAnswer will flip to which polkit and systemd mock to communicate to:
 // - yes for polkit always authorizing our actions, with a harcoded startup time and next refresh unit time.
 // - no for polkit always denying our actions, with a harcoded startup time and next refresh unit time.
 // - one having no startup time available.
@@ -429,7 +435,7 @@ func runDaemons() (teardown func()) {
 // - one having an invalid refresh unit time.
 // Note that this modify the environment variable, and so, tests using them can’t run in parallel.
 // The environment is restored when the test ends.
-func systemAnswer(t *testing.T, answer string) {
+func dbusAnswer(t *testing.T, answer string) {
 	t.Helper()
 
 	if answer == "" {
@@ -437,12 +443,13 @@ func systemAnswer(t *testing.T, answer string) {
 	}
 
 	var socket string
-	socket, ok := systemSockets[answer]
+	socket, ok := dbusSockets[answer]
 	if !ok {
 		t.Fatalf("Setup: unknown daemon answer to support: %q", answer)
 	}
 
-	testutils.Setenv(t, "DBUS_SYSTEM_BUS_ADDRESS", socket)
+	testutils.Setenv(t, "DBUS_SYSTEM_BUS_ADDRESS", filepath.Join(socket, "system_bus_socket"))
+	testutils.Setenv(t, "DBUS_SESSION_BUS_ADDRESS", filepath.Join(socket, "session_bus_socket"))
 }
 
 type runner interface {
