@@ -11,7 +11,7 @@ env:
   apt_dependencies: >-
     ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
     libwbclient-dev pkg-config protobuf-compiler python3-coverage samba sudo
-    libglib2.0-dev
+    libglib2.0-dev gvfs
 
 jobs:
   quality:
