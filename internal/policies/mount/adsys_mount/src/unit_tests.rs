@@ -53,7 +53,6 @@ mod lib {
                 &format!("{}/{}", testdata, "golden"),
                 test.0,
                 &got,
-                false,
             )?;
 
             assert_eq!(want, got);
@@ -74,13 +73,13 @@ mod test_utils {
         golden_path: &str,
         filename: &str,
         _got: &T,
-        update: bool,
     ) -> Result<T, std::io::Error>
     where
         T: Serialize + Debug + for<'a> Deserialize<'a>,
     {
         let full_path = format!("{}/{}", golden_path, filename);
-        if update {
+
+        if std::env::var("UPDATE").is_ok() {
             create_dir_all(golden_path)?;
 
             let tmp = serde_json::to_string_pretty(_got)?;
