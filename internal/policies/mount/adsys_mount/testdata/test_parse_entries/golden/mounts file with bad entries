@@ -1,46 +1,46 @@
 [
   {
-    "mount_path": "mount/path:protocol://why.com",
+    "path": "mount/path:protocol://why.com",
     "is_anonymous": false
   },
   {
-    "mount_path": "how did this happen?",
+    "path": "how did this happen?",
     "is_anonymous": false
   },
   {
-    "mount_path": "protocol:this_is_not_possible:domain.com",
+    "path": "protocol:this_is_not_possible:domain.com",
     "is_anonymous": false
   },
   {
-    "mount_path": "            you should not have edited the file",
+    "path": "            you should not have edited the file",
     "is_anonymous": false
   },
   {
-    "mount_path": "it",
+    "path": "it",
     "is_anonymous": false
   },
   {
-    "mount_path": "was",
+    "path": "was",
     "is_anonymous": false
   },
   {
-    "mount_path": "not",
+    "path": "not",
     "is_anonymous": false
   },
   {
-    "mount_path": "supposed",
+    "path": "supposed",
     "is_anonymous": false
   },
   {
-    "mount_path": "to",
+    "path": "to",
     "is_anonymous": false
   },
   {
-    "mount_path": "be",
+    "path": "be",
     "is_anonymous": false
   },
   {
-    "mount_path": "edited",
+    "path": "edited",
     "is_anonymous": false
   }
 ]
