@@ -18,5 +18,5 @@ fn main() -> Result<(), AdsysMountError> {
         log::set_max_level(log::LevelFilter::Debug);
     }
 
-    lib::handle_user_mounts(&args.mounts_file)
+    lib::mount(&args.mounts_file)
 }
