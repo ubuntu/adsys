@@ -1,6 +1,6 @@
 [
   {
-    "mount_path": "uno://single.com/one/path",
+    "path": "uno://single.com/one/path",
     "is_anonymous": false
   }
 ]
