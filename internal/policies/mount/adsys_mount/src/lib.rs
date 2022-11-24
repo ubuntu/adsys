@@ -13,10 +13,10 @@ use std::{
 mod errors;
 pub use errors::AdsysMountError;
 
-/// Represents a mount point read from the mounts file.
+/// Represents a mount point parsed from the mounts file.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-struct MountEntry {
-    mount_path: String,
+struct Entry {
+    path: String,
     is_anonymous: bool,
 }
 
@@ -26,22 +26,17 @@ pub struct Msg {
     status: MountResult,
 }
 
-type MountResult = Result<MountStatus, glib::Error>;
+/// Represents the result of a mount operation.
+type MountResult = Result<(), glib::Error>;
 
+/// Struct representing an error returned from trying to mount a path.
 struct MountError {
     path: String,
     error: glib::Error,
 }
 
-/// Represents the status returned by a mount attempt.
-#[derive(Debug)]
-#[non_exhaustive]
-pub enum MountStatus {
-    Done,
-    Asked,
-}
-
-pub fn handle_user_mounts(mounts_file: &str) -> Result<(), AdsysMountError> {
+/// Mount the entries that are specified in the file.
+pub fn mount(mounts_file: &str) -> Result<(), AdsysMountError> {
     debug!("Mounting entries listed in {}", mounts_file);
 
     let parsed_entries = match parse_entries(mounts_file) {
@@ -63,7 +58,7 @@ pub fn handle_user_mounts(mounts_file: &str) -> Result<(), AdsysMountError> {
     }
 
     for entry in parsed_entries {
-        handle_mount(entry, tx.clone());
+        mount_entry(entry, tx.clone());
     }
 
     // Sets the main loop glib to be used by the mounts
@@ -77,7 +72,7 @@ pub fn handle_user_mounts(mounts_file: &str) -> Result<(), AdsysMountError> {
         let errors = errors.clone();
         let g_loop = g_loop.clone();
         rx.attach(Some(&g_ctx), move |msg| {
-            user_mount_cb(msg, &errors, &g_loop, &mut mounts_left)
+            msg_handler(msg, &errors, &g_loop, &mut mounts_left)
         });
     }
 
@@ -89,17 +84,18 @@ pub fn handle_user_mounts(mounts_file: &str) -> Result<(), AdsysMountError> {
         warn!("Mount process for {} failed: {}", path, error);
     }
 
-    if errors
+    let error = errors
         .iter()
-        .any(|MountError { error, .. }| !error.matches(gio::IOErrorEnum::AlreadyMounted))
-    {
-        Err(AdsysMountError::MountError)
-    } else {
-        Ok(())
+        .any(|MountError { error, .. }| !error.matches(gio::IOErrorEnum::AlreadyMounted));
+
+    if error {
+        return Err(AdsysMountError::MountError);
     }
+
+    Ok(())
 }
 
-fn user_mount_cb(
+fn msg_handler(
     msg: Msg,
     errors: &Mutex<Vec<MountError>>,
     main_loop: &glib::MainLoop,
@@ -111,8 +107,7 @@ fn user_mount_cb(
             warn!("Failed when mounting {}", path);
             errors.lock().unwrap().push(MountError { path, error });
         }
-        Ok(MountStatus::Done) => debug!("Mounting of {} was successful", path),
-        _ => error!("Unexpected return status: {:?}", status),
+        Ok(_) => debug!("Mounting of {} was successful", path),
     };
     *mounts_left -= 1;
 
@@ -124,26 +119,24 @@ fn user_mount_cb(
 }
 
 /// Reads the file and parses the mount points listed in it.
-fn parse_entries(path: &str) -> Result<Vec<MountEntry>, std::io::Error> {
+fn parse_entries(path: &str) -> Result<Vec<Entry>, std::io::Error> {
     debug!("Parsing file {} content", path);
 
-    let mut parsed_entries: Vec<MountEntry> = Vec::new();
+    let mut parsed_entries: Vec<Entry> = Vec::new();
 
-    // The ? operator tries to unwrap the result and, if there is an error, returns it to the caller of this function.
     let content = fs::read_to_string(path)?;
-
-    for p in content.lines() {
-        if p.is_empty() {
+    for line in content.lines() {
+        if line.is_empty() {
             continue;
         }
 
-        parsed_entries.push(match p.strip_prefix("[anonymous]") {
-            Some(s) => MountEntry {
-                mount_path: s.to_string(),
+        parsed_entries.push(match line.strip_prefix("[anonymous]") {
+            Some(s) => Entry {
+                path: s.to_string(),
                 is_anonymous: true,
             },
-            None => MountEntry {
-                mount_path: p.to_string(),
+            None => Entry {
+                path: line.to_string(),
                 is_anonymous: false,
             },
         });
@@ -153,15 +146,15 @@ fn parse_entries(path: &str) -> Result<Vec<MountEntry>, std::io::Error> {
 }
 
 /// Handles the mount operation to mount the specified entry.
-fn handle_mount(entry: MountEntry, tx: glib::Sender<Msg>) {
-    debug!("Mounting entry {}", entry.mount_path);
+fn mount_entry(entry: Entry, tx: glib::Sender<Msg>) {
+    debug!("Mounting entry {}", entry.path);
 
-    let f = gio::File::for_uri(&entry.mount_path);
+    let f = gio::File::for_uri(&entry.path);
 
     let mount_op = gio::MountOperation::new();
 
     if entry.is_anonymous {
-        debug!("Anonymous mount requested for {}", entry.mount_path);
+        debug!("Anonymous mount requested for {}", entry.path);
         mount_op.set_anonymous(true);
     }
 
@@ -170,8 +163,8 @@ fn handle_mount(entry: MountEntry, tx: glib::Sender<Msg>) {
     // Callback invoked by gio after setting up the mount.
     let mount_handled_cb = move |r: Result<(), glib::Error>| {
         let msg = Msg {
-            path: entry.mount_path,
-            status: r.map(|_| MountStatus::Done),
+            path: entry.path,
+            status: r,
         };
 
         if let Err(e) = tx.send(msg) {
@@ -198,15 +191,15 @@ fn ask_password_cb(
     if mount_op.is_anonymous() && flags.contains(gio::AskPasswordFlags::ANONYMOUS_SUPPORTED) {
         // Unsafe block is needed for data and set_data implementations in glib.
         unsafe {
-            if let Some(data) = mount_op.data::<MountResult>("state") {
+            if let Some(data) = mount_op.data::<bool>("state") {
                 // Ensures that we only try anonymous access once.
-                if let Ok(MountStatus::Asked) = *(data.as_ptr()) {
+                if *(data.as_ref()) {
                     warn!("Anonymous access denied.");
                     mount_op.reply(gio::MountOperationResult::Aborted);
                 }
             } else {
                 debug!("Anonymous is supported by the provider.");
-                mount_op.set_data("state", Ok(MountStatus::Asked) as MountResult);
+                mount_op.set_data("state", true);
                 mount_op.reply(gio::MountOperationResult::Handled);
             }
         }
@@ -224,106 +217,4 @@ fn ask_password_cb(
     mount_op.reply(gio::MountOperationResult::Aborted);
 }
 
-#[cfg(test)]
-mod tests {
-    use std::collections::HashMap;
-
-    use crate::{parse_entries, test_utils};
-
-    #[test]
-    fn test_parse_entries() -> Result<(), std::io::Error> {
-        struct TestCase {
-            file: &'static str,
-        }
-
-        let tests: HashMap<&str, TestCase> = HashMap::from([
-            (
-                "mounts file with one entry",
-                TestCase {
-                    file: "mounts_with_one_entry",
-                },
-            ),
-            (
-                "mounts file with multiple entries",
-                TestCase {
-                    file: "mounts_with_multiple_entries",
-                },
-            ),
-            (
-                "mounts file with anonymous entries",
-                TestCase {
-                    file: "mounts_with_anonymous_entries",
-                },
-            ),
-            (
-                "empty mounts file",
-                TestCase {
-                    file: "mounts_with_no_entry",
-                },
-            ),
-            (
-                "mounts file with bad entries",
-                TestCase {
-                    file: "mounts_with_bad_entries",
-                },
-            ),
-        ]);
-
-        for test in tests.iter() {
-            let testdata = "testdata/test_parse_entries";
-
-            let got = parse_entries(&format!("{}/{}", testdata, (test.1).file))?;
-
-            let want = test_utils::load_and_update_golden(
-                &format!("{}/{}", testdata, "golden"),
-                test.0,
-                &got,
-                false,
-            );
-
-            match want {
-                Ok(w) => {
-                    for i in 0..w.len() {
-                        assert_eq!(w[i], got[i]);
-                    }
-                }
-                Err(e) => panic!("{}", e),
-            }
-        }
-        Ok(())
-    }
-}
-
-#[cfg(test)]
-mod test_utils {
-    use serde::{Deserialize, Serialize};
-    use std::{
-        fmt::Debug,
-        fs::{create_dir_all, read_to_string, write},
-    };
-
-    #[allow(dead_code)]
-    pub fn load_and_update_golden<T>(
-        golden_path: &str,
-        filename: &str,
-        _got: &T,
-        update: bool,
-    ) -> Result<T, std::io::Error>
-    where
-        T: Serialize + Debug + for<'a> Deserialize<'a>,
-    {
-        let full_path = format!("{}/{}", golden_path, filename);
-        if update {
-            create_dir_all(golden_path)?;
-
-            let tmp = serde_json::to_string_pretty(_got)?;
-            write(&full_path, tmp)?;
-        }
-
-        let s = read_to_string(&full_path)?;
-
-        let want: T = serde_json::from_str(&s)?;
-
-        Ok(want)
-    }
-}
+mod unit_tests;
