@@ -1,18 +1,18 @@
 [
   {
-    "mount_path": "protocol://domain.com/mount/path",
+    "path": "protocol://domain.com/mount/path",
     "is_anonymous": true
   },
   {
-    "mount_path": "protocol://domain.com/some/path",
+    "path": "protocol://domain.com/some/path",
     "is_anonymous": false
   },
   {
-    "mount_path": "smb://example.com/mount/path",
+    "path": "smb://example.com/mount/path",
     "is_anonymous": false
   },
   {
-    "mount_path": "other_protocol://some.com/other/path",
+    "path": "other_protocol://some.com/other/path",
     "is_anonymous": true
   }
 ]

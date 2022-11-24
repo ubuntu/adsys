@@ -103,11 +103,11 @@ fn msg_handler(
 ) -> glib::Continue {
     let Msg { path, status } = msg;
     match status {
+        Ok(_) => debug!("Mounting of {} was successful", path),
         Err(error) => {
             warn!("Failed when mounting {}", path);
             errors.lock().unwrap().push(MountError { path, error });
         }
-        Ok(_) => debug!("Mounting of {} was successful", path),
     };
     *mounts_left -= 1;
 
