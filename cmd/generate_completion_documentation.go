@@ -65,7 +65,7 @@ func main() {
 		if generators.InstallOnlyMode() {
 			return
 		}
-		updateFromCmd(commands, filepath.Join("doc", "13.-Command-line-reference.md"))
+		updateFromCmd(commands, filepath.Join("doc", "14.-Command-line-reference.md"))
 	default:
 		log.Fatalf(usage, os.Args[0])
 	}
