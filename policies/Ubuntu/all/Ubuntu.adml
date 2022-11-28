@@ -2653,7 +2653,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         </textBox>
       </presentation>
       <presentation id="UbuntuPresentationUserMountUserMounts">
-        <text>Mount points for the client</text>
+        <text>User mounts</text>
         <multiTextBox refId="UbuntuElemUserAllMountUserMounts" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2304MountUserMounts" defaultChecked="false">Override value for 23.04:</checkBox>
