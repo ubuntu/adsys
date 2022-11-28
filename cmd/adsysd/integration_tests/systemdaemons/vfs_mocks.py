@@ -98,14 +98,14 @@ class VfsMountTrackerMock(dbusmock.DBusMockObject):
             server = ''.join([dbus.String(x) for x in mount_spec[1].get("server")])
             share = ''.join([dbus.String(x) for x in mount_spec[1].get("share")])
 
-        # Mount spec for nfs when mounting nfs://example.com/mount/path
+        # Mount spec for nfs/ftp when mounting nfs(or ftp)://example.com/mount/path
         # mount_spec [
         #  "/mount/path" + \0,
         #  dict {
         #    "host": "example.com" + \0,
         #    "type": "nfs" + \0,
         #  }
-        elif protocol == 'nfs':
+        elif protocol == 'nfs' or protocol == 'ftp':
             server = ''.join([dbus.String(x) for x in mount_spec[1].get("host")])
             share = ''.join([dbus.String(x) for x in mount_spec[0]])
 
