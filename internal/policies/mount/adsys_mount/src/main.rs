@@ -1,22 +1,52 @@
-use clap::Parser;
 use lib::AdsysMountError;
 mod logger;
 
-/// Arguments required to run this binary
-#[derive(Debug, clap::Parser)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Path for the file containing the mounts for the user.
-    mounts_file: String,
-}
-
 fn main() -> Result<(), AdsysMountError> {
-    let args = Args::parse();
+    if std::env::args().any(|p| &p == "--help") {
+        print_help_msg();
+        return Ok(());
+    }
+
+    let mut args = std::env::args();
+
+    // Ignores the first argument, which is the path of the executable.
+    args.next();
+
+    let mounts_file = match args.next() {
+        Some(arg) => arg,
+        None => {
+            print_invalid_msg();
+            return Ok(());
+        }
+    };
 
     // Creates the logger and sets its level to Debug.
     if let Ok(()) = log::set_logger(&logger::Logger {}) {
         log::set_max_level(log::LevelFilter::Debug);
     }
 
-    lib::mount(&args.mounts_file)
+    lib::mount(&mounts_file)
+}
+
+fn print_help_msg() {
+    print!(
+        "\
+Adsys helper binary to handle user mounts. This is not intended to be used manually.
+
+Usage:
+    adsys_mount [filepath]
+    
+
+    filepath      Path to the file containing the shared directories to be mounted.
+"
+    );
+}
+
+fn print_invalid_msg() {
+    print!(
+        "\
+Usage:  
+    adsys_mount [filepath]
+"
+    );
 }
