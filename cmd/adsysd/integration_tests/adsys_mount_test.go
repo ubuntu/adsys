@@ -25,6 +25,7 @@ func TestUserMountHandler(t *testing.T) {
 		// Single entries
 		"mount successfully nfs share": {mountsFile: "mounts_with_nfs_entry"},
 		"mount successfully smb share": {mountsFile: "mounts_with_smb_entry"},
+		"mount successfully ftp share": {mountsFile: "mounts_with_ftp_entry"},
 
 		// Anonymous entries
 		"mount successfully anonymous entry":                         {mountsFile: "mounts_with_anonymous_nfs_entry"},
