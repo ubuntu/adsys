@@ -2,6 +2,8 @@ package adwatchd_test
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -21,13 +23,9 @@ import (
 
 func TestServiceStateChange(t *testing.T) {
 	tests := map[string]struct {
-		sequence   []string
-		invalidDir bool
+		sequence []string
 
-		skipUnlessWindows bool
-
-		wantErrAt   []int
-		wantStopped bool
+		wantErrAt []int
 	}{
 		// From stopped state
 		"stop multiple times": {sequence: []string{"stop"}},
@@ -37,8 +35,6 @@ func TestServiceStateChange(t *testing.T) {
 		"install":             {sequence: []string{"install"}, wantErrAt: []int{0}},
 
 		// From started state
-		// This should error on Windows but doesn't with systemd because of the auto-restart policy
-		"start with a bad dir": {sequence: []string{"start"}, invalidDir: true, wantStopped: true, skipUnlessWindows: true},
 		"start multiple times": {sequence: []string{"start", "start"}},
 		"start and stop":       {sequence: []string{"start", "stop"}},
 		"start and restart":    {sequence: []string{"start", "restart"}},
@@ -55,11 +51,6 @@ func TestServiceStateChange(t *testing.T) {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			// Skip Windows-only tests if requested
-			if runtime.GOOS != "windows" && tc.skipUnlessWindows {
-				t.Skip()
-			}
-
 			var err error
 
 			watchDir := t.TempDir()
@@ -77,9 +68,6 @@ func TestServiceStateChange(t *testing.T) {
 			err = app.Run()
 			require.NoError(t, err, "Setup: Stopping the service failed but shouldn't")
 
-			if tc.invalidDir {
-				os.RemoveAll(watchDir)
-			}
 			for index, state := range tc.sequence {
 				if runtime.GOOS == "windows" {
 					time.Sleep(time.Second)
@@ -97,15 +85,53 @@ func TestServiceStateChange(t *testing.T) {
 					return
 				}
 				require.NoError(t, err, fmt.Sprintf("%s failed but shouldn't", state))
-
-				if tc.wantStopped {
-					out := getStatus(t, app)
-					require.Contains(t, out, "stopped", "Service should be stopped")
-				}
 			}
 		})
 	}
 }
+
+func TestServiceStartWithABadDir(t *testing.T) {
+	// This should error on Windows but doesn't with systemd because of the auto-restart policy
+	if runtime.GOOS != "windows" {
+		t.Skip()
+	}
+
+	watchDir := t.TempDir()
+	configPath := generateConfig(t, -1, watchDir)
+
+	app := commands.New(commands.WithServiceName("adwatchd-test-baddir"))
+
+	installService(t, configPath, app)
+	time.Sleep(time.Second)
+
+	// Begin with a stopped state
+	changeAppArgs(t, app, "", "service", "stop")
+	err := app.Run()
+	require.NoError(t, err, "Setup: Stopping the service failed but shouldn't")
+
+	// Remove watched dir to make the service not start
+	os.RemoveAll(watchDir)
+
+	// The test is flaky on Windows and returns "context deadline exceeded" from
+	// time to time, so we retry a few times
+	tries := 0
+	for tries < 5 {
+		changeAppArgs(t, app, "", "service", "start")
+		err = app.Run()
+		if err == nil || !errors.Is(err, context.DeadlineExceeded) {
+			break
+		}
+		tries++
+	}
+	require.NoError(t, err, "starting the service failed but shouldn't")
+
+	// Although both start and stop are blocking operations, we need to wait a
+	// bit for the status to be updated
+	time.Sleep(time.Second)
+	out := getStatus(t, app)
+	require.Contains(t, out, "stopped", "Service should be stopped")
+}
+
 func TestInstall(t *testing.T) {
 	watchedDir := t.TempDir()
 
