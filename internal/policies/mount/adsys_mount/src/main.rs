@@ -9,14 +9,20 @@ fn main() -> Result<(), AdsysMountError> {
 
     let mut args = std::env::args();
 
+    // Ensures that the binary is executed with exactly 2 arguments.
+    if args.len() != 2 {
+        print_usage_msg();
+        return Err(AdsysMountError::ParseError);
+    }
+
     // Ignores the first argument, which is the path of the executable.
     args.next();
 
     let mounts_file = match args.next() {
         Some(arg) => arg,
         None => {
-            print_invalid_msg();
-            return Ok(());
+            print_usage_msg();
+            return Err(AdsysMountError::ParseError);
         }
     };
 
@@ -31,7 +37,7 @@ fn main() -> Result<(), AdsysMountError> {
 fn print_help_msg() {
     print!(
         "\
-Adsys helper binary to handle user mounts. This is not intended to be used manually.
+Adsys helper binary to handle user mounts. This is not intended to be executed manually.
 
 Usage:
     adsys_mount [filepath]
@@ -42,7 +48,7 @@ Usage:
     );
 }
 
-fn print_invalid_msg() {
+fn print_usage_msg() {
     print!(
         "\
 Usage:  
