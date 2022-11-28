@@ -2,11 +2,8 @@ package ad
 
 import (
 	"context"
-	// #nosec: G501: we are using it only for comparing directory tree content in tests.
-	"crypto/md5"
 	"flag"
 	"fmt"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -378,10 +375,8 @@ func TestFetch(t *testing.T) {
 				_, ok := tc.want[dirname]
 				assert.Truef(t, ok, "fetched file %s which is not in want list", dirname)
 
-				goldPath := filepath.Join("testdata", "AD", "SYSVOL", tc.adDomain, tc.want[dirname])
-				gpoTree := md5Tree(t, filepath.Join(adc.sysvolCacheDir, dirname))
-				goldTree := md5Tree(t, goldPath)
-				assert.Equalf(t, goldTree, gpoTree, "expected and after fetch for %q does not match", dirname)
+				expectSelectedPath := filepath.Join("testdata", "AD", "SYSVOL", tc.adDomain, tc.want[dirname])
+				testutils.CompareTreesWithFiltering(t, filepath.Join(adc.sysvolCacheDir, dirname), expectSelectedPath, false)
 			}
 			// We add the Policies/ directory
 			assert.Len(t, gotDirs, len(tc.want)+1, "unexpected number of elements in downloaded policy or assets")
@@ -436,10 +431,8 @@ func TestFetchWithUnreadableFile(t *testing.T) {
 			}
 
 			// Diff on each gpo dir content
-			goldPath := filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", "old_version")
-			gpoTree := md5Tree(t, filepath.Join(adc.sysvolCacheDir, "Policies", "gpo1"))
-			goldTree := md5Tree(t, goldPath)
-			assert.Equalf(t, goldTree, gpoTree, "expected and after fetch GPO %q does not match", "gpo1")
+			expectSelectedPath := filepath.Join("testdata", "AD", "SYSVOL", "fakegpo.com", "Policies", "old_version")
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adc.sysvolCacheDir, "Policies", "gpo1"), expectSelectedPath, false)
 			assert.False(t, assetsRefreshed, "we haven't refreshed assets")
 		})
 	}
@@ -614,35 +607,4 @@ func TestMain(m *testing.M) {
 
 	m.Run()
 	testutils.MergeCoverages()
-}
-
-// md5Tree build a recursive file list of dir and with their md5sum.
-func md5Tree(t *testing.T, dir string) map[string]string {
-	t.Helper()
-
-	r := make(map[string]string)
-
-	err := filepath.WalkDir(dir, func(path string, de fs.DirEntry, err error) error {
-		if err != nil {
-			return fmt.Errorf("couldn't access path %q: %w", path, err)
-		}
-
-		md5Val := ""
-		if !de.IsDir() {
-			d, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-			// #nosec: G401: we are using it only for comparing directory tree content in tests.
-			md5Val = fmt.Sprintf("%x", md5.Sum(d))
-		}
-		r[strings.TrimPrefix(path, dir)] = md5Val
-		return nil
-	})
-
-	if err != nil {
-		t.Fatalf("error while listing directory: %v", err)
-	}
-
-	return r
 }
