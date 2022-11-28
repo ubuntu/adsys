@@ -1,5 +1,5 @@
 - key: "/user-mounts"
-  displayname: "Mount points for the client"
+  displayname: "User mounts"
   explaintext: |
     Define network shares that will be mounted for the client.
     If more shares are defined higher the GPO hierarchy, the entries listed here will be appended to the list and duplicates will be removed.
