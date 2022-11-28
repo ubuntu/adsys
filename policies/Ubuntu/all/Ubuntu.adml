@@ -1251,16 +1251,22 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuDisplayUser2210ApparmorApparmorUsers">AppArmor</string>
       <string id="UbuntuDisplayUser2204ApparmorApparmorUsers">AppArmor</string>
       <string id="UbuntuDisplayUser2004ApparmorApparmorUsers">AppArmor</string>
-      <string id="UbuntuExplainTextUserMountUserMounts">Define mount points that will be mounted for the client.
-We will add one mount per line, the order of the mounts will be according to the order the mount points were listed in the policy, removing duplicates.
-The mounts listed will be appended to the list of mounts referenced higher in the GPO hierarchy.
-Anonymous and Kerberos validated mounts will be handled automatically.
+      <string id="UbuntuExplainTextUserMountUserMounts">Define network shares that will be mounted for the client.
+If more shares are defined higher in other GPO, the entries listed here will be appended to the list and duplicates will be removed.
 
 Values should be in the format: 
-        protocol://&lt;hostname-or-ip&gt;/mountpath 
+        protocol://&lt;hostname-or-ip&gt;/shared-dir
+        nfs://example_nfs.com/nfs_shared_dir
+        smb://example_smb.com/smb_shared_dir
+        ftp://example_ftp.com/ftp_shared_dir
 
 And anonymous mounts should have a prefix tag [anonymous] to indicate them, e.g:
-        [anonymous]protocol://&lt;hostname-or-ip&gt;/mountpath
+        [anonymous]protocol://&lt;hostname-or-ip&gt;/shared-dir
+
+The supported protocols are the same as the ones supported by gvfs.
+They are listed on the man page of gvfs, under the gvfs-backends section: https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
+
+If an entry is not formatted accordingly, it will be ignored or an error may occur.
 
 
 - Type: mount
@@ -1269,10 +1275,10 @@ And anonymous mounts should have a prefix tag [anonymous] to indicate them, e.g:
 Supported on Ubuntu 20.04, 22.04, 22.10.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
-      <string id="UbuntuDisplayUserAllMountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2210MountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2204MountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2004MountUserMounts">Mount points for the client</string>
+      <string id="UbuntuDisplayUserAllMountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2210MountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2204MountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2004MountUserMounts">User mounts</string>
     </stringTable>
 
     <presentationTable>
@@ -2224,7 +2230,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         </textBox>
       </presentation>
       <presentation id="UbuntuPresentationUserMountUserMounts">
-        <text>Mount points for the client</text>
+        <text>User mounts</text>
         <multiTextBox refId="UbuntuElemUserAllMountUserMounts" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210MountUserMounts" defaultChecked="false">Override value for 22.10:</checkBox>
