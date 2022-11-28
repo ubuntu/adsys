@@ -1278,10 +1278,10 @@ They are listed on the man page of gvfs, under the gvfs-backends section: https:
 Supported on Ubuntu 20.04, 22.04, 22.10.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
-      <string id="UbuntuDisplayUserAllMountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2210MountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2204MountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2004MountUserMounts">Mount points for the client</string>
+      <string id="UbuntuDisplayUserAllMountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2210MountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2204MountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2004MountUserMounts">User mounts</string>
     </stringTable>
 
     <presentationTable>
@@ -2233,7 +2233,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         </textBox>
       </presentation>
       <presentation id="UbuntuPresentationUserMountUserMounts">
-        <text>Mount points for the client</text>
+        <text>User mounts</text>
         <multiTextBox refId="UbuntuElemUserAllMountUserMounts" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210MountUserMounts" defaultChecked="false">Override value for 22.10:</checkBox>
