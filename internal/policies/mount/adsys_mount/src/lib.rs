@@ -158,7 +158,9 @@ fn mount_entry(entry: Entry, tx: glib::Sender<Msg>) {
         mount_op.set_anonymous(true);
     }
 
-    mount_op.connect_ask_password(ask_password_cb);
+    mount_op.connect_ask_password(|mount_op, _, _, _, flags| unsafe {
+        ask_password_cb(mount_op, "msg", "user", "domain", flags)
+    });
 
     // Callback invoked by gio after setting up the mount.
     let mount_handled_cb = move |r: Result<(), glib::Error>| {
@@ -181,7 +183,7 @@ fn mount_entry(entry: Entry, tx: glib::Sender<Msg>) {
 }
 
 /// Callback that is invoked by gio when prompted for password.
-fn ask_password_cb(
+unsafe fn ask_password_cb(
     mount_op: &gio::MountOperation,
     _: &str,
     _: &str,
@@ -189,7 +191,8 @@ fn ask_password_cb(
     flags: gio::AskPasswordFlags,
 ) {
     if mount_op.is_anonymous() && flags.contains(gio::AskPasswordFlags::ANONYMOUS_SUPPORTED) {
-        // Unsafe block is needed for data and set_data implementations in glib.
+        // SAFETY: The usage of set_data and data can result in type unsafety. Since we are
+        // controlling which key is being set and by whom, this should be safe.
         unsafe {
             if let Some(data) = mount_op.data::<bool>("state") {
                 // Ensures that we only try anonymous access once.
@@ -217,4 +220,5 @@ fn ask_password_cb(
     mount_op.reply(gio::MountOperationResult::Aborted);
 }
 
+#[cfg(test)]
 mod unit_tests;
