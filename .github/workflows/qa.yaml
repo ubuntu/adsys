@@ -16,7 +16,7 @@ jobs:
       - name: Install dependencies
         run: |
           DEBIAN_FRONTEND=noninteractive apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc pkg-config libsmbclient-dev
+          DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates git gcc pkg-config libsmbclient-dev libwbclient-dev
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3
@@ -61,7 +61,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper curl
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y ca-certificates gcc gettext libsmbclient-dev samba sudo dconf-cli python3-coverage libnss-wrapper curl libwbclient-dev
       - name: Set required environment variables
         run: echo "SUDO_PACKAGES=$(cat debian/tests/.sudo-packages)" >> $GITHUB_ENV
       - name: Authenticate to docker local registry and pull image with our token
@@ -153,7 +153,7 @@ jobs:
       - name: Install dependencies
         run: |
           DEBIAN_FRONTEND=noninteractive apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y git ca-certificates gcc pkg-config protobuf-compiler gettext libsmbclient-dev
+          DEBIAN_FRONTEND=noninteractive apt install -y git ca-certificates gcc pkg-config protobuf-compiler gettext libsmbclient-dev libwbclient-dev
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3

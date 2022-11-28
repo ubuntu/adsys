@@ -1,0 +1,7 @@
+* Domain(): example.com
+* ServerURL(): ldap://controller.overridden.com
+* IsOnline(): true
+* HostKrb5CCNAME(): 
+* DefaultDomainSuffix(): example.com
+* Config():
+Current backend is Winbind
