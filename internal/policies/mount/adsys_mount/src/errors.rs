@@ -5,7 +5,7 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum AdsysMountError {
     MountError = 1,
-    ParseError = 2,
+    ArgError = 2,
 }
 impl Display for AdsysMountError {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
