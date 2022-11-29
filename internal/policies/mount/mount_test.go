@@ -67,25 +67,25 @@ func TestApplyPolicy(t *testing.T) {
 	}{
 		/***************************** USER ****************************/
 		// Success cases.
-		"successfully apply policy for entry with one value":        {},
-		"successfully apply policy for entry with multiple values":  {entries: []string{"entry with multiple values"}},
-		"successfully apply policy for entry with repeatead values": {entries: []string{"entry with repeatead values"}},
-		"successfully apply policy filtering out unsupported keys":  {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
+		"user, successfully apply policy for entry with one value":        {},
+		"user, successfully apply policy for entry with multiple values":  {entries: []string{"entry with multiple values"}},
+		"user, successfully apply policy for entry with repeatead values": {entries: []string{"entry with repeatead values"}},
+		"user, successfully apply policy filtering out unsupported keys":  {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
 
 		// Special cases.
-		"successfully apply policy with anonymous values":     {entries: []string{"entry with anonymous tags"}},
-		"creates only users_user dir if the entry is errored": {entries: []string{"errored entry"}},
+		"user, successfully apply policy with anonymous values":     {entries: []string{"entry with anonymous tags"}},
+		"user, creates only users_user dir if the entry is errored": {entries: []string{"errored entry"}},
 
 		// Badly formatted entries.
-		"successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}},
-		"successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}},
-		"creates only users_user dir if the entry is empty":        {entries: []string{"entry with no value"}},
-		"creates only users dir if there are no entries":           {entries: []string{"no entries"}},
+		"user, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}},
+		"user, successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}},
+		"user, creates only users_user dir if the entry is empty":        {entries: []string{"entry with no value"}},
+		"user, creates only users dir if there are no entries":           {entries: []string{"no entries"}},
 
 		// Policy refresh.
-		"mount file is removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}},
-		"mount file is removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}},
-		"mount file is updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}},
+		"user, mount file is removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}},
+		"user, mount file is removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}},
+		"user, mount file is updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}},
 
 		/**************************** GENERIC **************************/
 		// Special cases.
@@ -94,14 +94,14 @@ func TestApplyPolicy(t *testing.T) {
 
 		/***************************** USER ****************************/
 		// Error cases.
-		"error when user is not found":                                               {objectName: "dont exist", wantErr: true},
-		"error when user has invalid uid":                                            {userReturnedUID: "invalid", wantErr: true},
-		"error when user has invalid gid":                                            {userReturnedGID: "invalid", wantErr: true},
-		"error when userDir has invalid permissions":                                 {readOnlyUsersDir: true, wantErr: true},
-		"error when path already exists as a directory":                              {pathAlreadyExists: true, wantErr: true},
-		"error when cleanup with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
-		"error when cleanup with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
-		"error when cleanup with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
+		"user, error when user is not found":                                               {objectName: "dont exist", wantErr: true},
+		"user, error when user has invalid uid":                                            {userReturnedUID: "invalid", wantErr: true},
+		"user, error when user has invalid gid":                                            {userReturnedGID: "invalid", wantErr: true},
+		"user, error when userDir has invalid permissions":                                 {readOnlyUsersDir: true, wantErr: true},
+		"user, error when path already exists as a directory":                              {pathAlreadyExists: true, wantErr: true},
+		"user, error when cleanup with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
+		"user, error when cleanup with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
+		"user, error when cleanup with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
 	}
 
 	u, err := user.Current()
@@ -145,7 +145,8 @@ func TestApplyPolicy(t *testing.T) {
 				}))
 			}
 
-			runDir := t.TempDir()
+			rootDir := t.TempDir()
+			runDir := filepath.Join(rootDir, "run", "adsys")
 			if tc.readOnlyUsersDir {
 				err := os.MkdirAll(filepath.Join(runDir, "users"), 0750)
 				require.NoError(t, err, "Setup: Expected no error when creating users dir for tests.")
@@ -190,7 +191,7 @@ func TestApplyPolicy(t *testing.T) {
 				makeIndependentOfCurrentUID(t, runDir, u.Uid)
 			}
 			goldPath := filepath.Join("testdata", t.Name())
-			testutils.CompareTreesWithFiltering(t, runDir, goldPath, mount.Update)
+			testutils.CompareTreesWithFiltering(t, rootDir, goldPath, mount.Update)
 		})
 	}
 }
@@ -202,7 +203,7 @@ func makeIndependentOfCurrentUID(t *testing.T, path string, uid string) {
 	// We need to rename at the end, starting from the leaf to the start so that we don’t fail filepath.Walk()
 	// walking in currently renamed directory.
 	var toRename []string
-	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(path string, _ os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
