@@ -20,6 +20,8 @@ func TestUserMountHandler(t *testing.T) {
 		sessionAnswer string
 		noKrbTicket   bool
 
+		addArgs []string
+
 		wantStatus int
 	}{
 		// Single entries
@@ -55,6 +57,14 @@ func TestUserMountHandler(t *testing.T) {
 		// Generic errors
 		"error when trying to mount unsupported protocol": {mountsFile: "mounts_with_unsupported_protocol", wantStatus: 1},
 		"error during mount process":                      {mountsFile: "mounts_with_error", wantStatus: 1},
+
+		// Binary usage cases
+		"correctly prints the help message": {addArgs: []string{"--help"}},
+
+		// Binary usage errors
+		"errors out and prints usage message when executed with less than 2 arguments": {wantStatus: 2},
+		"errors out and prints usage message when executed with more than 2 arguments": {addArgs: []string{"more", "than", "two"}, wantStatus: 2},
+		"errors out and prints usage message even when --help is among the arguments":  {addArgs: []string{"i", "need", "--help"}, wantStatus: 2},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -64,8 +74,17 @@ func TestUserMountHandler(t *testing.T) {
 			}
 			dbusAnswer(t, tc.sessionAnswer)
 
+			args := []string{}
+			if tc.mountsFile != "" {
+				args = append(args, filepath.Join(fixtureDir, tc.mountsFile))
+			}
+
+			if tc.addArgs != nil {
+				args = append(args, tc.addArgs...)
+			}
+
 			// #nosec G204: we are in control of the arguments during the tests.
-			cmd := exec.Command(filepath.Join(target, "debug", "adsys_mount"), filepath.Join(fixtureDir, tc.mountsFile))
+			cmd := exec.Command(filepath.Join(target, "debug", "adsys_mount"), args...)
 			cmd.Stderr, cmd.Stdout = os.Stderr, os.Stdout
 			cmd.Env = append(os.Environ(), env...)
 
