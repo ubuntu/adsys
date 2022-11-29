@@ -94,14 +94,14 @@ func TestApplyPolicy(t *testing.T) {
 
 		/***************************** USER ****************************/
 		// Error cases.
-		"user, error when user is not found":                                               {objectName: "dont exist", wantErr: true},
-		"user, error when user has invalid uid":                                            {userReturnedUID: "invalid", wantErr: true},
-		"user, error when user has invalid gid":                                            {userReturnedGID: "invalid", wantErr: true},
-		"user, error when userDir has invalid permissions":                                 {readOnlyUsersDir: true, wantErr: true},
-		"user, error when path already exists as a directory":                              {pathAlreadyExists: true, wantErr: true},
-		"user, error when cleanup with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
-		"user, error when cleanup with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
-		"user, error when cleanup with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
+		"error when user is not found":                                                               {objectName: "dont exist", wantErr: true},
+		"error when user has invalid uid":                                                            {userReturnedUID: "invalid", wantErr: true},
+		"error when user has invalid gid":                                                            {userReturnedGID: "invalid", wantErr: true},
+		"error when users-userDir has invalid permissions":                                           {readOnlyUsersDir: true, wantErr: true},
+		"error when mounts file path already exists as a directory":                                  {pathAlreadyExists: true, wantErr: true},
+		"error when cleaning up user policy with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
+		"error when cleaning up user policy with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
+		"error when cleaning up user policy with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
 	}
 
 	u, err := user.Current()
