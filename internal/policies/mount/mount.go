@@ -100,6 +100,17 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 				log.Debugf(ctx, "Key %q is currently not supported by the mount manager", entry.Key)
 			}
 		}
+	} else {
+		for _, entry := range entries {
+			switch entry.Key {
+			case "system-mounts":
+				if e := m.applySystemMountsPolicy(ctx, objectName, entry); e != nil {
+					err = e
+				}
+			default:
+				log.Debugf(ctx, "Key %q is currently not supported by the mount manager", entry.Key)
+			}
+		}
 	}
 
 	return err
