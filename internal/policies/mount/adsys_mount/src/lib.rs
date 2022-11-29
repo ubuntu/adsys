@@ -43,7 +43,7 @@ pub fn mount(mounts_file: &str) -> Result<(), AdsysMountError> {
         Ok(v) => v,
         Err(e) => {
             error!("Error when parsing entries: {}", e);
-            return Err(AdsysMountError::ParseError);
+            return Err(AdsysMountError::MountError);
         }
     };
 
