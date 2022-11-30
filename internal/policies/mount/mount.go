@@ -493,7 +493,8 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 
 // execSystemCtlCmd wraps the specified args into a systemctl command execution.
 func (m *Manager) execSystemCtlCmd(ctx context.Context, args ...string) (err error) {
-	cmdArgs := append(m.systemCtlCmd, args...)
+	cmdArgs := append([]string{}, m.systemCtlCmd...)
+	cmdArgs = append(cmdArgs, args...)
 
 	// #nosec G204 - We are in control of the arguments
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
