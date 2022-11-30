@@ -6,19 +6,23 @@ package mount
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 
+	"github.com/coreos/go-systemd/unit"
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
 /*
@@ -38,10 +42,16 @@ without preventing the authentication.
 type options struct {
 	systemctlCmd []string
 	userLookup   func(string) (*user.User, error)
+	unitPath     string
 }
 
 // Option represents an optional function that is able to alter a default behavior used in mount.
 type Option func(*options)
+
+const defaultUnitPath string = "/etc/systemd/system"
+
+//go:embed adsys-mount-template.mount
+var unitTemplate string
 
 // Manager holds information needed for handling the mount policies.
 type Manager struct {
@@ -52,13 +62,16 @@ type Manager struct {
 
 	userLookup   func(string) (*user.User, error)
 	systemCtlCmd []string
+	unitPath     string
 }
 
 // New creates a Manager to handle mount policies.
 func New(runDir string, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to create new mount manager"))
 	o := options{
-		userLookup: user.Lookup,
+		userLookup:   user.Lookup,
+		unitPath:     defaultUnitPath,
+		systemctlCmd: []string{"systemctl"},
 	}
 
 	for _, opt := range opts {
@@ -77,6 +90,7 @@ func New(runDir string, opts ...Option) (m *Manager, err error) {
 		runDir:       runDir,
 		userLookup:   o.userLookup,
 		systemCtlCmd: o.systemctlCmd,
+		unitPath:     o.unitPath,
 	}, nil
 }
 
@@ -175,6 +189,135 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 	return nil
 }
 
+func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName string, entry entry.Entry) (err error) {
+	decorate.OnError(&err, "error when applying mount policy to machine %q", machineName)
+
+	log.Debugf(ctx, "Applying mount policy to machine %q", machineName)
+
+	var failures []string
+
+	prevUnits := m.currentUnits()
+	newUnits, err := createUnits(parseEntryValues(entry))
+	if err != nil {
+		failures = append(failures, fmt.Sprintf("error when creating new units: %v", err))
+	}
+
+	// Marks shares to write as new units and removes from map units that shouldn't change
+	needsReload := false
+	var unitsToEnable []string
+
+	for name, content := range newUnits {
+		written, err := writeIfChanged(filepath.Join(m.unitPath, name), content)
+		if err != nil {
+			failures = append(failures, fmt.Sprintf("failed to write new unit: %v", err))
+		}
+		if written {
+			unitsToEnable = append(unitsToEnable, name)
+		}
+		needsReload = needsReload || written
+
+		delete(prevUnits, name)
+	}
+
+	// The units left in the map should be cleaned from the system.
+	unitsToClean := make([]string, 0, len(prevUnits))
+	for k := range prevUnits {
+		unitsToClean = append(unitsToClean, k)
+	}
+
+	if err = m.cleanupMountUnits(ctx, unitsToClean); err != nil {
+		failures = append(failures, fmt.Sprintf("failed when cleaning units: %v", err))
+	}
+
+	if !needsReload {
+		if failures != nil {
+			err = fmt.Errorf("%s", strings.Join(failures, "\n"))
+		}
+		return err
+	}
+
+	// Trigger a daemon reload
+	if err := m.execSystemCtlCmd(ctx, "daemon-reload"); err != nil {
+		failures = append(failures, fmt.Sprintf("failed to reload daemon: %v", err))
+		return fmt.Errorf("%s", strings.Join(failures, "\n"))
+	}
+
+	// Channel to control the error messages emitted by the routines.
+	ch := make(chan string, len(unitsToEnable))
+	// Enables and starts new units.
+	for _, name := range unitsToEnable {
+		name := name
+		go func() {
+			if err := m.execSystemCtlCmd(ctx, "enable", name); err != nil {
+				ch <- fmt.Sprintf("failed to enable unit %q: %v", name, err)
+				return
+			}
+			if err := m.execSystemCtlCmd(ctx, "start", name); err != nil {
+				ch <- fmt.Sprintf("failed to start unit %q: %v", name, err)
+				return
+			}
+			ch <- ""
+		}()
+	}
+
+	for i := 0; i < len(unitsToEnable); {
+		failure := <-ch
+		if failure != "" {
+			failures = append(failures, failure)
+		}
+		i++
+	}
+
+	if failures != nil {
+		return fmt.Errorf("%s", strings.Join(failures, "\n"))
+	}
+
+	return nil
+}
+
+// createUnits formats the adsys-.mount template with the specified paths.
+func createUnits(mountPaths []string) (units map[string]string, err error) {
+	defer decorate.OnError(&err, "failed when writing requested units")
+
+	var failures []string
+	units = make(map[string]string)
+
+	for _, mp := range mountPaths {
+		opts := []string{}
+
+		// Checks if anonymous was requested
+		p := strings.TrimPrefix(mp, "[anonymous]")
+		if p != mp {
+			opts = append(opts, "users")
+		}
+
+		_, s, found := strings.Cut(p, ":")
+		if !found {
+			failures = append(failures, fmt.Sprintf("badly formatted entry %q", mp))
+			continue
+		}
+
+		// Skips the // from the path
+		s = s[2:]
+
+		content := fmt.Sprintf(unitTemplate,
+			mp,                      // Description
+			p,                       // What
+			s,                       // Where
+			strings.Join(opts, ","), // Options
+		)
+
+		name := fmt.Sprintf("adsys-%s.mount", unit.UnitNameEscape(p))
+		units[name] = content
+	}
+
+	if failures != nil {
+		return units, fmt.Errorf("%s", strings.Join(failures, "\n"))
+	}
+
+	return units, nil
+}
+
 // parseEntryValues parses the entry value, trimming whitespaces and removing duplicates.
 func parseEntryValues(entry entry.Entry) (p []string, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to parse entry values"))
@@ -212,6 +355,25 @@ func checkValue(value string) error {
 	}
 
 	return nil
+}
+
+// writeIfChanged will only write to path if content is different from current content.
+func writeIfChanged(path string, content string) (done bool, err error) {
+	defer decorate.OnError(&err, i18n.G("can't save %s"), path)
+
+	if oldContent, err := os.ReadFile(path); err == nil && string(oldContent) == content {
+		return false, nil
+	}
+
+	// #nosec G306. This asset needs to be world-readable.
+	if err := os.WriteFile(path+".new", []byte(content), 0644); err != nil {
+		return false, err
+	}
+	if err := os.Rename(path+".new", path); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // writeFileWithUIDGID writes the content into the specified path and changes its ownership to the specified uid/gid.
@@ -273,9 +435,9 @@ func (m *Manager) cleanup(ctx context.Context, objectName string, isComputer boo
 		if u, err = m.userLookup(objectName); err != nil {
 			return err
 		}
-		err = m.cleanupMountsFile(ctx, u.Uid)
+		return m.cleanupMountsFile(ctx, u.Uid)
 	}
-	return err
+	return m.cleanupMountUnits(ctx, nil)
 }
 
 // cleanupMountsFile removes the mounts file, if there is any, created for the user with the specified uid.
@@ -292,4 +454,67 @@ func (m *Manager) cleanupMountsFile(ctx context.Context, uid string) (err error)
 		return err
 	}
 	return nil
+}
+
+// cleanupMountUnits removes all the mount units generated by adsys for the current system.
+// If the units slice is nil, all mount units will be removed.
+func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err error) {
+	defer decorate.OnError(&err, "failed to clean up the mount units")
+
+	if units == nil {
+		tmp := m.currentUnits()
+		for k := range tmp {
+			units = append(units, k)
+		}
+	}
+
+	var failures []string
+	for _, unit := range units {
+		// Stops and disables the unit before removing it
+		if err = m.execSystemCtlCmd(ctx, "stop", unit); err != nil {
+			failures = append(failures, fmt.Sprintf("failed to stop unit %q: %v", unit, err))
+		}
+
+		if err = m.execSystemCtlCmd(ctx, "disable", unit); err != nil {
+			failures = append(failures, fmt.Sprintf("failed to disable unit %q: %v", unit, err))
+		}
+
+		if err = os.Remove(filepath.Join(m.unitPath, unit)); err != nil {
+			failures = append(failures, fmt.Sprintf("could not remove file %q: %v", unit, err))
+		}
+	}
+
+	if failures != nil {
+		return fmt.Errorf("failed to remove units: %s", strings.Join(failures, "\n"))
+	}
+
+	return nil
+}
+
+// execSystemCtlCmd wraps the specified args into a systemctl command execution.
+func (m *Manager) execSystemCtlCmd(ctx context.Context, args ...string) (err error) {
+	cmdArgs := append(m.systemCtlCmd, args...)
+
+	// #nosec G204 - We are in control of the arguments
+	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
+
+	smbsafe.WaitExec()
+	if out, err := cmd.CombinedOutput(); err != nil {
+		smbsafe.DoneExec()
+		return fmt.Errorf("failed when running systemctl cmd: %w -> %s", err, out)
+	}
+	smbsafe.DoneExec()
+	return nil
+}
+
+// currentUnits reads the unit directory and returns a map containing the adsys mount units found.
+func (m *Manager) currentUnits() (units map[string]struct{}) {
+	paths, _ := filepath.Glob(filepath.Join(m.unitPath, "adsys-*.mount"))
+
+	units = make(map[string]struct{})
+	for _, path := range paths {
+		units[filepath.Base(path)] = struct{}{}
+	}
+
+	return units
 }
