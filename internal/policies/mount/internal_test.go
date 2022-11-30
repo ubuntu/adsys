@@ -132,6 +132,46 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 	}
 }
 
+func TestCreateUnits(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		entry   string
+		wantErr bool
+	}{
+		"write single unit":                         {entry: "entry with one value"},
+		"write multiple units":                      {entry: "entry with multiple values"},
+		"write anonymous unit with correct options": {entry: "entry with one anonymous value"},
+
+		"error when writing bad formatted unit":                             {entry: "entry with bad value", wantErr: true},
+		"error when writing multiple units with badly formatted among them": {entry: "entry with correct and bad values", wantErr: true},
+	}
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			mountPaths := parseEntryValues(EntriesForTests[tc.entry])
+
+			unitPath := t.TempDir()
+			units, err := createUnits(mountPaths)
+			if tc.wantErr {
+				require.Error(t, err, "Expected an error but got none")
+			} else {
+				require.NoError(t, err, "Expected no error but got one")
+			}
+
+			for name, content := range units {
+				err := os.WriteFile(filepath.Join(unitPath, name), []byte(content), 0600)
+				require.NoError(t, err, "Setup: Failed to write unit file for comparison.")
+			}
+
+			goldenPath := filepath.Join("testdata", t.Name(), "golden")
+			testutils.CompareTreesWithFiltering(t, unitPath, goldenPath, Update)
+		})
+	}
+}
+
 func TestMain(m *testing.M) {
 	flag.BoolVar(&Update, "update", false, "Update the golden files")
 	flag.Parse()

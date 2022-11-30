@@ -2,6 +2,7 @@ package mount_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -49,6 +50,9 @@ func TestNew(t *testing.T) {
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
+	u, err := user.Current()
+	require.NoError(t, err, "Setup: failed to get current user")
+
 	tests := map[string]struct {
 		entries    []string
 		keys       []string
@@ -63,7 +67,13 @@ func TestApplyPolicy(t *testing.T) {
 		userReturnedGID   string
 		pathAlreadyExists bool
 
-		wantErr bool
+		// System specific
+		firstSystemCtlDisabledArgs  []string
+		secondSystemCtlDisabledArgs []string
+		pathAlreadyExistsSecondCall bool
+
+		wantErr           bool
+		wantErrSecondCall bool
 	}{
 		/***************************** USER ****************************/
 		// Success cases.
@@ -86,6 +96,30 @@ func TestApplyPolicy(t *testing.T) {
 		"user, mount file is removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}},
 		"user, mount file is updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}},
 
+		/**************************** SYSTEM ***************************/
+		// Success cases.
+		"system, successfully apply policy for entry with one value":        {isComputer: true},
+		"system, successfully apply policy for entry with multiple values":  {entries: []string{"entry with multiple values"}, isComputer: true},
+		"system, successfully apply policy for entry with repeatead values": {entries: []string{"entry with repeatead values"}, isComputer: true},
+		"system, successfully apply policy filtering out unsupported keys":  {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "system-mounts"}, isComputer: true},
+
+		// Special cases.
+		"system, successfully apply policy with anonymous values": {entries: []string{"entry with anonymous tags"}, isComputer: true},
+		"system, does nothing if the entry is errored":            {entries: []string{"errored entry"}, isComputer: true},
+
+		// Badly formatted entries.
+		"system, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}, isComputer: true},
+		"system, successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}, isComputer: true},
+		"system, does nothing if the entry is empty":                       {entries: []string{"entry with no value"}, isComputer: true},
+		"system, does nothing if there are no entries":                     {entries: []string{"no entries"}, isComputer: true},
+
+		// Policy refresh.
+		"system, mount units are added on refreshing policy with slightly different values":        {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with multiple slightly different values"}, isComputer: true},
+		"system, mount units are updated on refreshing policy with an entry with multiple values":  {secondCall: []string{"entry with multiple values"}, isComputer: true},
+		"system, mount units are removed on refreshing policy with no entries":                     {secondCall: []string{"no entries"}, isComputer: true},
+		"system, mount units are removed on refreshing policy with an empty entry":                 {secondCall: []string{"entry with no value"}, isComputer: true},
+		"system, mount units are removed on refreshing policy with an entry with different values": {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true},
+
 		/**************************** GENERIC **************************/
 		// Special cases.
 		"creates only users dir when trying to policy with unsupported key":  {keys: []string{"unsupported"}},
@@ -103,15 +137,32 @@ func TestApplyPolicy(t *testing.T) {
 		"error when cleaning up user policy with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
 		"error when cleaning up user policy with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
 		"error when applying policy with entry containing badly formatted value":                     {entries: []string{"entry with badly formatted value"}, wantErr: true},
+
+		/**************************** SYSTEM ***************************/
+		// Error cases.
+		"error when creating units with bad entry values":             {entries: []string{"entry with correct and bad values"}, isComputer: true, wantErr: true},
+		"error when systemctl fails":                                  {firstSystemCtlDisabledArgs: []string{"systemctl"}, isComputer: true, wantErr: true},
+		"error when stopping units for clean up and systemctl fails":  {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlDisabledArgs: []string{"stop"}, wantErrSecondCall: true},
+		"error when disabling units for clean up and systemctl fails": {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlDisabledArgs: []string{"disable"}, wantErrSecondCall: true},
+		"error when enabling new units and systemctl fails":           {isComputer: true, firstSystemCtlDisabledArgs: []string{"enable"}, wantErr: true},
+		"error when starting new units and systemctl fails":           {isComputer: true, firstSystemCtlDisabledArgs: []string{"start"}, wantErr: true},
+		"error when trying to update policy with bad entry":           {secondCall: []string{"entry with one good value and one bad"}, wantErrSecondCall: true, isComputer: true},
+		"error when applying policy and path already exists as dir":   {isComputer: true, pathAlreadyExists: true, wantErr: true},
+		"error when updating policy and path to remove is a dir":      {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
 	}
-
-	u, err := user.Current()
-	require.NoError(t, err, "Setup: failed to get current user")
-
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
+
+			rootDir := t.TempDir()
+			runDir := filepath.Join(rootDir, "run", "adsys")
+			unitDir := filepath.Join(rootDir, "etc-systemd-system")
+
+			if tc.isComputer {
+				err := os.MkdirAll(unitDir, 0750)
+				require.NoError(t, err, "Setup: Failed to create unit dir for the tests.")
+			}
 
 			entries := []entry.Entry{}
 			if tc.entries == nil {
@@ -120,6 +171,9 @@ func TestApplyPolicy(t *testing.T) {
 
 			if tc.keys == nil {
 				tc.keys = []string{"user-mounts"}
+				if tc.isComputer {
+					tc.keys = []string{"system-mounts"}
+				}
 			}
 
 			for i, v := range tc.entries {
@@ -131,7 +185,7 @@ func TestApplyPolicy(t *testing.T) {
 				entries = append(entries, e)
 			}
 
-			opts := []mount.Option{}
+			opts := []mount.Option{mount.WithUnitPath(unitDir)}
 			if !tc.isComputer && tc.objectName == "" {
 				if tc.userReturnedUID == "" {
 					tc.userReturnedUID = u.Uid
@@ -146,8 +200,6 @@ func TestApplyPolicy(t *testing.T) {
 				}))
 			}
 
-			rootDir := t.TempDir()
-			runDir := filepath.Join(rootDir, "run", "adsys")
 			if tc.readOnlyUsersDir {
 				err := os.MkdirAll(filepath.Join(runDir, "users"), 0750)
 				require.NoError(t, err, "Setup: Expected no error when creating users dir for tests.")
@@ -155,16 +207,22 @@ func TestApplyPolicy(t *testing.T) {
 			}
 
 			if tc.pathAlreadyExists {
-				err := os.MkdirAll(filepath.Join(runDir, "users", u.Uid, "mounts"), 0750)
+				p := filepath.Join(runDir, "users", u.Uid, "mounts")
+				if tc.isComputer {
+					p = filepath.Join(unitDir, "adsys-protocol:--domain.com-mountpath.mount")
+				}
+
+				err := os.MkdirAll(p, 0750)
 				require.NoError(t, err, "Setup: Expected no error when creating mounts dir for tests.")
 				// In order to force the failure, we need to add a file in the directory to make os.Remove return
 				// an error when trying to remove a non empty directory.
-				err = os.WriteFile(filepath.Join(runDir, "users", u.Uid, "mounts", "not_empty"), []byte("not empty"), 0600)
+				err = os.WriteFile(filepath.Join(p, "not_empty"), []byte("not empty"), 0600)
 				require.NoError(t, err, "Setup: Expected to create file inside already existent path for tests.")
 			}
 
 			m, err := mount.New(runDir, opts...)
 			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
+			m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.firstSystemCtlDisabledArgs...))
 
 			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.isComputer, entries)
 			if tc.wantErr {
@@ -183,9 +241,26 @@ func TestApplyPolicy(t *testing.T) {
 					e.Key = tc.keys[i]
 					secondEntries = append(secondEntries, e)
 				}
+				m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.secondSystemCtlDisabledArgs...))
+
+				if tc.pathAlreadyExistsSecondCall {
+					p := filepath.Join(unitDir, "adsys-protocol:--domain.com-mountpath.mount")
+					err := os.Remove(p)
+					require.NoError(t, err, "Setup: failed to remove file for tests.")
+					err = os.MkdirAll(p, 0750)
+					require.NoError(t, err, "Setup: Expected no error when creating mounts dir for tests.")
+					// In order to force the failure, we need to add a file in the directory to make os.Remove return
+					// an error when trying to remove a non empty directory.
+					err = os.WriteFile(filepath.Join(p, "not_empty"), []byte("not empty"), 0600)
+					require.NoError(t, err, "Setup: Expected to create file inside already existent path for tests.")
+				}
 
 				err = m.ApplyPolicy(context.Background(), tc.objectName, tc.isComputer, secondEntries)
-				require.NoError(t, err, "Second call of ApplyPolicy should not have returned an error but did")
+				if tc.wantErrSecondCall {
+					require.Error(t, err, "Second call should have returned an error but didn't")
+				} else {
+					require.NoError(t, err, "Second call of ApplyPolicy should not have returned an error but did")
+				}
 			}
 
 			if !tc.isComputer {
@@ -195,6 +270,50 @@ func TestApplyPolicy(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, rootDir, goldPath, mount.Update)
 		})
 	}
+}
+
+func TestMockSystemCtl(t *testing.T) {
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		return
+	}
+	defer os.Exit(0)
+
+	args := os.Args
+	found := false
+	disabledArgs := make(map[string]struct{})
+	// Consumes args until the first --. Args after it (up until the next --)
+	// are marked as disabled and will fail if used in the mock.
+	for len(args) > 0 {
+		if args[0] == "--" {
+			if found {
+				args = args[1:]
+				break
+			}
+			found = true
+		} else {
+			if found {
+				disabledArgs[args[0]] = struct{}{}
+			}
+		}
+		args = args[1:]
+	}
+
+	for len(args) > 0 {
+		if _, ok := disabledArgs[args[0]]; ok {
+			fmt.Printf("Arg %q was disabled in the mock\n", args[0])
+			os.Exit(1)
+		}
+		args = args[1:]
+	}
+}
+
+func mockSystemCtlCmd(t *testing.T, args ...string) []string {
+	t.Helper()
+
+	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockSystemCtl", "--"}
+	cmdArgs = append(cmdArgs, args...)
+	cmdArgs = append(cmdArgs, "--")
+	return cmdArgs
 }
 
 // makeIndependentOfCurrentUID renames any file or directory which exactly match uid in path and replace it with 4242.
