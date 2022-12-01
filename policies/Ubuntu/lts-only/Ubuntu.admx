@@ -65,6 +65,9 @@
     <category name="UbuntuPowerManagement" displayName="$(string.UbuntuDisplayPowerManagement)">
       <parentCategory ref="UbuntuClientManagement" />
     </category>
+    <category name="UbuntuSystemDriveMapping" displayName="$(string.UbuntuDisplaySystemDriveMapping)">
+      <parentCategory ref="UbuntuClientManagement" />
+    </category>
     <category name="UbuntuSessionManagement" displayName="$(string.UbuntuDisplaySessionManagement)">
       <parentCategory ref="UbuntuUbuntu" />
     </category>
@@ -2556,6 +2559,25 @@
             </value>
           </item>
         </enum>
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineMountSystemMounts" class="Machine" displayName="$(string.UbuntuDisplayMachineAllMountSystemMounts)" explainText="$(string.UbuntuExplainTextMachineMountSystemMounts)" presentation="$(presentation.UbuntuPresentationMachineMountSystemMounts)" key="Software\Policies\Ubuntu\mount\system-mounts" valueName="metaValues">
+      <parentCategory ref="UbuntuSystemDriveMapping" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <elements>
+        <multiText id="UbuntuElemMachineAllMountSystemMounts" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204MountSystemMounts" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2204MountSystemMounts" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004MountSystemMounts" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2004MountSystemMounts" valueName="20.04" />
       </elements>
     </policy>
     <policy name="UbuntuUserScriptsLogon" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogon)" explainText="$(string.UbuntuExplainTextUserScriptsLogon)" presentation="$(presentation.UbuntuPresentationUserScriptsLogon)" key="Software\Policies\Ubuntu\scripts\logon" valueName="metaValues">
