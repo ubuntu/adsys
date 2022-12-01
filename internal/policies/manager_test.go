@@ -58,6 +58,7 @@ func TestApplyPolicies(t *testing.T) {
 		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
 		"scripts apply policy fails":   {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
 		"apparmor apply policy fails":  {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
+		"mount apply policy fails":     {makeDirReadOnly: "etc/systemd/system/", policiesDir: "all_entry_types", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -77,6 +78,7 @@ func TestApplyPolicies(t *testing.T) {
 			policyKitDir := filepath.Join(fakeRootDir, "etc", "polkit-1")
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
 			apparmorDir := filepath.Join(fakeRootDir, "etc", "apparmor.d", "adsys")
+			unitDir := filepath.Join(fakeRootDir, "etc", "systemd", "system")
 			loadedPoliciesFile := filepath.Join(fakeRootDir, "sys", "kernel", "security", "apparmor", "profiles")
 
 			err = os.MkdirAll(filepath.Dir(loadedPoliciesFile), 0700)
@@ -103,6 +105,7 @@ func TestApplyPolicies(t *testing.T) {
 				policies.WithApparmorDir(apparmorDir),
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
+				policies.WithUnitDir(unitDir),
 			)
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
