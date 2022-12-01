@@ -17,3 +17,25 @@
   type: "mount"
   meta:
     strategy: "append"
+
+- key: "/system-mounts"
+  displayname: "System mounts"
+  explaintext: |
+    Define network shares that will be mounted for the system.
+    If more shares are defined higher in other GPO, the entries listed here will be appended to the list and duplicates will be removed.
+    
+    Values should be in the format: <protocol>://<hostname-or-ip>/shared-dir.
+    Examples:
+      nfs://example.com/nfs_share
+      smb://example.com/smb_share
+      ftp://example.com/ftp_share
+
+    Anonymous mounts should be prefixed by the [anonymous] tag:
+      [anonymous]<protocol>://<hostname-or-ip>/shared-dir
+
+    The supported protocols are the same as the ones supported by gvfs. They are listed under the gvfs-backends section on https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
+  elementtype: "multiText"
+  release: "any"
+  type: "mount"
+  meta:
+    strategy: "append"
