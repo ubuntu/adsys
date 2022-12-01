@@ -25,6 +25,7 @@
       <string id="UbuntuDisplayComputerScripts">Computer Scripts</string>
       <string id="UbuntuDisplaySystemWideApplicationConfinement">System-wide application confinement</string>
       <string id="UbuntuDisplayPowerManagement">Power Management</string>
+      <string id="UbuntuDisplaySystemDriveMapping">System Drive Mapping</string>
       <string id="UbuntuDisplaySessionManagement">Session management</string>
       <string id="UbuntuDisplayUserScripts">User Scripts</string>
       <string id="UbuntuDisplayUserApplicationConfinement">User application confinement</string>
@@ -1169,6 +1170,31 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
       <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4">interactive</string>
       <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5">nothing</string>
       <string id="UbuntuItemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6">logout</string>
+      <string id="UbuntuExplainTextMachineMountSystemMounts">Define network shares that will be mounted for the system.
+If more shares are defined higher in other GPO, the entries listed here will be appended to the list and duplicates will be removed.
+
+Values should be in the format: &lt;protocol&gt;://&lt;hostname-or-ip&gt;/shared-dir.
+Examples:
+  nfs://example.com/nfs_share
+  smb://example.com/smb_share
+  ftp://example.com/ftp_share
+
+Anonymous mounts should be prefixed by the [anonymous] tag:
+  [anonymous]&lt;protocol&gt;://&lt;hostname-or-ip&gt;/shared-dir
+
+The supported protocols are the same as the ones supported by gvfs. They are listed under the gvfs-backends section on https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
+
+
+- Type: mount
+- Key: /system-mounts
+
+Supported on Ubuntu 20.04, 22.04, 22.10.
+
+An Ubuntu Pro subscription on the client is required to apply this policy.</string>
+      <string id="UbuntuDisplayMachineAllMountSystemMounts">System mounts</string>
+      <string id="UbuntuDisplayMachine2210MountSystemMounts">System mounts</string>
+      <string id="UbuntuDisplayMachine2204MountSystemMounts">System mounts</string>
+      <string id="UbuntuDisplayMachine2004MountSystemMounts">System mounts</string>
       <string id="UbuntuExplainTextUserScriptsLogon">Define scripts that are executed the first time an user logon until it exits from all sessions.
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
@@ -2166,6 +2192,22 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" defaultChecked="false">Override value for 20.04:</checkBox>
         <dropdownList refId="UbuntuElemMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="0"></dropdownList>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineMountSystemMounts">
+        <text>System mounts</text>
+        <multiTextBox refId="UbuntuElemMachineAllMountSystemMounts" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2210MountSystemMounts" defaultChecked="false">Override value for 22.10:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2210MountSystemMounts" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2204MountSystemMounts" defaultChecked="false">Override value for 22.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2204MountSystemMounts" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004MountSystemMounts" defaultChecked="false">Override value for 20.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2004MountSystemMounts" defaultHeight="5" />
       </presentation>
       <presentation id="UbuntuPresentationUserScriptsLogon">
         <text>Logon scripts</text>
