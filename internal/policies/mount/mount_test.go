@@ -18,13 +18,15 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		readOnlyPerm bool
+		readOnlyRunDir     bool
+		readOnlySystemdDir bool
 
 		wantErr bool
 	}{
 		"creates manager successfully": {},
 
-		"creation fails with invalid runDir permissions": {readOnlyPerm: true, wantErr: true},
+		"creation fails with invalid runDir permissions":  {readOnlyRunDir: true, wantErr: true},
+		"creation fails with invalid unitDir permissions": {readOnlySystemdDir: true, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -32,12 +34,22 @@ func TestNew(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			runDir := t.TempDir()
-			if tc.readOnlyPerm {
+			rootDir := t.TempDir()
+			runDir := filepath.Join(rootDir, "run/adsys")
+			if tc.readOnlyRunDir {
+				err := os.MkdirAll(runDir, 0750)
+				require.NoError(t, err, "Setup: Failed to create directory for tests")
 				testutils.MakeReadOnly(t, runDir)
 			}
 
-			_, err := mount.New(runDir)
+			systemdDir := filepath.Join(rootDir, "etc/systemd")
+			if tc.readOnlySystemdDir {
+				err := os.MkdirAll(systemdDir, 0750)
+				require.NoError(t, err, "Setup: Failed to create directory for tests")
+				testutils.MakeReadOnly(t, systemdDir)
+			}
+
+			_, err := mount.New(runDir, filepath.Join(systemdDir, "system"))
 			if tc.wantErr {
 				require.Error(t, err, "Expected an error when creating manager but got none.")
 				return
@@ -88,8 +100,8 @@ func TestApplyPolicy(t *testing.T) {
 		// Badly formatted entries.
 		"user, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}},
 		"user, successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}},
-		"user, creates only users_user dir if the entry is empty":        {entries: []string{"entry with no value"}},
-		"user, creates only users dir if there are no entries":           {entries: []string{"no entries"}},
+		"user, creates only dirs if the entry is empty":                  {entries: []string{"entry with no value"}},
+		"user, creates only dirs if there are no entries":                {entries: []string{"no entries"}},
 
 		// Policy refresh.
 		"user, mount file is removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}},
@@ -122,8 +134,8 @@ func TestApplyPolicy(t *testing.T) {
 
 		/**************************** GENERIC **************************/
 		// Special cases.
-		"creates only users dir when trying to policy with unsupported key":  {keys: []string{"unsupported"}},
-		"creates only users dir when trying to apply policy with no entries": {entries: []string{"no entries"}},
+		"creates only dirs when trying to policy with unsupported key":  {keys: []string{"unsupported"}},
+		"creates only dirs when trying to apply policy with no entries": {entries: []string{"no entries"}},
 
 		/***************************** USER ****************************/
 		// Error cases.
@@ -157,7 +169,7 @@ func TestApplyPolicy(t *testing.T) {
 
 			rootDir := t.TempDir()
 			runDir := filepath.Join(rootDir, "run", "adsys")
-			unitDir := filepath.Join(rootDir, "etc-systemd-system")
+			unitDir := filepath.Join(rootDir, "etc", "systemd", "system")
 
 			if tc.isComputer {
 				err := os.MkdirAll(unitDir, 0750)
@@ -185,7 +197,7 @@ func TestApplyPolicy(t *testing.T) {
 				entries = append(entries, e)
 			}
 
-			opts := []mount.Option{mount.WithUnitPath(unitDir)}
+			opts := []mount.Option{}
 			if !tc.isComputer && tc.objectName == "" {
 				if tc.userReturnedUID == "" {
 					tc.userReturnedUID = u.Uid
@@ -220,7 +232,7 @@ func TestApplyPolicy(t *testing.T) {
 				require.NoError(t, err, "Setup: Expected to create file inside already existent path for tests.")
 			}
 
-			m, err := mount.New(runDir, opts...)
+			m, err := mount.New(runDir, unitDir, opts...)
 			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
 			m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.firstSystemCtlDisabledArgs...))
 

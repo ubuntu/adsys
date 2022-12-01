@@ -11,13 +11,6 @@ func WithUserLookup(f func(string) (*user.User, error)) Option {
 	}
 }
 
-// WithUnitPath defines a custom path to store the generated units for testing.
-func WithUnitPath(path string) Option {
-	return func(o *options) {
-		o.unitPath = path
-	}
-}
-
 // SetSystemCtlCmd allows to override the systemCtlCmd of the Manager for the tests.
 func (m *Manager) SetSystemCtlCmd(args []string) {
 	m.systemCtlCmd = append(args, "systemctl")

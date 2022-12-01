@@ -48,8 +48,6 @@ type options struct {
 // Option represents an optional function that is able to alter a default behavior used in mount.
 type Option func(*options)
 
-const defaultUnitPath string = "/etc/systemd/system"
-
 //go:embed adsys-mount-template.mount
 var unitTemplate string
 
@@ -58,19 +56,19 @@ type Manager struct {
 	mountsMu map[string]*sync.Mutex
 	muMu     sync.Mutex
 
-	runDir string
+	runDir  string
+	unitDir string
 
 	userLookup   func(string) (*user.User, error)
 	systemCtlCmd []string
-	unitPath     string
 }
 
 // New creates a Manager to handle mount policies.
-func New(runDir string, opts ...Option) (m *Manager, err error) {
+func New(runDir string, unitDir string, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to create new mount manager"))
 	o := options{
 		userLookup:   user.Lookup,
-		unitPath:     defaultUnitPath,
+		unitPath:     unitDir,
 		systemctlCmd: []string{"systemctl"},
 	}
 
@@ -84,13 +82,21 @@ func New(runDir string, opts ...Option) (m *Manager, err error) {
 		return nil, err
 	}
 
+	// This creates the specified unitDir if it does not exist already.
+	// This is mostly used when setting up a custom dir for the units, as the
+	// default value is the systemd directory and it is supposed to always be
+	// there on linux systems.
+	if err := os.MkdirAll(unitDir, 0750); err != nil {
+		return nil, err
+	}
+
 	return &Manager{
 		mountsMu: make(map[string]*sync.Mutex),
 
 		runDir:       runDir,
 		userLookup:   o.userLookup,
 		systemCtlCmd: o.systemctlCmd,
-		unitPath:     o.unitPath,
+		unitDir:      unitDir,
 	}, nil
 }
 
@@ -207,7 +213,7 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 	var unitsToEnable []string
 
 	for name, content := range newUnits {
-		written, err := writeIfChanged(filepath.Join(m.unitPath, name), content)
+		written, err := writeIfChanged(filepath.Join(m.unitDir, name), content)
 		if err != nil {
 			failures = append(failures, fmt.Sprintf("failed to write new unit: %v", err))
 		}
@@ -479,7 +485,7 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 			failures = append(failures, fmt.Sprintf("failed to disable unit %q: %v", unit, err))
 		}
 
-		if err = os.Remove(filepath.Join(m.unitPath, unit)); err != nil {
+		if err = os.Remove(filepath.Join(m.unitDir, unit)); err != nil {
 			failures = append(failures, fmt.Sprintf("could not remove file %q: %v", unit, err))
 		}
 	}
@@ -510,7 +516,7 @@ func (m *Manager) execSystemCtlCmd(ctx context.Context, args ...string) (err err
 
 // currentUnits reads the unit directory and returns a map containing the adsys mount units found.
 func (m *Manager) currentUnits() (units map[string]struct{}) {
-	paths, _ := filepath.Glob(filepath.Join(m.unitPath, "adsys-*.mount"))
+	paths, _ := filepath.Glob(filepath.Join(m.unitDir, "adsys-*.mount"))
 
 	units = make(map[string]struct{})
 	for _, path := range paths {
