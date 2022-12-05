@@ -25,8 +25,8 @@ func TestNew(t *testing.T) {
 	}{
 		"creates manager successfully": {},
 
-		"creation fails with invalid runDir permissions":  {readOnlyRunDir: true, wantErr: true},
-		"creation fails with invalid unitDir permissions": {readOnlySystemdDir: true, wantErr: true},
+		"creation fails with invalid runDir permissions":        {readOnlyRunDir: true, wantErr: true},
+		"creation fails with invalid systemUnitDir permissions": {readOnlySystemdDir: true, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -80,8 +80,8 @@ func TestApplyPolicy(t *testing.T) {
 		pathAlreadyExists bool
 
 		// System specific
-		firstSystemCtlDisabledArgs  []string
-		secondSystemCtlDisabledArgs []string
+		firstSystemCtlFailingArgs   []string
+		secondSystemCtlFailingArgs  []string
 		pathAlreadyExistsSecondCall bool
 
 		wantErr           bool
@@ -89,10 +89,10 @@ func TestApplyPolicy(t *testing.T) {
 	}{
 		/***************************** USER ****************************/
 		// Success cases.
-		"user, successfully apply policy for entry with one value":        {},
-		"user, successfully apply policy for entry with multiple values":  {entries: []string{"entry with multiple values"}},
-		"user, successfully apply policy for entry with repeatead values": {entries: []string{"entry with repeatead values"}},
-		"user, successfully apply policy filtering out unsupported keys":  {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
+		"user, successfully apply policy for entry with one value":       {},
+		"user, successfully apply policy for entry with multiple values": {entries: []string{"entry with multiple values"}},
+		"user, successfully apply policy for entry with repeated values": {entries: []string{"entry with repeated values"}},
+		"user, successfully apply policy filtering out unsupported keys": {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
 
 		// Special cases.
 		"successfully apply policy with kerberos auth tags": {entries: []string{"entry with kerberos auth tags"}},
@@ -110,10 +110,10 @@ func TestApplyPolicy(t *testing.T) {
 
 		/**************************** SYSTEM ***************************/
 		// Success cases.
-		"system, successfully apply policy for entry with one value":        {isComputer: true},
-		"system, successfully apply policy for entry with multiple values":  {entries: []string{"entry with multiple values"}, isComputer: true},
-		"system, successfully apply policy for entry with repeatead values": {entries: []string{"entry with repeatead values"}, isComputer: true},
-		"system, successfully apply policy filtering out unsupported keys":  {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "system-mounts"}, isComputer: true},
+		"system, successfully apply policy for entry with one value":       {isComputer: true},
+		"system, successfully apply policy for entry with multiple values": {entries: []string{"entry with multiple values"}, isComputer: true},
+		"system, successfully apply policy for entry with repeated values": {entries: []string{"entry with repeated values"}, isComputer: true},
+		"system, successfully apply policy filtering out unsupported keys": {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "system-mounts"}, isComputer: true},
 
 		// Special cases.
 		"system, successfully apply policy with anonymous values": {entries: []string{"entry with anonymous tags"}, isComputer: true},
@@ -152,15 +152,15 @@ func TestApplyPolicy(t *testing.T) {
 
 		/**************************** SYSTEM ***************************/
 		// Error cases.
-		"error when creating units with bad entry values":             {entries: []string{"entry with correct and bad values"}, isComputer: true, wantErr: true},
-		"error when systemctl fails":                                  {firstSystemCtlDisabledArgs: []string{"systemctl"}, isComputer: true, wantErr: true},
-		"error when stopping units for clean up and systemctl fails":  {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlDisabledArgs: []string{"stop"}, wantErrSecondCall: true},
-		"error when disabling units for clean up and systemctl fails": {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlDisabledArgs: []string{"disable"}, wantErrSecondCall: true},
-		"error when enabling new units and systemctl fails":           {isComputer: true, firstSystemCtlDisabledArgs: []string{"enable"}, wantErr: true},
-		"error when starting new units and systemctl fails":           {isComputer: true, firstSystemCtlDisabledArgs: []string{"start"}, wantErr: true},
-		"error when trying to update policy with bad entry":           {secondCall: []string{"entry with one good value and one bad"}, wantErrSecondCall: true, isComputer: true},
-		"error when applying policy and path already exists as dir":   {isComputer: true, pathAlreadyExists: true, wantErr: true},
-		"error when updating policy and path to remove is a dir":      {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
+		"error when creating units with bad entry values":                        {entries: []string{"entry with correct and badly formatted values"}, isComputer: true, wantErr: true},
+		"error when systemctl fails":                                             {firstSystemCtlFailingArgs: []string{"systemctl"}, isComputer: true, wantErr: true},
+		"error when stopping units for clean up and systemctl fails":             {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"stop"}, wantErrSecondCall: true},
+		"error when disabling units for clean up and systemctl fails":            {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"disable"}, wantErrSecondCall: true},
+		"error when enabling new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"enable"}, wantErr: true},
+		"error when starting new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}, wantErr: true},
+		"error when trying to update policy with badly formatted entry":          {secondCall: []string{"entry with one good value and one badly formatted"}, wantErrSecondCall: true, isComputer: true},
+		"error when applying policy and system mount unit already exists as dir": {isComputer: true, pathAlreadyExists: true, wantErr: true},
+		"error when updating policy and system mount unit to remove is a dir":    {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -169,10 +169,10 @@ func TestApplyPolicy(t *testing.T) {
 
 			rootDir := t.TempDir()
 			runDir := filepath.Join(rootDir, "run", "adsys")
-			unitDir := filepath.Join(rootDir, "etc", "systemd", "system")
+			systemUnitDir := filepath.Join(rootDir, "etc", "systemd", "system")
 
 			if tc.isComputer {
-				err := os.MkdirAll(unitDir, 0750)
+				err := os.MkdirAll(systemUnitDir, 0750)
 				require.NoError(t, err, "Setup: Failed to create unit dir for the tests.")
 			}
 
@@ -221,7 +221,7 @@ func TestApplyPolicy(t *testing.T) {
 			if tc.pathAlreadyExists {
 				p := filepath.Join(runDir, "users", u.Uid, "mounts")
 				if tc.isComputer {
-					p = filepath.Join(unitDir, "adsys-protocol:--domain.com-mountpath.mount")
+					p = filepath.Join(systemUnitDir, "adsys-protocol:--domain.com-mountpath.mount")
 				}
 
 				err := os.MkdirAll(p, 0750)
@@ -232,9 +232,9 @@ func TestApplyPolicy(t *testing.T) {
 				require.NoError(t, err, "Setup: Expected to create file inside already existent path for tests.")
 			}
 
-			m, err := mount.New(runDir, unitDir, opts...)
+			m, err := mount.New(runDir, systemUnitDir, opts...)
 			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
-			m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.firstSystemCtlDisabledArgs...))
+			m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.firstSystemCtlFailingArgs...))
 
 			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.isComputer, entries)
 			if tc.wantErr {
@@ -253,10 +253,10 @@ func TestApplyPolicy(t *testing.T) {
 					e.Key = tc.keys[i]
 					secondEntries = append(secondEntries, e)
 				}
-				m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.secondSystemCtlDisabledArgs...))
+				m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.secondSystemCtlFailingArgs...))
 
 				if tc.pathAlreadyExistsSecondCall {
-					p := filepath.Join(unitDir, "adsys-protocol:--domain.com-mountpath.mount")
+					p := filepath.Join(systemUnitDir, "adsys-protocol:--domain.com-mountpath.mount")
 					err := os.Remove(p)
 					require.NoError(t, err, "Setup: failed to remove file for tests.")
 					err = os.MkdirAll(p, 0750)
@@ -292,7 +292,7 @@ func TestMockSystemCtl(t *testing.T) {
 
 	args := os.Args
 	found := false
-	disabledArgs := make(map[string]struct{})
+	failingArgs := make(map[string]struct{})
 	// Consumes args until the first --. Args after it (up until the next --)
 	// are marked as disabled and will fail if used in the mock.
 	for len(args) > 0 {
@@ -304,14 +304,14 @@ func TestMockSystemCtl(t *testing.T) {
 			found = true
 		} else {
 			if found {
-				disabledArgs[args[0]] = struct{}{}
+				failingArgs[args[0]] = struct{}{}
 			}
 		}
 		args = args[1:]
 	}
 
 	for len(args) > 0 {
-		if _, ok := disabledArgs[args[0]]; ok {
+		if _, ok := failingArgs[args[0]]; ok {
 			fmt.Printf("Arg %q was disabled in the mock\n", args[0])
 			os.Exit(1)
 		}

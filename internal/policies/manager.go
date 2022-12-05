@@ -137,7 +137,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 		cacheDir:    consts.DefaultCacheDir,
 		runDir:      consts.DefaultRunDir,
 		apparmorDir: consts.DefaultApparmorDir,
-		unitDir:     "/etc/systemd/system",
+		unitDir:     consts.DefaultSystemUnitDir,
 		gdm:         nil,
 	}
 	// applied options (including dconf manager used by gdm)
@@ -225,11 +225,7 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 		return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"], pols.SaveAssetsTo)
 	})
 	g.Go(func() error {
-		err := m.mount.ApplyPolicy(ctx, objectName, isComputer, rules["mount"])
-		if err != nil {
-			log.Warningf(ctx, i18n.G("Some errors occurred when applying mount policy to %q"), objectName)
-		}
-		return err
+		return m.mount.ApplyPolicy(ctx, objectName, isComputer, rules["mount"])
 	})
 	g.Go(func() error {
 		return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"], pols.SaveAssetsTo)

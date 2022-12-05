@@ -24,9 +24,9 @@ func TestParseEntryValues(t *testing.T) {
 		wantErr bool
 	}{
 		// Single entry cases.
-		"parse values from entry with one value":        {entry: "entry with one value"},
-		"parse values from entry with multiple values":  {entry: "entry with multiple values"},
-		"parse values from entry with repeatead values": {entry: "entry with repeatead values"},
+		"parse values from entry with one value":       {entry: "entry with one value"},
+		"parse values from entry with multiple values": {entry: "entry with multiple values"},
+		"parse values from entry with repeated values": {entry: "entry with repeated values"},
 
 		// Badly formatted entries.
 		"parse values trimming whitespaces":           {entry: "entry with spaces"},
@@ -143,8 +143,8 @@ func TestCreateUnits(t *testing.T) {
 		"write multiple units":                      {entry: "entry with multiple values"},
 		"write anonymous unit with correct options": {entry: "entry with one anonymous value"},
 
-		"error when writing bad formatted unit":                             {entry: "entry with bad value", wantErr: true},
-		"error when writing multiple units with badly formatted among them": {entry: "entry with correct and bad values", wantErr: true},
+		"error when writing bad formatted unit":                             {entry: "entry with badly formatted value", wantErr: true},
+		"error when writing multiple units with badly formatted among them": {entry: "entry with correct and badly formatted values", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc

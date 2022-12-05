@@ -10,7 +10,7 @@ import (
 var EntriesForTests = map[string]entry.Entry{
 	"entry with one value": {Value: "protocol://domain.com/mountpath"},
 
-	"entry with one good value and one bad": {Value: `
+	"entry with one good value and one badly formatted": {Value: `
 protocol://domain.com/mountpath
 protocol//bad.com/badpath
 `,
@@ -40,7 +40,7 @@ nfs://domain.com/mount-path
 `,
 	},
 
-	"entry with repeatead values": {Value: `
+	"entry with repeated values": {Value: `
 rpt://repeated.com/repeatedmount
 smb://single.com/mnt
 rpt://repeated.com/repeatedmount
@@ -77,9 +77,9 @@ protocol://domain.com/mountpath
 
 	"errored entry": {Value: "protocol://domain.com/mountpath", Err: fmt.Errorf("some error")},
 
-	"entry with bad value": {Value: "protocol//domain.com/mountpath"},
+	"entry with badly formatted value": {Value: "protocol//domain.com/mountpath"},
 
-	"entry with correct and bad values": {Value: `
+	"entry with correct and badly formatted values": {Value: `
 	bad//format.com/value
 	correct://format.com/value
 	bad\\format.com\othere\value
