@@ -152,15 +152,25 @@ func TestApplyPolicy(t *testing.T) {
 
 		/**************************** SYSTEM ***************************/
 		// Error cases.
-		"error when creating units with bad entry values":                        {entries: []string{"entry with correct and badly formatted values"}, isComputer: true, wantErr: true},
-		"error when systemctl fails":                                             {firstSystemCtlFailingArgs: []string{"systemctl"}, isComputer: true, wantErr: true},
-		"error when stopping units for clean up and systemctl fails":             {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"stop"}, wantErrSecondCall: true},
-		"error when disabling units for clean up and systemctl fails":            {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"disable"}, wantErrSecondCall: true},
-		"error when enabling new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"enable"}, wantErr: true},
-		"error when starting new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}, wantErr: true},
-		"error when trying to update policy with badly formatted entry":          {secondCall: []string{"entry with one good value and one badly formatted"}, wantErrSecondCall: true, isComputer: true},
-		"error when applying policy and system mount unit already exists as dir": {isComputer: true, pathAlreadyExists: true, wantErr: true},
-		"error when updating policy and system mount unit to remove is a dir":    {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
+		"error when creating units with bad entry values":                            {entries: []string{"entry with correct and badly formatted values"}, isComputer: true, wantErr: true},
+		"error when systemctl fails":                                                 {firstSystemCtlFailingArgs: []string{"systemctl"}, isComputer: true, wantErr: true},
+		"error when stopping units for clean up and systemctl fails":                 {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"stop"}, wantErrSecondCall: true},
+		"error when disabling units for clean up and systemctl fails":                {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with different values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"disable"}, wantErrSecondCall: true},
+		"error when enabling new units and systemctl fails":                          {isComputer: true, firstSystemCtlFailingArgs: []string{"enable"}, wantErr: true},
+		"error when starting new units and systemctl fails":                          {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}, wantErr: true},
+		"error when trying to update policy with badly formatted entry":              {secondCall: []string{"entry with one good value and one badly formatted"}, wantErrSecondCall: true, isComputer: true},
+		"error when applying policy and system mount unit already exists as dir":     {isComputer: true, pathAlreadyExists: true, wantErr: true},
+		"error when updating policy and system mount unit to remove is a dir":        {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
+		"error when user is not found":                                               {objectName: "dont exist", wantErr: true},
+		"error when user has invalid uid":                                            {userReturnedUID: "invalid", wantErr: true},
+		"error when user has invalid gid":                                            {userReturnedGID: "invalid", wantErr: true},
+		"error when userDir has invalid permissions":                                 {readOnlyUsersDir: true, wantErr: true},
+		"error when path already exists as a directory":                              {pathAlreadyExists: true, wantErr: true},
+		"error when entry is errored":                                                {entries: []string{"errored entry"}, wantErr: true},
+		"error when cleanup with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
+		"error when cleanup with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
+		"error when cleanup with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
+		"error when applying policy with entry containing badly formatted value":     {entries: []string{"entry with badly formatted value"}, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc

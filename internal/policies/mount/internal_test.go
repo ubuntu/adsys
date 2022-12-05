@@ -35,6 +35,9 @@ func TestParseEntryValues(t *testing.T) {
 		// Special cases.
 		"parse values from entry with kerberos auth tags": {entry: "entry with kerberos auth tags"},
 		"returns empty slice if the entry is empty":       {entry: "entry with no value"},
+
+		// Error cases
+		"error when parsing entry with badly formatted values": {entry: "entry with badly formatted value", wantErr: true},
 	}
 
 	for name, tc := range tests {
