@@ -565,6 +565,7 @@ func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClas
 	return target, nil
 }
 
+// Hostname returns the hostname of the current client.
 func (ad *AD) Hostname() string {
 	return ad.hostname
 }
