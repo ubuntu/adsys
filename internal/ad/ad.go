@@ -110,7 +110,7 @@ func WithRunDir(runDir string) Option {
 var AdsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab.
-func New(ctx context.Context, bus *dbus.Conn, configBackend backends.Backend, opts ...Option) (ad *AD, err error) {
+func New(ctx context.Context, bus *dbus.Conn, configBackend backends.Backend, hostname string, opts ...Option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
 	versionID, err := adcommon.GetVersionID("/")
@@ -152,13 +152,6 @@ func New(ctx context.Context, bus *dbus.Conn, configBackend backends.Backend, op
 		return nil, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)
 	}
 	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, serverURL)
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		return nil, err
-	}
-	// for misconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
-	hostname = strings.TrimSuffix(hostname, "."+domain)
 
 	return &AD{
 		hostname:         hostname,
@@ -523,7 +516,9 @@ func (ad *AD) GetInfo(ctx context.Context) (msg string) {
 	return fmt.Sprintf(i18n.G("%s\n%sDomain: %s\nServer URL: %s"), config, online, domain, server)
 }
 
-// NormalizeTargetName transforms and lowercases User or DOMAIN\User to user@domain.
+// NormalizeTargetName transforms the specified target to values adsys knows.
+// User: transforms and lowercases User or DOMAIN\User to user@domain.
+// Computer: strips the FQDN part, if it exists, and lowercases it.
 // If no domain is provided, we rely on having a default domain policy.
 func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClass ObjectClass) (string, error) {
 	log.Debugf(ctx, "NormalizeTargetName for %q, type %q", target, objectClass)
@@ -534,6 +529,8 @@ func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClas
 	target = strings.ToLower(target)
 
 	if objectClass == ComputerObject {
+		// For misconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
+		target, _, _ = strings.Cut(target, ".")
 		return target, nil
 	}
 	// If we don’t know if this is a computer, try to ensure first this is not our hostname
@@ -566,4 +563,8 @@ func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClas
 	target = fmt.Sprintf("%s@%s", baseUser, domainSuffix)
 	log.Debugf(ctx, "Target name normalized to %q", target)
 	return target, nil
+}
+
+func (ad *AD) Hostname() string {
+	return ad.hostname
 }

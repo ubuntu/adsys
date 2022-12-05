@@ -3,7 +3,6 @@ package adsysservice
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/ad"
@@ -40,10 +39,8 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 	}
 
 	if r.GetIsComputer() || r.GetAll() {
-		hostname, err := os.Hostname()
-		if err != nil {
-			return err
-		}
+		hostname := s.adc.Hostname()
+
 		err = s.updatePolicyFor(stream.Context(), true, hostname, ad.ComputerObject, "")
 
 		if r.GetAll() {
@@ -89,11 +86,7 @@ func (s *Service) DumpPolicies(r *adsys.DumpPoliciesRequest, stream adsys.Servic
 	}
 
 	// hostname policy display is allowed to all users
-	hostname, err := os.Hostname()
-	if err != nil {
-		return err
-	}
-	if target != hostname {
+	if target != s.adc.Hostname() {
 		if err := s.authorizer.IsAllowedFromContext(context.WithValue(stream.Context(), authorizer.OnUserKey, target),
 			actions.ActionPolicyDump); err != nil {
 			return err

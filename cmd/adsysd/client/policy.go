@@ -344,10 +344,7 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 			return err
 		}
 		// for malconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
-		if i := strings.Index(hostname, "."); i > 0 {
-			hostname = hostname[:i]
-		}
-		target = hostname
+		target, _, _ = strings.Cut(hostname, ".")
 	}
 
 	// Update for current user

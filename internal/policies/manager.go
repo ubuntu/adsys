@@ -26,6 +26,7 @@ import (
 // Manager handles all managers for various policy handlers.
 type Manager struct {
 	policiesCacheDir string
+	hostname         string
 
 	dconf     *dconf.Manager
 	privilege *privilege.Manager
@@ -119,7 +120,7 @@ func WithApparmorFsDir(p string) Option {
 }
 
 // NewManager returns a new manager with all default policy handlers.
-func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
+func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
 
 	// defaults
@@ -183,13 +184,13 @@ func NewManager(bus *dbus.Conn, opts ...Option) (m *Manager, err error) {
 
 	return &Manager{
 		policiesCacheDir: policiesCacheDir,
-
-		dconf:     dconfManager,
-		privilege: privilegeManager,
-		scripts:   scriptsManager,
-		mount:     mountManager,
-		apparmor:  apparmorManager,
-		gdm:       args.gdm,
+		hostname:         hostname,
+		dconf:            dconfManager,
+		privilege:        privilegeManager,
+		scripts:          scriptsManager,
+		mount:            mountManager,
+		apparmor:         apparmorManager,
+		gdm:              args.gdm,
 
 		subscriptionDbus: subscriptionDbus,
 	}, nil
@@ -241,19 +242,12 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 
 	var out strings.Builder
 
-	// Load machine for user
-	// FIXME: fqdn in hostname?
-	hostname, err := os.Hostname()
-	if err != nil {
-		return "", err
-	}
-
 	var alreadyProcessedRules map[string]struct{}
-	if objectName != hostname {
+	if objectName != m.hostname {
 		fmt.Fprintln(&out, i18n.G("Policies from machine configuration:"))
-		policiesHost, err := NewFromCache(ctx, filepath.Join(m.policiesCacheDir, hostname))
+		policiesHost, err := NewFromCache(ctx, filepath.Join(m.policiesCacheDir, m.hostname))
 		if err != nil {
-			return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), hostname, err)
+			return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), m.hostname, err)
 		}
 		for _, g := range policiesHost.GPOs {
 			alreadyProcessedRules = g.Format(&out, withRules, withOverridden, alreadyProcessedRules)
@@ -280,11 +274,7 @@ func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachin
 	log.Infof(ctx, "Get policies last update time %q (machine: %t)", objectName, isMachine)
 
 	if isMachine {
-		hostname, err := os.Hostname()
-		if err != nil {
-			return time.Time{}, err
-		}
-		objectName = hostname
+		objectName = m.hostname
 	}
 
 	info, err := os.Stat(filepath.Join(m.policiesCacheDir, objectName))
