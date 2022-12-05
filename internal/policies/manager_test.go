@@ -27,6 +27,9 @@ func TestApplyPolicies(t *testing.T) {
 	require.NoError(t, err, "Setup: can not create dummy systemctl")
 	testutils.Setenv(t, "PATH", fmt.Sprintf("%s:%s", bin, os.Getenv("PATH")))
 
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get hostname for tests.")
+
 	bus := testutils.NewDbusConn(t)
 
 	subscriptionDbus := bus.Object(consts.SubscriptionDbusRegisteredName,
@@ -91,6 +94,7 @@ func TestApplyPolicies(t *testing.T) {
 			}()
 
 			m, err := policies.NewManager(bus,
+				hostname,
 				policies.WithCacheDir(cacheDir),
 				policies.WithRunDir(runDir),
 				policies.WithDconfDir(dconfDir),
@@ -250,7 +254,7 @@ func TestDumpPolicies(t *testing.T) {
 			t.Parallel()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
@@ -326,7 +330,7 @@ func TestLastUpdateFor(t *testing.T) {
 			t.Parallel()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
@@ -363,6 +367,9 @@ func TestGetSubscriptionState(t *testing.T) {
 	subscriptionDbus := bus.Object(consts.SubscriptionDbusRegisteredName,
 		dbus.ObjectPath(consts.SubscriptionDbusObjectPath))
 
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get hostname for tests.")
+
 	tests := map[string]struct {
 		status bool
 
@@ -385,7 +392,7 @@ func TestGetSubscriptionState(t *testing.T) {
 			}()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			got := m.GetSubscriptionState(context.Background())

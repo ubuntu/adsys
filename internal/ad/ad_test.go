@@ -26,6 +26,8 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	bus := testutils.NewDbusConn(t)
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
 	tests := map[string]struct {
 		sysvolCacheDirExists  bool
@@ -60,7 +62,7 @@ func TestNew(t *testing.T) {
 				testutils.MakeReadOnly(t, cacheDir)
 			}
 
-			adc, err := ad.New(context.Background(), bus, mock.Backend{ErrServerURL: tc.backendServerURLError},
+			adc, err := ad.New(context.Background(), bus, mock.Backend{ErrServerURL: tc.backendServerURLError}, hostname,
 				ad.WithRunDir(runDir),
 				ad.WithCacheDir(cacheDir))
 			if tc.wantErr {
@@ -556,7 +558,7 @@ func TestGetPolicies(t *testing.T) {
 			}
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			adc, err := ad.New(context.Background(), bus, tc.backend,
+			adc, err := ad.New(context.Background(), bus, tc.backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs...)),
 				ad.WithVersionID(tc.versionID))
@@ -675,7 +677,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 			testutils.CreatePath(t, tc.backend.HostKrb5CCNAMEPath)
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			adc, err := ad.New(context.Background(), bus, tc.backend,
+			adc, err := ad.New(context.Background(), bus, tc.backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs...)))
 			require.NoError(t, err, "Setup: cannot create ad object")
@@ -696,7 +698,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 						Dom:                tc.domainToCache,
 						Online:             true,
 						HostKrb5CCNAMEPath: tc.backend.HostKrb5CCNAMEPath,
-					},
+					}, hostname,
 					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 					ad.WithGPOListCmd(mockGPOListCmd(t, tc.domainToCache, fmt.Sprintf("useroffline:standard::%s:standard", hostname))))
 				require.NoError(t, err, "Setup: cannot create ad object")
@@ -813,7 +815,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			}
 			testutils.CreatePath(t, backend.HostKrb5CCNAMEPath)
 
-			adc, err := ad.New(context.Background(), bus, backend,
+			adc, err := ad.New(context.Background(), bus, backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs...)))
 			require.NoError(t, err, "Setup: cannot create ad object")
@@ -841,7 +843,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			// Restart: recreate ad object
 			if tc.restart {
-				adc, err = ad.New(context.Background(), bus, backend,
+				adc, err = ad.New(context.Background(), bus, backend, hostname,
 					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 					ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs...)))
 				require.NoError(t, err, "Cannot create second ad object")
@@ -965,7 +967,7 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			if mockObjectName1 == mockObjectName2 {
 				gpoListMeta = fmt.Sprintf("%s:%s", mockObjectName1, tc.gpo1)
 			}
-			adc, err := ad.New(context.Background(), bus, backend,
+			adc, err := ad.New(context.Background(), bus, backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, "assetsandgpo.com", gpoListMeta)))
 			require.NoError(t, err, "Setup: cannot create ad object")
@@ -1007,6 +1009,8 @@ func TestListUsersFromCache(t *testing.T) {
 	t.Parallel()
 
 	bus := testutils.NewDbusConn(t)
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
 	tests := map[string]struct {
 		ccCachesToCreate []string
@@ -1060,7 +1064,7 @@ func TestListUsersFromCache(t *testing.T) {
 				}
 			}
 
-			adc, err := ad.New(context.Background(), bus, mock.Backend{Dom: "gpoonly.com", ServURL: "ldap://myserver.gpoonly.com"},
+			adc, err := ad.New(context.Background(), bus, mock.Backend{Dom: "gpoonly.com", ServURL: "ldap://myserver.gpoonly.com"}, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir))
 			require.NoError(t, err, "Setup: New should return no error")
 
@@ -1086,6 +1090,8 @@ func TestGetInfo(t *testing.T) {
 	t.Parallel()
 
 	bus := testutils.NewDbusConn(t)
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
 	tests := map[string]struct {
 		online       bool
@@ -1110,6 +1116,7 @@ func TestGetInfo(t *testing.T) {
 					Dom: "example.com", ServURL: "ldap://myserver.example.com",
 					Online:      tc.online,
 					ErrIsOnline: tc.errIsOnline, ErrServerURL: tc.ErrServerURL},
+				hostname,
 				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()))
 			require.NoError(t, err, "Setup: New should return no error")
 
@@ -1149,7 +1156,7 @@ func TestNormalizeTargetName(t *testing.T) {
 		// Computer cases
 		"Computer is left as such":              {target: "computername", objectClass: ad.ComputerObject, want: "computername"},
 		"Computer in uppercase is left as such": {target: "COMPUTERNAME", objectClass: ad.ComputerObject, want: "computername"},
-		"Computer with @ is left as such":       {target: "computername@gpoonly.com", objectClass: ad.ComputerObject, want: "computername@gpoonly.com"},
+		"Computer with @ is left as such":       {target: "computername@gpoonly.com", objectClass: ad.ComputerObject, want: "computername@gpoonly"},
 
 		// Error cases
 		`Error on multiple \ in name`:                        {target: `gpoonly.com\user\something`, wantErr: true},
@@ -1163,6 +1170,7 @@ func TestNormalizeTargetName(t *testing.T) {
 
 			adc, err := ad.New(context.Background(), bus,
 				mock.Backend{Dom: tc.defaultDomainSuffix, ServURL: "ldap://myserver.gpoonly.com"}, // Dom is the default domain suffix in the mock
+				hostname,
 				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()))
 			require.NoError(t, err, "Setup: New should return no error")
 
