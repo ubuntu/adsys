@@ -21,9 +21,9 @@ fn test_parse_entries() -> Result<(), std::io::Error> {
             },
         ),
         (
-            "mounts file with anonymous entries",
+            "mounts file with krb5 tagged entries",
             TestCase {
-                file: "mounts_with_anonymous_entries",
+                file: "mounts_with_krb5_tagged_entries",
             },
         ),
         (

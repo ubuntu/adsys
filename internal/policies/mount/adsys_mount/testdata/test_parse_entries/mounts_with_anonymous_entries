@@ -1,4 +1,0 @@
-[anonymous]protocol://domain.com/mount/path
-protocol://domain.com/some/path
-smb://example.com/mount/path
-[anonymous]other_protocol://some.com/other/path
