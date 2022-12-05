@@ -73,8 +73,7 @@ func TestApplyPolicy(t *testing.T) {
 		"successfully apply policy filtering out unsupported keys":  {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
 
 		// Special cases.
-		"successfully apply policy with anonymous values":     {entries: []string{"entry with anonymous tags"}},
-		"creates only users_user dir if the entry is errored": {entries: []string{"errored entry"}},
+		"successfully apply policy with kerberos auth tags": {entries: []string{"entry with kerberos auth tags"}},
 
 		// Badly formatted entries.
 		"successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}},
@@ -99,9 +98,11 @@ func TestApplyPolicy(t *testing.T) {
 		"error when user has invalid gid":                                            {userReturnedGID: "invalid", wantErr: true},
 		"error when userDir has invalid permissions":                                 {readOnlyUsersDir: true, wantErr: true},
 		"error when path already exists as a directory":                              {pathAlreadyExists: true, wantErr: true},
+		"error when entry is errored":                                                {entries: []string{"errored entry"}, wantErr: true},
 		"error when cleanup with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
 		"error when cleanup with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
 		"error when cleanup with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
+		"error when applying policy with entry containing badly formatted value":     {entries: []string{"entry with badly formatted value"}, wantErr: true},
 	}
 
 	u, err := user.Current()
@@ -202,7 +203,7 @@ func makeIndependentOfCurrentUID(t *testing.T, path string, uid string) {
 	// We need to rename at the end, starting from the leaf to the start so that we don’t fail filepath.Walk()
 	// walking in currently renamed directory.
 	var toRename []string
-	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(path string, _ os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

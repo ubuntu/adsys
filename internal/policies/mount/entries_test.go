@@ -45,12 +45,14 @@ smb://otherdomain.com/mount/path
 `,
 	},
 
-	"entry with anonymous tags": {Value: `
-[anonymous]smb://shady.com/shady/mount
-[anonymous]nfs://stealthydomain.com/mount/stealthy
+	"entry with kerberos auth tags": {Value: `
+[krb5]smb://authenticated.com/authenticated/mount
+[krb5]nfs://krb_domain.com/mount/krb_path
 protocol://domain.com/mountpath
 `,
 	},
 
 	"errored entry": {Value: "protocol://domain.com/mountpath", Err: fmt.Errorf("some error")},
+
+	"entry with badly formatted value": {Value: "protocol//domain.com/mountpath"},
 }

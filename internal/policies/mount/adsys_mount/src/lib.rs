@@ -17,7 +17,7 @@ pub use errors::AdsysMountError;
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 struct Entry {
     path: String,
-    is_anonymous: bool,
+    krb_auth: bool,
 }
 
 /// Struct representing the message that is to be passed in the glib channel.
@@ -130,14 +130,14 @@ fn parse_entries(path: &str) -> Result<Vec<Entry>, std::io::Error> {
             continue;
         }
 
-        parsed_entries.push(match line.strip_prefix("[anonymous]") {
+        parsed_entries.push(match line.strip_prefix("[krb5]") {
             Some(s) => Entry {
                 path: s.to_string(),
-                is_anonymous: true,
+                krb_auth: true,
             },
             None => Entry {
                 path: line.to_string(),
-                is_anonymous: false,
+                krb_auth: false,
             },
         });
     }
@@ -153,9 +153,10 @@ fn mount_entry(entry: Entry, tx: glib::Sender<Msg>) {
 
     let mount_op = gio::MountOperation::new();
 
-    if entry.is_anonymous {
-        debug!("Anonymous mount requested for {}", entry.path);
-        mount_op.set_anonymous(true);
+    mount_op.set_anonymous(true);
+    if entry.krb_auth {
+        debug!("Kerberos authentication required for mount {}", entry.path);
+        mount_op.set_anonymous(false);
     }
 
     mount_op.connect_ask_password(|mount_op, _, _, _, flags| unsafe {

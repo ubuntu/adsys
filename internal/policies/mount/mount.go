@@ -130,7 +130,12 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 		return fmt.Errorf(i18n.G("can't create user directory %q for %q: %v"), objectPath, username, err)
 	}
 
-	s := strings.Join(parseEntryValues(entry), "\n")
+	parsedValues, err := parseEntryValues(entry)
+	if err != nil {
+		return err
+	}
+
+	s := strings.Join(parsedValues, "\n")
 	if s == "" {
 		if err = m.cleanupMountsFile(ctx, u.Uid); err != nil {
 			return err
@@ -146,9 +151,11 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 }
 
 // parseEntryValues parses the entry value, trimming whitespaces and removing duplicates.
-func parseEntryValues(entry entry.Entry) (p []string) {
+func parseEntryValues(entry entry.Entry) (p []string, err error) {
+	defer decorate.OnError(&err, i18n.G("failed to parse entry values"))
+
 	if entry.Err != nil {
-		return nil
+		return nil, fmt.Errorf(i18n.G("entry is errored: %v"), entry.Err)
 	}
 
 	seen := make(map[string]struct{})
@@ -157,11 +164,29 @@ func parseEntryValues(entry entry.Entry) (p []string) {
 		if _, ok := seen[v]; ok || v == "" {
 			continue
 		}
+
+		if err := checkValue(v); err != nil {
+			return nil, err
+		}
+
 		p = append(p, v)
 		seen[v] = struct{}{}
 	}
 
-	return p
+	return p, nil
+}
+
+// checkValue checks if the entry value respects the defined formatting directive: <protocol>://<hostname-or-ip>/<shared-path>.
+func checkValue(value string) error {
+	// Removes the kerberos auth tag, if it exists
+	tmp := strings.TrimPrefix(value, "[krb5]")
+
+	// Value left: protocol://<hostname-or-ip>/<shared-path>
+	if _, hostnameAndPath, found := strings.Cut(tmp, ":"); !found || !strings.HasPrefix(hostnameAndPath, "//") {
+		return fmt.Errorf(i18n.G("entry %q is badly formatted"), value)
+	}
+
+	return nil
 }
 
 // writeFileWithUIDGID writes the content into the specified path and changes its ownership to the specified uid/gid.
