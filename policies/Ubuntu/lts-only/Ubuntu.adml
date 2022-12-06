@@ -1121,16 +1121,25 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuDisplayUserAllApparmorApparmorUsers">AppArmor</string>
       <string id="UbuntuDisplayUser2204ApparmorApparmorUsers">AppArmor</string>
       <string id="UbuntuDisplayUser2004ApparmorApparmorUsers">AppArmor</string>
-      <string id="UbuntuExplainTextUserMountUserMounts">Define mount points that will be mounted for the client.
-We will add one mount per line, the order of the mounts will be according to the order the mount points were listed in the policy, removing duplicates.
-The mounts listed will be appended to the list of mounts referenced higher in the GPO hierarchy.
-Anonymous and Kerberos validated mounts will be handled automatically.
+      <string id="UbuntuExplainTextUserMountUserMounts">Define network shares that will be mounted for the client.
+If more shares are defined higher the GPO hierarchy, the entries listed here will be appended to the list and duplicates will be removed.
 
 Values should be in the format: 
-        protocol://&lt;hostname-or-ip&gt;/mountpath 
+    &lt;protocol&gt;://&lt;hostname-or-ip&gt;/&lt;shared-dir&gt;
+e.g.
+    nfs://example_nfs.com/nfs_shared_dir
+    smb://example_smb.com/smb_shared_dir
+    ftp://example_ftp.com/ftp_shared_dir
 
-And anonymous mounts should have a prefix tag [anonymous] to indicate them, e.g:
-        [anonymous]protocol://&lt;hostname-or-ip&gt;/mountpath
+This pattern must be followed, otherwise the policy will not be applied.
+
+By the default, the mounts will be done in anonymous mode. In case of authentication needed, a krb5 tag can be added to the value, e.g.
+    [krb5]&lt;protocol&gt;://&lt;hostname-or-ip&gt;/&lt;shared-dir&gt;
+
+If the tag is added, the mount will require Kerberos authentication in order to occur.
+
+The supported protocols are the same as the ones supported by gvfs.
+They are listed on the man page of gvfs, under the gvfs-backends section: https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
 
 
 - Type: mount
