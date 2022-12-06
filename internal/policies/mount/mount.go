@@ -201,13 +201,11 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 
 	log.Debugf(ctx, "Applying mount policy to machine %q", machineName)
 
-	var failures []string
-
-	prevUnits := m.currentSystemMountUnits()
-	newUnits, err := createUnits(parseEntryValues(entry))
+	parsedValues, err := parseEntryValues(entry)
 	if err != nil {
-		failures = append(failures, fmt.Sprintf("error when creating new units: %v", err))
+		return err
 	}
+	newUnits := createUnits(parsedValues)
 
 	// Marks shares to write as new units and removes from map units that shouldn't change
 	needsReload := false
@@ -216,7 +214,7 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 	for name, content := range newUnits {
 		written, err := writeIfChanged(filepath.Join(m.systemUnitDir, name), content)
 		if err != nil {
-			failures = append(failures, fmt.Sprintf("failed to write new unit: %v", err))
+			return err
 		}
 		if written {
 			unitsToEnable = append(unitsToEnable, name)
@@ -237,92 +235,49 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 	}
 
 	if !needsReload {
-		if failures != nil {
-			err = fmt.Errorf("%s", strings.Join(failures, "\n"))
-		}
-		return err
+		return nil
 	}
 
 	// Trigger a daemon reload
 	if err := m.execSystemCtlCmd(ctx, "daemon-reload"); err != nil {
-		failures = append(failures, fmt.Sprintf("failed to reload daemon: %v", err))
-		return fmt.Errorf("%s", strings.Join(failures, "\n"))
+		return fmt.Errorf("failed to reload systemctl: %v", err)
 	}
 
-	// Channel to control the error messages emitted by the routines.
-	ch := make(chan string, len(unitsToEnable))
 	// Enables and starts new units.
 	for _, name := range unitsToEnable {
-		name := name
-		go func() {
-			if err := m.execSystemCtlCmd(ctx, "enable", name); err != nil {
-				ch <- fmt.Sprintf("failed to enable unit %q: %v", name, err)
-				return
-			}
-			if err := m.execSystemCtlCmd(ctx, "start", name); err != nil {
-				ch <- fmt.Sprintf("failed to start unit %q: %v", name, err)
-				return
-			}
-			ch <- ""
-		}()
-	}
-
-	for i := 0; i < len(unitsToEnable); {
-		failure := <-ch
-		if failure != "" {
-			failures = append(failures, failure)
+		if err := m.execSystemCtlCmd(ctx, "enable", name); err != nil {
+			return fmt.Errorf("failed to enable unit %q: %v", name, err)
 		}
-		i++
-	}
-
-	if failures != nil {
-		return fmt.Errorf("%s", strings.Join(failures, "\n"))
+		if err := m.execSystemCtlCmd(ctx, "start", name); err != nil {
+			log.Warningf(ctx, "failed to start unit %q: %v", name, err)
+		}
 	}
 
 	return nil
 }
 
 // createUnits formats the adsys-.mount template with the specified paths.
-func createUnits(mountPaths []string) (units map[string]string, err error) {
-	defer decorate.OnError(&err, "failed when writing requested units")
-
-	var failures []string
+func createUnits(mountPaths []string) (units map[string]string) {
 	units = make(map[string]string)
 
 	for _, mp := range mountPaths {
-		opts := []string{}
-
-		// Checks if anonymous was requested
-		p := strings.TrimPrefix(mp, "[anonymous]")
-		if p != mp {
-			opts = append(opts, "users")
-		}
-
-		_, s, found := strings.Cut(p, ":")
-		if !found {
-			failures = append(failures, fmt.Sprintf("badly formatted entry %q", mp))
-			continue
-		}
-
+		// Checks if kerberos auth was requested
+		p := strings.TrimPrefix(mp, "[krb5]")
+		_, s, _ := strings.Cut(p, ":")
 		// Skips the // from the path
 		s = s[2:]
 
 		content := fmt.Sprintf(unitTemplate,
-			mp,                      // Description
-			p,                       // What
-			s,                       // Where
-			strings.Join(opts, ","), // Options
+			mp, // Description
+			p,  // What
+			s,  // Where
 		)
 
 		name := fmt.Sprintf("adsys-%s.mount", unit.UnitNameEscape(p))
 		units[name] = content
 	}
 
-	if failures != nil {
-		return units, fmt.Errorf("%s", strings.Join(failures, "\n"))
-	}
-
-	return units, nil
+	return units
 }
 
 // parseEntryValues parses the entry value, trimming whitespaces and removing duplicates.
@@ -468,31 +423,19 @@ func (m *Manager) cleanupMountsFile(ctx context.Context, uid string) (err error)
 func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err error) {
 	defer decorate.OnError(&err, "failed to clean up the mount units")
 
-	if units == nil {
-		tmp := m.currentSystemMountUnits()
-		for k := range tmp {
-			units = append(units, k)
-		}
-	}
-
-	var failures []string
 	for _, unit := range units {
 		// Stops and disables the unit before removing it
 		if err = m.execSystemCtlCmd(ctx, "stop", unit); err != nil {
-			failures = append(failures, fmt.Sprintf("failed to stop unit %q: %v", unit, err))
+			return fmt.Errorf("failed to stop unit %q: %v", unit, err)
 		}
 
 		if err = m.execSystemCtlCmd(ctx, "disable", unit); err != nil {
-			failures = append(failures, fmt.Sprintf("failed to disable unit %q: %v", unit, err))
+			return fmt.Errorf("failed to disable unit %q: %v", unit, err)
 		}
 
 		if err = os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
-			failures = append(failures, fmt.Sprintf("could not remove file %q: %v", unit, err))
+			return fmt.Errorf("could not remove file %q: %v", unit, err)
 		}
-	}
-
-	if failures != nil {
-		return fmt.Errorf("failed to remove units: %s", strings.Join(failures, "\n"))
 	}
 
 	return nil
