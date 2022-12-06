@@ -120,8 +120,8 @@ func WithApparmorFsDir(p string) Option {
 	}
 }
 
-// WithUnitDir specifies a personalized unit directory for adsys mount units.
-func WithUnitDir(p string) Option {
+// WithSystemUnitDir specifies a personalized unit directory for adsys mount units.
+func WithSystemUnitDir(p string) Option {
 	return func(o *options) error {
 		o.systemUnitDir = p
 		return nil

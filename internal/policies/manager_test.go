@@ -78,7 +78,7 @@ func TestApplyPolicies(t *testing.T) {
 			policyKitDir := filepath.Join(fakeRootDir, "etc", "polkit-1")
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
 			apparmorDir := filepath.Join(fakeRootDir, "etc", "apparmor.d", "adsys")
-			unitDir := filepath.Join(fakeRootDir, "etc", "systemd", "system")
+			systemUnitDir := filepath.Join(fakeRootDir, "etc", "systemd", "system")
 			loadedPoliciesFile := filepath.Join(fakeRootDir, "sys", "kernel", "security", "apparmor", "profiles")
 
 			err = os.MkdirAll(filepath.Dir(loadedPoliciesFile), 0700)
@@ -105,7 +105,7 @@ func TestApplyPolicies(t *testing.T) {
 				policies.WithApparmorDir(apparmorDir),
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
-				policies.WithUnitDir(unitDir),
+				policies.WithSystemUnitDir(systemUnitDir),
 			)
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
