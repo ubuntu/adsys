@@ -6,7 +6,6 @@ After=network-online.target
 [Mount]
 What=ftp://example.com/ftp_share
 Where=/mnt/adsys/example.com/ftp_share
-Options=nofail,
 
 [Install]
 WantedBy=default.target

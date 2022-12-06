@@ -6,7 +6,6 @@ After=network-online.target
 [Mount]
 What=smb://example.com/smb_share
 Where=/mnt/adsys/example.com/smb_share
-Options=nofail,
 
 [Install]
 WantedBy=default.target
