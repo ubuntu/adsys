@@ -1,7 +1,6 @@
 package winbind_test
 
 import (
-	"bytes"
 	"context"
 	"flag"
 	"fmt"
@@ -70,29 +69,9 @@ func TestWinbind(t *testing.T) {
 				return
 			}
 
-			var got bytes.Buffer
-			got.WriteString(fmt.Sprintf("* Domain(): %s\n", backend.Domain()))
-
-			serverURL, err := backend.ServerURL(context.Background())
-			serverLine := fmt.Sprintf("* ServerURL(): %s\n", serverURL)
-			if err != nil {
-				serverLine = fmt.Sprintf("* ServerURL ERROR(): %s\n", err)
-			}
-			got.WriteString(serverLine)
-
-			isOnline, err := backend.IsOnline()
-			isOnlineLine := fmt.Sprintf("* IsOnline(): %t\n", isOnline)
-			if err != nil {
-				isOnlineLine = fmt.Sprintf("* IsOnline ERROR(): %s\n", err)
-			}
-			got.WriteString(isOnlineLine)
-
-			got.WriteString(fmt.Sprintf("* HostKrb5CCNAME(): %s\n", backend.HostKrb5CCNAME()))
-			got.WriteString(fmt.Sprintf("* DefaultDomainSuffix(): %s\n", backend.DefaultDomainSuffix()))
-			got.WriteString(fmt.Sprintf("* Config():\n%s\n", backend.Config()))
-
-			want := testutils.LoadWithUpdateFromGolden(t, got.String())
-			require.Equal(t, want, got.String(), "Got expected loaded values in winbind config object")
+			got := testutils.FormatBackendCalls(t, backend)
+			want := testutils.LoadWithUpdateFromGolden(t, got)
+			require.Equal(t, want, got, "Got expected loaded values in winbind config object")
 		})
 	}
 }
