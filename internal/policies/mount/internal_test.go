@@ -20,6 +20,8 @@ func TestParseEntryValues(t *testing.T) {
 
 	tests := map[string]struct {
 		entry string
+
+		wantErr bool
 	}{
 		// Single entry cases.
 		"parse values from entry with one value":        {entry: "entry with one value"},
@@ -40,10 +42,15 @@ func TestParseEntryValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got := parseEntryValues(EntriesForTests[tc.entry])
+			got, err := parseEntryValues(EntriesForTests[tc.entry])
+			if tc.wantErr {
+				require.Error(t, err, "Expected an error but got none.")
+				return
+			}
+			require.NoError(t, err, "Expected no error but got one.")
 
 			gotPath := t.TempDir()
-			err := os.WriteFile(filepath.Join(gotPath, "parsed_values"), []byte(strings.Join(got, "\n")+"\n"), 0600)
+			err = os.WriteFile(filepath.Join(gotPath, "parsed_values"), []byte(strings.Join(got, "\n")+"\n"), 0600)
 			require.NoError(t, err, "Setup: Failed to write the result")
 
 			goldenPath := filepath.Join("testdata", t.Name(), "golden")
