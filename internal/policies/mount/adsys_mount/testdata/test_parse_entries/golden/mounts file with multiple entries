@@ -1,10 +1,10 @@
 [
   {
     "path": "protocol://domain.com/some/path",
-    "is_anonymous": false
+    "krb_auth": false
   },
   {
     "path": "smb://example.com/mount/path",
-    "is_anonymous": false
+    "krb_auth": false
   }
 ]
