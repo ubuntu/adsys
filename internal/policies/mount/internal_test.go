@@ -53,7 +53,7 @@ func TestParseEntryValues(t *testing.T) {
 			err = os.WriteFile(filepath.Join(gotPath, "parsed_values"), []byte(strings.Join(got, "\n")+"\n"), 0600)
 			require.NoError(t, err, "Setup: Failed to write the result")
 
-			goldenPath := filepath.Join("testdata", t.Name(), "golden")
+			goldenPath := filepath.Join("testdata", "golden", t.Name())
 			testutils.CompareTreesWithFiltering(t, gotPath, goldenPath, Update)
 		})
 	}
@@ -127,7 +127,7 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 				return
 			}
 			require.NoError(t, err, "writeFileWithUIDGID should not have returned an error but did")
-			testutils.CompareTreesWithFiltering(t, path, filepath.Join("testdata", t.Name(), "golden"), Update)
+			testutils.CompareTreesWithFiltering(t, path, filepath.Join("testdata", "golden", t.Name()), Update)
 		})
 	}
 }
