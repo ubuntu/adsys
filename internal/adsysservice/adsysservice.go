@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/godbus/dbus/v5"
@@ -214,7 +215,14 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %v"), err)
 	}
 
-	adc, err := ad.New(ctx, bus, adBackend, adOptions...)
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+	// For machines where /proc/sys/kernel/hostname returns FQDN, cut it.
+	hostname, _, _ = strings.Cut(hostname, ".")
+
+	adc, err := ad.New(ctx, bus, adBackend, hostname, adOptions...)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +257,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	if args.apparmorFsDir != "" {
 		policyOptions = append(policyOptions, policies.WithApparmorFsDir(args.apparmorFsDir))
 	}
-	m, err := policies.NewManager(bus, policyOptions...)
+	m, err := policies.NewManager(bus, hostname, policyOptions...)
 	if err != nil {
 		return nil, err
 	}
