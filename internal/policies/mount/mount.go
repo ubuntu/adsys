@@ -173,7 +173,7 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 
 	// This creates the user directory and set its ownership to the current user.
 	if err := mkdirAllWithUIDGID(objectPath, uid, gid); err != nil {
-		return fmt.Errorf(i18n.G("can't create user directory %q for %q: %v"), objectPath, username, err)
+		return fmt.Errorf(i18n.G("can't create user directory %q for %q: %w"), objectPath, username, err)
 	}
 
 	parsedValues, err := parseEntryValues(entry)
@@ -236,7 +236,6 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 			unitsToEnable = append(unitsToEnable, name)
 		}
 		needsReload = needsReload || written
-
 	}
 
 	if !needsReload {
@@ -245,13 +244,13 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 
 	// Trigger a daemon reload
 	if err := m.execSystemCtlCmd(ctx, "daemon-reload"); err != nil {
-		return fmt.Errorf("failed to reload systemctl: %v", err)
+		return fmt.Errorf("failed to reload systemctl: %w", err)
 	}
 
 	// Enables and starts new units.
 	for _, name := range unitsToEnable {
 		if err := m.execSystemCtlCmd(ctx, "enable", name); err != nil {
-			return fmt.Errorf("failed to enable unit %q: %v", name, err)
+			return fmt.Errorf("failed to enable unit %q: %w", name, err)
 		}
 		if err := m.execSystemCtlCmd(ctx, "start", name); err != nil {
 			log.Warningf(ctx, "failed to start unit %q: %v", name, err)
@@ -290,7 +289,7 @@ func parseEntryValues(entry entry.Entry) (p []string, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to parse entry values"))
 
 	if entry.Err != nil {
-		return nil, fmt.Errorf(i18n.G("entry is errored: %v"), entry.Err)
+		return nil, fmt.Errorf(i18n.G("entry is errored: %w"), entry.Err)
 	}
 
 	seen := make(map[string]struct{})
@@ -436,15 +435,15 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 	for _, unit := range units {
 		// Stops and disables the unit before removing it
 		if err = m.execSystemCtlCmd(ctx, "stop", unit); err != nil {
-			return fmt.Errorf("failed to stop unit %q: %v", unit, err)
+			return fmt.Errorf("failed to stop unit %q: %w", unit, err)
 		}
 
 		if err = m.execSystemCtlCmd(ctx, "disable", unit); err != nil {
-			return fmt.Errorf("failed to disable unit %q: %v", unit, err)
+			return fmt.Errorf("failed to disable unit %q: %w", unit, err)
 		}
 
 		if err = os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
-			return fmt.Errorf("could not remove file %q: %v", unit, err)
+			return fmt.Errorf("could not remove file %q: %w", unit, err)
 		}
 	}
 
