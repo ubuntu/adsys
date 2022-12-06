@@ -62,7 +62,7 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:523
+#: internal/ad/ad.go:516
 #, c-format
 msgid ""
 "%s\n"
@@ -132,7 +132,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:445 internal/ad/ad.go:457
+#: internal/ad/ad.go:438 internal/ad/ad.go:450
 msgid "%s: %v"
 msgstr ""
 
@@ -161,11 +161,11 @@ msgstr ""
 msgid "%s: is not a directory"
 msgstr ""
 
-#: internal/ad/ad.go:513
+#: internal/ad/ad.go:506
 msgid "**Can't check if we have an active connection**\n"
 msgstr ""
 
-#: internal/ad/ad.go:515
+#: internal/ad/ad.go:508
 msgid "**Offline mode** using cached policies\n"
 msgstr ""
 
@@ -245,7 +245,7 @@ msgstr ""
 msgid "Calling quit on a non-interactive service is useless"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:295
+#: internal/adsysservice/adsysservice.go:303
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
@@ -490,11 +490,11 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/manager.go:253
+#: internal/policies/manager.go:247
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:261
+#: internal/policies/manager.go:255
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -772,7 +772,7 @@ msgstr ""
 msgid "can't apply machine policy"
 msgstr ""
 
-#: internal/policies/mount/mount.go:71
+#: internal/policies/mount/mount.go:85
 #, c-format
 msgid "can't apply mount policy to %s"
 msgstr ""
@@ -805,7 +805,7 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/mount/mount.go:200 internal/policies/policies.go:434
+#: internal/policies/mount/mount.go:239 internal/policies/policies.go:434
 #: internal/policies/scripts/scripts.go:347
 msgid "can't chown %q"
 msgstr ""
@@ -827,7 +827,7 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:123
+#: internal/policies/manager.go:124
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
@@ -851,7 +851,7 @@ msgstr ""
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/mount/mount.go:191
+#: internal/policies/mount/mount.go:230
 msgid "can't create directory %q: %v"
 msgstr ""
 
@@ -876,11 +876,11 @@ msgstr ""
 msgid "can't create scripts manager"
 msgstr ""
 
-#: internal/ad/ad.go:363
+#: internal/ad/ad.go:356
 msgid "can't create symlink for caching"
 msgstr ""
 
-#: internal/policies/mount/mount.go:130
+#: internal/policies/mount/mount.go:144
 msgid "can't create user directory %q for %q: %v"
 msgstr ""
 
@@ -916,7 +916,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:370
+#: internal/ad/ad.go:363
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -925,7 +925,7 @@ msgstr ""
 msgid "can't get cached policies from %s"
 msgstr ""
 
-#: internal/ad/ad.go:152 internal/ad/ad.go:227
+#: internal/ad/ad.go:152 internal/ad/ad.go:220
 msgid "can't get current Server URL: %w"
 msgstr ""
 
@@ -938,7 +938,7 @@ msgstr ""
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:184
+#: internal/ad/ad.go:177
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -950,7 +950,7 @@ msgstr ""
 msgid "can't install command flag bindings: %v"
 msgstr ""
 
-#: internal/ad/ad.go:338
+#: internal/ad/ad.go:331
 msgid "can't list users from cache"
 msgstr ""
 
@@ -1108,7 +1108,7 @@ msgstr ""
 msgid "could not find chapter starting with %s"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:214
+#: internal/adsysservice/adsysservice.go:215
 msgid "could not initialize AD backend: %v"
 msgstr ""
 
@@ -1126,21 +1126,21 @@ msgstr ""
 msgid "could not read chapter %q: %v"
 msgstr ""
 
-#: internal/policies/mount/mount.go:116
+#: internal/policies/mount/mount.go:130
 msgid "could not retrieve user for %q: %w"
 msgstr ""
 
-#: internal/policies/mount/mount.go:122
+#: internal/policies/mount/mount.go:136
 #: internal/policies/scripts/scripts.go:111
 msgid "couldn't convert %q to a valid gid for %q"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:137 internal/policies/mount/mount.go:119
+#: internal/authorizer/authorizer.go:137 internal/policies/mount/mount.go:133
 #: internal/policies/scripts/scripts.go:108
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
-#: internal/adsysservice/adsysservice.go:150
+#: internal/adsysservice/adsysservice.go:151
 msgid "couldn't create adsys service"
 msgstr ""
 
@@ -1197,6 +1197,14 @@ msgstr ""
 msgid "empty signature for %v"
 msgstr ""
 
+#: internal/policies/mount/mount.go:200
+msgid "entry %q is badly formatted"
+msgstr ""
+
+#: internal/policies/mount/mount.go:172
+msgid "entry is errored: %v"
+msgstr ""
+
 #: internal/ad/admxgen/dconf/dconf.go:326
 #, c-format
 msgid "enum id %s referenced by %s doesn't exist in list of enums"
@@ -1215,11 +1223,11 @@ msgstr ""
 msgid "error while checking signature"
 msgstr ""
 
-#: internal/adsysservice/policy.go:84
+#: internal/adsysservice/policy.go:81
 msgid "error while displaying applied policies"
 msgstr ""
 
-#: internal/adsysservice/policy.go:118
+#: internal/adsysservice/policy.go:111
 msgid "error while dumping policy definitions"
 msgstr ""
 
@@ -1235,7 +1243,7 @@ msgstr ""
 msgid "error while getting documentation"
 msgstr ""
 
-#: internal/adsysservice/policy.go:141
+#: internal/adsysservice/policy.go:134
 msgid "error while getting gpo list script"
 msgstr ""
 
@@ -1267,7 +1275,7 @@ msgstr ""
 msgid "error while trying to stop daemon"
 msgstr ""
 
-#: internal/adsysservice/policy.go:20
+#: internal/adsysservice/policy.go:19
 msgid "error while updating policy"
 msgstr ""
 
@@ -1280,11 +1288,11 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/mount/mount.go:109
+#: internal/policies/mount/mount.go:123
 msgid "failed to apply policy for user %q"
 msgstr ""
 
-#: internal/policies/manager.go:201
+#: internal/policies/manager.go:202
 msgid "failed to apply policy to %q"
 msgstr ""
 
@@ -1292,11 +1300,11 @@ msgstr ""
 msgid "failed to change directories to watch"
 msgstr ""
 
-#: internal/policies/mount/mount.go:45
+#: internal/policies/mount/mount.go:59
 msgid "failed to create new mount manager"
 msgstr ""
 
-#: internal/policies/manager.go:238
+#: internal/policies/manager.go:239
 msgid "failed to dump policies for %q"
 msgstr ""
 
@@ -1315,7 +1323,7 @@ msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:278
+#: internal/policies/manager.go:272
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -1347,7 +1355,11 @@ msgstr ""
 msgid "failed to open %q: %w"
 msgstr ""
 
-#: internal/ad/ad.go:347
+#: internal/policies/mount/mount.go:169
+msgid "failed to parse entry values"
+msgstr ""
+
+#: internal/ad/ad.go:340
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -1363,7 +1375,7 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/ad/ad.go:381
+#: internal/ad/ad.go:374
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -1379,7 +1391,7 @@ msgstr ""
 msgid "failed to retrieve status for service"
 msgstr ""
 
-#: internal/ad/ad.go:248
+#: internal/ad/ad.go:241
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -1415,7 +1427,7 @@ msgstr ""
 msgid "failed to watch directory %q: %v"
 msgstr ""
 
-#: internal/policies/mount/mount.go:169
+#: internal/policies/mount/mount.go:208
 #, c-format
 msgid "failed when writing file %s"
 msgstr ""
@@ -1468,7 +1480,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:217
+#: internal/ad/ad.go:210
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -1540,7 +1552,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:256 internal/policies/manager.go:267
+#: internal/policies/manager.go:250 internal/policies/manager.go:261
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -1587,7 +1599,7 @@ msgstr ""
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:292
+#: internal/policies/manager.go:282
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
@@ -1603,7 +1615,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:194
+#: internal/ad/ad.go:187
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -1711,6 +1723,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:189
+#: internal/ad/ad.go:182
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
