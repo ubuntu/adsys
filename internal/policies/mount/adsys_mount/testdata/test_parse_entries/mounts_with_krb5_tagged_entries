@@ -1,4 +1,0 @@
-[krb5]protocol://domain.com/mount/path
-protocol://domain.com/some/path
-smb://example.com/mount/path
-[krb5]other_protocol://some.com/other/path

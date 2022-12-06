@@ -46,7 +46,7 @@ type options struct {
 	runDir        string
 	apparmorDir   string
 	apparmorFsDir string
-	unitDir       string
+	systemUnitDir string
 	gdm           *gdm.Manager
 
 	apparmorParserCmd []string
@@ -123,7 +123,7 @@ func WithApparmorFsDir(p string) Option {
 // WithUnitDir specifies a personalized unit directory for adsys mount units.
 func WithUnitDir(p string) Option {
 	return func(o *options) error {
-		o.unitDir = p
+		o.systemUnitDir = p
 		return nil
 	}
 }
@@ -134,11 +134,11 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 
 	// defaults
 	args := options{
-		cacheDir:    consts.DefaultCacheDir,
-		runDir:      consts.DefaultRunDir,
-		apparmorDir: consts.DefaultApparmorDir,
-		unitDir:     consts.DefaultSystemUnitDir,
-		gdm:         nil,
+		cacheDir:      consts.DefaultCacheDir,
+		runDir:        consts.DefaultRunDir,
+		apparmorDir:   consts.DefaultApparmorDir,
+		systemUnitDir: consts.DefaultSystemUnitDir,
+		gdm:           nil,
 	}
 	// applied options (including dconf manager used by gdm)
 	for _, o := range opts {
@@ -162,7 +162,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 	}
 
 	// mount manager
-	mountManager, err := mount.New(args.runDir, args.unitDir)
+	mountManager, err := mount.New(args.runDir, args.systemUnitDir)
 	if err != nil {
 		return nil, err
 	}
