@@ -191,7 +191,7 @@ func TestApplyPolicy(t *testing.T) {
 			if !tc.isComputer {
 				makeIndependentOfCurrentUID(t, runDir, u.Uid)
 			}
-			goldPath := filepath.Join("testdata", t.Name())
+			goldPath := filepath.Join("testdata", "golden", t.Name())
 			testutils.CompareTreesWithFiltering(t, rootDir, goldPath, mount.Update)
 		})
 	}
