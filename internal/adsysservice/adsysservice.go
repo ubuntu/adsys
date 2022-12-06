@@ -14,6 +14,7 @@ import (
 	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/ad/backends"
 	"github.com/ubuntu/adsys/internal/ad/backends/sss"
+	"github.com/ubuntu/adsys/internal/ad/backends/winbind"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/daemon"
@@ -63,6 +64,7 @@ type options struct {
 	apparmorFsDir string
 	adBackend     string
 	sssConfig     sss.Config
+	winbindConfig winbind.Config
 	authorizer    authorizerer
 }
 type option func(*options) error
@@ -144,6 +146,14 @@ func WithSSSConfig(c sss.Config) func(o *options) error {
 	}
 }
 
+// WithWinbindConfig specifies our specific winbind options to override.
+func WithWinbindConfig(c winbind.Config) func(o *options) error {
+	return func(o *options) error {
+		o.winbindConfig = c
+		return nil
+	}
+}
+
 // New returns a new instance of an AD service.
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
@@ -210,6 +220,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	case "sssd":
 		adBackend, err = sss.New(ctx, args.sssConfig, bus)
 	case "winbind":
+		adBackend, err = winbind.New(ctx, args.winbindConfig)
 	}
 	if err != nil {
 		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %v"), err)
