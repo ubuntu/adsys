@@ -6,7 +6,6 @@ After=network-online.target
 [Mount]
 What=protocol://domain.com/mounpath
 Where=/mnt/adsys/domain.com/mounpath
-Options=nofail,
 
 [Install]
 WantedBy=default.target
