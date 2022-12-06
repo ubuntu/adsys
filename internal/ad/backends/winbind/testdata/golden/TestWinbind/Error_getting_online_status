@@ -1,6 +1,6 @@
 * Domain(): example.com
 * ServerURL(): ldap://adcontroller.example.com
-* IsOnline(): false
+* IsOnline ERROR(): could not get online status for domain "example.com": status code 2
 * HostKrb5CCNAME(): 
 * DefaultDomainSuffix(): example.com
 * Config():

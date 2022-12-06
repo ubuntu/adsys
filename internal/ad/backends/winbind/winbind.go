@@ -7,6 +7,7 @@ package winbind
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <wbclient.h>
 
@@ -40,6 +41,9 @@ bool is_online(char *domain) {
 
   wbc_status = wbcDomainInfo(domain, &info);
   if (wbc_status != WBC_ERR_SUCCESS) {
+    // Since there's no general purpose errno that we can use, set it to
+    // whatever wbc_status is and have the caller print the status code.
+    errno = wbc_status;
     return false;
   }
   return !(info->domain_flags & WBC_DOMINFO_DOMAIN_OFFLINE);
@@ -144,7 +148,11 @@ func (w Winbind) Config() string {
 func (w Winbind) IsOnline() (bool, error) {
 	cDomain := C.CString(w.domain)
 	defer C.free(unsafe.Pointer(cDomain))
-	return bool(C.is_online(cDomain)), nil
+	online, err := C.is_online(cDomain)
+	if err != nil {
+		err = fmt.Errorf(i18n.G("could not get online status for domain %q: status code %d"), w.domain, err)
+	}
+	return bool(online), err
 }
 
 func domainName() (string, error) {
