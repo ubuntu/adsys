@@ -31,8 +31,8 @@ func TestParseEntryValues(t *testing.T) {
 		"parse values trimming sequential linebreaks": {entry: "entry with multiple linebreaks"},
 
 		// Special cases.
-		"parse values from entry with anonymous tags": {entry: "entry with anonymous tags"},
-		"returns empty slice if the entry is empty":   {entry: "entry with no value"},
+		"parse values from entry with kerberos auth tags": {entry: "entry with kerberos auth tags"},
+		"returns empty slice if the entry is empty":       {entry: "entry with no value"},
 	}
 
 	for name, tc := range tests {
@@ -43,7 +43,7 @@ func TestParseEntryValues(t *testing.T) {
 			got := parseEntryValues(EntriesForTests[tc.entry])
 
 			gotPath := t.TempDir()
-			err := os.WriteFile(filepath.Join(gotPath, "parsed_values"), []byte(strings.Join(got, "\n")), 0600)
+			err := os.WriteFile(filepath.Join(gotPath, "parsed_values"), []byte(strings.Join(got, "\n")+"\n"), 0600)
 			require.NoError(t, err, "Setup: Failed to write the result")
 
 			goldenPath := filepath.Join("testdata", t.Name(), "golden")
