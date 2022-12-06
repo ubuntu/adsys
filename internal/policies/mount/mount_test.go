@@ -98,9 +98,11 @@ func TestApplyPolicy(t *testing.T) {
 		"error when user has invalid gid":                                                            {userReturnedGID: "invalid", wantErr: true},
 		"error when users-userDir has invalid permissions":                                           {readOnlyUsersDir: true, wantErr: true},
 		"error when mounts file path already exists as a directory":                                  {pathAlreadyExists: true, wantErr: true},
+		"error when entry is errored":                                                                {entries: []string{"errored entry"}, wantErr: true},
 		"error when cleaning up user policy with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
 		"error when cleaning up user policy with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
 		"error when cleaning up user policy with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
+		"error when applying policy with entry containing badly formatted value":                     {entries: []string{"entry with badly formatted value"}, wantErr: true},
 	}
 
 	u, err := user.Current()

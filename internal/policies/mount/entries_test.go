@@ -53,4 +53,6 @@ protocol://domain.com/mountpath
 	},
 
 	"errored entry": {Value: "protocol://domain.com/mountpath", Err: fmt.Errorf("some error")},
+
+	"entry with badly formatted value": {Value: "protocol//domain.com/mountpath"},
 }
