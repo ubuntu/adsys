@@ -139,30 +139,22 @@ func TestCreateUnits(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
-		entry   string
-		wantErr bool
+		entry string
 	}{
-		"write single unit":                         {entry: "entry with one value"},
-		"write multiple units":                      {entry: "entry with multiple values"},
-		"write anonymous unit with correct options": {entry: "entry with one anonymous value"},
-
-		"error when writing bad formatted unit":                             {entry: "entry with badly formatted value", wantErr: true},
-		"error when writing multiple units with badly formatted among them": {entry: "entry with correct and badly formatted values", wantErr: true},
+		"write single unit":      {entry: "entry with one value"},
+		"write multiple units":   {entry: "entry with multiple values"},
+		"write krb5 tagged unit": {entry: "entry with kerberos auth tag"},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			mountPaths := parseEntryValues(EntriesForTests[tc.entry])
+			parsedValues, err := parseEntryValues(EntriesForTests[tc.entry])
+			require.NoError(t, err, "Setup: failed to parse entries for TestCreateUnits.")
 
 			unitPath := t.TempDir()
-			units, err := createUnits(mountPaths)
-			if tc.wantErr {
-				require.Error(t, err, "Expected an error but got none")
-			} else {
-				require.NoError(t, err, "Expected no error but got one")
-			}
+			units := createUnits(parsedValues)
 
 			for name, content := range units {
 				err := os.WriteFile(filepath.Join(unitPath, name), []byte(content), 0600)
