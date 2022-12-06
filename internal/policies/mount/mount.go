@@ -211,6 +211,22 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 	needsReload := false
 	var unitsToEnable []string
 
+	prevUnits := m.currentSystemMountUnits()
+
+	// Removes from the map all the units that are supposed to be written or updated.
+	for name := range newUnits {
+		delete(prevUnits, name)
+	}
+
+	var unitsToClean []string
+	for name := range prevUnits {
+		unitsToClean = append(unitsToClean, name)
+	}
+
+	if err := m.cleanupMountUnits(ctx, unitsToClean); err != nil {
+		return err
+	}
+
 	for name, content := range newUnits {
 		written, err := writeIfChanged(filepath.Join(m.systemUnitDir, name), content)
 		if err != nil {
@@ -221,17 +237,6 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 		}
 		needsReload = needsReload || written
 
-		delete(prevUnits, name)
-	}
-
-	// The units left in the map should be cleaned from the system.
-	unitsToClean := make([]string, 0, len(prevUnits))
-	for k := range prevUnits {
-		unitsToClean = append(unitsToClean, k)
-	}
-
-	if err = m.cleanupMountUnits(ctx, unitsToClean); err != nil {
-		failures = append(failures, fmt.Sprintf("failed when cleaning units: %v", err))
 	}
 
 	if !needsReload {
@@ -399,7 +404,12 @@ func (m *Manager) cleanup(ctx context.Context, objectName string, isComputer boo
 		}
 		return m.cleanupMountsFile(ctx, u.Uid)
 	}
-	return m.cleanupMountUnits(ctx, nil)
+
+	var units []string
+	for k := range m.currentSystemMountUnits() {
+		units = append(units, k)
+	}
+	return m.cleanupMountUnits(ctx, units)
 }
 
 // cleanupMountsFile removes the mounts file, if there is any, created for the user with the specified uid.
