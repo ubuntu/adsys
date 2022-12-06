@@ -31,18 +31,24 @@
   displayname: "System mounts"
   explaintext: |
     Define network shares that will be mounted for the system.
-    If more shares are defined higher in other GPO, the entries listed here will be appended to the list and duplicates will be removed.
+    If more shares are defined higher in the GPO hierarchy, the entries listed here will be appended to the list and duplicates will be removed.
     
-    Values should be in the format: <protocol>://<hostname-or-ip>/shared-dir.
-    Examples:
-      nfs://example.com/nfs_share
-      smb://example.com/smb_share
-      ftp://example.com/ftp_share
+    Values should be in the format: 
+        <protocol>://<hostname-or-ip>/<shared-dir>
+    e.g.
+        nfs://example_nfs.com/nfs_shared_dir
+        smb://example_smb.com/smb_shared_dir
+        ftp://example_ftp.com/ftp_shared_dir
 
-    Anonymous mounts should be prefixed by the [anonymous] tag:
-      [anonymous]<protocol>://<hostname-or-ip>/shared-dir
+    This pattern must be followed, otherwise the policy will not be applied.
+    
+    By the default, the mounts will be done in anonymous mode. In case of authentication needed, a krb5 tag can be added to the value, e.g.
+        [krb5]<protocol>://<hostname-or-ip>/<shared-dir>
 
-    The supported protocols are the same as the ones supported by gvfs. They are listed under the gvfs-backends section on https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
+    If the tag is added, the mount will require Kerberos authentication in order to occur.
+
+    The supported protocols / filsystems are the same as the ones supported by the mount command.
+    They are listed on the mount man page on https://man7.org/linux/man-pages/man8/mount.8.html
   elementtype: "multiText"
   release: "any"
   type: "mount"
