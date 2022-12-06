@@ -73,8 +73,7 @@ func TestApplyPolicy(t *testing.T) {
 		"user, successfully apply policy filtering out unsupported keys":  {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
 
 		// Special cases.
-		"user, successfully apply policy with anonymous values":     {entries: []string{"entry with anonymous tags"}},
-		"user, creates only users_user dir if the entry is errored": {entries: []string{"errored entry"}},
+		"successfully apply policy with kerberos auth tags": {entries: []string{"entry with kerberos auth tags"}},
 
 		// Badly formatted entries.
 		"user, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}},

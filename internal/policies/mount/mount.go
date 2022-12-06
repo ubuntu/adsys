@@ -21,6 +21,20 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
+/*
+
+The mount policy for adsys works as follows:
+
+Should the manager fail to setup the policy with the requested entries and its values,
+an error will be returned and the login is prevented.
+
+However, if the manager creates the files needed and setup all the required steps,
+it's up to the correctness of the specified entries values and gvfs to mount the
+requested shared drives. Should an error occur during this step, adsys will log it
+without preventing the authentication.
+
+*/
+
 type options struct {
 	systemctlCmd []string
 	userLookup   func(string) (*user.User, error)
