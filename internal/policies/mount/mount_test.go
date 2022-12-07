@@ -223,7 +223,7 @@ func TestApplyPolicy(t *testing.T) {
 			if tc.pathAlreadyExists {
 				p := filepath.Join(runDir, "users", u.Uid, "mounts")
 				if tc.isComputer {
-					p = filepath.Join(systemUnitDir, "adsys-protocol:--domain.com-mountpath.mount")
+					p = filepath.Join(systemUnitDir, "adsys-protocol-domain.com-mountpath.mount")
 				}
 
 				err := os.MkdirAll(p, 0750)
@@ -258,7 +258,7 @@ func TestApplyPolicy(t *testing.T) {
 				m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.secondSystemCtlFailingArgs...))
 
 				if tc.pathAlreadyExistsSecondCall {
-					p := filepath.Join(systemUnitDir, "adsys-protocol:--domain.com-mountpath.mount")
+					p := filepath.Join(systemUnitDir, "adsys-protocol-domain.com-mountpath.mount")
 					err := os.Remove(p)
 					require.NoError(t, err, "Setup: failed to remove file for tests.")
 					err = os.MkdirAll(p, 0750)

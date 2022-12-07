@@ -161,7 +161,7 @@ func TestCreateUnits(t *testing.T) {
 				require.NoError(t, err, "Setup: Failed to write unit file for comparison.")
 			}
 
-			goldenPath := filepath.Join("testdata", t.Name(), "golden")
+			goldenPath := filepath.Join("testdata", "golden", t.Name())
 			testutils.CompareTreesWithFiltering(t, unitPath, goldenPath, Update)
 		})
 	}
