@@ -260,28 +260,103 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 	return nil
 }
 
+// info stores relevant information about a mount.
+type info struct {
+	hostname   string
+	sharedPath string
+	protocol   string
+	options    []string
+}
+
 // createUnits formats the adsys-.mount template with the specified paths.
 func createUnits(mountPaths []string) (units map[string]string) {
 	units = make(map[string]string)
 
 	for _, mp := range mountPaths {
-		// Checks if kerberos auth was requested
-		p := strings.TrimPrefix(mp, "[krb5]")
-		_, s, _ := strings.Cut(p, ":")
-		// Skips the // from the path
-		s = s[2:]
+
+		mi := parseMountPath(mp)
+
+		what := whatStringFromInfo(mi)
+
+		where := filepath.Join("/", "adsys", mi.protocol, mi.hostname, mi.sharedPath)
+
+		opts := "default"
+		if mi.options != nil {
+			opts = strings.Join(mi.options, ",")
+		}
 
 		content := fmt.Sprintf(unitTemplate,
-			mp, // Description
-			p,  // What
-			s,  // Where
+			mp,          // Description
+			what,        // What
+			where,       // Where
+			mi.protocol, // Type
+			opts,        // Options
 		)
 
-		name := fmt.Sprintf("adsys-%s.mount", unit.UnitNameEscape(p))
-		units[name] = content
+		n := fmt.Sprintf("%s.mount", unit.UnitNameEscape(where[1:]))
+		units[n] = content
 	}
 
 	return units
+}
+
+// parseMountPath takes a mount path <protocol>://<hostname>/<shared_path> and parses it
+// into the richer type mountInfo.
+func parseMountPath(path string) info {
+	var info info
+
+	// path = [krb5]protocol://hostname/shared_path
+	krb5 := strings.HasPrefix(path, "[krb5]")
+	if krb5 {
+		path = strings.TrimPrefix(path, "[krb5]")
+		info.options = append(info.options, "sec=krb5i")
+	}
+
+	// path = protocol://hostname/shared_path
+	protocol, path, _ := strings.Cut(path, ":")
+
+	// Some aliases for common mounts protocols, as they need to be converted to a type
+	// recognized by systemd and the mount command.
+	switch protocol {
+	case "smb":
+		info.protocol = "cifs"
+	case "ftp":
+		info.protocol = "fuse"
+	default:
+		info.protocol = protocol
+	}
+
+	// path = //hostname/shared_path
+	path = path[2:]
+
+	// path = hostname/shared_path
+	info.hostname, info.sharedPath, _ = strings.Cut(path, "/")
+
+	return info
+}
+
+// whatStringFromInfo creates the What value of a systemd mount unit from the
+// specified info as some protocols have quite different What values.
+// If the protocol is not recognized, the What string will be that of a partition
+// protocol.
+func whatStringFromInfo(mi info) (what string) {
+	switch mi.protocol {
+	case "cifs":
+		// What=//hostname/shared_path e.g. //domain.com/cifs_share
+		what = fmt.Sprintf("//%s/%s", mi.hostname, mi.sharedPath)
+	case "nfs":
+		// What=hostname:/shared_path e.g. domain.com:/nfs_share
+		what = fmt.Sprintf("%s:/%s", mi.hostname, mi.sharedPath)
+	case "fuse":
+		// What=hostname e.g. ftp.domain.com
+		what = fmt.Sprintf("%s", mi.hostname)
+	default:
+		// The default case will treat the protocol as a partition one (ext4, usb...)
+		// What=/hostname/shared_path
+		what = fmt.Sprintf("/%s/%s", mi.hostname, mi.sharedPath)
+	}
+
+	return what
 }
 
 // parseEntryValues parses the entry value, trimming whitespaces and removing duplicates.

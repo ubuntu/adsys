@@ -5,7 +5,9 @@ After=network-online.target
 
 [Mount]
 What=%s
-Where=/mnt/adsys/%s
+Where=%s
+Type=%s
+Options=%s
 
 [Install]
 WantedBy=default.target
