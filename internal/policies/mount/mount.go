@@ -273,7 +273,6 @@ func createUnits(mountPaths []string) (units map[string]string) {
 	units = make(map[string]string)
 
 	for _, mp := range mountPaths {
-
 		mi := parseMountPath(mp)
 
 		what := whatStringFromInfo(mi)
@@ -349,7 +348,7 @@ func whatStringFromInfo(mi info) (what string) {
 		what = fmt.Sprintf("%s:/%s", mi.hostname, mi.sharedPath)
 	case "fuse":
 		// What=hostname e.g. ftp.domain.com
-		what = fmt.Sprintf("%s", mi.hostname)
+		what = mi.hostname
 	default:
 		// The default case will treat the protocol as a partition one (ext4, usb...)
 		// What=/hostname/shared_path
