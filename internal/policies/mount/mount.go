@@ -23,6 +23,7 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
+	"golang.org/x/exp/slices"
 )
 
 /*
@@ -49,7 +50,9 @@ type options struct {
 type Option func(*options)
 
 //go:embed adsys-mount-template.mount
-var unitTemplate string
+var systemdUnitTemplate string
+
+const krbTag string = "[krb5]"
 
 // Manager holds information needed for handling the mount policies.
 type Manager struct {
@@ -117,38 +120,27 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	defer m.mountsMu[objectName].Unlock()
 
 	if len(entries) == 0 {
-		if err := m.cleanup(ctx, objectName, isComputer); err != nil {
-			return err
-		}
-		return nil
+		return m.cleanup(ctx, objectName, isComputer)
 	}
 
-	if !isComputer {
-		for _, entry := range entries {
-			switch entry.Key {
-			case "user-mounts":
-				if e := m.applyUserMountsPolicy(ctx, objectName, entry); e != nil {
-					err = e
-				}
-
-			default:
-				log.Debugf(ctx, "Key %q is currently not supported by the mount manager", entry.Key)
-			}
-		}
-	} else {
-		for _, entry := range entries {
-			switch entry.Key {
-			case "system-mounts":
-				if e := m.applySystemMountsPolicy(ctx, objectName, entry); e != nil {
-					err = e
-				}
-			default:
-				log.Debugf(ctx, "Key %q is currently not supported by the mount manager", entry.Key)
-			}
-		}
+	key := "user"
+	if isComputer {
+		key = "system"
 	}
 
-	return err
+	i := slices.IndexFunc(entries, func(e entry.Entry) bool {
+		return e.Key == key+"-mounts"
+	})
+
+	if i == -1 || entries[i].Disabled {
+		log.Debugf(ctx, i18n.G("The provided entries are not supported by the %s mount manager: %v"), key, entries)
+		return m.cleanup(ctx, objectName, isComputer)
+	}
+
+	if key == "user" {
+		return m.applyUserMountsPolicy(ctx, objectName, entries[i])
+	}
+	return m.applySystemMountsPolicy(ctx, objectName, entries[i])
 }
 
 func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, entry entry.Entry) (err error) {
@@ -176,7 +168,7 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 		return fmt.Errorf(i18n.G("can't create user directory %q for %q: %w"), objectPath, username, err)
 	}
 
-	parsedValues, err := parseEntryValues(entry)
+	parsedValues, err := parseEntryValues(ctx, entry)
 	if err != nil {
 		return err
 	}
@@ -197,11 +189,11 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 }
 
 func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName string, entry entry.Entry) (err error) {
-	decorate.OnError(&err, "error when applying mount policy to machine %q", machineName)
+	defer decorate.OnError(&err, i18n.G("error when applying mount policy to machine %q"), machineName)
 
-	log.Debugf(ctx, "Applying mount policy to machine %q", machineName)
+	log.Debugf(ctx, i18n.G("Applying mount policy to machine %q"), machineName)
 
-	parsedValues, err := parseEntryValues(entry)
+	parsedValues, err := parseEntryValues(ctx, entry)
 	if err != nil {
 		return err
 	}
@@ -244,24 +236,24 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 
 	// Trigger a daemon reload
 	if err := m.execSystemCtlCmd(ctx, "daemon-reload"); err != nil {
-		return fmt.Errorf("failed to reload systemctl: %w", err)
+		return fmt.Errorf(i18n.G("failed to reload systemctl: %w"), err)
 	}
 
 	// Enables and starts new units.
 	for _, name := range unitsToEnable {
 		if err := m.execSystemCtlCmd(ctx, "enable", name); err != nil {
-			return fmt.Errorf("failed to enable unit %q: %w", name, err)
+			return fmt.Errorf(i18n.G("failed to enable unit %q: %w"), name, err)
 		}
 		if err := m.execSystemCtlCmd(ctx, "start", name); err != nil {
-			log.Warningf(ctx, "failed to start unit %q: %v", name, err)
+			log.Warningf(ctx, i18n.G("failed to start unit %q: %v"), name, err)
 		}
 	}
 
 	return nil
 }
 
-// info stores relevant information about a mount.
-type info struct {
+// mountInfo stores relevant information about a mount.
+type mountInfo struct {
 	hostname   string
 	sharedPath string
 	protocol   string
@@ -269,22 +261,21 @@ type info struct {
 }
 
 // createUnits formats the adsys-.mount template with the specified paths.
-func createUnits(mountPaths []string) (units map[string]string) {
-	units = make(map[string]string)
+func createUnits(mountPaths []string) map[string]string {
+	units := make(map[string]string)
 
 	for _, mp := range mountPaths {
 		mi := parseMountPath(mp)
 
 		what := whatStringFromInfo(mi)
-
 		where := filepath.Join("/", "adsys", mi.protocol, mi.hostname, mi.sharedPath)
 
-		opts := "default"
+		opts := "defaults"
 		if mi.options != nil {
 			opts = strings.Join(mi.options, ",")
 		}
 
-		content := fmt.Sprintf(unitTemplate,
+		content := fmt.Sprintf(systemdUnitTemplate,
 			mp,          // Description
 			what,        // What
 			where,       // Where
@@ -301,13 +292,14 @@ func createUnits(mountPaths []string) (units map[string]string) {
 
 // parseMountPath takes a mount path <protocol>://<hostname>/<shared_path> and parses it
 // into the richer type mountInfo.
-func parseMountPath(path string) info {
-	var info info
+func parseMountPath(path string) mountInfo {
+	var info mountInfo
 
 	// path = [krb5]protocol://hostname/shared_path
-	krb5 := strings.HasPrefix(path, "[krb5]")
+	krb5 := strings.HasPrefix(path, krbTag)
 	if krb5 {
-		path = strings.TrimPrefix(path, "[krb5]")
+		path = strings.TrimPrefix(path, krbTag)
+		// Using krb5i since it's supported by both cifs and nfs, while krb5p is only supported by nfs.
 		info.options = append(info.options, "sec=krb5i")
 	}
 
@@ -338,7 +330,9 @@ func parseMountPath(path string) info {
 // specified info as some protocols have quite different What values.
 // If the protocol is not recognized, the What string will be that of a partition
 // protocol.
-func whatStringFromInfo(mi info) (what string) {
+func whatStringFromInfo(mi mountInfo) string {
+	var what string
+
 	switch mi.protocol {
 	case "cifs":
 		// What=//hostname/shared_path e.g. //domain.com/cifs_share
@@ -359,17 +353,24 @@ func whatStringFromInfo(mi info) (what string) {
 }
 
 // parseEntryValues parses the entry value, trimming whitespaces and removing duplicates.
-func parseEntryValues(entry entry.Entry) (p []string, err error) {
+func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to parse entry values"))
 
-	if entry.Err != nil {
-		return nil, fmt.Errorf(i18n.G("entry is errored: %w"), entry.Err)
+	if e.Err != nil {
+		return nil, fmt.Errorf(i18n.G("entry is errored: %w"), e.Err)
 	}
 
 	seen := make(map[string]struct{})
-	for _, v := range strings.Split(entry.Value, "\n") {
+	for _, v := range strings.Split(e.Value, "\n") {
 		v := strings.TrimSpace(v)
-		if _, ok := seen[v]; ok || v == "" {
+		if v == "" {
+			continue
+		}
+
+		// Compares "normal" and prefixed values the same way, since the unit name will be the same.
+		tmp := strings.TrimPrefix(v, krbTag)
+		if _, ok := seen[tmp]; ok {
+			log.Debugf(ctx, i18n.G("Value %q is duplicated. Tagged values are the same as untagged ones."), v)
 			continue
 		}
 
@@ -378,7 +379,7 @@ func parseEntryValues(entry entry.Entry) (p []string, err error) {
 		}
 
 		p = append(p, v)
-		seen[v] = struct{}{}
+		seen[tmp] = struct{}{}
 	}
 
 	return p, nil
@@ -387,7 +388,7 @@ func parseEntryValues(entry entry.Entry) (p []string, err error) {
 // checkValue checks if the entry value respects the defined formatting directive: <protocol>://<hostname-or-ip>/<shared-path>.
 func checkValue(value string) error {
 	// Removes the kerberos auth tag, if it exists
-	tmp := strings.TrimPrefix(value, "[krb5]")
+	tmp := strings.TrimPrefix(value, krbTag)
 
 	// Value left: protocol://<hostname-or-ip>/<shared-path>
 	if _, hostnameAndPath, found := strings.Cut(tmp, ":"); !found || !strings.HasPrefix(hostnameAndPath, "//") {
@@ -466,9 +467,9 @@ func chown(p string, f *os.File, uid, gid int) (err error) {
 
 // cleanup removes the files generated when applying the mount policy to an object.
 func (m *Manager) cleanup(ctx context.Context, objectName string, isComputer bool) (err error) {
-	defer decorate.OnError(&err, "failed to clean up mount policy files for %q", objectName)
+	defer decorate.OnError(&err, i18n.G("failed to clean up mount policy files for %q"), objectName)
 
-	log.Debugf(ctx, "Cleaning up mount policy files for %q", objectName)
+	log.Debugf(ctx, i18n.G("Cleaning up mount policy files for %q"), objectName)
 
 	if !isComputer {
 		var u *user.User
@@ -487,9 +488,9 @@ func (m *Manager) cleanup(ctx context.Context, objectName string, isComputer boo
 
 // cleanupMountsFile removes the mounts file, if there is any, created for the user with the specified uid.
 func (m *Manager) cleanupMountsFile(ctx context.Context, uid string) (err error) {
-	defer decorate.OnError(&err, "failed to clean up mounts file")
+	defer decorate.OnError(&err, i18n.G("failed to clean up mounts file"))
 
-	log.Debugf(ctx, "Cleaning up mounts file for user with uid %q", uid)
+	log.Debugf(ctx, i18n.G("Cleaning up mounts file for user with uid %q"), uid)
 
 	p := filepath.Join(m.runDir, "users", uid, "mounts")
 
@@ -502,22 +503,17 @@ func (m *Manager) cleanupMountsFile(ctx context.Context, uid string) (err error)
 }
 
 // cleanupMountUnits removes all the mount units generated by adsys for the current system.
-// If the units slice is nil, all mount units will be removed.
 func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err error) {
-	defer decorate.OnError(&err, "failed to clean up the mount units")
+	defer decorate.OnError(&err, i18n.G("failed to clean up the mount units"))
 
 	for _, unit := range units {
 		// Stops and disables the unit before removing it
-		if err = m.execSystemCtlCmd(ctx, "stop", unit); err != nil {
-			return fmt.Errorf("failed to stop unit %q: %w", unit, err)
-		}
-
-		if err = m.execSystemCtlCmd(ctx, "disable", unit); err != nil {
-			return fmt.Errorf("failed to disable unit %q: %w", unit, err)
+		if err = m.execSystemCtlCmd(ctx, "disable", "--now", unit); err != nil {
+			return fmt.Errorf(i18n.G("failed to disable unit %q: %w"), unit, err)
 		}
 
 		if err = os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
-			return fmt.Errorf("could not remove file %q: %w", unit, err)
+			return fmt.Errorf(i18n.G("could not remove file %q: %w"), unit, err)
 		}
 	}
 
@@ -525,7 +521,7 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 }
 
 // execSystemCtlCmd wraps the specified args into a systemctl command execution.
-func (m *Manager) execSystemCtlCmd(ctx context.Context, args ...string) (err error) {
+func (m *Manager) execSystemCtlCmd(ctx context.Context, args ...string) error {
 	cmdArgs := append([]string{}, m.systemCtlCmd...)
 	cmdArgs = append(cmdArgs, args...)
 
@@ -535,17 +531,17 @@ func (m *Manager) execSystemCtlCmd(ctx context.Context, args ...string) (err err
 	smbsafe.WaitExec()
 	if out, err := cmd.CombinedOutput(); err != nil {
 		smbsafe.DoneExec()
-		return fmt.Errorf("failed when running systemctl cmd: %w -> %s", err, out)
+		return fmt.Errorf(i18n.G("failed when running systemctl cmd: %w -> %s"), err, out)
 	}
 	smbsafe.DoneExec()
 	return nil
 }
 
 // currentSystemMountUnits reads the unit directory and returns a map containing the adsys mount units found.
-func (m *Manager) currentSystemMountUnits() (units map[string]struct{}) {
+func (m *Manager) currentSystemMountUnits() map[string]struct{} {
 	paths, _ := filepath.Glob(filepath.Join(m.systemUnitDir, "adsys-*.mount"))
 
-	units = make(map[string]struct{})
+	units := make(map[string]struct{})
 	for _, path := range paths {
 		units[filepath.Base(path)] = struct{}{}
 	}

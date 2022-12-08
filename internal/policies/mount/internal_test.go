@@ -1,6 +1,7 @@
 package mount
 
 import (
+	"context"
 	"flag"
 	"os"
 	"os/user"
@@ -45,7 +46,7 @@ func TestParseEntryValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := parseEntryValues(EntriesForTests[tc.entry])
+			got, err := parseEntryValues(context.Background(), EntriesForTests[tc.entry])
 			if tc.wantErr {
 				require.Error(t, err, "Expected an error but got none.")
 				return
@@ -150,7 +151,7 @@ func TestCreateUnits(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			parsedValues, err := parseEntryValues(EntriesForTests[tc.entry])
+			parsedValues, err := parseEntryValues(context.Background(), EntriesForTests[tc.entry])
 			require.NoError(t, err, "Setup: failed to parse entries for TestCreateUnits.")
 
 			unitPath := t.TempDir()

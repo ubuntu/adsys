@@ -152,7 +152,6 @@ func TestApplyPolicy(t *testing.T) {
 		// Error cases.
 		"error when creating units with bad entry values":                        {entries: []string{"entry with badly formatted value"}, isComputer: true, wantErr: true},
 		"error when systemctl fails":                                             {firstSystemCtlFailingArgs: []string{"systemctl"}, isComputer: true, wantErr: true},
-		"error when stopping units for clean up and systemctl fails":             {secondCall: []string{"entry with multiple values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"stop"}, wantErrSecondCall: true},
 		"error when disabling units for clean up and systemctl fails":            {secondCall: []string{"entry with multiple values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"disable"}, wantErrSecondCall: true},
 		"error when enabling new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"enable"}, wantErr: true},
 		"error when trying to update policy with badly formatted entry":          {secondCall: []string{"entry with badly formatted value"}, wantErrSecondCall: true, isComputer: true},
@@ -161,7 +160,7 @@ func TestApplyPolicy(t *testing.T) {
 		"error when applying system policy and the entry is errored":             {entries: []string{"errored entry"}, isComputer: true, wantErr: true},
 
 		// Special cases.
-		"only emmit a warning when starting new units and systemctl fails": {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}},
+		"only emit a warning when starting new units and systemctl fails": {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -171,12 +170,6 @@ func TestApplyPolicy(t *testing.T) {
 			rootDir := t.TempDir()
 			runDir := filepath.Join(rootDir, "run", "adsys")
 			systemUnitDir := filepath.Join(rootDir, "etc", "systemd", "system")
-
-			if tc.isComputer {
-				// #nosec G301 - /etc/systemd/system permissions are 0755, so we should keep the same pattern.
-				err := os.MkdirAll(systemUnitDir, 0755)
-				require.NoError(t, err, "Setup: Failed to create unit dir for the tests.")
-			}
 
 			entries := []entry.Entry{}
 			if tc.entries == nil {
@@ -225,13 +218,7 @@ func TestApplyPolicy(t *testing.T) {
 				if tc.isComputer {
 					p = filepath.Join(systemUnitDir, "adsys-protocol-domain.com-mountpath.mount")
 				}
-
-				err := os.MkdirAll(p, 0750)
-				require.NoError(t, err, "Setup: Expected no error when creating mounts dir for tests.")
-				// In order to force the failure, we need to add a file in the directory to make os.Remove return
-				// an error when trying to remove a non empty directory.
-				err = os.WriteFile(filepath.Join(p, "not_empty"), []byte("not empty"), 0600)
-				require.NoError(t, err, "Setup: Expected to create file inside already existent path for tests.")
+				testutils.CreatePath(t, filepath.Join(p, "not_empty"))
 			}
 
 			m, err := mount.New(runDir, systemUnitDir, opts...)
@@ -261,12 +248,7 @@ func TestApplyPolicy(t *testing.T) {
 					p := filepath.Join(systemUnitDir, "adsys-protocol-domain.com-mountpath.mount")
 					err := os.Remove(p)
 					require.NoError(t, err, "Setup: failed to remove file for tests.")
-					err = os.MkdirAll(p, 0750)
-					require.NoError(t, err, "Setup: Expected no error when creating mounts dir for tests.")
-					// In order to force the failure, we need to add a file in the directory to make os.Remove return
-					// an error when trying to remove a non empty directory.
-					err = os.WriteFile(filepath.Join(p, "not_empty"), []byte("not empty"), 0600)
-					require.NoError(t, err, "Setup: Expected to create file inside already existent path for tests.")
+					testutils.CreatePath(t, filepath.Join(p, "not_empty"))
 				}
 
 				err = m.ApplyPolicy(context.Background(), tc.objectName, tc.isComputer, secondEntries)

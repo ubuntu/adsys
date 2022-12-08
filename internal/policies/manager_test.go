@@ -58,7 +58,7 @@ func TestApplyPolicies(t *testing.T) {
 		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
 		"scripts apply policy fails":   {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
 		"apparmor apply policy fails":  {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
-		"mount apply policy fails":     {makeDirReadOnly: "etc/systemd/system/", policiesDir: "all_entry_types", wantErr: true},
+		"mount apply policy fails":     {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
