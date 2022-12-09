@@ -38,8 +38,9 @@
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
@@ -51,8 +52,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">On-screen keyboard</string>
@@ -64,8 +66,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">Screen magnifier</string>
@@ -77,8 +80,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">Screen reader</string>
@@ -90,8 +94,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
@@ -103,7 +108,7 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureOptions">Picture Options</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions0">none</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions1">wallpaper</string>
@@ -112,6 +117,14 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions4">stretched</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions5">zoom</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions6">spanned</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopBackgroundPictureOptions">Picture Options</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions0">none</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions1">wallpaper</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions2">centered</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions3">scaled</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions4">stretched</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions5">zoom</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions6">spanned</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopBackgroundPictureOptions">Picture Options</string>
       <string id="UbuntuItemUser2210DconfOrgGnomeDesktopBackgroundPictureOptions0">none</string>
       <string id="UbuntuItemUser2210DconfOrgGnomeDesktopBackgroundPictureOptions1">wallpaper</string>
@@ -143,11 +156,13 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 - Default for 20.04: [ &#39;ubiquity.desktop&#39;, &#39;firefox.desktop&#39;, &#39;thunderbird.desktop&#39;, &#39;org.gnome.Nautilus.desktop&#39;, &#39;rhythmbox.desktop&#39;, &#39;libreoffice-writer.desktop&#39;, &#39;snap-store_ubuntu-software.desktop&#39;, &#39;yelp.desktop&#39; ]
 - Default for 22.04: [ &#39;ubuntu-desktop-installer_ubuntu-desktop-installer.desktop&#39;, &#39;ubiquity.desktop&#39;, &#39;firefox_firefox.desktop&#39;, &#39;thunderbird.desktop&#39;, &#39;org.gnome.Nautilus.desktop&#39;, &#39;rhythmbox.desktop&#39;, &#39;libreoffice-writer.desktop&#39;, &#39;snap-store_ubuntu-software.desktop&#39;, &#39;yelp.desktop&#39; ]
 - Default for 22.10: [ &#39;ubuntu-desktop-installer_ubuntu-desktop-installer.desktop&#39;, &#39;ubiquity.desktop&#39;, &#39;firefox_firefox.desktop&#39;, &#39;thunderbird.desktop&#39;, &#39;org.gnome.Nautilus.desktop&#39;, &#39;rhythmbox.desktop&#39;, &#39;libreoffice-writer.desktop&#39;, &#39;snap-store_ubuntu-software.desktop&#39;, &#39;yelp.desktop&#39; ]
+- Default for 23.04: [ &#39;ubuntu-desktop-installer_ubuntu-desktop-installer.desktop&#39;, &#39;ubiquity.desktop&#39;, &#39;firefox_firefox.desktop&#39;, &#39;thunderbird.desktop&#39;, &#39;org.gnome.Nautilus.desktop&#39;, &#39;rhythmbox.desktop&#39;, &#39;libreoffice-writer.desktop&#39;, &#39;snap-store_ubuntu-software.desktop&#39;, &#39;yelp.desktop&#39; ]
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellFavoriteApps">List of desktop file IDs for favorite applications</string>
@@ -159,8 +174,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopBackgroundShowDesktopIcons">Have file manager handle the desktop</string>
@@ -172,8 +188,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">Show applications button</string>
@@ -185,10 +202,13 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemUser2210DconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemUser2210DconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
@@ -206,8 +226,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
@@ -219,8 +240,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
@@ -232,8 +254,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
@@ -245,8 +268,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableCommandLine">Disable command line</string>
@@ -258,8 +282,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableLogOut">Disable log out</string>
@@ -271,8 +296,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableUserSwitching">Disable user switching</string>
@@ -284,8 +310,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisablePrinting">Disable printing</string>
@@ -297,8 +324,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisablePrintSetup">Disable print setup</string>
@@ -310,8 +338,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
@@ -323,8 +352,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
@@ -336,8 +366,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Launch settings</string>
@@ -349,8 +380,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal">Launch terminal</string>
@@ -362,8 +394,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellKeybindingsToggleOverview">Keybinding to open the overview</string>
@@ -375,8 +408,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeShellKeybindingsToggleApplicationView">Keybinding to open the “Show Applications” view</string>
@@ -398,8 +432,9 @@ Supported on Ubuntu 20.04.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeMutterOverlayKey">Modifier to use for extended window management operations</string>
@@ -411,8 +446,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopScreensaverPictureUri">Picture URI</string>
@@ -424,7 +460,7 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureOptions">Picture Options</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions0">none</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions1">wallpaper</string>
@@ -433,6 +469,14 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions4">stretched</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions5">zoom</string>
       <string id="UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions6">spanned</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopScreensaverPictureOptions">Picture Options</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions0">none</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions1">wallpaper</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions2">centered</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions3">scaled</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions4">stretched</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions5">zoom</string>
+      <string id="UbuntuItemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions6">spanned</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopScreensaverPictureOptions">Picture Options</string>
       <string id="UbuntuItemUser2210DconfOrgGnomeDesktopScreensaverPictureOptions0">none</string>
       <string id="UbuntuItemUser2210DconfOrgGnomeDesktopScreensaverPictureOptions1">wallpaper</string>
@@ -465,8 +509,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
@@ -478,8 +523,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableLockScreen">Disable lock screen</string>
@@ -491,8 +537,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
+      <string id="UbuntuDisplayUser2304DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
       <string id="UbuntuDisplayUser2210DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopMediaHandlingAutomount">Whether to automatically mount media</string>
@@ -504,8 +551,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenDisableRestartButtons">Disable showing the restart buttons</string>
@@ -517,8 +565,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">Show notifications in the lock screen</string>
@@ -530,8 +579,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopNotificationsShowBanners">Show notification banners</string>
@@ -543,8 +593,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">Enable Toolkit Accessibility</string>
@@ -556,8 +607,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenDisableUserList">Avoid showing user list</string>
@@ -569,8 +621,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">Whether or not to allow passwords for login</string>
@@ -582,8 +635,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">Whether or not to allow fingerprint readers for login</string>
@@ -595,8 +649,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">Whether or not to allow smartcard readers for login</string>
@@ -608,8 +663,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenAllowedFailures">Number of allowed authentication failures</string>
@@ -621,10 +677,13 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
+      <string id="UbuntuItemMachine2304GdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
+      <string id="UbuntuItemMachine2304GdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeDesktopInterfaceClockFormat">Whether the clock displays in 24h or 12h format</string>
       <string id="UbuntuItemMachine2210GdmDconfOrgGnomeDesktopInterfaceClockFormat0">24h</string>
       <string id="UbuntuItemMachine2210GdmDconfOrgGnomeDesktopInterfaceClockFormat1">12h</string>
@@ -642,8 +701,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowDate">Show date in clock</string>
@@ -655,8 +715,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">Show weekday in clock</string>
@@ -668,8 +729,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageEnable">Enable showing the banner message</string>
@@ -681,8 +743,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenBannerMessageText">Banner message text</string>
@@ -694,8 +757,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2210GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2204GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
       <string id="UbuntuDisplayMachine2004GdmDconfOrgGnomeLoginScreenLogo">Path to small image at top of user list</string>
@@ -707,8 +771,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
       <string id="UbuntuDisplayMachine2210GdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
       <string id="UbuntuDisplayMachine2204GdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
       <string id="UbuntuDisplayMachine2004GdmDconfComUbuntuLoginScreenBackgroundColor">The background-color property sets the background color.</string>
@@ -720,8 +785,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
       <string id="UbuntuDisplayMachine2210GdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
       <string id="UbuntuDisplayMachine2204GdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
       <string id="UbuntuDisplayMachine2004GdmDconfComUbuntuLoginScreenBackgroundPictureUri">Sets the background image for the login screen.</string>
@@ -733,7 +799,7 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat">The background-repeat property sets if/how the background image will be repeated.</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat0">default</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat1">repeat</string>
@@ -742,6 +808,14 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat4">no-repeat</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat5">space</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat6">round</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat">The background-repeat property sets if/how the background image will be repeated.</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat0">default</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat1">repeat</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat2">repeat-x</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat3">repeat-y</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat4">no-repeat</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat5">space</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat6">round</string>
       <string id="UbuntuDisplayMachine2210GdmDconfComUbuntuLoginScreenBackgroundRepeat">The background-repeat property sets if/how the background image will be repeated.</string>
       <string id="UbuntuItemMachine2210GdmDconfComUbuntuLoginScreenBackgroundRepeat0">default</string>
       <string id="UbuntuItemMachine2210GdmDconfComUbuntuLoginScreenBackgroundRepeat1">repeat</string>
@@ -774,12 +848,17 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize">The background-size property specifies the size of the background image.</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize0">default</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize1">auto</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize2">cover</string>
       <string id="UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize3">contain</string>
+      <string id="UbuntuDisplayMachine2304GdmDconfComUbuntuLoginScreenBackgroundSize">The background-size property specifies the size of the background image.</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundSize0">default</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundSize1">auto</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundSize2">cover</string>
+      <string id="UbuntuItemMachine2304GdmDconfComUbuntuLoginScreenBackgroundSize3">contain</string>
       <string id="UbuntuDisplayMachine2210GdmDconfComUbuntuLoginScreenBackgroundSize">The background-size property specifies the size of the background image.</string>
       <string id="UbuntuItemMachine2210GdmDconfComUbuntuLoginScreenBackgroundSize0">default</string>
       <string id="UbuntuItemMachine2210GdmDconfComUbuntuLoginScreenBackgroundSize1">auto</string>
@@ -836,10 +915,11 @@ Note: -
  The set of scripts are per boot, and refreshed only on new boot of the machine.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10.
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayMachineAllScriptsStartup">Startup scripts</string>
+      <string id="UbuntuDisplayMachine2304ScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2210ScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2204ScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2004ScriptsStartup">Startup scripts</string>
@@ -857,10 +937,11 @@ Note: -
  The set of scripts are per boot, and refreshed only on new boot of the machine.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10.
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayMachineAllScriptsShutdown">Shutdown scripts</string>
+      <string id="UbuntuDisplayMachine2304ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2210ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2204ScriptsShutdown">Shutdown scripts</string>
       <string id="UbuntuDisplayMachine2004ScriptsShutdown">Shutdown scripts</string>
@@ -880,10 +961,11 @@ Note: -
  * Disabled: The profiles are removed from the target machine, and any related rules are unloaded.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10.
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayMachineAllApparmorApparmorMachine">AppArmor</string>
+      <string id="UbuntuDisplayMachine2304ApparmorApparmorMachine">AppArmor</string>
       <string id="UbuntuDisplayMachine2210ApparmorApparmorMachine">AppArmor</string>
       <string id="UbuntuDisplayMachine2204ApparmorApparmorMachine">AppArmor</string>
       <string id="UbuntuDisplayMachine2004ApparmorApparmorMachine">AppArmor</string>
@@ -895,8 +977,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">Enable the ALS sensor</string>
@@ -908,8 +991,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">The brightness of the screen when idle</string>
@@ -921,8 +1005,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">Dim the screen after a period of inactivity</string>
@@ -934,7 +1019,7 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
@@ -943,6 +1028,14 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4">interactive</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5">nothing</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6">logout</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2">shutdown</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3">hibernate</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4">interactive</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5">nothing</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6">logout</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">Laptop lid close action when on AC</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0">blank</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1">suspend</string>
@@ -975,7 +1068,7 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
@@ -984,6 +1077,14 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4">interactive</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5">nothing</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6">logout</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2">shutdown</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3">hibernate</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4">interactive</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5">nothing</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6">logout</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">Laptop lid close action on battery</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0">blank</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1">suspend</string>
@@ -1016,8 +1117,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
@@ -1029,12 +1131,17 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2">hibernate</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3">interactive</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2">hibernate</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3">interactive</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">Power button action</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0">nothing</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1">suspend</string>
@@ -1058,8 +1165,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 22.04, 22.10.</string>
+Supported on Ubuntu 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Enable power-saver profile when battery is low</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Enable power-saver profile when battery is low</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Enable power-saver profile when battery is low</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">Enable power-saver profile when battery is low</string>
       <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">The amount of time in seconds the computer on AC power needs to be inactive before it goes to sleep. A value of 0 means never.
@@ -1070,8 +1178,9 @@ Supported on Ubuntu 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">Sleep timeout computer when on AC</string>
@@ -1083,7 +1192,7 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
@@ -1092,6 +1201,14 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4">interactive</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5">nothing</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6">logout</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2">shutdown</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3">hibernate</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4">interactive</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5">nothing</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6">logout</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">Whether to hibernate, suspend or do nothing when inactive</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0">blank</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1">suspend</string>
@@ -1124,8 +1241,9 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">Sleep timeout computer when on battery</string>
@@ -1137,7 +1255,7 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
-Supported on Ubuntu 20.04, 22.04, 22.10.</string>
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
       <string id="UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
@@ -1146,6 +1264,14 @@ Supported on Ubuntu 20.04, 22.04, 22.10.</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4">interactive</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5">nothing</string>
       <string id="UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6">logout</string>
+      <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2">shutdown</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3">hibernate</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4">interactive</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5">nothing</string>
+      <string id="UbuntuItemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6">logout</string>
       <string id="UbuntuDisplayMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">Whether to hibernate, suspend or do nothing when inactive</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0">blank</string>
       <string id="UbuntuItemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1">suspend</string>
@@ -1177,28 +1303,29 @@ Values should be in the format:
     &lt;protocol&gt;://&lt;hostname-or-ip&gt;/&lt;shared-dir&gt;
 e.g.
     nfs://example_nfs.com/nfs_shared_dir
-    cifs://example_cifs.com/cifs_shared_dir
-    fuse://ftp_share_server.com
+    smb://example_smb.com/smb_shared_dir
+    ftp://ftp_share_server.com
 
 This pattern must be followed, otherwise the policy will not be applied.
 
-By the default, the mounts will be done in anonymous mode. In case of authentication needed, a krb5 tag can be added to the value, e.g.
+By default, the mounts will be done in anonymous mode. In case of authentication needed, a krb5 tag can be added to the value, e.g.
     [krb5]&lt;protocol&gt;://&lt;hostname-or-ip&gt;/&lt;shared-dir&gt;
 
 If the tag is added, the mount will require Kerberos authentication in order to occur.
 
 The supported protocols / filsystems are the same as the ones supported by the mount command.
 They are listed on the mount man page on https://man7.org/linux/man-pages/man8/mount.8.html
-It&#39;s up to the user to ensure that the requested protocols are valid and supported.
+It&#39;s up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
 
 
 - Type: mount
 - Key: /system-mounts
 
-Supported on Ubuntu 20.04, 22.04, 22.10.
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayMachineAllMountSystemMounts">System mounts</string>
+      <string id="UbuntuDisplayMachine2304MountSystemMounts">System mounts</string>
       <string id="UbuntuDisplayMachine2210MountSystemMounts">System mounts</string>
       <string id="UbuntuDisplayMachine2204MountSystemMounts">System mounts</string>
       <string id="UbuntuDisplayMachine2004MountSystemMounts">System mounts</string>
@@ -1216,10 +1343,11 @@ Note: -
  The set of scripts are per session, and refreshed only on new session creation.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10.
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayUserAllScriptsLogon">Logon scripts</string>
+      <string id="UbuntuDisplayUser2304ScriptsLogon">Logon scripts</string>
       <string id="UbuntuDisplayUser2210ScriptsLogon">Logon scripts</string>
       <string id="UbuntuDisplayUser2204ScriptsLogon">Logon scripts</string>
       <string id="UbuntuDisplayUser2004ScriptsLogon">Logon scripts</string>
@@ -1237,10 +1365,11 @@ Note: -
  The set of scripts are per session, and refreshed only on new session creation.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10.
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayUserAllScriptsLogoff">Logoff scripts</string>
+      <string id="UbuntuDisplayUser2304ScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2210ScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2204ScriptsLogoff">Logoff scripts</string>
       <string id="UbuntuDisplayUser2004ScriptsLogoff">Logoff scripts</string>
@@ -1277,10 +1406,11 @@ Note: -
  * Not configured: A profile declared higher in the GPO hierarchy will be used if available.
 
 
-Supported on Ubuntu 20.04, 22.04, 22.10.
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayUserAllApparmorApparmorUsers">AppArmor</string>
+      <string id="UbuntuDisplayUser2304ApparmorApparmorUsers">AppArmor</string>
       <string id="UbuntuDisplayUser2210ApparmorApparmorUsers">AppArmor</string>
       <string id="UbuntuDisplayUser2204ApparmorApparmorUsers">AppArmor</string>
       <string id="UbuntuDisplayUser2004ApparmorApparmorUsers">AppArmor</string>
@@ -1292,7 +1422,7 @@ Values should be in the format:
 e.g.
     nfs://example_nfs.com/nfs_shared_dir
     smb://example_smb.com/smb_shared_dir
-    ftp://example_ftp.com/ftp_shared_dir
+    ftp://ftp_share_server.com
 
 This pattern must be followed, otherwise the policy will not be applied.
 
@@ -1303,15 +1433,17 @@ If the tag is added, the mount will require Kerberos authentication in order to 
 
 The supported protocols are the same as the ones supported by gvfs.
 They are listed on the man page of gvfs, under the gvfs-backends section: https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
+It&#39;s up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
 
 
 - Type: mount
 - Key: /user-mounts
 
-Supported on Ubuntu 20.04, 22.04, 22.10.
+Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
       <string id="UbuntuDisplayUserAllMountUserMounts">Mount points for the client</string>
+      <string id="UbuntuDisplayUser2304MountUserMounts">Mount points for the client</string>
       <string id="UbuntuDisplayUser2210MountUserMounts">Mount points for the client</string>
       <string id="UbuntuDisplayUser2204MountUserMounts">Mount points for the client</string>
       <string id="UbuntuDisplayUser2004MountUserMounts">Mount points for the client</string>
@@ -1320,6 +1452,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
     <presentationTable>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
@@ -1333,6 +1468,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">On-screen keyboard</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">On-screen keyboard</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" defaultChecked="false">On-screen keyboard</checkBox>
         <text/>
@@ -1345,6 +1483,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Screen magnifier</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Screen magnifier</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" defaultChecked="false">Screen magnifier</checkBox>
         <text/>
@@ -1356,6 +1497,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Screen reader</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Screen reader</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" defaultChecked="false">Screen reader</checkBox>
@@ -1370,6 +1514,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <textBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureUri">
           <label>Picture URI</label>
           <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopBackgroundPictureUri" defaultChecked="false">Override value for 23.04:</checkBox>
+        <textBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopBackgroundPictureUri">
+          <label></label>
+          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopBackgroundPictureUri" defaultChecked="false">Override value for 22.10:</checkBox>
@@ -1393,6 +1543,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureOptions">
         <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions" noSort="true" defaultItem="">Picture Options</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2304DconfOrgGnomeDesktopBackgroundPictureOptions" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopBackgroundPictureOptions" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemUser2210DconfOrgGnomeDesktopBackgroundPictureOptions" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -1405,6 +1558,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeShellFavoriteApps">
         <text>List of desktop file IDs for favorite applications</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeShellFavoriteApps" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeShellFavoriteApps" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2304DconfOrgGnomeShellFavoriteApps" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeShellFavoriteApps" defaultChecked="false">Override value for 22.10:</checkBox>
         
@@ -1421,6 +1578,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="false">Have file manager handle the desktop</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="true">Have file manager handle the desktop</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopBackgroundShowDesktopIcons" defaultChecked="true">Have file manager handle the desktop</checkBox>
         <text/>
@@ -1432,6 +1592,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="false">Show applications button</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="true">Show applications button</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" defaultChecked="true">Show applications button</checkBox>
@@ -1445,6 +1608,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockFormat">
         <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="">Whether the clock displays in 24h or 12h format</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopInterfaceClockFormat" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2304DconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopInterfaceClockFormat" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemUser2210DconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -1456,6 +1622,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowDate">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Show date in clock</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="true">Show date in clock</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="true">Show date in clock</checkBox>
@@ -1469,6 +1638,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowWeekday">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
         <text/>
@@ -1480,6 +1652,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowBanners">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Show notification banners</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="true">Show notification banners</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="true">Show notification banners</checkBox>
@@ -1493,6 +1668,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableCommandLine">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Disable command line</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Disable command line</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopLockdownDisableCommandLine" defaultChecked="false">Disable command line</checkBox>
         <text/>
@@ -1504,6 +1682,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLogOut">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Disable log out</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Disable log out</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopLockdownDisableLogOut" defaultChecked="false">Disable log out</checkBox>
@@ -1517,6 +1698,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableUserSwitching">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Disable user switching</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Disable user switching</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopLockdownDisableUserSwitching" defaultChecked="false">Disable user switching</checkBox>
         <text/>
@@ -1528,6 +1712,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrinting">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Disable printing</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Disable printing</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopLockdownDisablePrinting" defaultChecked="false">Disable printing</checkBox>
@@ -1541,6 +1728,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrintSetup">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Disable print setup</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Disable print setup</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopLockdownDisablePrintSetup" defaultChecked="false">Disable print setup</checkBox>
         <text/>
@@ -1552,6 +1742,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Disable saving files to disk</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Disable saving files to disk</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Disable saving files to disk</checkBox>
@@ -1565,6 +1758,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
         <text/>
@@ -1577,6 +1773,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">
         <text>Launch settings</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2304DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" defaultChecked="false">Override value for 22.10:</checkBox>
         
@@ -1594,6 +1794,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <text>Launch terminal</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultHeight="5" />
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2304DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultHeight="5" />
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultChecked="false">Override value for 22.10:</checkBox>
         
         <multiTextBox refId="UbuntuElemUser2210DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" defaultHeight="5" />
@@ -1610,6 +1814,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <text>Keybinding to open the overview</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeShellKeybindingsToggleOverview" defaultHeight="5" />
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeShellKeybindingsToggleOverview" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2304DconfOrgGnomeShellKeybindingsToggleOverview" defaultHeight="5" />
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeShellKeybindingsToggleOverview" defaultChecked="false">Override value for 22.10:</checkBox>
         
         <multiTextBox refId="UbuntuElemUser2210DconfOrgGnomeShellKeybindingsToggleOverview" defaultHeight="5" />
@@ -1625,6 +1833,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeShellKeybindingsToggleApplicationView">
         <text>Keybinding to open the “Show Applications” view</text>
         <multiTextBox refId="UbuntuElemUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeShellKeybindingsToggleApplicationView" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2304DconfOrgGnomeShellKeybindingsToggleApplicationView" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeShellKeybindingsToggleApplicationView" defaultChecked="false">Override value for 22.10:</checkBox>
         
@@ -1646,6 +1858,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <textBox refId="UbuntuElemUserAllDconfOrgGnomeMutterOverlayKey">
           <label>Modifier to use for extended window management operations</label>
           <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeMutterOverlayKey" defaultChecked="false">Override value for 23.04:</checkBox>
+        <textBox refId="UbuntuElemUser2304DconfOrgGnomeMutterOverlayKey">
+          <label></label>
+          <defaultValue>'Super_L'</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeMutterOverlayKey" defaultChecked="false">Override value for 22.10:</checkBox>
@@ -1672,6 +1890,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
           <defaultValue></defaultValue>
         </textBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 23.04:</checkBox>
+        <textBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopScreensaverPictureUri">
+          <label></label>
+          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
+        </textBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopScreensaverPictureUri" defaultChecked="false">Override value for 22.10:</checkBox>
         <textBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopScreensaverPictureUri">
           <label></label>
@@ -1693,6 +1917,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopScreensaverPictureOptions">
         <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions" noSort="true" defaultItem="">Picture Options</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2304DconfOrgGnomeDesktopScreensaverPictureOptions" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopScreensaverPictureOptions" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemUser2210DconfOrgGnomeDesktopScreensaverPictureOptions" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -1704,6 +1931,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowInLockScreen">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Show notifications in the lock screen</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="true">Show notifications in the lock screen</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="true">Show notifications in the lock screen</checkBox>
@@ -1717,6 +1947,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLockScreen">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Disable lock screen</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Disable lock screen</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopLockdownDisableLockScreen" defaultChecked="false">Disable lock screen</checkBox>
         <text/>
@@ -1728,6 +1961,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopMediaHandlingAutomount">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Whether to automatically mount media</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2304DconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="true">Whether to automatically mount media</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemUser2210DconfOrgGnomeDesktopMediaHandlingAutomount" defaultChecked="true">Whether to automatically mount media</checkBox>
@@ -1741,6 +1977,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Disable showing the restart buttons</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Disable showing the restart buttons</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeLoginScreenDisableRestartButtons" defaultChecked="false">Disable showing the restart buttons</checkBox>
         <text/>
@@ -1752,6 +1991,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Show notifications in the lock screen</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="true">Show notifications in the lock screen</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" defaultChecked="true">Show notifications in the lock screen</checkBox>
@@ -1765,6 +2007,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Show notification banners</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="true">Show notification banners</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeDesktopNotificationsShowBanners" defaultChecked="true">Show notification banners</checkBox>
         <text/>
@@ -1776,6 +2021,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" defaultChecked="false">Enable Toolkit Accessibility</checkBox>
@@ -1789,6 +2037,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableUserList">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Avoid showing user list</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Avoid showing user list</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeLoginScreenDisableUserList" defaultChecked="false">Avoid showing user list</checkBox>
         <text/>
@@ -1800,6 +2051,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="false">Whether or not to allow passwords for login</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="true">Whether or not to allow passwords for login</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" defaultChecked="true">Whether or not to allow passwords for login</checkBox>
@@ -1813,6 +2067,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="false">Whether or not to allow fingerprint readers for login</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="true">Whether or not to allow fingerprint readers for login</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" defaultChecked="true">Whether or not to allow fingerprint readers for login</checkBox>
         <text/>
@@ -1824,6 +2081,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="false">Whether or not to allow smartcard readers for login</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="true">Whether or not to allow smartcard readers for login</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" defaultChecked="true">Whether or not to allow smartcard readers for login</checkBox>
@@ -1837,6 +2097,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenAllowedFailures">
         <decimalTextBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures" defaultValue="">Number of allowed authentication failures</decimalTextBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenAllowedFailures" defaultChecked="false">Override value for 23.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenAllowedFailures" defaultValue="3">Number of allowed authentication failures</decimalTextBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenAllowedFailures" defaultChecked="false">Override value for 22.10:</checkBox>
         <decimalTextBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeLoginScreenAllowedFailures" defaultValue="3">Number of allowed authentication failures</decimalTextBox>
         <text/>
@@ -1848,6 +2111,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat">
         <dropdownList refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="">Whether the clock displays in 24h or 12h format</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeDesktopInterfaceClockFormat" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2304GdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="0"></dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeDesktopInterfaceClockFormat" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2210GdmDconfOrgGnomeDesktopInterfaceClockFormat" noSort="true" defaultItem="0"></dropdownList>
@@ -1861,6 +2127,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Show date in clock</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="true">Show date in clock</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeDesktopInterfaceClockShowDate" defaultChecked="true">Show date in clock</checkBox>
         <text/>
@@ -1873,6 +2142,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" defaultChecked="false">Show weekday in clock</checkBox>
         <text/>
@@ -1884,6 +2156,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable">
         <checkBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Enable showing the banner message</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Enable showing the banner message</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeLoginScreenBannerMessageEnable" defaultChecked="false">Enable showing the banner message</checkBox>
@@ -1898,6 +2173,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <textBox refId="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText">
           <label>Banner message text</label>
           <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenBannerMessageText" defaultChecked="false">Override value for 23.04:</checkBox>
+        <textBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenBannerMessageText">
+          <label></label>
+          <defaultValue>''</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenBannerMessageText" defaultChecked="false">Override value for 22.10:</checkBox>
@@ -1924,6 +2205,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
           <defaultValue></defaultValue>
         </textBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenLogo" defaultChecked="false">Override value for 23.04:</checkBox>
+        <textBox refId="UbuntuElemMachine2304GdmDconfOrgGnomeLoginScreenLogo">
+          <label></label>
+          <defaultValue>'/usr/share/plymouth/ubuntu-logo.png'</defaultValue>
+        </textBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfOrgGnomeLoginScreenLogo" defaultChecked="false">Override value for 22.10:</checkBox>
         <textBox refId="UbuntuElemMachine2210GdmDconfOrgGnomeLoginScreenLogo">
           <label></label>
@@ -1946,6 +2233,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <textBox refId="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor">
           <label>The background-color property sets the background color.</label>
           <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundColor" defaultChecked="false">Override value for 23.04:</checkBox>
+        <textBox refId="UbuntuElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundColor">
+          <label></label>
+          <defaultValue>''</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfComUbuntuLoginScreenBackgroundColor" defaultChecked="false">Override value for 22.10:</checkBox>
@@ -1972,6 +2265,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
           <defaultValue></defaultValue>
         </textBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundPictureUri" defaultChecked="false">Override value for 23.04:</checkBox>
+        <textBox refId="UbuntuElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundPictureUri">
+          <label></label>
+          <defaultValue>''</defaultValue>
+        </textBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfComUbuntuLoginScreenBackgroundPictureUri" defaultChecked="false">Override value for 22.10:</checkBox>
         <textBox refId="UbuntuElemMachine2210GdmDconfComUbuntuLoginScreenBackgroundPictureUri">
           <label></label>
@@ -1993,6 +2292,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat">
         <dropdownList refId="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat" noSort="true" defaultItem="">The background-repeat property sets if/how the background image will be repeated.</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundRepeat" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfComUbuntuLoginScreenBackgroundRepeat" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2210GdmDconfComUbuntuLoginScreenBackgroundRepeat" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -2004,6 +2306,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundSize">
         <dropdownList refId="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize" noSort="true" defaultItem="">The background-size property specifies the size of the background image.</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundSize" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundSize" noSort="true" defaultItem="0"></dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210GdmDconfComUbuntuLoginScreenBackgroundSize" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2210GdmDconfComUbuntuLoginScreenBackgroundSize" noSort="true" defaultItem="0"></dropdownList>
@@ -2024,6 +2329,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <text>Startup scripts</text>
         <multiTextBox refId="UbuntuElemMachineAllScriptsStartup" defaultHeight="5" />
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304ScriptsStartup" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2304ScriptsStartup" defaultHeight="5" />
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210ScriptsStartup" defaultChecked="false">Override value for 22.10:</checkBox>
         
         <multiTextBox refId="UbuntuElemMachine2210ScriptsStartup" defaultHeight="5" />
@@ -2039,6 +2348,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineScriptsShutdown">
         <text>Shutdown scripts</text>
         <multiTextBox refId="UbuntuElemMachineAllScriptsShutdown" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304ScriptsShutdown" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2304ScriptsShutdown" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210ScriptsShutdown" defaultChecked="false">Override value for 22.10:</checkBox>
         
@@ -2056,6 +2369,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <text>AppArmor</text>
         <multiTextBox refId="UbuntuElemMachineAllApparmorApparmorMachine" defaultHeight="5" />
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304ApparmorApparmorMachine" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2304ApparmorApparmorMachine" defaultHeight="5" />
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210ApparmorApparmorMachine" defaultChecked="false">Override value for 22.10:</checkBox>
         
         <multiTextBox refId="UbuntuElemMachine2210ApparmorApparmorMachine" defaultHeight="5" />
@@ -2071,6 +2388,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled">
         <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Enable the ALS sensor</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="true">Enable the ALS sensor</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" defaultChecked="true">Enable the ALS sensor</checkBox>
         <text/>
@@ -2082,6 +2402,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness">
         <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultValue="">The brightness of the screen when idle</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultChecked="false">Override value for 23.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultValue="30">The brightness of the screen when idle</decimalTextBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultChecked="false">Override value for 22.10:</checkBox>
         <decimalTextBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" defaultValue="30">The brightness of the screen when idle</decimalTextBox>
@@ -2095,6 +2418,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim">
         <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="false">Dim the screen after a period of inactivity</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="true">Dim the screen after a period of inactivity</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" defaultChecked="true">Dim the screen after a period of inactivity</checkBox>
         <text/>
@@ -2106,6 +2432,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction">
         <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" noSort="true" defaultItem="">Laptop lid close action when on AC</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" noSort="true" defaultItem="0"></dropdownList>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" noSort="true" defaultItem="0"></dropdownList>
@@ -2119,6 +2448,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction">
         <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" noSort="true" defaultItem="">Laptop lid close action on battery</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -2130,6 +2462,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">
         <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</checkBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" defaultChecked="false">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</checkBox>
@@ -2143,6 +2478,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">
         <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" noSort="true" defaultItem="">Power button action</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -2155,6 +2493,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery">
         <checkBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="false">Enable power-saver profile when battery is low</checkBox>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="false">Override value for 23.04:</checkBox>
+        <checkBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="true">Enable power-saver profile when battery is low</checkBox>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="false">Override value for 22.10:</checkBox>
         <checkBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" defaultChecked="true">Enable power-saver profile when battery is low</checkBox>
         <text/>
@@ -2163,6 +2504,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout">
         <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultValue="">Sleep timeout computer when on AC</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultChecked="false">Override value for 23.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultValue="0">Sleep timeout computer when on AC</decimalTextBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultChecked="false">Override value for 22.10:</checkBox>
         <decimalTextBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" defaultValue="0">Sleep timeout computer when on AC</decimalTextBox>
@@ -2176,6 +2520,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType">
         <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" noSort="true" defaultItem="">Whether to hibernate, suspend or do nothing when inactive</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -2187,6 +2534,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout">
         <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="">Sleep timeout computer when on battery</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultChecked="false">Override value for 23.04:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="1200">Sleep timeout computer when on battery</decimalTextBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultChecked="false">Override value for 22.10:</checkBox>
         <decimalTextBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="1200">Sleep timeout computer when on battery</decimalTextBox>
@@ -2200,6 +2550,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType">
         <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="">Whether to hibernate, suspend or do nothing when inactive</dropdownList>
         <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" defaultChecked="false">Override value for 23.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" defaultChecked="false">Override value for 22.10:</checkBox>
         <dropdownList refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" noSort="true" defaultItem="0"></dropdownList>
         <text/>
@@ -2212,6 +2565,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationMachineMountSystemMounts">
         <text>System mounts</text>
         <multiTextBox refId="UbuntuElemMachineAllMountSystemMounts" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2304MountSystemMounts" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachine2304MountSystemMounts" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210MountSystemMounts" defaultChecked="false">Override value for 22.10:</checkBox>
         
@@ -2229,6 +2586,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <text>Logon scripts</text>
         <multiTextBox refId="UbuntuElemUserAllScriptsLogon" defaultHeight="5" />
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304ScriptsLogon" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2304ScriptsLogon" defaultHeight="5" />
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210ScriptsLogon" defaultChecked="false">Override value for 22.10:</checkBox>
         
         <multiTextBox refId="UbuntuElemUser2210ScriptsLogon" defaultHeight="5" />
@@ -2245,6 +2606,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <text>Logoff scripts</text>
         <multiTextBox refId="UbuntuElemUserAllScriptsLogoff" defaultHeight="5" />
         <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304ScriptsLogoff" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2304ScriptsLogoff" defaultHeight="5" />
+        <text/>
         <checkBox refId="UbuntuOverrideElemUser2210ScriptsLogoff" defaultChecked="false">Override value for 22.10:</checkBox>
         
         <multiTextBox refId="UbuntuElemUser2210ScriptsLogoff" defaultHeight="5" />
@@ -2260,6 +2625,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserApparmorApparmorUsers">
         <textBox refId="UbuntuElemUserAllApparmorApparmorUsers">
           <label>AppArmor</label>
+          <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304ApparmorApparmorUsers" defaultChecked="false">Override value for 23.04:</checkBox>
+        <textBox refId="UbuntuElemUser2304ApparmorApparmorUsers">
+          <label></label>
           <defaultValue></defaultValue>
         </textBox>
         <text/>
@@ -2284,6 +2655,10 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <presentation id="UbuntuPresentationUserMountUserMounts">
         <text>Mount points for the client</text>
         <multiTextBox refId="UbuntuElemUserAllMountUserMounts" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2304MountUserMounts" defaultChecked="false">Override value for 23.04:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemUser2304MountUserMounts" defaultHeight="5" />
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2210MountUserMounts" defaultChecked="false">Override value for 22.10:</checkBox>
         

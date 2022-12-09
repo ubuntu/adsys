@@ -1050,19 +1050,19 @@ Values should be in the format:
     &lt;protocol&gt;://&lt;hostname-or-ip&gt;/&lt;shared-dir&gt;
 e.g.
     nfs://example_nfs.com/nfs_shared_dir
-    cifs://example_cifs.com/cifs_shared_dir
-    fuse://ftp_share_server.com
+    smb://example_smb.com/smb_shared_dir
+    ftp://ftp_share_server.com
 
 This pattern must be followed, otherwise the policy will not be applied.
 
-By the default, the mounts will be done in anonymous mode. In case of authentication needed, a krb5 tag can be added to the value, e.g.
+By default, the mounts will be done in anonymous mode. In case of authentication needed, a krb5 tag can be added to the value, e.g.
     [krb5]&lt;protocol&gt;://&lt;hostname-or-ip&gt;/&lt;shared-dir&gt;
 
 If the tag is added, the mount will require Kerberos authentication in order to occur.
 
 The supported protocols / filsystems are the same as the ones supported by the mount command.
 They are listed on the mount man page on https://man7.org/linux/man-pages/man8/mount.8.html
-It&#39;s up to the user to ensure that the requested protocols are valid and supported.
+It&#39;s up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
 
 
 - Type: mount
@@ -1161,7 +1161,7 @@ Values should be in the format:
 e.g.
     nfs://example_nfs.com/nfs_shared_dir
     smb://example_smb.com/smb_shared_dir
-    ftp://example_ftp.com/ftp_shared_dir
+    ftp://ftp_share_server.com
 
 This pattern must be followed, otherwise the policy will not be applied.
 
@@ -1172,6 +1172,7 @@ If the tag is added, the mount will require Kerberos authentication in order to 
 
 The supported protocols are the same as the ones supported by gvfs.
 They are listed on the man page of gvfs, under the gvfs-backends section: https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
+It&#39;s up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
 
 
 - Type: mount
