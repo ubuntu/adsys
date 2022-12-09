@@ -2,14 +2,16 @@
 [Unit]
 Description= ADSys mount for ftp://completelydifferent.com/different/path
 After=network-online.target
+Requires=network-online.target
 
 [Mount]
-What=completelydifferent.com
+What=curlftpfs#completelydifferent.com
 Where=/adsys/fuse/completelydifferent.com/different/path
 Type=fuse
 Options=defaults
 # This option prevents hangs on shutdown due to an unreachable network share.
 LazyUnmount=true
+TimeoutSec=30
 
 [Install]
 WantedBy=default.target

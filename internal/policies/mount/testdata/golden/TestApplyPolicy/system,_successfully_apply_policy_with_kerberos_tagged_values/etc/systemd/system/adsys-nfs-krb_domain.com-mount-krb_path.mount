@@ -2,6 +2,7 @@
 [Unit]
 Description= ADSys mount for [krb5]nfs://krb_domain.com/mount/krb_path
 After=network-online.target
+Requires=network-online.target
 
 [Mount]
 What=krb_domain.com:/mount/krb_path
@@ -10,6 +11,7 @@ Type=nfs
 Options=sec=krb5i
 # This option prevents hangs on shutdown due to an unreachable network share.
 LazyUnmount=true
+TimeoutSec=30
 
 [Install]
 WantedBy=default.target
