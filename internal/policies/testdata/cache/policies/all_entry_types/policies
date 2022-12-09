@@ -42,3 +42,9 @@ gpos:
           usr.bin.foo
           usr.bin.bar
           nested/usr.bin.baz
+    mount:
+    - key: system-mounts
+      value: |
+          nfs://example.com/nfs_share
+          smb://example.com/smb_share
+          ftp://example.com/ftp_share

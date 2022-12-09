@@ -10,14 +10,29 @@ import (
 var EntriesForTests = map[string]entry.Entry{
 	"entry with one value": {Value: "protocol://domain.com/mountpath"},
 
-	"entry with multiple values": {Value: `
-protocol://domain.com/mountpath2
-smb://otherdomain.com/mount/path
-nfs://yetanotherdomain.com/mount-path/mount/path
+	"entry with one good value and one badly formatted": {Value: `
+protocol://domain.com/mountpath
+protocol//bad.com/badpath
 `,
 	},
 
-	"entry with repeatead values": {Value: `
+	"entry with kerberos auth tag": {Value: "[krb5]protocol://kerberos.com/auth_mount"},
+
+	"entry with multiple values": {Value: `
+protocol://domain.com/mountpath2
+smb://otherdomain.com/mount/path
+nfs://yetanotherdomain.com/mount_path/mount/path
+`,
+	},
+
+	"entry with multiple matching values": {Value: `
+smb://otherdomain.com/mount/path
+nfs://yetanotherdomain.com/mount_path/mount/path
+ftp://completelydifferent.com/different/path
+`,
+	},
+
+	"entry with repeated values": {Value: `
 rpt://repeated.com/repeatedmount
 smb://single.com/mnt
 rpt://repeated.com/repeatedmount
