@@ -9,7 +9,7 @@
     e.g.
         nfs://example_nfs.com/nfs_shared_dir
         smb://example_smb.com/smb_shared_dir
-        ftp://example_ftp.com/ftp_shared_dir
+        ftp://ftp_share_server.com
     
     This pattern must be followed, otherwise the policy will not be applied.
     
@@ -20,6 +20,7 @@
 
     The supported protocols are the same as the ones supported by gvfs.
     They are listed on the man page of gvfs, under the gvfs-backends section: https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
+    It's up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
     
   elementtype: "multiText"
   release: "any"
@@ -37,8 +38,8 @@
         <protocol>://<hostname-or-ip>/<shared-dir>
     e.g.
         nfs://example_nfs.com/nfs_shared_dir
-        cifs://example_cifs.com/cifs_shared_dir
-        fuse://ftp_share_server.com
+        smb://example_smb.com/smb_shared_dir
+        ftp://ftp_share_server.com
 
     This pattern must be followed, otherwise the policy will not be applied.
     
@@ -49,7 +50,7 @@
 
     The supported protocols / filsystems are the same as the ones supported by the mount command.
     They are listed on the mount man page on https://man7.org/linux/man-pages/man8/mount.8.html
-    It's up to the user to ensure that the requested protocols are valid and supported.
+    It's up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
   elementtype: "multiText"
   release: "any"
   type: "mount"
