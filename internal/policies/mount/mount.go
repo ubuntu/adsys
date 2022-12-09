@@ -53,6 +53,7 @@ type Option func(*options)
 var systemdUnitTemplate string
 
 const krbTag string = "[krb5]"
+const defaultMountTimeoutSec int = 30
 
 // Manager holds information needed for handling the mount policies.
 type Manager struct {
@@ -276,11 +277,12 @@ func createUnits(mountPaths []string) map[string]string {
 		}
 
 		content := fmt.Sprintf(systemdUnitTemplate,
-			mp,          // Description
-			what,        // What
-			where,       // Where
-			mi.protocol, // Type
-			opts,        // Options
+			mp,                     // Description
+			what,                   // What
+			where,                  // Where
+			mi.protocol,            // Type
+			opts,                   // Options
+			defaultMountTimeoutSec, // TimeoutSec
 		)
 
 		n := fmt.Sprintf("%s.mount", unit.UnitNameEscape(where[1:]))
@@ -341,8 +343,8 @@ func whatStringFromInfo(mi mountInfo) string {
 		// What=hostname:/shared_path e.g. domain.com:/nfs_share
 		what = fmt.Sprintf("%s:/%s", mi.hostname, mi.sharedPath)
 	case "fuse":
-		// What=hostname e.g. ftp.domain.com
-		what = mi.hostname
+		// What=curlftpfs#hostname e.g. curlftpfs#ftp.domain.com
+		what = fmt.Sprintf("curlftpfs#%s", mi.hostname)
 	default:
 		// The default case will treat the protocol as a partition one (ext4, usb...)
 		// What=/hostname/shared_path
