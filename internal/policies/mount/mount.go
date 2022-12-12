@@ -524,6 +524,11 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 
 // execSystemCtlCmd wraps the specified args into a systemctl command execution.
 func (m *Manager) execSystemCtlCmd(ctx context.Context, args ...string) error {
+	// Test guard: Avoids running systemctl that requires sudo privileges in tests.
+	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
+		return nil
+	}
+
 	cmdArgs := append([]string{}, m.systemCtlCmd...)
 	cmdArgs = append(cmdArgs, args...)
 
