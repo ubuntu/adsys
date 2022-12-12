@@ -31,7 +31,13 @@ func FormatBackendCalls(t *testing.T, backend backends.Backend) string {
 	}
 	got.WriteString(isOnlineLine)
 
-	got.WriteString(fmt.Sprintf("* HostKrb5CCNAME(): %s\n", backend.HostKrb5CCNAME()))
+	hostKrb5CCNAME, err := backend.HostKrb5CCNAME()
+	hostKrb5CCNAMELine := fmt.Sprintf("* HostKrb5CCNAME(): %s\n", hostKrb5CCNAME)
+	if err != nil {
+		hostKrb5CCNAMELine = fmt.Sprintf("* HostKrb5CCNAME ERROR(): %s\n", err)
+	}
+	got.WriteString(hostKrb5CCNAMELine)
+
 	got.WriteString(fmt.Sprintf("* DefaultDomainSuffix(): %s\n", backend.DefaultDomainSuffix()))
 	got.WriteString(fmt.Sprintf("* Config():\n%s\n", backend.Config()))
 

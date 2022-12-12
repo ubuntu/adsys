@@ -1,7 +1,9 @@
 * Domain(): overridden.com
 * ServerURL(): ldap://adcontroller.example.com
 * IsOnline(): true
-* HostKrb5CCNAME(): 
+* HostKrb5CCNAME(): /tmp/krb5cc_0
 * DefaultDomainSuffix(): overridden.com
 * Config():
 Current backend is Winbind
+
+Kinit args: ["-k" "UBUNTU$@OVERRIDDEN.COM" "-c" "/tmp/krb5cc_0"]

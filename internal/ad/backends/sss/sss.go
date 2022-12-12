@@ -125,8 +125,8 @@ func (sss SSS) ServerURL(ctx context.Context) (serverURL string, err error) {
 }
 
 // HostKrb5CCNAME returns the absolute path of the machine krb5 ticket.
-func (sss SSS) HostKrb5CCNAME() string {
-	return sss.hostKrb5CCNAME
+func (sss SSS) HostKrb5CCNAME() (string, error) {
+	return sss.hostKrb5CCNAME, nil
 }
 
 // DefaultDomainSuffix returns current default domain suffix.
