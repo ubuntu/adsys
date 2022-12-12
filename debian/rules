@@ -28,6 +28,9 @@ export ADSYS_SKIP_INTEGRATION_TESTS=1
 # dh-cargo, allowing integration with vendored deps, etc...
 export ADSYS_SKIP_RUST_TESTS_IN_GOLANG=1
 
+# Needed for Rust vendored sources tracking
+export CARGO_VENDOR_DIR = vendor_rust
+
 %:
 	dh $@ --buildsystem=golang --with=golang,apport
 
@@ -35,6 +38,17 @@ override_dh_auto_clean:
 	dh_auto_clean
 	# Create the vendor directory when building the source package
 	[ -d vendor/ ] || go mod vendor
+	# system-deps crate includes an empty .a file which is filtered out when
+	# building the source package and cargo gets confused when trying to verify
+	# integrity. So we just put in an empty checksum file instead.
+	if [ ! -d $(CARGO_VENDOR_DIR)/ ]; then \
+		$(CARGO) vendor $(CARGO_VENDOR_DIR); \
+		cp debian/cargo-checksum.json $(CARGO_VENDOR_DIR)/system-deps/.cargo-checksum.json; \
+		/usr/share/cargo/bin/dh-cargo-vendored-sources; \
+	fi
+	# That last line above is to warn whoever's doing the packaging that they
+	# need to update the Vendored-Sources field. The initial packaging work
+	# didn't include said field since the vendoring is done on the fly.
 
 override_dh_auto_build:
 	# Build on linux only adsysd itself, and not generator or Windows binaries

@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Build-Depends: debhelper-compat (= 13),
                dh-apport,
+               dh-cargo,
                dh-golang,
                golang-go (>= 2:1.16~),
                libsmbclient-dev,
