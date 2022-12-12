@@ -28,6 +28,13 @@ export ADSYS_SKIP_INTEGRATION_TESTS=1
 # dh-cargo, allowing integration with vendored deps, etc...
 export ADSYS_SKIP_RUST_TESTS_IN_GOLANG=1
 
+# The following definitions are necessary because of the manual steps
+# we need to do to work around some issues with either dh-cargo,
+# the wrapper, or cargo
+include /usr/share/rustc/architecture.mk
+CARGO := /usr/share/cargo/bin/cargo
+ADSYS_MOUNT := internal/policies/mount/adsys_mount
+
 # Needed for Rust vendored sources tracking
 export CARGO_VENDOR_DIR = vendor_rust
 
@@ -36,6 +43,7 @@ export CARGO_VENDOR_DIR = vendor_rust
 
 override_dh_auto_clean:
 	dh_auto_clean
+	dh_auto_clean --buildsystem=cargo
 	# Create the vendor directory when building the source package
 	[ -d vendor/ ] || go mod vendor
 	# system-deps crate includes an empty .a file which is filtered out when
@@ -50,9 +58,24 @@ override_dh_auto_clean:
 	# need to update the Vendored-Sources field. The initial packaging work
 	# didn't include said field since the vendoring is done on the fly.
 
+override_dh_auto_configure:
+	dh_auto_configure
+	# Normally we keep the lockfile around when using vendored deps, except we
+	# had to mess with the checksums of system-deps and so cargo complains.
+	# That doesn't actually matter since dh-cargo configured cargo not to query
+	# the network for deps, instead relying on the vendored ones.
+	rm -f Cargo.lock
+	dh_auto_configure --buildsystem=cargo
+
 override_dh_auto_build:
 	# Build on linux only adsysd itself, and not generator or Windows binaries
 	DH_GOLANG_BUILDPKG=github.com/ubuntu/adsys/cmd/adsysd dh_auto_build
+	DEB_HOST_GNU_TYPE=$(DEB_HOST_GNU_TYPE) DEB_HOST_RUST_TYPE=$(DEB_HOST_RUST_TYPE) \
+		CARGO_HOME=$(CURDIR)/debian/cargo_home $(CARGO) build --release --all
+
+override_dh_auto_test:
+	dh_auto_test --buildsystem=cargo -- test --all
+	dh_auto_test
 
 # Build the Windows executables for adwatchd where applicable
 ifeq ($(WINDOWS_BUILD),1)
@@ -61,6 +84,13 @@ endif
 
 override_dh_auto_install:
 	dh_auto_install -- --no-source
+
+	# Currently doesn't work because of https://github.com/rust-lang/cargo/issues/4101
+	# combined with a lack of flexibility in the cargo wrapper. That means we
+	# have to do it manually (with the build split out in dh_auto_build for good
+	# measure, even though dh-cargo does it all in the install step)
+	# dh_auto_install --buildsystem=cargo
+	cp target/$(DEB_HOST_RUST_TYPE)/release/adsys_mount debian/tmp/usr/bin
 
 	# PAM configuration
 	mkdir -p debian/tmp/usr/share/pam
