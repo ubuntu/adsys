@@ -45,12 +45,13 @@ type Service struct {
 }
 
 type state struct {
-	cacheDir     string
-	runDir       string
-	dconfDir     string
-	sudoersDir   string
-	policyKitDir string
-	apparmorDir  string
+	cacheDir      string
+	runDir        string
+	dconfDir      string
+	sudoersDir    string
+	policyKitDir  string
+	apparmorDir   string
+	systemUnitDir string
 }
 
 type options struct {
@@ -61,6 +62,7 @@ type options struct {
 	policyKitDir  string
 	apparmorDir   string
 	apparmorFsDir string
+	systemUnitDir string
 	adBackend     string
 	sssConfig     sss.Config
 	authorizer    authorizerer
@@ -124,6 +126,13 @@ func WithApparmorDir(p string) func(o *options) error {
 func WithApparmorFsDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.apparmorFsDir = p
+		return nil
+	}
+}
+
+func WithSystemUnitDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.systemUnitDir = p
 		return nil
 	}
 }
@@ -257,6 +266,9 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	if args.apparmorFsDir != "" {
 		policyOptions = append(policyOptions, policies.WithApparmorFsDir(args.apparmorFsDir))
 	}
+	if args.systemUnitDir != "" {
+		policyOptions = append(policyOptions, policies.WithSystemUnitDir(args.systemUnitDir))
+	}
 	m, err := policies.NewManager(bus, hostname, policyOptions...)
 	if err != nil {
 		return nil, err
@@ -270,12 +282,13 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 		policyManager: m,
 		authorizer:    args.authorizer,
 		state: state{
-			cacheDir:     args.cacheDir,
-			dconfDir:     args.dconfDir,
-			sudoersDir:   args.sudoersDir,
-			policyKitDir: args.policyKitDir,
-			runDir:       args.runDir,
-			apparmorDir:  args.apparmorDir,
+			cacheDir:      args.cacheDir,
+			dconfDir:      args.dconfDir,
+			sudoersDir:    args.sudoersDir,
+			policyKitDir:  args.policyKitDir,
+			runDir:        args.runDir,
+			apparmorDir:   args.apparmorDir,
+			systemUnitDir: args.systemUnitDir,
 		},
 		initSystemTime: initSysTime,
 		bus:            bus,
