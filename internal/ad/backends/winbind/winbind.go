@@ -126,8 +126,8 @@ func (w Winbind) Domain() string {
 	return w.domain
 }
 
-// HostKrb5CCNAME returns the absolute path of the machine krb5 ticket.
-func (w Winbind) HostKrb5CCNAME() (string, error) {
+// HostKrb5CCName returns the absolute path of the machine krb5 ticket.
+func (w Winbind) HostKrb5CCName() (string, error) {
 	target := "/tmp/krb5cc_0"
 
 	// Uppercase domain and hostname

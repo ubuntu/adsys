@@ -17,8 +17,8 @@ type Backend interface {
 	// If the dynamic lookup worked, but there is still no server URL found (for instance, backend
 	// if offline), the error raised is of type ErrorNoActiveServer.
 	ServerURL(context.Context) (string, error)
-	// HostKrb5CCNAME computes and returns the absolute path of the machine krb5 ticket.
-	HostKrb5CCNAME() (string, error)
+	// HostKrb5CCName computes and returns the absolute path of the machine krb5 ticket.
+	HostKrb5CCName() (string, error)
 	// DefaultDomainSuffix returns current default domain suffix.
 	DefaultDomainSuffix() string
 	// IsOnline refresh and returns if we are online.

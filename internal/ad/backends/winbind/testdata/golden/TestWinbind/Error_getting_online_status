@@ -1,7 +1,7 @@
 * Domain(): example.com
 * ServerURL(): ldap://adcontroller.example.com
 * IsOnline ERROR(): could not get online status for domain "example.com": status code 2
-* HostKrb5CCNAME(): /tmp/krb5cc_0
+* HostKrb5CCName(): /tmp/krb5cc_0
 * DefaultDomainSuffix(): example.com
 * Config():
 Current backend is Winbind

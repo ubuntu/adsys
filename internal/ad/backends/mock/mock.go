@@ -10,12 +10,12 @@ import (
 type Backend struct {
 	Dom                string
 	ServURL            string
-	HostKrb5CCNAMEPath string
+	HostKrb5CCNamePath string
 
 	Online        bool
 	ErrIsOnline   bool
 	ErrServerURL  error
-	ErrKrb5CCNAME error
+	ErrKrb5CCName error
 }
 
 // Domain returns current server domain.
@@ -34,12 +34,12 @@ func (m Backend) ServerURL(context.Context) (string, error) {
 	return m.ServURL, nil
 }
 
-// HostKrb5CCNAME returns the absolute path of the machine krb5 ticket.
-func (m Backend) HostKrb5CCNAME() (string, error) {
-	if m.ErrKrb5CCNAME != nil {
-		return "", m.ErrKrb5CCNAME
+// HostKrb5CCName returns the absolute path of the machine krb5 ticket.
+func (m Backend) HostKrb5CCName() (string, error) {
+	if m.ErrKrb5CCName != nil {
+		return "", m.ErrKrb5CCName
 	}
-	return m.HostKrb5CCNAMEPath, nil
+	return m.HostKrb5CCNamePath, nil
 }
 
 // DefaultDomainSuffix returns current default domain suffix.

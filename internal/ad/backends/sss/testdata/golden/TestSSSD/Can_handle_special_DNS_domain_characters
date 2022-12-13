@@ -1,7 +1,7 @@
 * Domain(): special-characters.example.com
 * ServerURL(): ldap://dynamic_active_server.special-characters.example.com
 * IsOnline(): true
-* HostKrb5CCNAME(): /var/lib/sss/db/ccache_SPECIAL-CHARACTERS.EXAMPLE.COM
+* HostKrb5CCName(): /var/lib/sss/db/ccache_SPECIAL-CHARACTERS.EXAMPLE.COM
 * DefaultDomainSuffix(): special-characters.example.com
 * Config():
 Current backend is SSSD

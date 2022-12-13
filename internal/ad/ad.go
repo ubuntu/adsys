@@ -191,7 +191,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		src := userKrb5CCName
 		// there is no env var for machine: get sss ccache
 		if objectClass == ComputerObject {
-			src, err = ad.configBackend.HostKrb5CCNAME()
+			src, err = ad.configBackend.HostKrb5CCName()
 			if err != nil {
 				return pols, err
 			}
