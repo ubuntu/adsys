@@ -36,6 +36,7 @@ CARGO := /usr/share/cargo/bin/cargo
 ADSYS_MOUNT := internal/policies/mount/adsys_mount
 
 # Needed for Rust vendored sources tracking
+DH_CARGO_VENDORED_SOURCES := /usr/share/cargo/bin/dh-cargo-vendored-sources
 export CARGO_VENDOR_DIR = vendor_rust
 
 %:
@@ -52,7 +53,7 @@ override_dh_auto_clean:
 	if [ ! -d $(CARGO_VENDOR_DIR)/ ]; then \
 		$(CARGO) vendor $(CARGO_VENDOR_DIR); \
 		cp debian/cargo-checksum.json $(CARGO_VENDOR_DIR)/system-deps/.cargo-checksum.json; \
-		/usr/share/cargo/bin/dh-cargo-vendored-sources; \
+		[ ! -e $(DH_CARGO_VENDORED_SOURCES) ] || $(DH_CARGO_VENDORED_SOURCES); \
 	fi
 	# That last line above is to warn whoever's doing the packaging that they
 	# need to update the Vendored-Sources field. The initial packaging work
@@ -65,7 +66,15 @@ override_dh_auto_configure:
 	# That doesn't actually matter since dh-cargo configured cargo not to query
 	# the network for deps, instead relying on the vendored ones.
 	rm -f Cargo.lock
-	dh_auto_configure --buildsystem=cargo
+	# The following lines basically do the same thing as
+	# `dh_auto_configure --buildsystem=cargo`
+	# on Kinetic and above, but since we're supporting Jammy as well,
+	# we need to do it manually. Note that we don't want to export CARGO_HOME
+	# in the global debian/rules as it would interfere with the clean target
+	[ ! -e $(DH_CARGO_VENDORED_SOURCES) ] || $(DH_CARGO_VENDORED_SOURCES)
+	DEB_HOST_GNU_TYPE=$(DEB_HOST_GNU_TYPE) DEB_HOST_RUST_TYPE=$(DEB_HOST_RUST_TYPE) \
+		CARGO_HOME=$(CURDIR)/debian/cargo_home DEB_CARGO_CRATE=adsys_$(shell dpkg-parsechangelog --show-field Version) \
+		$(CARGO) prepare-debian $(CARGO_VENDOR_DIR)
 
 override_dh_auto_build:
 	# Build on linux only adsysd itself, and not generator or Windows binaries
