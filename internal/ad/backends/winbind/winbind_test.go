@@ -37,8 +37,7 @@ func TestWinbind(t *testing.T) {
 		wantKinitErr bool
 		wantErr      bool
 	}{
-		"Lookup is successful":                                  {},
-		"Lookup requests correct krb5cc for hostname with fqdn": {hostname: "ubuntu.example.com"},
+		"Lookup is successful": {},
 
 		// Override cases
 		"Lookup with overridden ad_domain":                  {staticADDomain: "overridden.com"},
@@ -78,7 +77,7 @@ func TestWinbind(t *testing.T) {
 				kinitCmd = append(kinitCmd, "-Exit1-")
 			}
 
-			backend, err := winbind.New(context.Background(), config, winbind.WithKinitCmd(kinitCmd), winbind.WithHostname(hostname))
+			backend, err := winbind.New(context.Background(), config, hostname, winbind.WithKinitCmd(kinitCmd))
 			if tc.wantErr {
 				require.Error(t, err, "New should have errored out")
 				return

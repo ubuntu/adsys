@@ -55,7 +55,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"os/exec"
 	"strings"
 	"unsafe"
@@ -88,22 +87,15 @@ type Option func(*options)
 
 type options struct {
 	kinitCmd []string
-	hostname string
 }
 
 // New returns a winbind backend loaded from Config.
-func New(ctx context.Context, c Config, opts ...Option) (w Winbind, err error) {
+func New(ctx context.Context, c Config, hostname string, opts ...Option) (w Winbind, err error) {
 	defer decorate.OnError(&err, i18n.G("can't get domain configuration from %+v"), c)
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		return Winbind{}, fmt.Errorf(i18n.G("could not get hostname: %v"), err)
-	}
 
 	// defaults
 	args := options{
 		kinitCmd: []string{"kinit"},
-		hostname: hostname,
 	}
 	// applied options
 	for _, o := range opts {
@@ -124,7 +116,7 @@ func New(ctx context.Context, c Config, opts ...Option) (w Winbind, err error) {
 		domain:              c.ADDomain,
 		defaultDomainSuffix: c.ADDomain,
 		kinitCmd:            args.kinitCmd,
-		hostname:            args.hostname,
+		hostname:            hostname,
 		config:              c,
 	}, nil
 }
@@ -138,9 +130,9 @@ func (w Winbind) Domain() string {
 func (w Winbind) HostKrb5CCNAME() (string, error) {
 	target := "/tmp/krb5cc_0"
 
-	// Uppercase domain and hostname, and trim domain from hostname if needed
+	// Uppercase domain and hostname
 	domain := strings.ToUpper(w.domain)
-	hostname := strings.TrimSuffix(strings.ToUpper(w.hostname), "."+domain)
+	hostname := strings.ToUpper(w.hostname)
 
 	principal := fmt.Sprintf("%s$@%s", hostname, domain)
 	cmdArgs := append(w.kinitCmd, "-k", principal, "-c", target)

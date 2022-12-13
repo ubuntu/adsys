@@ -16,6 +16,8 @@ func (s *Service) SelectedBackend() string {
 	backend := "unknown"
 	if strings.Contains(info, "sssd") {
 		backend = "sssd"
+	} else if strings.Contains(info, "Winbind") {
+		backend = "winbind"
 	}
 
 	return backend
