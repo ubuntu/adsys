@@ -1,7 +1,7 @@
 * Domain(): activeservererr.example.com
 * ServerURL(): ldap://mystaticserver.example.com
 * IsOnline(): true
-* HostKrb5CCNAME(): /var/lib/sss/db/ccache_ACTIVESERVERERR.EXAMPLE.COM
+* HostKrb5CCName(): /var/lib/sss/db/ccache_ACTIVESERVERERR.EXAMPLE.COM
 * DefaultDomainSuffix(): activeservererr.example.com
 * Config():
 Current backend is SSSD

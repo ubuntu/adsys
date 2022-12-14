@@ -1,7 +1,6 @@
 package sss_test
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"flag"
@@ -103,29 +102,9 @@ func TestSSSD(t *testing.T) {
 				return // nothing else we can check on the machine's default sssd conf
 			}
 
-			var got bytes.Buffer
-			got.WriteString(fmt.Sprintf("* Domain(): %s\n", sssd.Domain()))
-
-			serverURL, err := sssd.ServerURL(context.Background())
-			serverLine := fmt.Sprintf("* ServerURL(): %s\n", serverURL)
-			if err != nil {
-				serverLine = fmt.Sprintf("* ServerURL ERROR(): %s\n", err)
-			}
-			got.WriteString(serverLine)
-
-			isOnline, err := sssd.IsOnline()
-			isOnlineLine := fmt.Sprintf("* IsOnline(): %t\n", isOnline)
-			if err != nil {
-				isOnlineLine = fmt.Sprintf("* IsOnline ERROR(): %s\n", err)
-			}
-			got.WriteString(isOnlineLine)
-
-			got.WriteString(fmt.Sprintf("* HostKrb5CCNAME(): %s\n", sssd.HostKrb5CCNAME()))
-			got.WriteString(fmt.Sprintf("* DefaultDomainSuffix(): %s\n", sssd.DefaultDomainSuffix()))
-			got.WriteString(fmt.Sprintf("* Config():\n%s\n", sssd.Config()))
-
-			want := testutils.LoadWithUpdateFromGolden(t, got.String())
-			require.Equal(t, want, got.String(), "Got expected loaded values in sssd config object")
+			got := testutils.FormatBackendCalls(t, sssd)
+			want := testutils.LoadWithUpdateFromGolden(t, got)
+			require.Equal(t, want, got, "Got expected loaded values in sssd config object")
 		})
 	}
 }

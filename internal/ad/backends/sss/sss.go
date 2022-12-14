@@ -23,7 +23,7 @@ type SSS struct {
 	domainDbus          dbus.BusObject
 	serverURL           string
 	staticServerURL     string
-	hostKrb5CCNAME      string
+	hostKrb5CCName      string
 	defaultDomainSuffix string
 
 	config Config
@@ -78,14 +78,14 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 	}
 
 	// local machine sssd krb5 cache
-	hostKrb5CCNAME := filepath.Join(c.CacheDir, "ccache_"+strings.ToUpper(domain))
+	hostKrb5CCName := filepath.Join(c.CacheDir, "ccache_"+strings.ToUpper(domain))
 
 	return SSS{
 		domain:              domain,
 		domainDbus:          domainDbus,
 		serverURL:           staticServerURL,
 		staticServerURL:     staticServerURL,
-		hostKrb5CCNAME:      hostKrb5CCNAME,
+		hostKrb5CCName:      hostKrb5CCName,
 		defaultDomainSuffix: defaultDomainSuffix,
 
 		config: c,
@@ -124,9 +124,9 @@ func (sss SSS) ServerURL(ctx context.Context) (serverURL string, err error) {
 	return serverURL, nil
 }
 
-// HostKrb5CCNAME returns the absolute path of the machine krb5 ticket.
-func (sss SSS) HostKrb5CCNAME() string {
-	return sss.hostKrb5CCNAME
+// HostKrb5CCName returns the absolute path of the machine krb5 ticket.
+func (sss SSS) HostKrb5CCName() (string, error) {
+	return sss.hostKrb5CCName, nil
 }
 
 // DefaultDomainSuffix returns current default domain suffix.

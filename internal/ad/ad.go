@@ -186,12 +186,15 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	if objectClass == ComputerObject && objectName != ad.hostname {
 		return pols, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
 	}
-	// Create a ccache symlink on first fetch for futur calls (on refresh for instance)
+	// Create a ccache symlink on first fetch for future calls (on refresh for instance)
 	if userKrb5CCName != "" || objectClass == ComputerObject {
 		src := userKrb5CCName
 		// there is no env var for machine: get sss ccache
 		if objectClass == ComputerObject {
-			src = ad.configBackend.HostKrb5CCNAME()
+			src, err = ad.configBackend.HostKrb5CCName()
+			if err != nil {
+				return pols, err
+			}
 		}
 		if err := ad.ensureKrb5CCName(src, krb5CCPath); err != nil {
 			return pols, err

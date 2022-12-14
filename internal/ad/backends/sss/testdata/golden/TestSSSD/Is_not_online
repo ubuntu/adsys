@@ -1,7 +1,7 @@
 * Domain(): offline.example.com
 * ServerURL(): ldap://dynamic_active_server.offline.example.com
 * IsOnline(): false
-* HostKrb5CCNAME(): /var/lib/sss/db/ccache_OFFLINE.EXAMPLE.COM
+* HostKrb5CCName(): /var/lib/sss/db/ccache_OFFLINE.EXAMPLE.COM
 * DefaultDomainSuffix(): offline.example.com
 * Config():
 Current backend is SSSD
