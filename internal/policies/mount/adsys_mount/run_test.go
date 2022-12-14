@@ -12,10 +12,10 @@ import (
 )
 
 func TestRust(t *testing.T) {
-    if os.Getenv("ADSYS_SKIP_RUST_TESTS_IN_GOLANG") != "" {
-        fmt.Println("Rust tests skipped as requested")
+	if os.Getenv("ADSYS_SKIP_RUST_TESTS_IN_GOLANG") != "" {
+		fmt.Println("Rust tests skipped as requested")
 		return
-    }
+	}
 	t.Parallel()
 
 	d, err := os.Getwd()
