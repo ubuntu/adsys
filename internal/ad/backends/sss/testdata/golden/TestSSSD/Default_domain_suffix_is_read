@@ -1,7 +1,7 @@
 * Domain(): example.com
 * ServerURL(): ldap://dynamic_active_server.example.com
 * IsOnline(): true
-* HostKrb5CCNAME(): /var/lib/sss/db/ccache_EXAMPLE.COM
+* HostKrb5CCName(): /var/lib/sss/db/ccache_EXAMPLE.COM
 * DefaultDomainSuffix(): otherdomainsuffix.com
 * Config():
 Current backend is SSSD

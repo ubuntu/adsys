@@ -55,12 +55,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os/exec"
 	"strings"
 	"unsafe"
 
 	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/smbsafe"
 )
 
 // Winbind is the backend object with domain and url information.
@@ -68,7 +70,8 @@ type Winbind struct {
 	staticServerURL     string
 	domain              string
 	defaultDomainSuffix string
-	hostKrb5CCNAME      string
+	kinitCmd            []string
+	hostname            string
 
 	config Config
 }
@@ -79,9 +82,25 @@ type Config struct {
 	ADDomain string `mapstructure:"ad_domain"` // bypass domain name detection and use this domain
 }
 
+// Option reprents an optional function to change the winbind backend.
+type Option func(*options)
+
+type options struct {
+	kinitCmd []string
+}
+
 // New returns a winbind backend loaded from Config.
-func New(ctx context.Context, c Config) (w Winbind, err error) {
+func New(ctx context.Context, c Config, hostname string, opts ...Option) (w Winbind, err error) {
 	defer decorate.OnError(&err, i18n.G("can't get domain configuration from %+v"), c)
+
+	// defaults
+	args := options{
+		kinitCmd: []string{"kinit"},
+	}
+	// applied options
+	for _, o := range opts {
+		o(&args)
+	}
 
 	log.Debug(ctx, "Loading Winbind configuration for AD backend")
 
@@ -92,14 +111,12 @@ func New(ctx context.Context, c Config) (w Winbind, err error) {
 		}
 	}
 
-	// TODO local machine krb5cc
-	hostKrb5CCNAME := ""
-
 	return Winbind{
 		staticServerURL:     c.ADServer,
 		domain:              c.ADDomain,
 		defaultDomainSuffix: c.ADDomain,
-		hostKrb5CCNAME:      hostKrb5CCNAME,
+		kinitCmd:            args.kinitCmd,
+		hostname:            hostname,
 		config:              c,
 	}, nil
 }
@@ -109,9 +126,24 @@ func (w Winbind) Domain() string {
 	return w.domain
 }
 
-// HostKrb5CCNAME returns the absolute path of the machine krb5 ticket.
-func (w Winbind) HostKrb5CCNAME() string {
-	return w.hostKrb5CCNAME
+// HostKrb5CCName returns the absolute path of the machine krb5 ticket.
+func (w Winbind) HostKrb5CCName() (string, error) {
+	target := "/tmp/krb5cc_0"
+
+	// Uppercase domain and hostname
+	domain := strings.ToUpper(w.domain)
+	hostname := strings.ToUpper(w.hostname)
+
+	principal := fmt.Sprintf("%s$@%s", hostname, domain)
+	cmdArgs := append(w.kinitCmd, "-k", principal, "-c", target)
+	smbsafe.WaitExec()
+	defer smbsafe.DoneExec()
+	if cmd, err := exec.Command(cmdArgs[0], cmdArgs[1:]...).CombinedOutput(); err != nil {
+		return "", fmt.Errorf(i18n.G(`could not get krb5 cached ticket for %q: %w:
+%s`), principal, err, string(cmd))
+	}
+
+	return target, nil
 }
 
 // DefaultDomainSuffix returns current default domain suffix.

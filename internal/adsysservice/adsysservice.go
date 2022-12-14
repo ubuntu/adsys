@@ -209,6 +209,13 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 		adOptions = append(adOptions, ad.WithRunDir(args.runDir))
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+	// For machines where /proc/sys/kernel/hostname returns FQDN, cut it.
+	hostname, _, _ = strings.Cut(hostname, ".")
+
 	// AD Backend selection
 	var adBackend backends.Backend
 	switch args.adBackend {
@@ -220,18 +227,11 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	case "sssd":
 		adBackend, err = sss.New(ctx, args.sssConfig, bus)
 	case "winbind":
-		adBackend, err = winbind.New(ctx, args.winbindConfig)
+		adBackend, err = winbind.New(ctx, args.winbindConfig, hostname)
 	}
 	if err != nil {
 		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %v"), err)
 	}
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		return nil, err
-	}
-	// For machines where /proc/sys/kernel/hostname returns FQDN, cut it.
-	hostname, _, _ = strings.Cut(hostname, ".")
 
 	adc, err := ad.New(ctx, bus, adBackend, hostname, adOptions...)
 	if err != nil {

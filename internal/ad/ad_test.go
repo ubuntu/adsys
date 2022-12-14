@@ -459,7 +459,7 @@ func TestGetPolicies(t *testing.T) {
 			objectClass: ad.ComputerObject,
 			backend: mock.Backend{
 				Dom:                "gpoonly.com",
-				HostKrb5CCNAMEPath: "dont-exist",
+				HostKrb5CCNamePath: "dont-exist",
 				Online:             true,
 			},
 			gpoListArgs: []string{"gpoonly.com", hostname + ":standard"},
@@ -535,11 +535,11 @@ func TestGetPolicies(t *testing.T) {
 				tc.backend.ServURL = "ldap://myserver." + tc.backend.Dom
 			}
 			// we file in host_ccache to not have to reset it in every single test
-			if tc.backend.HostKrb5CCNAMEPath == "" {
-				tc.backend.HostKrb5CCNAMEPath = filepath.Join(t.TempDir(), "host_ccache")
+			if tc.backend.HostKrb5CCNamePath == "" {
+				tc.backend.HostKrb5CCNamePath = filepath.Join(t.TempDir(), "host_ccache")
 			}
-			if tc.backend.HostKrb5CCNAMEPath != "dont-exist" {
-				testutils.CreatePath(t, tc.backend.HostKrb5CCNAMEPath)
+			if tc.backend.HostKrb5CCNamePath != "dont-exist" {
+				testutils.CreatePath(t, tc.backend.HostKrb5CCNamePath)
 			}
 
 			var krb5CCName string
@@ -673,8 +673,8 @@ func TestGetPoliciesOffline(t *testing.T) {
 			t.Parallel()
 
 			tc.backend.ServURL = "ldap://myserver." + tc.backend.Dom
-			tc.backend.HostKrb5CCNAMEPath = filepath.Join(t.TempDir(), "host_ccache")
-			testutils.CreatePath(t, tc.backend.HostKrb5CCNAMEPath)
+			tc.backend.HostKrb5CCNamePath = filepath.Join(t.TempDir(), "host_ccache")
+			testutils.CreatePath(t, tc.backend.HostKrb5CCNamePath)
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
 			adc, err := ad.New(context.Background(), bus, tc.backend, hostname,
@@ -697,7 +697,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 					mock.Backend{
 						Dom:                tc.domainToCache,
 						Online:             true,
-						HostKrb5CCNAMEPath: tc.backend.HostKrb5CCNAMEPath,
+						HostKrb5CCNamePath: tc.backend.HostKrb5CCNamePath,
 					}, hostname,
 					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 					ad.WithGPOListCmd(mockGPOListCmd(t, tc.domainToCache, fmt.Sprintf("useroffline:standard::%s:standard", hostname))))
@@ -810,10 +810,10 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			backend := mock.Backend{
 				Dom:                "assetsandgpo.com",
 				ServURL:            "ldap://UNUSED:1636/",
-				HostKrb5CCNAMEPath: filepath.Join(t.TempDir(), "host_ccache"),
+				HostKrb5CCNamePath: filepath.Join(t.TempDir(), "host_ccache"),
 				Online:             true,
 			}
-			testutils.CreatePath(t, backend.HostKrb5CCNAMEPath)
+			testutils.CreatePath(t, backend.HostKrb5CCNamePath)
 
 			adc, err := ad.New(context.Background(), bus, backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
@@ -949,10 +949,10 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			backend := mock.Backend{
 				Dom:                "assetsandgpo.com",
 				ServURL:            "ldap://UNUSED:1636/",
-				HostKrb5CCNAMEPath: filepath.Join(t.TempDir(), "host_ccache"),
+				HostKrb5CCNamePath: filepath.Join(t.TempDir(), "host_ccache"),
 				Online:             true,
 			}
-			testutils.CreatePath(t, backend.HostKrb5CCNAMEPath)
+			testutils.CreatePath(t, backend.HostKrb5CCNamePath)
 
 			mockObjectName1 := tc.objectName1
 			if i := strings.LastIndex(mockObjectName1, "@"); i > 0 {

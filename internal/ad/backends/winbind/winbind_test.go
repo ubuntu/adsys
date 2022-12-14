@@ -32,8 +32,10 @@ func TestWinbind(t *testing.T) {
 		wbclientBehavior string
 		staticADDomain   string
 		staticADServer   string
+		hostname         string
 
-		wantErr bool
+		wantKinitErr bool
+		wantErr      bool
 	}{
 		"Lookup is successful": {},
 
@@ -47,6 +49,7 @@ func TestWinbind(t *testing.T) {
 		"Error looking up DC name":     {wbclientBehavior: "error_getting_dc_name"},
 		"Error getting online status":  {wbclientBehavior: "error_getting_online_status"},
 		"Error when domain is offline": {wbclientBehavior: "domain_is_offline"},
+		"Error requesting krb5cc":      {wantKinitErr: true},
 	}
 
 	for name, tc := range tests {
@@ -54,6 +57,11 @@ func TestWinbind(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			// Set up mock libwbclient behavior
 			t.Setenv("ADSYS_WBCLIENT_BEHAVIOR", tc.wbclientBehavior)
+
+			hostname := tc.hostname
+			if hostname == "" {
+				hostname = "ubuntu"
+			}
 
 			config := winbind.Config{}
 			if tc.staticADDomain != "" {
@@ -63,16 +71,59 @@ func TestWinbind(t *testing.T) {
 				config.ADServer = tc.staticADServer
 			}
 
-			backend, err := winbind.New(context.Background(), config)
+			kinitCmdOutputFile := filepath.Join(t.TempDir(), "kinit-output")
+			kinitCmd := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestExecuteKinitCommand", "--", kinitCmdOutputFile}
+			if tc.wantKinitErr {
+				kinitCmd = append(kinitCmd, "-Exit1-")
+			}
+
+			backend, err := winbind.New(context.Background(), config, hostname, winbind.WithKinitCmd(kinitCmd))
 			if tc.wantErr {
 				require.Error(t, err, "New should have errored out")
 				return
 			}
 
 			got := testutils.FormatBackendCalls(t, backend)
+
+			// Check kinit command
+			gotKinitCmd := []byte("not executed\n")
+			if !tc.wantKinitErr {
+				gotKinitCmd, err = os.ReadFile(kinitCmdOutputFile)
+				require.NoError(t, err, "Setup: failed to read kinit command output")
+			}
+			got += "\nKinit args: " + string(gotKinitCmd)
 			want := testutils.LoadWithUpdateFromGolden(t, got)
 			require.Equal(t, want, got, "Got expected loaded values in winbind config object")
 		})
+	}
+}
+
+func TestExecuteKinitCommand(t *testing.T) {
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		return
+	}
+	defer os.Exit(0)
+
+	var goldPath string
+	args := os.Args
+	for len(args) > 0 {
+		if args[0] == "--" {
+			goldPath = args[1]
+			args = args[2:]
+			break
+		}
+		args = args[1:]
+	}
+
+	if args[0] == "-Exit1-" {
+		fmt.Fprintf(os.Stderr, "EXIT 1 requested in mock")
+		os.Exit(1)
+	}
+
+	err := os.WriteFile(goldPath, []byte(fmt.Sprintf("%q", args)+"\n"), 0600)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Setup: failed to write kinit command output: %v", err)
+		os.Exit(1)
 	}
 }
 
