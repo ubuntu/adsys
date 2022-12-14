@@ -36,6 +36,7 @@ Depends: ${shlibs:Depends},
          sssd,
          sssd-dbus,
          apparmor,
+         gvfs,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Description: ${source:Synopsis}
