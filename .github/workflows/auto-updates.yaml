@@ -7,6 +7,11 @@ on:
       - po/*
       - README.md
 
+env:
+  apt_dependencies: >-
+    ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
+    libwbclient-dev pkg-config protobuf-compiler python3-coverage samba sudo
+
 jobs:
   update-po:
     name: Update po files
@@ -63,7 +68,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y libsmbclient-dev gcc pkg-config
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y ${{ env.apt_dependencies }}
       # Checkout code with git
       - uses: actions/checkout@v3
         with:
