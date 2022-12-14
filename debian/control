@@ -39,6 +39,7 @@ Depends: ${shlibs:Depends},
          apparmor,
          cifs-utils,
          krb5-user,
+         gvfs,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Suggests:
