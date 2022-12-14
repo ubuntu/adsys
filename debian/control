@@ -34,6 +34,8 @@ Depends: ${shlibs:Depends},
          sssd,
          sssd-dbus,
          apparmor,
+         cifs-utils,
+         curlftpfs,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Description: ${source:Synopsis}
