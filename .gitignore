@@ -14,6 +14,7 @@ coverage/
 
 # Dependency directories
 vendor/
+vendor_rust/
 
 # Package artefacts
 obj-x86_64-linux-gnu/
