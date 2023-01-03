@@ -35,6 +35,7 @@ Depends: ${shlibs:Depends},
          sssd,
          sssd-dbus,
          apparmor,
+         krb5-user,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Description: ${source:Synopsis}

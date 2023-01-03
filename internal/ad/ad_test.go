@@ -484,6 +484,17 @@ func TestGetPolicies(t *testing.T) {
 			gpoListArgs: []string{"gpoonly.com", "bob:standard"},
 			wantErr:     true,
 		},
+		"Error on backend HostKrb5CCName call failed": {
+			objectName:  hostname,
+			objectClass: ad.ComputerObject,
+			backend: mock.Backend{
+				Dom:           "gpoonly.com",
+				Online:        true,
+				ErrKrb5CCName: true,
+			},
+			gpoListArgs: []string{"gpoonly.com", hostname + ":standard"},
+			wantErr:     true,
+		},
 		"Error on user without @ in name": {
 			objectName:  "bob",
 			gpoListArgs: []string{"gpoonly.com", "bob:standard"},

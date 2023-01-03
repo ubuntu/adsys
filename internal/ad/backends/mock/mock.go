@@ -14,8 +14,8 @@ type Backend struct {
 
 	Online        bool
 	ErrIsOnline   bool
+	ErrKrb5CCName bool
 	ErrServerURL  error
-	ErrKrb5CCName error
 }
 
 // Domain returns current server domain.
@@ -36,8 +36,8 @@ func (m Backend) ServerURL(context.Context) (string, error) {
 
 // HostKrb5CCName returns the absolute path of the machine krb5 ticket.
 func (m Backend) HostKrb5CCName() (string, error) {
-	if m.ErrKrb5CCName != nil {
-		return "", m.ErrKrb5CCName
+	if m.ErrKrb5CCName {
+		return "", errors.New("HostKrb5CCName returned an error")
 	}
 	return m.HostKrb5CCNamePath, nil
 }

@@ -82,7 +82,7 @@ type Config struct {
 	ADDomain string `mapstructure:"ad_domain"` // bypass domain name detection and use this domain
 }
 
-// Option reprents an optional function to change the winbind backend.
+// Option represents an optional function to change the winbind backend.
 type Option func(*options)
 
 type options struct {
