@@ -37,7 +37,8 @@ Depends: ${shlibs:Depends},
          cifs-utils,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
-            curlftpfs,
+Suggests:
+        curlftpfs,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
 
