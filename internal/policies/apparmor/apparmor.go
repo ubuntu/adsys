@@ -231,8 +231,9 @@ func (m *Manager) applyMachinePolicy(ctx context.Context, e entry.Entry, apparmo
 		cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
 		cmd.Dir = m.apparmorDir
 		smbsafe.WaitExec()
-		defer smbsafe.DoneExec()
-		if out, err := cmd.CombinedOutput(); err != nil {
+		out, err := cmd.CombinedOutput()
+		smbsafe.DoneExec()
+		if err != nil {
 			return fmt.Errorf(i18n.G("failed to load apparmor rules: %w\n%s"), err, string(out))
 		}
 	}
@@ -303,8 +304,9 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
 	cmd.Dir = m.apparmorDir
 	smbsafe.WaitExec()
-	defer smbsafe.DoneExec()
-	if out, err := cmd.CombinedOutput(); err != nil {
+	out, err := cmd.CombinedOutput()
+	smbsafe.DoneExec()
+	if err != nil {
 		// Restore the old content
 		var restoreErr error
 		if len(oldContent) == 0 {
