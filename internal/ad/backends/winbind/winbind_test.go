@@ -37,7 +37,8 @@ func TestWinbind(t *testing.T) {
 		wantKinitErr bool
 		wantErr      bool
 	}{
-		"Lookup is successful": {},
+		"Lookup is successful":                         {},
+		"Lookup with different hostname is successful": {hostname: "mycustomhostname"},
 
 		// Override cases
 		"Lookup with overridden ad_domain":                  {staticADDomain: "overridden.com"},
@@ -86,12 +87,11 @@ func TestWinbind(t *testing.T) {
 			got := testutils.FormatBackendCalls(t, backend)
 
 			// Check kinit command
-			gotKinitCmd := []byte("not executed\n")
 			if !tc.wantKinitErr {
-				gotKinitCmd, err = os.ReadFile(kinitCmdOutputFile)
+				gotKinitArgs, err := os.ReadFile(kinitCmdOutputFile)
 				require.NoError(t, err, "Setup: failed to read kinit command output")
+				got += "\nKinit args: " + string(gotKinitArgs)
 			}
-			got += "\nKinit args: " + string(gotKinitCmd)
 			want := testutils.LoadWithUpdateFromGolden(t, got)
 			require.Equal(t, want, got, "Got expected loaded values in winbind config object")
 		})
