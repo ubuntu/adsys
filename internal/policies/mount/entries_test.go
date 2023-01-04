@@ -40,6 +40,14 @@ nfs://anotherone.com/mnt
 `,
 	},
 
+	"entry with same values tagged and untagged": {Value: `
+nfs://domain/untagged_first
+[krb5]nfs://domain/untagged_first
+[krb5]nfs://domain/tagged_first
+nfs://domain/tagged_first
+`,
+	},
+
 	"entry with no value": {},
 
 	"entry with multiple linebreaks": {Value: `
