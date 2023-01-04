@@ -382,7 +382,7 @@ func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error
 		// Compares "normal" and prefixed values the same way, since the unit name will be the same.
 		tmp := strings.TrimPrefix(v, krbTag)
 		if _, ok := seen[tmp]; ok {
-			log.Warningf(ctx, i18n.G("The location %q was already set up to be mounted. Authenticated and anonymous mounts are considered the same."), tmp)
+			log.Warningf(ctx, i18n.G("The location %q was already set up to be mounted with different options or authentication. Only the first value will be considered"), v)
 			continue
 		}
 
