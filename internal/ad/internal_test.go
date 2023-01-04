@@ -574,6 +574,7 @@ func TestParseGPOConcurrent(t *testing.T) {
 const SmbPort = 1445
 
 func TestMain(m *testing.M) {
+	defer testutils.StartLocalSystemBus()()
 	testutils.InstallUpdateFlag()
 	flag.Parse()
 
