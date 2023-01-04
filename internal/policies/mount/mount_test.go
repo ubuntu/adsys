@@ -126,7 +126,7 @@ func TestApplyPolicy(t *testing.T) {
 		"system, successfully apply policy with kerberos tagged values":                         {entries: []string{"entry with kerberos auth tags"}, isComputer: true},
 		"system, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}, isComputer: true},
 		"system, only emit a warning when starting new units and systemctl fails":               {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}},
-		"system, only emit a warning when stoping previous units and systemctl fails":           {isComputer: true, secondCall: []string{"entry with multiple values"}, secondSystemCtlFailingArgs: []string{"stop"}},
+		"system, only emit a warning when stopping previous units and systemctl fails":          {isComputer: true, secondCall: []string{"entry with multiple values"}, secondSystemCtlFailingArgs: []string{"stop"}},
 		"system, does nothing if the entry is disabled":                                         {isComputer: true, isDisabled: true},
 
 		// Badly formatted entries.
