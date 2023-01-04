@@ -1,0 +1,3 @@
+[krb5]rpt://repeated.com/repeatedmount
+[krb5]smb://single.com/mnt
+[krb5]nfs://anotherone.com/mnt
