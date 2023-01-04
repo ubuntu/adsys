@@ -133,8 +133,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return e.Key == key+"-mounts"
 	})
 
-	if i == -1 || entries[i].Disabled {
+	if i == -1 {
 		log.Debugf(ctx, i18n.G("The provided entries are not supported by the %s mount manager: %v"), key, entries)
+		return m.cleanup(ctx, objectName, isComputer)
+	}
+
+	if entries[i].Disabled {
+		log.Debugf(ctx, i18n.G("The entry %q is disabled and will be skipped"), entries[i].Key)
 		return m.cleanup(ctx, objectName, isComputer)
 	}
 
@@ -362,7 +367,7 @@ func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error
 		return nil, fmt.Errorf(i18n.G("entry is errored: %w"), e.Err)
 	}
 
-	seen := make(map[string]struct{})
+	seen := make(map[string]string)
 	for _, v := range strings.Split(e.Value, "\n") {
 		v := strings.TrimSpace(v)
 		if v == "" {
@@ -371,8 +376,12 @@ func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error
 
 		// Compares "normal" and prefixed values the same way, since the unit name will be the same.
 		tmp := strings.TrimPrefix(v, krbTag)
-		if _, ok := seen[tmp]; ok {
-			log.Debugf(ctx, i18n.G("Value %q is duplicated. Tagged values are the same as untagged ones."), v)
+		if prev, ok := seen[tmp]; ok {
+			if prev == v {
+				log.Debugf(ctx, i18n.G("Value %q is duplicated."), v)
+			} else {
+				log.Warningf(ctx, i18n.G("The location %q was already set up to be mounted with different options or authentication. The first provided value %q will be used instead."), v, prev)
+			}
 			continue
 		}
 
@@ -381,7 +390,7 @@ func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error
 		}
 
 		p = append(p, v)
-		seen[tmp] = struct{}{}
+		seen[tmp] = v
 	}
 
 	return p, nil
@@ -509,12 +518,17 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 	defer decorate.OnError(&err, i18n.G("failed to clean up the mount units"))
 
 	for _, unit := range units {
-		// Stops and disables the unit before removing it
-		if err = m.execSystemCtlCmd(ctx, "disable", "--now", unit); err != nil {
+		// Tries to stop the unit before disabling and removing it.
+		if err := m.execSystemCtlCmd(ctx, "stop", unit); err != nil {
+			log.Warningf(ctx, i18n.G("Failed to stop unit %q: %v"), unit, err)
+		}
+
+		// Disables the unit before removing it.
+		if err := m.execSystemCtlCmd(ctx, "disable", unit); err != nil {
 			return fmt.Errorf(i18n.G("failed to disable unit %q: %w"), unit, err)
 		}
 
-		if err = os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
+		if err := os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
 			return fmt.Errorf(i18n.G("could not remove file %q: %w"), unit, err)
 		}
 	}
