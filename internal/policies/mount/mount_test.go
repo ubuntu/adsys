@@ -68,10 +68,12 @@ func TestApplyPolicy(t *testing.T) {
 	tests := map[string]struct {
 		entries    []string
 		keys       []string
+		isDisabled bool
 		objectName string
 		isComputer bool
 
-		secondCall []string
+		secondCall           []string
+		isDisabledSecondCall bool
 
 		// User specific
 		readOnlyUsersDir  bool
@@ -95,7 +97,9 @@ func TestApplyPolicy(t *testing.T) {
 		"user, successfully apply policy filtering out unsupported keys": {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
 
 		// Special cases.
-		"user, successfully apply policy with kerberos auth tags": {entries: []string{"entry with kerberos auth tags"}},
+		"user, successfully apply policy with kerberos auth tags":                             {entries: []string{"entry with kerberos auth tags"}},
+		"user, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}},
+		"user, does nothing if the entry is disabled":                                         {isDisabled: true},
 
 		// Badly formatted entries.
 		"user, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}},
@@ -106,6 +110,7 @@ func TestApplyPolicy(t *testing.T) {
 		// Policy refresh.
 		"user, mount file is removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}},
 		"user, mount file is removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}},
+		"user, mount file is removed on refreshing policy with a disabled entry":              {secondCall: []string{"entry with one value"}, isDisabledSecondCall: true},
 		"user, mount file is updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}},
 
 		/**************************** SYSTEM ***************************/
@@ -116,7 +121,10 @@ func TestApplyPolicy(t *testing.T) {
 		"system, successfully apply policy filtering out unsupported keys": {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "system-mounts"}, isComputer: true},
 
 		// Special cases.
-		"system, successfully apply policy with kerberos tagged values": {entries: []string{"entry with kerberos auth tags"}, isComputer: true},
+		"system, successfully apply policy with kerberos tagged values":                         {entries: []string{"entry with kerberos auth tags"}, isComputer: true},
+		"system, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}, isComputer: true},
+		"system, only emit a warning when starting new units and systemctl fails":               {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}},
+		"system, does nothing if the entry is disabled":                                         {isComputer: true, isDisabled: true},
 
 		// Badly formatted entries.
 		"system, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}, isComputer: true},
@@ -129,6 +137,7 @@ func TestApplyPolicy(t *testing.T) {
 		"system, mount units are updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}, isComputer: true},
 		"system, mount units are removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}, isComputer: true},
 		"system, mount units are removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}, isComputer: true},
+		"system, mount units are removed on refreshing policy with disabled entry":                {secondCall: []string{"entry with one value"}, isDisabledSecondCall: true},
 
 		/**************************** GENERIC **************************/
 		// Special cases.
@@ -151,16 +160,13 @@ func TestApplyPolicy(t *testing.T) {
 		/**************************** SYSTEM ***************************/
 		// Error cases.
 		"error when creating units with bad entry values":                        {entries: []string{"entry with badly formatted value"}, isComputer: true, wantErr: true},
-		"error when systemctl fails":                                             {firstSystemCtlFailingArgs: []string{"systemctl"}, isComputer: true, wantErr: true},
+		"error when daemon-reload fails":                                         {firstSystemCtlFailingArgs: []string{"daemon-reload"}, isComputer: true, wantErr: true},
 		"error when disabling units for clean up and systemctl fails":            {secondCall: []string{"entry with multiple values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"disable"}, wantErrSecondCall: true},
 		"error when enabling new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"enable"}, wantErr: true},
 		"error when trying to update policy with badly formatted entry":          {secondCall: []string{"entry with badly formatted value"}, wantErrSecondCall: true, isComputer: true},
 		"error when applying policy and system mount unit already exists as dir": {isComputer: true, pathAlreadyExists: true, wantErr: true},
 		"error when updating policy and system mount unit to remove is a dir":    {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
 		"error when applying system policy and the entry is errored":             {entries: []string{"errored entry"}, isComputer: true, wantErr: true},
-
-		// Special cases.
-		"only emit a warning when starting new units and systemctl fails": {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -189,6 +195,7 @@ func TestApplyPolicy(t *testing.T) {
 				}
 				e := mount.EntriesForTests[v]
 				e.Key = tc.keys[i]
+				e.Disabled = tc.isDisabled
 				entries = append(entries, e)
 			}
 
@@ -240,6 +247,7 @@ func TestApplyPolicy(t *testing.T) {
 					}
 					e := mount.EntriesForTests[v]
 					e.Key = tc.keys[i]
+					e.Disabled = tc.isDisabledSecondCall
 					secondEntries = append(secondEntries, e)
 				}
 				m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.secondSystemCtlFailingArgs...))
