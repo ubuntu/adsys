@@ -40,6 +40,14 @@ nfs://anotherone.com/mnt
 `,
 	},
 
+	"entry with repeated tagged values": {Value: `
+[krb5]rpt://repeated.com/repeatedmount
+[krb5]smb://single.com/mnt
+[krb5]rpt://repeated.com/repeatedmount
+[krb5]nfs://anotherone.com/mnt
+`,
+	},
+
 	"entry with same values tagged and untagged": {Value: `
 nfs://domain/untagged_first
 [krb5]nfs://domain/untagged_first
