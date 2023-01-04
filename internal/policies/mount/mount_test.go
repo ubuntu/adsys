@@ -91,10 +91,11 @@ func TestApplyPolicy(t *testing.T) {
 	}{
 		/***************************** USER ****************************/
 		// Success cases.
-		"user, successfully apply policy for entry with one value":       {},
-		"user, successfully apply policy for entry with multiple values": {entries: []string{"entry with multiple values"}},
-		"user, successfully apply policy for entry with repeated values": {entries: []string{"entry with repeated values"}},
-		"user, successfully apply policy filtering out unsupported keys": {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
+		"user, successfully apply policy for entry with one value":              {},
+		"user, successfully apply policy for entry with multiple values":        {entries: []string{"entry with multiple values"}},
+		"user, successfully apply policy for entry with repeated values":        {entries: []string{"entry with repeated values"}},
+		"user, successfully apply policy for entry with repeated tagged values": {entries: []string{"entry with repeated tagged values"}},
+		"user, successfully apply policy filtering out unsupported keys":        {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
 
 		// Special cases.
 		"user, successfully apply policy with kerberos auth tags":                             {entries: []string{"entry with kerberos auth tags"}},
@@ -115,10 +116,11 @@ func TestApplyPolicy(t *testing.T) {
 
 		/**************************** SYSTEM ***************************/
 		// Success cases.
-		"system, successfully apply policy for entry with one value":       {isComputer: true},
-		"system, successfully apply policy for entry with multiple values": {entries: []string{"entry with multiple values"}, isComputer: true},
-		"system, successfully apply policy for entry with repeated values": {entries: []string{"entry with repeated values"}, isComputer: true},
-		"system, successfully apply policy filtering out unsupported keys": {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "system-mounts"}, isComputer: true},
+		"system, successfully apply policy for entry with one value":              {isComputer: true},
+		"system, successfully apply policy for entry with multiple values":        {entries: []string{"entry with multiple values"}, isComputer: true},
+		"system, successfully apply policy for entry with repeated values":        {entries: []string{"entry with repeated values"}, isComputer: true},
+		"system, successfully apply policy for entry with repeated tagged values": {entries: []string{"entry with repeated tagged values"}, isComputer: true},
+		"system, successfully apply policy filtering out unsupported keys":        {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "system-mounts"}, isComputer: true},
 
 		// Special cases.
 		"system, successfully apply policy with kerberos tagged values":                         {entries: []string{"entry with kerberos auth tags"}, isComputer: true},
