@@ -374,10 +374,15 @@ func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error
 			continue
 		}
 
+		if _, ok := seen[v]; ok {
+			log.Debugf(ctx, i18n.G("Value %q is duplicated."), v)
+			continue
+		}
+
 		// Compares "normal" and prefixed values the same way, since the unit name will be the same.
 		tmp := strings.TrimPrefix(v, krbTag)
 		if _, ok := seen[tmp]; ok {
-			log.Debugf(ctx, i18n.G("Value %q is duplicated. Tagged values are the same as untagged ones."), v)
+			log.Warningf(ctx, i18n.G("The location %q was already set up to be mounted. Authenticated and anonymous mounts are considered the same."), tmp)
 			continue
 		}
 
