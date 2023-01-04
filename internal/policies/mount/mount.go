@@ -133,8 +133,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return e.Key == key+"-mounts"
 	})
 
-	if i == -1 || entries[i].Disabled {
+	if i == -1 {
 		log.Debugf(ctx, i18n.G("The provided entries are not supported by the %s mount manager: %v"), key, entries)
+		return m.cleanup(ctx, objectName, isComputer)
+	}
+
+	if entries[i].Disabled {
+		log.Debugf(ctx, i18n.G("The entry %q is disabled and will be skipped"), entries[i].Key)
 		return m.cleanup(ctx, objectName, isComputer)
 	}
 
