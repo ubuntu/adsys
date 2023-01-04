@@ -367,22 +367,21 @@ func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error
 		return nil, fmt.Errorf(i18n.G("entry is errored: %w"), e.Err)
 	}
 
-	seen := make(map[string]struct{})
+	seen := make(map[string]string)
 	for _, v := range strings.Split(e.Value, "\n") {
 		v := strings.TrimSpace(v)
 		if v == "" {
 			continue
 		}
 
-		if _, ok := seen[v]; ok {
-			log.Debugf(ctx, i18n.G("Value %q is duplicated."), v)
-			continue
-		}
-
 		// Compares "normal" and prefixed values the same way, since the unit name will be the same.
 		tmp := strings.TrimPrefix(v, krbTag)
-		if _, ok := seen[tmp]; ok {
-			log.Warningf(ctx, i18n.G("The location %q was already set up to be mounted with different options or authentication. Only the first value will be considered"), v)
+		if prev, ok := seen[tmp]; ok {
+			if prev == v {
+				log.Debugf(ctx, i18n.G("Value %q is duplicated."), v)
+			} else {
+				log.Warningf(ctx, i18n.G("The location %q was already set up to be mounted with different options or authentication. The first provided value %q will be used instead."), v, prev)
+			}
 			continue
 		}
 
@@ -391,7 +390,7 @@ func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error
 		}
 
 		p = append(p, v)
-		seen[tmp] = struct{}{}
+		seen[tmp] = v
 	}
 
 	return p, nil
