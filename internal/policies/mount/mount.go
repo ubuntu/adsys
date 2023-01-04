@@ -519,12 +519,17 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 	defer decorate.OnError(&err, i18n.G("failed to clean up the mount units"))
 
 	for _, unit := range units {
-		// Stops and disables the unit before removing it
-		if err = m.execSystemCtlCmd(ctx, "disable", "--now", unit); err != nil {
+		// Tries to stop the unit before disabling and removing it.
+		if err := m.execSystemCtlCmd(ctx, "stop", unit); err != nil {
+			log.Warningf(ctx, i18n.G("Failed to stop unit %q: %v"), unit, err)
+		}
+
+		// Disables the unit before removing it.
+		if err := m.execSystemCtlCmd(ctx, "disable", unit); err != nil {
 			return fmt.Errorf(i18n.G("failed to disable unit %q: %w"), unit, err)
 		}
 
-		if err = os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
+		if err := os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
 			return fmt.Errorf(i18n.G("could not remove file %q: %w"), unit, err)
 		}
 	}
