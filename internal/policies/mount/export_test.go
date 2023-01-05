@@ -11,9 +11,9 @@ func WithUserLookup(f func(string) (*user.User, error)) Option {
 	}
 }
 
-// WithSystemCtlCmd allow to mock systemctl call.
-func WithSystemCtlCmd(cmd []string) Option {
-	return func(o *options) {
-		o.systemctlCmd = cmd
-	}
+// SetSystemCtlCmd allows to override the systemCtlCmd of the Manager for the tests.
+// This is used instead of a option function because we need to control the systemctl command
+// in multiple occasions during tests.
+func (m *Manager) SetSystemCtlCmd(args []string) {
+	m.systemCtlCmd = append(args, "systemctl")
 }

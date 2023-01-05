@@ -47,6 +47,7 @@ type daemonConfig struct {
 	PolicyKitDir  string `mapstructure:"policykit_dir"`
 	ApparmorDir   string `mapstructure:"apparmor_dir"`
 	ApparmorFsDir string `mapstructure:"apparmorfs_dir"`
+	SystemUnitDir string `mapstructure:"systemunit_dir"`
 
 	AdBackend     string         `mapstructure:"ad_backend"`
 	SSSdConfig    sss.Config     `mapstructure:"sssd"`
@@ -116,6 +117,7 @@ func New() *App {
 				adsysservice.WithPolicyKitDir(a.config.PolicyKitDir),
 				adsysservice.WithApparmorDir(a.config.ApparmorDir),
 				adsysservice.WithApparmorFsDir(a.config.ApparmorFsDir),
+				adsysservice.WithSystemUnitDir(a.config.SystemUnitDir),
 				adsysservice.WithADBackend(a.config.AdBackend),
 				adsysservice.WithSSSConfig(a.config.SSSdConfig),
 				adsysservice.WithWinbindConfig(a.config.WinbindConfig),

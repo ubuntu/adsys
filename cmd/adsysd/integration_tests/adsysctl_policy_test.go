@@ -459,6 +459,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"polkit-1",
 				"run/machine",
 				"apparmor.d/adsys/machine",
+				"systemd/system",
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
@@ -480,6 +481,7 @@ func TestPolicyUpdate(t *testing.T) {
 				"polkit-1",
 				"run/machine",
 				"apparmor.d/adsys/machine",
+				"systemd/system",
 				"cache/sysvol/Policies/{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}",
 				"cache/sysvol/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}",
 			},
@@ -593,7 +595,7 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		"Error on mount apply failing": {
+		"Error on user mount apply failing": {
 			initState: "old-data",
 			clearDirs: []string{
 				fmt.Sprintf("run/users/%s/mounts", currentUID),
@@ -603,6 +605,20 @@ func TestPolicyUpdate(t *testing.T) {
 				fmt.Sprintf("run/users/%s/mounts/", currentUID),
 			},
 			wantErr: true,
+		},
+		"Error on system mount apply failing": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState: "old-data",
+			// This generates an error when trying to write the units into a read only directory.
+			readOnlyDirs: []string{"systemd/system"},
+			wantErr:      true,
 		},
 		"Error on apparmor apply failing": {
 			args:       []string{"-m"},
@@ -952,6 +968,7 @@ func TestPolicyUpdate(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "sudoers.d"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "polkit-1"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "apparmor.d", "adsys"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "apparmor.d", "adsys"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "systemd", "system"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "systemd", "system"), update)
 
 			// Current user can have different UID depending on where it’s running. We can’t mock it as we rely on current uid
 			// in the process for authorization check. Just make it generic.

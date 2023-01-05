@@ -35,9 +35,12 @@ Depends: ${shlibs:Depends},
          sssd,
          sssd-dbus,
          apparmor,
+         cifs-utils,
          krb5-user,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
+Suggests:
+        curlftpfs,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
 

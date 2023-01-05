@@ -46,6 +46,7 @@ type options struct {
 	runDir        string
 	apparmorDir   string
 	apparmorFsDir string
+	systemUnitDir string
 	gdm           *gdm.Manager
 
 	apparmorParserCmd []string
@@ -119,16 +120,25 @@ func WithApparmorFsDir(p string) Option {
 	}
 }
 
+// WithSystemUnitDir specifies a personalized unit directory for adsys mount units.
+func WithSystemUnitDir(p string) Option {
+	return func(o *options) error {
+		o.systemUnitDir = p
+		return nil
+	}
+}
+
 // NewManager returns a new manager with all default policy handlers.
 func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
 
 	// defaults
 	args := options{
-		cacheDir:    consts.DefaultCacheDir,
-		runDir:      consts.DefaultRunDir,
-		apparmorDir: consts.DefaultApparmorDir,
-		gdm:         nil,
+		cacheDir:      consts.DefaultCacheDir,
+		runDir:        consts.DefaultRunDir,
+		apparmorDir:   consts.DefaultApparmorDir,
+		systemUnitDir: consts.DefaultSystemUnitDir,
+		gdm:           nil,
 	}
 	// applied options (including dconf manager used by gdm)
 	for _, o := range opts {
@@ -152,7 +162,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 	}
 
 	// mount manager
-	mountManager, err := mount.New(args.runDir)
+	mountManager, err := mount.New(args.runDir, args.systemUnitDir)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +224,9 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	g.Go(func() error {
 		return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"], pols.SaveAssetsTo)
 	})
-	g.Go(func() error { return m.mount.ApplyPolicy(ctx, objectName, isComputer, rules["mount"]) })
+	g.Go(func() error {
+		return m.mount.ApplyPolicy(ctx, objectName, isComputer, rules["mount"])
+	})
 	g.Go(func() error {
 		return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"], pols.SaveAssetsTo)
 	})

@@ -1,6 +1,7 @@
 package mount
 
 import (
+	"context"
 	"flag"
 	"os"
 	"os/user"
@@ -24,9 +25,9 @@ func TestParseEntryValues(t *testing.T) {
 		wantErr bool
 	}{
 		// Single entry cases.
-		"parse values from entry with one value":        {entry: "entry with one value"},
-		"parse values from entry with multiple values":  {entry: "entry with multiple values"},
-		"parse values from entry with repeatead values": {entry: "entry with repeatead values"},
+		"parse values from entry with one value":       {entry: "entry with one value"},
+		"parse values from entry with multiple values": {entry: "entry with multiple values"},
+		"parse values from entry with repeated values": {entry: "entry with repeated values"},
 
 		// Badly formatted entries.
 		"parse values trimming whitespaces":           {entry: "entry with spaces"},
@@ -35,6 +36,9 @@ func TestParseEntryValues(t *testing.T) {
 		// Special cases.
 		"parse values from entry with kerberos auth tags": {entry: "entry with kerberos auth tags"},
 		"returns empty slice if the entry is empty":       {entry: "entry with no value"},
+
+		// Error cases
+		"error when parsing entry with badly formatted values": {entry: "entry with badly formatted value", wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -42,7 +46,7 @@ func TestParseEntryValues(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, err := parseEntryValues(EntriesForTests[tc.entry])
+			got, err := parseEntryValues(context.Background(), EntriesForTests[tc.entry])
 			if tc.wantErr {
 				require.Error(t, err, "Expected an error but got none.")
 				return
@@ -128,6 +132,38 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 			}
 			require.NoError(t, err, "writeFileWithUIDGID should not have returned an error but did")
 			testutils.CompareTreesWithFiltering(t, path, filepath.Join("testdata", "golden", t.Name()), Update)
+		})
+	}
+}
+
+func TestCreateUnits(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		entry string
+	}{
+		"write single unit":      {entry: "entry with one value"},
+		"write multiple units":   {entry: "entry with multiple values"},
+		"write krb5 tagged unit": {entry: "entry with kerberos auth tag"},
+	}
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			parsedValues, err := parseEntryValues(context.Background(), EntriesForTests[tc.entry])
+			require.NoError(t, err, "Setup: failed to parse entries for TestCreateUnits.")
+
+			unitPath := t.TempDir()
+			units := createUnits(parsedValues)
+
+			for name, content := range units {
+				err := os.WriteFile(filepath.Join(unitPath, name), []byte(content), 0600)
+				require.NoError(t, err, "Setup: Failed to write unit file for comparison.")
+			}
+
+			goldenPath := filepath.Join("testdata", "golden", t.Name())
+			testutils.CompareTreesWithFiltering(t, unitPath, goldenPath, Update)
 		})
 	}
 }

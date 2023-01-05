@@ -1,0 +1,3 @@
+[krb5]smb://auth.com/some-mount
+[krb5]nfs://kerberos.com/authenticated-mount
+[krb5]nfs://watchdog.com/careful-mount

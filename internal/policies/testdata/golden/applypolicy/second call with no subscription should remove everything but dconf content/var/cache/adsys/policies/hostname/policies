@@ -21,6 +21,13 @@ gpos:
                 Multilines
               disabled: false
               meta: s
+        mount:
+            - key: system-mounts
+              value: |
+                nfs://example.com/nfs_share
+                smb://example.com/smb_share
+                ftp://example.com/ftp_share
+              disabled: false
         privilege:
             - key: allow-local-admins
               value: ""

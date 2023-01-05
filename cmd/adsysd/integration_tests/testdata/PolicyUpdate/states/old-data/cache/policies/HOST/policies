@@ -41,6 +41,11 @@ gpos:
             old-nested/usr.bin.baz
           disabled: false
           strategy: append
+      mount:
+        - key: system-mounts
+          value: smb://example.com/old_share
+          disabled: false
+          strategy: append
 
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy
