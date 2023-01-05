@@ -1,0 +1,9 @@
+* Domain(): example.com
+* ServerURL(): ldap://adcontroller.example.com
+* IsOnline(): true
+* HostKrb5CCName(): /tmp/krb5cc_0
+* DefaultDomainSuffix(): example.com
+* Config():
+Current backend is Winbind
+
+Kinit args: ["-k" "MYCUSTOMHOSTNAME$@EXAMPLE.COM" "-c" "/tmp/krb5cc_0"]

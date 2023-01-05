@@ -1,0 +1,8 @@
+* Domain(): example.com
+* ServerURL(): ldap://adcontroller.example.com
+* IsOnline(): true
+* HostKrb5CCName ERROR(): could not get krb5 cached ticket for "UBUNTU$@EXAMPLE.COM": exit status 1:
+EXIT 1 requested in mock
+* DefaultDomainSuffix(): example.com
+* Config():
+Current backend is Winbind

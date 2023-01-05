@@ -14,6 +14,7 @@ Build-Depends: debhelper-compat (= 13),
                libpam0g-dev,
                samba,
                dbus,
+               libwbclient-dev,
 Standards-Version: 4.5.1
 XS-Go-Import-Path: github.com/ubuntu/adsys
 Homepage: https://github.com/ubuntu/adsys
@@ -35,6 +36,7 @@ Depends: ${shlibs:Depends},
          sssd-dbus,
          apparmor,
          cifs-utils,
+         krb5-user,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Suggests:

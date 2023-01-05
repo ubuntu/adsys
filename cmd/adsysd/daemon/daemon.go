@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/ad/backends/sss"
+	"github.com/ubuntu/adsys/internal/ad/backends/winbind"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
@@ -48,8 +49,9 @@ type daemonConfig struct {
 	ApparmorFsDir string `mapstructure:"apparmorfs_dir"`
 	SystemUnitDir string `mapstructure:"systemunit_dir"`
 
-	AdBackend  string     `mapstructure:"ad_backend"`
-	SSSdConfig sss.Config `mapstructure:"sssd"`
+	AdBackend     string         `mapstructure:"ad_backend"`
+	SSSdConfig    sss.Config     `mapstructure:"sssd"`
+	WinbindConfig winbind.Config `mapstructure:"winbind"`
 
 	ServiceTimeout int `mapstructure:"service_timeout"`
 }
@@ -118,6 +120,7 @@ func New() *App {
 				adsysservice.WithSystemUnitDir(a.config.SystemUnitDir),
 				adsysservice.WithADBackend(a.config.AdBackend),
 				adsysservice.WithSSSConfig(a.config.SSSdConfig),
+				adsysservice.WithWinbindConfig(a.config.WinbindConfig),
 			)
 			if err != nil {
 				close(a.ready)

@@ -21,6 +21,7 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/adsys/internal/smbsafe"
 	"golang.org/x/exp/slices"
 )
 
@@ -229,7 +230,10 @@ func (m *Manager) applyMachinePolicy(ctx context.Context, e entry.Entry, apparmo
 		// #nosec G204 - We are in control of the arguments
 		cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
 		cmd.Dir = m.apparmorDir
-		if out, err := cmd.CombinedOutput(); err != nil {
+		smbsafe.WaitExec()
+		out, err := cmd.CombinedOutput()
+		smbsafe.DoneExec()
+		if err != nil {
 			return fmt.Errorf(i18n.G("failed to load apparmor rules: %w\n%s"), err, string(out))
 		}
 	}
@@ -299,7 +303,10 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 	// #nosec G204 - We are in control of the arguments
 	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
 	cmd.Dir = m.apparmorDir
-	if out, err := cmd.CombinedOutput(); err != nil {
+	smbsafe.WaitExec()
+	out, err := cmd.CombinedOutput()
+	smbsafe.DoneExec()
+	if err != nil {
 		// Restore the old content
 		var restoreErr error
 		if len(oldContent) == 0 {
@@ -396,7 +403,9 @@ func (m *Manager) policiesFromFiles(ctx context.Context, profiles []string) (pol
 	cmd.Dir = m.apparmorDir
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
+	smbsafe.WaitExec()
 	err = cmd.Run()
+	smbsafe.DoneExec()
 	if err != nil {
 		return nil, fmt.Errorf(i18n.G("failed to get apparmor policies: %w\n%s"), err, errb.String())
 	}
@@ -450,6 +459,8 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 		}
 	}()
 
+	smbsafe.WaitExec()
+	defer smbsafe.DoneExec()
 	if out, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf(i18n.G("failed to unload apparmor policies: %w\n%s"), err, string(out))
 	}

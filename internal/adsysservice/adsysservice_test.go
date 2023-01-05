@@ -13,6 +13,7 @@ import (
 	"github.com/godbus/dbus/v5/prop"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/ad/backends/sss"
+	"github.com/ubuntu/adsys/internal/ad/backends/winbind"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/testutils"
@@ -35,8 +36,9 @@ func TestNew(t *testing.T) {
 		"Adsys directory can already exists":                    {existingAdsysDirs: true, wantBackend: "sssd"},
 
 		// Backend selection
-		"Unknown backend defaults to sssd": {backend: "unknown-backend", wantBackend: "sssd"},
-		"Select sssd backend explicitly":   {backend: "sssd", wantBackend: "sssd"},
+		"Unknown backend defaults to sssd":  {backend: "unknown-backend", wantBackend: "sssd"},
+		"Select sssd backend explicitly":    {backend: "sssd", wantBackend: "sssd"},
+		"Select winbind backend explicitly": {backend: "winbind", wantBackend: "winbind"},
 
 		// Error cases
 		"Error on failure to create run directory":       {roDir: "parentrun", wantNewErr: true},
@@ -71,6 +73,11 @@ func TestNew(t *testing.T) {
 				CacheDir: t.TempDir(),
 			}
 
+			winbindConfig := winbind.Config{
+				ADServer: "dc.example.com",
+				ADDomain: "example.com",
+			}
+
 			if tc.roDir != "" {
 				dest := filepath.Join(temp, tc.roDir)
 				require.NoError(t, os.MkdirAll(dest, 0700), "Setup: can't create directory to make it Read Only")
@@ -86,6 +93,7 @@ func TestNew(t *testing.T) {
 				adsysservice.WithApparmorDir(apparmorDir),
 				adsysservice.WithApparmorFsDir(apparmorFsDir),
 				adsysservice.WithSSSConfig(sssdConfig),
+				adsysservice.WithWinbindConfig(winbindConfig),
 			}
 
 			if tc.backend != "" {
