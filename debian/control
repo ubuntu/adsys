@@ -20,6 +20,7 @@ Build-Depends: debhelper-compat (= 13),
                apparmor,
 Standards-Version: 4.5.1
 XS-Go-Import-Path: github.com/ubuntu/adsys
+XS-Vendored-Sources-Rust: 
 Homepage: https://github.com/ubuntu/adsys
 Description: AD SYStem integration
  ADSys is an AD SYStem tool to integrate GPOs with a linux system.
