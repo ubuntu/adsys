@@ -144,8 +144,8 @@ jobs:
         # V5 Beta needed because of https://github.com/peter-evans/create-pull-request/issues/1170
         uses: peter-evans/create-pull-request@v5-beta
         with:
-          commit-message: Auto update Rust vendored sources in debian/control file
-          title: Auto update Rust vendored sources in debian/control file
+          commit-message: Auto update Rust vendored sources in debian/control
+          title: Auto update Rust vendored sources in debian/control
           labels: control, automated pr
           body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/auto-updates.yaml) by GitHub Action"
           branch: auto-update-rust-vendored-sources
