@@ -107,6 +107,7 @@ jobs:
 
   update-rust-vendored-sources:
     name: Update XS-Vendored-Sources-Rust on debian/control
+    needs: update-readme-clid-ref
     runs-on: ubuntu-latest
     container: 
       image: ubuntu:rolling
