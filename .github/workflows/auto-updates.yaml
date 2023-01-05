@@ -105,11 +105,11 @@ jobs:
         run: |
           git push origin auto-update-readme-cli-ref:main
 
-  update-vendored-sources:
+  update-rust-vendored-sources:
     name: Update XS-Vendored-Sources-Rust on debian/control
     runs-on: ubuntu-latest
     container: 
-      image: ubuntu:23.04
+      image: ubuntu:rolling
     steps:
       - name: Install dependencies
         run: |
@@ -124,7 +124,9 @@ jobs:
           cargo vendor vendor_rust/
       - name: Update XS-Vendored-Sources-Rust
         run: |
-          OUTPUT=$((CARGO_VENDOR_DIR=vendor_rust/ /usr/share/cargo/bin/dh-cargo-vendored-sources 2>&1 ||:) | grep XS-Vendored-Sources-Rust:)
+          set -eu
+        
+          OUTPUT=$((CARGO_VENDOR_DIR=vendor_rust/ /usr/share/cargo/bin/dh-cargo-vendored-sources 2>&1 || true) | grep XS-Vendored-Sources-Rust:)
           if [ -z "$OUTPUT" ]; then
               exit 0
           fi
@@ -134,21 +136,22 @@ jobs:
           echo "modified=true" >> $GITHUB_ENV
         shell: bash
 
-      - run: git config --global --add safe.directory /__w/adsys/adsys
+      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
+        run: git config --global --add safe.directory /__w/adsys/adsys
 
       - name: Create Pull Request
         if: ${{ env.modified == 'true' }}
         # V5 Beta needed because of https://github.com/peter-evans/create-pull-request/issues/1170
         uses: peter-evans/create-pull-request@v5-beta
         with:
-          commit-message: Auto update debian/control file
-          title: Auto update debian/control file
+          commit-message: Auto update Rust vendored sources in debian/control file
+          title: Auto update Rust vendored sources in debian/control file
           labels: control, automated pr
           body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/auto-updates.yaml) by GitHub Action"
-          branch: auto-update-debian-control
+          branch: auto-update-rust-vendored-sources
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch
         if: ${{ env.modified == 'true' }}
         # TODO: Change this when merging it into main
         run: |
-          git push origin auto-update-debian-control:user-mount-handler
+          git push origin auto-update-rust-vendored-sources:user-mount-handler
