@@ -1,11 +1,13 @@
-name: Update translation and readme in main branch automatically
+name: Update translation, readme and debian/control in main branch automatically
 on:
   push:
-    branches:
-      - main
+    # Uncomment this when merging into main
+    # branches:
+    #   - main
     paths-ignore:
       - po/*
       - README.md
+      - debian/control
 
 env:
   apt_dependencies: >-
@@ -107,3 +109,55 @@ jobs:
         if: ${{ env.modified == 'true' }}
         run: |
           git push origin auto-update-readme-cli-ref:main
+
+  update-rust-vendored-sources:
+    name: Update XS-Vendored-Sources-Rust on debian/control
+    needs: update-readme-clid-ref
+    runs-on: ubuntu-latest
+    container: 
+      image: ubuntu:rolling
+    steps:
+      - name: Install dependencies
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt update
+          DEBIAN_FRONTEND=noninteractive apt install -y cargo dh-cargo git
+      - uses: actions/checkout@v3
+        with:
+          # TODO: Change this when merging it into main
+          ref: user-mount-handler
+      - name: Vendoring the dependencies
+        run: |
+          cargo vendor vendor_rust/
+      - name: Update XS-Vendored-Sources-Rust
+        run: |
+          set -eu
+        
+          OUTPUT=$((CARGO_VENDOR_DIR=vendor_rust/ /usr/share/cargo/bin/dh-cargo-vendored-sources 2>&1 || true) | grep XS-Vendored-Sources-Rust:)
+          if [ -z "$OUTPUT" ]; then
+              exit 0
+          fi
+
+          sed -i "s/^XS-Vendored-Sources-Rust:.*/$OUTPUT/" debian/control
+
+          echo "modified=true" >> $GITHUB_ENV
+        shell: bash
+
+      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
+        run: git config --global --add safe.directory /__w/adsys/adsys
+
+      - name: Create Pull Request
+        if: ${{ env.modified == 'true' }}
+        # V5 Beta needed because of https://github.com/peter-evans/create-pull-request/issues/1170
+        uses: peter-evans/create-pull-request@v5-beta
+        with:
+          commit-message: Auto update Rust vendored sources in debian/control
+          title: Auto update Rust vendored sources in debian/control
+          labels: control, automated pr
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/auto-updates.yaml) by GitHub Action"
+          branch: auto-update-rust-vendored-sources
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push branch
+        if: ${{ env.modified == 'true' }}
+        # TODO: Change this when merging it into main
+        run: |
+          git push origin auto-update-rust-vendored-sources:user-mount-handler
