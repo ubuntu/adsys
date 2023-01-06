@@ -1442,11 +1442,11 @@ It&#39;s up to the user to ensure that the requested protocols are valid and sup
 Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
-      <string id="UbuntuDisplayUserAllMountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2304MountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2210MountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2204MountUserMounts">Mount points for the client</string>
-      <string id="UbuntuDisplayUser2004MountUserMounts">Mount points for the client</string>
+      <string id="UbuntuDisplayUserAllMountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2304MountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2210MountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2204MountUserMounts">User mounts</string>
+      <string id="UbuntuDisplayUser2004MountUserMounts">User mounts</string>
     </stringTable>
 
     <presentationTable>
