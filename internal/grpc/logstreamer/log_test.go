@@ -60,7 +60,10 @@ func TestAllLogLevels(t *testing.T) {
 	log.Info(stream.Context(), "info log")
 	log.Debug(stream.Context(), "debug log")
 	log.Warning(stream.Context(), "warning log")
-	log.Error(stream.Context(), "error log")
+
+	// Log an extra whitespace here because the substring assertion fails
+	// otherwise on the LP ppc64el builder
+	log.Error(stream.Context(), "error  log")
 
 	log.Infoln(stream.Context(), "infoln log")
 	log.Debugln(stream.Context(), "debugln log")
@@ -75,7 +78,7 @@ func TestAllLogLevels(t *testing.T) {
 		[]string{"level=info msg=", "[[123456:", "info log"},
 		[]string{"level=debug msg=", "[[123456:", "debug log"},
 		[]string{"level=warning msg=", "[[123456:", "warning log"},
-		[]string{"level=error msg=", "[[123456:", "error log"},
+		[]string{"level=error msg=", "[[123456:", "error  log"},
 		[]string{"level=info msg=", "[[123456:", "infoln log"},
 		[]string{"level=debug msg=", "[[123456:", "debugln log"},
 		[]string{"level=warning msg=", "[[123456:", "warningln log"},
@@ -90,7 +93,7 @@ func TestAllLogLevels(t *testing.T) {
 		[]string{"level=info msg=", "info log"},
 		[]string{"level=debug msg=", "debug log"},
 		[]string{"level=warning msg=", "warning log"},
-		[]string{"level=error msg=", "error log"},
+		[]string{"level=error msg=", "error  log"},
 		[]string{"level=info msg=", "infoln log"},
 		[]string{"level=debug msg=", "debugln log"},
 		[]string{"level=warning msg=", "warningln log"},
