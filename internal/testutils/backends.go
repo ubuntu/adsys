@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os/exec"
+	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/ad/backends"
 )
 
@@ -42,4 +46,26 @@ func FormatBackendCalls(t *testing.T, backend backends.Backend) string {
 	got.WriteString(fmt.Sprintf("* Config():\n%s\n", backend.Config()))
 
 	return got.String()
+}
+
+// BuildWinbindMock takes the path to the location of the winbind internal
+// package and builds the libwbclient mock for use with package or integration
+// tests.
+func BuildWinbindMock(t *testing.T, goPkgPath string) string {
+	t.Helper()
+
+	cmd := exec.Command("pkg-config", "--cflags-only-I", "wbclient")
+	cflags, err := cmd.Output()
+	require.NoError(t, err, "libwbclient-dev is not installed on disk, either skip these tests or install the required package")
+
+	// Build mock libwbclient
+	tmpdir := t.TempDir()
+	libPath := filepath.Join(tmpdir, "libwbclient.so.0")
+	args := strings.Fields(string(cflags))
+	args = append(args, "-fPIC", "-shared", filepath.Join(goPkgPath, "mock/libwbclient_mock.c"), "-o", libPath)
+	// #nosec G204: this is only for tests, under controlled args
+	out, err := exec.Command("gcc", args...).CombinedOutput()
+	require.NoError(t, err, "failed to build mock libwbclient: ", string(out))
+
+	return libPath
 }
