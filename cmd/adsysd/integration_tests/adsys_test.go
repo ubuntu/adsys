@@ -79,7 +79,7 @@ func TestMain(m *testing.M) {
 func TestStartAndStopDaemon(t *testing.T) {
 	systemAnswer(t, "polkit_yes")
 
-	conf := createConf(t, "")
+	conf := createConf(t, "", "sssd")
 	quit := runDaemon(t, conf)
 	quit()
 }
@@ -193,7 +193,7 @@ client_timeout: %d`, socket, tc.timeout)), 0600)
 
 // createConf generates an adsys configuration in a temporary directory
 // It will use adsysDir for socket, cache and run dir if provided.
-func createConf(t *testing.T, adsysDir string) (conf string) {
+func createConf(t *testing.T, adsysDir string, backend string) (conf string) {
 	t.Helper()
 
 	dir := adsysDir
@@ -214,7 +214,7 @@ run_dir: %s/run
 service_timeout: 30
 
 # Backend selection: sssd (default) or winbind
-ad_backend: sssd
+ad_backend: %s
 
 # SSSd configuration
 sssd:
@@ -228,7 +228,7 @@ policykit_dir: %s/polkit-1
 apparmor_dir: %s/apparmor.d/adsys
 apparmorfs_dir: %s/apparmorfs
 systemunit_dir: %s/systemd/system
-`, dir, dir, dir, dir, dir, dir, dir, dir, dir, dir)), 0600)
+`, dir, dir, dir, backend, dir, dir, dir, dir, dir, dir, dir)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0750), "Setup: should create dconf dir")

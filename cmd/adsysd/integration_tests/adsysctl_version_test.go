@@ -26,7 +26,7 @@ func TestVersion(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			systemAnswer(t, tc.systemAnswer)
 
-			conf := createConf(t, "")
+			conf := createConf(t, "", "sssd")
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
 			}

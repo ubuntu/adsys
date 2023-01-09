@@ -55,6 +55,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"unsafe"
@@ -130,6 +131,9 @@ func (w Winbind) Domain() string {
 func (w Winbind) HostKrb5CCName() (string, error) {
 	target := "/tmp/krb5cc_0"
 
+	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
+		return target, nil
+	}
 	// Uppercase domain and hostname
 	domain := strings.ToUpper(w.domain)
 	hostname := strings.ToUpper(w.hostname)
