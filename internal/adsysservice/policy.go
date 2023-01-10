@@ -80,7 +80,12 @@ func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target s
 func (s *Service) DumpPolicies(r *adsys.DumpPoliciesRequest, stream adsys.Service_DumpPoliciesServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while displaying applied policies"))
 
-	target, err := s.adc.NormalizeTargetName(stream.Context(), r.GetTarget(), "")
+	objectClass := ad.UserObject
+	if r.GetIsComputer() {
+		objectClass = ad.ComputerObject
+	}
+
+	target, err := s.adc.NormalizeTargetName(stream.Context(), r.GetTarget(), objectClass)
 	if err != nil {
 		return err
 	}
@@ -93,7 +98,7 @@ func (s *Service) DumpPolicies(r *adsys.DumpPoliciesRequest, stream adsys.Servic
 		}
 	}
 
-	msg, err := s.policyManager.DumpPolicies(stream.Context(), target, r.GetDetails(), r.GetAll())
+	msg, err := s.policyManager.DumpPolicies(stream.Context(), target, r.GetIsComputer(), r.GetDetails(), r.GetAll())
 	if err != nil {
 		return err
 	}

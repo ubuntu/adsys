@@ -247,7 +247,7 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 
 // DumpPolicies displays the currently applied policies and rules (since last update) for objectName.
 // It can in addition show the rules and overridden content.
-func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules bool, withOverridden bool) (msg string, err error) {
+func (m *Manager) DumpPolicies(ctx context.Context, objectName string, computerOnly, withRules, withOverridden bool) (msg string, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to dump policies for %q"), objectName)
 
 	log.Infof(ctx, "Dumping policies for %s", objectName)
@@ -255,7 +255,7 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 	var out strings.Builder
 
 	var alreadyProcessedRules map[string]struct{}
-	if objectName != m.hostname {
+	if !computerOnly {
 		fmt.Fprintln(&out, i18n.G("Policies from machine configuration:"))
 		policiesHost, err := NewFromCache(ctx, filepath.Join(m.policiesCacheDir, m.hostname))
 		if err != nil {
@@ -270,6 +270,7 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, withRules
 	// Load target policies
 	policiesTarget, err := NewFromCache(ctx, filepath.Join(m.policiesCacheDir, objectName))
 	if err != nil {
+		log.Infof(ctx, i18n.G("User %q not found on cache."), objectName)
 		return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), objectName, err)
 	}
 	for _, g := range policiesTarget.GPOs {
