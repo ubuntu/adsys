@@ -20,5 +20,11 @@ sssd:
   config: /etc/sssd.conf
   cache_dir: /var/lib/sss/db
 
+# Winbind configuration
+# (if ad_backend is set to winbind)
+winbind:
+  ad_domain: domain.com
+  ad_server: adc.domain.com
+
 # Client only configuration
 client_timeout: 60
