@@ -51,6 +51,7 @@ adsysctl applied [USER_NAME] [flags]
   -a, --all        show overridden rules in each GPOs.
       --details    show applied rules in addition to GPOs.
   -h, --help       help for applied
+  -m, --machine    show applied rules to the machine.
       --no-color   don't display colorized version.
 ```
 
@@ -347,6 +348,7 @@ adsysctl policy applied [USER_NAME] [flags]
   -a, --all        show overridden rules in each GPOs.
       --details    show applied rules in addition to GPOs.
   -h, --help       help for applied
+  -m, --machine    show applied rules to the machine.
       --no-color   don't display colorized version.
 ```
 
