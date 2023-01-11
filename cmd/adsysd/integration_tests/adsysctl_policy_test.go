@@ -99,7 +99,7 @@ func TestPolicyApplied(t *testing.T) {
 		"Current user applied gpos":               {},
 		"Other user applied gpos":                 {args: []string{"userintegrationtest@example.com"}, userGPORules: "userintegrationtest@example.com"},
 		"Other user applied gpos with mixed case": {args: []string{"UserIntegrationTest@example.com"}, userGPORules: "userintegrationtest@example.com"},
-		"Machine only applied gpos":               {args: []string{hostname}},
+		"Machine only applied gpos using -m flag": {args: []string{"--machine"}},
 
 		"Detailed policy without override":               {args: []string{"--details"}},
 		"Detailed policy with overrides (all)":           {args: []string{"--all"}},
@@ -111,12 +111,13 @@ func TestPolicyApplied(t *testing.T) {
 		`Current user with default domain completion`: {args: []string{`adsystestuser`}},
 
 		// Error cases
-		"Machine cache not available":                             {noMachineGPORules: true, wantErr: true},
-		"User cache not available":                                {userGPORules: "-", wantErr: true},
-		"Error on unexisting user":                                {args: []string{"doesnotexists@example.com"}, wantErr: true},
-		"Error on user name without domain and no default domain": {args: []string{"doesnotexists"}, wantErr: true},
-		"Applied denied":                                          {systemAnswer: "polkit_no", wantErr: true},
-		"Daemon not responding":                                   {daemonNotStarted: true, wantErr: true},
+		"Error when getting machine only applied gpos without flag": {args: []string{hostname}, wantErr: true},
+		"Machine cache not available":                               {noMachineGPORules: true, wantErr: true},
+		"User cache not available":                                  {userGPORules: "-", wantErr: true},
+		"Error on unexisting user":                                  {args: []string{"doesnotexists@example.com"}, wantErr: true},
+		"Error on user name without domain and no default domain":   {args: []string{"doesnotexists"}, wantErr: true},
+		"Applied denied":                                            {systemAnswer: "polkit_no", wantErr: true},
+		"Daemon not responding":                                     {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc

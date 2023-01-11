@@ -35,8 +35,9 @@ message UpdatePolicyRequest {
 
 message DumpPoliciesRequest {
   string target = 1;
-  bool details = 2;   // Show rules in addition to GPO
-  bool all = 3;   // Show overridden rules
+  bool isComputer = 2;
+  bool details = 3;   // Show rules in addition to GPO
+  bool all = 4;   // Show overridden rules
 }
 
 message DumpPolicyDefinitionsRequest {

@@ -43,7 +43,7 @@ func (a *App) installPolicy() {
 	distro = mainCmd.Flags().StringP("distro", "", consts.DistroID, i18n.G("distro for which to retrieve policy definition."))
 	policyCmd.AddCommand(mainCmd)
 
-	var details, all, nocolor *bool
+	var details, all, nocolor, isMachine *bool
 	appliedCmd := &cobra.Command{
 		Use:   "applied [USER_NAME]",
 		Short: i18n.G("Print last applied GPOs for current or given user/machine"),
@@ -60,12 +60,13 @@ func (a *App) installPolicy() {
 			if len(args) > 0 {
 				target = args[0]
 			}
-			return a.dumpPolicies(target, *details, *all, *nocolor)
+			return a.dumpPolicies(target, *details, *all, *nocolor, *isMachine)
 		},
 	}
 	details = appliedCmd.Flags().BoolP("details", "", false, i18n.G("show applied rules in addition to GPOs."))
 	all = appliedCmd.Flags().BoolP("all", "a", false, i18n.G("show overridden rules in each GPOs."))
 	nocolor = appliedCmd.Flags().BoolP("no-color", "", false, i18n.G("don't display colorized version."))
+	isMachine = appliedCmd.Flags().BoolP("machine", "m", false, i18n.G("show applied rules to the machine."))
 	policyCmd.AddCommand(appliedCmd)
 	cmdhandler.RegisterAlias(appliedCmd, &a.rootCmd)
 
@@ -167,7 +168,7 @@ func (a App) getPolicyDefinitions(format, distroID string) (err error) {
 	return nil
 }
 
-func (a *App) dumpPolicies(target string, showDetails, showOverridden, nocolor bool) error {
+func (a *App) dumpPolicies(target string, showDetails, showOverridden, nocolor, isMachine bool) error {
 	// incompatible options
 	if showOverridden && !showDetails {
 		showDetails = true
@@ -181,17 +182,26 @@ func (a *App) dumpPolicies(target string, showDetails, showOverridden, nocolor b
 
 	// Dump for current user
 	if target == "" {
-		u, err := user.Current()
-		if err != nil {
-			return fmt.Errorf("failed to retrieve current user: %w", err)
+		if isMachine {
+			hostname, err := os.Hostname()
+			if err != nil {
+				return fmt.Errorf("failed to retrieve client hostname: %w", err)
+			}
+			target = hostname
+		} else {
+			u, err := user.Current()
+			if err != nil {
+				return fmt.Errorf("failed to retrieve current user: %w", err)
+			}
+			target = u.Username
 		}
-		target = u.Username
 	}
 
 	stream, err := client.DumpPolicies(a.ctx, &adsys.DumpPoliciesRequest{
-		Target:  target,
-		Details: showDetails,
-		All:     showOverridden,
+		Target:     target,
+		IsComputer: isMachine,
+		Details:    showDetails,
+		All:        showOverridden,
 	})
 	if err != nil {
 		return err

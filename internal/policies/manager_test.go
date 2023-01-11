@@ -165,6 +165,7 @@ func TestDumpPolicies(t *testing.T) {
 		cachePoliciesUser  string
 		cachePolicyMachine string
 		target             string
+		computerOnly       bool
 		withRules          bool
 		withOverridden     bool
 
@@ -176,6 +177,7 @@ func TestDumpPolicies(t *testing.T) {
 		"One GPO Machine": {
 			cachePolicyMachine: "one_gpo",
 			target:             hostname,
+			computerOnly:       true,
 		},
 		"One GPO User + Machine": {
 			cachePoliciesUser:  "one_gpo",
@@ -193,6 +195,7 @@ func TestDumpPolicies(t *testing.T) {
 		"Machine only GPO with rules": {
 			cachePolicyMachine: "one_gpo",
 			target:             hostname,
+			computerOnly:       true,
 			withRules:          true,
 		},
 		"Multiple GPOs with rules, no override": {
@@ -282,7 +285,7 @@ func TestDumpPolicies(t *testing.T) {
 			if tc.target == "" {
 				tc.target = "user"
 			}
-			got, err := m.DumpPolicies(context.Background(), tc.target, tc.withRules, tc.withOverridden)
+			got, err := m.DumpPolicies(context.Background(), tc.target, tc.computerOnly, tc.withRules, tc.withOverridden)
 			if tc.wantErr {
 				require.Error(t, err, "DumpPolicies should return an error but got none")
 				return
