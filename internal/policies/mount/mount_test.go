@@ -235,7 +235,7 @@ func TestApplyPolicy(t *testing.T) {
 			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
 			m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.firstSystemCtlFailingArgs...))
 
-			err = m.ApplyPolicy(context.Background(), "ubuntu", tc.isComputer, entries)
+			err = m.ApplyPolicy(context.Background(), tc.objectName, tc.isComputer, entries)
 			if tc.wantErr {
 				require.Error(t, err, "ApplyPolicy should have returned an error but did not")
 				return
