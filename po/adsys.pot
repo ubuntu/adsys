@@ -136,12 +136,12 @@ msgstr ""
 msgid "%s: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:273
+#: cmd/adsysd/client/policy.go:283
 #, c-format
 msgid "%s: Disabled"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:271
+#: cmd/adsysd/client/policy.go:281
 #, c-format
 msgid "%s: Locked to system default"
 msgstr ""
@@ -343,7 +343,7 @@ msgstr ""
 msgid "Create finale admx and adml files"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:74
+#: cmd/adsysd/client/policy.go:75
 msgid "Debug various policy infos"
 msgstr ""
 
@@ -706,7 +706,7 @@ msgstr ""
 msgid "Update"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:92
+#: cmd/adsysd/client/policy.go:93
 msgid ""
 "Updates/Create a policy for current user or given user with its kerberos "
 "ticket"
@@ -718,6 +718,10 @@ msgstr ""
 
 #: internal/watchdservice/watchdservice.go:128
 msgid "Updating directories to watch"
+msgstr ""
+
+#: internal/policies/manager.go:273
+msgid "User %q not found on cache."
 msgstr ""
 
 #: internal/policies/mount/mount.go:381
@@ -749,7 +753,7 @@ msgstr ""
 msgid "Watching: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:82
+#: cmd/adsysd/client/policy.go:83
 msgid "Write GPO list python embeeded script in current directory"
 msgstr ""
 
@@ -761,7 +765,7 @@ msgstr ""
 msgid "a `directory` to check for changes (can be specified multiple times)"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:120
+#: cmd/adsysd/client/policy.go:121
 msgid ""
 "all updates the policy of the computer and all the logged in users. -m or "
 "USER_NAME/TICKET cannot be used with this option."
@@ -964,7 +968,7 @@ msgid "can't get current Server URL: %w"
 msgstr ""
 
 #: internal/ad/backends/sss/sss.go:40
-#: internal/ad/backends/winbind/winbind.go:94
+#: internal/ad/backends/winbind/winbind.go:95
 msgid "can't get domain configuration from %+v"
 msgstr ""
 
@@ -1143,15 +1147,15 @@ msgstr ""
 msgid "could not find chapter starting with %s"
 msgstr ""
 
-#: internal/ad/backends/winbind/winbind.go:204
+#: internal/ad/backends/winbind/winbind.go:208
 msgid "could not get domain controller name for domain %q"
 msgstr ""
 
-#: internal/ad/backends/winbind/winbind.go:193
+#: internal/ad/backends/winbind/winbind.go:197
 msgid "could not get domain name"
 msgstr ""
 
-#: internal/ad/backends/winbind/winbind.go:185
+#: internal/ad/backends/winbind/winbind.go:189
 msgid "could not get online status for domain %q: status code %d"
 msgstr ""
 
@@ -1282,7 +1286,7 @@ msgstr ""
 msgid "error while displaying applied policies"
 msgstr ""
 
-#: internal/adsysservice/policy.go:111
+#: internal/adsysservice/policy.go:116
 msgid "error while dumping policy definitions"
 msgstr ""
 
@@ -1298,7 +1302,7 @@ msgstr ""
 msgid "error while getting documentation"
 msgstr ""
 
-#: internal/adsysservice/policy.go:134
+#: internal/adsysservice/policy.go:139
 msgid "error while getting gpo list script"
 msgstr ""
 
@@ -1326,7 +1330,7 @@ msgstr ""
 msgid "error while trying to look up AD server address on SSSD for %q"
 msgstr ""
 
-#: internal/ad/backends/winbind/winbind.go:158
+#: internal/ad/backends/winbind/winbind.go:162
 msgid "error while trying to look up AD server address on winbind"
 msgstr ""
 
@@ -1402,7 +1406,7 @@ msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:284
+#: internal/policies/manager.go:285
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -1575,11 +1579,11 @@ msgstr ""
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:328
+#: cmd/adsysd/client/policy.go:338
 msgid "machine or user arguments cannot be used with update all"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:119
+#: cmd/adsysd/client/policy.go:120
 msgid "machine updates the policy of the computer."
 msgstr ""
 
@@ -1643,7 +1647,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:262 internal/policies/manager.go:273
+#: internal/policies/manager.go:262 internal/policies/manager.go:274
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -1690,7 +1694,7 @@ msgstr ""
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:294
+#: internal/policies/manager.go:295
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
@@ -1738,6 +1742,10 @@ msgstr ""
 
 #: cmd/adsysd/client/policy.go:66
 msgid "show applied rules in addition to GPOs."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:69
+msgid "show applied rules to the machine."
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:67
@@ -1810,7 +1818,7 @@ msgstr ""
 msgid "use a specific configuration file"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:331
+#: cmd/adsysd/client/policy.go:341
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
