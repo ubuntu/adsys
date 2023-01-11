@@ -1,0 +1,5 @@
+[org/gnome/desktop/background]
+picture-options='stretched'
+picture-uri='file:///usr/share/backgrounds/canonical.png'
+[org/gnome/shell]
+favorite-apps=['\'libreoffice-writer.desktop\'', '\'snap-store_ubuntu-software.desktop\'', '\'yelp.desktop']

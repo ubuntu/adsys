@@ -45,7 +45,7 @@ func TestPolicyAdmx(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			systemAnswer(t, tc.systemAnswer)
 
-			conf := createConf(t, "")
+			conf := createConf(t)
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
 			}
@@ -152,7 +152,7 @@ func TestPolicyApplied(t *testing.T) {
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: failed to copy user policies cache")
 			}
-			conf := createConf(t, dir)
+			conf := createConf(t, confWithAdsysDir(dir))
 
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
@@ -212,20 +212,26 @@ func TestPolicyUpdate(t *testing.T) {
 	}
 
 	tests := map[string]struct {
-		args             []string
-		initState        string
-		sssdConf         string
-		systemAnswer     string
-		krb5ccname       string
-		krb5ccNamesState []krb5ccNamesWithState
-		clearDirs        []string // Removes already generated system files eg dconf db, apparmor profiles, ...
-		addPaths         []string
-		readOnlyDirs     []string
+		args                []string
+		backend             string
+		initState           string
+		sssdConf            string
+		systemAnswer        string
+		krb5ccname          string
+		krb5ccNamesState    []krb5ccNamesWithState
+		clearDirs           []string // Removes already generated system files eg dconf db, apparmor profiles, ...
+		addPaths            []string
+		readOnlyDirs        []string
+		winbindMockBehavior string
 
 		wantErr bool
 	}{
 		// First time download
 		"Current user, first time": {
+			initState: "localhost-uptodate",
+		},
+		"Current user, first time with winbind backend": {
+			backend:   "winbind",
 			initState: "localhost-uptodate",
 		},
 		"Other user, first time": {
@@ -247,6 +253,17 @@ func TestPolicyUpdate(t *testing.T) {
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
 					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			}},
+		"Machine, first time with winbind backend": {
+			backend:    "winbind",
+			args:       []string{"-m"},
+			addPaths:   []string{"apparmorfs/profiles"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "/tmp/krb5cc_0",
 					machine: true,
 				},
 			}},
@@ -659,6 +676,32 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		"Error on host is offline, without policies and backend is winbind": {
+			backend:             "winbind",
+			winbindMockBehavior: "domain_is_offline",
+			initState:           "old-data",
+			// clean gpos rules, but sysvol/ directory
+			clearDirs: []string{
+				"dconf/db/adsystestuser@example.com.d",
+				"dconf/profile/adsystestuser@example.com",
+				"sudoers.d",
+				"polkit-1",
+				"run",
+				"cache/policies/adsystestuser@example.com",
+			},
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "/tmp/krb5cc_0",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
 		// danglink symlink
 		"Error on no KRB5CCNAME and no adsys symlink created": {
 			initState:  "localhost-uptodate",
@@ -864,6 +907,12 @@ func TestPolicyUpdate(t *testing.T) {
 				}
 			}
 
+			if tc.backend == "" {
+				tc.backend = "sssd"
+			}
+
+			testutils.Setenv(t, "ADSYS_WBCLIENT_BEHAVIOR", tc.winbindMockBehavior)
+
 			// Some tests will need some initial state assets
 			for _, k := range tc.clearDirs {
 				err := os.RemoveAll(filepath.Join(adsysDir, k))
@@ -904,7 +953,9 @@ func TestPolicyUpdate(t *testing.T) {
 					require.NoError(t, err, "Setup: could not create machine sss cache")
 				}
 				if krb5.src != "" {
-					krb5.src = filepath.Join(krb5currentDir, krb5.src)
+					if !filepath.IsAbs(krb5.src) {
+						krb5.src = filepath.Join(krb5currentDir, krb5.src)
+					}
 					content := "Some data for the mock"
 					if krb5.invalid {
 						content = "Some invalid ticket content for the mock"
@@ -936,7 +987,7 @@ func TestPolicyUpdate(t *testing.T) {
 				testutils.Setenv(t, "KRB5CCNAME", tc.krb5ccname)
 			}
 
-			conf := createConf(t, adsysDir)
+			conf := createConf(t, confWithAdsysDir(adsysDir), confWithBackend(tc.backend))
 			if tc.sssdConf != "" {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
@@ -1003,7 +1054,7 @@ func TestPolicyDebugGPOListScript(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			systemAnswer(t, tc.systemAnswer)
 
-			conf := createConf(t, "")
+			conf := createConf(t)
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
 			}
@@ -1083,6 +1134,8 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	err := exec.Command("pkg-config", "--exists", "nss_wrapper").Run()
 	require.NoError(t, err, "libnss-wrapper is not installed on disk, either skip integration tests or install it")
 
+	mockWinbindLibPath := testutils.BuildWinbindMock(t, filepath.Join(rootProjectDir, "internal/ad/backends/winbind"))
+
 	var subArgs []string
 	// We are going to only reexec ourself: only take options (without -run)
 	// and redirect coverage file
@@ -1127,7 +1180,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		fmt.Sprintf("PYTHONPATH=%s", admock),
 
 		// override user and host database
-		"LD_PRELOAD=libnss_wrapper.so",
+		fmt.Sprintf("LD_PRELOAD=libnss_wrapper.so:%s", mockWinbindLibPath),
 		fmt.Sprintf("NSS_WRAPPER_PASSWD=%s", passwd),
 		"NSS_WRAPPER_GROUP=/etc/group",
 	)

@@ -9,7 +9,7 @@ import (
 func TestCompletion(t *testing.T) {
 	systemAnswer(t, "polkit_yes")
 
-	conf := createConf(t, "")
+	conf := createConf(t)
 	defer runDaemon(t, conf)()
 
 	out, err := runClient(t, conf, "completion", "bash")

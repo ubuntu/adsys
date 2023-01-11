@@ -20,7 +20,7 @@ func TestWinbind(t *testing.T) {
 	// Build mock libwbclient
 	var mockLibPath string
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		mockLibPath = buildMockLib(t)
+		mockLibPath = testutils.BuildWinbindMock(t, ".")
 	}
 
 	// We setup and rerun in a subprocess because we need to preload the mock libwbclient
@@ -183,25 +183,6 @@ func setupSubprocessForTest(t *testing.T, mockLibPath string) bool {
 	}
 
 	return true
-}
-
-func buildMockLib(t *testing.T) string {
-	t.Helper()
-
-	cmd := exec.Command("pkg-config", "--cflags-only-I", "wbclient")
-	cflags, err := cmd.Output()
-	require.NoError(t, err, "libwbclient-dev is not installed on disk, either skip these tests or install the required package")
-
-	// Build mock libwbclient
-	tmpdir := t.TempDir()
-	libPath := filepath.Join(tmpdir, "libwbclient.so.0")
-	args := strings.Fields(string(cflags))
-	args = append(args, "-fPIC", "-shared", "mock/libwbclient_mock.c", "-o", libPath)
-	// #nosec G204: this is only for tests, under controlled args
-	out, err := exec.Command("gcc", args...).CombinedOutput()
-	require.NoError(t, err, "failed to build mock libwbclient: ", string(out))
-
-	return libPath
 }
 
 func TestMain(m *testing.M) {
