@@ -41,7 +41,7 @@ func TestServiceStop(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			systemAnswer(t, tc.daemonAnswer)
 
-			conf := createConf(t, "", "sssd")
+			conf := createConf(t)
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
 			}
@@ -64,7 +64,7 @@ func TestServiceStop(t *testing.T) {
 func TestServiceStopWaitForHangingClient(t *testing.T) {
 	systemAnswer(t, "polkit_yes")
 
-	conf := createConf(t, "", "sssd")
+	conf := createConf(t)
 	d := daemon.New()
 	changeAppArgs(t, d, conf)
 
@@ -108,7 +108,7 @@ func TestServiceStopWaitForHangingClient(t *testing.T) {
 func TestServiceStopForcedWithHangingClient(t *testing.T) {
 	systemAnswer(t, "polkit_yes")
 
-	conf := createConf(t, "", "sssd")
+	conf := createConf(t)
 	d := daemon.New()
 	changeAppArgs(t, d, conf)
 
@@ -171,7 +171,7 @@ func TestServiceCat(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			systemAnswer(t, tc.systemAnswer)
 
-			conf := createConf(t, "", "sssd")
+			conf := createConf(t)
 			if !tc.daemonNotStarted && !tc.coverCatClient {
 				defer runDaemon(t, conf)()
 			}
@@ -305,7 +305,7 @@ func TestServiceStatus(t *testing.T) {
 
 			adsysDir := t.TempDir()
 			cachedPoliciesDir := filepath.Join(adsysDir, "cache", "policies")
-			conf := createConf(t, adsysDir, "sssd")
+			conf := createConf(t, confWithAdsysDir(adsysDir))
 			if tc.sssdConf != "" {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")

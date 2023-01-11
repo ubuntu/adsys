@@ -45,7 +45,7 @@ func TestPolicyAdmx(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			systemAnswer(t, tc.systemAnswer)
 
-			conf := createConf(t, "", "sssd")
+			conf := createConf(t)
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
 			}
@@ -152,7 +152,7 @@ func TestPolicyApplied(t *testing.T) {
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: failed to copy user policies cache")
 			}
-			conf := createConf(t, dir, "sssd")
+			conf := createConf(t, confWithAdsysDir(dir))
 
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
@@ -987,7 +987,7 @@ func TestPolicyUpdate(t *testing.T) {
 				testutils.Setenv(t, "KRB5CCNAME", tc.krb5ccname)
 			}
 
-			conf := createConf(t, adsysDir, tc.backend)
+			conf := createConf(t, confWithAdsysDir(adsysDir), confWithBackend(tc.backend))
 			if tc.sssdConf != "" {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
@@ -1054,7 +1054,7 @@ func TestPolicyDebugGPOListScript(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			systemAnswer(t, tc.systemAnswer)
 
-			conf := createConf(t, "", "sssd")
+			conf := createConf(t)
 			if !tc.daemonNotStarted {
 				defer runDaemon(t, conf)()
 			}

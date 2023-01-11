@@ -79,7 +79,7 @@ func TestMain(m *testing.M) {
 func TestStartAndStopDaemon(t *testing.T) {
 	systemAnswer(t, "polkit_yes")
 
-	conf := createConf(t, "", "sssd")
+	conf := createConf(t)
 	quit := runDaemon(t, conf)
 	quit()
 }
@@ -193,16 +193,43 @@ client_timeout: %d`, socket, tc.timeout)), 0600)
 
 // createConf generates an adsys configuration in a temporary directory
 // It will use adsysDir for socket, cache and run dir if provided.
-func createConf(t *testing.T, adsysDir string, backend string) (conf string) {
+
+// Option represents an optional function to change the winbind backend.
+type confOption func(*confOptions)
+
+type confOptions struct {
+	adsysDir string
+	backend  string
+}
+
+func confWithAdsysDir(adsysDir string) confOption {
+	return func(o *confOptions) {
+		o.adsysDir = adsysDir
+	}
+}
+
+func confWithBackend(backend string) confOption {
+	return func(o *confOptions) {
+		o.backend = backend
+	}
+}
+
+func createConf(t *testing.T, opts ...confOption) (conf string) {
 	t.Helper()
 
-	dir := adsysDir
-	if dir == "" {
-		dir = t.TempDir()
+	// defaults
+	args := confOptions{
+		adsysDir: t.TempDir(),
+		backend:  "sssd",
+	}
+
+	// applied options
+	for _, o := range opts {
+		o(&args)
 	}
 
 	// Create config
-	confFile := filepath.Join(dir, "adsys.yaml")
+	confFile := filepath.Join(args.adsysDir, "adsys.yaml")
 	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
 # Service and client configuration
 verbose: 2
@@ -228,10 +255,10 @@ policykit_dir: %s/polkit-1
 apparmor_dir: %s/apparmor.d/adsys
 apparmorfs_dir: %s/apparmorfs
 systemunit_dir: %s/systemd/system
-`, dir, dir, dir, backend, dir, dir, dir, dir, dir, dir, dir)), 0600)
+`, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir)), 0600)
 	require.NoError(t, err, "Setup: config file should be created")
 
-	require.NoError(t, os.MkdirAll(filepath.Join(dir, "dconf"), 0750), "Setup: should create dconf dir")
+	require.NoError(t, os.MkdirAll(filepath.Join(args.adsysDir, "dconf"), 0750), "Setup: should create dconf dir")
 	// Don’t create empty dirs for sudo and polkit: todo: same for dconf?
 
 	return confFile
