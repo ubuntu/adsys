@@ -9,12 +9,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/dconf"
+	"github.com/ubuntu/adsys/internal/testutils"
 	"gopkg.in/yaml.v3"
 )
-
-var update bool
 
 func TestGenerate(t *testing.T) {
 	t.Parallel()
@@ -84,7 +82,7 @@ func TestGenerate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			tc.root = filepath.Join("testdata", "system", tc.root)
+			tc.root = filepath.Join(testutils.TestFamilyPath(t), "system", tc.root)
 			if tc.currentSessions == "" {
 				tc.currentSessions = "ubuntu:GNOME"
 			} else if tc.currentSessions == "-" {
@@ -92,7 +90,7 @@ func TestGenerate(t *testing.T) {
 			}
 
 			var dconfPolicies []dconf.Policy
-			data, err := os.ReadFile(filepath.Join("testdata", "defs", def))
+			data, err := os.ReadFile(filepath.Join(testutils.TestFamilyPath(t), "defs", def))
 			require.NoError(t, err, "Setup: cannot load policy definition")
 			err = yaml.Unmarshal(data, &dconfPolicies)
 			require.NoError(t, err, "Setup: cannot create policy objects")
@@ -104,31 +102,17 @@ func TestGenerate(t *testing.T) {
 			}
 			require.NoError(t, err, "Generate should issue no error")
 
-			goldPath := filepath.Join("testdata", "golden", def)
-			// Update golden file
-			if update {
-				t.Logf("updating golden file %s", goldPath)
-				data, err = yaml.Marshal(got)
-				require.NoError(t, err, "Cannot marshal expanded policies to YAML")
-				err = os.WriteFile(goldPath, data, 0600)
-				require.NoError(t, err, "Cannot write golden file")
-			}
-			var want []common.ExpandedPolicy
-			data, err = os.ReadFile(goldPath)
-			require.NoError(t, err, "Cannot load policy golden file")
-			err = yaml.Unmarshal(data, &want)
-			require.NoError(t, err, "Cannot create expanded policy objects from golden file")
+			want := testutils.LoadWithUpdateFromGoldenYAML(t, got)
 			if len(want) == 0 {
 				want = nil
 			}
-
 			assert.Equal(t, want, got, "expected and got differs")
 		})
 	}
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()
