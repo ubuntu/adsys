@@ -21,8 +21,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var update bool
-
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
@@ -45,58 +43,58 @@ func TestApplyPolicy(t *testing.T) {
 		wantErr bool
 	}{
 		// computer cases
-		"computer, one profile":                    {},
-		"computer, multiple profiles,":             {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo\nusr.bin.bar\nnested/usr.bin.baz"}}},
-		"computer, duplicated profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo\nusr.bin.foo"}}},
-		"computer, blank line profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo\n\nusr.bin.bar\n"}}},
-		"computer, profiles with whitespace":       {entries: []entry.Entry{{Key: "apparmor-machine", Value: " usr.bin.foo\n\n usr.bin.bar   \nnested/usr.bin.baz "}}},
-		"computer, whitespace-only value":          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "       "}}, noParserOutput: true},
-		"computer, only blank profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "\n\n\n"}}, noParserOutput: true},
-		"computer, previous profiles are unloaded": {destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
-		"computer, user policies are unloaded":     {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, entries: []entry.Entry{}, existingLoadedPolicies: []string{"/usr/bin/pam_binary", "/usr/bin/pam_binary//ubuntu", "/usr/bin/pam_binary//DEFAULT"}},
-		"existing .old directory is removed":       {destsAlreadyExist: map[string]string{"only-machine": "machine.old"}},
-		"existing .new directory is removed":       {destsAlreadyExist: map[string]string{"only-machine": "machine.new"}},
+		"Computer, one profile":                    {},
+		"Computer, multiple profiles,":             {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo\nusr.bin.bar\nnested/usr.bin.baz"}}},
+		"Computer, duplicated profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo\nusr.bin.foo"}}},
+		"Computer, blank line profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo\n\nusr.bin.bar\n"}}},
+		"Computer, profiles with whitespace":       {entries: []entry.Entry{{Key: "apparmor-machine", Value: " usr.bin.foo\n\n usr.bin.bar   \nnested/usr.bin.baz "}}},
+		"Computer, whitespace-only value":          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "       "}}, noParserOutput: true},
+		"Computer, only blank profiles":            {entries: []entry.Entry{{Key: "apparmor-machine", Value: "\n\n\n"}}, noParserOutput: true},
+		"Computer, previous profiles are unloaded": {destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
+		"Computer, user policies are unloaded":     {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, entries: []entry.Entry{}, existingLoadedPolicies: []string{"/usr/bin/pam_binary", "/usr/bin/pam_binary//ubuntu", "/usr/bin/pam_binary//DEFAULT"}},
+		"Existing .new directory is removed":       {destsAlreadyExist: map[string]string{"only-machine": "machine.new"}},
+		"Existing .old directory is removed":       {destsAlreadyExist: map[string]string{"only-machine": "machine.old"}},
 
 		// shared cases
-		"no profiles, existing rules are removed": {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
-		"no profiles, apparmor directory absent":  {entries: []entry.Entry{}, noParserOutput: true},
-		"unexpected entry key":                    {entries: []entry.Entry{{Key: "apparmor-foo", Value: "usr.bin.foo"}}, noParserOutput: true},
+		"No profiles, existing rules are removed": {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}},
+		"No profiles, apparmor directory absent":  {entries: []entry.Entry{}, noParserOutput: true},
+		"Unexpected entry key":                    {entries: []entry.Entry{{Key: "apparmor-foo", Value: "usr.bin.foo"}}, noParserOutput: true},
 
 		// user cases
-		"user, valid mapping":                                   {destsAlreadyExist: map[string]string{"machine-with-users": "machine"}, entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, user: true},
-		"user, valid mapping, unchanged content":                {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, entries: []entry.Entry{{Key: "apparmor-users", Value: "users/unchanged_user"}}, noParserOutput: true, user: true},
-		"user, no machine profiles":                             {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, user: true},
-		"user, no entries, existing user profile is deleted":    {destsAlreadyExist: map[string]string{"users": "users"}, entries: []entry.Entry{}, noParserOutput: true, user: true},
-		"user, no user profiles, machine profiles are unloaded": {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, existingLoadedPolicies: []string{"/usr/bin/pam_binary//ubuntu"}, user: true},
-		"user, error on empty user profile":                     {entries: []entry.Entry{{Key: "apparmor-users", Value: ""}}, noParserOutput: true, saveAssetsError: true, wantErr: true, user: true},
-		"user, error on save assets failing":                    {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, saveAssetsError: true, wantErr: true, user: true},
-		"user, error on overwriting profile contents":           {destsAlreadyExist: map[string]string{"users": "users"}, readOnlyApparmorDir: "users", entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, wantErr: true, user: true},
-		"user, error on multiple profiles":                      {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user\nusers/confined_user"}}, noParserOutput: true, wantErr: true, user: true},
-		"user, error on invalid user profile, restore previous": {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, apparmorParserError: "-r", entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, wantErr: true, user: true},
-		"user, error on invalid user profile, delete previous":  {destsAlreadyExist: map[string]string{"machine-with-users": "machine"}, apparmorParserError: "-r", entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, wantErr: true, user: true},
+		"User, valid mapping":                                   {destsAlreadyExist: map[string]string{"machine-with-users": "machine"}, entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, user: true},
+		"User, valid mapping, unchanged content":                {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, entries: []entry.Entry{{Key: "apparmor-users", Value: "users/unchanged_user"}}, noParserOutput: true, user: true},
+		"User, no machine profiles":                             {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, user: true},
+		"User, no entries, existing user profile is deleted":    {destsAlreadyExist: map[string]string{"users": "users"}, entries: []entry.Entry{}, noParserOutput: true, user: true},
+		"User, no user profiles, machine profiles are unloaded": {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, existingLoadedPolicies: []string{"/usr/bin/pam_binary//ubuntu"}, user: true},
+		"User, error on empty user profile":                     {entries: []entry.Entry{{Key: "apparmor-users", Value: ""}}, noParserOutput: true, saveAssetsError: true, wantErr: true, user: true},
+		"User, error on save assets failing":                    {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, saveAssetsError: true, wantErr: true, user: true},
+		"User, error on overwriting profile contents":           {destsAlreadyExist: map[string]string{"users": "users"}, readOnlyApparmorDir: "users", entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, noParserOutput: true, wantErr: true, user: true},
+		"User, error on multiple profiles":                      {entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user\nusers/confined_user"}}, noParserOutput: true, wantErr: true, user: true},
+		"User, error on invalid user profile, restore previous": {destsAlreadyExist: map[string]string{"machine-with-users": "machine", "users": "users"}, apparmorParserError: "-r", entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, wantErr: true, user: true},
+		"User, error on invalid user profile, delete previous":  {destsAlreadyExist: map[string]string{"machine-with-users": "machine"}, apparmorParserError: "-r", entries: []entry.Entry{{Key: "apparmor-users", Value: "users/privileged_user"}}, wantErr: true, user: true},
 
 		// other edge cases
-		"no apparmor_parser and no entries":       {entries: []entry.Entry{}, noApparmorParser: true, noParserOutput: true},
-		"no apparmor_parser and entries":          {noApparmorParser: true, noParserOutput: true, wantErr: true},
-		"read-only root directory and no entries": {entries: []entry.Entry{}, readOnlyApparmorDir: ".", noParserOutput: true},
+		"No apparmor_parser and no entries":       {entries: []entry.Entry{}, noApparmorParser: true, noParserOutput: true},
+		"No apparmor_parser and entries":          {noApparmorParser: true, noParserOutput: true, wantErr: true},
+		"Read-only root directory and no entries": {entries: []entry.Entry{}, readOnlyApparmorDir: ".", noParserOutput: true},
 
 		// error cases
-		"error on loading profiles failing":                {apparmorParserError: "-r", wantErr: true},
-		"error on preprocessing new profiles failing":      {apparmorParserError: "-N", wantErr: true},
-		"error on preprocessing old profiles failing":      {destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo"}, apparmorParserError: "-N", wantErr: true},
-		"error on unloading all profiles failing":          {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}, apparmorParserError: "-R", wantErr: true},
-		"error on unloading old profiles failing":          {destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/bar", "/usr/bin/baz"}, apparmorParserError: "-R", wantErr: true},
-		"error on save assets dumping failing":             {noParserOutput: true, saveAssetsError: true, wantErr: true},
-		"error on removing unused assets after dump":       {noParserOutput: true, removeUnusedAssetsError: true, wantErr: true},
-		"error on profile being a directory":               {entries: []entry.Entry{{Key: "apparmor-machine", Value: "nested/"}}, noParserOutput: true, wantErr: true},
-		"error on absent profile":                          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.nonexistent"}}, noParserOutput: true, wantErr: true},
-		"error on absent loaded policies file":             {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"parseError"}, noParserOutput: true, wantErr: true},
-		"error on file as a directory":                     {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo/notadir"}}, noParserOutput: true, wantErr: true},
-		"error on read-only root directory with entries":   {readOnlyApparmorDir: ".", noParserOutput: true, wantErr: true},
-		"error on read-only machine directory":             {destsAlreadyExist: map[string]string{"only-machine": "machine"}, readOnlyApparmorDir: "machine", wantErr: true},
-		"error on read-only machine directory, no entries": {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"only-machine": "machine"}, readOnlyApparmorDir: "machine/nested", wantErr: true},
-		"error on read-only .old directory":                {destsAlreadyExist: map[string]string{"only-machine": "machine.old"}, readOnlyApparmorDir: "machine.old", noParserOutput: true, wantErr: true},
-		"error on read-only .new directory":                {destsAlreadyExist: map[string]string{"only-machine": "machine.new"}, readOnlyApparmorDir: "machine.new", noParserOutput: true, wantErr: true},
+		"Error on loading profiles failing":                {apparmorParserError: "-r", wantErr: true},
+		"Error on preprocessing new profiles failing":      {apparmorParserError: "-N", wantErr: true},
+		"Error on preprocessing old profiles failing":      {destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo"}, apparmorParserError: "-N", wantErr: true},
+		"Error on unloading all profiles failing":          {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/foo", "/usr/bin/bar", "/usr/bin/baz"}, apparmorParserError: "-R", wantErr: true},
+		"Error on unloading old profiles failing":          {destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"/usr/bin/bar", "/usr/bin/baz"}, apparmorParserError: "-R", wantErr: true},
+		"Error on save assets dumping failing":             {noParserOutput: true, saveAssetsError: true, wantErr: true},
+		"Error on removing unused assets after dump":       {noParserOutput: true, removeUnusedAssetsError: true, wantErr: true},
+		"Error on profile being a directory":               {entries: []entry.Entry{{Key: "apparmor-machine", Value: "nested/"}}, noParserOutput: true, wantErr: true},
+		"Error on absent profile":                          {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.nonexistent"}}, noParserOutput: true, wantErr: true},
+		"Error on absent loaded policies file":             {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"only-machine": "machine"}, existingLoadedPolicies: []string{"parseError"}, noParserOutput: true, wantErr: true},
+		"Error on file as a directory":                     {entries: []entry.Entry{{Key: "apparmor-machine", Value: "usr.bin.foo/notadir"}}, noParserOutput: true, wantErr: true},
+		"Error on read-only root directory with entries":   {readOnlyApparmorDir: ".", noParserOutput: true, wantErr: true},
+		"Error on read-only machine directory":             {destsAlreadyExist: map[string]string{"only-machine": "machine"}, readOnlyApparmorDir: "machine", wantErr: true},
+		"Error on read-only machine directory, no entries": {entries: []entry.Entry{}, destsAlreadyExist: map[string]string{"only-machine": "machine"}, readOnlyApparmorDir: "machine/nested", wantErr: true},
+		"Error on read-only .old directory":                {destsAlreadyExist: map[string]string{"only-machine": "machine.old"}, readOnlyApparmorDir: "machine.old", noParserOutput: true, wantErr: true},
+		"Error on read-only .new directory":                {destsAlreadyExist: map[string]string{"only-machine": "machine.new"}, readOnlyApparmorDir: "machine.new", noParserOutput: true, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -130,7 +128,7 @@ func TestApplyPolicy(t *testing.T) {
 			for source, dest := range tc.destsAlreadyExist {
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "apparmor_dir", source), filepath.Join(apparmorDir, dest),
+						filepath.Join(testutils.TestFamilyPath(t), "apparmor_dir", source), filepath.Join(apparmorDir, dest),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't create initial apparmor dir machine profiles content")
 			}
@@ -174,10 +172,9 @@ func TestApplyPolicy(t *testing.T) {
 				})
 				require.NoError(t, err, "Setup: can't restore permissions of dumped files")
 			}
-			testutils.CompareTreesWithFiltering(t, apparmorDir, filepath.Join("testdata", "golden", testutils.NormalizeGoldenName(t, t.Name()), "etc", "apparmor.d", "adsys"), update)
+			testutils.CompareTreesWithFiltering(t, apparmorDir, filepath.Join(testutils.GoldenPath(t), "etc", "apparmor.d", "adsys"), testutils.Update())
 
 			// Check that apparmor_parser was called with the expected arguments
-			goldPath := filepath.Join("testdata", "golden", testutils.NormalizeGoldenName(t, t.Name()), fmt.Sprintf("parser_output-%s", userOrMachine(tc.user)))
 			got, err := os.ReadFile(parserCmdOutputFile)
 			// Return early if we don't want to check apparmor_parser output for
 			// whatever reason (e.g. command did not execute, returned an error before etc.)
@@ -187,13 +184,11 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "Setup: Can't read parser output file")
 			got = []byte(normalizeOutput(t, string(got), apparmorDir))
-			if update {
-				err = os.WriteFile(goldPath, got, 0600)
-				require.NoError(t, err, "Setup: Can't write golden file")
-			}
-			want, err := os.ReadFile(goldPath)
+
+			goldPath := filepath.Join(testutils.GoldenPath(t), fmt.Sprintf("parser_output-%s", userOrMachine(tc.user)))
+			want := testutils.LoadWithUpdateFromGolden(t, string(got), testutils.WithGoldenPath(goldPath))
 			require.NoError(t, err, "Setup: Can't read golden file")
-			require.Equal(t, string(want), string(got), "Apparmor parser command output doesn't match")
+			require.Equal(t, want, string(got), "Apparmor parser command output doesn't match")
 		})
 	}
 }
@@ -322,7 +317,7 @@ func mockLoadedPoliciesFile(t *testing.T, policies []string) string {
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()
