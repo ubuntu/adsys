@@ -24,19 +24,19 @@ func TestAdsysdRunScripts(t *testing.T) {
 		wantSessionFlagFileRemoved bool
 		wantErr                    bool
 	}{
-		"one script":                      {orderFile: "simple"},
-		"multiple scripts":                {orderFile: "multiple"},
-		"multiple scripts with subfolder": {orderFile: "multiple-subfolder"},
+		"One script":                      {orderFile: "simple"},
+		"Multiple scripts":                {orderFile: "multiple"},
+		"Multiple scripts with subfolder": {orderFile: "multiple-subfolder"},
 
-		"logoff cleans up running flag":           {orderFile: "logoff", wantSessionFlagFileRemoved: true},
-		"shutdown machine cleans up running flag": {orderFile: "shutdown", scriptObjectName: "machine", wantSessionFlagFileRemoved: true},
-		"order file is missing but allowed":       {orderFile: "missing", args: []string{"--allow-order-missing"}},
-		"one missing script is allowed":           {orderFile: "script-missing"},
-		"failing script is allowed":               {orderFile: "script-failing"},
+		"Logoff cleans up running flag":           {orderFile: "logoff", wantSessionFlagFileRemoved: true},
+		"Shutdown machine cleans up running flag": {orderFile: "shutdown", scriptObjectName: "machine", wantSessionFlagFileRemoved: true},
+		"Order file is missing but allowed":       {orderFile: "missing", args: []string{"--allow-order-missing"}},
+		"One missing script is allowed":           {orderFile: "script-missing"},
+		"Failing script is allowed":               {orderFile: "script-failing"},
 
 		// Error cases
-		"error on order file not existing": {orderFile: "missing", wantErr: true},
-		"error on directory not ready":     {orderFile: "simple", notready: true, wantErr: true},
+		"Error on order file not existing": {orderFile: "missing", wantErr: true},
+		"Error on directory not ready":     {orderFile: "simple", notready: true, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -55,7 +55,7 @@ func TestAdsysdRunScripts(t *testing.T) {
 			scriptRunBaseDir := filepath.Join(p, tc.scriptObjectName)
 
 			// Setup script directory
-			testutils.Copy(t, "testdata/RunScripts/scripts", scriptRunBaseDir)
+			testutils.Copy(t, filepath.Join(testutils.TestFamilyPath(t), "scripts"), scriptRunBaseDir)
 
 			if tc.notready {
 				require.NoError(t, os.RemoveAll(filepath.Join(scriptRunBaseDir, ".ready")), "Setup: can't remove .ready flag file")
@@ -85,7 +85,7 @@ func TestAdsysdRunScripts(t *testing.T) {
 
 			// Get and compare oracle file to check order
 			src := filepath.Join(p, "golden")
-			testutils.CompareTreesWithFiltering(t, src, filepath.Join("testdata", "RunScripts", "golden", name), update)
+			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
