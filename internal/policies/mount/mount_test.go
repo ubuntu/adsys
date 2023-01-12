@@ -23,10 +23,10 @@ func TestNew(t *testing.T) {
 
 		wantErr bool
 	}{
-		"creates manager successfully": {},
+		"Creates manager successfully": {},
 
-		"creation fails with invalid runDir permissions":        {readOnlyRunDir: true, wantErr: true},
-		"creation fails with invalid systemUnitDir permissions": {readOnlySystemdDir: true, wantErr: true},
+		"Error when runDir has invalid permissions":        {readOnlyRunDir: true, wantErr: true},
+		"Error when systemUnitDir has invalid permissions": {readOnlySystemdDir: true, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -91,85 +91,85 @@ func TestApplyPolicy(t *testing.T) {
 	}{
 		/***************************** USER ****************************/
 		// Success cases.
-		"user, successfully apply policy for entry with one value":              {},
-		"user, successfully apply policy for entry with multiple values":        {entries: []string{"entry with multiple values"}},
-		"user, successfully apply policy for entry with repeated values":        {entries: []string{"entry with repeated values"}},
-		"user, successfully apply policy for entry with repeated tagged values": {entries: []string{"entry with repeated tagged values"}},
-		"user, successfully apply policy filtering out unsupported keys":        {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
+		"User, successfully apply policy for entry with one value":              {},
+		"User, successfully apply policy for entry with multiple values":        {entries: []string{"entry with multiple values"}},
+		"User, successfully apply policy for entry with repeated values":        {entries: []string{"entry with repeated values"}},
+		"User, successfully apply policy for entry with repeated tagged values": {entries: []string{"entry with repeated tagged values"}},
+		"User, successfully apply policy filtering out unsupported keys":        {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "user-mounts"}},
 
 		// Special cases.
-		"user, successfully apply policy with kerberos auth tags":                             {entries: []string{"entry with kerberos auth tags"}},
-		"user, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}},
-		"user, does nothing if the entry is disabled":                                         {isDisabled: true},
+		"User, successfully apply policy with kerberos auth tags":                             {entries: []string{"entry with kerberos auth tags"}},
+		"User, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}},
+		"User, does nothing if the entry is disabled":                                         {isDisabled: true},
 
 		// Badly formatted entries.
-		"user, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}},
-		"user, successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}},
-		"user, creates only dirs if the entry is empty":                  {entries: []string{"entry with no value"}},
-		"user, creates only dirs if there are no entries":                {entries: []string{"no entries"}},
+		"User, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}},
+		"User, successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}},
+		"User, creates only dirs if the entry is empty":                  {entries: []string{"entry with no value"}},
+		"User, creates only dirs if there are no entries":                {entries: []string{"no entries"}},
 
 		// Policy refresh.
-		"user, mount file is removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}},
-		"user, mount file is removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}},
-		"user, mount file is removed on refreshing policy with a disabled entry":              {secondCall: []string{"entry with one value"}, isDisabledSecondCall: true},
-		"user, mount file is updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}},
+		"User, mount file is removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}},
+		"User, mount file is removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}},
+		"User, mount file is removed on refreshing policy with a disabled entry":              {secondCall: []string{"entry with one value"}, isDisabledSecondCall: true},
+		"User, mount file is updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}},
 
 		/**************************** SYSTEM ***************************/
 		// Success cases.
-		"system, successfully apply policy for entry with one value":              {isComputer: true},
-		"system, successfully apply policy for entry with multiple values":        {entries: []string{"entry with multiple values"}, isComputer: true},
-		"system, successfully apply policy for entry with repeated values":        {entries: []string{"entry with repeated values"}, isComputer: true},
-		"system, successfully apply policy for entry with repeated tagged values": {entries: []string{"entry with repeated tagged values"}, isComputer: true},
-		"system, successfully apply policy filtering out unsupported keys":        {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "system-mounts"}, isComputer: true},
+		"System, successfully apply policy for entry with one value":              {isComputer: true},
+		"System, successfully apply policy for entry with multiple values":        {entries: []string{"entry with multiple values"}, isComputer: true},
+		"System, successfully apply policy for entry with repeated values":        {entries: []string{"entry with repeated values"}, isComputer: true},
+		"System, successfully apply policy for entry with repeated tagged values": {entries: []string{"entry with repeated tagged values"}, isComputer: true},
+		"System, successfully apply policy filtering out unsupported keys":        {entries: []string{"entry with multiple values", "entry with one value"}, keys: []string{"unsupported", "system-mounts"}, isComputer: true},
 
 		// Special cases.
-		"system, successfully apply policy with kerberos tagged values":                         {entries: []string{"entry with kerberos auth tags"}, isComputer: true},
-		"system, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}, isComputer: true},
-		"system, only emit a warning when starting new units and systemctl fails":               {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}},
-		"system, only emit a warning when stopping previous units and systemctl fails":          {isComputer: true, secondCall: []string{"entry with multiple values"}, secondSystemCtlFailingArgs: []string{"stop"}},
-		"system, does nothing if the entry is disabled":                                         {isComputer: true, isDisabled: true},
+		"System, successfully apply policy with kerberos tagged values":                         {entries: []string{"entry with kerberos auth tags"}, isComputer: true},
+		"System, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}, isComputer: true},
+		"System, only emit a warning when starting new units and systemctl fails":               {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}},
+		"System, only emit a warning when stopping previous units and systemctl fails":          {isComputer: true, secondCall: []string{"entry with multiple values"}, secondSystemCtlFailingArgs: []string{"stop"}},
+		"System, does nothing if the entry is disabled":                                         {isComputer: true, isDisabled: true},
 
 		// Badly formatted entries.
-		"system, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}, isComputer: true},
-		"system, successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}, isComputer: true},
-		"system, does nothing if the entry is empty":                       {entries: []string{"entry with no value"}, isComputer: true},
-		"system, does nothing if there are no entries":                     {entries: []string{"no entries"}, isComputer: true},
+		"System, successfully apply policy trimming whitespaces":           {entries: []string{"entry with spaces"}, isComputer: true},
+		"System, successfully apply policy trimming sequential linebreaks": {entries: []string{"entry with multiple linebreaks"}, isComputer: true},
+		"System, does nothing if the entry is empty":                       {entries: []string{"entry with no value"}, isComputer: true},
+		"System, does nothing if there are no entries":                     {entries: []string{"no entries"}, isComputer: true},
 
 		// Policy refresh.
-		"system, mount units are added on refreshing policy with some matching values":            {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with multiple matching values"}, isComputer: true},
-		"system, mount units are updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}, isComputer: true},
-		"system, mount units are removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}, isComputer: true},
-		"system, mount units are removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}, isComputer: true},
-		"system, mount units are removed on refreshing policy with disabled entry":                {secondCall: []string{"entry with one value"}, isDisabledSecondCall: true},
+		"System, mount units are added on refreshing policy with some matching values":            {entries: []string{"entry with multiple values"}, secondCall: []string{"entry with multiple matching values"}, isComputer: true},
+		"System, mount units are updated on refreshing policy with an entry with multiple values": {secondCall: []string{"entry with multiple values"}, isComputer: true},
+		"System, mount units are removed on refreshing policy with no entries":                    {secondCall: []string{"no entries"}, isComputer: true},
+		"System, mount units are removed on refreshing policy with an empty entry":                {secondCall: []string{"entry with no value"}, isComputer: true},
+		"System, mount units are removed on refreshing policy with disabled entry":                {secondCall: []string{"entry with one value"}, isDisabledSecondCall: true},
 
 		/**************************** GENERIC **************************/
 		// Special cases.
-		"creates only dirs when trying to policy with unsupported key":  {keys: []string{"unsupported"}},
-		"creates only dirs when trying to apply policy with no entries": {entries: []string{"no entries"}},
+		"Creates only dirs when trying to policy with unsupported key":  {keys: []string{"unsupported"}},
+		"Creates only dirs when trying to apply policy with no entries": {entries: []string{"no entries"}},
 
 		/***************************** USER ****************************/
 		// Error cases.
-		"error when user is not found":                                                               {objectName: "dont exist", wantErr: true},
-		"error when user has invalid uid":                                                            {userReturnedUID: "invalid", wantErr: true},
-		"error when user has invalid gid":                                                            {userReturnedGID: "invalid", wantErr: true},
-		"error when users-userDir has invalid permissions":                                           {readOnlyUsersDir: true, wantErr: true},
-		"error when mounts file path already exists as a directory":                                  {pathAlreadyExists: true, wantErr: true},
-		"error when entry is errored":                                                                {entries: []string{"errored entry"}, wantErr: true},
-		"error when cleaning up user policy with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
-		"error when cleaning up user policy with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
-		"error when cleaning up user policy with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
-		"error when applying policy with entry containing badly formatted value":                     {entries: []string{"entry with badly formatted value"}, wantErr: true},
+		"Error when user is not found":                                                               {objectName: "dont exist", wantErr: true},
+		"Error when user has invalid uid":                                                            {userReturnedUID: "invalid", wantErr: true},
+		"Error when user has invalid gid":                                                            {userReturnedGID: "invalid", wantErr: true},
+		"Error when users-userDir has invalid permissions":                                           {readOnlyUsersDir: true, wantErr: true},
+		"Error when mounts file path already exists as a directory":                                  {pathAlreadyExists: true, wantErr: true},
+		"Error when entry is errored":                                                                {entries: []string{"errored entry"}, wantErr: true},
+		"Error when cleaning up user policy with invalid user":                                       {entries: []string{"no entries"}, objectName: "dont exist", wantErr: true},
+		"Error when cleaning up user policy with no entries and path already exists as a directory":  {entries: []string{"no entries"}, pathAlreadyExists: true, wantErr: true},
+		"Error when cleaning up user policy with empty entry and path already exists as a directory": {entries: []string{"entry with no value"}, pathAlreadyExists: true, wantErr: true},
+		"Error when applying policy with entry containing badly formatted value":                     {entries: []string{"entry with badly formatted value"}, wantErr: true},
 
 		/**************************** SYSTEM ***************************/
 		// Error cases.
-		"error when creating units with bad entry values":                        {entries: []string{"entry with badly formatted value"}, isComputer: true, wantErr: true},
-		"error when daemon-reload fails":                                         {firstSystemCtlFailingArgs: []string{"daemon-reload"}, isComputer: true, wantErr: true},
-		"error when disabling units for clean up and systemctl fails":            {secondCall: []string{"entry with multiple values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"disable"}, wantErrSecondCall: true},
-		"error when enabling new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"enable"}, wantErr: true},
-		"error when trying to update policy with badly formatted entry":          {secondCall: []string{"entry with badly formatted value"}, wantErrSecondCall: true, isComputer: true},
-		"error when applying policy and system mount unit already exists as dir": {isComputer: true, pathAlreadyExists: true, wantErr: true},
-		"error when updating policy and system mount unit to remove is a dir":    {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
-		"error when applying system policy and the entry is errored":             {entries: []string{"errored entry"}, isComputer: true, wantErr: true},
+		"Error when creating units with bad entry values":                        {entries: []string{"entry with badly formatted value"}, isComputer: true, wantErr: true},
+		"Error when daemon-reload fails":                                         {firstSystemCtlFailingArgs: []string{"daemon-reload"}, isComputer: true, wantErr: true},
+		"Error when disabling units for clean up and systemctl fails":            {secondCall: []string{"entry with multiple values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"disable"}, wantErrSecondCall: true},
+		"Error when enabling new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"enable"}, wantErr: true},
+		"Error when trying to update policy with badly formatted entry":          {secondCall: []string{"entry with badly formatted value"}, wantErrSecondCall: true, isComputer: true},
+		"Error when applying policy and system mount unit already exists as dir": {isComputer: true, pathAlreadyExists: true, wantErr: true},
+		"Error when updating policy and system mount unit to remove is a dir":    {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
+		"Error when applying system policy and the entry is errored":             {entries: []string{"errored entry"}, isComputer: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -273,8 +273,7 @@ func TestApplyPolicy(t *testing.T) {
 			if !tc.isComputer {
 				makeIndependentOfCurrentUID(t, runDir, u.Uid)
 			}
-			goldPath := filepath.Join("testdata", "golden", t.Name())
-			testutils.CompareTreesWithFiltering(t, rootDir, goldPath, mount.Update)
+			testutils.CompareTreesWithFiltering(t, rootDir, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
