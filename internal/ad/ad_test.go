@@ -1132,7 +1132,8 @@ func TestGetInfo(t *testing.T) {
 			require.NoError(t, err, "Setup: New should return no error")
 
 			msg := adc.GetInfo(context.Background())
-			testutils.LoadWithUpdateFromGolden(t, msg)
+			want := testutils.LoadWithUpdateFromGolden(t, msg)
+			require.Equal(t, want, msg, "Output does not match golden file content")
 		})
 	}
 }
