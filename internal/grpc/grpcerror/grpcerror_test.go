@@ -24,8 +24,8 @@ func TestFormat(t *testing.T) {
 		wantDaemonName       bool
 		wantOverridenMessage bool
 	}{
-		"non GRPC errors are returned as is": {err: errors.New(errMSG)},
-		"nil returns nil":                    {err: nil, wantNilError: true},
+		"Non GRPC errors are returned as is": {err: errors.New(errMSG)},
+		"Nil returns nil":                    {err: nil, wantNilError: true},
 
 		"GRPC Unavailable errors prints daemon name":                     {err: status.Error(codes.Unavailable, errMSG), wantDaemonName: true},
 		"GRPC Deadline errors don’t print status nor daemon nor message": {err: status.Error(codes.DeadlineExceeded, errMSG), wantOverridenMessage: true},

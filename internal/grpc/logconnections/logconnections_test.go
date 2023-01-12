@@ -48,8 +48,8 @@ func TestChildRecvMsgAndHandlerCalled(t *testing.T) {
 		"Info being nil has no impact":   {infoIsNil: true, wantRecvMsgNum: 1, wantHandlerNum: 1},
 
 		// Error cases
-		"Handler fails out":    {handlerShouldFail: true, wantCreationError: true},
-		"RecvMsg erroring out": {recvMsgError: true, wantHandlerNum: 1, wantRecvMsgError: true},
+		"Error when handler fails out":  {handlerShouldFail: true, wantCreationError: true},
+		"Error when RecvMsg errors out": {recvMsgError: true, wantHandlerNum: 1, wantRecvMsgError: true},
 	}
 	for name, tc := range tests {
 		tc := tc
