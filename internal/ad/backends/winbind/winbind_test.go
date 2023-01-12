@@ -46,11 +46,11 @@ func TestWinbind(t *testing.T) {
 		"Lookup with overridden ad_server with LDAP prefix": {staticADServer: "ldap://controller.overridden.com"},
 
 		// Error cases
-		"Error looking up domain":      {wbclientBehavior: "domain_not_found", wantErr: true},
-		"Error looking up DC name":     {wbclientBehavior: "error_getting_dc_name"},
-		"Error getting online status":  {wbclientBehavior: "error_getting_online_status"},
-		"Error when domain is offline": {wbclientBehavior: "domain_is_offline"},
-		"Error requesting krb5cc":      {wantKinitErr: true},
+		"Error when looking up domain":     {wbclientBehavior: "domain_not_found", wantErr: true},
+		"Error when looking up DC name":    {wbclientBehavior: "error_getting_dc_name"},
+		"Error when getting online status": {wbclientBehavior: "error_getting_online_status"},
+		"Error when domain is offline":     {wbclientBehavior: "domain_is_offline"},
+		"Error when requesting krb5cc":     {wantKinitErr: true},
 	}
 
 	for name, tc := range tests {
