@@ -14,8 +14,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var update bool
-
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
@@ -26,74 +24,74 @@ func TestApplyPolicy(t *testing.T) {
 
 		wantErr bool
 	}{
-		// user cases
-		"new user": {entries: []entry.Entry{
+		// User cases
+		"New user": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}}},
-		"user updates existing value": {entries: []entry.Entry{
+		"User updates existing value": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
 			existingDconfDir: "existing-user"},
-		"user updates with different value": {entries: []entry.Entry{
+		"User updates with different value": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"}},
 			existingDconfDir: "existing-user"},
-		"user updates key is now disabled": {entries: []entry.Entry{
+		"User updates key is now disabled": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Disabled: true, Meta: "s"}},
 			existingDconfDir: "existing-user"},
-		"update user disabled key with value": {entries: []entry.Entry{
+		"Update user disabled key with value": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			existingDconfDir: "user-with-disabled-value"},
 
-		// machine cases
-		"first boot": {entries: []entry.Entry{
+		// Machine cases
+		"First boot": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: true, existingDconfDir: "-"},
-		"machine updates existing value": {entries: []entry.Entry{
+		"Machine updates existing value": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
 			isComputer: true},
-		"machine updates with different value": {entries: []entry.Entry{
+		"Machine updates with different value": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"}},
 			isComputer: true},
-		"machine updates key is now disabled": {entries: []entry.Entry{
+		"Machine updates key is now disabled": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Disabled: true, Meta: "s"}},
 			isComputer: true},
-		"update machine disabled key with value": {entries: []entry.Entry{
+		"Update machine disabled key with value": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: true, existingDconfDir: "machine-with-disabled-value"},
 
-		"no policy still generates a valid db": {entries: nil},
-		"multiple keys same category": {entries: []entry.Entry{
+		"No policy still generates a valid db": {entries: nil},
+		"Multiple keys same category": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
 			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"},
 		}},
-		"multiple sections": {entries: []entry.Entry{
+		"Multiple sections": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
 			{Key: "com/ubuntu/category2/key-s2", Value: "'onekey-s2'", Meta: "s"},
 		}},
-		"multiple sections with disabled keys": {entries: []entry.Entry{
+		"Multiple sections with disabled keys": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Disabled: true, Meta: "s"},
 			{Key: "com/ubuntu/category2/key-s2", Disabled: true, Meta: "s"},
 		}},
-		"mixing sections and keys still groups sections": {entries: []entry.Entry{
+		"Mixing sections and keys still groups sections": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
 			{Key: "com/ubuntu/category2/key-s2", Value: "'onekey-s2'", Meta: "s"},
 			{Key: "com/ubuntu/category/key-as", Value: "['simple-as']", Meta: "as"},
 		}},
 
 		// Update edge cases
-		"no update when no change": {entries: []entry.Entry{
+		"No update when no change": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			existingDconfDir: "existing-user"},
-		"missing machine compiled db for machine": {entries: []entry.Entry{
+		"Missing machine compiled db for machine": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: true, existingDconfDir: "missing-machine-compiled-db"},
-		"missing machine compiled db for user": {entries: []entry.Entry{
+		"Missing machine compiled db for user": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: false, existingDconfDir: "missing-machine-compiled-db"},
-		"missing user compiled db for user": {entries: []entry.Entry{
+		"Missing user compiled db for user": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			existingDconfDir: "missing-user-compiled-db"},
 
 		// Normalized keys formats
-		"normalized canonical form for each supported key": {entries: []entry.Entry{
+		"Normalized canonical form for each supported key": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s'", Meta: "s"},
 			{Key: "com/ubuntu/category/key-i", Value: "'42'", Meta: "i"},
 			{Key: "com/ubuntu/category/key-b", Value: "true", Meta: "b"},
@@ -103,88 +101,88 @@ func TestApplyPolicy(t *testing.T) {
 		}},
 
 		// help users with quoting, normalizing… (common use cases here: more tests in internal_tests)
-		"unquoted string": {entries: []entry.Entry{
+		"Unquoted string": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "onekey-s", Meta: "s"},
 		}},
-		"quoted i": {entries: []entry.Entry{
+		"Quoted i": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-i", Value: "'1'", Meta: "i"},
 		}},
-		"quoted b": {entries: []entry.Entry{
+		"Quoted b": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-b", Value: "'true'", Meta: "b"},
 		}},
-		"no surrounding brackets ai": {entries: []entry.Entry{
+		"No surrounding brackets ai": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-ai", Value: "1", Meta: "ai"},
 		}},
-		"no surrounding brackets multiple ai": {entries: []entry.Entry{
+		"No surrounding brackets multiple ai": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-ai", Value: "1,2", Meta: "ai"},
 		}},
-		"no surrounding brackets unquoted as": {entries: []entry.Entry{
+		"No surrounding brackets unquoted as": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: "simple-as", Meta: "as"},
 		}},
-		"no surrounding brackets unquoted multiple as": {entries: []entry.Entry{
+		"No surrounding brackets unquoted multiple as": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: "two-as1, two-as2", Meta: "as"},
 		}},
-		"no surrounding brackets quoted as": {entries: []entry.Entry{
+		"No surrounding brackets quoted as": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: "'simple-as'", Meta: "as"},
 		}},
-		"no surrounding brackets quoted multiple as": {entries: []entry.Entry{
+		"No surrounding brackets quoted multiple as": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: "'two-as1', 'two-as2'", Meta: "as"},
 		}},
-		"multi-lines as": {entries: []entry.Entry{
+		"Multi-lines as": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: "first\nsecond\n", Meta: "as"},
 		}},
-		"multi-lines as mixed with comma": {entries: []entry.Entry{
+		"Multi-lines as mixed with comma": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: "first,second\nthird\n", Meta: "as"},
 		}},
-		"multi-lines ai": {entries: []entry.Entry{
+		"Multi-lines ai": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-ai", Value: "1\n2\n", Meta: "ai"},
 		}},
-		"multi-lines ai mixed with comma": {entries: []entry.Entry{
+		"Multi-lines ai mixed with comma": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-ai", Value: "1,2\n3\n", Meta: "ai"},
 		}},
 
 		// Profiles tests
-		"update existing correct profile stays unchanged": {entries: nil,
+		"Update existing correct profile stays unchanged": {entries: nil,
 			existingDconfDir: "existing-user"},
-		"update existing correct profile with trailing spaces are removed": {entries: nil,
+		"Update existing correct profile with trailing spaces are removed": {entries: nil,
 			existingDconfDir: "existing-user-with-trailing-spaces"},
-		"update existing profile without needed db append them": {entries: nil,
+		"Update existing profile without needed db append them": {entries: nil,
 			existingDconfDir: "existing-user-no-adsysdb"},
-		"update existing profile without needed db, trailine lines are removed": {entries: nil,
+		"Update existing profile without needed db, trailine lines are removed": {entries: nil,
 			existingDconfDir: "existing-user-no-adsysdb-trailing-newlines"},
-		"update existing profile with partial db append them without repetition": {entries: nil,
+		"Update existing profile with partial db append them without repetition": {entries: nil,
 			existingDconfDir: "existing-user-one-adsysdb-partial"},
-		"update existing profile with wrong order appends them in correct order": {entries: nil,
+		"Update existing profile with wrong order appends them in correct order": {entries: nil,
 			existingDconfDir: "existing-user-one-adsysdb-reversed-end"},
-		"update existing profile eliminates adsys DB repetitions": {entries: nil,
+		"Update existing profile eliminates adsys DB repetitions": {entries: nil,
 			existingDconfDir: "existing-user-adsysdb-repetitions"},
 
 		// non adsys content
-		"do not update other files from db": {entries: []entry.Entry{
+		"Do not update other files from db": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
 			existingDconfDir: "existing-user-with-extra-files"},
-		"do not interfere with other user profile": {entries: []entry.Entry{
+		"Do not interfere with other user profile": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-thirdvalue'", Meta: "s"}},
 			existingDconfDir: "existing-other-user"},
 
-		"invalid as is too robust to produce defaulting values": {entries: []entry.Entry{
+		"Invalid as is too robust to produce defaulting values": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-as", Value: `[value1, ] value2]`, Meta: "as"},
 		}},
 
 		// Error cases
-		"no machine db will fail": {entries: []entry.Entry{
+		"Error when machine db does not exist": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
 		}, existingDconfDir: "-", wantErr: true},
-		"error on invalid ai": {entries: []entry.Entry{
+		"Error on invalid ai": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-ai", Value: "[1,b]", Meta: "ai"},
 		}, wantErr: true},
-		"error on invalid value for unnormalized type": {entries: []entry.Entry{
+		"Error on invalid value for unnormalized type": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-i", Value: "NaN", Meta: "i"},
 		}, wantErr: true},
-		"error on invalid type": {entries: []entry.Entry{
+		"Error on invalid type": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-something", Value: "value", Meta: "sometype"},
 		}, wantErr: true},
-		"error on empty meta": {entries: []entry.Entry{
+		"Error on empty meta": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-something", Value: "value", Meta: ""},
 		}, wantErr: true},
 	}
@@ -204,7 +202,7 @@ func TestApplyPolicy(t *testing.T) {
 				require.NoError(t, os.Remove(dconfDir), "Setup: can't delete dconf base directory before recreation")
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "dconf", tc.existingDconfDir), dconfDir,
+						filepath.Join(testutils.TestFamilyPath(t), "dconf", tc.existingDconfDir), dconfDir,
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't create initial dconf directory")
 			}
@@ -217,13 +215,13 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
 
-			testutils.CompareTreesWithFiltering(t, dconfDir, filepath.Join("testdata", "golden", name), update)
+			testutils.CompareTreesWithFiltering(t, dconfDir, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()
