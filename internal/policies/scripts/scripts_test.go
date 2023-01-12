@@ -18,8 +18,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var update bool
-
 func TestNew(t *testing.T) {
 	t.Parallel()
 
@@ -79,43 +77,45 @@ func TestApplyPolicy(t *testing.T) {
 
 		wantErr bool
 	}{
-		// user cases -> setuid/setgid to current user in tests
-		"one script": {entries: defaultSingleScript},
-		"one directory, multiple scripts in order": {entries: []entry.Entry{{Key: "s", Value: "script3.sh\nscript1.sh\nscript2.sh"}}},
-		"multiple directories:": {entries: []entry.Entry{
+		// User cases -> setuid/setgid to current user in tests
+		"One script": {entries: defaultSingleScript},
+		"One directory, multiple scripts in order": {entries: []entry.Entry{{Key: "s", Value: "script3.sh\nscript1.sh\nscript2.sh"}}},
+		"Multiple directories:": {entries: []entry.Entry{
 			{Key: "s", Value: "script3.sh\nscript1.sh\nscript2.sh"},
 			{Key: "e", Value: "script93.sh\nscript91.sh\nscript92.sh"}}},
-		"same script is used multiple times": {entries: []entry.Entry{{Key: "s", Value: "script3.sh\nscript1.sh\nscript3.sh"}}},
-		"subfolder with script":              {entries: []entry.Entry{{Key: "s", Value: "subfolder/script1.sh"}}},
-		"subfolder with same script name":    {entries: []entry.Entry{{Key: "s", Value: "script1.sh\nsubfolder/script1.sh"}}},
-		"no entries is an empty folder":      {},
-		"empty entries are discared":         {entries: []entry.Entry{{Key: "s", Value: "script3.sh\n\nscript1.sh"}}},
+		"Same script is used multiple times": {entries: []entry.Entry{{Key: "s", Value: "script3.sh\nscript1.sh\nscript3.sh"}}},
+		"Subfolder with script":              {entries: []entry.Entry{{Key: "s", Value: "subfolder/script1.sh"}}},
+		"Subfolder with same script name":    {entries: []entry.Entry{{Key: "s", Value: "script1.sh\nsubfolder/script1.sh"}}},
+		"No entries is an empty folder":      {},
+		"Empty entries are discared":         {entries: []entry.Entry{{Key: "s", Value: "script3.sh\n\nscript1.sh"}}},
 
-		// computer cases -> no setuid/setgid (should be -1)
-		"computer, no systemctl with other directory than startup":       {computer: true, systemctlShouldFail: true, entries: defaultSingleScript},
-		"startup script for computer runs systemctl (systemctl success)": {computer: true, systemctlShouldFail: false, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}},
+		// Computer cases -> no setuid/setgid (should be -1)
+		"Computer, no systemctl with other directory than startup":       {computer: true, systemctlShouldFail: true, entries: defaultSingleScript},
+		"Startup script for computer runs systemctl (systemctl success)": {computer: true, systemctlShouldFail: false, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}},
 
 		// Destination already exists. Using computer to be uid independent
-		"destination is already running, no change":                   {destAlreadyExists: "already running", computer: true, entries: defaultSingleScript},
-		"destination is already ready but not in session, refreshing": {destAlreadyExists: "already ready", computer: true, entries: defaultSingleScript},
-		"destination is not ready, refreshing":                        {destAlreadyExists: "not ready", computer: true, entries: defaultSingleScript},
-		"no entries update existing non ready folder":                 {destAlreadyExists: "not ready", computer: true},
+		"Destination is already running, no change":                   {destAlreadyExists: "already running", computer: true, entries: defaultSingleScript},
+		"Destination is already ready but not in session, refreshing": {destAlreadyExists: "already ready", computer: true, entries: defaultSingleScript},
+		"Destination is not ready, refreshing":                        {destAlreadyExists: "not ready", computer: true, entries: defaultSingleScript},
+		"No entries update existing non ready folder":                 {destAlreadyExists: "not ready", computer: true},
+
+		// Special cases
+		"User lookup failing does not impact machine update":    {computer: true, userReturnedUID: "userLookupError", entries: defaultSingleScript, wantErr: false},
+		"Systemctl failing does not impact user scripts update": {computer: false, systemctlShouldFail: true, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}, wantErr: false},
 
 		// Error cases
-		"error on subfolder listed":              {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
-		"error on script does not exist":         {entries: []entry.Entry{{Key: "s", Value: "doestnotexists"}}, wantErr: true},
-		"error on users run directory Read Only": {makeReadOnly: true, entries: defaultSingleScript, wantErr: true},
-		"error on save assets dumping failing":   {entries: defaultSingleScript, saveAssetsError: true, wantErr: true},
+		"Error on subfolder listed":              {entries: []entry.Entry{{Key: "s", Value: "subfolder"}}, wantErr: true},
+		"Error on script does not exist":         {entries: []entry.Entry{{Key: "s", Value: "doestnotexists"}}, wantErr: true},
+		"Error on users run directory Read Only": {makeReadOnly: true, entries: defaultSingleScript, wantErr: true},
+		"Error on save assets dumping failing":   {entries: defaultSingleScript, saveAssetsError: true, wantErr: true},
 
 		// User error cases only
-		"error on invalid UID":                               {userReturnedUID: "invalid", entries: defaultSingleScript, wantErr: true},
-		"error on invalid GID":                               {userReturnedGID: "invalid", entries: defaultSingleScript, wantErr: true},
-		"error on user lookup failing":                       {userReturnedUID: "userLookupError", entries: defaultSingleScript, wantErr: true},
-		"user lookup failing does not impact machine update": {computer: true, userReturnedUID: "userLookupError", entries: defaultSingleScript, wantErr: false},
+		"Error on invalid UID":         {userReturnedUID: "invalid", entries: defaultSingleScript, wantErr: true},
+		"Error on invalid GID":         {userReturnedGID: "invalid", entries: defaultSingleScript, wantErr: true},
+		"Error on user lookup failing": {userReturnedUID: "userLookupError", entries: defaultSingleScript, wantErr: true},
 
 		// Machine error cases only
-		"start script for computer runs systemctl (systemctl failed)": {computer: true, systemctlShouldFail: true, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}, wantErr: true},
-		"systemctl failing does not impact user scripts update":       {computer: false, systemctlShouldFail: true, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}, wantErr: false},
+		"Error on running start script that runs systemctl and systemctl fails": {computer: true, systemctlShouldFail: true, entries: []entry.Entry{{Key: "startup", Value: "script1.sh"}}, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -145,7 +145,7 @@ func TestApplyPolicy(t *testing.T) {
 				require.NoError(t, os.RemoveAll(runDir), "Setup: can't remove run dir before filing it")
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "ApplyPolicy", "run_dir", tc.destAlreadyExists), runDir,
+						filepath.Join(testutils.TestFamilyPath(t), "run_dir", tc.destAlreadyExists), runDir,
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't create initial run dir scripts content")
 			}
@@ -176,7 +176,7 @@ func TestApplyPolicy(t *testing.T) {
 
 			makeIndependentOfCurrentUID(t, runDir, u.Uid)
 
-			testutils.CompareTreesWithFiltering(t, runDir, filepath.Join("testdata", "ApplyPolicy", "golden", testutils.NormalizeGoldenName(t, name)), update)
+			testutils.CompareTreesWithFiltering(t, runDir, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
@@ -263,11 +263,11 @@ func TestRunScripts(t *testing.T) {
 			scriptParentDir := filepath.Join(scriptRootParentDir, "scripts")
 			scriptDir = filepath.Join(scriptParentDir, tc.stageDir)
 
-			if _, err := os.Stat(filepath.Join("testdata", "RunScripts", "scripts", name)); err == nil {
+			if _, err := os.Stat(filepath.Join(testutils.TestFamilyPath(t), "scripts", name)); err == nil {
 				require.NoError(t, os.MkdirAll(scriptRootParentDir, 0700), "Setup: can't create user dir")
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "RunScripts", "scripts", name), scriptParentDir,
+						filepath.Join(testutils.TestFamilyPath(t), "scripts", name), scriptParentDir,
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: can't create script dir")
 			}
@@ -290,7 +290,7 @@ func TestRunScripts(t *testing.T) {
 
 			// Get and compare oracle file to check order
 			src := filepath.Join(scriptRootParentDir, "golden")
-			testutils.CompareTreesWithFiltering(t, src, filepath.Join("testdata", "RunScripts", "golden", name), update)
+			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
@@ -325,7 +325,7 @@ func mockSystemCtlCmd(t *testing.T, args ...string) []string {
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()
