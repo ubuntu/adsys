@@ -1,9 +1,0 @@
-* Domain(): activeservererr.example.com
-* ServerURL ERROR(): error while trying to look up AD server address on SSSD for "activeservererr.example.com": Active Server dbus call Error
-* IsOnline(): true
-* HostKrb5CCName(): /var/lib/sss/db/ccache_ACTIVESERVERERR.EXAMPLE.COM
-* DefaultDomainSuffix(): activeservererr.example.com
-* Config():
-Current backend is SSSD
-Configuration: testdata/configs/active-server-err.example.com
-Cache: /var/lib/sss/db

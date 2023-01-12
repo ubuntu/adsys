@@ -1,3 +1,0 @@
-[krb5]smb://authenticated.com/authenticated/mount
-[krb5]nfs://krb_domain.com/mount/krb_path
-protocol://domain.com/mountpath

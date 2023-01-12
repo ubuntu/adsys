@@ -62,7 +62,7 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			log.Fatalf("Setup: can't get current working directory: %v", err)
 		}
-		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/TestPolicyUpdate/AD/SYSVOL"))()
+		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/AD/SYSVOL"))()
 	}
 
 	testutils.InstallUpdateFlag()
