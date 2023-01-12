@@ -79,7 +79,7 @@ func TestSSSD(t *testing.T) {
 
 			config := sss.Config{}
 			if tc.sssdConf != "" {
-				config.Conf = filepath.Join("testdata", "configs", tc.sssdConf)
+				config.Conf = filepath.Join(testutils.TestFamilyPath(t), "configs", tc.sssdConf)
 			} else {
 				// We are using the default, depending on the machine, this can fails if it doesn't exist
 				if _, err := os.Stat(consts.DefaultSSSConf); errors.Is(err, os.ErrNotExist) {
