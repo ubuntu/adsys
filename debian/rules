@@ -59,13 +59,14 @@ override_dh_auto_clean:
 	# need to update the Vendored-Sources field. The initial packaging work
 	# didn't include said field since the vendoring is done on the fly.
 
+	# After the package is built, we need to restore the original lockfile to keep it in line 
+	# with upstream.
+	if [ -e Cargo.lock.bkp ]; then \
+		mv Cargo.lock.bkp Cargo.lock; \
+	fi
+
 override_dh_auto_configure:
 	dh_auto_configure
-	# Normally we keep the lockfile around when using vendored deps, except we
-	# had to mess with the checksums of system-deps and so cargo complains.
-	# That doesn't actually matter since dh-cargo configured cargo not to query
-	# the network for deps, instead relying on the vendored ones.
-	rm -f Cargo.lock
 	# The following lines basically do the same thing as
 	# `dh_auto_configure --buildsystem=cargo`
 	# on Kinetic and above, but since we're supporting Jammy as well,
@@ -79,11 +80,51 @@ override_dh_auto_configure:
 override_dh_auto_build:
 	# Build on linux only adsysd itself, and not generator or Windows binaries
 	DH_GOLANG_BUILDPKG=github.com/ubuntu/adsys/cmd/adsysd dh_auto_build
-	DEB_HOST_GNU_TYPE=$(DEB_HOST_GNU_TYPE) DEB_HOST_RUST_TYPE=$(DEB_HOST_RUST_TYPE) \
-		CARGO_HOME=$(CURDIR)/debian/cargo_home $(CARGO) build --release --all
+
+	# Debian Native packages remove some .a files and ends up changing some of the dependencies
+	# checksums. To still be able to build, we have to trick Cargo into thinking we don't have
+	# a lockfile and make it regenerate another based on our vendored dependencies.
+	if [ ! -e Cargo.lock.bkp ]; then \
+		mv Cargo.lock Cargo.lock.bkp; \
+	fi
+
+	# Everything must be executed in a single command in order to store the status before restoring
+	# the backup and exiting with $$STATUS.																					
+	DEB_HOST_GNU_TYPE=$(DEB_HOST_GNU_TYPE) \
+	DEB_HOST_RUST_TYPE=$(DEB_HOST_RUST_TYPE) \
+	CARGO_HOME=$(CURDIR)/debian/cargo_home \
+	$(CARGO) build --release --all; \
+	STATUS=$$?; \
+    \
+	if [ -e Cargo.lock.bkp ]; then \
+		mv Cargo.lock.bkp Cargo.lock; \
+	fi; \
+    \
+	if [ $$STATUS -ne 0 ]; then \
+		exit $$STATUS; \
+	fi
 
 override_dh_auto_test:
-	dh_auto_test --buildsystem=cargo -- test --all
+	# Debian Native packages remove some .a files and ends up changing some of the dependencies
+	# checksums. To still be able to build, we have to trick Cargo into thinking we don't have
+	# a lockfile and make it regenerate another based on our vendored dependencies.
+	if [ ! -e Cargo.lock.bkp ]; then \
+		mv Cargo.lock Cargo.lock.bkp; \
+	fi
+
+	# Everything must be executed in a single command in order to store the status before restoring
+	# the backup and exiting with $$STATUS.																					
+	dh_auto_test --buildsystem=cargo -- test --all; \
+	STATUS=$$?; \
+    \
+	if [ -e Cargo.lock.bkp ]; then \
+		mv Cargo.lock.bkp Cargo.lock; \
+	fi; \
+    \
+	if [ $$STATUS -ne 0 ]; then \
+		exit $$STATUS; \
+	fi
+
 	dh_auto_test
 
 # Build the Windows executables for adwatchd where applicable
