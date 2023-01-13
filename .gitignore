@@ -18,6 +18,7 @@ vendor_rust/
 
 # Package artefacts
 obj-x86_64-linux-gnu/
+target/
 installer/Output
 
 # Various cruft to not consider by default
