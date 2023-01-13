@@ -1,7 +1,8 @@
 [workspace]
 
-members = [
-    "internal/policies/mount/adsys_mount",
-]
+members = ["internal/policies/mount/adsys_mount"]
 
-exclude = [ "vendor_rust/" ]
+exclude = ["vendor_rust/"]
+
+[profile.release]
+lto = "fat"
