@@ -1,4 +1,4 @@
-use chrono::Utc;
+use time::{self, macros::format_description, OffsetDateTime};
 
 use log::{Level, Log, Metadata, Record};
 /// Logger used by adsys_mount to provide context about the mount process.
@@ -15,12 +15,14 @@ impl Log for Logger {
             return;
         }
 
-        eprintln!(
-            "{} - {}: {}",
-            Utc::now().format("%d/%m/%Y %H:%M:%S"),
-            record.level(),
-            record.args()
-        );
+        let fmt_time = match OffsetDateTime::now_utc().format(format_description!(
+            "[day]/[month]/[year] [hour]:[minute]:[second]"
+        )) {
+            Ok(t) => t,
+            Err(_) => String::from("00/00/0000 00:00:00"),
+        };
+
+        eprintln!("{} - {}: {}", fmt_time, record.level(), record.args());
     }
 
     fn flush(&self) {}
