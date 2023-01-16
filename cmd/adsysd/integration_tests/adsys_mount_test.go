@@ -25,46 +25,46 @@ func TestUserMountHandler(t *testing.T) {
 		wantStatus int
 	}{
 		// Single entries
-		"mount successfully nfs share":                     {mountsFile: "mounts_with_nfs_entry"},
-		"mount successfully smb share":                     {mountsFile: "mounts_with_smb_entry"},
-		"mount successfully ftp share":                     {mountsFile: "mounts_with_ftp_entry"},
-		"mount successfully entry without kerberos ticket": {mountsFile: "mounts_with_nfs_entry", noKrbTicket: true},
+		"Mount successfully nfs share":                     {mountsFile: "mounts_with_nfs_entry"},
+		"Mount successfully smb share":                     {mountsFile: "mounts_with_smb_entry"},
+		"Mount successfully ftp share":                     {mountsFile: "mounts_with_ftp_entry"},
+		"Mount successfully entry without kerberos ticket": {mountsFile: "mounts_with_nfs_entry", noKrbTicket: true},
 
 		// Kerberos authentication entries
-		"mount successfully krb auth entry": {mountsFile: "mounts_with_krb_auth_entry"},
+		"Mount successfully krb auth entry": {mountsFile: "mounts_with_krb_auth_entry"},
 
 		// Many entries
-		"mount successfully many entries with same protocol":       {mountsFile: "mounts_with_many_nfs_entries"},
-		"mount successfully many entries with different protocols": {mountsFile: "mounts_with_many_entries"},
-		"mount successfully many kerberos auth entries":            {mountsFile: "mounts_with_many_krb_auth_entries"},
+		"Mount successfully many entries with same protocol":       {mountsFile: "mounts_with_many_nfs_entries"},
+		"Mount successfully many entries with different protocols": {mountsFile: "mounts_with_many_entries"},
+		"Mount successfully many kerberos auth entries":            {mountsFile: "mounts_with_many_krb_auth_entries"},
 
 		// File cases
-		"exit code 0 when file is empty": {mountsFile: "mounts_with_no_entries"},
+		"Exit code 0 when file is empty": {mountsFile: "mounts_with_no_entries"},
 
 		// File errors
-		"error when file has badly formated entries": {mountsFile: "mounts_with_bad_entries", wantStatus: 1},
-		"error when file doesn't exist":              {mountsFile: "do_not_exist", wantStatus: 1},
+		"Error when file has badly formated entries": {mountsFile: "mounts_with_bad_entries", wantStatus: 1},
+		"Error when file doesn't exist":              {mountsFile: "do_not_exist", wantStatus: 1},
 
 		// Authentication errors
-		"error when auth is needed but no kerberos ticket is available": {mountsFile: "mounts_with_krb_auth_entry", noKrbTicket: true, wantStatus: 1},
-		"error when anonymous auth is not supported by the server":      {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_anonymous_error", noKrbTicket: true, wantStatus: 1},
+		"Error when auth is needed but no kerberos ticket is available": {mountsFile: "mounts_with_krb_auth_entry", noKrbTicket: true, wantStatus: 1},
+		"Error when anonymous auth is not supported by the server":      {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_anonymous_error", noKrbTicket: true, wantStatus: 1},
 
 		// Bus errors
-		"error when VFS bus is not available": {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_no_vfs_bus", wantStatus: 1},
-		"error during ListMountableInfo step": {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_list_info_fail", wantStatus: 1},
-		"error during MountLocation step":     {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_mount_loc_fail", wantStatus: 1},
+		"Error when VFS bus is not available": {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_no_vfs_bus", wantStatus: 1},
+		"Error during ListMountableInfo step": {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_list_info_fail", wantStatus: 1},
+		"Error during MountLocation step":     {mountsFile: "mounts_with_nfs_entry", sessionAnswer: "gvfs_mount_loc_fail", wantStatus: 1},
 
 		// Generic errors
-		"error when trying to mount unsupported protocol": {mountsFile: "mounts_with_unsupported_protocol", wantStatus: 1},
-		"error during mount process":                      {mountsFile: "mounts_with_error", wantStatus: 1},
+		"Error when trying to mount unsupported protocol": {mountsFile: "mounts_with_unsupported_protocol", wantStatus: 1},
+		"Error during mount process":                      {mountsFile: "mounts_with_error", wantStatus: 1},
 
 		// Binary usage cases
-		"correctly prints the help message": {addArgs: []string{"--help"}},
+		"Correctly prints the help message": {addArgs: []string{"--help"}},
 
 		// Binary usage errors
-		"errors out and prints usage message when executed with less than 2 arguments": {wantStatus: 2},
-		"errors out and prints usage message when executed with more than 2 arguments": {addArgs: []string{"more", "than", "two"}, wantStatus: 2},
-		"errors out and prints usage message even when --help is among the arguments":  {addArgs: []string{"i", "need", "--help"}, wantStatus: 2},
+		"Errors out and prints usage message when executed with less than 2 arguments": {wantStatus: 2},
+		"Errors out and prints usage message when executed with more than 2 arguments": {addArgs: []string{"more", "than", "two"}, wantStatus: 2},
+		"Errors out and prints usage message even when --help is among the arguments":  {addArgs: []string{"i", "need", "--help"}, wantStatus: 2},
 	}
 	for name, tc := range tests {
 		tc := tc
