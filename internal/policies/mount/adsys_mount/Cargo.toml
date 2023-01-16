@@ -12,10 +12,10 @@ path = "src/lib.rs"
 
 [dependencies]
 anyhow = "^1"
-gio = "0.16"
-glib = "0.16"
-log = "0.4"
+gio = "=0.16.7"
+glib = "=0.16.7"
+log = "=0.4.17"
 serde = { version = "^1", features = ["derive"] }
 serde_json = "^1"
 thiserror = "^1"
-time = { version = "0.3", features = ["formatting", "macros"] }
+time = { version = "=0.3.17", features = ["formatting", "macros"] }
