@@ -29,7 +29,6 @@ import (
 const dockerSystemDaemonsImage = "ghcr.io/ubuntu/adsys/systemdaemons:0.1"
 
 var (
-	update         bool
 	rootProjectDir string
 )
 
@@ -63,10 +62,10 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			log.Fatalf("Setup: can't get current working directory: %v", err)
 		}
-		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/PolicyUpdate/AD/SYSVOL"))()
+		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/AD/SYSVOL"))()
 	}
 
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()

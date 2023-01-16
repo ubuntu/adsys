@@ -111,10 +111,10 @@ func TestSocketActivation(t *testing.T) {
 
 		wantErr bool
 	}{
-		"success with one socket": {sockets: []string{"sock1"}},
+		"Success with one socket": {sockets: []string{"sock1"}},
 
-		"fails when Listeners() fails": {listenerFail: true, wantErr: true},
-		"fails with many sockets":      {sockets: []string{"socket1", "socket2"}, wantErr: true},
+		"Error when Listeners() fails":          {listenerFail: true, wantErr: true},
+		"Error when provided with many sockets": {sockets: []string{"socket1", "socket2"}, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -219,10 +219,10 @@ func TestSdNotifier(t *testing.T) {
 
 		wantErr bool
 	}{
-		"sends signal":                        {sent: true},
-		"doesn't fail when not under systemd": {sent: false},
+		"Sends signal":                        {sent: true},
+		"Doesn't fail when not under systemd": {sent: false},
 
-		"fails when notifier fails": {notifierFail: true, wantErr: true},
+		"Error when notifier fails": {notifierFail: true, wantErr: true},
 	}
 
 	for name, tc := range tests {

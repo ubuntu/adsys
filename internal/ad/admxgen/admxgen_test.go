@@ -1,7 +1,6 @@
 package admxgen_test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -11,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/ad/admxgen"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
+	"github.com/ubuntu/adsys/internal/testutils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -44,9 +44,9 @@ func TestExpand(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			src := filepath.Join("testdata", "expand", "defs", name)
+			src := filepath.Join(testutils.TestFamilyPath(t), "defs", name)
 			dst := t.TempDir()
-			root := filepath.Join("testdata", "expand", "system", tc.root)
+			root := filepath.Join(testutils.TestFamilyPath(t), "system", tc.root)
 
 			currentSession := "ubuntu"
 			err := admxgen.Expand(src, dst, root, currentSession)
@@ -58,8 +58,8 @@ func TestExpand(t *testing.T) {
 
 			data, err := os.ReadFile(filepath.Join(dst, "20.04.yaml"))
 			require.NoError(t, err, "failed to generate expanded policies file")
-			goldPath := filepath.Join("testdata", "expand", "golden", name)
-			var got, want []common.ExpandedPolicy
+
+			var got []common.ExpandedPolicy
 			err = yaml.Unmarshal(data, &got)
 
 			// Order the policies (as we collect them as soon as the generator returns)
@@ -77,8 +77,8 @@ func TestExpand(t *testing.T) {
 			}
 
 			require.NoError(t, err, "created file is not a slice of expanded policy objects")
-			admxgen.WantFromGoldenFileYAML(t, goldPath, gotPolicies, &want)
 
+			want := testutils.LoadWithUpdateFromGoldenYAML(t, gotPolicies)
 			assert.Equal(t, want, gotPolicies, "expected and got differs")
 		})
 	}
@@ -108,8 +108,8 @@ func TestGenerate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			catDef := filepath.Join("testdata", "admx", name+".yaml")
-			src := filepath.Join("testdata", "admx", "src")
+			catDef := filepath.Join(testutils.TestFamilyPath(t), name+".yaml")
+			src := filepath.Join(testutils.TestFamilyPath(t), "src")
 			dst := t.TempDir()
 
 			if tc.destIsFile {
@@ -126,17 +126,19 @@ func TestGenerate(t *testing.T) {
 			}
 			require.NoError(t, err, "admx failed but shouldn't have")
 
-			goldPath := filepath.Join("testdata", "admx", "golden")
 			gotADMX, err := os.ReadFile(filepath.Join(dst, "Ubuntu.admx"))
 			require.NoError(t, err, "should be able to read destination admx file")
 			gotADML, err := os.ReadFile(filepath.Join(dst, "Ubuntu.adml"))
 			require.NoError(t, err, "should be able to read destination adml file")
 
-			wantADMX := admxgen.WantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.admx", name, "Ubuntu")), gotADMX)
-			wantADML := admxgen.WantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.adml", name, "Ubuntu")), gotADML)
+			goldAdmxPath := testutils.GoldenPath(t) + ".admx"
+			goldAdmlPath := testutils.GoldenPath(t) + ".adml"
 
-			assert.Equal(t, string(wantADMX), string(gotADMX), "expected and got admx content differs")
-			assert.Equal(t, string(wantADML), string(gotADML), "expected and got adml content differs")
+			wantADMX := testutils.LoadWithUpdateFromGolden(t, string(gotADMX), testutils.WithGoldenPath(goldAdmxPath))
+			wantADML := testutils.LoadWithUpdateFromGolden(t, string(gotADML), testutils.WithGoldenPath(goldAdmlPath))
+
+			assert.Equal(t, wantADMX, string(gotADMX), "expected and got admx content differs")
+			assert.Equal(t, wantADML, string(gotADML), "expected and got adml content differs")
 		})
 	}
 }

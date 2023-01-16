@@ -123,67 +123,67 @@ func TestAdsysGPOList(t *testing.T) {
 		},
 
 		// Error cases
-		"Fail on no network": {
+		"Error on no network": {
 			url:            "ldap://NT_STATUS_NETWORK_UNREACHABLE",
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
-		"Fail on unreachable ldap host": {
+		"Error on unreachable ldap host": {
 			url:            "ldap://NT_STATUS_HOST_UNREACHABLE",
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
-		"Fail on ldap connection refused": {
+		"Error on ldap connection refused": {
 			url:            "ldap://NT_STATUS_CONNECTION_REFUSED",
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
-		"Fail on machine with no ldap": {
+		"Error on machine with no ldap": {
 			url:            "ldap://NT_STATUS_OBJECT_NAME_NOT_FOUND",
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 
-		"Fail on non existent account": {
+		"Error on non existent account": {
 			accountName:    "nonexistent@GPOONLY.COM",
 			wantReturnCode: 1,
 			wantErr:        true,
 		},
-		"Fail on user requested but found machine": {
+		"Error on user requested but found machine": {
 			accountName:    "hostname1",
 			objectClass:    "user",
 			wantReturnCode: 1,
 			wantErr:        true,
 		},
-		"Fail on computer requested but found user": {
+		"Error on computer requested but found user": {
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			objectClass:    "computer",
 			wantReturnCode: 1,
 			wantErr:        true,
 		},
-		"Fail invalid GPO link": {
+		"Error invalid GPO link": {
 			accountName:    "UserInvalidLink@GPOONLY.COM",
 			wantReturnCode: 3,
 			wantErr:        true,
 		},
 
-		"Fail on KRB5CCNAME unset": {
+		"Error on KRB5CCNAME unset": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "unset",
 			wantReturnCode:  1,
 			wantErr:         true,
 		},
-		"Fail on invalid ticket": {
+		"Error on invalid ticket": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "invalid",
 			wantReturnCode:  1,
 			wantErr:         true,
 		},
-		"Fail on dangling ticket symlink": {
+		"Error on dangling ticket symlink": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "dangling",
 			wantReturnCode:  1,

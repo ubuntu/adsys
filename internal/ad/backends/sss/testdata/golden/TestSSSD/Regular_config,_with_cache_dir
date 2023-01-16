@@ -1,9 +1,0 @@
-* Domain(): example.com
-* ServerURL(): ldap://dynamic_active_server.example.com
-* IsOnline(): true
-* HostKrb5CCName(): /some/specific/cachedir/ccache_EXAMPLE.COM
-* DefaultDomainSuffix(): example.com
-* Config():
-Current backend is SSSD
-Configuration: testdata/configs/example.com
-Cache: /some/specific/cachedir

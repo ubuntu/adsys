@@ -1,0 +1,9 @@
+* Domain(): example.com
+* ServerURL(): ldap://mystaticserver.example.com
+* IsOnline(): true
+* HostKrb5CCName(): /var/lib/sss/db/ccache_EXAMPLE.COM
+* DefaultDomainSuffix(): example.com
+* Config():
+Current backend is SSSD
+Configuration: testdata/TestSSSD/configs/example.com-with-server-start-ldap
+Cache: /var/lib/sss/db

@@ -112,12 +112,12 @@ func TestPolicyApplied(t *testing.T) {
 
 		// Error cases
 		"Error when getting machine only applied gpos without flag": {args: []string{hostname}, wantErr: true},
-		"Machine cache not available":                               {noMachineGPORules: true, wantErr: true},
-		"User cache not available":                                  {userGPORules: "-", wantErr: true},
+		"Error on machine cache not available":                      {noMachineGPORules: true, wantErr: true},
+		"Error on user cache not available":                         {userGPORules: "-", wantErr: true},
 		"Error on unexisting user":                                  {args: []string{"doesnotexists@example.com"}, wantErr: true},
 		"Error on user name without domain and no default domain":   {args: []string{"doesnotexists"}, wantErr: true},
-		"Applied denied":                                            {systemAnswer: "polkit_no", wantErr: true},
-		"Daemon not responding":                                     {daemonNotStarted: true, wantErr: true},
+		"Error on applied denied":                                   {systemAnswer: "polkit_no", wantErr: true},
+		"Error on daemon not responding":                            {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -137,7 +137,7 @@ func TestPolicyApplied(t *testing.T) {
 			if !tc.noMachineGPORules {
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "PolicyApplied", "policies", "machine"),
+						filepath.Join(testutils.TestFamilyPath(t), "policies", "machine"),
 						filepath.Join(dstDir, hostname),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: failed to copy machine policies cache")
@@ -148,7 +148,7 @@ func TestPolicyApplied(t *testing.T) {
 				}
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "PolicyApplied", "policies", "user"),
+						filepath.Join(testutils.TestFamilyPath(t), "policies", "user"),
 						filepath.Join(dstDir, tc.userGPORules),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: failed to copy user policies cache")
@@ -172,17 +172,8 @@ func TestPolicyApplied(t *testing.T) {
 			require.NoError(t, err, "client should exit with no error")
 
 			// Compare golden files
-			goldPath := filepath.Join("testdata/PolicyApplied/golden", testutils.NormalizeGoldenName(t, name))
-			// Update golden file
-			if update {
-				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(got), 0600)
-				require.NoError(t, err, "Cannot write golden file")
-			}
-			want, err := os.ReadFile(goldPath)
-			require.NoError(t, err, "Cannot load policy golden file")
-
-			require.Equal(t, string(want), got, "DumpPolicies returned expected output")
+			want := testutils.LoadWithUpdateFromGolden(t, got)
+			require.Equal(t, want, got, "DumpPolicies returned expected output")
 		})
 	}
 }
@@ -891,7 +882,7 @@ func TestPolicyUpdate(t *testing.T) {
 				// Copytree dest directory should not exists
 				err = os.Remove(adsysDir)
 				require.NoError(t, err, "Setup: could not remove adsysDir")
-				err := shutil.CopyTree(filepath.Join("testdata", "PolicyUpdate", "states", tc.initState), adsysDir, &shutil.CopyTreeOptions{CopyFunction: shutil.Copy})
+				err := shutil.CopyTree(filepath.Join(testutils.TestFamilyPath(t), "states", tc.initState), adsysDir, &shutil.CopyTreeOptions{CopyFunction: shutil.Copy})
 				require.NoError(t, err, "Setup: could not copy initial state")
 
 				// rename HOST and CURRENT_UID directory in destination:
@@ -1015,12 +1006,13 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 			require.NoError(t, err, "client should exit with no error")
 
-			goldName := testutils.NormalizeGoldenName(t, name)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "dconf"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "sudoers.d"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "polkit-1"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "apparmor.d", "adsys"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "apparmor.d", "adsys"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "systemd", "system"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "systemd", "system"), update)
+			goldenPath := testutils.GoldenPath(t)
+			update := testutils.Update()
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join(goldenPath, "dconf"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join(goldenPath, "sudoers.d"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join(goldenPath, "polkit-1"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "apparmor.d", "adsys"), filepath.Join(goldenPath, "apparmor.d", "adsys"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "systemd", "system"), filepath.Join(goldenPath, "systemd", "system"), update)
 
 			// Current user can have different UID depending on where it’s running. We can’t mock it as we rely on current uid
 			// in the process for authorization check. Just make it generic.
@@ -1030,8 +1022,8 @@ func TestPolicyUpdate(t *testing.T) {
 					"Setup: can't rename current user directory to generic CURRENT_UID")
 			}
 
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "users"), update)
-			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "machine"), filepath.Join("testdata", "PolicyUpdate", "golden", goldName, "run", "machine"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "users"), filepath.Join(goldenPath, "run", "users"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "run", "machine"), filepath.Join(goldenPath, "run", "machine"), update)
 		})
 	}
 }
@@ -1048,7 +1040,8 @@ func TestPolicyDebugGPOListScript(t *testing.T) {
 	}{
 		"Get adsys-gpolist script":     {systemAnswer: "polkit_yes"},
 		"Version is always authorized": {systemAnswer: "polkit_no"},
-		"Daemon not responding":        {daemonNotStarted: true, wantErr: true},
+
+		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc

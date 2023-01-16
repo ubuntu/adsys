@@ -14,8 +14,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var Update bool
-
 func TestParseEntryValues(t *testing.T) {
 	t.Parallel()
 
@@ -25,20 +23,20 @@ func TestParseEntryValues(t *testing.T) {
 		wantErr bool
 	}{
 		// Single entry cases.
-		"parse values from entry with one value":       {entry: "entry with one value"},
-		"parse values from entry with multiple values": {entry: "entry with multiple values"},
-		"parse values from entry with repeated values": {entry: "entry with repeated values"},
+		"Parse values from entry with one value":       {entry: "entry with one value"},
+		"Parse values from entry with multiple values": {entry: "entry with multiple values"},
+		"Parse values from entry with repeated values": {entry: "entry with repeated values"},
 
 		// Badly formatted entries.
-		"parse values trimming whitespaces":           {entry: "entry with spaces"},
-		"parse values trimming sequential linebreaks": {entry: "entry with multiple linebreaks"},
+		"Parse values trimming whitespaces":           {entry: "entry with spaces"},
+		"Parse values trimming sequential linebreaks": {entry: "entry with multiple linebreaks"},
 
 		// Special cases.
-		"parse values from entry with kerberos auth tags": {entry: "entry with kerberos auth tags"},
-		"returns empty slice if the entry is empty":       {entry: "entry with no value"},
+		"Parse values from entry with kerberos auth tags": {entry: "entry with kerberos auth tags"},
+		"Returns empty slice if the entry is empty":       {entry: "entry with no value"},
 
 		// Error cases
-		"error when parsing entry with badly formatted values": {entry: "entry with badly formatted value", wantErr: true},
+		"Error when parsing entry with badly formatted values": {entry: "entry with badly formatted value", wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -53,12 +51,9 @@ func TestParseEntryValues(t *testing.T) {
 			}
 			require.NoError(t, err, "Expected no error but got one.")
 
-			gotPath := t.TempDir()
-			err = os.WriteFile(filepath.Join(gotPath, "parsed_values"), []byte(strings.Join(got, "\n")+"\n"), 0600)
-			require.NoError(t, err, "Setup: Failed to write the result")
-
-			goldenPath := filepath.Join("testdata", "golden", t.Name())
-			testutils.CompareTreesWithFiltering(t, gotPath, goldenPath, Update)
+			gotStr := strings.Join(got, "\n")
+			want := testutils.LoadWithUpdateFromGolden(t, gotStr)
+			require.Equal(t, want, gotStr, "Returned value is not what was expected.")
 		})
 	}
 }
@@ -76,12 +71,12 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 
 		wantErr bool
 	}{
-		"write file with current user ownership": {},
+		"Write file with current user ownership": {},
 
-		"error when invalid uid":                               {uid: "-150", wantErr: true},
-		"error when invalid gid":                               {gid: "-150", wantErr: true},
-		"error when writing on a dir with invalid permissions": {readOnlyDir: true, wantErr: true},
-		"error when path already exists as a directory":        {pathAlreadyExists: true, wantErr: true},
+		"Error when invalid uid":                               {uid: "-150", wantErr: true},
+		"Error when invalid gid":                               {gid: "-150", wantErr: true},
+		"Error when writing on a dir with invalid permissions": {readOnlyDir: true, wantErr: true},
+		"Error when path already exists as a directory":        {pathAlreadyExists: true, wantErr: true},
 	}
 
 	u, err := user.Current()
@@ -131,7 +126,7 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 				return
 			}
 			require.NoError(t, err, "writeFileWithUIDGID should not have returned an error but did")
-			testutils.CompareTreesWithFiltering(t, path, filepath.Join("testdata", "golden", t.Name()), Update)
+			testutils.CompareTreesWithFiltering(t, path, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
@@ -142,9 +137,9 @@ func TestCreateUnits(t *testing.T) {
 	tests := map[string]struct {
 		entry string
 	}{
-		"write single unit":      {entry: "entry with one value"},
-		"write multiple units":   {entry: "entry with multiple values"},
-		"write krb5 tagged unit": {entry: "entry with kerberos auth tag"},
+		"Write single unit":      {entry: "entry with one value"},
+		"Write multiple units":   {entry: "entry with multiple values"},
+		"Write krb5 tagged unit": {entry: "entry with kerberos auth tag"},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -162,14 +157,13 @@ func TestCreateUnits(t *testing.T) {
 				require.NoError(t, err, "Setup: Failed to write unit file for comparison.")
 			}
 
-			goldenPath := filepath.Join("testdata", "golden", t.Name())
-			testutils.CompareTreesWithFiltering(t, unitPath, goldenPath, Update)
+			testutils.CompareTreesWithFiltering(t, unitPath, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&Update, "update", false, "Update the golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 	m.Run()
 }

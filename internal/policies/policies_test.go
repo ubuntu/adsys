@@ -24,8 +24,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var update bool
-
 func TestNew(t *testing.T) {
 	t.Parallel()
 
@@ -50,20 +48,20 @@ func TestNew(t *testing.T) {
 		"gpos only": {
 			gpos: gpos,
 		},
-		"with assets": {
+		"With assets": {
 			gpos:     gpos,
 			assetsDB: "testdata/cache/policies/with_assets/assets.db",
 		},
-		"no gpos": {
+		"No gpos": {
 			gpos: nil,
 		},
 
-		// error cases
-		"error on invalid assets db": {
+		// Error cases
+		"Error on invalid assets db": {
 			assetsDB: "testdata/cache/policies/invalid_assets_db/assets.db",
 			wantErr:  true,
 		},
-		"error on assets db does not exists": {
+		"Error on assets db does not exists": {
 			assetsDB: "testdata/cache/policies/doesnotexists/assets.db",
 			wantErr:  true,
 		},
@@ -83,7 +81,7 @@ func TestNew(t *testing.T) {
 			require.NoError(t, err, "New should return no error but got one")
 			defer got.Close()
 
-			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "new", name), update)
+			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
@@ -99,20 +97,20 @@ func TestNewFromCache(t *testing.T) {
 		"gpos only": {
 			cacheDir: "simple",
 		},
-		"with assets": {
+		"With assets": {
 			cacheDir: "with_assets",
 		},
 
-		// error cases
-		"error on invalid policies cache": {
+		// Error cases
+		"Error on invalid policies cache": {
 			cacheDir: "invalid_policies_cache",
 			wantErr:  true,
 		},
-		"error on invalid assets db": {
+		"Error on invalid assets db": {
 			cacheDir: "invalid_assets_db",
 			wantErr:  true,
 		},
-		"error on no policies cache": {
+		"Error on no policies cache": {
 			cacheDir: "doesnotexists",
 			wantErr:  true,
 		},
@@ -132,7 +130,7 @@ func TestNewFromCache(t *testing.T) {
 			require.NoError(t, err, "NewFromCache should return no error but got one")
 			defer got.Close()
 
-			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "newfromcache", name), update)
+			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
@@ -152,52 +150,52 @@ func TestSave(t *testing.T) {
 		"gpos only": {
 			cacheSrc: "simple",
 		},
-		"with assets": {
+		"With assets": {
 			cacheSrc: "with_assets",
 		},
 
-		// refresh existing directory
-		"existing policies cache is refreshed": {
+		// Refresh existing directory
+		"Existing policies cache is refreshed": {
 			cacheSrc:        "one_gpo",
 			initialCacheDir: "one_gpo_other",
 		},
-		"existing assets cache is refreshed": {
+		"Existing assets cache is refreshed": {
 			cacheSrc:        "with_assets",
 			initialCacheDir: "with_assets_other",
 		},
-		"existing cache with assets, new cache with no assets": {
+		"Existing cache with assets, new cache with no assets": {
 			cacheSrc:        "one_gpo",
 			initialCacheDir: "with_assets",
 		},
-		"save assets on existing opened file does not segfault": {
+		"Save assets on existing opened file does not segfault": {
 			cacheSrc:          "with_assets",
 			initialCacheDir:   "with_assets",
 			saveTwiceSameDest: true,
 		},
 
-		// edge cases
-		"destdir does not exists": {
+		// Edge cases
+		"Destdir does not exists": {
 			cacheSrc:      "one_gpo",
 			transformDest: "destdir does not exists",
 		},
-		"can refresh on existing read only asset file": {
+		"Can refresh on existing read only asset file": {
 			cacheSrc:        "with_assets",
 			initialCacheDir: "with_assets_other",
 			transformDest:   "read only asset file",
 		},
 
-		// error cases
-		"error on can’t write to policies base dir": {
+		// Error cases
+		"Error on can’t write to policies base dir": {
 			cacheSrc:      "with_assets",
 			transformDest: "read only policies base directory",
 			wantErr:       true,
 		},
-		"error on can’t write to dest dir": {
+		"Error on can’t write to dest dir": {
 			cacheSrc:      "with_assets",
 			transformDest: "read only destination directory",
 			wantErr:       true,
 		},
-		"error on can’t remove existing assets": {
+		"Error on can’t remove existing assets": {
 			cacheSrc:        "one_gpo",
 			initialCacheDir: "with_assets_other",
 			transformDest:   "unremovable asset",
@@ -259,7 +257,7 @@ func TestSave(t *testing.T) {
 			}
 			require.NoError(t, err, "Save should return no error but got one")
 
-			testutils.CompareTreesWithFiltering(t, dest, filepath.Join("testdata", "golden", "save", name), update)
+			testutils.CompareTreesWithFiltering(t, dest, testutils.GoldenPath(t), testutils.Update())
 			// compare that assets compressed db corresponds to source.
 			testutils.CompareTreesWithFiltering(t, filepath.Join(dest, policies.PoliciesAssetsFileName), filepath.Join(src, policies.PoliciesAssetsFileName), false)
 
@@ -321,64 +319,64 @@ func TestSaveAssetsTo(t *testing.T) {
 
 		wantErr bool
 	}{
-		"all": {
+		"All": {
 			relSrc:   ".",
 			cacheSrc: "with_assets",
 		},
-		"sub directory": {
+		"Sub directory": {
 			relSrc:   "scripts",
 			cacheSrc: "with_assets",
 		},
-		"sub directory ending with slash": {
+		"Sub directory ending with slash": {
 			relSrc:   "scripts/",
 			cacheSrc: "with_assets",
 		},
-		"file": {
+		"File": {
 			relSrc:   "scripts/script-simple.sh",
 			cacheSrc: "with_assets",
 		},
 
-		"chown directories and files when requested": {
+		"Chown directories and files when requested": {
 			relSrc:   ".",
 			uid:      os.Getuid(),
 			gid:      os.Getgid(),
 			cacheSrc: "with_assets",
 		},
 
-		// error cases
-		"error on unexisting relSrc in cache": {
+		// Error cases
+		"Error on unexisting relSrc in cache": {
 			relSrc:   "doesnotexists",
 			cacheSrc: "with_assets",
 			wantErr:  true,
 		},
-		"error on empty relSrc": {
+		"Error on empty relSrc": {
 			relSrc:   "",
 			cacheSrc: "with_assets",
 			wantErr:  true,
 		},
-		"error on no assets": {
+		"Error on no assets": {
 			cacheSrc: "one_gpo",
 			wantErr:  true,
 		},
-		"error on read only dest": {
+		"Error on read only dest": {
 			relSrc:       ".",
 			cacheSrc:     "with_assets",
 			readOnlyDest: ".",
 			wantErr:      true,
 		},
-		"error on file read only existing in dest": {
+		"Error on file read only existing in dest": {
 			relSrc:       ".",
 			cacheSrc:     "with_assets",
 			readOnlyDest: "scripts/script-simple.sh",
 			wantErr:      true,
 		},
-		"error on dest already exists": {
+		"Error on dest already exists": {
 			relSrc:     ".",
 			cacheSrc:   "with_assets",
 			destExists: true,
 			wantErr:    true,
 		},
-		"error on can't chown to user": {
+		"Error on can't chown to user": {
 			relSrc:   ".",
 			uid:      -2,
 			gid:      -2,
@@ -425,7 +423,7 @@ func TestSaveAssetsTo(t *testing.T) {
 			}
 			require.NoError(t, err, "SaveAssetsTo should return no error but got one")
 
-			testutils.CompareTreesWithFiltering(t, dest, filepath.Join("testdata", "golden", "saveassetsto", name), update)
+			testutils.CompareTreesWithFiltering(t, dest, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
@@ -440,27 +438,28 @@ func TestCompressAssets(t *testing.T) {
 
 		wantErr bool
 	}{
-		"no db": {
+		"No db": {
 			src: "assets no db",
 		},
-		"existing db": {
+		"Existing db": {
 			src: "assets with db",
 		},
 
-		// error cases
+		// Error cases
 		/*
 			This fails on RemoveAll(), so same than the case below
-			"error on can’t create new db": {
+			"Error on can’t create new db": {
 				src:      "assets no db",
 				readOnly: ".",
 				wantErr:  true,
-			},*/
-		"error on can’t remove existing db": {
+			},
+		*/
+		"Error on can’t remove existing db": {
 			src:      "assets with db",
 			readOnly: ".",
 			wantErr:  true,
 		},
-		"error on non existing directory": {
+		"Error on non existing directory": {
 			src:     "",
 			wantErr: true,
 		},
@@ -524,7 +523,7 @@ func TestCompressAssets(t *testing.T) {
 			require.NoError(t, err, "Teardown: NewFromCache should return no error but got one")
 			defer got.Close()
 
-			equalPoliciesToGolden(t, got, filepath.Join("testdata", "golden", "compressassets", name), update)
+			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
@@ -918,7 +917,7 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, u
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	// Don’t setup samba or sssd for mock helpers

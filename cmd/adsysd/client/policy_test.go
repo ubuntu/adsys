@@ -1,11 +1,13 @@
 package client
 
 import (
+	"flag"
 	"os"
 	"testing"
 
 	"github.com/fatih/color"
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestColorizePolicies(t *testing.T) {
@@ -47,8 +49,12 @@ Policies from user configuration:
 	got, err := colorizePolicies(policies)
 	require.NoError(t, err, "colorizePolicies should not return an error")
 
-	want, err := os.ReadFile("testdata/golden/colorize.golden")
-	require.NoError(t, err, "Setup: failed to read colorized golden file")
+	want := testutils.LoadWithUpdateFromGolden(t, got)
+	require.Equal(t, want, got, "colorizePolicies returned expected formatted output")
+}
 
-	require.Equal(t, string(want), got, "colorizePolicies returned expected formatted output")
+func TestMain(m *testing.M) {
+	testutils.InstallUpdateFlag()
+	flag.Parse()
+	m.Run()
 }

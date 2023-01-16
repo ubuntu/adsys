@@ -13,8 +13,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var update bool
-
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
@@ -51,13 +49,13 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
 
-			testutils.CompareTreesWithFiltering(t, dconfDir, filepath.Join("testdata", "golden", name, "etc", "dconf"), update)
+			testutils.CompareTreesWithFiltering(t, dconfDir, filepath.Join(testutils.GoldenPath(t), "etc", "dconf"), testutils.Update())
 		})
 	}
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()

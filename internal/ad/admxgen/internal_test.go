@@ -2,17 +2,15 @@ package admxgen
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/testutils"
 	"gopkg.in/yaml.v3"
 )
-
-var update bool
 
 func TestGenerateExpandedCategories(t *testing.T) {
 	t.Parallel()
@@ -94,8 +92,8 @@ func TestGenerateExpandedCategories(t *testing.T) {
 			t.Parallel()
 
 			policies, catfs, err := loadDefinitions(
-				filepath.Join("testdata", "generateExpandedCategories", "defs", categoryDefinition)+".yaml",
-				filepath.Join("testdata", "generateExpandedCategories", "defs", name))
+				filepath.Join(testutils.TestFamilyPath(t), "defs", categoryDefinition)+".yaml",
+				filepath.Join(testutils.TestFamilyPath(t), "defs", name))
 
 			if tc.wantErrLoadDefinitions {
 				require.Error(t, err, "loadDefinitions should have errored out")
@@ -114,10 +112,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 			}
 			require.NoError(t, err, "generateExpandedCategories failed but shouldn't have")
 
-			goldPath := filepath.Join("testdata", "generateExpandedCategories", "golden", name)
-			var want []expandedCategory
-			WantFromGoldenFileYAML(t, goldPath, got, &want)
-
+			want := testutils.LoadWithUpdateFromGoldenYAML(t, got)
 			assert.Equal(t, want, got, "expected and got differs")
 		})
 	}
@@ -190,7 +185,7 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 			}
 
 			var ec []expandedCategory
-			ecF, err := os.ReadFile(filepath.Join("testdata", "expandedCategoriesToADMX", "defs", name+".yaml"))
+			ecF, err := os.ReadFile(filepath.Join(testutils.TestFamilyPath(t), "defs", name+".yaml"))
 			require.NoError(t, err, "Setup: failed to load expanded categories from file")
 			err = yaml.Unmarshal(ecF, &ec)
 			require.NoError(t, err, "Setup: failed to unmarshal expanded categories")
@@ -205,55 +200,25 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 			}
 			require.NoError(t, err, "expandedCategoriesToADMX failed but shouldn't have")
 
-			goldPath := filepath.Join("testdata", "expandedCategoriesToADMX", "golden")
 			gotADMX, err := os.ReadFile(filepath.Join(dst, tc.distroID+".admx"))
 			require.NoError(t, err, "should be able to read destination admx file")
 			gotADML, err := os.ReadFile(filepath.Join(dst, tc.distroID+".adml"))
 			require.NoError(t, err, "should be able to read destination adml file")
 
-			wantADMX := WantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.admx", name, tc.distroID)), gotADMX)
-			wantADML := WantFromGoldenFile(t, filepath.Join(goldPath, fmt.Sprintf("%s-%s.adml", name, tc.distroID)), gotADML)
+			goldenADMXPath := testutils.GoldenPath(t) + ".admx"
+			goldenADMLPath := testutils.GoldenPath(t) + ".adml"
 
-			assert.Equal(t, string(wantADMX), string(gotADMX), "expected and got admx content differs")
-			assert.Equal(t, string(wantADML), string(gotADML), "expected and got adml content differs")
+			wantADMX := testutils.LoadWithUpdateFromGolden(t, string(gotADMX), testutils.WithGoldenPath(goldenADMXPath))
+			wantADML := testutils.LoadWithUpdateFromGolden(t, string(gotADML), testutils.WithGoldenPath(goldenADMLPath))
+
+			assert.Equal(t, wantADMX, string(gotADMX), "expected and got admx content differs")
+			assert.Equal(t, wantADML, string(gotADML), "expected and got adml content differs")
 		})
 	}
 }
 
-func WantFromGoldenFileYAML(t *testing.T, goldPath string, got interface{}, want interface{}) {
-	t.Helper()
-
-	if update {
-		t.Logf("updating golden file %s", goldPath)
-		data, err := yaml.Marshal(got)
-		require.NoError(t, err, "Cannot marshal expanded policies to YAML")
-		err = os.WriteFile(goldPath, data, 0600)
-		require.NoError(t, err, "Cannot write golden file")
-	}
-
-	data, err := os.ReadFile(goldPath)
-	require.NoError(t, err, "Cannot load policy golden file")
-	err = yaml.Unmarshal(data, want)
-	require.NoError(t, err, "Cannot create expanded policy objects from golden file")
-}
-
-func WantFromGoldenFile(t *testing.T, goldPath string, got []byte) (want []byte) {
-	t.Helper()
-
-	if update {
-		t.Logf("updating golden file %s", goldPath)
-		err := os.WriteFile(goldPath, got, 0600)
-		require.NoError(t, err, "Cannot write golden file")
-	}
-
-	want, err := os.ReadFile(goldPath)
-	require.NoError(t, err, "Cannot load policy golden file")
-
-	return want
-}
-
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()

@@ -13,8 +13,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var update bool
-
 func TestConfigFileFromArgs(t *testing.T) {
 	t.Parallel()
 
@@ -24,12 +22,12 @@ func TestConfigFileFromArgs(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		"short config argument":             {args: `adwatchd.exe -c C:\path\to\adwatchd.yaml`, want: `C:\path\to\adwatchd.yaml`},
-		"short config argument with quotes": {args: `adwatchd.exe -c "C:\path\to\adwatchd.yaml"`, want: `C:\path\to\adwatchd.yaml`},
+		"Short config argument":             {args: `adwatchd.exe -c C:\path\to\adwatchd.yaml`, want: `C:\path\to\adwatchd.yaml`},
+		"Short config argument with quotes": {args: `adwatchd.exe -c "C:\path\to\adwatchd.yaml"`, want: `C:\path\to\adwatchd.yaml`},
 
-		"empty args":                    {wantErr: true},
-		"no config argument":            {args: "adwatchd.exe", wantErr: true},
-		"config argument with no value": {args: "adwatchd.exe -c ", wantErr: true},
+		"Error on empty args":                    {wantErr: true},
+		"Error on no config argument":            {args: "adwatchd.exe", wantErr: true},
+		"Error on config argument with no value": {args: "adwatchd.exe -c ", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -57,11 +55,11 @@ func TestDirsFromConfigFile(t *testing.T) {
 
 		wantDirs []string
 	}{
-		"no config file":              {noConfig: true},
-		"empty config file":           {dirsInConfig: ""},
-		"no dirs in config file":      {dirsInConfig: "dirs:\n"},
-		"config dirs is not an array": {dirsInConfig: "dirs: testdir"},
-		"config dirs is an array": {
+		"No config file":              {noConfig: true},
+		"Empty config file":           {dirsInConfig: ""},
+		"No dirs in config file":      {dirsInConfig: "dirs:\n"},
+		"Config dirs is not an array": {dirsInConfig: "dirs: testdir"},
+		"Config dirs is an array": {
 			dirsInConfig: "dirs:\n  - /path/to/dir1\n  - /path/to/dir2",
 			wantDirs:     []string{"/path/to/dir1", "/path/to/dir2"},
 		},
@@ -94,17 +92,17 @@ func TestWriteConfig(t *testing.T) {
 
 		wantErr bool
 	}{
-		"with relative config path": {dirs: []string{"dir1", "dir2"}},
-		"with nested config path":   {dirs: []string{"dir1", "dir2"}, nestedConfigPath: true},
+		"With relative config path": {dirs: []string{"dir1", "dir2"}},
+		"With nested config path":   {dirs: []string{"dir1", "dir2"}, nestedConfigPath: true},
 
-		"with empty dirs":  {wantErr: true},
-		"with absent dirs": {dirs: []string{"dir1", "dir2"}, absentDirs: true, wantErr: true},
+		"Error on empty dirs":  {wantErr: true},
+		"Error on absent dirs": {dirs: []string{"dir1", "dir2"}, absentDirs: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			goldPath, err := filepath.Abs(filepath.Join("testdata", "golden", strings.ReplaceAll(name, " ", "_")))
+			goldPath, err := filepath.Abs(testutils.GoldenPath(t))
 			require.NoError(t, err, "failed to get absolute path")
 
 			tmpdir := t.TempDir()
@@ -128,7 +126,9 @@ func TestWriteConfig(t *testing.T) {
 			}
 			require.NoError(t, error, "didn't expect writing config to fail")
 
-			if update {
+			if testutils.Update() {
+				err := os.MkdirAll(filepath.Dir(goldPath), 0750)
+				require.NoError(t, err, "Setup: Failed to create path to store the golden files")
 				testutils.Copy(t, configPath, goldPath)
 			}
 
@@ -139,7 +139,7 @@ func TestWriteConfig(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()

@@ -26,7 +26,6 @@ import (
 )
 
 var (
-	update bool
 	stdout bool
 )
 
@@ -47,43 +46,43 @@ func TestInteractiveInput(t *testing.T) {
 		prevConfig     string
 		prevConfigDirs []string
 	}{
-		"initial view": {
+		"Initial view": {
 			events:        []tea.Msg{},
 			existingPaths: []string{"foo/bar/", "foo/baz"},
 		},
 
 		// Config file input behaviors
-		"config file exists": {
+		"Config file exists": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/baz"},
 		},
-		"config file is absent and input is absolute": {
+		"Config file is absent and input is absolute": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			absPathInput: true,
 		},
-		"config file is absent and input is relative": {
+		"Config file is absent and input is relative": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 		},
-		"config file is absent and input is a dir": {
+		"Config file is absent and input is a dir": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
 				tea.KeyMsg{Type: tea.KeyEnter},
 			},
 			existingPaths: []string{"foo/bar/"},
 		},
-		"existing config file is passed in and is empty or has no directories": {
+		"Existing config file is passed in and is empty or has no directories": {
 			configOverride: true,
 		},
-		"existing config file is passed in and contains directories which exist on the system": {
+		"Existing config file is passed in and contains directories which exist on the system": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyDown},
@@ -93,7 +92,7 @@ func TestInteractiveInput(t *testing.T) {
 			existingPaths:  []string{"foo/bar/", "foo/baz/"},
 			configDirs:     []string{"foo/bar", "foo/baz"},
 		},
-		"existing config file is passed in and contains directories, not all which exist on the system": {
+		"Existing config file is passed in and contains directories, not all which exist on the system": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyDown}, // focus on bad input for the error message
@@ -104,13 +103,13 @@ func TestInteractiveInput(t *testing.T) {
 		},
 
 		// Installed service behaviors
-		"found installed service, config not overridden": {
+		"Found installed service, config not overridden": {
 			prevConfig:     "myprevconfig.yaml",
 			prevConfigDirs: []string{"foo/bar", "foo/baz"},
 			configDirs:     []string{"foo/bar", "foo/qux"},
 			existingPaths:  []string{"foo/bar/", "foo/baz/", "foo/qux/"},
 		},
-		"found installed service, config overridden": {
+		"Found installed service, config overridden": {
 			configOverride: true,
 			prevConfig:     "myprevconfig.yaml",
 			prevConfigDirs: []string{"foo/bar", "foo/baz"},
@@ -119,7 +118,7 @@ func TestInteractiveInput(t *testing.T) {
 		},
 
 		// Directory input behaviors
-		"directory exists": {
+		"Directory exists": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
@@ -128,7 +127,7 @@ func TestInteractiveInput(t *testing.T) {
 			},
 			existingPaths: []string{"foo/bar/"},
 		},
-		"directory does not exist, block input": {
+		"Directory does not exist, block input": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
@@ -144,13 +143,13 @@ func TestInteractiveInput(t *testing.T) {
 				tea.KeyMsg{Type: tea.KeyShiftTab},
 			},
 		},
-		"dot and double dot directory inputs are normalized": {
+		"Dot and double dot directory inputs are normalized": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar/./qux/../../baz")},
 			},
 		},
-		"directory is a file, block input": {
+		"Directory is a file, block input": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
@@ -167,7 +166,7 @@ func TestInteractiveInput(t *testing.T) {
 			},
 			existingPaths: []string{"foo/bar"},
 		},
-		"multiple existing directories, can cycle between the inputs": {
+		"Multiple existing directories, can cycle between the inputs": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyDown},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
@@ -184,7 +183,7 @@ func TestInteractiveInput(t *testing.T) {
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/", "foo/qux/"},
 		},
-		"multiple existing directories, can delete them": {
+		"Multiple existing directories, can delete them": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
@@ -201,7 +200,7 @@ func TestInteractiveInput(t *testing.T) {
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 		},
-		"no directories, focus on dir input": {
+		"No directories, focus on dir input": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyEnter}, // cannot move further with no directories
@@ -211,7 +210,7 @@ func TestInteractiveInput(t *testing.T) {
 		},
 
 		// Submit behaviors
-		"submit with default config": {
+		"Submit with default config": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
@@ -224,7 +223,7 @@ func TestInteractiveInput(t *testing.T) {
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
-		"submit with fresh config in current directory": {
+		"Submit with fresh config in current directory": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("my_config.yaml")},
 				tea.KeyMsg{Type: tea.KeyEnter},
@@ -238,7 +237,7 @@ func TestInteractiveInput(t *testing.T) {
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: "my_config.yaml",
 		},
-		"submit with fresh config in nested directory": {
+		"Submit with fresh config in nested directory": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("aaa/bbb/ccc/my_config.yaml")},
 				tea.KeyMsg{Type: tea.KeyEnter},
@@ -252,7 +251,7 @@ func TestInteractiveInput(t *testing.T) {
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: "aaa/bbb/ccc/my_config.yaml",
 		},
-		"submit with duplicate directories": {
+		"Submit with duplicate directories": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
@@ -271,7 +270,7 @@ func TestInteractiveInput(t *testing.T) {
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
-		"submit with directory as config input": {
+		"Submit with directory as config input": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
 				tea.KeyMsg{Type: tea.KeyEnter},
@@ -283,7 +282,7 @@ func TestInteractiveInput(t *testing.T) {
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: "foo/bar/adwatchd.yaml",
 		},
-		"submit with dot directories is normalized": {
+		"Submit with dot directories is normalized": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("./foo/./bar/./")},
@@ -296,7 +295,7 @@ func TestInteractiveInput(t *testing.T) {
 			existingPaths: []string{"foo/bar/"},
 			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
-		"submit with double dot directories is normalized": {
+		"Submit with double dot directories is normalized": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyEnter},
 				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz/qux/asd/../..")}, // baz
@@ -309,7 +308,7 @@ func TestInteractiveInput(t *testing.T) {
 		},
 
 		// Other navigation behaviors
-		"other navigation tests": {
+		"Other navigation tests": {
 			events: []tea.Msg{
 				tea.KeyMsg{Type: tea.KeyUp},        // no up or shift+tab on config
 				tea.KeyMsg{Type: tea.KeyShiftTab},  // no up or shift+tab on config
@@ -330,13 +329,12 @@ func TestInteractiveInput(t *testing.T) {
 	}
 	for name, tc := range tests {
 		tc := tc
-		goldDir, _ := filepath.Abs(filepath.Join("testdata", "golden"))
+
+		// Need to capture the absolute path of the package before changing directory
+		// in the subtests, otherwise the tree will change.
+		absPkgPath, _ := filepath.Abs(".")
 		t.Run(name, func(t *testing.T) {
 			t.Cleanup(func() { os.Remove(filepath.Join(binDir, "adwatchd.yaml")) })
-
-			var err error
-
-			goldPath := filepath.Join(goldDir, strings.ReplaceAll(name, " ", "_"))
 
 			tmpdir := t.TempDir()
 			testutils.Chdir(t, tmpdir)
@@ -387,33 +385,23 @@ func TestInteractiveInput(t *testing.T) {
 				fmt.Println(out)
 			}
 
-			// Update golden file
-			if update {
-				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(normalizeOutput(t, out)), 0600)
-				require.NoError(t, err, "Cannot write golden file")
-			}
+			got := normalizeOutput(t, out)
 
-			want, err := os.ReadFile(goldPath)
-			require.NoError(t, err, "Cannot load golden file")
+			goldPath := filepath.Join(absPkgPath, testutils.GoldenPath(t))
+			want := testutils.LoadWithUpdateFromGolden(t, got, testutils.WithGoldenPath(goldPath))
 
 			if tc.cfgToValidate != "" {
-				goldCfgPath := filepath.Join(goldDir, strings.ReplaceAll(name, " ", "_")+".yaml")
 				outCfg, err := os.ReadFile(tc.cfgToValidate)
 				require.NoError(t, err, "Cannot load test config file")
 
-				if update {
-					err = os.WriteFile(goldCfgPath, []byte(normalizeOutput(t, string(outCfg))), 0600)
-					require.NoError(t, err, "Cannot write golden config file")
-				}
+				goldCfgPath := filepath.Join(absPkgPath, testutils.GoldenPath(t)+".yaml")
 
-				wantCfg, err := os.ReadFile(goldCfgPath)
-				require.NoError(t, err, "Cannot load golden config file")
-
-				require.Equal(t, normalizeGoldenFile(t, string(wantCfg)), normalizeOutput(t, string(outCfg)), "Configs don't match")
+				gotCfg := normalizeOutput(t, string(outCfg))
+				wantCfg := testutils.LoadWithUpdateFromGolden(t, gotCfg, testutils.WithGoldenPath(goldCfgPath))
+				require.Equal(t, normalizeGoldenFile(t, wantCfg), normalizeOutput(t, string(outCfg)), "Configs don't match")
 			}
 
-			require.Equal(t, normalizeGoldenFile(t, string(want)), normalizeOutput(t, m.View()), "Didn't get expected output")
+			require.Equal(t, normalizeGoldenFile(t, want), got, "Didn't get expected output")
 		})
 	}
 }
@@ -480,11 +468,11 @@ func TestInteractiveUpdate(t *testing.T) {
 
 		changeConfigPath bool
 	}{
-		"change directories, same config file": {
+		"Change directories, same config file": {
 			prevDirs:  []string{"foo/bar", "foo/baz"},
 			dirsToAdd: []string{"foo/qux"},
 		},
-		"change directories, different config file": {
+		"Change directories, different config file": {
 			prevDirs:         []string{"foo/bar", "foo/baz"},
 			dirsToAdd:        []string{"foo/qux"},
 			changeConfigPath: true,
@@ -665,7 +653,7 @@ func TestMain(m *testing.M) {
 	// Simulate a color terminal
 	lipgloss.SetColorProfile(termenv.ANSI256)
 
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.BoolVar(&stdout, "stdout", false, "print output to stdout for debugging purposes")
 	flag.Parse()
 

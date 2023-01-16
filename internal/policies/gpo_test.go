@@ -2,13 +2,13 @@ package policies_test
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestFormat(t *testing.T) {
@@ -103,17 +103,8 @@ func TestFormat(t *testing.T) {
 			require.Equal(t, tc.wantAlreadyProcessedRules, got, "Format returns expected alreadyProcessedRules cache")
 
 			// check collected output between Format calls
-			goldPath := filepath.Join("testdata", "golden", "format", name)
-			// Update golden file
-			if update {
-				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(out.String()), 0600)
-				require.NoError(t, err, "Cannot write golden file")
-			}
-			want, err := os.ReadFile(goldPath)
-			require.NoError(t, err, "Cannot load policy golden file")
-
-			require.Equal(t, string(want), out.String(), "Format write expected output")
+			want := testutils.LoadWithUpdateFromGolden(t, out.String())
+			require.Equal(t, want, out.String(), "Format write expected output")
 		})
 	}
 }

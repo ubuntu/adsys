@@ -17,39 +17,39 @@ func TestSplitAndNormalizeUsersAndGroups(t *testing.T) {
 		want []string
 	}{
 		// string cases
-		"simple one value":                            {input: "user@domain", want: []string{"user@domain"}},
-		"group one value":                             {input: "%group@domain", want: []string{"%group@domain"}},
-		"empty value":                                 {input: "", want: nil},
-		"multiple values separated by comma":          {input: "user1@domain,user2@domain", want: []string{"user1@domain", "user2@domain"}},
-		"multiple values separated by EOL":            {input: "user1@domain\nuser2@domain", want: []string{"user1@domain", "user2@domain"}},
-		"multiple values with a mix of comma and EOL": {input: "user1@domain,user2@domain\nuser3@domain", want: []string{"user1@domain", "user2@domain", "user3@domain"}},
+		"Simple one value":                            {input: "user@domain", want: []string{"user@domain"}},
+		"Group one value":                             {input: "%group@domain", want: []string{"%group@domain"}},
+		"Empty value":                                 {input: "", want: nil},
+		"Multiple values separated by comma":          {input: "user1@domain,user2@domain", want: []string{"user1@domain", "user2@domain"}},
+		"Multiple values separated by EOL":            {input: "user1@domain\nuser2@domain", want: []string{"user1@domain", "user2@domain"}},
+		"Multiple values with a mix of comma and EOL": {input: "user1@domain,user2@domain\nuser3@domain", want: []string{"user1@domain", "user2@domain", "user3@domain"}},
 
 		// domain handling
-		`domain\user handling`:                                 {input: `domain\user`, want: []string{"user@domain"}},
-		`multiple \ only handling first one and ignore others`: {input: `domain\user\foo`, want: []string{`userfoo@domain`}},
+		`Handle domain\user`: {input: `domain\user`, want: []string{"user@domain"}},
+		`Multiple \ only handling first one and ignore others`: {input: `domain\user\foo`, want: []string{`userfoo@domain`}},
 
 		// edge cases
-		"user name with space":                    {input: "user name@domain", want: []string{"user name@domain"}},
-		"empty value with comma":                  {input: ",", want: nil},
-		"empty value with EOL":                    {input: "\n", want: nil},
-		"multiple values with consecutives EOL":   {input: "user1@domain\n\nuser2@domain", want: []string{"user1@domain", "user2@domain"}},
-		"multiple values with consecutives comma": {input: "user1@domain,,user2@domain", want: []string{"user1@domain", "user2@domain"}},
-		"strip empty values":                      {input: "user1@domain,,", want: []string{"user1@domain"}},
+		"User name with space":                    {input: "user name@domain", want: []string{"user name@domain"}},
+		"Empty value with comma":                  {input: ",", want: nil},
+		"Empty value with EOL":                    {input: "\n", want: nil},
+		"Multiple values with consecutives EOL":   {input: "user1@domain\n\nuser2@domain", want: []string{"user1@domain", "user2@domain"}},
+		"Multiple values with consecutives comma": {input: "user1@domain,,user2@domain", want: []string{"user1@domain", "user2@domain"}},
+		"Strip empty values":                      {input: "user1@domain,,", want: []string{"user1@domain"}},
 
 		// forbidden characters: "/", "[", "]", ":", "|", "<", ">", "=", ";", "?", "*", "%"
-		"strip any /":                    {input: `u/s/er@domain`, want: []string{`user@domain`}},
-		"strip any [":                    {input: `u[s]er@domain`, want: []string{`user@domain`}},
-		"strip any ]":                    {input: `u]s]er@domain`, want: []string{`user@domain`}},
-		"strip any :":                    {input: `u:s:er@domain`, want: []string{`user@domain`}},
-		"strip any |":                    {input: `u|s|er@domain`, want: []string{`user@domain`}},
-		"strip any <":                    {input: `u<s<er@domain`, want: []string{`user@domain`}},
-		"strip any >":                    {input: `u>s>er@domain`, want: []string{`user@domain`}},
-		"strip any =":                    {input: `u=s=er@domain`, want: []string{`user@domain`}},
-		"strip any ;":                    {input: `u;s;er@domain`, want: []string{`user@domain`}},
-		"strip any ?":                    {input: `u?s?er@domain`, want: []string{`user@domain`}},
-		"strip any *":                    {input: `u*s*er@domain`, want: []string{`user@domain`}},
-		"strip any %":                    {input: `u%s%er@domain`, want: []string{`user@domain`}},
-		"don’t strip first % but others": {input: `%g%r%oup@domain`, want: []string{`%group@domain`}},
+		"Strip any /":                    {input: `u/s/er@domain`, want: []string{`user@domain`}},
+		"Strip any [":                    {input: `u[s]er@domain`, want: []string{`user@domain`}},
+		"Strip any ]":                    {input: `u]s]er@domain`, want: []string{`user@domain`}},
+		"Strip any :":                    {input: `u:s:er@domain`, want: []string{`user@domain`}},
+		"Strip any |":                    {input: `u|s|er@domain`, want: []string{`user@domain`}},
+		"Strip any <":                    {input: `u<s<er@domain`, want: []string{`user@domain`}},
+		"Strip any >":                    {input: `u>s>er@domain`, want: []string{`user@domain`}},
+		"Strip any =":                    {input: `u=s=er@domain`, want: []string{`user@domain`}},
+		"Strip any ;":                    {input: `u;s;er@domain`, want: []string{`user@domain`}},
+		"Strip any ?":                    {input: `u?s?er@domain`, want: []string{`user@domain`}},
+		"Strip any *":                    {input: `u*s*er@domain`, want: []string{`user@domain`}},
+		"Strip any %":                    {input: `u%s%er@domain`, want: []string{`user@domain`}},
+		"Don’t strip first % but others": {input: `%g%r%oup@domain`, want: []string{`%group@domain`}},
 	}
 
 	for name, tc := range tests {

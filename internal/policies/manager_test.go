@@ -45,20 +45,21 @@ func TestApplyPolicies(t *testing.T) {
 
 		wantErr bool
 	}{
-		"succeed": {policiesDir: "all_entry_types"},
-		"second call with no rules deletes everything":                           {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: true},
-		"second call with no rules don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: false},
+		"Succeed": {policiesDir: "all_entry_types"},
+		"Second call with no rules deletes everything":                           {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: true},
+		"Second call with no rules don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: false},
 
 		// no subscription filterings
-		"no subscription is only dconf content":                                         {policiesDir: "all_entry_types", isNotSubscribed: true},
-		"second call with no subscription should remove everything but dconf content":   {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: true},
-		"second call with no subscription don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: false},
+		"No subscription is only dconf content":                                         {policiesDir: "all_entry_types", isNotSubscribed: true},
+		"Second call with no subscription should remove everything but dconf content":   {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: true},
+		"Second call with no subscription don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: false},
 
-		"dconf apply policy fails":     {policiesDir: "dconf_failing", wantErr: true},
-		"privilege apply policy fails": {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
-		"scripts apply policy fails":   {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
-		"apparmor apply policy fails":  {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
-		"mount apply policy fails":     {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
+		// Error cases
+		"Error when applying dconf policy":     {policiesDir: "dconf_failing", wantErr: true},
+		"Error when applying privilege policy": {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying scripts policy":   {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying apparmor policy":  {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying mount policy":     {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -148,7 +149,7 @@ func TestApplyPolicies(t *testing.T) {
 				require.NoError(t, err, "ApplyPolicy should return no error but got one")
 			}
 
-			testutils.CompareTreesWithFiltering(t, fakeRootDir, filepath.Join("testdata", "golden", "applypolicy", name), update)
+			testutils.CompareTreesWithFiltering(t, fakeRootDir, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
@@ -292,17 +293,8 @@ func TestDumpPolicies(t *testing.T) {
 			}
 			require.NoError(t, err, "DumpPolicies should return no error but got one")
 
-			goldPath := filepath.Join("testdata", "golden", "dumppolicies", name)
-			// Update golden file
-			if update {
-				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(got), 0600)
-				require.NoError(t, err, "Cannot write golden file")
-			}
-			want, err := os.ReadFile(goldPath)
-			require.NoError(t, err, "Cannot load policy golden file")
-
-			require.Equal(t, string(want), got, "DumpPolicies returned expected output")
+			want := testutils.LoadWithUpdateFromGolden(t, got)
+			require.Equal(t, want, got, "DumpPolicies returned expected output")
 		})
 	}
 }
@@ -326,7 +318,7 @@ func TestLastUpdateFor(t *testing.T) {
 		"Target is ignored for machine request": {target: "does_not_exit", isMachine: true},
 
 		// Error cases
-		"Target does not exist": {target: "does_not_exit", wantErr: true},
+		"Error when target does not exist": {target: "does_not_exit", wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -381,8 +373,8 @@ func TestGetSubscriptionState(t *testing.T) {
 
 		want bool
 	}{
-		"returns enablement status (enabled)":  {status: true, want: true},
-		"returns enablement status (disabled)": {status: false, want: false},
+		"Returns enablement status (enabled)":  {status: true, want: true},
+		"Returns enablement status (disabled)": {status: false, want: false},
 	}
 
 	for name, tc := range tests {

@@ -1,3 +1,0 @@
-protocol://domain.com/mountpath
-smb://otherdomain.com/mount/path
-nfs://yetanotherdomain.com/path/mount

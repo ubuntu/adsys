@@ -45,9 +45,9 @@ func TestIsAllowedFromContext(t *testing.T) {
 		"Extract current user action from request": {action: myUserOtherAction, userUIDReturn: "1000", pid: 10000, uid: 1000, wantAuthorized: true},
 		"Extract other user action from request":   {action: myUserOtherAction, userUIDReturn: "999", pid: 10000, uid: 1000, wantAuthorized: true},
 
-		// Error cases
-		"User lookup returns an error": {action: myUserOtherAction, userLookupError: true, pid: 10000, uid: 1000, wantAuthorized: false},
-		"User has invalid uid":         {action: myUserOtherAction, userUIDReturn: "NaN", pid: 10000, uid: 1000, wantAuthorized: false},
+		// Unauthorized cases
+		"Unauthorizes when user lookup returns an error": {action: myUserOtherAction, userLookupError: true, pid: 10000, uid: 1000, wantAuthorized: false},
+		"Unauthorizes when user has invalid uid":         {action: myUserOtherAction, userUIDReturn: "NaN", pid: 10000, uid: 1000, wantAuthorized: false},
 	}
 	for name, tc := range tests {
 		tc := tc

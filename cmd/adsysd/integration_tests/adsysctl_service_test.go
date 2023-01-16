@@ -321,7 +321,7 @@ func TestServiceStatus(t *testing.T) {
 				require.NoError(t, err, "Setup: couldn't create policies directory: %v", err)
 				require.NoError(t,
 					shutil.CopyTree(
-						filepath.Join("testdata", "PolicyApplied", "policies", "machine"),
+						filepath.Join("testdata", "TestPolicyApplied", "policies", "machine"),
 						filepath.Join(cachedPoliciesDir, hostname),
 						&shutil.CopyTreeOptions{Symlinks: true, CopyFunction: shutil.Copy}),
 					"Setup: failed to copy machine policies cache")
@@ -370,17 +370,8 @@ func TestServiceStatus(t *testing.T) {
 			got = re.ReplaceAllString(got, "$1 Tue May 25 14:55")
 
 			// Compare golden files
-			goldPath := filepath.Join("testdata/ServiceStatus/golden", name)
-			// Update golden file
-			if update {
-				t.Logf("updating golden file %s", goldPath)
-				err = os.WriteFile(goldPath, []byte(got), 0600)
-				require.NoError(t, err, "Cannot write golden file")
-			}
-			want, err := os.ReadFile(goldPath)
-			require.NoError(t, err, "Cannot load policy golden file")
-
-			require.Equal(t, string(want), got, "Status returned expected output")
+			want := testutils.LoadWithUpdateFromGolden(t, got)
+			require.Equal(t, want, got, "Expected values to match")
 		})
 	}
 }

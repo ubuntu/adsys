@@ -14,8 +14,6 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-var update bool
-
 func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
@@ -32,62 +30,62 @@ func TestApplyPolicy(t *testing.T) {
 		wantErr bool
 	}{
 		// local admin cases
-		"disallow local admins":                            {entries: []entry.Entry{{Key: "allow-local-admins", Disabled: true}}},
-		"allow local admins with no other rules is a noop": {entries: []entry.Entry{{Key: "allow-local-admins", Disabled: false}}},
+		"Disallow local admins":                            {entries: []entry.Entry{{Key: "allow-local-admins", Disabled: true}}},
+		"Allow local admins with no other rules is a noop": {entries: []entry.Entry{{Key: "allow-local-admins", Disabled: false}}},
 
 		// client admins from AD
-		"set client user admins":                       {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com"}}},
-		"set client multiple users admins":             {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com,domain\\bob,carole cosmic@otherdomain.com"}}},
-		"set client group admins":                      {entries: []entry.Entry{{Key: "client-admins", Value: "%group@domain.com"}}},
-		"set client mixed with users and group admins": {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com,%group@domain.com"}}},
-		"empty client AD admins":                       {entries: []entry.Entry{{Key: "client-admins", Value: ""}}},
-		"no client AD admins":                          {entries: []entry.Entry{{Key: "client-admins", Disabled: true}}},
+		"Set client user admins":                       {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com"}}},
+		"Set client multiple users admins":             {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com,domain\\bob,carole cosmic@otherdomain.com"}}},
+		"Set client group admins":                      {entries: []entry.Entry{{Key: "client-admins", Value: "%group@domain.com"}}},
+		"Set client mixed with users and group admins": {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com,%group@domain.com"}}},
+		"Empty client AD admins":                       {entries: []entry.Entry{{Key: "client-admins", Value: ""}}},
+		"No client AD admins":                          {entries: []entry.Entry{{Key: "client-admins", Disabled: true}}},
 
 		// Mixed rules
-		"disallow local admins and set client admins": {entries: []entry.Entry{
+		"Disallow local admins and set client admins": {entries: []entry.Entry{
 			{Key: "allow-local-admins", Disabled: true},
 			{Key: "client-admins", Value: "alice@domain.com"}}},
-		"disallow local admins with previous local admin conf and set client admins": {
+		"Disallow local admins with previous local admin conf and set client admins": {
 			existingPolkitDir: "existing-previous-local-admins-multi",
 			entries: []entry.Entry{
 				{Key: "allow-local-admins", Disabled: true},
 				{Key: "client-admins", Value: "alice@domain.com"}}},
-		"allow local admins without previous local admin conf and set client admins": {entries: []entry.Entry{
+		"Allow local admins without previous local admin conf and set client admins": {entries: []entry.Entry{
 			{Key: "allow-local-admins", Disabled: false},
 			{Key: "client-admins", Value: "alice@domain.com"}}},
-		"allow local admins with previous local admin conf (simple) and set client admins": {
+		"Allow local admins with previous local admin conf (simple) and set client admins": {
 			existingPolkitDir: "existing-previous-local-admins-one",
 			entries: []entry.Entry{
 				{Key: "allow-local-admins", Disabled: false},
 				{Key: "client-admins", Value: "alice@domain.com"}}},
-		"allow local admins with previous local admin conf and set client admins": {
+		"Allow local admins with previous local admin conf and set client admins": {
 			existingPolkitDir: "existing-previous-local-admins-multi",
 			entries: []entry.Entry{
 				{Key: "allow-local-admins", Disabled: false},
 				{Key: "client-admins", Value: "alice@domain.com"}}},
-		"allow local admins with previous local admin conf (with adsys file) and set client admins": {
+		"Allow local admins with previous local admin conf (with adsys file) and set client admins": {
 			existingPolkitDir: "existing-previous-local-admins-with-adsys-file",
 			entries: []entry.Entry{
 				{Key: "allow-local-admins", Disabled: false},
 				{Key: "client-admins", Value: "alice@domain.com"}}},
 
 		// Overwrite existing files
-		"no rules and no existing history means no files": {},
-		"overwrite existing sudoers file":                 {existingSudoersDir: "existing-files", entries: defaultLocalAdminDisabledRule},
-		"overwrite existing polkit file":                  {existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule},
-		"no rules still overwrite those files":            {existingSudoersDir: "existing-files", existingPolkitDir: "existing-files"},
-		"don't overwrite other existing files":            {existingSudoersDir: "existing-other-files", existingPolkitDir: "existing-other-files", entries: defaultLocalAdminDisabledRule},
+		"No rules and no existing history means no files": {},
+		"Overwrite existing sudoers file":                 {existingSudoersDir: "existing-files", entries: defaultLocalAdminDisabledRule},
+		"Overwrite existing polkit file":                  {existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule},
+		"No rules still overwrite those files":            {existingSudoersDir: "existing-files", existingPolkitDir: "existing-files"},
+		"Don't overwrite other existing files":            {existingSudoersDir: "existing-other-files", existingPolkitDir: "existing-other-files", entries: defaultLocalAdminDisabledRule},
 
 		// Not a computer, don’t do anything (even not create new files)
-		"not a computer": {notComputer: true, existingSudoersDir: "existing-other-files", existingPolkitDir: "existing-other-files"},
+		"Not a computer": {notComputer: true, existingSudoersDir: "existing-other-files", existingPolkitDir: "existing-other-files"},
 
 		// Error cases
-		"error on writing to sudoers file":                          {makeReadOnly: "sudoers.d/", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error on writing to polkit subdirectory creation":          {makeReadOnly: "polkit-1/", existingSudoersDir: "existing-files", existingPolkitDir: "only-base-polkit-dir", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error on writing to polkit conf file":                      {makeReadOnly: "polkit-1/localauthority.conf.d", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error on creating sudoers and polkit base directory":       {makeReadOnly: ".", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error if can’t rename to destination for sudoers file":     {destIsDir: "sudoers.d/99-adsys-privilege-enforcement", entries: defaultLocalAdminDisabledRule, wantErr: true},
-		"error if can’t rename to destination for polkit conf file": {destIsDir: "polkit-1/localauthority.conf.d/99-adsys-privilege-enforcement.conf", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"Error on writing to sudoers file":                          {makeReadOnly: "sudoers.d/", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"Error on writing to polkit subdirectory creation":          {makeReadOnly: "polkit-1/", existingSudoersDir: "existing-files", existingPolkitDir: "only-base-polkit-dir", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"Error on writing to polkit conf file":                      {makeReadOnly: "polkit-1/localauthority.conf.d", existingSudoersDir: "existing-files", existingPolkitDir: "existing-files", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"Error on creating sudoers and polkit base directory":       {makeReadOnly: ".", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"Error if can’t rename to destination for sudoers file":     {destIsDir: "sudoers.d/99-adsys-privilege-enforcement", entries: defaultLocalAdminDisabledRule, wantErr: true},
+		"Error if can’t rename to destination for polkit conf file": {destIsDir: "polkit-1/localauthority.conf.d/99-adsys-privilege-enforcement.conf", entries: defaultLocalAdminDisabledRule, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -132,13 +130,13 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
 
-			testutils.CompareTreesWithFiltering(t, tempEtc, filepath.Join("testdata", "golden", name), update)
+			testutils.CompareTreesWithFiltering(t, tempEtc, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }
 
 func TestMain(m *testing.M) {
-	flag.BoolVar(&update, "update", false, "update golden files")
+	testutils.InstallUpdateFlag()
 	flag.Parse()
 
 	m.Run()
