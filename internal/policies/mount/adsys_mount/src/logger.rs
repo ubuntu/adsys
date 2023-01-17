@@ -15,12 +15,11 @@ impl Log for Logger {
             return;
         }
 
-        let fmt_time = match OffsetDateTime::now_utc().format(format_description!(
-            "[day]/[month]/[year] [hour]:[minute]:[second]"
-        )) {
-            Ok(t) => t,
-            Err(_) => String::from("00/00/0000 00:00:00"),
-        };
+        let fmt_time = OffsetDateTime::now_utc()
+            .format(format_description!(
+                "[day]/[month]/[year] [hour]:[minute]:[second]"
+            ))
+            .unwrap_or_else(|_| "00/00/0000 00:00:00".into());
 
         eprintln!("{} - {}: {}", fmt_time, record.level(), record.args());
     }
