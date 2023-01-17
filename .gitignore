@@ -38,3 +38,8 @@ debian/adsys-windows
 /adsysd
 /adsysctl
 /adsys.yaml
+
+# GitHub CI temporary files
+node_modules
+package-lock.json
+package.json

@@ -162,3 +162,66 @@ jobs:
         # TODO: Change this when merging it into main
         run: |
           git push origin auto-update-rust-vendored-sources:user-mount-handler
+
+  update-fake-checksum-file:
+    name: 'Update the fake checksum file at d/cargo-checksum.json'
+    needs: update-readme-clid-ref
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          # TODO: Change this when merging it into main
+          ref: user-mount-handler
+      - name: 'Install GitHub script dependencies'
+        run: npm install toml
+      - name: 'Update the checksum file'
+        uses: actions/github-script@v5
+        id: update-checksum
+        with:
+          script: |
+            const toml = require("toml");
+            const fs = require("node:fs");
+            const checksum_path = "./debian/cargo-checksum.json";
+            /** @typedef LockEntry @prop {string} name @prop {string} checksum @prop {string} version */
+            /** Read and parse the lock file
+            * @param {string} path
+            * @returns {any} */
+            function readLock(path) {
+              const lock = fs.readFileSync(path, { encoding: "utf-8" });
+              return toml.parse(lock);
+            }
+
+            const lockfile = readLock("./Cargo.lock");
+            /** @type {LockEntry?} */ const sd_block = lockfile.package.find(
+              (/** @type {LockEntry} */ x) => x.name === "system-deps"
+            );
+            if (!sd_block) throw new Error("system-deps not found in the lock file");
+            const old_cksum_file = require(checksum_path);
+            if (old_cksum_file.package === sd_block.checksum) {
+                console.info("Checksum is up-to-date. No update needed.");
+                return false;
+            }
+            const new_cksum_file =
+              JSON.stringify({
+                package: sd_block.checksum,
+                files: {},
+              }) + "\n";
+            fs.writeFileSync(checksum_path, new_cksum_file);
+            console.info("Checksum file updated.");
+            return true;
+      - name: Create Pull Request
+        if: ${{ steps.update-checksum.outputs.result == 'true' }}
+        # V5 Beta needed because of https://github.com/peter-evans/create-pull-request/issues/1170
+        uses: peter-evans/create-pull-request@v5-beta
+        with:
+          commit-message: Auto update Rust vendored sources checksums
+          title: Auto update Rust vendored sources checksums
+          labels: control, automated pr
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/auto-updates.yaml) by GitHub Action"
+          branch: auto-update-rust-checksum
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push branch
+        if: ${{ steps.update-checksum.outputs.result == 'true' }}
+        # TODO: Change this when merging it into main
+        run: |
+          git push origin auto-update-rust-checksum:user-mount-handler
