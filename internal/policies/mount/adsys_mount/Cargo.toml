@@ -11,11 +11,11 @@ name = "lib"
 path = "src/lib.rs"
 
 [dependencies]
-anyhow = "1.0.65"
-chrono = "0.4.22"
-gio = "0.16.2"
-glib = "0.16.2"
-log = "0.4.17"
-serde = { version = "1.0.147", features = ["derive"] }
-serde_json = "1.0.87"
-thiserror = "1.0.37"
+anyhow = "^1"
+gio = "=0.16.7"
+glib = "=0.16.7"
+log = "=0.4.17"
+serde = { version = "^1", features = ["derive"] }
+serde_json = "^1"
+thiserror = "^1"
+time = { version = "=0.3.17", features = ["formatting", "macros"] }
