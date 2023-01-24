@@ -114,7 +114,7 @@ jobs:
     name: Update XS-Vendored-Sources-Rust on debian/control
     needs: update-readme-clid-ref
     runs-on: ubuntu-latest
-    container: 
+    container:
       image: ubuntu:rolling
     steps:
       - name: Install dependencies
@@ -132,12 +132,12 @@ jobs:
         run: |
           set -eu
 
-          export CARGO_VENDOR_DIR=vendor_rust/ 
-          OUTPUT=$(/usr/share/cargo/bin/dh-cargo-vendored-sources 2>&1 || true | grep XS-Vendored-Sources-Rust:)
+          export CARGO_VENDOR_DIR=vendor_rust/
+          VENDORED_SOURCES=$(/usr/share/cargo/bin/dh-cargo-vendored-sources 2>&1 || true)
+          OUTPUT=$(echo "$VENDORED_SOURCES" | grep ^XS-Vendored-Sources-Rust: || true)
           if [ -z "$OUTPUT" ]; then
-              exit 0
+            exit 0
           fi
-
           sed -i "s/^XS-Vendored-Sources-Rust:.*/$OUTPUT/" debian/control
 
           echo "modified=true" >> $GITHUB_ENV
@@ -165,22 +165,26 @@ jobs:
 
   update-fake-checksum-file:
     name: 'Update the fake checksum file at d/cargo-checksum.json'
-    needs: update-readme-clid-ref
+    needs: update-rust-vendored-sources
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y git nodejs
       - uses: actions/checkout@v3
         with:
           # TODO: Change this when merging it into main
           ref: user-mount-handler
       - name: 'Install GitHub script dependencies'
-        run: npm install toml
+        run: npm install -D toml @types/node
       - name: 'Update the checksum file'
         uses: actions/github-script@v5
         id: update-checksum
         with:
           script: |
             const toml = require("toml");
-            const fs = require("node:fs");
+            const fs = require("fs");
             const checksum_path = "./debian/cargo-checksum.json";
             /** @typedef LockEntry @prop {string} name @prop {string} checksum @prop {string} version */
             /** Read and parse the lock file
