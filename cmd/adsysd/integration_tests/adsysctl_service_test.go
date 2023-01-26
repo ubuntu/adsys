@@ -39,7 +39,7 @@ func TestServiceStop(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			systemAnswer(t, tc.daemonAnswer)
+			dbusAnswer(t, tc.daemonAnswer)
 
 			conf := createConf(t)
 			if !tc.daemonNotStarted {
@@ -62,7 +62,7 @@ func TestServiceStop(t *testing.T) {
 }
 
 func TestServiceStopWaitForHangingClient(t *testing.T) {
-	systemAnswer(t, "polkit_yes")
+	dbusAnswer(t, "polkit_yes")
 
 	conf := createConf(t)
 	d := daemon.New()
@@ -106,7 +106,7 @@ func TestServiceStopWaitForHangingClient(t *testing.T) {
 }
 
 func TestServiceStopForcedWithHangingClient(t *testing.T) {
-	systemAnswer(t, "polkit_yes")
+	dbusAnswer(t, "polkit_yes")
 
 	conf := createConf(t)
 	d := daemon.New()
@@ -169,7 +169,7 @@ func TestServiceCat(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 
 			conf := createConf(t)
 			if !tc.daemonNotStarted && !tc.coverCatClient {
@@ -301,7 +301,7 @@ func TestServiceStatus(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			systemAnswer(t, tc.systemAnswer)
+			dbusAnswer(t, tc.systemAnswer)
 
 			adsysDir := t.TempDir()
 			cachedPoliciesDir := filepath.Join(adsysDir, "cache", "policies")

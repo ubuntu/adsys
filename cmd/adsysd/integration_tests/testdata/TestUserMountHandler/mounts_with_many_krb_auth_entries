@@ -1,0 +1,4 @@
+[krb5]smb://domain.com/some/mount
+[krb5]smb://other.com/who/are/you
+[krb5]nfs://kerberos.com/auth-mount
+[krb5]nfs://authenticated.com/verified-mount

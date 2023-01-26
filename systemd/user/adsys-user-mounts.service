@@ -1,0 +1,12 @@
+[Unit]
+Description=ADSys user mount handler
+After=network-online.service
+ConditionPathExists=/run/adsys/users/%U/mounts
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/adsys_mount /run/adsys/users/%U/mounts
+
+[Install]
+WantedBy=default.target

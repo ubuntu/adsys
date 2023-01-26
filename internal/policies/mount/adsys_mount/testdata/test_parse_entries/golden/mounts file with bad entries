@@ -1,0 +1,46 @@
+[
+  {
+    "path": "mount/path:protocol://why.com",
+    "krb_auth": false
+  },
+  {
+    "path": "how did this happen?",
+    "krb_auth": false
+  },
+  {
+    "path": "protocol:this_is_not_possible:domain.com",
+    "krb_auth": false
+  },
+  {
+    "path": "            you should not have edited the file",
+    "krb_auth": false
+  },
+  {
+    "path": "it",
+    "krb_auth": false
+  },
+  {
+    "path": "was",
+    "krb_auth": false
+  },
+  {
+    "path": "not",
+    "krb_auth": false
+  },
+  {
+    "path": "supposed",
+    "krb_auth": false
+  },
+  {
+    "path": "to",
+    "krb_auth": false
+  },
+  {
+    "path": "be",
+    "krb_auth": false
+  },
+  {
+    "path": "edited",
+    "krb_auth": false
+  }
+]

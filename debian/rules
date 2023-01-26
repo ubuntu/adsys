@@ -24,17 +24,63 @@ export DH_GOLANG_INSTALL_ALL := 1
 # Tests needing sudo will be skipped automatically
 export ADSYS_SKIP_INTEGRATION_TESTS=1
 
+# Do not run Rust tests from Golang, as they're run independently via
+# dh-cargo, allowing integration with vendored deps, etc...
+export ADSYS_SKIP_RUST_TESTS_IN_GOLANG=1
+
+# The following definitions are necessary because of the manual steps
+# we need to do to work around some issues with either dh-cargo,
+# the wrapper, or cargo
+include /usr/share/rustc/architecture.mk
+CARGO := /usr/share/cargo/bin/cargo
+ADSYS_MOUNT := internal/policies/mount/adsys_mount
+
+# Needed for Rust vendored sources tracking
+DH_CARGO_VENDORED_SOURCES := /usr/share/cargo/bin/dh-cargo-vendored-sources
+export CARGO_VENDOR_DIR = vendor_rust
+
 %:
 	dh $@ --buildsystem=golang --with=golang,apport
 
 override_dh_auto_clean:
 	dh_auto_clean
+	dh_auto_clean --buildsystem=cargo
 	# Create the vendor directory when building the source package
 	[ -d vendor/ ] || go mod vendor
+	# system-deps crate includes an empty .a file which is filtered out when
+	# building the source package and cargo gets confused when trying to verify
+	# integrity. So we just put in an empty checksum file instead.
+	# The checksum in the file comes from the Cargo.lock file under the `system-deps`
+	# dependency segment. This fake checksum file needs to be updated after each
+	# adsys update.
+	if [ ! -d $(CARGO_VENDOR_DIR)/ ]; then \
+		$(CARGO) vendor $(CARGO_VENDOR_DIR); \
+		cp debian/cargo-checksum.json $(CARGO_VENDOR_DIR)/system-deps/.cargo-checksum.json; \
+		[ ! -e $(DH_CARGO_VENDORED_SOURCES) ] || $(DH_CARGO_VENDORED_SOURCES); \
+	fi
+	# That last line above is to warn whoever's doing the packaging that they
+	# need to update the Vendored-Sources field. The initial packaging work
+	# didn't include said field since the vendoring is done on the fly.
+
+override_dh_auto_configure:
+	dh_auto_configure
+	# The following lines basically do the same thing as
+	# `dh_auto_configure --buildsystem=cargo`
+	# on Kinetic and above, but since we're supporting Jammy as well,
+	# we need to do it manually. Note that we don't want to export CARGO_HOME
+	# in the global debian/rules as it would interfere with the clean target
+	[ ! -e $(DH_CARGO_VENDORED_SOURCES) ] || $(DH_CARGO_VENDORED_SOURCES)
+	DEB_HOST_GNU_TYPE=$(DEB_HOST_GNU_TYPE) DEB_HOST_RUST_TYPE=$(DEB_HOST_RUST_TYPE) \
+		CARGO_HOME=$(CURDIR)/debian/cargo_home DEB_CARGO_CRATE=adsys_$(shell dpkg-parsechangelog --show-field Version) \
+		$(CARGO) prepare-debian $(CARGO_VENDOR_DIR)
 
 override_dh_auto_build:
 	# Build on linux only adsysd itself, and not generator or Windows binaries
 	DH_GOLANG_BUILDPKG=github.com/ubuntu/adsys/cmd/adsysd dh_auto_build
+
+override_dh_auto_test:
+	dh_auto_test --buildsystem=cargo -- test --all
+	dh_auto_test
 
 # Build the Windows executables for adwatchd where applicable
 ifeq ($(WINDOWS_BUILD),1)
@@ -43,6 +89,22 @@ endif
 
 override_dh_auto_install:
 	dh_auto_install -- --no-source
+
+	# Here we utilise a logical flaw in the cargo wrapper to our advantage:
+	# when specifying DEB_CARGO_CRATE_IN_REGISTRY=1, the wrapper will
+	# avoid adding the `--path` option, so that we can specify it ourselves
+	DEB_HOST_GNU_TYPE=$(DEB_HOST_GNU_TYPE) \
+	DEB_HOST_RUST_TYPE=$(DEB_HOST_RUST_TYPE) \
+	CARGO_HOME=$(CURDIR)/debian/cargo_home \
+	DEB_CARGO_CRATE=adsys_mount_0.1.0 \
+	DEB_CARGO_CRATE_IN_REGISTRY=1 \
+	DESTDIR=$(CURDIR)/debian/tmp \
+        $(CARGO) install --path $(ADSYS_MOUNT)
+	# Currently doesn't work because of https://github.com/rust-lang/cargo/issues/4101
+	# combined with a lack of flexibility in the cargo wrapper. That means we
+	# have to do it manually (with the build split out in dh_auto_build for good
+	# measure, even though dh-cargo does it all in the install step)
+	# dh_auto_install --buildsystem=cargo -- --path $(ADSYS_MOUNT)
 
 	# PAM configuration
 	mkdir -p debian/tmp/usr/share/pam

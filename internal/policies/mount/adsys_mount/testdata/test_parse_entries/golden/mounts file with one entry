@@ -1,0 +1,6 @@
+[
+  {
+    "path": "uno://single.com/one/path",
+    "krb_auth": false
+  }
+]
