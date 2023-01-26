@@ -1,9 +1,8 @@
 name: Update translation, readme and debian/control in main branch automatically
 on:
   push:
-    # Uncomment this when merging into main
-    # branches:
-    #   - main
+    branches:
+      - main
     paths-ignore:
       - po/*
       - README.md
@@ -122,9 +121,6 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt update
           DEBIAN_FRONTEND=noninteractive apt install -y cargo dh-cargo git
       - uses: actions/checkout@v3
-        with:
-          # TODO: Change this when merging it into main
-          ref: user-mount-handler
       - name: Vendoring the dependencies
         run: |
           cargo vendor vendor_rust/
@@ -159,9 +155,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch
         if: ${{ env.modified == 'true' }}
-        # TODO: Change this when merging it into main
         run: |
-          git push origin auto-update-rust-vendored-sources:user-mount-handler
+          git push origin auto-update-rust-vendored-sources:main
 
   update-fake-checksum-file:
     name: 'Update the fake checksum file at d/cargo-checksum.json'
@@ -173,9 +168,6 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y git nodejs
       - uses: actions/checkout@v3
-        with:
-          # TODO: Change this when merging it into main
-          ref: user-mount-handler
       - name: 'Install GitHub script dependencies'
         run: npm install -D toml @types/node
       - name: 'Update the checksum file'
@@ -226,6 +218,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch
         if: ${{ steps.update-checksum.outputs.result == 'true' }}
-        # TODO: Change this when merging it into main
         run: |
-          git push origin auto-update-rust-checksum:user-mount-handler
+          git push origin auto-update-rust-checksum:main
