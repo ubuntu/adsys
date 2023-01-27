@@ -171,7 +171,7 @@ jobs:
       - name: 'Install GitHub script dependencies'
         run: npm install -D toml @types/node
       - name: 'Update the checksum file'
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         id: update-checksum
         with:
           script: |
