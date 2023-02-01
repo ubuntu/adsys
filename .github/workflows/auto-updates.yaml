@@ -121,6 +121,9 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt update
           DEBIAN_FRONTEND=noninteractive apt install -y cargo dh-cargo git
       - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
       - name: Vendoring the dependencies
         run: |
           cargo vendor vendor_rust/
@@ -138,9 +141,6 @@ jobs:
 
           echo "modified=true" >> $GITHUB_ENV
         shell: bash
-
-      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
-        run: git config --global --add safe.directory /__w/adsys/adsys
 
       - name: Create Pull Request
         if: ${{ env.modified == 'true' }}

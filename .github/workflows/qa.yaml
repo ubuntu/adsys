@@ -23,9 +23,10 @@ jobs:
         run: |
           DEBIAN_FRONTEND=noninteractive apt update
           DEBIAN_FRONTEND=noninteractive apt install -y ${{ env.apt_dependencies }}
-      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
-        run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
       - uses: actions/setup-go@v3
         with:
           go-version-file: go.mod
@@ -178,9 +179,10 @@ jobs:
         run: |
           DEBIAN_FRONTEND=noninteractive apt update
           DEBIAN_FRONTEND=noninteractive apt install -y ${{ env.apt_dependencies }}
-      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
-        run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3
+        with:
+          path: ${{ github.workspace }}
+          set-safe-directory: true
       - uses: actions/setup-go@v3
         with:
           go-version-file: go.mod
