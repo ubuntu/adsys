@@ -51,6 +51,7 @@ bool is_online(char *domain) {
 */
 // #cgo pkg-config: wbclient
 import "C"
+
 import (
 	"context"
 	"errors"
