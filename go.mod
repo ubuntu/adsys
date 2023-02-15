@@ -24,7 +24,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
 	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5
-	golang.org/x/net v0.6.0
+	golang.org/x/net v0.7.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/sys v0.5.0
 	golang.org/x/text v0.7.0
