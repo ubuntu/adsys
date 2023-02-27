@@ -312,8 +312,16 @@ func TestInit(t *testing.T) {
 				callbackPhase = 2
 				phaseMu.Unlock()
 
-				err = os.WriteFile(filepath.Join(configDir, prefix+".yaml"), []byte(tc.changeConfigWith), 0600)
-				require.NoError(t, err, "Setup: failed to write initial config file")
+				// fsnotify docs states that truncating a file will also trigger a Write event, which means that the callback can be triggered
+				// before the file contents are properly written. In order to avoid that, we must manually open the file and write the new content
+				// to it to avoid truncating the file and triggering the event too early.
+				configFile, err := os.OpenFile(filepath.Join(configDir, prefix+".yaml"), os.O_RDWR|os.O_CREATE, os.ModePerm)
+				require.NoError(t, err, "Setup: failed to open config file")
+				defer configFile.Close()
+				_, err = configFile.WriteString(tc.changeConfigWith)
+				require.NoError(t, err, "Setup: failed to write new content to config file")
+				configFile.Close()
+
 				// Let’s force a sync to make sure the file is written on disk
 				syscall.Sync()
 				select {
