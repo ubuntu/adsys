@@ -171,12 +171,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Download adm template files for "all"
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: adm-ALL
           path: policies/Ubuntu/all
       - name: Download adm template files for lts only
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: adm-LTS
           path: policies/Ubuntu/lts-only
