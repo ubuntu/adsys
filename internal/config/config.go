@@ -79,7 +79,7 @@ func Init(name string, cmd cobra.Command, vip *viper.Viper, configChanged func(r
 		log.Infof(context.Background(), "Using configuration file: %v", vip.ConfigFileUsed())
 		vip.WatchConfig()
 		vip.OnConfigChange(func(e fsnotify.Event) {
-			if e.Op != fsnotify.Write {
+			if e.Op != fsnotify.Write && e.Op != fsnotify.Create {
 				return
 			}
 			log.Infof(context.Background(), "Config file %q changed. Reloading.", e.Name)
