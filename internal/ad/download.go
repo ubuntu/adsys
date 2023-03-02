@@ -177,6 +177,7 @@ func needsDownload(ctx context.Context, client *libsmbclient.Client, g *download
 
 	f, err := client.Open(fmt.Sprintf("%s/GPT.INI", g.url), 0, 0)
 	if err != nil {
+		// nolint:errorlint // We cannot have multiple error wrapping directives in a single call
 		return false, fmt.Errorf("%w: %v", errNoGPTINI, err)
 	}
 	defer f.Close()
