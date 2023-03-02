@@ -1,3 +1,24 @@
+adsys (0.10.1) lunar; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Jean-Baptiste Lallement ]
+  [ Gabriel Nagy ]
+  [ Didier Roche ]
+  * Fix erroneous non alternative dependency on package krb5-user
+  * Fix a bug in internal/config tests that was causing the autopkgtests to fail
+  * Update internal/config to also trigger a reload when config file is
+    overwritten
+  * Update dependencies to latest:
+    - github.com/golangci/golangci-lint
+    - github.com/stretchr/testify
+  * CI and quality of life changes not impacting package functionality:
+    - Bump github actions to latest:
+      - peter-evans/create-pull-request
+      - actions/download-artifact
+    - Addressing some linter issues pointed out by new golangci-lint version
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Thu, 02 Mar 2023 09:43:33 -0400
+
 adsys (0.10.0) lunar; urgency=medium
 
   [ Denison Barbosa ]
