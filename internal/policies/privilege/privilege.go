@@ -94,6 +94,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	if err := os.MkdirAll(filepath.Dir(sudoersConf), 0755); err != nil {
 		return err
 	}
+	// nolint:gosec // G302 match distribution permission
 	sudoersF, err := os.OpenFile(sudoersConf+".new", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0440)
 	if err != nil {
 		return err
@@ -103,7 +104,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	if err := os.MkdirAll(filepath.Dir(policyKitConf), 0755); err != nil {
 		return err
 	}
-	// nolint:gosec // G301 match distribution permission
+	// nolint:gosec // G302 match distribution permission
 	policyKitConfF, err := os.OpenFile(policyKitConf+".new", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return err

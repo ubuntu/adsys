@@ -180,6 +180,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			if info.IsDir() {
 				return fmt.Errorf(i18n.G("script %q is a directory and not a file to execute"), script)
 			}
+			// nolint:gosec // G302 - scripts need rx permissions
 			if err := os.Chmod(scriptFilePath, 0550); err != nil {
 				return fmt.Errorf(i18n.G("can't change mode of script %qto %o: %v"), scriptFilePath, 0550, err)
 			}
