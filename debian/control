@@ -25,7 +25,7 @@ Homepage: https://github.com/ubuntu/adsys
 Description: AD SYStem integration
  ADSys is an AD SYStem tool to integrate GPOs with a linux system.
  It allows one to handle machine and users GPOs, mapping them to dconf keys,
- apparmor rules and running scripts at different points in time.
+ apparmor rules, mounts, proxy settings and running scripts at different points in time.
 
 
 Package: adsys
