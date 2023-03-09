@@ -44,8 +44,8 @@ Depends: ${shlibs:Depends},
          gvfs,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
-Suggests:
-        curlftpfs,
+Suggests: curlftpfs,
+          ubuntu-proxy-manager,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
 
