@@ -1237,7 +1237,10 @@ Supported on Ubuntu 20.04, 22.04, 22.10, 23.04.</string>
 
 - Type: dconf
 - Key: /org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-timeout
-- Default: 1200
+- Default for 20.04: 1200
+- Default for 22.04: 1200
+- Default for 22.10: 1200
+- Default for 23.04: 900
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
@@ -2536,7 +2539,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <decimalTextBox refId="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="">Sleep timeout computer when on battery</decimalTextBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultChecked="false">Override value for 23.04:</checkBox>
-        <decimalTextBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="1200">Sleep timeout computer when on battery</decimalTextBox>
+        <decimalTextBox refId="UbuntuElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="900">Sleep timeout computer when on battery</decimalTextBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultChecked="false">Override value for 22.10:</checkBox>
         <decimalTextBox refId="UbuntuElemMachine2210DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" defaultValue="1200">Sleep timeout computer when on battery</decimalTextBox>
