@@ -1,4 +1,28 @@
 // Package dconf is the policy manager for dconf entry types.
+//
+// The manager will create additional dconf databases: system-db:<username> and system-db:machine.
+// Values specified in the GPO will be appended to those databases, according to their configuration.
+// Dconf applies the values from bottom to top and stops checking values for a certain key at the
+// moment it finds a lock.
+// Default values specified by the policy will be added to the profile database, along with locks to
+// their correspondent keys, in order to enforce the requested values.
+//
+// The manager will parse the values and try to fix some formatting problems, but if something goes
+// wrong when applying the profile or updating dconf, an error is returned.
+// However, ADSys will not check for the correctness of the values being assigned and it's up to the
+// admin to ensure that the requested value is assignable to the key it is being assigned to.
+//
+// Notes or common keys between user and machine:
+//
+// 1. Machine is not configured (no value, no lock) -> upper layers will be taken into account, which can be the user
+// one or user default value.
+//
+// 2. Machine is configured (value, and lock) -> the lock will "stick" our desired value and enforce it.
+//
+// 3. Machine configuration is set to deleted, conveying "I want the default value from the system" (no value, and lock)
+// -> the lock will "stick" the desired value to the layer of current value of Machine. As machine doesn’t have any
+// value and is the lowest in the stack (the first one to be processed), this will thus enforce the default system
+// configuration for that setting.
 package dconf
 
 import (
@@ -23,27 +47,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 )
-
-/*
-	Notes:
-	dconf applies default values and lock from bottom to top of the profile.
-	It will stop to check values at the first corresponding lock layer it encounters.
-
-	We always append to the profile the following dbs:
-	system-db:<username>
-	system-db:machine
-
-	For common keys between user and machine:
-	  1. Machine is not configured (no value, no lock) -> upper layers will be taken into account, which can be the user
-	     one or user default value.
-
-	  2. Machine is configured (value, and lock) -> the lock will "stick" our desired value and enforce it.
-
-	  3. Machine configuration is set to deleted, conveying "I want the default value from the system" (no value, and lock)
-	     -> the lock will "stick" the desired value to the layer of current value of Machine. As machine doesn’t have any
-		 value and is the lowest in the stack (the first one to be processed), this will thus enforce the default system
-		 configuration for that setting.
-*/
 
 // Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {

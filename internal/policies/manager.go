@@ -1,3 +1,26 @@
+// Package policies - Policy manager guidelines
+//
+// ADSys is expected to apply configuration policies, not enforce them. We are responsible for
+// properly configuring those policies and set up the machine to apply them, but we can not ensure that
+// they will be executed as this relies on lots of variables and system functionalities.
+// As such, policy managers are expected to only prevent authentication when something goes wrong
+// during the configuration of the policies, whilst ensuring that the user will be warned should a
+// configuration fail to execute.
+//
+// We should prevent authentication on errors such as:
+//   - failed to copy the policy requested assets to the machine;
+//   - failed to parse policy configuration values;
+//   - failed to write the requested files on disk;
+//   - missing required auxiliar binary to set up the policy (e.g. apparmor_parser, dconf);
+//
+// We should only warn the user on errors such as:
+//   - systemd unit failed to start due to some system error;
+//   - copied asset failed to be executed due to own misconfiguration;
+//   - script failed during execution;
+//   - requested shared folder does not exist and, as such, can not be mounted;
+//
+// This is supposed to be a guideline, rather than a rule. Therefore, some of these errors can be
+// interchangeable depending on which policy is being applied.
 package policies
 
 import (

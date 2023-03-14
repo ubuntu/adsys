@@ -1,4 +1,18 @@
-// Package privilege is the policy manager for privilege escalation (sudo and polkit) entry types.
+// Package privilege is the policy manager for privilege escalation entry types.
+//
+// This manager allows (and denies) privilege escalation on the client by configuring sudo and polkit
+// files. In order to do that, it modifies 2 files (one for sudo and one for polkit) and their default
+// locations are, respectively:
+//   - /etc/sudoers.d/99-adsys-privilege-enforcement
+//   - /etc/polkit-1/localauthority.conf.d/99-adsys-privilege-enforcement
+//
+// This is an all or nothing type of policy and, therefore, requires a lot of attention during setup.
+// If the policy is setup improperly, users could end up with too much (or too little) privilege,
+// which could compromise the safety and/or usability of the machine until the policy gets updated.
+// If the policy is set without any value (or it's disabled) the files are removed and the default
+// privilege configuration is restored.
+// Should the manager fail to create the files with the requested values, it will return an error and
+// authentication will be prevented.
 package privilege
 
 import (
