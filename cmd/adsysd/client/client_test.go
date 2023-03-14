@@ -11,6 +11,8 @@ import (
 // We can’t run any tests in parallel, even those not changing env variables as cobra install flags globally
 
 func TestInitApp(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 
 	err := a.Run()
@@ -18,6 +20,8 @@ func TestInitApp(t *testing.T) {
 }
 
 func TestAppHelp(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.SetArgs("--help")
 
@@ -26,6 +30,8 @@ func TestAppHelp(t *testing.T) {
 }
 
 func TestAppCompletion(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.SetArgs("completion", "bash")
 
@@ -34,6 +40,8 @@ func TestAppCompletion(t *testing.T) {
 }
 
 func TestAppNoUsageError(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.SetArgs("completion", "bash")
 
@@ -44,6 +52,8 @@ func TestAppNoUsageError(t *testing.T) {
 }
 
 func TestAppUsageError(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.SetArgs("doesnotexist")
 
@@ -54,6 +64,8 @@ func TestAppUsageError(t *testing.T) {
 }
 
 func TestAppCanQuitWhenExecute(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.AddWaitCommand()
 	a.SetArgs("wait")
@@ -72,6 +84,8 @@ func TestAppCanQuitWhenExecute(t *testing.T) {
 }
 
 func TestAppCanQuitAfterExecute(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.SetArgs("completion", "bash")
 
@@ -81,11 +95,15 @@ func TestAppCanQuitAfterExecute(t *testing.T) {
 }
 
 func TestAppCanQuitWithoutExecute(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.Quit()
 }
 
 func TestAppCanSigHupWhenExecute(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.AddWaitCommand()
 	a.SetArgs("wait")
@@ -104,6 +122,8 @@ func TestAppCanSigHupWhenExecute(t *testing.T) {
 }
 
 func TestAppCanSigHupAfterExecute(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	a.SetArgs("completion", "bash")
 
@@ -113,6 +133,8 @@ func TestAppCanSigHupAfterExecute(t *testing.T) {
 }
 
 func TestAppGetRootCmd(t *testing.T) {
+	t.Parallel()
+
 	a := client.New()
 	require.NotNil(t, a.RootCmd(), "Returns root command")
 }

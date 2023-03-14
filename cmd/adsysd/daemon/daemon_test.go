@@ -18,6 +18,8 @@ import (
 )
 
 func TestAppHelp(t *testing.T) {
+	t.Parallel()
+
 	a := daemon.New()
 	a.SetArgs("--help")
 
@@ -26,6 +28,8 @@ func TestAppHelp(t *testing.T) {
 }
 
 func TestAppCompletion(t *testing.T) {
+	t.Parallel()
+
 	a := daemon.New()
 	a.SetArgs("completion", "bash")
 
@@ -58,6 +62,8 @@ func TestAppVersion(t *testing.T) {
 }
 
 func TestAppNoUsageError(t *testing.T) {
+	t.Parallel()
+
 	a := daemon.New()
 	a.SetArgs("completion", "bash")
 
@@ -68,6 +74,8 @@ func TestAppNoUsageError(t *testing.T) {
 }
 
 func TestAppUsageError(t *testing.T) {
+	t.Parallel()
+
 	a := daemon.New()
 	a.SetArgs("doesnotexist")
 
@@ -92,6 +100,8 @@ func TestAppCanQuitAfterExecute(t *testing.T) {
 }
 
 func TestAppCanQuitWithoutExecute(t *testing.T) {
+	t.Parallel()
+
 	t.Skip("We need to initialize the daemon first, so this is not possible and will hang forever (ready not closed)")
 	a := daemon.New()
 	a.Quit()
