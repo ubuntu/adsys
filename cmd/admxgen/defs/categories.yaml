@@ -140,6 +140,15 @@ categories:
         defaultpolicyclass: "Machine"
         policies:
           - "/system-mounts"
+      - displayname: "System proxy configuration"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/proxy/http"
+          - "/proxy/https"
+          - "/proxy/ftp"
+          - "/proxy/socks"
+          - "/proxy/no-proxy"
+          - "/proxy/auto"
 
     - displayname: "Session management"
       defaultpolicyclass: "User"
