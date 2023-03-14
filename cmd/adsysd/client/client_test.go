@@ -1,7 +1,6 @@
 package client_test
 
 import (
-	"os"
 	"sync"
 	"testing"
 
@@ -123,10 +122,3 @@ func TestAppGetRootCmd(t *testing.T) {
 }
 
 // TODO: config change
-
-// changeArgs allows changing command line arguments and return a function to return it.
-func changeArgs(args ...string) func() {
-	orig := os.Args
-	os.Args = args
-	return func() { os.Args = orig }
-}

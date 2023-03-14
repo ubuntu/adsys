@@ -332,13 +332,6 @@ func prepareEnv(t *testing.T) {
 	testutils.Setenv(t, "ADSYS_SSSD.CONFIG", "testdata/sssd.conf")
 }
 
-// changeArgs allows changing command line arguments and return a function to restore it.
-func changeArgs(args ...string) (restore func()) {
-	orig := os.Args
-	os.Args = args
-	return func() { os.Args = orig }
-}
-
 // captureLogs captures current logs.
 // It returns a function to read the buffered log output.
 // The original log output is restored when the test ends.
