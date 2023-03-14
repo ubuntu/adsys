@@ -143,22 +143,6 @@ jobs:
           sed -i "s/^XS-Vendored-Sources-Rust:.*/$OUTPUT/" debian/control
           echo "modified=true" >> $GITHUB_ENV
         shell: bash
-      - name: Update the fake checksum file
-        run: |
-          set -eu
-          # Reads the checksum of both files
-          FAKE_CHECKSUM=$(cat debian/cargo-checksum.json | jq .package)
-          CRATE_CHECKSUM=$(cat vendor_rust/system-deps/.cargo-checksum.json | jq .package)
-          if [ "${FAKE_CHECKSUM}" == "${CRATE_CHECKSUM}" ]; then
-            echo "debian/cargo-checksum.json is up to date. No change is needed.";
-            exit 0
-          fi
-          # Formats in a way where we can replace the line using sed
-          FMT_CHECKSUM="\"package\": ${CRATE_CHECKSUM},"
-          # Replaces the fake checksum with the correct value
-          sed -i "s/\"package\":.*/${FMT_CHECKSUM}/" debian/cargo-checksum.json
-          echo "modified=true" >>$GITHUB_ENV
-        shell: bash
       # Since we run this job in a container, we need to manually add the safe directory due to some
       # issues between actions/checkout and actions/runner, which seem to be triggered by multiple
       # causes (e.g. https://github.com/actions/runner-images/issues/6775, https://github.com/actions/checkout/issues/1048#issuecomment-1356485556).
