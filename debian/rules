@@ -47,16 +47,24 @@ override_dh_auto_clean:
 	dh_auto_clean --buildsystem=cargo
 	# Create the vendor directory when building the source package
 	[ -d vendor/ ] || go mod vendor
-	# system-deps crate includes an empty .a file which is filtered out when
-	# building the source package and cargo gets confused when trying to verify
-	# integrity. So we just put in an empty checksum file instead.
-	# The checksum in the file comes from the Cargo.lock file under the `system-deps`
-	# dependency segment. This fake checksum file needs to be updated after each
-	# adsys update.
+	# Some crates are shipped with .a files, which get removed by the helpers during the package build as a safety measure.
+	# This results in cargo failing to compile, since the files (which are listed in the checksums) are not there anymore.
+	# For those crates, we need to replace their checksum with a more general one that only lists the crate checksum, instead of each file.
 	if [ ! -d $(CARGO_VENDOR_DIR)/ ]; then \
 		$(CARGO) vendor $(CARGO_VENDOR_DIR); \
-		cp debian/cargo-checksum.json $(CARGO_VENDOR_DIR)/system-deps/.cargo-checksum.json; \
 		[ ! -e $(DH_CARGO_VENDORED_SOURCES) ] || $(DH_CARGO_VENDORED_SOURCES); \
+		\
+		[ -e /usr/bin/jq ] || (echo "jq is required to run this script. Try installing it with 'sudo apt install jq'" && exit 1); \
+		\
+		for dep in $$(ls vendor_rust -1); do \
+			checksum_file="vendor_rust/$${dep}/.cargo-checksum.json"; \
+			a_files=$$(cat $${checksum_file} | jq '.files | keys | map(select(.|test(".a$$")))'); \
+			if [ "$$a_files" = "[]" ]; then \
+				continue; \
+			fi; \
+			pkg_checksum=$$(cat "$${checksum_file}" | jq '.package'); \
+			echo "{\"files\": {}, \"package\": $${pkg_checksum}}" >"$${checksum_file}"; \
+		done; \
 	fi
 	# That last line above is to warn whoever's doing the packaging that they
 	# need to update the Vendored-Sources field. The initial packaging work
