@@ -190,8 +190,8 @@ func TestPolicyUpdate(t *testing.T) {
 		return
 	}
 
-	testutils.Setenv(t, "ADSYS_TESTS_MOCK_SMBDOMAIN", "example.com")
-	testutils.Setenv(t, "ADSYS_SKIP_ROOT_CALLS", "TRUE")
+	t.Setenv("ADSYS_TESTS_MOCK_SMBDOMAIN", "example.com")
+	t.Setenv("ADSYS_SKIP_ROOT_CALLS", "TRUE")
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get current host")
@@ -903,7 +903,7 @@ func TestPolicyUpdate(t *testing.T) {
 				tc.backend = "sssd"
 			}
 
-			testutils.Setenv(t, "ADSYS_WBCLIENT_BEHAVIOR", tc.winbindMockBehavior)
+			t.Setenv("ADSYS_WBCLIENT_BEHAVIOR", tc.winbindMockBehavior)
 
 			// Some tests will need some initial state assets
 			for _, k := range tc.clearDirs {
@@ -976,7 +976,7 @@ func TestPolicyUpdate(t *testing.T) {
 				} else {
 					tc.krb5ccname = fmt.Sprintf("FILE:%s/%s", krb5dir, tc.krb5ccname)
 				}
-				testutils.Setenv(t, "KRB5CCNAME", tc.krb5ccname)
+				t.Setenv("KRB5CCNAME", tc.krb5ccname)
 			}
 
 			conf := createConf(t, confWithAdsysDir(adsysDir), confWithBackend(tc.backend))

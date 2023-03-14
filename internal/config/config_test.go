@@ -18,7 +18,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/config"
-	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestSetVerboseMode(t *testing.T) {
@@ -254,7 +253,7 @@ func TestInit(t *testing.T) {
 			}
 
 			if tc.withConfigEnv {
-				testutils.Setenv(t, strings.ToUpper(prefix)+"_VALUE", "envvalue")
+				t.Setenv(strings.ToUpper(prefix)+"_VALUE", "envvalue")
 			}
 
 			if tc.configFileContent != "" {

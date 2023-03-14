@@ -475,8 +475,8 @@ func dbusAnswer(t *testing.T, answer string) {
 		t.Fatalf("Setup: unknown daemon answer to support: %q", answer)
 	}
 
-	testutils.Setenv(t, "DBUS_SYSTEM_BUS_ADDRESS", filepath.Join(socket, "system_bus_socket"))
-	testutils.Setenv(t, "DBUS_SESSION_BUS_ADDRESS", filepath.Join(socket, "session_bus_socket"))
+	t.Setenv("DBUS_SYSTEM_BUS_ADDRESS", filepath.Join(socket, "system_bus_socket"))
+	t.Setenv("DBUS_SESSION_BUS_ADDRESS", filepath.Join(socket, "session_bus_socket"))
 }
 
 type runner interface {

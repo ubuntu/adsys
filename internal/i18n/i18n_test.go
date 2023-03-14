@@ -10,7 +10,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 const (
@@ -114,11 +113,11 @@ func TestTranslations(t *testing.T) {
 			} else if tc.lcmessages == "-" {
 				tc.lcmessages = ""
 			}
-			testutils.Setenv(t, "LC_MESSAGES", tc.lcmessages)
+			t.Setenv("LC_MESSAGES", tc.lcmessages)
 			if tc.lang == "" {
 				tc.lang = "FR_fr"
 			}
-			testutils.Setenv(t, "LANG", tc.lang)
+			t.Setenv("LANG", tc.lang)
 			if tc.loc == "" {
 				tc.loc = defaultLoc
 			} else if tc.loc == "-" {

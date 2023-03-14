@@ -10,11 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/doc"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestDocChapter(t *testing.T) {
-	testutils.Setenv(t, "GLAMOUR_STYLE", "notty")
+	t.Setenv("GLAMOUR_STYLE", "notty")
 
 	fullName, strippedExt, baseName := getTestChapter(t, "02.")
 
@@ -140,7 +139,7 @@ func TestDocChapter(t *testing.T) {
 }
 
 func TestDocList(t *testing.T) {
-	testutils.Setenv(t, "GLAMOUR_STYLE", "notty")
+	t.Setenv("GLAMOUR_STYLE", "notty")
 
 	tests := map[string]struct {
 		raw              bool

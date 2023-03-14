@@ -22,8 +22,8 @@ func TestAdsysGPOList(t *testing.T) {
 	// Setup samba mock
 	p, err := filepath.Abs("../testutils/admock")
 	require.NoError(t, err, "Setup: Failed to get current absolute path for mock")
-	testutils.Setenv(t, "PYTHONPATH", p)
-	testutils.Setenv(t, "ADSYS_TESTS_MOCK_SMBDOMAIN", "gpoonly.com")
+	t.Setenv("PYTHONPATH", p)
+	t.Setenv("ADSYS_TESTS_MOCK_SMBDOMAIN", "gpoonly.com")
 
 	tests := map[string]struct {
 		url             string
@@ -222,7 +222,7 @@ func TestAdsysGPOList(t *testing.T) {
 					krb5ccname = krb5symlink
 				}
 
-				testutils.Setenv(t, "KRB5CCNAME", krb5ccname)
+				t.Setenv("KRB5CCNAME", krb5ccname)
 			}
 
 			// #nosec G204: we control the command line name and only change it for tests
