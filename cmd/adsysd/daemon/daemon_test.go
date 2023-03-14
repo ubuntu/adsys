@@ -20,7 +20,7 @@ import (
 func TestAppHelp(t *testing.T) {
 	a := daemon.New()
 
-	defer changeArgs("adsysd", "--help")()
+	a.SetArgs("--help")
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 }
@@ -28,7 +28,7 @@ func TestAppHelp(t *testing.T) {
 func TestAppCompletion(t *testing.T) {
 	a := daemon.New()
 
-	defer changeArgs("adsysd", "completion", "bash")()
+	a.SetArgs("completion", "bash")
 	err := a.Run()
 	require.NoError(t, err, "Completion should not use socket and always be reachable")
 }
@@ -39,7 +39,7 @@ func TestAppVersion(t *testing.T) {
 
 	a := daemon.New()
 
-	defer changeArgs("adsysd", "version")()
+	a.SetArgs("version")
 
 	orig := os.Stdout
 	os.Stdout = w
@@ -61,7 +61,7 @@ func TestAppVersion(t *testing.T) {
 func TestAppNoUsageError(t *testing.T) {
 	a := daemon.New()
 
-	defer changeArgs("adsysd", "completion", "bash")()
+	a.SetArgs("completion", "bash")
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 	isUsageError := a.UsageError()
@@ -71,7 +71,7 @@ func TestAppNoUsageError(t *testing.T) {
 func TestAppUsageError(t *testing.T) {
 	a := daemon.New()
 
-	defer changeArgs("adsys", "doesnotexist")()
+	a.SetArgs("doesnotexist")
 	err := a.Run()
 	require.Error(t, err, "Run itself should return an error")
 	isUsageError := a.UsageError()
@@ -225,9 +225,8 @@ func TestAppGetRootCmd(t *testing.T) {
 func TestConfigLoad(t *testing.T) {
 	dir := t.TempDir()
 	configFile := writeConfig(t, dir, "adsys.socket", 1, 10)
-	defer changeArgs("adsysd", "-c", configFile)()
 
-	a, wait := startDaemon(t, false)
+	a, wait := startDaemon(t, false, "-c", configFile)
 	defer wait()
 	defer a.Quit()
 
@@ -239,9 +238,8 @@ func TestConfigLoad(t *testing.T) {
 func TestConfigChange(t *testing.T) {
 	dir := t.TempDir()
 	configFile := writeConfig(t, dir, "adsys.socket", 1, 10)
-	defer changeArgs("adsysd", "-c", configFile)()
 
-	a, wait := startDaemon(t, false)
+	a, wait := startDaemon(t, false, "-c", configFile)
 	defer wait()
 	defer a.Quit()
 

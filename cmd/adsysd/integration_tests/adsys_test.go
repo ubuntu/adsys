@@ -340,7 +340,7 @@ func changeAppArgs(t *testing.T, s setterArgs, conf string, args ...string) {
 		newArgs = append(newArgs, args...)
 	}
 
-	s.SetArgs(newArgs)
+	s.SetArgs(newArgs...)
 }
 
 var (

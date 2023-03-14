@@ -21,7 +21,7 @@ func TestInitApp(t *testing.T) {
 func TestAppHelp(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "--help")()
+	a.SetArgs("--help")
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 }
@@ -29,7 +29,7 @@ func TestAppHelp(t *testing.T) {
 func TestAppCompletion(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "completion", "bash")()
+	a.SetArgs("completion", "bash")
 	err := a.Run()
 	require.NoError(t, err, "Completion should not use socket and always be reachable")
 }
@@ -37,7 +37,7 @@ func TestAppCompletion(t *testing.T) {
 func TestAppNoUsageError(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "completion", "bash")()
+	a.SetArgs("completion", "bash")
 	err := a.Run()
 	require.NoError(t, err, "Completion should not return an error")
 	isUsageError := a.UsageError()
@@ -47,7 +47,7 @@ func TestAppNoUsageError(t *testing.T) {
 func TestAppUsageError(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "doesnotexist")()
+	a.SetArgs("doesnotexist")
 	err := a.Run()
 	require.Error(t, err, "Run should return usage")
 	isUsageError := a.UsageError()
@@ -57,7 +57,7 @@ func TestAppUsageError(t *testing.T) {
 func TestAppCanQuitWhenExecute(t *testing.T) {
 	a := client.New()
 	a.AddWaitCommand()
-	defer changeArgs("adsysctl", "wait")()
+	a.SetArgs("wait")
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -75,7 +75,7 @@ func TestAppCanQuitWhenExecute(t *testing.T) {
 func TestAppCanQuitAfterExecute(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "completion", "bash")()
+	a.SetArgs("completion", "bash")
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 	a.Quit()
@@ -90,7 +90,7 @@ func TestAppCanSigHupWhenExecute(t *testing.T) {
 	a := client.New()
 
 	a.AddWaitCommand()
-	defer changeArgs("adsysctl", "wait")()
+	a.SetArgs("wait")
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -108,7 +108,7 @@ func TestAppCanSigHupWhenExecute(t *testing.T) {
 func TestAppCanSigHupAfterExecute(t *testing.T) {
 	a := client.New()
 
-	defer changeArgs("adsysctl", "completion", "bash")()
+	a.SetArgs("completion", "bash")
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 	require.True(t, a.Hup(), "Hup returns true for client")

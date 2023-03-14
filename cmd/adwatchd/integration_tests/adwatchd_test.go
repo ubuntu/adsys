@@ -101,7 +101,7 @@ func changeAppArgs(t *testing.T, app *commands.App, conf string, args ...string)
 	}
 
 	app.Reset()
-	app.SetArgs(newArgs, conf)
+	app.SetArgs(newArgs...)
 }
 
 // installService installs the service on the system.
