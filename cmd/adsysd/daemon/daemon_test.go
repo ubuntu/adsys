@@ -293,7 +293,7 @@ sssd:
 
 // startDaemon prepares and start the daemon in the background. The done function should be called
 // to wait for the daemon to stop.
-func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
+func startDaemon(t *testing.T, setupEnv bool, args ...string) (app *daemon.App, done func()) {
 	t.Helper()
 
 	if setupEnv {
@@ -301,6 +301,7 @@ func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
 	}
 
 	a := daemon.New()
+	a.SetArgs(args...)
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
