@@ -19,16 +19,16 @@ import (
 
 func TestAppHelp(t *testing.T) {
 	a := daemon.New()
-
 	a.SetArgs("--help")
+
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 }
 
 func TestAppCompletion(t *testing.T) {
 	a := daemon.New()
-
 	a.SetArgs("completion", "bash")
+
 	err := a.Run()
 	require.NoError(t, err, "Completion should not use socket and always be reachable")
 }
@@ -38,7 +38,6 @@ func TestAppVersion(t *testing.T) {
 	require.NoError(t, err, "Setup: pipe shouldn’t fail")
 
 	a := daemon.New()
-
 	a.SetArgs("version")
 
 	orig := os.Stdout
@@ -60,8 +59,8 @@ func TestAppVersion(t *testing.T) {
 
 func TestAppNoUsageError(t *testing.T) {
 	a := daemon.New()
-
 	a.SetArgs("completion", "bash")
+
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 	isUsageError := a.UsageError()
@@ -70,8 +69,8 @@ func TestAppNoUsageError(t *testing.T) {
 
 func TestAppUsageError(t *testing.T) {
 	a := daemon.New()
-
 	a.SetArgs("doesnotexist")
+
 	err := a.Run()
 	require.Error(t, err, "Run itself should return an error")
 	isUsageError := a.UsageError()
