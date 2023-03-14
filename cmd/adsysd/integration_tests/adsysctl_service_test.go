@@ -264,7 +264,7 @@ func TestServiceCat(t *testing.T) {
 func TestServiceStatus(t *testing.T) {
 	admock, err := filepath.Abs(filepath.Join(rootProjectDir, "internal/testutils/admock"))
 	require.NoError(t, err, "Setup: Failed to get current absolute path for ad mock")
-	testutils.Setenv(t, "PYTHONPATH", admock)
+	t.Setenv("PYTHONPATH", admock)
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get current user")

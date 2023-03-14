@@ -86,7 +86,7 @@ func TestAppCanQuitWhenExecute(t *testing.T) {
 }
 
 func TestAppCanQuitAfterExecute(t *testing.T) {
-	testutils.Setenv(t, "ADSYS_SERVICE_TIMEOUT", "1")
+	t.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
 	a, wait := startDaemon(t, true)
 	wait()
 	a.Quit()
@@ -156,7 +156,7 @@ func TestAppCanSigHupAfterExecute(t *testing.T) {
 	r, w, err := os.Pipe()
 	require.NoError(t, err, "Setup: pipe shouldn’t fail")
 
-	testutils.Setenv(t, "ADSYS_SERVICE_TIMEOUT", "1")
+	t.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
 	a, wait := startDaemon(t, true)
 	wait()
 	a.Quit()
@@ -196,7 +196,7 @@ func TestAppCanSigHupWithoutExecute(t *testing.T) {
 }
 
 func TestAppTimeout(t *testing.T) {
-	testutils.Setenv(t, "ADSYS_SERVICE_TIMEOUT", "1")
+	t.Setenv("ADSYS_SERVICE_TIMEOUT", "1")
 	a, wait := startDaemon(t, true)
 
 	done := make(chan struct{})
@@ -324,12 +324,12 @@ func prepareEnv(t *testing.T) {
 
 	dir := t.TempDir()
 
-	testutils.Setenv(t, "ADSYS_SOCKET", filepath.Join(dir, "socket"))
-	testutils.Setenv(t, "ADSYS_CACHE_DIR", filepath.Join(dir, "cache"))
-	testutils.Setenv(t, "ADSYS_RUN_DIR", filepath.Join(dir, "run"))
+	t.Setenv("ADSYS_SOCKET", filepath.Join(dir, "socket"))
+	t.Setenv("ADSYS_CACHE_DIR", filepath.Join(dir, "cache"))
+	t.Setenv("ADSYS_RUN_DIR", filepath.Join(dir, "run"))
 
 	// This is to make ad.New() (and so adsysservice) instantiable
-	testutils.Setenv(t, "ADSYS_SSSD.CONFIG", "testdata/sssd.conf")
+	t.Setenv("ADSYS_SSSD.CONFIG", "testdata/sssd.conf")
 }
 
 // changeArgs allows changing command line arguments and return a function to restore it.

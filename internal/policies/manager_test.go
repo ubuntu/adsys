@@ -25,7 +25,7 @@ func TestApplyPolicies(t *testing.T) {
 	// #nosec G306: This is a dummy command for test on systemctl which is under our control.
 	err := os.WriteFile(filepath.Join(bin, "systemctl"), []byte("#!/bin/sh"), 0700)
 	require.NoError(t, err, "Setup: can not create dummy systemctl")
-	testutils.Setenv(t, "PATH", fmt.Sprintf("%s:%s", bin, os.Getenv("PATH")))
+	t.Setenv("PATH", fmt.Sprintf("%s:%s", bin, os.Getenv("PATH")))
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
