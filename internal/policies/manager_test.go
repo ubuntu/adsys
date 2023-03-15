@@ -42,6 +42,7 @@ func TestApplyPolicies(t *testing.T) {
 		makeDirReadOnly                 string
 		isNotSubscribed                 bool
 		secondCallWithNoSubscription    bool
+		noUbuntuProxyManager            bool
 
 		wantErr bool
 	}{
@@ -60,6 +61,7 @@ func TestApplyPolicies(t *testing.T) {
 		"Error when applying scripts policy":   {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
 		"Error when applying apparmor policy":  {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
 		"Error when applying mount policy":     {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying proxy policy":     {noUbuntuProxyManager: true, policiesDir: "all_entry_types", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -107,6 +109,7 @@ func TestApplyPolicies(t *testing.T) {
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
 				policies.WithSystemUnitDir(systemUnitDir),
+				policies.WithProxyApplier(&policies.ProxyApplierMock{WantApplyError: tc.noUbuntuProxyManager}),
 			)
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
