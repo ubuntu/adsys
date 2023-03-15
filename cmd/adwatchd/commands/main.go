@@ -199,7 +199,7 @@ func (a App) UsageError() bool {
 }
 
 // SetArgs changes the root command args. Shouldn't be in general necessary apart for integration tests.
-func (a *App) SetArgs(args []string, conf string) {
+func (a *App) SetArgs(args ...string) {
 	a.rootCmd.SetArgs(args)
 }
 

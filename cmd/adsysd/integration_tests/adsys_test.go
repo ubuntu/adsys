@@ -324,7 +324,7 @@ func runClient(t *testing.T, conf string, args ...string) (stdout string, err er
 }
 
 type setterArgs interface {
-	SetArgs([]string)
+	SetArgs(...string)
 }
 
 // changeAppArgs modifies the application Args for cobra to parse them successfully.
@@ -340,7 +340,7 @@ func changeAppArgs(t *testing.T, s setterArgs, conf string, args ...string) {
 		newArgs = append(newArgs, args...)
 	}
 
-	s.SetArgs(newArgs)
+	s.SetArgs(newArgs...)
 }
 
 var (

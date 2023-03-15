@@ -18,17 +18,21 @@ import (
 )
 
 func TestAppHelp(t *testing.T) {
-	a := daemon.New()
+	t.Parallel()
 
-	defer changeArgs("adsysd", "--help")()
+	a := daemon.New()
+	a.SetArgs("--help")
+
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 }
 
 func TestAppCompletion(t *testing.T) {
-	a := daemon.New()
+	t.Parallel()
 
-	defer changeArgs("adsysd", "completion", "bash")()
+	a := daemon.New()
+	a.SetArgs("completion", "bash")
+
 	err := a.Run()
 	require.NoError(t, err, "Completion should not use socket and always be reachable")
 }
@@ -38,8 +42,7 @@ func TestAppVersion(t *testing.T) {
 	require.NoError(t, err, "Setup: pipe shouldn’t fail")
 
 	a := daemon.New()
-
-	defer changeArgs("adsysd", "version")()
+	a.SetArgs("version")
 
 	orig := os.Stdout
 	os.Stdout = w
@@ -59,9 +62,11 @@ func TestAppVersion(t *testing.T) {
 }
 
 func TestAppNoUsageError(t *testing.T) {
-	a := daemon.New()
+	t.Parallel()
 
-	defer changeArgs("adsysd", "completion", "bash")()
+	a := daemon.New()
+	a.SetArgs("completion", "bash")
+
 	err := a.Run()
 	require.NoError(t, err, "Run should return no error")
 	isUsageError := a.UsageError()
@@ -69,9 +74,11 @@ func TestAppNoUsageError(t *testing.T) {
 }
 
 func TestAppUsageError(t *testing.T) {
-	a := daemon.New()
+	t.Parallel()
 
-	defer changeArgs("adsys", "doesnotexist")()
+	a := daemon.New()
+	a.SetArgs("doesnotexist")
+
 	err := a.Run()
 	require.Error(t, err, "Run itself should return an error")
 	isUsageError := a.UsageError()
@@ -93,6 +100,8 @@ func TestAppCanQuitAfterExecute(t *testing.T) {
 }
 
 func TestAppCanQuitWithoutExecute(t *testing.T) {
+	t.Parallel()
+
 	t.Skip("We need to initialize the daemon first, so this is not possible and will hang forever (ready not closed)")
 	a := daemon.New()
 	a.Quit()
@@ -225,9 +234,8 @@ func TestAppGetRootCmd(t *testing.T) {
 func TestConfigLoad(t *testing.T) {
 	dir := t.TempDir()
 	configFile := writeConfig(t, dir, "adsys.socket", 1, 10)
-	defer changeArgs("adsysd", "-c", configFile)()
 
-	a, wait := startDaemon(t, false)
+	a, wait := startDaemon(t, false, "-c", configFile)
 	defer wait()
 	defer a.Quit()
 
@@ -239,9 +247,8 @@ func TestConfigLoad(t *testing.T) {
 func TestConfigChange(t *testing.T) {
 	dir := t.TempDir()
 	configFile := writeConfig(t, dir, "adsys.socket", 1, 10)
-	defer changeArgs("adsysd", "-c", configFile)()
 
-	a, wait := startDaemon(t, false)
+	a, wait := startDaemon(t, false, "-c", configFile)
 	defer wait()
 	defer a.Quit()
 
@@ -293,7 +300,7 @@ sssd:
 
 // startDaemon prepares and start the daemon in the background. The done function should be called
 // to wait for the daemon to stop.
-func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
+func startDaemon(t *testing.T, setupEnv bool, args ...string) (app *daemon.App, done func()) {
 	t.Helper()
 
 	if setupEnv {
@@ -301,6 +308,7 @@ func startDaemon(t *testing.T, setupEnv bool) (app *daemon.App, done func()) {
 	}
 
 	a := daemon.New()
+	a.SetArgs(args...)
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -330,13 +338,6 @@ func prepareEnv(t *testing.T) {
 
 	// This is to make ad.New() (and so adsysservice) instantiable
 	t.Setenv("ADSYS_SSSD.CONFIG", "testdata/sssd.conf")
-}
-
-// changeArgs allows changing command line arguments and return a function to restore it.
-func changeArgs(args ...string) (restore func()) {
-	orig := os.Args
-	os.Args = args
-	return func() { os.Args = orig }
 }
 
 // captureLogs captures current logs.

@@ -134,6 +134,6 @@ func (a App) getTimeout() time.Duration {
 }
 
 // SetArgs changes the root command args. Shouldn’t be in general necessary apart for integration tests.
-func (a *App) SetArgs(args []string) {
+func (a *App) SetArgs(args ...string) {
 	a.rootCmd.SetArgs(args)
 }
