@@ -29,7 +29,6 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       - name: Get version of golanci-lint to use
         id: cilint-version-fetch
         # This handles "require foo version" and "require (\nfoo version\n)"" formats
@@ -74,7 +73,6 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       - name: Install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -129,7 +127,6 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       - name: Build installer
         run: |
           tag=$(git describe --tags)
@@ -184,7 +181,6 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       - name: Install go grpc protoc generator
         run: |
           set -eu
