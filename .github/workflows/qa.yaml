@@ -26,10 +26,9 @@ jobs:
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       - name: Get version of golanci-lint to use
         id: cilint-version-fetch
         # This handles "require foo version" and "require (\nfoo version\n)"" formats
@@ -71,10 +70,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       - name: Install dependencies
         run: |
           sudo DEBIAN_FRONTEND=noninteractive apt update
@@ -126,10 +124,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       - name: Build installer
         run: |
           tag=$(git describe --tags)
@@ -181,10 +178,9 @@ jobs:
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       - name: Install go grpc protoc generator
         run: |
           set -eu

@@ -27,10 +27,9 @@ jobs:
         with:
           ref: main
       # Install go
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       # Update po if needed
       - name: Check po files
         id: checkpo
@@ -75,10 +74,9 @@ jobs:
         with:
           ref: main
       # Install go
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: go.mod
-          cache: true
       # Try updating README
       - name: Check README file
         id: checkreadme
