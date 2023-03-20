@@ -1,6 +1,9 @@
 package policies
 
 import (
+	"errors"
+
+	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/policies/gdm"
 )
 
@@ -19,4 +22,20 @@ func WithGDM(m *gdm.Manager) Option {
 
 func (pols Policies) HasAssets() bool {
 	return pols.assets != nil
+}
+
+// ProxyApplierMock is a mock for the proxy apply object.
+type ProxyApplierMock struct {
+	WantApplyError bool
+}
+
+// Call mocks the proxy apply call.
+func (d *ProxyApplierMock) Call(method string, flags dbus.Flags, args ...interface{}) *dbus.Call {
+	var errApply error
+
+	if d.WantApplyError {
+		errApply = errors.New("proxy apply error")
+	}
+
+	return &dbus.Call{Err: errApply}
 }

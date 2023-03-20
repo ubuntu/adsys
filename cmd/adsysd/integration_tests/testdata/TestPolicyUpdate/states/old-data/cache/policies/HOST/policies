@@ -46,6 +46,14 @@ gpos:
           value: smb://example.com/old_share
           disabled: false
           strategy: append
+      proxy:
+        - key: proxy/auto
+          value: http://old-example.com/proxy.pac
+        - key: proxy/http
+          value: ""
+          disabled: true
+        - key: proxy/no-proxy
+          value: old-localhost,127.0.0.1,::1
 
 - id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
   name: Default Domain Policy

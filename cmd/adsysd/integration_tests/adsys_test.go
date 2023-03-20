@@ -353,6 +353,8 @@ var (
 		"no_nextrefresh_time",
 		"invalid_nextrefresh_time",
 		"subscription_disabled",
+		"apply_proxy_fail",
+		"no_proxy_object",
 
 		// This values will only influence the session bus
 		"gvfs_no_vfs_bus",

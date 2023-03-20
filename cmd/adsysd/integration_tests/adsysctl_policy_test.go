@@ -569,6 +569,20 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			}},
 
+		// Specific manager functionality
+		"Does not error when D-Bus proxy object is not available": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState:    "localhost-uptodate",
+			systemAnswer: "no_proxy_object",
+		},
+
 		// Error cases
 		"Error on applying user policies before updating the machine": {wantErr: true},
 		"Error on Polkit denying updating self":                       {systemAnswer: "polkit_no", initState: "localhost-uptodate", wantErr: true},
@@ -641,6 +655,19 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "localhost-uptodate",
 			// this generates an error when dumping assets to machine.new
 			readOnlyDirs: []string{"apparmor.d/adsys"},
+			wantErr:      true,
+		},
+		"Error on system proxy apply failing": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState:    "localhost-uptodate",
+			systemAnswer: "apply_proxy_fail",
 			wantErr:      true,
 		},
 		"Error on host is offline, without policies": {

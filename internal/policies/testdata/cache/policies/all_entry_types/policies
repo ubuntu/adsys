@@ -48,3 +48,11 @@ gpos:
           nfs://example.com/nfs_share
           smb://example.com/smb_share
           ftp://example.com/ftp_share
+    proxy:
+    - key: proxy/auto
+      value: http://example.com/proxy.pac
+    - key: proxy/http
+      value: ""
+      disabled: true
+    - key: proxy/no-proxy
+      value: localhost,127.0.0.1,::1

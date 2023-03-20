@@ -39,6 +39,16 @@ gpos:
                 %mygroup@domain
                 cosmic carole@domain
               disabled: false
+        proxy:
+            - key: proxy/auto
+              value: http://example.com/proxy.pac
+              disabled: false
+            - key: proxy/http
+              value: ""
+              disabled: true
+            - key: proxy/no-proxy
+              value: localhost,127.0.0.1,::1
+              disabled: false
         scripts:
             - key: startup
               value: |

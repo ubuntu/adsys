@@ -43,6 +43,9 @@ def run_system_mocks(bus: dbus.Bus, mode: str):
     sssd_on_bus(bus)
     ubuntu_advantage_on_bus(bus, mode)
 
+    if not mode == "no_proxy_object":
+        ubuntu_proxy_manager_on_bus(bus, mode)
+
 
 def systemd_on_bus(bus: dbus.Bus, mode: str):
     """ Installs systemd mock on dbus and sets up the adsys scripts and refresh timer services """
@@ -144,3 +147,27 @@ def ubuntu_advantage_on_bus(bus: dbus.bus, mode: str):
         {"Attached": subscription_state},
         "/tmp/ubuntu-advantage-mock.log",
         False)
+
+def ubuntu_proxy_manager_on_bus(bus: dbus.bus, mode: str):
+    """ Installs ubuntu-proxy-manager mock on the bus """
+    service = dbus.service.BusName(
+        "com.ubuntu.ProxyManager",
+        bus,
+        allow_replacement=True,
+        replace_existing=True,
+        do_not_queue=True)
+
+    call_result = "ret = None"
+    if mode == "apply_proxy_fail":
+        call_result = """raise dbus.exceptions.DBusException(
+            'could not apply proxy settings',
+            name='org.freeesktop.DBus.Error.Failed'
+        )"""
+
+    # Mock the Apply method
+    main_object = dbusmock.mockobject.DBusMockObject(
+        service, "/com/ubuntu/ProxyManager",
+        "com.ubuntu.ProxyManager", {},
+        "/tmp/ubuntu-proxy-manager-mock.log",
+        False)
+    main_object.AddMethod("", "Apply", "ssssss", "", call_result)

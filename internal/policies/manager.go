@@ -19,6 +19,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/gdm"
 	"github.com/ubuntu/adsys/internal/policies/mount"
 	"github.com/ubuntu/adsys/internal/policies/privilege"
+	"github.com/ubuntu/adsys/internal/policies/proxy"
 	"github.com/ubuntu/adsys/internal/policies/scripts"
 	"golang.org/x/sync/errgroup"
 )
@@ -34,6 +35,7 @@ type Manager struct {
 	mount     *mount.Manager
 	gdm       *gdm.Manager
 	apparmor  *apparmor.Manager
+	proxy     *proxy.Manager
 
 	subscriptionDbus dbus.BusObject
 }
@@ -47,6 +49,7 @@ type options struct {
 	apparmorDir   string
 	apparmorFsDir string
 	systemUnitDir string
+	proxyApplier  proxy.Caller
 	gdm           *gdm.Manager
 
 	apparmorParserCmd []string
@@ -128,6 +131,14 @@ func WithSystemUnitDir(p string) Option {
 	}
 }
 
+// WithProxyApplier specifies a personalized proxy applier for the proxy policy manager.
+func WithProxyApplier(p proxy.Caller) Option {
+	return func(o *options) error {
+		o.proxyApplier = p
+		return nil
+	}
+}
+
 // NewManager returns a new manager with all default policy handlers.
 func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
@@ -177,6 +188,13 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 	}
 	apparmorManager := apparmor.New(args.apparmorDir, apparmorOptions...)
 
+	// proxy manager
+	var proxyOptions []proxy.Option
+	if args.proxyApplier != nil {
+		proxyOptions = append(proxyOptions, proxy.WithProxyApplier(args.proxyApplier))
+	}
+	proxyManager := proxy.New(bus, proxyOptions...)
+
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {
 		if args.gdm, err = gdm.New(gdm.WithDconf(dconfManager)); err != nil {
@@ -200,6 +218,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 		scripts:          scriptsManager,
 		mount:            mountManager,
 		apparmor:         apparmorManager,
+		proxy:            proxyManager,
 		gdm:              args.gdm,
 
 		subscriptionDbus: subscriptionDbus,
@@ -229,6 +248,9 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	})
 	g.Go(func() error {
 		return m.apparmor.ApplyPolicy(ctx, objectName, isComputer, rules["apparmor"], pols.SaveAssetsTo)
+	})
+	g.Go(func() error {
+		return m.proxy.ApplyPolicy(ctx, objectName, isComputer, rules["proxy"])
 	})
 	if err := g.Wait(); err != nil {
 		return err
@@ -337,4 +359,5 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) {
 	rules["scripts"] = nil
 	rules["mount"] = nil
 	rules["apparmor"] = nil
+	rules["proxy"] = nil
 }

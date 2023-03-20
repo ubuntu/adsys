@@ -68,6 +68,9 @@
     <category name="UbuntuSystemDriveMapping" displayName="$(string.UbuntuDisplaySystemDriveMapping)">
       <parentCategory ref="UbuntuClientManagement" />
     </category>
+    <category name="UbuntuSystemProxyConfiguration" displayName="$(string.UbuntuDisplaySystemProxyConfiguration)">
+      <parentCategory ref="UbuntuClientManagement" />
+    </category>
     <category name="UbuntuSessionManagement" displayName="$(string.UbuntuDisplaySessionManagement)">
       <parentCategory ref="UbuntuUbuntu" />
     </category>
@@ -2578,6 +2581,120 @@
           <falseValue><string>false</string></falseValue>
         </boolean>
         <multiText id="UbuntuElemMachine2004MountSystemMounts" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineProxyProxyHttp" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyHttp)" explainText="$(string.UbuntuExplainTextMachineProxyProxyHttp)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyHttp)" key="Software\Policies\Ubuntu\proxy\proxy\http" valueName="metaValues">
+      <parentCategory ref="UbuntuSystemProxyConfiguration" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{},"22.04":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllProxyProxyHttp" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204ProxyProxyHttp" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2204ProxyProxyHttp" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004ProxyProxyHttp" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004ProxyProxyHttp" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineProxyProxyHttps" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyHttps)" explainText="$(string.UbuntuExplainTextMachineProxyProxyHttps)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyHttps)" key="Software\Policies\Ubuntu\proxy\proxy\https" valueName="metaValues">
+      <parentCategory ref="UbuntuSystemProxyConfiguration" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{},"22.04":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllProxyProxyHttps" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204ProxyProxyHttps" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2204ProxyProxyHttps" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004ProxyProxyHttps" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004ProxyProxyHttps" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineProxyProxyFtp" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyFtp)" explainText="$(string.UbuntuExplainTextMachineProxyProxyFtp)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyFtp)" key="Software\Policies\Ubuntu\proxy\proxy\ftp" valueName="metaValues">
+      <parentCategory ref="UbuntuSystemProxyConfiguration" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{},"22.04":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllProxyProxyFtp" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204ProxyProxyFtp" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2204ProxyProxyFtp" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004ProxyProxyFtp" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004ProxyProxyFtp" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineProxyProxySocks" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxySocks)" explainText="$(string.UbuntuExplainTextMachineProxyProxySocks)" presentation="$(presentation.UbuntuPresentationMachineProxyProxySocks)" key="Software\Policies\Ubuntu\proxy\proxy\socks" valueName="metaValues">
+      <parentCategory ref="UbuntuSystemProxyConfiguration" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{},"22.04":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllProxyProxySocks" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204ProxyProxySocks" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2204ProxyProxySocks" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004ProxyProxySocks" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004ProxyProxySocks" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineProxyProxyNoProxy" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyNoProxy)" explainText="$(string.UbuntuExplainTextMachineProxyProxyNoProxy)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyNoProxy)" key="Software\Policies\Ubuntu\proxy\proxy\no-proxy" valueName="metaValues">
+      <parentCategory ref="UbuntuSystemProxyConfiguration" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{},"22.04":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllProxyProxyNoProxy" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204ProxyProxyNoProxy" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2204ProxyProxyNoProxy" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004ProxyProxyNoProxy" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004ProxyProxyNoProxy" valueName="20.04" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineProxyProxyAuto" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyAuto)" explainText="$(string.UbuntuExplainTextMachineProxyProxyAuto)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyAuto)" key="Software\Policies\Ubuntu\proxy\proxy\auto" valueName="metaValues">
+      <parentCategory ref="UbuntuSystemProxyConfiguration" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{},"22.04":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllProxyProxyAuto" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2204ProxyProxyAuto" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2204ProxyProxyAuto" valueName="22.04" />
+        <boolean id="UbuntuOverrideElemMachine2004ProxyProxyAuto" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2004ProxyProxyAuto" valueName="20.04" />
       </elements>
     </policy>
     <policy name="UbuntuUserScriptsLogon" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogon)" explainText="$(string.UbuntuExplainTextUserScriptsLogon)" presentation="$(presentation.UbuntuPresentationUserScriptsLogon)" key="Software\Policies\Ubuntu\scripts\logon" valueName="metaValues">
