@@ -20,7 +20,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/ad/backends"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	"github.com/ubuntu/adsys/internal/ad/registry"
@@ -110,7 +109,7 @@ func WithRunDir(runDir string) Option {
 var AdsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab.
-func New(ctx context.Context, _ *dbus.Conn, configBackend backends.Backend, hostname string, opts ...Option) (ad *AD, err error) {
+func New(ctx context.Context, configBackend backends.Backend, hostname string, opts ...Option) (ad *AD, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
 
 	versionID, err := adcommon.GetVersionID("/")
