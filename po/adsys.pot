@@ -35,11 +35,11 @@ msgid ""
 "Service already exists and will be reconfigured\n"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:295
+#: internal/policies/scripts/scripts.go:296
 msgid "%q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:255
+#: internal/policies/scripts/scripts.go:256
 msgid "%q is not ready to execute scripts"
 msgstr ""
 
@@ -75,7 +75,7 @@ msgstr ""
 msgid "%s installing service... please wait."
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:254
+#: internal/policies/privilege/privilege.go:255
 #, c-format
 msgid "%s is a directory. Ignoring."
 msgstr ""
@@ -303,7 +303,7 @@ msgstr ""
 msgid "Control() error: %s"
 msgstr ""
 
-#: internal/ad/download.go:248
+#: internal/ad/download.go:249
 msgid "Could not clean up temporary directory:"
 msgstr ""
 
@@ -363,13 +363,19 @@ msgstr ""
 msgid "Documentation"
 msgstr ""
 
-#: internal/ad/download.go:298
+#: internal/ad/download.go:299
 #, c-format
 msgid "Downloading %s"
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:33
 msgid "Dump windows policy definitions"
+msgstr ""
+
+#: internal/policies/proxy/proxy.go:100
+#, c-format
+msgid ""
+"Encountered unsupported key '%s' while parsing proxy entries, skipping it"
 msgstr ""
 
 #: internal/grpc/grpcerror/grpcerror.go:38
@@ -493,7 +499,7 @@ msgstr ""
 msgid "No entries found for the apparmor %s policy"
 msgstr ""
 
-#: internal/ad/download.go:212
+#: internal/ad/download.go:213
 #, c-format
 msgid "No version key found in GPT.INI for %s, assuming 0"
 msgstr ""
@@ -506,11 +512,17 @@ msgstr ""
 msgid "Not Configured"
 msgstr ""
 
-#: internal/policies/manager.go:259
+#: internal/policies/proxy/proxy.go:119
+#, c-format
+msgid ""
+"Not applying proxy settings as ubuntu-proxy-manager is not installed: %s"
+msgstr ""
+
+#: internal/policies/manager.go:281
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:267
+#: internal/policies/manager.go:289
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -720,7 +732,7 @@ msgstr ""
 msgid "Updating directories to watch"
 msgstr ""
 
-#: internal/policies/manager.go:273
+#: internal/policies/manager.go:295
 msgid "User %q not found on cache."
 msgstr ""
 
@@ -820,6 +832,10 @@ msgstr ""
 msgid "can't apply privilege policy to %s"
 msgstr ""
 
+#: internal/policies/proxy/proxy.go:81
+msgid "can't apply proxy policy"
+msgstr ""
+
 #: internal/policies/scripts/scripts.go:96
 #, c-format
 msgid "can't apply scripts policy to %s"
@@ -834,7 +850,7 @@ msgstr ""
 msgid "can't bump version for %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:184
+#: internal/policies/scripts/scripts.go:185
 msgid "can't change mode of script %qto %o: %v"
 msgstr ""
 
@@ -844,7 +860,7 @@ msgid "can't check if %s needs refreshing"
 msgstr ""
 
 #: internal/policies/mount/mount.go:464 internal/policies/policies.go:434
-#: internal/policies/scripts/scripts.go:347
+#: internal/policies/scripts/scripts.go:348
 msgid "can't chown %q"
 msgstr ""
 
@@ -865,7 +881,7 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:133
+#: internal/policies/manager.go:144
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
@@ -893,7 +909,7 @@ msgstr ""
 msgid "can't create directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:329
+#: internal/policies/scripts/scripts.go:330
 msgid "can't create flag file %q"
 msgstr ""
 
@@ -906,7 +922,7 @@ msgid "can't create object directory %q: %v"
 msgstr ""
 
 #: internal/policies/scripts/scripts.go:153
-#: internal/policies/scripts/scripts.go:322
+#: internal/policies/scripts/scripts.go:323
 msgid "can't create scripts directory %q: %v"
 msgstr ""
 
@@ -968,11 +984,11 @@ msgid "can't get current Server URL: %w"
 msgstr ""
 
 #: internal/ad/backends/sss/sss.go:40
-#: internal/ad/backends/winbind/winbind.go:95
+#: internal/ad/backends/winbind/winbind.go:96
 msgid "can't get domain configuration from %+v"
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:241
+#: internal/policies/privilege/privilege.go:242
 #, c-format
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
@@ -1039,7 +1055,7 @@ msgstr ""
 msgid "can't rename apparmor directory %q to %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:247
+#: internal/policies/scripts/scripts.go:248
 #, c-format
 msgid "can't run scripts listed in %s"
 msgstr ""
@@ -1126,7 +1142,7 @@ msgstr ""
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
-#: internal/ad/download.go:238
+#: internal/ad/download.go:239
 msgid "could not close directory: %v"
 msgstr ""
 
@@ -1142,20 +1158,20 @@ msgstr ""
 msgid "could not find AD domain name corresponding to %q"
 msgstr ""
 
-#: cmd/adsysd/integration_tests/adsysctl_doc_test.go:224
+#: cmd/adsysd/integration_tests/adsysctl_doc_test.go:223
 #, c-format
 msgid "could not find chapter starting with %s"
 msgstr ""
 
-#: internal/ad/backends/winbind/winbind.go:208
+#: internal/ad/backends/winbind/winbind.go:209
 msgid "could not get domain controller name for domain %q"
 msgstr ""
 
-#: internal/ad/backends/winbind/winbind.go:197
+#: internal/ad/backends/winbind/winbind.go:198
 msgid "could not get domain name"
 msgstr ""
 
-#: internal/ad/backends/winbind/winbind.go:189
+#: internal/ad/backends/winbind/winbind.go:190
 msgid "could not get online status for domain %q: status code %d"
 msgstr ""
 
@@ -1167,7 +1183,7 @@ msgstr ""
 msgid "could not initialize fsnotify watcher: %v"
 msgstr ""
 
-#: cmd/adsysd/integration_tests/adsysctl_doc_test.go:211
+#: cmd/adsysd/integration_tests/adsysctl_doc_test.go:210
 #: internal/adsysservice/doc.go:36 internal/adsysservice/doc.go:91
 #: internal/adsysservice/doc.go:143
 msgid "could not list documentation directory: %v"
@@ -1244,7 +1260,7 @@ msgstr ""
 msgid "don't display colorized version."
 msgstr ""
 
-#: internal/ad/download.go:225
+#: internal/ad/download.go:226
 msgid "download %q failed"
 msgstr ""
 
@@ -1330,7 +1346,7 @@ msgstr ""
 msgid "error while trying to look up AD server address on SSSD for %q"
 msgstr ""
 
-#: internal/ad/backends/winbind/winbind.go:162
+#: internal/ad/backends/winbind/winbind.go:163
 msgid "error while trying to look up AD server address on winbind"
 msgstr ""
 
@@ -1355,7 +1371,7 @@ msgstr ""
 msgid "failed to apply policy for user %q"
 msgstr ""
 
-#: internal/policies/manager.go:212
+#: internal/policies/manager.go:231
 msgid "failed to apply policy to %q"
 msgstr ""
 
@@ -1383,7 +1399,7 @@ msgstr ""
 msgid "failed to disable unit %q: %w"
 msgstr ""
 
-#: internal/policies/manager.go:251
+#: internal/policies/manager.go:273
 msgid "failed to dump policies for %q"
 msgstr ""
 
@@ -1406,7 +1422,7 @@ msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:285
+#: internal/policies/manager.go:307
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -1557,7 +1573,7 @@ msgstr ""
 msgid "invalid policy"
 msgstr ""
 
-#: internal/ad/download.go:197
+#: internal/ad/download.go:198
 msgid "invalid remote GPT.INI"
 msgstr ""
 
@@ -1647,7 +1663,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:262 internal/policies/manager.go:274
+#: internal/policies/manager.go:284 internal/policies/manager.go:296
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -1694,7 +1710,7 @@ msgstr ""
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:295
+#: internal/policies/manager.go:317
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
