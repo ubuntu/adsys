@@ -45,7 +45,7 @@ type newConnectionPingued struct {
 	newConnectionCalledCount int
 }
 
-func (n *newConnectionPingued) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) {
+func (n *newConnectionPingued) OnNewConnection(_ context.Context, _ *grpc.StreamServerInfo) {
 	// store current count and increment the global one
 	n.newConnectionCalledCount = *n.globalCallOrder
 	*n.globalCallOrder++
@@ -78,7 +78,7 @@ type doneConnectionPingued struct {
 	doneConnectionCalledCount int
 }
 
-func (n *doneConnectionPingued) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo) {
+func (n *doneConnectionPingued) OnDoneConnection(_ context.Context, _ *grpc.StreamServerInfo) {
 	// store current count and increment the global one
 	n.doneConnectionCalledCount = *n.globalCallOrder
 	*n.globalCallOrder++

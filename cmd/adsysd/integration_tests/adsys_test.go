@@ -485,7 +485,7 @@ type runner interface {
 	Run() error
 }
 
-func TestExecuteCommand(t *testing.T) {
+func TestExecuteCommand(_ *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return
 	}

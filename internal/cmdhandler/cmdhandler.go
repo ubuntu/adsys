@@ -12,7 +12,7 @@ import (
 )
 
 // NoCmd is a no-op command to just make it valid.
-func NoCmd(cmd *cobra.Command, args []string) error {
+func NoCmd(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
@@ -27,7 +27,7 @@ func ZeroOrNArgs(n int) cobra.PositionalArgs {
 }
 
 // NoValidArgs prevents any completion, including files.
-func NoValidArgs(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+func NoValidArgs(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellCompDirective) {
 	return nil, cobra.ShellCompDirectiveNoFileComp
 }
 

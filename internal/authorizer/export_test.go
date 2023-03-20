@@ -26,7 +26,7 @@ type DbusMock struct {
 	actionRequested Action
 }
 
-func (d *DbusMock) Call(method string, flags dbus.Flags, args ...interface{}) *dbus.Call {
+func (d *DbusMock) Call(_ string, _ dbus.Flags, args ...interface{}) *dbus.Call {
 	var errPolkit error
 
 	content, ok := args[1].(string)

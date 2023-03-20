@@ -112,7 +112,7 @@ func New(ctx context.Context, opts ...option) (*WatchdService, error) {
 		if err != nil {
 			return nil, err
 		}
-		log.AddHook(ctx, &loghooks.EventLog{Logger: logger})
+		log.AddHook(&loghooks.EventLog{Logger: logger})
 	}
 
 	return &WatchdService{

@@ -55,12 +55,12 @@ func (serverPeerCreds) ServerHandshake(conn net.Conn) (n net.Conn, c credentials
 
 	return conn, peerCredsInfo{uid: cred.Uid, pid: cred.Pid}, nil
 }
-func (serverPeerCreds) ClientHandshake(ctx context.Context, authority string, conn net.Conn) (net.Conn, credentials.AuthInfo, error) {
+func (serverPeerCreds) ClientHandshake(_ context.Context, _ string, conn net.Conn) (net.Conn, credentials.AuthInfo, error) {
 	return conn, nil, nil
 }
 func (serverPeerCreds) Info() credentials.ProtocolInfo          { return credentials.ProtocolInfo{} }
 func (serverPeerCreds) Clone() credentials.TransportCredentials { return nil }
-func (serverPeerCreds) OverrideServerName(s string) error       { return nil }
+func (serverPeerCreds) OverrideServerName(_ string) error       { return nil }
 
 type peerCredsInfo struct {
 	uid uint32

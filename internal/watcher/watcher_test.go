@@ -469,10 +469,10 @@ func (mockService) Stop() error      { return nil }
 func (mockService) Restart() error   { return nil }
 func (mockService) Install() error   { return nil }
 func (mockService) Uninstall() error { return nil }
-func (mockService) Logger(errs chan<- error) (service.Logger, error) {
+func (mockService) Logger(_ chan<- error) (service.Logger, error) {
 	return service.ConsoleLogger, nil
 }
-func (mockService) SystemLogger(errs chan<- error) (service.Logger, error) {
+func (mockService) SystemLogger(_ chan<- error) (service.Logger, error) {
 	return service.ConsoleLogger, nil
 }
 func (mockService) String() string                  { return "" }

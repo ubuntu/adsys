@@ -119,12 +119,12 @@ func TestWriteConfig(t *testing.T) {
 				configPath = filepath.Join("path", "to", "adwatchd.yaml")
 			}
 
-			error := watchdconfig.WriteConfig(configPath, tc.dirs)
+			err = watchdconfig.WriteConfig(configPath, tc.dirs)
 			if tc.wantErr {
-				require.Error(t, error, "expected writing config to fail")
+				require.Error(t, err, "expected writing config to fail")
 				return
 			}
-			require.NoError(t, error, "didn't expect writing config to fail")
+			require.NoError(t, err, "didn't expect writing config to fail")
 
 			if testutils.Update() {
 				err := os.MkdirAll(filepath.Dir(goldPath), 0750)

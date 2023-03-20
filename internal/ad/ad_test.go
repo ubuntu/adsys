@@ -1198,7 +1198,7 @@ func TestNormalizeTargetName(t *testing.T) {
 	}
 }
 
-func TestMockGPOList(t *testing.T) {
+func TestMockGPOList(_ *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return
 	}

@@ -81,6 +81,6 @@ func (mockServiceLogger) Info(v ...interface{}) error {
 	return nil
 }
 
-func (mockServiceLogger) Errorf(format string, a ...interface{}) error   { return nil }
-func (mockServiceLogger) Warningf(format string, a ...interface{}) error { return nil }
-func (mockServiceLogger) Infof(format string, a ...interface{}) error    { return nil }
+func (mockServiceLogger) Errorf(_ string, _ ...interface{}) error   { return nil }
+func (mockServiceLogger) Warningf(_ string, _ ...interface{}) error { return nil }
+func (mockServiceLogger) Infof(_ string, _ ...interface{}) error    { return nil }

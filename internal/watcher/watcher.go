@@ -139,7 +139,7 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 // Documentation states that the function should not block but run
 // asynchronously. When our function exits, the service manager registers a
 // signal handler that calls Stop when a signal is received.
-func (w *Watcher) Start(s service.Service) (err error) {
+func (w *Watcher) Start(_ service.Service) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't start service"))
 
 	return w.send(nil, startCmd, nil)
@@ -148,7 +148,7 @@ func (w *Watcher) Start(s service.Service) (err error) {
 // Stop is called by the service manager to stop the watcher service.
 // Documentation states that the function should not take more than a few
 // seconds to execute.
-func (w *Watcher) Stop(s service.Service) (err error) {
+func (w *Watcher) Stop(_ service.Service) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't stop service"))
 
 	return w.send(nil, stopCmd, nil)

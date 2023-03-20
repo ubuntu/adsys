@@ -381,6 +381,6 @@ func stringFromReader(t *testing.T, r io.Reader) string {
 
 type failedWriter struct{}
 
-func (failedWriter) Write(p []byte) (int, error) {
+func (failedWriter) Write(_ []byte) (int, error) {
 	return 0, errors.New("Error from failedWriter")
 }

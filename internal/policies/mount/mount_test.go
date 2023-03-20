@@ -278,7 +278,7 @@ func TestApplyPolicy(t *testing.T) {
 	}
 }
 
-func TestMockSystemCtl(t *testing.T) {
+func TestMockSystemCtl(_ *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return
 	}
