@@ -229,6 +229,10 @@ Files: vendor/github.com/yuin/*
 Copyright: 2019-2020 Yusuke Inuzuka
 License: MIT
 
+Files: vendor/github.com/ubuntu/decorate/*
+Copyright: Canonical
+License: MIT
+
 Files: vendor_rust/autocfg/*
 Copyright: 2018 Josh Stone
 License: MIT
