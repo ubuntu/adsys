@@ -11,11 +11,11 @@ import (
 
 	"github.com/kardianos/service"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
-	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/loghooks"
 	"github.com/ubuntu/adsys/internal/watcher"
+	"github.com/ubuntu/decorate"
 )
 
 // WatchdService contains the service and watcher.

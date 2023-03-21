@@ -12,9 +12,9 @@ import (
 
 	"github.com/coreos/go-systemd/activation"
 	"github.com/coreos/go-systemd/daemon"
-	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/decorate"
 	"google.golang.org/grpc"
 )
 

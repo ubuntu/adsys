@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
-	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/decorate"
 )
 
 func (a *App) installRun() {

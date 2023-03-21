@@ -17,11 +17,11 @@ import (
 
 	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/consts"
-	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
+	"github.com/ubuntu/decorate"
 )
 
 /*

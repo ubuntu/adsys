@@ -11,9 +11,9 @@ import (
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/consts"
-	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/grpc/grpcerror"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/decorate"
 )
 
 // CmdName is the binary name for the client.

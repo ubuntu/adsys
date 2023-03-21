@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ubuntu/adsys/internal/decorate"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	policydefinitions "github.com/ubuntu/adsys/policies"
+	"github.com/ubuntu/decorate"
 )
 
 // GetPolicyDefinitions returns admx and adml content for the given type t of policies.
