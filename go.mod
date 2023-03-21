@@ -23,6 +23,7 @@ require (
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
+	github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117
 	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5
 	golang.org/x/net v0.8.0
 	golang.org/x/sync v0.1.0
