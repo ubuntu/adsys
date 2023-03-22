@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	systemd "github.com/coreos/go-systemd/daemon"
+	systemd "github.com/coreos/go-systemd/v22/daemon"
 	"github.com/spf13/cobra"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"

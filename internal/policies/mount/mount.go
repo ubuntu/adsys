@@ -25,7 +25,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/coreos/go-systemd/unit"
+	"github.com/coreos/go-systemd/v22/unit"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
