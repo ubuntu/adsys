@@ -11,8 +11,8 @@ import (
 	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/dconf"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
-	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/decorate"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v3"
 )

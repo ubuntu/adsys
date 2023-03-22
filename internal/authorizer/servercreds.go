@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/decorate"
 	"golang.org/x/sys/unix"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

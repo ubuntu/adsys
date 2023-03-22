@@ -18,13 +18,13 @@ import (
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/daemon"
-	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/grpc/connectionnotify"
 	"github.com/ubuntu/adsys/internal/grpc/interceptorschain"
 	"github.com/ubuntu/adsys/internal/grpc/logconnections"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/decorate"
 	"google.golang.org/grpc"
 )
 

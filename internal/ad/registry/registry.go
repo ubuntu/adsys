@@ -15,9 +15,9 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/decorate"
 )
 
 type dataType uint8

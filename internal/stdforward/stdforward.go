@@ -9,8 +9,8 @@ import (
 	"sync"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/ubuntu/adsys/internal/decorate"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/decorate"
 )
 
 // stdforward will forward to any number of writers the messages on Stdout and StdErr.
