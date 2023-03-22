@@ -2,7 +2,7 @@ package mount_test
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -49,7 +49,7 @@ func TestNew(t *testing.T) {
 				testutils.MakeReadOnly(t, systemdDir)
 			}
 
-			_, err := mount.New(runDir, filepath.Join(systemdDir, "system"))
+			_, err := mount.New(runDir, filepath.Join(systemdDir, "system"), &mockSystemdCaller{})
 			if tc.wantErr {
 				require.Error(t, err, "Expected an error when creating manager but got none.")
 				return
@@ -82,8 +82,8 @@ func TestApplyPolicy(t *testing.T) {
 		pathAlreadyExists bool
 
 		// System specific
-		firstSystemCtlFailingArgs   []string
-		secondSystemCtlFailingArgs  []string
+		firstMockSystemdCaller      mockSystemdCaller
+		secondMockSystemdCaller     mockSystemdCaller
 		pathAlreadyExistsSecondCall bool
 
 		wantErr           bool
@@ -125,8 +125,8 @@ func TestApplyPolicy(t *testing.T) {
 		// Special cases.
 		"System, successfully apply policy with kerberos tagged values":                         {entries: []string{"entry with kerberos auth tags"}, isComputer: true},
 		"System, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}, isComputer: true},
-		"System, only emit a warning when starting new units and systemctl fails":               {isComputer: true, firstSystemCtlFailingArgs: []string{"start"}},
-		"System, only emit a warning when stopping previous units and systemctl fails":          {isComputer: true, secondCall: []string{"entry with multiple values"}, secondSystemCtlFailingArgs: []string{"stop"}},
+		"System, only emit a warning when starting new units and systemctl fails":               {isComputer: true, firstMockSystemdCaller: mockSystemdCaller{failOn: start}},
+		"System, only emit a warning when stopping previous units and systemctl fails":          {isComputer: true, secondCall: []string{"entry with multiple values"}, secondMockSystemdCaller: mockSystemdCaller{failOn: stop}},
 		"System, does nothing if the entry is disabled":                                         {isComputer: true, isDisabled: true},
 
 		// Badly formatted entries.
@@ -163,9 +163,9 @@ func TestApplyPolicy(t *testing.T) {
 		/**************************** SYSTEM ***************************/
 		// Error cases.
 		"Error when creating units with bad entry values":                        {entries: []string{"entry with badly formatted value"}, isComputer: true, wantErr: true},
-		"Error when daemon-reload fails":                                         {firstSystemCtlFailingArgs: []string{"daemon-reload"}, isComputer: true, wantErr: true},
-		"Error when disabling units for clean up and systemctl fails":            {secondCall: []string{"entry with multiple values"}, isComputer: true, secondSystemCtlFailingArgs: []string{"disable"}, wantErrSecondCall: true},
-		"Error when enabling new units and systemctl fails":                      {isComputer: true, firstSystemCtlFailingArgs: []string{"enable"}, wantErr: true},
+		"Error when daemon-reload fails":                                         {firstMockSystemdCaller: mockSystemdCaller{failOn: daemonReload}, isComputer: true, wantErr: true},
+		"Error when disabling units for clean up and systemctl fails":            {secondCall: []string{"entry with multiple values"}, isComputer: true, secondMockSystemdCaller: mockSystemdCaller{failOn: disable}, wantErrSecondCall: true},
+		"Error when enabling new units and systemctl fails":                      {isComputer: true, firstMockSystemdCaller: mockSystemdCaller{failOn: enable}, wantErr: true},
 		"Error when trying to update policy with badly formatted entry":          {secondCall: []string{"entry with badly formatted value"}, wantErrSecondCall: true, isComputer: true},
 		"Error when applying policy and system mount unit already exists as dir": {isComputer: true, pathAlreadyExists: true, wantErr: true},
 		"Error when updating policy and system mount unit to remove is a dir":    {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
@@ -231,9 +231,8 @@ func TestApplyPolicy(t *testing.T) {
 				testutils.CreatePath(t, filepath.Join(p, "not_empty"))
 			}
 
-			m, err := mount.New(runDir, systemUnitDir, opts...)
+			m, err := mount.New(runDir, systemUnitDir, &tc.firstMockSystemdCaller, opts...)
 			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
-			m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.firstSystemCtlFailingArgs...))
 
 			err = m.ApplyPolicy(context.Background(), tc.objectName, tc.isComputer, entries)
 			if tc.wantErr {
@@ -253,7 +252,7 @@ func TestApplyPolicy(t *testing.T) {
 					e.Disabled = tc.isDisabledSecondCall
 					secondEntries = append(secondEntries, e)
 				}
-				m.SetSystemCtlCmd(mockSystemCtlCmd(t, tc.secondSystemCtlFailingArgs...))
+				m.SetSystemdCaller(&tc.secondMockSystemdCaller)
 
 				if tc.pathAlreadyExistsSecondCall {
 					p := filepath.Join(systemUnitDir, "adsys-protocol-domain.com-mountpath.mount")
@@ -276,50 +275,6 @@ func TestApplyPolicy(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, rootDir, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
-}
-
-func TestMockSystemCtl(_ *testing.T) {
-	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		return
-	}
-	defer os.Exit(0)
-
-	args := os.Args
-	found := false
-	failingArgs := make(map[string]struct{})
-	// Consumes args until the first --. Args after it (up until the next --)
-	// are marked as disabled and will fail if used in the mock.
-	for len(args) > 0 {
-		if args[0] == "--" {
-			if found {
-				args = args[1:]
-				break
-			}
-			found = true
-		} else {
-			if found {
-				failingArgs[args[0]] = struct{}{}
-			}
-		}
-		args = args[1:]
-	}
-
-	for len(args) > 0 {
-		if _, ok := failingArgs[args[0]]; ok {
-			fmt.Printf("Arg %q was disabled in the mock\n", args[0])
-			os.Exit(1)
-		}
-		args = args[1:]
-	}
-}
-
-func mockSystemCtlCmd(t *testing.T, args ...string) []string {
-	t.Helper()
-
-	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockSystemCtl", "--"}
-	cmdArgs = append(cmdArgs, args...)
-	cmdArgs = append(cmdArgs, "--")
-	return cmdArgs
 }
 
 // makeIndependentOfCurrentUID renames any file or directory which exactly match uid in path and replace it with 4242.
@@ -345,4 +300,55 @@ func makeIndependentOfCurrentUID(t *testing.T, path string, uid string) {
 		err := os.Rename(path, filepath.Join(filepath.Dir(path), "4242"))
 		require.NoError(t, err, "Setup: failed to generated path independent of current Uid")
 	}
+}
+
+type failingStep uint8
+
+const (
+	start failingStep = iota
+	stop
+	enable
+	disable
+	daemonReload
+)
+
+type mockSystemdCaller struct {
+	testutils.MockSystemdCaller
+
+	failOn failingStep
+}
+
+func (s mockSystemdCaller) StartUnit(_ context.Context, _ string) error {
+	if s.failOn == start {
+		return errors.New("failed to start unit")
+	}
+	return nil
+}
+
+func (s mockSystemdCaller) StopUnit(_ context.Context, _ string) error {
+	if s.failOn == stop {
+		return errors.New("failed to stop unit")
+	}
+	return nil
+}
+
+func (s mockSystemdCaller) EnableUnit(_ context.Context, _ string) error {
+	if s.failOn == enable {
+		return errors.New("failed to enable unit")
+	}
+	return nil
+}
+
+func (s mockSystemdCaller) DisableUnit(_ context.Context, _ string) error {
+	if s.failOn == disable {
+		return errors.New("failed to disable unit")
+	}
+	return nil
+}
+
+func (s mockSystemdCaller) DaemonReload(_ context.Context) error {
+	if s.failOn == daemonReload {
+		return errors.New("failed to reload daemon")
+	}
+	return nil
 }

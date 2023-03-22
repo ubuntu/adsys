@@ -57,3 +57,13 @@ func (m MockAssetsDumper) SaveAssetsTo(_ context.Context, relSrc, dest string, _
 	}
 	return shutil.CopyTree(fmt.Sprintf("testdata/sysvol-%s", m.Path), dest, nil)
 }
+
+// MockSystemdCaller is a mock implementation of the systemd.Caller interface.
+// It is embedded in manager tests which implement subsets of the systemd.Caller interface according to their needs.
+type MockSystemdCaller struct{}
+
+func (s MockSystemdCaller) StartUnit(_ context.Context, _ string) error   { return nil } //nolint:revive
+func (s MockSystemdCaller) StopUnit(_ context.Context, _ string) error    { return nil } //nolint:revive
+func (s MockSystemdCaller) EnableUnit(_ context.Context, _ string) error  { return nil } //nolint:revive
+func (s MockSystemdCaller) DisableUnit(_ context.Context, _ string) error { return nil } //nolint:revive
+func (s MockSystemdCaller) DaemonReload(_ context.Context) error          { return nil } //nolint:revive

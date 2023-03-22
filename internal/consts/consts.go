@@ -63,6 +63,17 @@ const (
 	// SSSDDbusInterface is the interface we are using for access dbus methods.
 	SSSDDbusInterface = "org.freedesktop.sssd.infopipe.Domains.Domain"
 
+	/* systemd related properties. */
+
+	// SystemdDbusRegisteredName is the well-known name of systemd on dbus.
+	SystemdDbusRegisteredName = "org.freedesktop.systemd1"
+	// SystemdDbusObjectPath is the systemd path for dbus.
+	SystemdDbusObjectPath = "/org/freedesktop/systemd1"
+	// SystemdDbusManagerInterface is the interface we are using to access dbus methods.
+	SystemdDbusManagerInterface = "org.freedesktop.systemd1.Manager"
+	// SystemdDbusUnitInterface is the interface we are using to access units.
+	SystemdDbusUnitInterface = "org.freedesktop.systemd1.Unit"
+
 	/* Ubuntu Advantage properties. */
 
 	// SubscriptionDbusRegisteredName is the well-known name of UA on dbus.

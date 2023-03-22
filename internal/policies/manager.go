@@ -43,6 +43,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/privilege"
 	"github.com/ubuntu/adsys/internal/policies/proxy"
 	"github.com/ubuntu/adsys/internal/policies/scripts"
+	"github.com/ubuntu/adsys/internal/systemd"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/sync/errgroup"
 )
@@ -73,6 +74,7 @@ type options struct {
 	apparmorFsDir string
 	systemUnitDir string
 	proxyApplier  proxy.Caller
+	systemdCaller systemd.Caller
 	gdm           *gdm.Manager
 
 	apparmorParserCmd []string
@@ -162,9 +164,22 @@ func WithProxyApplier(p proxy.Caller) Option {
 	}
 }
 
+// WithSystemdCaller specifies a personalized systemd caller for the policy managers.
+func WithSystemdCaller(p systemd.Caller) Option {
+	return func(o *options) error {
+		o.systemdCaller = p
+		return nil
+	}
+}
+
 // NewManager returns a new manager with all default policy handlers.
 func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
+
+	defaultSystemdCaller, err := systemd.New(bus)
+	if err != nil {
+		return nil, err
+	}
 
 	// defaults
 	args := options{
@@ -172,6 +187,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 		runDir:        consts.DefaultRunDir,
 		apparmorDir:   consts.DefaultApparmorDir,
 		systemUnitDir: consts.DefaultSystemUnitDir,
+		systemdCaller: defaultSystemdCaller,
 		gdm:           nil,
 	}
 	// applied options (including dconf manager used by gdm)
@@ -190,13 +206,13 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 	privilegeManager := privilege.NewWithDirs(args.sudoersDir, args.policyKitDir)
 
 	// scripts manager
-	scriptsManager, err := scripts.New(args.runDir)
+	scriptsManager, err := scripts.New(args.runDir, args.systemdCaller)
 	if err != nil {
 		return nil, err
 	}
 
 	// mount manager
-	mountManager, err := mount.New(args.runDir, args.systemUnitDir)
+	mountManager, err := mount.New(args.runDir, args.systemUnitDir, args.systemdCaller)
 	if err != nil {
 		return nil, err
 	}

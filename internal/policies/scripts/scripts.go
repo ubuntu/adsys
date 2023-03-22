@@ -30,7 +30,7 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
-	"github.com/ubuntu/adsys/internal/smbsafe"
+	"github.com/ubuntu/adsys/internal/systemd"
 	"github.com/ubuntu/decorate"
 )
 
@@ -45,28 +45,26 @@ type Manager struct {
 	scriptsMu map[string]*sync.Mutex // mutex is per destination directory (user1/user2/computer)
 	muMu      sync.Mutex             // protect scriptsMu
 
-	runDir string
+	runDir        string
+	systemdCaller systemd.Caller
 
-	systemctlCmd []string
-	userLookup   func(string) (*user.User, error)
+	userLookup func(string) (*user.User, error)
 }
 
 type options struct {
-	userLookup   func(string) (*user.User, error)
-	systemctlCmd []string
+	userLookup func(string) (*user.User, error)
 }
 
 // Option reprents an optional function to change scripts manager.
 type Option func(*options)
 
 // New creates a manager with a specific scripts directory.
-func New(runDir string, opts ...Option) (m *Manager, err error) {
+func New(runDir string, systemdCaller systemd.Caller, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create scripts manager"))
 
 	// defaults
 	args := options{
-		userLookup:   user.Lookup,
-		systemctlCmd: []string{"systemctl"},
+		userLookup: user.Lookup,
 	}
 	// applied options
 	for _, o := range opts {
@@ -84,10 +82,10 @@ func New(runDir string, opts ...Option) (m *Manager, err error) {
 	}
 
 	return &Manager{
-		scriptsMu:    make(map[string]*sync.Mutex),
-		runDir:       runDir,
-		userLookup:   args.userLookup,
-		systemctlCmd: args.systemctlCmd,
+		scriptsMu:     make(map[string]*sync.Mutex),
+		runDir:        runDir,
+		userLookup:    args.userLookup,
+		systemdCaller: systemdCaller,
 	}, nil
 }
 
@@ -232,17 +230,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	log.Info(ctx, "Running machine startup scripts")
-	cmdArgs := m.systemctlCmd
-	cmdArgs = append(cmdArgs, "start", consts.AdysMachineScriptsServiceName)
-	// #nosec G204 - We are in control of the arguments
-	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
-	smbsafe.WaitExec()
-	defer smbsafe.DoneExec()
-	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("failed to run machine scripts: %w\n%s", err, string(out))
-	}
-
-	return nil
+	return m.systemdCaller.StartUnit(ctx, consts.AdysMachineScriptsServiceName)
 }
 
 // RunScripts executes all scripts in directory if ready and not already executed.

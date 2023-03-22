@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"io/fs"
 	"os"
 	"os/user"
@@ -43,7 +42,7 @@ func TestNew(t *testing.T) {
 			if tc.makeReadOnly {
 				testutils.MakeReadOnly(t, runDir)
 			}
-			_, err := scripts.New(runDir)
+			_, err := scripts.New(runDir, &mockSystemdCaller{})
 			if tc.wantErr {
 				require.NotNil(t, err, "New should have failed but didn't")
 				return
@@ -150,15 +149,9 @@ func TestApplyPolicy(t *testing.T) {
 					"Setup: can't create initial run dir scripts content")
 			}
 
-			systemctlCmd := mockSystemCtlCmd(t)
-			if tc.systemctlShouldFail {
-				systemctlCmd = append(systemctlCmd, "-Exit1-")
-			}
-
 			mockAssetsDumper := testutils.MockAssetsDumper{T: t, Err: tc.saveAssetsError, Path: "scripts/"}
 
-			m, err := scripts.New(runDir,
-				scripts.WithSystemCtlCmd(systemctlCmd),
+			m, err := scripts.New(runDir, &mockSystemdCaller{StartFailed: tc.systemctlShouldFail},
 				scripts.WithUserLookup(userLookup),
 			)
 			require.NoError(t, err, "Setup: can't create scripts manager")
@@ -295,33 +288,17 @@ func TestRunScripts(t *testing.T) {
 	}
 }
 
-func TestMockSystemCtl(_ *testing.T) {
-	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		return
-	}
-	defer os.Exit(0)
+type mockSystemdCaller struct {
+	testutils.MockSystemdCaller
 
-	args := os.Args
-	for len(args) > 0 {
-		if args[0] != "--" {
-			args = args[1:]
-			continue
-		}
-		args = args[1:]
-		break
-	}
-	if args[0] == "-Exit1-" {
-		fmt.Println("EXIT 1 requested in mock")
-		os.Exit(1)
-	}
+	StartFailed bool
 }
 
-func mockSystemCtlCmd(t *testing.T, args ...string) []string {
-	t.Helper()
-
-	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockSystemCtl", "--"}
-	cmdArgs = append(cmdArgs, args...)
-	return cmdArgs
+func (s mockSystemdCaller) StartUnit(_ context.Context, _ string) error {
+	if s.StartFailed {
+		return errors.New("failed to start unit")
+	}
+	return nil
 }
 
 func TestMain(m *testing.M) {
