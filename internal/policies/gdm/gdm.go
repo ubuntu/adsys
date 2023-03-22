@@ -1,4 +1,8 @@
-// Package gdm is the policy manager for gdm entry types. It’s using the dconf parser for gdm user.
+// Package gdm is the policy manager for gdm entry types.
+//
+// This policy manager applies dconf policies to the gdm user. It will create a system-db:gdm database
+// with the requested key=value pairs specified in the policy. For more information, refer to the
+// dconf manager documentation.
 package gdm
 
 import (

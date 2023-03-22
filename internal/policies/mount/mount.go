@@ -1,7 +1,16 @@
-// Package mount implements the manager responsible to handle the file sharing
-// policy of adsys, parsing the GPO rules and setting up the mount process for
-// the requested drives. User mounts will be handled by a systemd user service and
-// computer mounts will be handled directly by systemd, via mount units.
+// Package mount provides the policy manager to handle file sharing policies.
+//
+// The manager behavior differs depending on the object type:
+//   - System mounts: Systemd mount units are created to handle the mount process of the
+//     requested shared locations;
+//   - User mounts:   The policy values are parsed into a mounts file that will handled by a
+//     helper binary that will mount the shared locations using gio.
+//
+// Should the manager fail to write the required assets, an error will be returned.
+// However, if the manager setup all the required steps, it's up to the correctness of the specified
+// entries values and gvfs to mount the requested shared drives.
+// Should an error occur during this step, it will be logged (in the system journal for the system
+// or in the adsys-user-mounts.service for the user).
 package mount
 
 import (
@@ -25,20 +34,6 @@ import (
 	"github.com/ubuntu/decorate"
 	"golang.org/x/exp/slices"
 )
-
-/*
-
-The mount policy for adsys works as follows:
-
-Should the manager fail to setup the policy with the requested entries and its values,
-an error will be returned and the login is prevented.
-
-However, if the manager creates the files needed and setup all the required steps,
-it's up to the correctness of the specified entries values and gvfs to mount the
-requested shared drives. Should an error occur during this step, adsys will log it
-without preventing the authentication.
-
-*/
 
 type options struct {
 	systemctlCmd  []string

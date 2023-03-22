@@ -1,6 +1,16 @@
 // Package scripts is the policy manager for machine and user script entry types.
 //
-// It handles also the script assets themselves.
+// This manager configures the scripts that will be executed in the following steps:
+//   - machine: startup and shutdown;
+//   - user: login and logout;
+//
+// The manager will download the requested assets and set up the scripts to be executed during the
+// mentioned steps. The machine scripts will be executed by ADSys itself and the user ones will be
+// handled by systemd through user units.
+// If the manager fail to download and find the required assets, the applying process will fail and
+// authentication will be prevented. ADSys ensures that the scripts will be executed at the correct
+// time and in the correct order, but it does not account for the correctness of the scripts.
+// If a script returns an error, it will be logged, but authentication will not be prevented.
 package scripts
 
 import (
@@ -23,13 +33,6 @@ import (
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
 )
-
-/*
-	Notes:
-
-	scripts are executed to control machine startup and shutdown, and user login/logout.
-	We rely on systemd units to manage them and only control the execution of the machine startup one.
-*/
 
 const (
 	inSessionFlag = ".running"
