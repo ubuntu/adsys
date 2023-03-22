@@ -26,7 +26,7 @@ type MockAssetsDumper struct {
 // SaveAssetsTo uncompresses policy assets to a directory.
 // It returns an error if the Err field is set to true.
 // It returns an error if Path is different than the dest exercised by the manager.
-func (m MockAssetsDumper) SaveAssetsTo(ctx context.Context, relSrc, dest string, uid int, gid int) (err error) {
+func (m MockAssetsDumper) SaveAssetsTo(_ context.Context, relSrc, dest string, _, _ int) (err error) {
 	if m.Err {
 		return errors.New("SaveAssetsTo error")
 	}

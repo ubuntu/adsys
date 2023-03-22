@@ -119,7 +119,7 @@ var (
 )
 
 // AddHook adds a hook to the logger.
-func AddHook(ctx context.Context, hook logrus.Hook) {
+func AddHook(hook logrus.Hook) {
 	localLogger := logrus.StandardLogger()
 
 	localLogger.AddHook(hook)

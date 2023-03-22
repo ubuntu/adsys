@@ -75,7 +75,7 @@ out:
 	i.operations = nil
 }
 
-func (i *idler) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) {
+func (i *idler) OnNewConnection(_ context.Context, _ *grpc.StreamServerInfo) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.currentRequests++
@@ -86,7 +86,7 @@ func (i *idler) OnNewConnection(_ context.Context, info *grpc.StreamServerInfo) 
 	i.sendOrTimeout(stopTimeout)
 }
 
-func (i *idler) OnDoneConnection(_ context.Context, info *grpc.StreamServerInfo) {
+func (i *idler) OnDoneConnection(_ context.Context, _ *grpc.StreamServerInfo) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.currentRequests--

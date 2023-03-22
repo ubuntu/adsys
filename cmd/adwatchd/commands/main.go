@@ -164,7 +164,7 @@ func New(opts ...option) *App {
 			}
 
 			configFileSet := a.rootCmd.Flags().Lookup("config").Changed
-			if err := watchdtui.Start(context.Background(), a.viper.ConfigFileUsed(), prevConfigFile, !configFileSet); err != nil {
+			if err := watchdtui.Start(a.viper.ConfigFileUsed(), prevConfigFile, !configFileSet); err != nil {
 				return err
 			}
 

@@ -25,7 +25,6 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	bus := testutils.NewDbusConn(t)
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
@@ -62,7 +61,7 @@ func TestNew(t *testing.T) {
 				testutils.MakeReadOnly(t, cacheDir)
 			}
 
-			adc, err := ad.New(context.Background(), bus, mock.Backend{ErrServerURL: tc.backendServerURLError}, hostname,
+			adc, err := ad.New(context.Background(), mock.Backend{ErrServerURL: tc.backendServerURLError}, hostname,
 				ad.WithRunDir(runDir),
 				ad.WithCacheDir(cacheDir))
 			if tc.wantErr {
@@ -85,8 +84,6 @@ func TestGetPolicies(t *testing.T) {
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
-
-	bus := testutils.NewDbusConn(t)
 
 	/*
 				GPOs layout:
@@ -569,7 +566,7 @@ func TestGetPolicies(t *testing.T) {
 			}
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			adc, err := ad.New(context.Background(), bus, tc.backend, hostname,
+			adc, err := ad.New(context.Background(), tc.backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs...)),
 				ad.WithVersionID(tc.versionID))
@@ -614,8 +611,6 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
-
-	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
 		domainToCache string
@@ -688,7 +683,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 			testutils.CreatePath(t, tc.backend.HostKrb5CCNamePath)
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			adc, err := ad.New(context.Background(), bus, tc.backend, hostname,
+			adc, err := ad.New(context.Background(), tc.backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs...)))
 			require.NoError(t, err, "Setup: cannot create ad object")
@@ -704,7 +699,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 				krb5CCNameForCache := setKrb5CC(t, objectNameForCache)
 
 				cachedir, rundir := t.TempDir(), t.TempDir()
-				adcForCache, err := ad.New(context.Background(), bus,
+				adcForCache, err := ad.New(context.Background(),
 					mock.Backend{
 						Dom:                tc.domainToCache,
 						Online:             true,
@@ -739,8 +734,6 @@ func TestGetPoliciesOffline(t *testing.T) {
 
 func TestGetPoliciesWorkflows(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
-
-	bus := testutils.NewDbusConn(t)
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
@@ -826,7 +819,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			}
 			testutils.CreatePath(t, backend.HostKrb5CCNamePath)
 
-			adc, err := ad.New(context.Background(), bus, backend, hostname,
+			adc, err := ad.New(context.Background(), backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs...)))
 			require.NoError(t, err, "Setup: cannot create ad object")
@@ -854,7 +847,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			// Restart: recreate ad object
 			if tc.restart {
-				adc, err = ad.New(context.Background(), bus, backend, hostname,
+				adc, err = ad.New(context.Background(), backend, hostname,
 					ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 					ad.WithGPOListCmd(mockGPOListCmd(t, gpoListArgs...)))
 				require.NoError(t, err, "Cannot create second ad object")
@@ -877,8 +870,6 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 func TestGetPoliciesConcurrently(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
-
-	bus := testutils.NewDbusConn(t)
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
@@ -978,7 +969,7 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 			if mockObjectName1 == mockObjectName2 {
 				gpoListMeta = fmt.Sprintf("%s:%s", mockObjectName1, tc.gpo1)
 			}
-			adc, err := ad.New(context.Background(), bus, backend, hostname,
+			adc, err := ad.New(context.Background(), backend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, "assetsandgpo.com", gpoListMeta)))
 			require.NoError(t, err, "Setup: cannot create ad object")
@@ -1019,7 +1010,6 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 func TestListUsersFromCache(t *testing.T) {
 	t.Parallel()
 
-	bus := testutils.NewDbusConn(t)
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
@@ -1075,7 +1065,7 @@ func TestListUsersFromCache(t *testing.T) {
 				}
 			}
 
-			adc, err := ad.New(context.Background(), bus, mock.Backend{Dom: "gpoonly.com", ServURL: "ldap://myserver.gpoonly.com"}, hostname,
+			adc, err := ad.New(context.Background(), mock.Backend{Dom: "gpoonly.com", ServURL: "ldap://myserver.gpoonly.com"}, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir))
 			require.NoError(t, err, "Setup: New should return no error")
 
@@ -1100,7 +1090,6 @@ func TestListUsersFromCache(t *testing.T) {
 func TestGetInfo(t *testing.T) {
 	t.Parallel()
 
-	bus := testutils.NewDbusConn(t)
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
@@ -1122,7 +1111,7 @@ func TestGetInfo(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			adc, err := ad.New(context.Background(), bus,
+			adc, err := ad.New(context.Background(),
 				mock.Backend{
 					Dom: "example.com", ServURL: "ldap://myserver.example.com",
 					Online:      tc.online,
@@ -1143,8 +1132,6 @@ func TestNormalizeTargetName(t *testing.T) {
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname")
-
-	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
 		target              string
@@ -1180,7 +1167,7 @@ func TestNormalizeTargetName(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			adc, err := ad.New(context.Background(), bus,
+			adc, err := ad.New(context.Background(),
 				mock.Backend{Dom: tc.defaultDomainSuffix, ServURL: "ldap://myserver.gpoonly.com"}, // Dom is the default domain suffix in the mock
 				hostname,
 				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()))
@@ -1198,7 +1185,7 @@ func TestNormalizeTargetName(t *testing.T) {
 	}
 }
 
-func TestMockGPOList(t *testing.T) {
+func TestMockGPOList(_ *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return
 	}

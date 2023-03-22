@@ -98,7 +98,7 @@ func TestWinbind(t *testing.T) {
 	}
 }
 
-func TestExecuteKinitCommand(t *testing.T) {
+func TestExecuteKinitCommand(_ *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return
 	}

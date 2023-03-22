@@ -18,7 +18,7 @@ type myStream struct {
 	callRecvMsgNum int
 }
 
-func (ss *myStream) RecvMsg(m interface{}) error {
+func (ss *myStream) RecvMsg(_ interface{}) error {
 	ss.callRecvMsgNum++
 	var err error
 	if ss.recvMsgError {

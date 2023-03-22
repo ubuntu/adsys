@@ -224,7 +224,7 @@ func TestLogStreamsAreSeparated(t *testing.T) {
 }
 
 func TestLogAddHook(t *testing.T) {
-	log.AddHook(context.Background(), &mockLogHook{})
+	log.AddHook(&mockLogHook{})
 
 	// capture stderr
 	r, w, err := os.Pipe()
@@ -247,8 +247,8 @@ func TestLogAddHook(t *testing.T) {
 type mockLogHook struct{}
 
 // Fire is called by logrus and will print a message to stderr.
-func (*mockLogHook) Fire(entry *logrus.Entry) error { return errors.New("hook fired") }
-func (*mockLogHook) Levels() []logrus.Level         { return logrus.AllLevels }
+func (*mockLogHook) Fire(_ *logrus.Entry) error { return errors.New("hook fired") }
+func (*mockLogHook) Levels() []logrus.Level     { return logrus.AllLevels }
 
 func requireLog(t *testing.T, logs string, want ...[]string) {
 	t.Helper()

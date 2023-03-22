@@ -244,7 +244,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %v"), err)
 	}
 
-	adc, err := ad.New(ctx, bus, adBackend, hostname, adOptions...)
+	adc, err := ad.New(ctx, adBackend, hostname, adOptions...)
 	if err != nil {
 		return nil, err
 	}

@@ -22,8 +22,6 @@ import (
 func TestFetch(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := testutils.NewDbusConn(t)
-
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
@@ -278,7 +276,7 @@ func TestFetch(t *testing.T) {
 				tc.adDomain = "fakegpo.com"
 			}
 
-			adc, err := New(context.Background(), bus,
+			adc, err := New(context.Background(),
 				mock.Backend{}, hostname,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 
@@ -390,7 +388,6 @@ func TestFetch(t *testing.T) {
 func TestFetchWithUnreadableFile(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := testutils.NewDbusConn(t)
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
@@ -414,7 +411,7 @@ func TestFetchWithUnreadableFile(t *testing.T) {
 
 			dest, rundir := t.TempDir(), t.TempDir()
 
-			adc, err := New(context.Background(), bus, mock.Backend{}, hostname,
+			adc, err := New(context.Background(), mock.Backend{}, hostname,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -446,7 +443,6 @@ func TestFetchWithUnreadableFile(t *testing.T) {
 func TestFetchTweakSysvolCacheDir(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := testutils.NewDbusConn(t)
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
@@ -464,7 +460,7 @@ func TestFetchTweakSysvolCacheDir(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
 			dest, rundir := t.TempDir(), t.TempDir()
-			adc, err := New(context.Background(), bus, mock.Backend{}, hostname,
+			adc, err := New(context.Background(), mock.Backend{}, hostname,
 				WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 			require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -487,13 +483,12 @@ func TestFetchTweakSysvolCacheDir(t *testing.T) {
 func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := testutils.NewDbusConn(t)
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), bus, mock.Backend{}, hostname,
+	adc, err := New(context.Background(), mock.Backend{}, hostname,
 		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 	require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -538,13 +533,12 @@ func TestFetchOneGPOWhileParsingItConcurrently(t *testing.T) {
 func TestParseGPOConcurrent(t *testing.T) {
 	t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
-	bus := testutils.NewDbusConn(t)
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
 	dest, rundir := t.TempDir(), t.TempDir()
 
-	adc, err := New(context.Background(), bus, mock.Backend{}, hostname,
+	adc, err := New(context.Background(), mock.Backend{}, hostname,
 		WithCacheDir(dest), WithRunDir(rundir), withoutKerberos())
 	require.NoError(t, err, "Setup: cannot create ad object")
 
@@ -574,7 +568,6 @@ func TestParseGPOConcurrent(t *testing.T) {
 const SmbPort = 1445
 
 func TestMain(m *testing.M) {
-	defer testutils.StartLocalSystemBus()()
 	testutils.InstallUpdateFlag()
 	flag.Parse()
 

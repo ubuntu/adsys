@@ -153,7 +153,7 @@ func (f *fakeServerStream) SendMsg(m interface{}) error {
 	return nil
 }
 
-func (f *fakeServerStream) RecvMsg(m interface{}) error {
+func (f *fakeServerStream) RecvMsg(_ interface{}) error {
 	if f.recvMessage == nil {
 		return status.Errorf(codes.NotFound, "fakeServerStream has no message, sorry")
 	}

@@ -30,7 +30,7 @@ type ProxyApplierMock struct {
 }
 
 // Call mocks the proxy apply call.
-func (d *ProxyApplierMock) Call(method string, flags dbus.Flags, args ...interface{}) *dbus.Call {
+func (d *ProxyApplierMock) Call(_ string, _ dbus.Flags, _ ...interface{}) *dbus.Call {
 	var errApply error
 
 	if d.WantApplyError {
