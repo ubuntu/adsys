@@ -73,6 +73,10 @@ const (
 	SystemdDbusManagerInterface = "org.freedesktop.systemd1.Manager"
 	// SystemdDbusUnitInterface is the interface we are using to access units.
 	SystemdDbusUnitInterface = "org.freedesktop.systemd1.Unit"
+	// SystemdDbusTimerInterface is the interface we are using to access timer unit objects.
+	SystemdDbusTimerInterface = "org.freedesktop.systemd1.Timer"
+	// SystemdDbusServiceInterface is the interface we are using to access service unit objects.
+	SystemdDbusServiceInterface = "org.freedesktop.systemd1.Service"
 
 	/* Ubuntu Advantage properties. */
 

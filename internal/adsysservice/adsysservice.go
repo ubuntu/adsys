@@ -332,8 +332,8 @@ func (s *Service) Quit(ctx context.Context) {
 
 // initSystemTime returns systemd generator init system time.
 func initSystemTime(bus *dbus.Conn) *time.Time {
-	systemd := bus.Object("org.freedesktop.systemd1", "/org/freedesktop/systemd1")
-	val, err := systemd.GetProperty("org.freedesktop.systemd1.Manager.GeneratorsStartTimestamp")
+	systemd := bus.Object(consts.SystemdDbusRegisteredName, consts.SystemdDbusObjectPath)
+	val, err := systemd.GetProperty(fmt.Sprintf("%s.GeneratorsStartTimestamp", consts.SystemdDbusManagerInterface))
 	if err != nil {
 		log.Warningf(context.Background(), "could not get system startup time? Can’t list next refresh: %v", err)
 		return nil

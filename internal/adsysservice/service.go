@@ -206,10 +206,11 @@ func (s Service) nextRefreshTime() (next *time.Time, err error) {
 
 	const unit = "adsys-gpo-refresh.timer"
 
-	timerUnit := s.bus.Object("org.freedesktop.systemd1",
-		dbus.ObjectPath(fmt.Sprintf("/org/freedesktop/systemd1/unit/%s",
+	timerUnit := s.bus.Object(consts.SystemdDbusRegisteredName,
+		dbus.ObjectPath(fmt.Sprintf("%s/unit/%s",
+			consts.SystemdDbusObjectPath,
 			strings.ReplaceAll(strings.ReplaceAll(unit, ".", "_2e"), "-", "_2d"))))
-	val, err := timerUnit.GetProperty("org.freedesktop.systemd1.Timer.NextElapseUSecMonotonic")
+	val, err := timerUnit.GetProperty(fmt.Sprintf("%s.NextElapseUSecMonotonic", consts.SystemdDbusTimerInterface))
 	if err != nil {
 		return nil, fmt.Errorf(i18n.G("could not find %s unit on systemd bus: no GPO refresh scheduled? %v"), unit, err)
 	}

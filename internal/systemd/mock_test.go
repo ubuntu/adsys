@@ -19,7 +19,7 @@ type systemdBus struct {
 	mu sync.Mutex
 }
 
-var errNoSuchUnit = dbus.NewError("org.freedesktop.systemd1.NoSuchUnit", []interface{}{"Unit not-a-service.service not found."})
+var errNoSuchUnit = dbus.NewError(fmt.Sprintf("%s.NoSuchUnit", consts.SystemdDbusRegisteredName), []interface{}{"Unit not-a-service.service not found."})
 
 const (
 	absentUnit  = "not-a-service.service"
