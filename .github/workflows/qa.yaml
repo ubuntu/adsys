@@ -96,15 +96,14 @@ jobs:
         run: |
           set -eu
 
-          go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=count ./...
+          go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=set ./...
 
           # Run integration tests that need sudo
           # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
-          sudo -E $(which go) test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=count $SUDO_PACKAGES
+          sudo -E $(which go) test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=set $SUDO_PACKAGES
 
           # Combine coverage files, and filter out test utilities and generated files
-          echo "mode: set" > /tmp/coverage.combined.out
-          grep -hv -e "mode: set" -e "testutils" -e "pb.go:" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
+          grep -hv -e "testutils" -e "pb.go:" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
       - name: Run tests (with race detector)
         run: |
           go test -race ./...
