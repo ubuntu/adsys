@@ -35,11 +35,11 @@ msgid ""
 "Service already exists and will be reconfigured\n"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:296
+#: internal/policies/scripts/scripts.go:292
 msgid "%q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:256
+#: internal/policies/scripts/scripts.go:252
 msgid "%q is not ready to execute scripts"
 msgstr ""
 
@@ -62,7 +62,7 @@ msgid ""
 "Note: %s"
 msgstr ""
 
-#: internal/ad/ad.go:519
+#: internal/ad/ad.go:518
 #, c-format
 msgid ""
 "%s\n"
@@ -75,7 +75,7 @@ msgstr ""
 msgid "%s installing service... please wait."
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:255
+#: internal/policies/privilege/privilege.go:269
 #, c-format
 msgid "%s is a directory. Ignoring."
 msgstr ""
@@ -89,7 +89,7 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:417
+#: internal/policies/dconf/dconf.go:420
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -132,7 +132,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:441 internal/ad/ad.go:453
+#: internal/ad/ad.go:440 internal/ad/ad.go:452
 msgid "%s: %v"
 msgstr ""
 
@@ -161,11 +161,11 @@ msgstr ""
 msgid "%s: is not a directory"
 msgstr ""
 
-#: internal/ad/ad.go:509
+#: internal/ad/ad.go:508
 msgid "**Can't check if we have an active connection**\n"
 msgstr ""
 
-#: internal/ad/ad.go:511
+#: internal/ad/ad.go:510
 msgid "**Offline mode** using cached policies\n"
 msgstr ""
 
@@ -184,7 +184,7 @@ msgstr ""
 msgid "- can't read content -"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:114
+#: internal/policies/dconf/dconf.go:117
 msgid "- error on %s: %v"
 msgstr ""
 
@@ -222,16 +222,16 @@ msgid "Any user always authorized"
 msgstr ""
 
 #. Otherwise, just let the user know
-#: internal/policies/apparmor/apparmor.go:124
+#: internal/policies/apparmor/apparmor.go:141
 msgid "Apparmor is not available on this system: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:136
+#: internal/policies/apparmor/apparmor.go:153
 #, c-format
 msgid "Applying apparmor %s policy to %s"
 msgstr ""
 
-#: internal/policies/mount/mount.go:200
+#: internal/policies/mount/mount.go:201
 msgid "Applying mount policy to machine %q"
 msgstr ""
 
@@ -261,11 +261,11 @@ msgstr ""
 msgid "Check if grpc request peer is authorized"
 msgstr ""
 
-#: internal/policies/mount/mount.go:483
+#: internal/policies/mount/mount.go:484
 msgid "Cleaning up mount policy files for %q"
 msgstr ""
 
-#: internal/policies/mount/mount.go:504
+#: internal/policies/mount/mount.go:505
 msgid "Cleaning up mounts file for user with uid %q"
 msgstr ""
 
@@ -323,11 +323,11 @@ msgstr ""
 msgid "Couldn't connect to %s daemon: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:509
+#: internal/policies/apparmor/apparmor.go:526
 msgid "Couldn't remove new apparmor directory: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:513
+#: internal/policies/apparmor/apparmor.go:530
 msgid "Couldn't restore previous apparmor directory: %v"
 msgstr ""
 
@@ -335,7 +335,7 @@ msgstr ""
 msgid "Couldn't send initial connection log to client"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:457
+#: internal/policies/apparmor/apparmor.go:474
 msgid "Couldn't write to apparmor parser stdin: %v"
 msgstr ""
 
@@ -412,7 +412,7 @@ msgstr ""
 msgid "Failed to remove watcher on %q: %s"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:318
+#: internal/policies/apparmor/apparmor.go:335
 msgid "Failed to restore old apparmor user profile: %v"
 msgstr ""
 
@@ -421,7 +421,7 @@ msgstr ""
 msgid "Failed to stat: %s"
 msgstr ""
 
-#: internal/policies/mount/mount.go:523
+#: internal/policies/mount/mount.go:524
 msgid "Failed to stop unit %q: %v"
 msgstr ""
 
@@ -489,12 +489,12 @@ msgstr ""
 msgid "New connection from client [[%s]]"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:294
+#: internal/policies/apparmor/apparmor.go:311
 msgid ""
 "No apparmor machine profiles configured for this machine, skipping reload"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:132
+#: internal/policies/apparmor/apparmor.go:149
 #, c-format
 msgid "No entries found for the apparmor %s policy"
 msgstr ""
@@ -518,11 +518,11 @@ msgid ""
 "Not applying proxy settings as ubuntu-proxy-manager is not installed: %s"
 msgstr ""
 
-#: internal/policies/manager.go:281
+#: internal/policies/manager.go:331
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:289
+#: internal/policies/manager.go:339
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -669,17 +669,17 @@ msgstr ""
 msgid "Supported on %s %s"
 msgstr ""
 
-#: internal/policies/mount/mount.go:142
+#: internal/policies/mount/mount.go:143
 msgid "The entry %q is disabled and will be skipped"
 msgstr ""
 
-#: internal/policies/mount/mount.go:383
+#: internal/policies/mount/mount.go:384
 msgid ""
 "The location %q was already set up to be mounted with different options or "
 "authentication. The first provided value %q will be used instead."
 msgstr ""
 
-#: internal/policies/mount/mount.go:137
+#: internal/policies/mount/mount.go:138
 msgid "The provided entries are not supported by the %s mount manager: %v"
 msgstr ""
 
@@ -710,7 +710,7 @@ msgstr ""
 msgid "Uninstalls the service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:436
+#: internal/policies/apparmor/apparmor.go:453
 msgid "Unloading %d apparmor policies: %v"
 msgstr ""
 
@@ -732,11 +732,11 @@ msgstr ""
 msgid "Updating directories to watch"
 msgstr ""
 
-#: internal/policies/manager.go:295
+#: internal/policies/manager.go:345
 msgid "User %q not found on cache."
 msgstr ""
 
-#: internal/policies/mount/mount.go:381
+#: internal/policies/mount/mount.go:382
 msgid "Value %q is duplicated."
 msgstr ""
 
@@ -792,11 +792,11 @@ msgstr ""
 msgid "another instance of the %s service is already running"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:533
+#: internal/policies/apparmor/apparmor.go:550
 msgid "apparmor profile %q is a directory and not a file"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:530
+#: internal/policies/apparmor/apparmor.go:547
 msgid "apparmor profile %q is not accessible: %w"
 msgstr ""
 
@@ -804,30 +804,30 @@ msgstr ""
 msgid "call to polkit failed: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:98
+#: internal/policies/apparmor/apparmor.go:115
 #, c-format
 msgid "can't apply apparmor policy to %s"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:62
+#: internal/policies/dconf/dconf.go:65
 #, c-format
 msgid "can't apply dconf policy to %s"
 msgstr ""
 
-#: internal/policies/gdm/gdm.go:58
+#: internal/policies/gdm/gdm.go:62
 msgid "can't apply gdm policy"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:153
+#: internal/policies/apparmor/apparmor.go:170
 msgid "can't apply machine policy"
 msgstr ""
 
-#: internal/policies/mount/mount.go:110
+#: internal/policies/mount/mount.go:111
 #, c-format
 msgid "can't apply mount policy to %s"
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:58
+#: internal/policies/privilege/privilege.go:72
 #, c-format
 msgid "can't apply privilege policy to %s"
 msgstr ""
@@ -836,12 +836,12 @@ msgstr ""
 msgid "can't apply proxy policy"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:96
+#: internal/policies/scripts/scripts.go:102
 #, c-format
 msgid "can't apply scripts policy to %s"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:250
+#: internal/policies/apparmor/apparmor.go:267
 msgid "can't apply user policy"
 msgstr ""
 
@@ -850,7 +850,7 @@ msgstr ""
 msgid "can't bump version for %s"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:185
+#: internal/policies/scripts/scripts.go:191
 msgid "can't change mode of script %qto %o: %v"
 msgstr ""
 
@@ -859,8 +859,8 @@ msgstr ""
 msgid "can't check if %s needs refreshing"
 msgstr ""
 
-#: internal/policies/mount/mount.go:464 internal/policies/policies.go:434
-#: internal/policies/scripts/scripts.go:348
+#: internal/policies/mount/mount.go:465 internal/policies/policies.go:434
+#: internal/policies/scripts/scripts.go:344
 msgid "can't chown %q"
 msgstr ""
 
@@ -873,15 +873,15 @@ msgstr ""
 msgid "can't create %q"
 msgstr ""
 
-#: internal/ad/ad.go:114
+#: internal/ad/ad.go:113
 msgid "can't create Active Directory object"
 msgstr ""
 
-#: internal/policies/gdm/gdm.go:38
+#: internal/policies/gdm/gdm.go:42
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:144
+#: internal/policies/manager.go:188
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
@@ -889,7 +889,7 @@ msgstr ""
 msgid "can't create admx file: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:138
+#: internal/policies/apparmor/apparmor.go:155
 msgid "can't create apparmor directory %q: %v"
 msgstr ""
 
@@ -905,11 +905,11 @@ msgstr ""
 msgid "can't create destination directory for AD policies: %v"
 msgstr ""
 
-#: internal/policies/mount/mount.go:455
+#: internal/policies/mount/mount.go:456
 msgid "can't create directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:330
+#: internal/policies/scripts/scripts.go:326
 msgid "can't create flag file %q"
 msgstr ""
 
@@ -917,24 +917,24 @@ msgstr ""
 msgid "can't create new authorizer"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:150
+#: internal/policies/scripts/scripts.go:156
 msgid "can't create object directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:153
-#: internal/policies/scripts/scripts.go:323
+#: internal/policies/scripts/scripts.go:159
+#: internal/policies/scripts/scripts.go:319
 msgid "can't create scripts directory %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:61
+#: internal/policies/scripts/scripts.go:66
 msgid "can't create scripts manager"
 msgstr ""
 
-#: internal/ad/ad.go:359
+#: internal/ad/ad.go:358
 msgid "can't create symlink for caching"
 msgstr ""
 
-#: internal/policies/mount/mount.go:174
+#: internal/policies/mount/mount.go:175
 msgid "can't create user directory %q for %q: %w"
 msgstr ""
 
@@ -970,7 +970,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:366
+#: internal/ad/ad.go:365
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -979,7 +979,7 @@ msgstr ""
 msgid "can't get cached policies from %s"
 msgstr ""
 
-#: internal/ad/ad.go:152 internal/ad/ad.go:223
+#: internal/ad/ad.go:151 internal/ad/ad.go:222
 msgid "can't get current Server URL: %w"
 msgstr ""
 
@@ -988,12 +988,12 @@ msgstr ""
 msgid "can't get domain configuration from %+v"
 msgstr ""
 
-#: internal/policies/privilege/privilege.go:242
+#: internal/policies/privilege/privilege.go:256
 #, c-format
 msgid "can't get existing system polkit administrators in %s"
 msgstr ""
 
-#: internal/ad/ad.go:177
+#: internal/ad/ad.go:176
 msgid "can't get policies for %q"
 msgstr ""
 
@@ -1005,7 +1005,7 @@ msgstr ""
 msgid "can't install command flag bindings: %v"
 msgstr ""
 
-#: internal/ad/ad.go:334
+#: internal/ad/ad.go:333
 msgid "can't list users from cache"
 msgstr ""
 
@@ -1021,11 +1021,11 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:421
+#: internal/policies/dconf/dconf.go:424
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:473
+#: internal/policies/apparmor/apparmor.go:490
 msgid "can't parse loaded apparmor policies"
 msgstr ""
 
@@ -1037,31 +1037,31 @@ msgstr ""
 msgid "can't redirect output"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:180
+#: internal/policies/apparmor/apparmor.go:197
 msgid "can't remove new apparmor directory %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:176
-#: internal/policies/apparmor/apparmor.go:243
+#: internal/policies/apparmor/apparmor.go:193
+#: internal/policies/apparmor/apparmor.go:260
 msgid "can't remove old apparmor directory %q: %v"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:549
+#: internal/policies/apparmor/apparmor.go:566
 msgid "can't remove unused apparmor assets"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:192
-#: internal/policies/apparmor/apparmor.go:198
+#: internal/policies/apparmor/apparmor.go:209
+#: internal/policies/apparmor/apparmor.go:215
 msgid "can't rename apparmor directory %q to %q: %v"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:248
+#: internal/policies/scripts/scripts.go:244
 #, c-format
 msgid "can't run scripts listed in %s"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:633
-#: internal/policies/dconf/dconf.go:197 internal/policies/mount/mount.go:414
+#: internal/policies/apparmor/apparmor.go:650
+#: internal/policies/dconf/dconf.go:200 internal/policies/mount/mount.go:415
 #, c-format
 msgid "can't save %s"
 msgstr ""
@@ -1092,7 +1092,7 @@ msgstr ""
 msgid "can't stop service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:333
+#: internal/policies/apparmor/apparmor.go:350
 msgid "can't unload apparmor rules"
 msgstr ""
 
@@ -1100,7 +1100,7 @@ msgstr ""
 msgid "can't update directories to watch"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:218
+#: internal/policies/dconf/dconf.go:221
 #, c-format
 msgid "can't update user profile %s"
 msgstr ""
@@ -1146,11 +1146,11 @@ msgstr ""
 msgid "could not close directory: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:214
+#: internal/adsysservice/service.go:215
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
-#: internal/watchdservice/watchdservice_linux.go:45
+#: internal/watchdservice/watchdservice_linux.go:47
 msgid "could not find %s unit on systemd bus: no service installed? %v"
 msgstr ""
 
@@ -1193,21 +1193,21 @@ msgstr ""
 msgid "could not read chapter %q: %v"
 msgstr ""
 
-#: internal/policies/mount/mount.go:532
+#: internal/policies/mount/mount.go:533
 msgid "could not remove file %q: %w"
 msgstr ""
 
-#: internal/policies/mount/mount.go:160
+#: internal/policies/mount/mount.go:161
 msgid "could not retrieve user for %q: %w"
 msgstr ""
 
-#: internal/policies/mount/mount.go:166
-#: internal/policies/scripts/scripts.go:111
+#: internal/policies/mount/mount.go:167
+#: internal/policies/scripts/scripts.go:117
 msgid "couldn't convert %q to a valid gid for %q"
 msgstr ""
 
-#: internal/authorizer/authorizer.go:137 internal/policies/mount/mount.go:163
-#: internal/policies/scripts/scripts.go:108
+#: internal/authorizer/authorizer.go:137 internal/policies/mount/mount.go:164
+#: internal/policies/scripts/scripts.go:114
 msgid "couldn't convert %q to a valid uid for %q"
 msgstr ""
 
@@ -1220,7 +1220,7 @@ msgid "couldn't open stat file for process: %v"
 msgstr ""
 
 #: internal/authorizer/authorizer.go:133
-#: internal/policies/scripts/scripts.go:105
+#: internal/policies/scripts/scripts.go:111
 msgid "couldn't retrieve user for %q: %v"
 msgstr ""
 
@@ -1232,7 +1232,7 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:189
+#: internal/policies/dconf/dconf.go:192
 msgid "dconf update failed: %v"
 msgstr ""
 
@@ -1264,15 +1264,15 @@ msgstr ""
 msgid "download %q failed"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:412
+#: internal/policies/dconf/dconf.go:415
 msgid "empty signature for %v"
 msgstr ""
 
-#: internal/policies/mount/mount.go:406
+#: internal/policies/mount/mount.go:407
 msgid "entry %q is badly formatted"
 msgstr ""
 
-#: internal/policies/mount/mount.go:367
+#: internal/policies/mount/mount.go:368
 msgid "entry is errored: %w"
 msgstr ""
 
@@ -1290,11 +1290,11 @@ msgstr ""
 msgid "error opening raw connection: %s"
 msgstr ""
 
-#: internal/policies/mount/mount.go:198
+#: internal/policies/mount/mount.go:199
 msgid "error when applying mount policy to machine %q"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:409
+#: internal/policies/dconf/dconf.go:412
 msgid "error while checking signature"
 msgstr ""
 
@@ -1358,7 +1358,7 @@ msgstr ""
 msgid "error while updating policy"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:266
+#: internal/policies/apparmor/apparmor.go:283
 #, c-format
 msgid "expected exactly one profile, got %d"
 msgstr ""
@@ -1367,11 +1367,11 @@ msgstr ""
 msgid "failed to access definition files: %w"
 msgstr ""
 
-#: internal/policies/mount/mount.go:153
+#: internal/policies/mount/mount.go:154
 msgid "failed to apply policy for user %q"
 msgstr ""
 
-#: internal/policies/manager.go:231
+#: internal/policies/manager.go:281
 msgid "failed to apply policy to %q"
 msgstr ""
 
@@ -1379,15 +1379,15 @@ msgstr ""
 msgid "failed to change directories to watch"
 msgstr ""
 
-#: internal/policies/mount/mount.go:481
+#: internal/policies/mount/mount.go:482
 msgid "failed to clean up mount policy files for %q"
 msgstr ""
 
-#: internal/policies/mount/mount.go:502
+#: internal/policies/mount/mount.go:503
 msgid "failed to clean up mounts file"
 msgstr ""
 
-#: internal/policies/mount/mount.go:518
+#: internal/policies/mount/mount.go:519
 msgid "failed to clean up the mount units"
 msgstr ""
 
@@ -1395,23 +1395,25 @@ msgstr ""
 msgid "failed to create new mount manager"
 msgstr ""
 
-#: internal/policies/mount/mount.go:528
-msgid "failed to disable unit %q: %w"
+#: internal/systemd/systemd.go:75
+#, c-format
+msgid "failed to disable unit %s"
 msgstr ""
 
-#: internal/policies/manager.go:273
+#: internal/policies/manager.go:323
 msgid "failed to dump policies for %q"
 msgstr ""
 
-#: internal/policies/mount/mount.go:251
-msgid "failed to enable unit %q: %w"
+#: internal/systemd/systemd.go:65
+#, c-format
+msgid "failed to enable unit %s"
 msgstr ""
 
 #: internal/ad/backends/sss/sss.go:60
 msgid "failed to find default sssd domain in sssd.conf"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:410
+#: internal/policies/apparmor/apparmor.go:427
 msgid ""
 "failed to get apparmor policies: %w\n"
 "%s"
@@ -1422,7 +1424,7 @@ msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:307
+#: internal/policies/manager.go:357
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -1435,8 +1437,8 @@ msgid "failed to install service"
 msgstr ""
 
 #. Return the execution error
-#: internal/policies/apparmor/apparmor.go:237
-#: internal/policies/apparmor/apparmor.go:322
+#: internal/policies/apparmor/apparmor.go:254
+#: internal/policies/apparmor/apparmor.go:339
 msgid ""
 "failed to load apparmor rules: %w\n"
 "%s"
@@ -1450,15 +1452,15 @@ msgstr ""
 msgid "failed to marshal enabled meta data"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:477
+#: internal/policies/apparmor/apparmor.go:494
 msgid "failed to open %q: %w"
 msgstr ""
 
-#: internal/policies/mount/mount.go:364
+#: internal/policies/mount/mount.go:365
 msgid "failed to parse entry values"
 msgstr ""
 
-#: internal/ad/ad.go:343
+#: internal/ad/ad.go:342
 msgid "failed to read cache directory: %v"
 msgstr ""
 
@@ -1474,11 +1476,11 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
-#: internal/policies/mount/mount.go:245
-msgid "failed to reload systemctl: %w"
+#: internal/systemd/systemd.go:85
+msgid "failed to reload units"
 msgstr ""
 
-#: internal/ad/ad.go:377
+#: internal/ad/ad.go:376
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -1494,7 +1496,7 @@ msgstr ""
 msgid "failed to retrieve status for service"
 msgstr ""
 
-#: internal/ad/ad.go:244
+#: internal/ad/ad.go:243
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -1508,19 +1510,29 @@ msgstr ""
 msgid "failed to start service"
 msgstr ""
 
-#: internal/policies/mount/mount.go:254
+#: internal/policies/mount/mount.go:255
 msgid "failed to start unit %q: %v"
+msgstr ""
+
+#: internal/systemd/systemd.go:35
+#, c-format
+msgid "failed to start unit %s"
 msgstr ""
 
 #: internal/watchdservice/watchdservice.go:163
 msgid "failed to stop service"
 msgstr ""
 
+#: internal/systemd/systemd.go:50
+#, c-format
+msgid "failed to stop unit %s"
+msgstr ""
+
 #: internal/watchdservice/watchdservice.go:365
 msgid "failed to uninstall service"
 msgstr ""
 
-#: internal/policies/apparmor/apparmor.go:465
+#: internal/policies/apparmor/apparmor.go:482
 msgid ""
 "failed to unload apparmor policies: %w\n"
 "%s"
@@ -1534,11 +1546,7 @@ msgstr ""
 msgid "failed to watch directory %q: %v"
 msgstr ""
 
-#: internal/policies/mount/mount.go:555
-msgid "failed when running systemctl cmd: %w -> %s"
-msgstr ""
-
-#: internal/policies/mount/mount.go:433
+#: internal/policies/mount/mount.go:434
 #, c-format
 msgid "failed when writing file %s"
 msgstr ""
@@ -1565,7 +1573,7 @@ msgid ""
 ". Please use the StreamClientInterceptor: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:218
+#: internal/adsysservice/service.go:219
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
@@ -1585,13 +1593,13 @@ msgstr ""
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:83
+#: internal/policies/dconf/dconf.go:86
 msgid ""
 "machine dconf database is required before generating a policy for an user. "
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:213
+#: internal/ad/ad.go:212
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -1663,7 +1671,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:284 internal/policies/manager.go:296
+#: internal/policies/manager.go:334 internal/policies/manager.go:346
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -1710,7 +1718,7 @@ msgstr ""
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:317
+#: internal/policies/manager.go:367
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
@@ -1726,7 +1734,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:187
+#: internal/ad/ad.go:186
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
@@ -1744,11 +1752,11 @@ msgstr ""
 msgid "running"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:178
+#: internal/policies/scripts/scripts.go:184
 msgid "script %q doesn't exist in SYSVOL scripts/ subdirectory"
 msgstr ""
 
-#: internal/policies/scripts/scripts.go:181
+#: internal/policies/scripts/scripts.go:187
 msgid "script %q is a directory and not a file to execute"
 msgstr ""
 
@@ -1778,6 +1786,14 @@ msgstr ""
 msgid ""
 "some releases have no policies attached to them while being listed in "
 "categories: %v"
+msgstr ""
+
+#: internal/systemd/systemd.go:43
+msgid "start job failed"
+msgstr ""
+
+#: internal/systemd/systemd.go:58
+msgid "stop job failed"
 msgstr ""
 
 #: internal/watchdservice/watchdservice.go:247
@@ -1838,6 +1854,6 @@ msgstr ""
 msgid "user arguments cannot be used with machine update"
 msgstr ""
 
-#: internal/ad/ad.go:182
+#: internal/ad/ad.go:181
 msgid "user name %q should be of the form %s@DOMAIN"
 msgstr ""
