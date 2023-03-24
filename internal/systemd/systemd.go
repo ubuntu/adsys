@@ -12,18 +12,7 @@ import (
 	"github.com/ubuntu/decorate"
 )
 
-// Caller is the interface to interact with systemd.
-type Caller interface {
-	StartUnit(context.Context, string) error
-	StopUnit(context.Context, string) error
-
-	EnableUnit(context.Context, string) error
-	DisableUnit(context.Context, string) error
-
-	DaemonReload(context.Context) error
-}
-
-// DefaultCaller is the default implementation of Caller.
+// DefaultCaller is the default implementation of the systemd wrapper.
 type DefaultCaller struct {
 	conn *systemdDbus.Conn
 }

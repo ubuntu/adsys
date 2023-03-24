@@ -64,6 +64,17 @@ type Manager struct {
 	subscriptionDbus dbus.BusObject
 }
 
+// systemdCaller is the interface to interact with systemd.
+type systemdCaller interface {
+	StartUnit(context.Context, string) error
+	StopUnit(context.Context, string) error
+
+	EnableUnit(context.Context, string) error
+	DisableUnit(context.Context, string) error
+
+	DaemonReload(context.Context) error
+}
+
 type options struct {
 	cacheDir      string
 	dconfDir      string
@@ -74,7 +85,7 @@ type options struct {
 	apparmorFsDir string
 	systemUnitDir string
 	proxyApplier  proxy.Caller
-	systemdCaller systemd.Caller
+	systemdCaller systemdCaller
 	gdm           *gdm.Manager
 
 	apparmorParserCmd []string
@@ -165,7 +176,7 @@ func WithProxyApplier(p proxy.Caller) Option {
 }
 
 // WithSystemdCaller specifies a personalized systemd caller for the policy managers.
-func WithSystemdCaller(p systemd.Caller) Option {
+func WithSystemdCaller(p systemdCaller) Option {
 	return func(o *options) error {
 		o.systemdCaller = p
 		return nil
