@@ -125,8 +125,8 @@ func TestApplyPolicy(t *testing.T) {
 		// Special cases.
 		"System, successfully apply policy with kerberos tagged values":                         {entries: []string{"entry with kerberos auth tags"}, isComputer: true},
 		"System, successfully apply policy prioritizing the first value found, despite the tag": {entries: []string{"entry with same values tagged and untagged"}, isComputer: true},
-		"System, only emit a warning when starting new units and systemctl fails":               {isComputer: true, firstMockSystemdCaller: mockSystemdCaller{failOn: start}},
-		"System, only emit a warning when stopping previous units and systemctl fails":          {isComputer: true, secondCall: []string{"entry with multiple values"}, secondMockSystemdCaller: mockSystemdCaller{failOn: stop}},
+		"System, only emit a warning when starting new units fails":                             {isComputer: true, firstMockSystemdCaller: mockSystemdCaller{failOn: start}},
+		"System, only emit a warning when stopping previous units fails":                        {isComputer: true, secondCall: []string{"entry with multiple values"}, secondMockSystemdCaller: mockSystemdCaller{failOn: stop}},
 		"System, does nothing if the entry is disabled":                                         {isComputer: true, isDisabled: true},
 
 		// Badly formatted entries.
@@ -164,8 +164,8 @@ func TestApplyPolicy(t *testing.T) {
 		// Error cases.
 		"Error when creating units with bad entry values":                        {entries: []string{"entry with badly formatted value"}, isComputer: true, wantErr: true},
 		"Error when daemon-reload fails":                                         {firstMockSystemdCaller: mockSystemdCaller{failOn: daemonReload}, isComputer: true, wantErr: true},
-		"Error when disabling units for clean up and systemctl fails":            {secondCall: []string{"entry with multiple values"}, isComputer: true, secondMockSystemdCaller: mockSystemdCaller{failOn: disable}, wantErrSecondCall: true},
-		"Error when enabling new units and systemctl fails":                      {isComputer: true, firstMockSystemdCaller: mockSystemdCaller{failOn: enable}, wantErr: true},
+		"Error when disabling units for clean up fails":                          {secondCall: []string{"entry with multiple values"}, isComputer: true, secondMockSystemdCaller: mockSystemdCaller{failOn: disable}, wantErrSecondCall: true},
+		"Error when enabling new units fails":                                    {isComputer: true, firstMockSystemdCaller: mockSystemdCaller{failOn: enable}, wantErr: true},
 		"Error when trying to update policy with badly formatted entry":          {secondCall: []string{"entry with badly formatted value"}, wantErrSecondCall: true, isComputer: true},
 		"Error when applying policy and system mount unit already exists as dir": {isComputer: true, pathAlreadyExists: true, wantErr: true},
 		"Error when updating policy and system mount unit to remove is a dir":    {secondCall: []string{"entry with multiple values"}, isComputer: true, pathAlreadyExistsSecondCall: true, wantErrSecondCall: true},
