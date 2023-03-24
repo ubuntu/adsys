@@ -52,6 +52,7 @@ import (
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -95,6 +96,19 @@ type generator struct {
 	distroID          string
 	supportedReleases []string
 }
+
+var (
+	// defaultAppendNote is the default note for append-type policies. It will be used unless a specific note is provided.
+	defaultAppendNote = i18n.G(`
+ * Enabled: The value(s) referenced in the entry are applied on the client machine.
+ * Disabled: The value(s) are removed from the target machine.
+ * Not configured: Value(s) declared higher in the GPO hierarchy will be used if available.`)
+
+	// defaultOverrideNote is the default note for override-type policies. It will be used unless a specific note is provided.
+	defaultOverrideNote = i18n.G(`
+ * Enabled: The value(s) referenced in the entry are applied on the client machine.
+ * Disabled: The value(s) are removed from the target machine.`)
+)
 
 func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy, allowMissingKeys bool) (ep []expandedCategory, err error) {
 	defer decorate.OnError(&err, i18n.G("can't generate expanded categories"))
@@ -243,9 +257,19 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			explainText = fmt.Sprintf("%s\n%s", explainText, fmt.Sprintf(i18n.G("- Default: %s"), defaultString))
 		}
 
+		explainText = fmt.Sprintf(i18n.G("%s\n\nNote:"), explainText)
+		var note string
 		if releasesElements["all"].Note != "" {
-			explainText = fmt.Sprintf(i18n.G("%s\n\nNote: %s"), explainText, releasesElements["all"].Note)
+			note = releasesElements["all"].Note
+		} else {
+			switch releasesElements["all"].Meta["strategy"] {
+			case entry.StrategyAppend:
+				note = defaultAppendNote
+			default:
+				note = defaultOverrideNote
+			}
 		}
+		explainText = fmt.Sprintf("%s %s", explainText, note)
 
 		// supportedOn can be empty if no release is specified in the policy definition
 		// In this case we don't want to print redundant newlines
