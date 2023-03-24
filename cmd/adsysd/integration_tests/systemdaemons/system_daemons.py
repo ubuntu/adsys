@@ -83,6 +83,13 @@ def systemd_on_bus(bus: dbus.Bus, mode: str):
         },
         [])
 
+    # mock methods not implemented by the dbusmock template
+    main_object.AddMethods("", [
+        ("EnableUnitFiles", "asbb", "ba(sss)", "ret = [True, [['symlink', '/from/path', '/to/path']]]"),
+        ("DisableUnitFiles", "asb", "a(sss)", "ret = [['symlink', '/from/path', '/to/path']]"),
+        ("Reload", "", "", "ret = None"),
+    ])
+
     # our script unit
     main_object.AddMockUnit("adsys-machine-scripts.service")
 

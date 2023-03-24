@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/go-systemd/activation"
-	"github.com/coreos/go-systemd/daemon"
+	"github.com/coreos/go-systemd/v22/activation"
+	"github.com/coreos/go-systemd/v22/daemon"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"

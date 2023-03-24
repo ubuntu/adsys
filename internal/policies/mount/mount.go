@@ -19,24 +19,21 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/coreos/go-systemd/unit"
+	"github.com/coreos/go-systemd/v22/unit"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
-	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/exp/slices"
 )
 
 type options struct {
-	systemctlCmd  []string
 	userLookup    func(string) (*user.User, error)
 	systemUnitDir string
 }
@@ -57,18 +54,26 @@ type Manager struct {
 
 	runDir        string
 	systemUnitDir string
+	systemdCaller systemdCaller
 
-	userLookup   func(string) (*user.User, error)
-	systemCtlCmd []string
+	userLookup func(string) (*user.User, error)
+}
+
+type systemdCaller interface {
+	StartUnit(context.Context, string) error
+	StopUnit(context.Context, string) error
+	EnableUnit(context.Context, string) error
+	DisableUnit(context.Context, string) error
+	DaemonReload(context.Context) error
 }
 
 // New creates a Manager to handle mount policies.
-func New(runDir string, systemUnitDir string, opts ...Option) (m *Manager, err error) {
+func New(runDir string, systemUnitDir string, systemdCaller systemdCaller, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to create new mount manager"))
+
 	o := options{
 		userLookup:    user.Lookup,
 		systemUnitDir: systemUnitDir,
-		systemctlCmd:  []string{"systemctl"},
 	}
 
 	for _, opt := range opts {
@@ -94,9 +99,10 @@ func New(runDir string, systemUnitDir string, opts ...Option) (m *Manager, err e
 		mountsMu: make(map[string]*sync.Mutex),
 
 		runDir:        runDir,
-		userLookup:    o.userLookup,
-		systemCtlCmd:  o.systemctlCmd,
 		systemUnitDir: systemUnitDir,
+		systemdCaller: systemdCaller,
+
+		userLookup: o.userLookup,
 	}, nil
 }
 
@@ -236,16 +242,16 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 	}
 
 	// Trigger a daemon reload
-	if err := m.execSystemCtlCmd(ctx, "daemon-reload"); err != nil {
-		return fmt.Errorf(i18n.G("failed to reload systemctl: %w"), err)
+	if err := m.systemdCaller.DaemonReload(ctx); err != nil {
+		return err
 	}
 
 	// Enables and starts new units.
 	for _, name := range unitsToEnable {
-		if err := m.execSystemCtlCmd(ctx, "enable", name); err != nil {
-			return fmt.Errorf(i18n.G("failed to enable unit %q: %w"), name, err)
+		if err := m.systemdCaller.EnableUnit(ctx, name); err != nil {
+			return err
 		}
-		if err := m.execSystemCtlCmd(ctx, "start", name); err != nil {
+		if err := m.systemdCaller.StartUnit(ctx, name); err != nil {
 			log.Warningf(ctx, i18n.G("failed to start unit %q: %v"), name, err)
 		}
 	}
@@ -514,13 +520,13 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 
 	for _, unit := range units {
 		// Tries to stop the unit before disabling and removing it.
-		if err := m.execSystemCtlCmd(ctx, "stop", unit); err != nil {
+		if err := m.systemdCaller.StopUnit(ctx, unit); err != nil {
 			log.Warningf(ctx, i18n.G("Failed to stop unit %q: %v"), unit, err)
 		}
 
 		// Disables the unit before removing it.
-		if err := m.execSystemCtlCmd(ctx, "disable", unit); err != nil {
-			return fmt.Errorf(i18n.G("failed to disable unit %q: %w"), unit, err)
+		if err := m.systemdCaller.DisableUnit(ctx, unit); err != nil {
+			return err
 		}
 
 		if err := os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
@@ -528,28 +534,6 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 		}
 	}
 
-	return nil
-}
-
-// execSystemCtlCmd wraps the specified args into a systemctl command execution.
-func (m *Manager) execSystemCtlCmd(ctx context.Context, args ...string) error {
-	// Test guard: Avoids running systemctl that requires sudo privileges in tests.
-	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
-		return nil
-	}
-
-	cmdArgs := append([]string{}, m.systemCtlCmd...)
-	cmdArgs = append(cmdArgs, args...)
-
-	// #nosec G204 - We are in control of the arguments
-	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
-
-	smbsafe.WaitExec()
-	if out, err := cmd.CombinedOutput(); err != nil {
-		smbsafe.DoneExec()
-		return fmt.Errorf(i18n.G("failed when running systemctl cmd: %w -> %s"), err, out)
-	}
-	smbsafe.DoneExec()
 	return nil
 }
 

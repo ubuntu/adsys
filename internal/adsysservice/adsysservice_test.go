@@ -170,7 +170,7 @@ func TestMain(m *testing.M) {
 
 	// systemd starts time
 	propsSpec := map[string]map[string]*prop.Prop{
-		"org.freedesktop.systemd1.Manager": {
+		consts.SystemdDbusManagerInterface: {
 			"GeneratorsStartTimestamp": {
 				Value:    uint64(1234),
 				Writable: false,
@@ -181,15 +181,15 @@ func TestMain(m *testing.M) {
 			},
 		},
 	}
-	err = conn.Export(struct{}{}, "/org/freedesktop/systemd1", "org.freedesktop.systemd1.Manager")
+	err = conn.Export(struct{}{}, consts.SystemdDbusObjectPath, consts.SystemdDbusManagerInterface)
 	if err != nil {
 		log.Fatalf("Setup: Failed to export systemd object on local system bus: %v", err)
 	}
-	_, err = prop.Export(conn, "/org/freedesktop/systemd1", propsSpec)
+	_, err = prop.Export(conn, consts.SystemdDbusObjectPath, propsSpec)
 	if err != nil {
 		log.Fatalf("Setup: Failed to export property for systemd object on local system bus: %v", err)
 	}
-	reply, err = conn.RequestName("org.freedesktop.systemd1", dbus.NameFlagDoNotQueue)
+	reply, err = conn.RequestName(consts.SystemdDbusRegisteredName, dbus.NameFlagDoNotQueue)
 	if err != nil {
 		log.Fatalf("Setup: Failed to acquire systemd name on local system bus: %v", err)
 	}

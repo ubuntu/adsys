@@ -2,7 +2,7 @@ package policies_test
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,13 +19,6 @@ import (
 
 func TestApplyPolicies(t *testing.T) {
 	//t.Parallel()
-
-	// Let’s mock systemctl with a dummy command in PATH as this test is not running in parallel
-	bin := t.TempDir()
-	// #nosec G306: This is a dummy command for test on systemctl which is under our control.
-	err := os.WriteFile(filepath.Join(bin, "systemctl"), []byte("#!/bin/sh"), 0700)
-	require.NoError(t, err, "Setup: can not create dummy systemctl")
-	t.Setenv("PATH", fmt.Sprintf("%s:%s", bin, os.Getenv("PATH")))
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
@@ -109,7 +102,8 @@ func TestApplyPolicies(t *testing.T) {
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
 				policies.WithSystemUnitDir(systemUnitDir),
-				policies.WithProxyApplier(&policies.ProxyApplierMock{WantApplyError: tc.noUbuntuProxyManager}),
+				policies.WithProxyApplier(&mockProxyApplier{wantApplyError: tc.noUbuntuProxyManager}),
+				policies.WithSystemdCaller(&testutils.MockSystemdCaller{}),
 			)
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
@@ -400,4 +394,20 @@ func TestGetSubscriptionState(t *testing.T) {
 			assert.Equal(t, tc.want, got, "GetStatus should return %q but got %q", tc.want, got)
 		})
 	}
+}
+
+// mockProxyApplier is a mock for the proxy apply object.
+type mockProxyApplier struct {
+	wantApplyError bool
+}
+
+// Call mocks the proxy apply call.
+func (d *mockProxyApplier) Call(_ string, _ dbus.Flags, _ ...interface{}) *dbus.Call {
+	var errApply error
+
+	if d.wantApplyError {
+		errApply = errors.New("proxy apply error")
+	}
+
+	return &dbus.Call{Err: errApply}
 }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"golang.org/x/exp/slices"
 )
@@ -35,12 +36,13 @@ func (s *WatchdService) serviceArgs() (string, string, error) {
 		return "", "", err
 	}
 
-	svcUnit := bus.Object("org.freedesktop.systemd1",
-		dbus.ObjectPath(fmt.Sprintf("/org/freedesktop/systemd1/unit/%s",
+	svcUnit := bus.Object(consts.SystemdDbusRegisteredName,
+		dbus.ObjectPath(fmt.Sprintf("%s/unit/%s",
+			consts.SystemdDbusObjectPath,
 			strings.ReplaceAll(strings.ReplaceAll(fmt.Sprintf("%s.service", s.Name()), ".", "_2e"), "-", "_2d"))))
 
 	var execStarts []execStart
-	err = svcUnit.StoreProperty("org.freedesktop.systemd1.Service.ExecStart", &execStarts)
+	err = svcUnit.StoreProperty(fmt.Sprintf("%s.ExecStart", consts.SystemdDbusServiceInterface), &execStarts)
 	if err != nil || len(execStarts) == 0 {
 		return "", "", fmt.Errorf(i18n.G("could not find %s unit on systemd bus: no service installed? %v"), s.Name(), err)
 	}
