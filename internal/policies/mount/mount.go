@@ -29,7 +29,6 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
-	"github.com/ubuntu/adsys/internal/systemd"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/exp/slices"
 )
@@ -55,13 +54,21 @@ type Manager struct {
 
 	runDir        string
 	systemUnitDir string
-	systemdCaller systemd.Caller
+	systemdCaller systemdCaller
 
 	userLookup func(string) (*user.User, error)
 }
 
+type systemdCaller interface {
+	StartUnit(context.Context, string) error
+	StopUnit(context.Context, string) error
+	EnableUnit(context.Context, string) error
+	DisableUnit(context.Context, string) error
+	DaemonReload(context.Context) error
+}
+
 // New creates a Manager to handle mount policies.
-func New(runDir string, systemUnitDir string, systemdCaller systemd.Caller, opts ...Option) (m *Manager, err error) {
+func New(runDir string, systemUnitDir string, systemdCaller systemdCaller, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("failed to create new mount manager"))
 
 	o := options{

@@ -30,7 +30,6 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
-	"github.com/ubuntu/adsys/internal/systemd"
 	"github.com/ubuntu/decorate"
 )
 
@@ -46,9 +45,13 @@ type Manager struct {
 	muMu      sync.Mutex             // protect scriptsMu
 
 	runDir        string
-	systemdCaller systemd.Caller
+	systemdCaller systemdCaller
 
 	userLookup func(string) (*user.User, error)
+}
+
+type systemdCaller interface {
+	StartUnit(context.Context, string) error
 }
 
 type options struct {
@@ -59,7 +62,7 @@ type options struct {
 type Option func(*options)
 
 // New creates a manager with a specific scripts directory.
-func New(runDir string, systemdCaller systemd.Caller, opts ...Option) (m *Manager, err error) {
+func New(runDir string, systemdCaller systemdCaller, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create scripts manager"))
 
 	// defaults
