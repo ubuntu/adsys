@@ -32,7 +32,10 @@ const (
 
 	// DistroID is the distro ID which can be overridden at build time.
 	DistroID = "Ubuntu"
+)
 
+// Manager related properties.
+const (
 	// StartupScriptsMachineBaseDir is the base directory for machine startup scripts.
 	StartupScriptsMachineBaseDir = "startup"
 
@@ -49,9 +52,10 @@ const (
 	DefaultApparmorDir = "/etc/apparmor.d/adsys"
 	// DefaultSystemUnitDir is the default directory for systemd unit files.
 	DefaultSystemUnitDir = "/etc/systemd/system"
+)
 
-	/* SSSD related properties. */
-
+// SSSD related properties.
+const (
 	// DefaultSSSCacheDir is the default sssd cache dir.
 	DefaultSSSCacheDir = "/var/lib/sss/db"
 	// DefaultSSSConf is the default sssd.conf location.
@@ -62,9 +66,10 @@ const (
 	SSSDDbusBaseObjectPath = "/org/freedesktop/sssd/infopipe/Domains"
 	// SSSDDbusInterface is the interface we are using for access dbus methods.
 	SSSDDbusInterface = "org.freedesktop.sssd.infopipe.Domains.Domain"
+)
 
-	/* systemd related properties. */
-
+// systemd related properties.
+const (
 	// SystemdDbusRegisteredName is the well-known name of systemd on dbus.
 	SystemdDbusRegisteredName = "org.freedesktop.systemd1"
 	// SystemdDbusObjectPath is the systemd path for dbus.
@@ -77,9 +82,10 @@ const (
 	SystemdDbusTimerInterface = "org.freedesktop.systemd1.Timer"
 	// SystemdDbusServiceInterface is the interface we are using to access service unit objects.
 	SystemdDbusServiceInterface = "org.freedesktop.systemd1.Service"
+)
 
-	/* Ubuntu Advantage properties. */
-
+// Ubuntu Advantage related properties.
+const (
 	// SubscriptionDbusRegisteredName is the well-known name of UA on dbus.
 	SubscriptionDbusRegisteredName = "com.canonical.UbuntuAdvantage"
 	// SubscriptionDbusObjectPath  is the path under which our AD service is registered.
