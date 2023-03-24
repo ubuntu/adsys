@@ -85,10 +85,12 @@ func New(runDir string, systemdCaller systemdCaller, opts ...Option) (m *Manager
 	}
 
 	return &Manager{
-		scriptsMu:     make(map[string]*sync.Mutex),
+		scriptsMu: make(map[string]*sync.Mutex),
+
 		runDir:        runDir,
-		userLookup:    args.userLookup,
 		systemdCaller: systemdCaller,
+
+		userLookup: args.userLookup,
 	}, nil
 }
 

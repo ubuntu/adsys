@@ -99,9 +99,10 @@ func New(runDir string, systemUnitDir string, systemdCaller systemdCaller, opts 
 		mountsMu: make(map[string]*sync.Mutex),
 
 		runDir:        runDir,
-		userLookup:    o.userLookup,
-		systemdCaller: systemdCaller,
 		systemUnitDir: systemUnitDir,
+		systemdCaller: systemdCaller,
+
+		userLookup: o.userLookup,
 	}, nil
 }
 
