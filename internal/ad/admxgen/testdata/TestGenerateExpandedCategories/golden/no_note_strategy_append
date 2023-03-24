@@ -1,17 +1,8 @@
-- displayname: Category1 for Prefix
+- displayname: Category1 Display Name
   parent: ubuntu:Desktop
   policies:
-    - key: Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\policy-simple
-      explaintext: |-
-        description
-
-        - Type: dconf
-        - Key: /org/gnome/desktop/policy-simple
-        - Default: 'Default Value'
-
-        Note: default system value is used for "Not Configured" and enforced if "Disabled".
-
-        Supported on Ubuntu 20.04.
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple
+      explaintext: "description\n\n- Type: dconf\n- Key: /org/gnome/desktop/policy-simple\n- Default: 'Default Value'\n\nNote: \n * Enabled: The value(s) referenced in the entry are applied on the client machine.\n * Disabled: The value(s) are removed from the target machine.\n * Not configured: Value(s) declared higher in the GPO hierarchy will be used if available.\n\nSupported on Ubuntu 20.04."
       metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
       metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
       class: Machine
@@ -21,12 +12,13 @@
             displayname: summary
             explaintext: description
             elementtype: text
+            meta:
+                strategy: append
             metaenabled:
                 empty: ''''''
                 meta: s
             metadisabled:
                 meta: s
             default: '''Default Value'''
-            note: default system value is used for "Not Configured" and enforced if "Disabled".
             release: "20.04"
             type: dconf

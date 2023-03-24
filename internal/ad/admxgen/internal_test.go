@@ -44,10 +44,11 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"with prefix": {},
 
 		// Optional content
-		"no defaults": {},
-		"no note":     {},
-		"range":       {},
-		"choices":     {},
+		"no defaults":             {},
+		"no note":                 {},
+		"no note strategy append": {},
+		"range":                   {},
+		"choices":                 {},
 
 		"default policy class is capitalized": {},
 		"requires ubuntu pro":                 {},

@@ -1,29 +1,22 @@
 - displayname: Category1 Display Name
   parent: ubuntu:Desktop
   policies:
-  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple
-    explaintext: |-
-      description
-
-      - Type: dconf
-      - Key: /org/gnome/desktop/policy-simple
-      - Default: 'Default Value'
-
-      Supported on Ubuntu 20.04.
-    metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
-    metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
-    class: Machine
-    releaseselements:
-      all:
-        key: /org/gnome/desktop/policy-simple
-        displayname: summary
-        explaintext: description
-        elementtype: text
-        metaenabled:
-          empty: ''''''
-          meta: s
-        metadisabled:
-          meta: s
-        default: '''Default Value'''
-        release: "20.04"
-        type: dconf
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple
+      explaintext: "description\n\n- Type: dconf\n- Key: /org/gnome/desktop/policy-simple\n- Default: 'Default Value'\n\nNote: \n * Enabled: The value(s) referenced in the entry are applied on the client machine.\n * Disabled: The value(s) are removed from the target machine.\n\nSupported on Ubuntu 20.04."
+      metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+      metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+      class: Machine
+      releaseselements:
+        all:
+            key: /org/gnome/desktop/policy-simple
+            displayname: summary
+            explaintext: description
+            elementtype: text
+            metaenabled:
+                empty: ''''''
+                meta: s
+            metadisabled:
+                meta: s
+            default: '''Default Value'''
+            release: "20.04"
+            type: dconf
