@@ -3,10 +3,12 @@ package proxy_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"os"
 	"testing"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -75,7 +77,7 @@ func TestApplyPolicy(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			proxyApplier := &proxy.ProxyApplierMock{WantApplyError: tc.dbusCallError}
+			proxyApplier := &mockProxyApplier{wantApplyError: tc.dbusCallError}
 			m := proxy.New(bus, proxy.WithProxyApplier(proxyApplier))
 			err := m.ApplyPolicy(context.Background(), "ubuntu", !tc.isUser, tc.entries)
 
@@ -100,7 +102,7 @@ func TestWarnOnUnsupportedKeys(t *testing.T) {
 	orig := logrus.StandardLogger().Out
 	logrus.StandardLogger().SetOutput(w)
 
-	m := proxy.New(testutils.NewDbusConn(t), proxy.WithProxyApplier(&proxy.ProxyApplierMock{}))
+	m := proxy.New(testutils.NewDbusConn(t), proxy.WithProxyApplier(&mockProxyApplier{}))
 	err = m.ApplyPolicy(context.Background(), "ubuntu", true, []entry.Entry{{Key: "not-applied", Value: "not-applied"}})
 	require.NoError(t, err, "ApplyPolicy should have succeeded but it didn't")
 
@@ -121,7 +123,7 @@ func TestWarnOnMissingDBusService(t *testing.T) {
 	orig := logrus.StandardLogger().Out
 	logrus.StandardLogger().SetOutput(w)
 
-	m := proxy.New(testutils.NewDbusConn(t), proxy.WithProxyApplier(&proxy.ProxyApplierMock{WantNoService: true}))
+	m := proxy.New(testutils.NewDbusConn(t), proxy.WithProxyApplier(&mockProxyApplier{wantNoService: true}))
 	err = m.ApplyPolicy(context.Background(), "ubuntu", true, []entry.Entry{{Key: "proxy/http", Value: "not-applied"}})
 	require.NoError(t, err, "ApplyPolicy should have succeeded but it didn't")
 
@@ -133,4 +135,37 @@ func TestWarnOnMissingDBusService(t *testing.T) {
 	require.NoError(t, errCopy, "Setup: Couldn't copy logs to buffer")
 
 	require.Contains(t, out.String(), "Not applying proxy settings as ubuntu-proxy-manager is not installed", "Should have logged unsupported key but didn't")
+}
+
+// mockProxyApplier is a mock for the proxy apply object.
+type mockProxyApplier struct {
+	wantApplyError bool
+	wantNoService  bool
+
+	args []string
+}
+
+// Call mocks the proxy apply call.
+func (d *mockProxyApplier) Call(_ string, _ dbus.Flags, args ...interface{}) *dbus.Call {
+	var errApply error
+
+	for _, arg := range args {
+		if arg, ok := arg.(string); ok {
+			d.args = append(d.args, arg)
+		}
+	}
+
+	if d.wantApplyError {
+		errApply = dbus.MakeFailedError(errors.New("proxy apply error"))
+	}
+
+	if d.wantNoService {
+		errApply = dbus.Error{Name: proxy.ErrDBusServiceUnknownName, Body: []interface{}{"The name com.ubuntu.ProxyManager was not provided by any .service files"}}
+	}
+
+	return &dbus.Call{Err: errApply}
+}
+
+func (d *mockProxyApplier) Args() []string {
+	return d.args
 }
