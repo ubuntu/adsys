@@ -42,7 +42,7 @@ func TestNew(t *testing.T) {
 			if tc.makeReadOnly {
 				testutils.MakeReadOnly(t, runDir)
 			}
-			_, err := scripts.New(runDir, &mockSystemdCaller{})
+			_, err := scripts.New(runDir, &mockUnitStarter{})
 			if tc.wantErr {
 				require.NotNil(t, err, "New should have failed but didn't")
 				return
@@ -151,7 +151,7 @@ func TestApplyPolicy(t *testing.T) {
 
 			mockAssetsDumper := testutils.MockAssetsDumper{T: t, Err: tc.saveAssetsError, Path: "scripts/"}
 
-			m, err := scripts.New(runDir, &mockSystemdCaller{StartFailed: tc.systemctlShouldFail},
+			m, err := scripts.New(runDir, &mockUnitStarter{StartFailed: tc.systemctlShouldFail},
 				scripts.WithUserLookup(userLookup),
 			)
 			require.NoError(t, err, "Setup: can't create scripts manager")
@@ -288,13 +288,13 @@ func TestRunScripts(t *testing.T) {
 	}
 }
 
-type mockSystemdCaller struct {
+type mockUnitStarter struct {
 	testutils.MockSystemdCaller
 
 	StartFailed bool
 }
 
-func (s mockSystemdCaller) StartUnit(_ context.Context, _ string) error {
+func (s mockUnitStarter) StartUnit(_ context.Context, _ string) error {
 	if s.StartFailed {
 		return errors.New("failed to start unit")
 	}

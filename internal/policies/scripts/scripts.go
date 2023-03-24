@@ -44,13 +44,13 @@ type Manager struct {
 	scriptsMu map[string]*sync.Mutex // mutex is per destination directory (user1/user2/computer)
 	muMu      sync.Mutex             // protect scriptsMu
 
-	runDir        string
-	systemdCaller systemdCaller
+	runDir      string
+	unitStarter unitStarter
 
 	userLookup func(string) (*user.User, error)
 }
 
-type systemdCaller interface {
+type unitStarter interface {
 	StartUnit(context.Context, string) error
 }
 
@@ -62,7 +62,7 @@ type options struct {
 type Option func(*options)
 
 // New creates a manager with a specific scripts directory.
-func New(runDir string, systemdCaller systemdCaller, opts ...Option) (m *Manager, err error) {
+func New(runDir string, unitStarter unitStarter, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create scripts manager"))
 
 	// defaults
@@ -87,8 +87,8 @@ func New(runDir string, systemdCaller systemdCaller, opts ...Option) (m *Manager
 	return &Manager{
 		scriptsMu: make(map[string]*sync.Mutex),
 
-		runDir:        runDir,
-		systemdCaller: systemdCaller,
+		runDir:      runDir,
+		unitStarter: unitStarter,
 
 		userLookup: args.userLookup,
 	}, nil
@@ -235,7 +235,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	log.Info(ctx, "Running machine startup scripts")
-	return m.systemdCaller.StartUnit(ctx, consts.AdysMachineScriptsServiceName)
+	return m.unitStarter.StartUnit(ctx, consts.AdysMachineScriptsServiceName)
 }
 
 // RunScripts executes all scripts in directory if ready and not already executed.
