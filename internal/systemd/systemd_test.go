@@ -9,6 +9,7 @@ import (
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/introspect"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/systemd"
@@ -88,13 +89,11 @@ func TestDaemonReload(t *testing.T) {
 	systemdCaller, err := systemd.New(bus)
 	require.NoError(t, err, "Setup: failed to create systemd caller")
 
-	err = systemdCaller.DaemonReload(ctx)
-	require.NoError(t, err, "DaemonReload shouldn't have failed but it did")
+	assert.NoError(t, systemdCaller.DaemonReload(ctx), "DaemonReload shouldn't have failed but it did")
 
 	s.setErrorOnReload()
 
-	err = systemdCaller.DaemonReload(ctx)
-	require.Error(t, err, "DaemonReload should have failed but it didn't")
+	assert.Error(t, systemdCaller.DaemonReload(ctx), "DaemonReload should have failed but it didn't")
 }
 
 func TestMain(m *testing.M) {
