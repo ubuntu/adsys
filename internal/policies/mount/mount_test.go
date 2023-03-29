@@ -235,11 +235,7 @@ func TestApplyPolicy(t *testing.T) {
 			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
 
 			err = m.ApplyPolicy(context.Background(), tc.objectName, tc.isComputer, entries)
-			if tc.wantErr {
-				require.Error(t, err, "ApplyPolicy should have returned an error but did not")
-				return
-			}
-			require.NoError(t, err, "ApplyPolicy should not have returned an error but did")
+			testutils.WantError(t, err, tc.wantErr, true)
 
 			if tc.secondCall != nil {
 				secondEntries := []entry.Entry{}
@@ -262,11 +258,7 @@ func TestApplyPolicy(t *testing.T) {
 				}
 
 				err = m.ApplyPolicy(context.Background(), tc.objectName, tc.isComputer, secondEntries)
-				if tc.wantErrSecondCall {
-					require.Error(t, err, "Second call should have returned an error but didn't")
-				} else {
-					require.NoError(t, err, "Second call of ApplyPolicy should not have returned an error but did")
-				}
+				testutils.WantError(t, err, tc.wantErrSecondCall, false)
 			}
 
 			if !tc.isComputer {
