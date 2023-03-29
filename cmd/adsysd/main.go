@@ -22,6 +22,7 @@ import (
 
 func main() {
 	var a app
+	i18n.InitI18nDomain(consts.TEXTDOMAIN)
 	switch filepath.Base(os.Args[0]) {
 	case daemon.CmdName:
 		a = daemon.New()
@@ -39,7 +40,6 @@ type app interface {
 }
 
 func run(a app) int {
-	i18n.InitI18nDomain(consts.TEXTDOMAIN)
 	defer installSignalHandler(a)()
 
 	log.SetFormatter(&log.TextFormatter{
