@@ -43,7 +43,7 @@ func New() *App {
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
 		Short: i18n.G("AD integration client"),
-		Long:  i18n.G(`Active Directory integration bridging toolset command line tool.`),
+		Long:  i18n.G("Active Directory integration bridging toolset command line tool."),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
