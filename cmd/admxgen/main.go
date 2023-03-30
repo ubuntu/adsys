@@ -67,8 +67,8 @@ func installExpand(rootCmd *cobra.Command, viper *viper.Viper) error {
 	cmd := &cobra.Command{
 		Use:   "expand SOURCE DEST",
 		Short: i18n.G("Generates intermediary policy definition files"),
-		Long: i18n.G("Generates an intermediary policy definition file into DEST directory from all the policy definition files in SOURCE directory, using the correct decoder.\nThe generated definition file will be of the form expanded_policies.RELEASE.yaml"),
-		Args: cobra.ExactArgs(2),
+		Long:  i18n.G("Generates an intermediary policy definition file into DEST directory from all the policy definition files in SOURCE directory, using the correct decoder.\nThe generated definition file will be of the form expanded_policies.RELEASE.yaml"),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return admxgen.Expand(args[0], args[1], viper.GetString("root"), viper.GetString("current-session"))
 		},

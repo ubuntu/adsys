@@ -97,8 +97,8 @@ func (a *App) serviceInstall() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: i18n.G("Installs the service"),
-		Long: fmt.Sprintf(i18n.G("Installs the %s service.\n\nThe service will be installed as a Windows service.\n"), watchdconfig.CmdName),
-		Args: cobra.NoArgs,
+		Long:  fmt.Sprintf(i18n.G("Installs the %s service.\n\nThe service will be installed as a Windows service.\n"), watchdconfig.CmdName),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return a.service.Install(context.Background())
 		},
