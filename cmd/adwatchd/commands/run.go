@@ -18,11 +18,7 @@ func (a *App) installRun() {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: i18n.G("Starts the directory watch loop"),
-		Long: i18n.G(`Can run as a service through the service manager or interactively as a standalone application.
-
-The program will monitor the configured directories for changes and bump the appropriate GPT.ini versions anytime a change is detected.
-If a GPT.ini file does not exist for a directory, a warning will be issued and the file will be created. If the GPT.ini file is incompatible or malformed, the program will report an error.
-`),
+		Long: i18n.G("Can run as a service through the service manager or interactively as a standalone application.\n\nThe program will monitor the configured directories for changes and bump the appropriate GPT.ini versions anytime a change is detected.\nIf a GPT.ini file does not exist for a directory, a warning will be issued and the file will be created. If the GPT.ini file is incompatible or malformed, the program will report an error.\n"),
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(a.config.Dirs) < 1 {

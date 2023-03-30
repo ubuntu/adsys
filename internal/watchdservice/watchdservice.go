@@ -293,9 +293,7 @@ func (s *WatchdService) Status(ctx context.Context) (status string, err error) {
 	}
 
 	if pathMismatch {
-		log.Warningf(ctx, i18n.G(`Service binary path does not match executable path
-Service binary path: %s
-Current executable path: %s`), svcInfo.binPath, exePath)
+		log.Warningf(ctx, i18n.G("Service binary path does not match executable path\nService binary path: %s\nCurrent executable path: %s"), svcInfo.binPath, exePath)
 	}
 	status = statStr.String()
 

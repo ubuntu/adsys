@@ -428,8 +428,7 @@ func (m *Manager) policiesFromFiles(ctx context.Context, profiles []string) (pol
 	}
 	// Execution succeeded but we still got something on stderr, let the user know
 	if errb.Len() > 0 {
-		log.Warningf(ctx, i18n.G(`Got stderr output from apparmor_parser:
-%s`), errb.String())
+		log.Warningf(ctx, i18n.G("Got stderr output from apparmor_parser:\n%s"), errb.String())
 	}
 
 	for _, line := range strings.Split(outb.String(), "\n") {

@@ -144,8 +144,7 @@ func (w Winbind) HostKrb5CCName() (string, error) {
 	smbsafe.WaitExec()
 	defer smbsafe.DoneExec()
 	if cmd, err := exec.Command(cmdArgs[0], cmdArgs[1:]...).CombinedOutput(); err != nil {
-		return "", fmt.Errorf(i18n.G(`could not get krb5 cached ticket for %q: %w:
-%s`), principal, err, string(cmd))
+		return "", fmt.Errorf(i18n.G("could not get krb5 cached ticket for %q: %w:\n%s"), principal, err, string(cmd))
 	}
 
 	return target, nil

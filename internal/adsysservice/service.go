@@ -130,24 +130,7 @@ func (s *Service) Status(_ *adsys.Empty, stream adsys.Service_StatusServer) (err
 		ubuntuProStatus = i18n.G("Ubuntu Pro subscription active.")
 	}
 
-	status := fmt.Sprintf(i18n.G(`%s
-%s
-Next Refresh: %s
-
-%s
-
-Active Directory:
-  %s
-
-Daemon:
-  Timeout after %s
-  Listening on: %s
-  Cache path: %s
-  Run path: %s
-  Dconf path: %s
-  Sudoers path: %s
-  PolicyKit path: %s
-  Apparmor path: %s`), updateMachine, updateUsers, nextRefresh,
+	status := fmt.Sprintf(i18n.G("%s\n%s\nNext Refresh: %s\n\n%s\n\nActive Directory:\n  %s\n\nDaemon:\n  Timeout after %s\n  Listening on: %s\n  Cache path: %s\n  Run path: %s\n  Dconf path: %s\n  Sudoers path: %s\n  PolicyKit path: %s\n  Apparmor path: %s"), updateMachine, updateUsers, nextRefresh,
 		ubuntuProStatus,
 		strings.Join(strings.Split(adInfo, "\n"), "\n  "),
 		timeout, socket, state.cacheDir, state.runDir, state.dconfDir,
