@@ -66,7 +66,7 @@ func New(opts ...option) *App {
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s [COMMAND]", watchdconfig.CmdName),
 		Short: i18n.G("AD watch daemon"),
-		Long:  i18n.G(`Watch directories for changes and bump the relevant GPT.ini versions.`),
+		Long:  i18n.G("Watch directories for changes and bump the relevant GPT.ini versions."),
 		Args:  cobra.NoArgs,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Command parsing has been successful. Returns runtime (or

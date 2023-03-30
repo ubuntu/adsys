@@ -553,10 +553,10 @@ func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClas
 	case 1:
 		baseUser = c[0]
 	default:
-		return "", fmt.Errorf(i18n.G(`only one \ is permitted in domain\username. Got: %s`), target)
+		return "", fmt.Errorf(i18n.G("only one \\ is permitted in domain\\username. Got: %s"), target)
 	}
 	if domainSuffix == "" && ad.configBackend.DefaultDomainSuffix() == "" {
-		return "", fmt.Errorf(i18n.G(`no domain provided for user %q and no default domain in sssd.conf`), target)
+		return "", fmt.Errorf(i18n.G("no domain provided for user %q and no default domain in sssd.conf"), target)
 	}
 	if domainSuffix == "" {
 		domainSuffix = ad.configBackend.DefaultDomainSuffix()

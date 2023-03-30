@@ -99,15 +99,10 @@ type generator struct {
 
 var (
 	// defaultAppendNote is the default note for append-type policies. It will be used unless a specific note is provided.
-	defaultAppendNote = i18n.G(`
- * Enabled: The value(s) referenced in the entry are applied on the client machine.
- * Disabled: The value(s) are removed from the target machine.
- * Not configured: Value(s) declared higher in the GPO hierarchy will be used if available.`)
+	defaultAppendNote = i18n.G("\n * Enabled: The value(s) referenced in the entry are applied on the client machine.\n * Disabled: The value(s) are removed from the target machine.\n * Not configured: Value(s) declared higher in the GPO hierarchy will be used if available.")
 
 	// defaultOverrideNote is the default note for override-type policies. It will be used unless a specific note is provided.
-	defaultOverrideNote = i18n.G(`
- * Enabled: The value(s) referenced in the entry are applied on the client machine.
- * Disabled: The value(s) are removed from the target machine.`)
+	defaultOverrideNote = i18n.G("\n * Enabled: The value(s) referenced in the entry are applied on the client machine.\n * Disabled: The value(s) are removed from the target machine.")
 )
 
 func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy, allowMissingKeys bool) (ep []expandedCategory, err error) {

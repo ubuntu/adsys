@@ -14,7 +14,7 @@ func (a *App) installService() {
 	cmd := &cobra.Command{
 		Use:   "service COMMAND",
 		Short: fmt.Sprintf(i18n.G("Manages the %s service"), watchdconfig.CmdName),
-		Long:  fmt.Sprintf(i18n.G(`The service command allows the user to interact with the %s service. It can manage and query the service status, and also install and uninstall the service.`), watchdconfig.CmdName),
+		Long:  fmt.Sprintf(i18n.G("The service command allows the user to interact with the %s service. It can manage and query the service status, and also install and uninstall the service."), watchdconfig.CmdName),
 		Args:  cmdhandler.SubcommandsRequiredWithSuggestions,
 		RunE:  cmdhandler.NoCmd,
 	}
@@ -97,11 +97,8 @@ func (a *App) serviceInstall() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "install",
 		Short: i18n.G("Installs the service"),
-		Long: fmt.Sprintf(i18n.G(`Installs the %s service.
-
-The service will be installed as a Windows service.
-`), watchdconfig.CmdName),
-		Args: cobra.NoArgs,
+		Long:  fmt.Sprintf(i18n.G("Installs the %s service.\n\nThe service will be installed as a Windows service.\n"), watchdconfig.CmdName),
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return a.service.Install(context.Background())
 		},

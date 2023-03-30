@@ -32,7 +32,7 @@ func main() {
 	rootCmd := cobra.Command{
 		Use:   "admxgen COMMAND",
 		Short: i18n.G("Generate Active Directory admx and adml files"),
-		Long:  i18n.G(`Generate ADMX and intermediary working files from a list of policy definition files.`),
+		Long:  i18n.G("Generate ADMX and intermediary working files from a list of policy definition files."),
 		Args:  cmdhandler.SubcommandsRequiredWithSuggestions,
 		RunE:  cmdhandler.NoCmd,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -67,16 +67,14 @@ func installExpand(rootCmd *cobra.Command, viper *viper.Viper) error {
 	cmd := &cobra.Command{
 		Use:   "expand SOURCE DEST",
 		Short: i18n.G("Generates intermediary policy definition files"),
-		Long: i18n.G(`Generates an intermediary policy definition file into DEST directory from all the policy definition files in SOURCE directory, using the correct decoder.
-The generated definition file will be of the form expanded_policies.RELEASE.yaml`),
-		Args: cobra.ExactArgs(2),
+		Long:  i18n.G("Generates an intermediary policy definition file into DEST directory from all the policy definition files in SOURCE directory, using the correct decoder.\nThe generated definition file will be of the form expanded_policies.RELEASE.yaml"),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return admxgen.Expand(args[0], args[1], viper.GetString("root"), viper.GetString("current-session"))
 		},
 	}
 	cmd.Flags().StringP("root", "r", "/", i18n.G("root filesystem path to use. Default to /."))
-	cmd.Flags().StringP("current-session", "s", "", i18n.G(`current session to consider for dconf per-session
-	overrides. Default to "".`))
+	cmd.Flags().StringP("current-session", "s", "", i18n.G("current session to consider for dconf per-session\n\toverrides. Default to \"\"."))
 	if err := bindFlags(viper, cmd.Flags()); err != nil {
 		return fmt.Errorf(i18n.G("can't install command flag bindings: %v"), err)
 	}
@@ -97,7 +95,7 @@ func installAdmx(rootCmd *cobra.Command, viper *viper.Viper) error {
 		},
 	}
 	autoDetectReleases = cmd.Flags().BoolP("auto-detect-releases", "a", false, i18n.G("override supported releases in categories definition file and will takes all yaml files in SOURCE directory and use the basename as their versions."))
-	allowMissingKeys = cmd.Flags().BoolP("allow-missing-keys", "k", false, i18n.G(`avoid fail but display a warning if some keys are not available in a release. This is the case when news keys are added to non-lts releases.`))
+	allowMissingKeys = cmd.Flags().BoolP("allow-missing-keys", "k", false, i18n.G("avoid fail but display a warning if some keys are not available in a release. This is the case when news keys are added to non-lts releases."))
 	if err := bindFlags(viper, cmd.Flags()); err != nil {
 		return fmt.Errorf(i18n.G("can't install command flag bindings: %v"), err)
 	}
