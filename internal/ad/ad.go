@@ -437,7 +437,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			// Decode and apply policies in gpo order. First win
 			pols, err := registry.DecodePolicy(f)
 			if err != nil {
-				return fmt.Errorf(i18n.G("%s: %v"), f.Name(), err)
+				return fmt.Errorf("%s: %w", f.Name(), err)
 			}
 
 			// filter keys to be overridden
@@ -449,7 +449,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 					continue
 				}
 				if pol.Err != nil {
-					return fmt.Errorf(i18n.G("%s: %v"), f.Name(), pol.Err)
+					return fmt.Errorf("%s: %w", f.Name(), pol.Err)
 				}
 				pol.Key = strings.TrimPrefix(pol.Key, keyFilterPrefix)
 

@@ -24,7 +24,7 @@ func (a *App) installVersion() {
 
 // getVersion returns the current server and client versions.
 func (a App) getVersion() (err error) {
-	fmt.Printf(i18n.G("%s\t%s")+"\n", CmdName, consts.Version)
+	fmt.Printf("%s\t%s"+"\n", CmdName, consts.Version)
 
 	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
 	if err != nil {
@@ -41,7 +41,7 @@ func (a App) getVersion() (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Printf(i18n.G("%s\t\t%s")+"\n", "adsysd", version)
+	fmt.Printf("%s\t\t%s"+"\n", "adsysd", version)
 
 	return nil
 }

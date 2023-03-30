@@ -50,12 +50,12 @@ func SubcommandsRequiredWithSuggestions(cmd *cobra.Command, args []string) error
 	if len(suggestions) > 0 {
 		suggestionsMsg += i18n.G("Did you mean this?\n")
 		for _, s := range suggestions {
-			suggestionsMsg += fmt.Sprintf(i18n.G("\t%v\n"), s)
+			suggestionsMsg += fmt.Sprintf("\t%v\n", s)
 		}
 	}
 
 	if suggestionsMsg != "" {
-		requireMsg = fmt.Sprintf(i18n.G("%s. %s"), requireMsg, suggestionsMsg)
+		requireMsg = fmt.Sprintf("%s. %s", requireMsg, suggestionsMsg)
 	}
 
 	return fmt.Errorf(requireMsg, cmd.Name())

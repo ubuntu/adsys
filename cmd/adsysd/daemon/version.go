@@ -20,6 +20,6 @@ func (a *App) installVersion() {
 
 // getVersion returns the current service version.
 func getVersion() (err error) {
-	fmt.Printf(i18n.G("%s\t%s")+"\n", CmdName, consts.Version)
+	fmt.Printf("%s\t%s"+"\n", CmdName, consts.Version)
 	return nil
 }

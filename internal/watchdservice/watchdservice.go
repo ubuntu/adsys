@@ -289,7 +289,7 @@ func (s *WatchdService) Status(ctx context.Context) (status string, err error) {
 	}
 
 	for _, dir := range svcInfo.dirs {
-		statStr.WriteString(fmt.Sprintf(i18n.G("\n  - %s"), dir))
+		statStr.WriteString(fmt.Sprintf("\n  - %s", dir))
 	}
 
 	if pathMismatch {
