@@ -37,7 +37,7 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 					if !a.config.Force {
 						return fmt.Errorf(i18n.G("%s, use --force to override"), msg)
 					}
-					log.Warningf(context.Background(), i18n.G(msg))
+					log.Warningf(context.Background(), msg)
 				}
 			}
 
