@@ -1,14 +1,19 @@
 package policies_test
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
@@ -115,7 +120,26 @@ func TestApplyPolicies(t *testing.T) {
 				testutils.MakeReadOnly(t, filepath.Join(fakeRootDir, tc.makeDirReadOnly))
 			}
 
+			// capture log output (set to stderr, but captured when loading logrus)
+			r, w, err := os.Pipe()
+			require.NoError(t, err, "Setup: pipe shouldn’t fail")
+			orig := logrus.StandardLogger().Out
+			logrus.StandardLogger().SetOutput(w)
+
 			err = m.ApplyPolicies(context.Background(), "hostname", true, &pols)
+
+			logrus.StandardLogger().SetOutput(orig)
+			w.Close()
+
+			var out bytes.Buffer
+			_, errCopy := io.Copy(&out, r)
+			require.NoError(t, errCopy, "Setup: Couldn't copy logs to buffer")
+
+			if tc.isNotSubscribed {
+				want := fmt.Sprintf("Rules from the following policy types will be filtered out as the machine is not enrolled to Ubuntu Pro: %s", strings.Join(policies.ProOnlyRules, ", "))
+				require.Contains(t, out.String(), want, "ApplyPolicy should have logged the filtered rules")
+			}
+
 			if tc.wantErr {
 				require.Error(t, err, "ApplyPolicy should return an error but got none")
 				return

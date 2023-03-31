@@ -45,8 +45,13 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/scripts"
 	"github.com/ubuntu/adsys/internal/systemd"
 	"github.com/ubuntu/decorate"
+	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 )
+
+// proOnlyRules are the rules that are only available for Pro subscribers. They
+// will be filtered otherwise.
+var proOnlyRules = []string{"privilege", "scripts", "mount", "apparmor", "proxy"}
 
 // Manager handles all managers for various policy handlers.
 type Manager struct {
@@ -286,7 +291,9 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	var g errgroup.Group
 	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
 	if !m.GetSubscriptionState(ctx) {
-		filterRules(ctx, rules)
+		if filteredRules := filterRules(ctx, rules); len(filteredRules) > 0 {
+			log.Warningf(ctx, i18n.G("Rules from the following policy types will be filtered out as the machine is not enrolled to Ubuntu Pro: %s"), strings.Join(filteredRules, ", "))
+		}
 	}
 
 	g.Go(func() error { return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"]) })
@@ -401,13 +408,25 @@ func (m *Manager) GetSubscriptionState(ctx context.Context) (subscriptionEnabled
 	return true
 }
 
-// filterRules allow to filter any rules that is not eligible for the current device.
-func filterRules(ctx context.Context, rules map[string][]entry.Entry) {
+// filterRules allows to filter any rules that are not eligible for the current device,
+// and returns the sorted list of filtered rules.
+func filterRules(ctx context.Context, rules map[string][]entry.Entry) []string {
 	log.Debug(ctx, "Filtering Rules")
 
-	rules["privilege"] = nil
-	rules["scripts"] = nil
-	rules["mount"] = nil
-	rules["apparmor"] = nil
-	rules["proxy"] = nil
+	var filteredRules []string
+	for rule := range rules {
+		if !slices.Contains(proOnlyRules, rule) {
+			continue
+		}
+		filteredRules = append(filteredRules, rule)
+		rules[rule] = nil
+	}
+
+	// Return the filtered rules in the same order as ProOnlyRules, which is the
+	// order of the rules to apply
+	slices.SortFunc(filteredRules, func(a, b string) bool {
+		return slices.Index(ProOnlyRules, a) < slices.Index(ProOnlyRules, b)
+	})
+
+	return filteredRules
 }

@@ -9,6 +9,8 @@ const (
 	PoliciesFileName       = policiesFileName
 )
 
+var ProOnlyRules = proOnlyRules
+
 // WithGDM specifies a personalized gdm manager.
 func WithGDM(m *gdm.Manager) Option {
 	return func(o *options) error {
