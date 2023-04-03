@@ -112,12 +112,12 @@ msgstr ""
 msgid "%s will be the absolute path"
 msgstr ""
 
-#: internal/adsysservice/service.go:119
+#: internal/adsysservice/service.go:121
 #, c-format
 msgid "%s, no gpo applied found"
 msgstr ""
 
-#: internal/adsysservice/service.go:104
+#: internal/adsysservice/service.go:106
 #, c-format
 msgid "%s, updated on %s"
 msgstr ""
@@ -253,7 +253,7 @@ msgstr ""
 msgid "Can't disconnect system dbus: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:111
+#: internal/adsysservice/service.go:113
 msgid "Can't get connected users"
 msgstr ""
 
@@ -289,7 +289,7 @@ msgstr ""
 msgid "Config file: %s\n"
 msgstr ""
 
-#: internal/adsysservice/service.go:114
+#: internal/adsysservice/service.go:116
 msgid "Connected users:"
 msgstr ""
 
@@ -471,11 +471,11 @@ msgstr ""
 msgid "Installs the service"
 msgstr ""
 
-#: internal/adsysservice/service.go:108
+#: internal/adsysservice/service.go:110
 msgid "Machine"
 msgstr ""
 
-#: internal/adsysservice/service.go:105
+#: internal/adsysservice/service.go:107
 msgid "Machine, no gpo applied found"
 msgstr ""
 
@@ -504,7 +504,7 @@ msgstr ""
 msgid "No version key found in GPT.INI for %s, assuming 0"
 msgstr ""
 
-#: internal/adsysservice/service.go:123
+#: internal/adsysservice/service.go:125
 msgid "None"
 msgstr ""
 
@@ -518,11 +518,11 @@ msgid ""
 "Not applying proxy settings as ubuntu-proxy-manager is not installed: %s"
 msgstr ""
 
-#: internal/policies/manager.go:331
+#: internal/policies/manager.go:338
 msgid "Policies from machine configuration:"
 msgstr ""
 
-#: internal/policies/manager.go:339
+#: internal/policies/manager.go:346
 msgid "Policies from user configuration:"
 msgstr ""
 
@@ -586,6 +586,13 @@ msgstr ""
 
 #: cmd/adsysd/daemon/version.go:14 cmd/adwatchd/commands/version.go:15
 msgid "Returns version of service and exits"
+msgstr ""
+
+#: internal/policies/manager.go:295
+#, c-format
+msgid ""
+"Rules from the following policy types will be filtered out as the machine is "
+"not enrolled to Ubuntu Pro: %s"
 msgstr ""
 
 #: internal/watchdservice/watchdservice.go:410
@@ -687,14 +694,14 @@ msgstr ""
 msgid "Ubuntu AD Watch Daemon Installer"
 msgstr ""
 
-#: internal/adsysservice/service.go:130
+#: internal/adsysservice/service.go:136
 msgid "Ubuntu Pro subscription active."
 msgstr ""
 
-#: internal/adsysservice/service.go:127
+#: internal/adsysservice/service.go:129
 msgid ""
-"Ubuntu Pro subscription is not active on this machine. Some policies won't "
-"be applied."
+"Ubuntu Pro subscription is not active on this machine. Rules belonging to "
+"the following policy types will not be applied:\n"
 msgstr ""
 
 #: internal/watchdservice/watchdservice.go:366
@@ -732,7 +739,7 @@ msgstr ""
 msgid "Updating directories to watch"
 msgstr ""
 
-#: internal/policies/manager.go:345
+#: internal/policies/manager.go:352
 msgid "User %q not found on cache."
 msgstr ""
 
@@ -881,7 +888,7 @@ msgstr ""
 msgid "can't create a new gdm handler manager"
 msgstr ""
 
-#: internal/policies/manager.go:188
+#: internal/policies/manager.go:193
 msgid "can't create a new policy handlers manager"
 msgstr ""
 
@@ -1146,7 +1153,7 @@ msgstr ""
 msgid "could not close directory: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:215
+#: internal/adsysservice/service.go:221
 msgid "could not find %s unit on systemd bus: no GPO refresh scheduled? %v"
 msgstr ""
 
@@ -1306,7 +1313,7 @@ msgstr ""
 msgid "error while dumping policy definitions"
 msgstr ""
 
-#: internal/adsysservice/service.go:61
+#: internal/adsysservice/service.go:63
 msgid "error while getting daemon status"
 msgstr ""
 
@@ -1330,15 +1337,15 @@ msgstr ""
 msgid "error while loading schemas"
 msgstr ""
 
-#: internal/adsysservice/service.go:201
+#: internal/adsysservice/service.go:207
 msgid "error while trying to determine next refresh time"
 msgstr ""
 
-#: internal/adsysservice/service.go:25
+#: internal/adsysservice/service.go:27
 msgid "error while trying to display daemon output"
 msgstr ""
 
-#: internal/adsysservice/service.go:180
+#: internal/adsysservice/service.go:186
 msgid "error while trying to get the list of active users"
 msgstr ""
 
@@ -1350,7 +1357,7 @@ msgstr ""
 msgid "error while trying to look up AD server address on winbind"
 msgstr ""
 
-#: internal/adsysservice/service.go:168
+#: internal/adsysservice/service.go:174
 msgid "error while trying to stop daemon"
 msgstr ""
 
@@ -1371,7 +1378,7 @@ msgstr ""
 msgid "failed to apply policy for user %q"
 msgstr ""
 
-#: internal/policies/manager.go:281
+#: internal/policies/manager.go:286
 msgid "failed to apply policy to %q"
 msgstr ""
 
@@ -1400,7 +1407,7 @@ msgstr ""
 msgid "failed to disable unit %s"
 msgstr ""
 
-#: internal/policies/manager.go:323
+#: internal/policies/manager.go:330
 msgid "failed to dump policies for %q"
 msgstr ""
 
@@ -1424,7 +1431,7 @@ msgid ""
 "failed to get executable path, using relative path for default config: %v"
 msgstr ""
 
-#: internal/policies/manager.go:357
+#: internal/policies/manager.go:364
 msgid "failed to get policy last update time %q (machine: %q)"
 msgstr ""
 
@@ -1573,7 +1580,7 @@ msgid ""
 ". Please use the StreamClientInterceptor: %v"
 msgstr ""
 
-#: internal/adsysservice/service.go:219
+#: internal/adsysservice/service.go:225
 msgid "invalid next GPO refresh value: %v"
 msgstr ""
 
@@ -1651,7 +1658,7 @@ msgstr ""
 msgid "no assets attached"
 msgstr ""
 
-#: internal/adsysservice/service.go:204
+#: internal/adsysservice/service.go:210
 msgid "no boot system time found"
 msgstr ""
 
@@ -1671,7 +1678,7 @@ msgstr ""
 msgid "no file found matching chapter %q"
 msgstr ""
 
-#: internal/policies/manager.go:334 internal/policies/manager.go:346
+#: internal/policies/manager.go:341 internal/policies/manager.go:353
 msgid "no policy applied for %q: %v"
 msgstr ""
 
@@ -1718,7 +1725,7 @@ msgstr ""
 msgid "please enter at least one directory"
 msgstr ""
 
-#: internal/policies/manager.go:367
+#: internal/policies/manager.go:374
 msgid "policies were not applied for %q: %v"
 msgstr ""
 
@@ -1840,8 +1847,8 @@ msgstr ""
 msgid "unexpected socket type"
 msgstr ""
 
-#: internal/adsysservice/service.go:83 internal/adsysservice/service.go:84
-#: internal/adsysservice/service.go:97
+#: internal/adsysservice/service.go:85 internal/adsysservice/service.go:86
+#: internal/adsysservice/service.go:99
 #: internal/watchdservice/watchdservice.go:249
 msgid "unknown"
 msgstr ""
