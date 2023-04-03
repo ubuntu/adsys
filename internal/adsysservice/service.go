@@ -13,8 +13,10 @@ import (
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/stdforward"
 	"github.com/ubuntu/decorate"
+	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 )
 
@@ -124,7 +126,11 @@ func (s *Service) Status(_ *adsys.Empty, stream adsys.Service_StatusServer) (err
 		}
 	}
 
-	ubuntuProStatus := i18n.G("Ubuntu Pro subscription is not active on this machine. Some policies won't be applied.")
+	ubuntuProStatus := i18n.G("Ubuntu Pro subscription is not active on this machine. Rules belonging to the following policy types will not be applied:\n")
+	proOnlyRules := slices.Clone(policies.ProOnlyRules)
+	slices.Sort(proOnlyRules)
+	ubuntuProStatus = ubuntuProStatus + "  - " + strings.Join(proOnlyRules, "\n  - ")
+
 	subscriptionEnabled := s.policyManager.GetSubscriptionState(stream.Context())
 	if subscriptionEnabled {
 		ubuntuProStatus = i18n.G("Ubuntu Pro subscription active.")

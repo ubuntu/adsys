@@ -49,9 +49,9 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// proOnlyRules are the rules that are only available for Pro subscribers. They
+// ProOnlyRules are the rules that are only available for Pro subscribers. They
 // will be filtered otherwise.
-var proOnlyRules = []string{"privilege", "scripts", "mount", "apparmor", "proxy"}
+var ProOnlyRules = []string{"privilege", "scripts", "mount", "apparmor", "proxy"}
 
 // Manager handles all managers for various policy handlers.
 type Manager struct {
@@ -415,7 +415,7 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) []string {
 
 	var filteredRules []string
 	for rule := range rules {
-		if !slices.Contains(proOnlyRules, rule) {
+		if !slices.Contains(ProOnlyRules, rule) {
 			continue
 		}
 		filteredRules = append(filteredRules, rule)
