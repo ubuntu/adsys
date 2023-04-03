@@ -29,6 +29,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/godbus/dbus/v5"
@@ -62,6 +63,11 @@ type Manager struct {
 	proxy     *proxy.Manager
 
 	subscriptionDbus dbus.BusObject
+
+	// muMu protects the objectMu mutex.
+	muMu *sync.Mutex
+	// objectMu prevents applying multiple policies concurrently for the same object.
+	objectMu map[string]*sync.Mutex
 }
 
 // systemdCaller is the interface to interact with systemd.
@@ -272,6 +278,9 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 		gdm:              args.gdm,
 
 		subscriptionDbus: subscriptionDbus,
+
+		muMu:     &sync.Mutex{},
+		objectMu: make(map[string]*sync.Mutex),
 	}, nil
 }
 
@@ -280,16 +289,30 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComputer bool, pols *Policies) (err error) {
 	defer decorate.OnError(&err, i18n.G("failed to apply policy to %q"), objectName)
 
-	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
+	// We have a lock per objectName to prevent multiple instances of ApplyPolicies for the same object.
+	m.muMu.Lock()
+	if _, ok := m.objectMu[objectName]; !ok {
+		m.objectMu[objectName] = &sync.Mutex{}
+	}
+	m.muMu.Unlock()
+	m.objectMu[objectName].Lock()
+	defer m.objectMu[objectName].Unlock()
 
+	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
 	rules := pols.GetUniqueRules()
 	var g errgroup.Group
-	g.Go(func() error { return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"]) })
+	// Applying dconf policies take a while to complete, so it's better to start applying them before
+	// querying dbus for the Pro subscription state, as it does not rely on that.
+	g.Go(func() error {
+		return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"])
+	})
 	if !m.GetSubscriptionState(ctx) {
 		filterRules(ctx, rules)
 	}
 
-	g.Go(func() error { return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"]) })
+	g.Go(func() error {
+		return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"])
+	})
 	g.Go(func() error {
 		return m.scripts.ApplyPolicy(ctx, objectName, isComputer, rules["scripts"], pols.SaveAssetsTo)
 	})
