@@ -241,25 +241,15 @@ Files: vendor_rust/bitflags/*
        vendor_rust/libc/*
        vendor_rust/heck/*
        vendor_rust/log/*
-       vendor_rust/num-integer/*
-       vendor_rust/num-traits/*
        vendor_rust/quote/*
        vendor_rust/time/*
-       vendor_rust/unicode-width/*
 Copyright: 2014-2020 The Rust Project Developers
 License: MIT
 
-Files: vendor_rust/bumpalo/*
-Copyright: 2019 Nick Fitzgerald
-License: MIT
-
-Files: vendor_rust/cc/*
-       vendor_rust/js-sys/*
-       vendor_rust/cfg-if/*
+Files: vendor_rust/cfg-if/*
        vendor_rust/pkg-config/*
        vendor_rust/proc-macro2/*
        vendor_rust/toml/*
-       vendor_rust/wasm-bindgen-*/*
 Copyright: 2014 Alex Crichton
 License: MIT
 
@@ -267,21 +257,8 @@ Files: vendor_rust/cfg-expr/*
 Copyright: 2019 Embark Studios
 License: MIT
 
-Files: vendor_rust/chrono/*
-Copyright: 2014
-License: MIT
-
-Files: vendor_rust/core-foundation-sys/*
-Copyright: 2012-2013 Mozilla Foundation
-License: MIT
-
 Files: vendor_rust/futures-*/*
 Copyright: 2017 The Tokio Authors / 2016 Alex Crichton
-License: MIT
-
-Files: vendor_rust/iana-time-zone/*
-       vendor_rust/iana-time-zone-haiku/*
-Copyright: 2020 Andrew D. Straw
 License: MIT
 
 Files: vendor_rust/pin-utils/*
@@ -301,11 +278,6 @@ Files: vendor_rust/smallvec/*
 Copyright: 2018 The Servo Project Developers
 License: MIT
 
-Files: vendor_rust/termcolor/*
-       vendor_rust/winapi-util/*
-Copyright: 2015-2017 Andrew Gallant
-License: MIT
-
 Files: vendor_rust/unicode-ident/*
 Copyright: 1991-2022 Unicode, Inc.
 License: Unicode
@@ -321,10 +293,6 @@ License: MIT
 Files: vendor_rust/winapi/*
 Copyright: 2015-2018 The winapi-rs Developers
 License: MIT
-
-Files: vendor_rust/android_system_properties/*
-Copyright: 2013, 2016 Nicolas Silva
-License: MIT or Apache-2.0
 
 License: Apache-2.0
  Unless required by applicable law or agreed to in writing, software
