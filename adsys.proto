@@ -31,6 +31,7 @@ message UpdatePolicyRequest {
   bool all = 2;   // Update policies of the machine and all the users
   string target = 3;
   string krb5cc = 4;
+  bool purge = 5;
 }
 
 message DumpPoliciesRequest {

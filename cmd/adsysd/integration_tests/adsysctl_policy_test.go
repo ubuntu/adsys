@@ -215,6 +215,7 @@ func TestPolicyUpdate(t *testing.T) {
 		addPaths            []string
 		readOnlyDirs        []string
 		winbindMockBehavior string
+		purge               bool
 
 		wantErr bool
 	}{
@@ -582,6 +583,41 @@ func TestPolicyUpdate(t *testing.T) {
 			initState:    "localhost-uptodate",
 			systemAnswer: "no_proxy_object",
 		},
+
+		// Purge cases
+		"Purge current user policies": {
+			purge:     true,
+			initState: "localhost-uptodate",
+		},
+		"Purge other user policies": {
+			purge:     true,
+			args:      []string{"userintegrationtest@example.com"},
+			initState: "localhost-uptodate",
+		},
+		"Purge machine policies": {
+			purge:     true,
+			args:      []string{"-m"},
+			initState: "localhost-uptodate",
+		},
+		"Purge policies for all connected": {args: []string{"--all"},
+			purge:      true,
+			initState:  "localhost-uptodate",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					src:          "userintegrationtest@example.com.krb5",
+					adsysSymlink: "userintegrationtest@example.com",
+				},
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			}},
 
 		// Error cases
 		"Error on applying user policies before updating the machine": {wantErr: true},
@@ -1017,7 +1053,11 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 			defer runDaemon(t, conf)()
 
-			args := []string{"policy", "update"}
+			action := "update"
+			if tc.purge {
+				action = "purge"
+			}
+			args := []string{"policy", action}
 			for _, arg := range tc.args {
 				// Prefix krb5 ticket with our krb5dir
 				if strings.HasSuffix(arg, ".krb5") {
