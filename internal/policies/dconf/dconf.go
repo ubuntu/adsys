@@ -50,7 +50,11 @@ import (
 
 // Manager prevents running multiple dconf update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
+	// dconfMu prevents applying dconf policies for users and machine in parallel.
+	// Applying the policy for the machine can only be done if we are not applying it for any user.
 	dconfMu sync.RWMutex
+	// dconfUpdateMu prevents running multiple dconf update processes in parallel.
+	dconfUpdateMu sync.Mutex
 
 	dconfDir string
 }
@@ -69,7 +73,18 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		dconfDir = consts.DefaultDconfDir
 	}
 
-	m.dconfMu.RLock()
+	// Since the user dconf configuration is reliant on the machine dconf configuration, we can't
+	// apply them in parallel. The strategy works as follows:
+	// 	- Any number of users can have the policy applied in parallel;
+	//	- Machine policy can't be applied if there are any user policies being applied;
+	// dconfMu is used to prevent that.
+	if isComputer {
+		m.dconfMu.Lock()
+		defer m.dconfMu.Unlock()
+	} else {
+		m.dconfMu.RLock()
+		defer m.dconfMu.RUnlock()
+	}
 
 	log.Debugf(ctx, "Applying dconf policy to %s", objectName)
 
@@ -82,7 +97,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	if !isComputer {
 		if _, err := os.Stat(filepath.Join(dbsPath, "machine.d", "locks", "adsys")); err != nil {
-			m.dconfMu.RUnlock()
 			return fmt.Errorf(i18n.G("machine dconf database is required before generating a policy for an user. This one returns: %v"), err)
 		}
 	}
@@ -92,11 +106,9 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		// Profile must be readable by everyone
 		// #nosec G301
 		if err := os.MkdirAll(profilesPath, 0755); err != nil {
-			m.dconfMu.RUnlock()
 			return err
 		}
 		if err := writeProfile(ctx, objectName, profilesPath); err != nil {
-			m.dconfMu.RUnlock()
 			return err
 		}
 	}
@@ -126,7 +138,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// Stop on any error
 	if errMsgs != nil {
-		m.dconfMu.RUnlock()
 		return errors.New(strings.Join(errMsgs, "\n"))
 	}
 
@@ -149,14 +160,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	// Locks must be readable by everyone
 	// #nosec G301
 	if err := os.MkdirAll(filepath.Join(dbPath, "locks"), 0755); err != nil {
-		m.dconfMu.RUnlock()
 		return err
 	}
 
 	defaultPath := filepath.Join(dbPath, "adsys")
 	changed, err := writeIfChanged(defaultPath, strings.Join(data, "\n")+"\n")
 	if err != nil {
-		m.dconfMu.RUnlock()
 		return err
 	}
 	needsRefresh = needsRefresh || changed
@@ -164,12 +173,9 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	locksPath := filepath.Join(dbPath, "locks", "adsys")
 	changed, err = writeIfChanged(locksPath, strings.Join(locks, "\n")+"\n")
 	if err != nil {
-		m.dconfMu.RUnlock()
 		return err
 	}
 	needsRefresh = needsRefresh || changed
-
-	m.dconfMu.RUnlock()
 
 	// update if any profile changed, or if any compiled db is missing
 	needsRefresh = needsRefresh || dconfNeedsUpdate(filepath.Join(dbsPath, "machine"))
@@ -183,10 +189,10 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	// request an update now that we released the read lock
 	// we will call update multiple times.
 	smbsafe.WaitExec()
-	m.dconfMu.Lock()
+	m.dconfUpdateMu.Lock()
 	// #nosec G204 - we control the input
 	out, errExec := exec.Command("dconf", "update", filepath.Join(dconfDir, "db")).CombinedOutput()
-	m.dconfMu.Unlock()
+	m.dconfUpdateMu.Unlock()
 	smbsafe.DoneExec()
 	if errExec != nil {
 		err = fmt.Errorf(i18n.G("dconf update failed: %v"), out)
