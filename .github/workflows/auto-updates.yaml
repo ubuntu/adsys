@@ -46,7 +46,7 @@ jobs:
           echo "modified=${hasModif}" >> $GITHUB_ENV
       - name: Create Pull Request
         if: ${{ env.modified == 'true' }}
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           commit-message: Auto update po files
           title: Auto update po files
@@ -94,7 +94,7 @@ jobs:
           echo "modified=${hasModif}" >> $GITHUB_ENV
       - name: Create Pull Request
         if: ${{ env.modified == 'true' }}
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           commit-message: Auto update readme files
           title: Auto update readme files
