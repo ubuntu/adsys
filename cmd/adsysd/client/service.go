@@ -115,9 +115,9 @@ func (a *App) serviceStop(force bool) error {
 		return err
 	}
 
-	if _, err := stream.Recv(); err != nil && !errors.Is(err, io.EOF) {
+	if _, err := stream.Recv(); err != nil {
 		// Ignore "transport is closing" error if force (i.e immediately drop all connections) was used.
-		if force && status.Code(err) == codes.Unavailable {
+		if (force && status.Code(err) == codes.Unavailable) || errors.Is(err, io.EOF) {
 			return nil
 		}
 		return err
