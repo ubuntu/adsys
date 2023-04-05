@@ -8,7 +8,6 @@ package gdm
 import (
 	"context"
 	"strings"
-	"sync"
 
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -20,7 +19,6 @@ import (
 
 // Manager prevents running multiple gdm update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
-	mu    sync.RWMutex
 	dconf *dconf.Manager
 }
 
@@ -60,8 +58,6 @@ func New(opts ...option) (m *Manager, err error) {
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, entries []entry.Entry) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't apply gdm policy"))
-
-	m.mu.RLock()
 
 	log.Debug(ctx, "ApplyPolicy gdm policy")
 

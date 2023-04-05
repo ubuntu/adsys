@@ -24,7 +24,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -53,8 +52,6 @@ const adsysBaseConfName = "99-adsys-privilege-enforcement"
 
 // Manager prevents running multiple privilege update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
-	privilegeMu sync.Mutex
-
 	sudoersDir   string
 	policyKitDir string
 }
@@ -86,9 +83,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 	sudoersConf := filepath.Join(sudoersDir, adsysBaseConfName)
 	policyKitConf := filepath.Join(policyKitDir, "localauthority.conf.d", adsysBaseConfName+".conf")
-
-	m.privilegeMu.Lock()
-	defer m.privilegeMu.Unlock()
 
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
 
