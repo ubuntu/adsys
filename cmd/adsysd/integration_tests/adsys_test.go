@@ -190,9 +190,6 @@ client_timeout: %d`, socket, tc.timeout)), 0600)
 	}
 }
 
-// createConf generates an adsys configuration in a temporary directory
-// It will use adsysDir for socket, cache and run dir if provided.
-
 // Option represents an optional function to change the winbind backend.
 type confOption func(*confOptions)
 
@@ -213,6 +210,8 @@ func confWithBackend(backend string) confOption {
 	}
 }
 
+// createConf generates an adsys configuration in a temporary directory
+// It will use adsysDir for socket, cache and run dir if provided.
 func createConf(t *testing.T, opts ...confOption) (conf string) {
 	t.Helper()
 
