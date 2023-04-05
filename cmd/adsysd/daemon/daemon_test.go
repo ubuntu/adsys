@@ -292,8 +292,12 @@ sssd:
 		filepath.Join(dir, "run"),
 		serviceTimeout))
 
-	err := os.WriteFile(configFile, data, 0600)
+	f, err := os.OpenFile(configFile, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	require.NoError(t, err, "Setup: failed to open test config file")
+	defer f.Close()
+	_, err = f.Write(data)
 	require.NoError(t, err, "Setup: failed to write test config file")
+	f.Close()
 
 	return configFile
 }

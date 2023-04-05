@@ -229,7 +229,7 @@ func createConf(t *testing.T, opts ...confOption) (conf string) {
 
 	// Create config
 	confFile := filepath.Join(args.adsysDir, "adsys.yaml")
-	err := os.WriteFile(confFile, []byte(fmt.Sprintf(`
+	confData := []byte(fmt.Sprintf(`
 # Service and client configuration
 verbose: 2
 socket: %s/socket
@@ -244,8 +244,8 @@ ad_backend: %s
 
 # SSSd configuration
 sssd:
-  config: testdata/sssd-configs/sssd.conf-example.com
-  cache_dir: %s/sss_cache
+    config: testdata/sssd-configs/sssd.conf-example.com
+    cache_dir: %s/sss_cache
 
 # Those are more for tests
 dconf_dir: %s/dconf
@@ -254,8 +254,14 @@ policykit_dir: %s/polkit-1
 apparmor_dir: %s/apparmor.d/adsys
 apparmorfs_dir: %s/apparmorfs
 systemunit_dir: %s/systemd/system
-`, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir)), 0600)
+`, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir))
+
+	f, err := os.OpenFile(confFile, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	require.NoError(t, err, "Setup: couldn't open config file")
+	defer f.Close()
+	_, err = f.Write(confData)
 	require.NoError(t, err, "Setup: config file should be created")
+	f.Close()
 
 	require.NoError(t, os.MkdirAll(filepath.Join(args.adsysDir, "dconf"), 0750), "Setup: should create dconf dir")
 	// Don’t create empty dirs for sudo and polkit: todo: same for dconf?
