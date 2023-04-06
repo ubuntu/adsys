@@ -227,7 +227,7 @@ to enable it.  You can execute the following once:
 
 To load completions in your current shell session:
 
-	source <(adsysctl completion zsh); compdef _adsysctl adsysctl
+	source <(adsysctl completion zsh)
 
 To load completions for every new session, execute once:
 
@@ -741,7 +741,7 @@ to enable it.  You can execute the following once:
 
 To load completions in your current shell session:
 
-	source <(adsysd completion zsh); compdef _adsysd adsysd
+	source <(adsysd completion zsh)
 
 To load completions for every new session, execute once:
 
@@ -980,7 +980,7 @@ to enable it.  You can execute the following once:
 
 To load completions in your current shell session:
 
-	source <(adwatchd completion zsh); compdef _adwatchd adwatchd
+	source <(adwatchd completion zsh)
 
 To load completions for every new session, execute once:
 
