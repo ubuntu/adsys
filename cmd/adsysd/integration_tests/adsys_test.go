@@ -243,8 +243,8 @@ ad_backend: %s
 
 # SSSd configuration
 sssd:
-    config: testdata/sssd-configs/sssd.conf-example.com
-    cache_dir: %s/sss_cache
+  config: testdata/sssd-configs/sssd.conf-example.com
+  cache_dir: %s/sss_cache
 
 # Those are more for tests
 dconf_dir: %s/dconf
