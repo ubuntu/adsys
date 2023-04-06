@@ -255,13 +255,7 @@ apparmorfs_dir: %s/apparmorfs
 systemunit_dir: %s/systemd/system
 `, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir))
 
-	f, err := os.OpenFile(confFile, os.O_RDWR|os.O_CREATE, os.ModePerm)
-	require.NoError(t, err, "Setup: couldn't open config file")
-	defer f.Close()
-	_, err = f.Write(confData)
-	require.NoError(t, err, "Setup: config file should be created")
-	f.Close()
-
+	testutils.WriteFile(t, confFile, confData, os.ModePerm)
 	require.NoError(t, os.MkdirAll(filepath.Join(args.adsysDir, "dconf"), 0750), "Setup: should create dconf dir")
 	// Don’t create empty dirs for sudo and polkit: todo: same for dconf?
 

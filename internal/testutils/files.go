@@ -49,9 +49,7 @@ func CreatePath(t *testing.T, path string) {
 
 	err := os.MkdirAll(filepath.Dir(path), 0750)
 	require.NoError(t, err, "Setup: can't create directory for file")
-
-	err = os.WriteFile(path, []byte("new content"), 0600)
-	require.NoError(t, err, "Setup: could not write sample file")
+	WriteFile(t, path, []byte("new content"), 0600)
 }
 
 // Copy copies files and directories to dest.
@@ -184,6 +182,22 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 		_, err = os.Stat(strings.TrimSuffix(db, ".db"))
 		assert.NoError(t, err, "Binary version of dconf DB should exists")
 	}
+}
+
+// WriteFile writes a file by using the standard open & write procedure instead of using
+// os.WriteFile.
+//
+// This is useful because os.WriteFile truncates the file before writing, which
+// trigger a fsnotify event and can create problems when writing files in watched directories.
+func WriteFile(t *testing.T, name string, data []byte, mode os.FileMode) {
+	t.Helper()
+
+	f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE, mode)
+	require.NoError(t, err, "Helper: couldn't open requested file %q", name)
+	defer f.Close()
+	_, err = f.Write(data)
+	require.NoError(t, err, "Helper: couldn't write requested data to %q", name)
+	f.Close()
 }
 
 // addEmptyMarker adds to any empty directory, fileForEmptyDir to it.

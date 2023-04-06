@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/config"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 func TestSetVerboseMode(t *testing.T) {
@@ -318,15 +319,7 @@ func TestInit(t *testing.T) {
 				phaseMu.Unlock()
 
 				if tc.directlyChangeConfigFile {
-					// fsnotify docs states that truncating a file will also trigger a Write event, which means that the callback can be triggered
-					// before the file contents are properly written. In order to avoid that, we must manually open the file and write the new content
-					// to it to avoid truncating the file and triggering the event too early.
-					configFile, err := os.OpenFile(filepath.Join(configDir, prefix+".yaml"), os.O_RDWR|os.O_CREATE, os.ModePerm)
-					require.NoError(t, err, "Setup: failed to open config file")
-					defer configFile.Close()
-					_, err = configFile.WriteString(tc.changeConfigWith)
-					require.NoError(t, err, "Setup: failed to write new content to config file")
-					configFile.Close()
+					testutils.WriteFile(t, filepath.Join(configDir, prefix+".yaml"), []byte(tc.changeConfigWith), os.ModePerm)
 				} else {
 					err := os.WriteFile(filepath.Join(configDir, prefix+".new"), []byte(tc.changeConfigWith), 0600)
 					require.NoError(t, err, "Setup: failed to write .new config file")
