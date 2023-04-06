@@ -235,6 +235,10 @@ msgstr ""
 msgid "Applying mount policy to machine %q"
 msgstr ""
 
+#: internal/ad/download.go:137
+msgid "Assets directory is already up to date"
+msgstr ""
+
 #: internal/authorizer/authorizer.go:150
 msgid "Authorized as being administrator"
 msgstr ""
@@ -303,7 +307,7 @@ msgstr ""
 msgid "Control() error: %s"
 msgstr ""
 
-#: internal/ad/download.go:249
+#: internal/ad/download.go:256
 msgid "Could not clean up temporary directory:"
 msgstr ""
 
@@ -363,7 +367,7 @@ msgstr ""
 msgid "Documentation"
 msgstr ""
 
-#: internal/ad/download.go:299
+#: internal/ad/download.go:306
 #, c-format
 msgid "Downloading %s"
 msgstr ""
@@ -434,6 +438,10 @@ msgstr ""
 msgid "Format type (markdown, raw or html)."
 msgstr ""
 
+#: internal/ad/download.go:139
+msgid "GPO %q is already up to date"
+msgstr ""
+
 #: cmd/admxgen/main.go:34
 msgid "Generate Active Directory admx and adml files"
 msgstr ""
@@ -499,7 +507,7 @@ msgstr ""
 msgid "No entries found for the apparmor %s policy"
 msgstr ""
 
-#: internal/ad/download.go:213
+#: internal/ad/download.go:220
 #, c-format
 msgid "No version key found in GPT.INI for %s, assuming 0"
 msgstr ""
@@ -861,7 +869,7 @@ msgstr ""
 msgid "can't change mode of script %qto %o: %v"
 msgstr ""
 
-#: internal/ad/download.go:163
+#: internal/ad/download.go:169
 #, c-format
 msgid "can't check if %s needs refreshing"
 msgstr ""
@@ -1149,7 +1157,7 @@ msgstr ""
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
-#: internal/ad/download.go:239
+#: internal/ad/download.go:246
 msgid "could not close directory: %v"
 msgstr ""
 
@@ -1267,7 +1275,7 @@ msgstr ""
 msgid "don't display colorized version."
 msgstr ""
 
-#: internal/ad/download.go:226
+#: internal/ad/download.go:233
 msgid "download %q failed"
 msgstr ""
 
@@ -1588,7 +1596,7 @@ msgstr ""
 msgid "invalid policy"
 msgstr ""
 
-#: internal/ad/download.go:198
+#: internal/ad/download.go:205
 msgid "invalid remote GPT.INI"
 msgstr ""
 
