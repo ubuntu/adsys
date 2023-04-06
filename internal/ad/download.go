@@ -133,6 +133,12 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, downloadables map[st
 			}
 
 			if !shouldDownload {
+				if g.isAssets {
+					log.Infof(ctx, i18n.G("Assets directory is already up to date"))
+				} else {
+					log.Infof(ctx, i18n.G("GPO %q is already up to date"), g.name)
+				}
+
 				return nil
 			}
 
@@ -187,6 +193,7 @@ func needsDownload(ctx context.Context, client *libsmbclient.Client, g *download
 		return false, err
 	}
 
+	log.Debugf(ctx, "Local version for %q: %d, remote version: %d", g.name, localVersion, remoteVersion)
 	if localVersion >= remoteVersion {
 		return false, nil
 	}
