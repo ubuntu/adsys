@@ -64,8 +64,7 @@ type Manager struct {
 	apparmorParserCmd  []string
 	loadedPoliciesFile string
 
-	muMu    sync.Mutex             // protect pathsMu
-	pathsMu map[string]*sync.Mutex // mutex is per destination path (e.g. machine, users/user1, users/user2)
+	mu sync.Mutex // Prevents multiple instances of apparmor from running concurrenctly
 }
 
 type options struct {
@@ -89,7 +88,7 @@ func New(apparmorDir string, opts ...Option) *Manager {
 	}
 
 	return &Manager{
-		pathsMu:            make(map[string]*sync.Mutex),
+		mu:                 sync.Mutex{},
 		apparmorDir:        apparmorDir,
 		apparmorCacheDir:   filepath.Join(consts.DefaultCacheDir, "apparmor"),
 		apparmorParserCmd:  args.apparmorParserCmd,
@@ -120,15 +119,9 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 	apparmorPath := filepath.Join(m.apparmorDir, objectDir)
 
-	// Mutex is per destination path (e.g. machine, users/user1, users/user2)
-	m.muMu.Lock()
-	// if mutex does not exist for this destination, creates it
-	if _, exists := m.pathsMu[apparmorPath]; !exists {
-		m.pathsMu[apparmorPath] = &sync.Mutex{}
-	}
-	m.muMu.Unlock()
-	m.pathsMu[apparmorPath].Lock()
-	defer m.pathsMu[apparmorPath].Unlock()
+	// Apparmor can't be executed concurrently, so we need a lock to prevent it.
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	// No point in continuing if apparmor isn't available
 	absPath, err := exec.LookPath(m.apparmorParserCmd[0])

@@ -16,7 +16,6 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"sync"
 
 	"github.com/godbus/dbus/v5"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -39,7 +38,6 @@ const errDBusServiceUnknownName = "org.freedesktop.DBus.Error.ServiceUnknown"
 
 // Manager prevents running multiple apparmor update processes in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
-	mu           sync.Mutex
 	proxyApplier Caller
 }
 
@@ -89,9 +87,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	if len(entries) == 0 {
 		return nil
 	}
-
-	m.mu.Lock()
-	defer m.mu.Unlock()
 
 	args := make(map[string]string)
 	for _, e := range entries {

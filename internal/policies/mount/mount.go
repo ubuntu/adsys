@@ -23,7 +23,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/coreos/go-systemd/v22/unit"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -49,9 +48,6 @@ const defaultMountTimeoutSec int = 30
 
 // Manager holds information needed for handling the mount policies.
 type Manager struct {
-	mountsMu map[string]*sync.Mutex
-	muMu     sync.Mutex
-
 	runDir        string
 	systemUnitDir string
 	systemdCaller systemdCaller
@@ -96,8 +92,6 @@ func New(runDir string, systemUnitDir string, systemdCaller systemdCaller, opts 
 	}
 
 	return &Manager{
-		mountsMu: make(map[string]*sync.Mutex),
-
 		runDir:        runDir,
 		systemUnitDir: systemUnitDir,
 		systemdCaller: systemdCaller,
@@ -111,15 +105,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	defer decorate.OnError(&err, i18n.G("can't apply mount policy to %s"), objectName)
 
 	log.Debugf(ctx, "Applying mount policy to %s", objectName)
-
-	// Mutexes are per user1, user2, computer
-	m.muMu.Lock()
-	if _, exists := m.mountsMu[objectName]; !exists {
-		m.mountsMu[objectName] = &sync.Mutex{}
-	}
-	m.muMu.Unlock()
-	m.mountsMu[objectName].Lock()
-	defer m.mountsMu[objectName].Unlock()
 
 	if len(entries) == 0 {
 		return m.cleanup(ctx, objectName, isComputer)

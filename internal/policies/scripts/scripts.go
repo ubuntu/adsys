@@ -24,7 +24,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -41,9 +40,6 @@ const (
 
 // Manager prevents running multiple scripts update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
-	scriptsMu map[string]*sync.Mutex // mutex is per destination directory (user1/user2/computer)
-	muMu      sync.Mutex             // protect scriptsMu
-
 	runDir      string
 	unitStarter unitStarter
 
@@ -85,8 +81,6 @@ func New(runDir string, unitStarter unitStarter, opts ...Option) (m *Manager, er
 	}
 
 	return &Manager{
-		scriptsMu: make(map[string]*sync.Mutex),
-
 		runDir:      runDir,
 		unitStarter: unitStarter,
 
@@ -122,16 +116,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	objectPath := filepath.Join(m.runDir, objectDir)
 	scriptsPath := filepath.Join(objectPath, executableDir)
-
-	// Mutex is per user1, user2, computer
-	m.muMu.Lock()
-	// if mutex does not exist for this destination, creates it
-	if _, exists := m.scriptsMu[scriptsPath]; !exists {
-		m.scriptsMu[scriptsPath] = &sync.Mutex{}
-	}
-	m.muMu.Unlock()
-	m.scriptsMu[scriptsPath].Lock()
-	defer m.scriptsMu[scriptsPath].Unlock()
 
 	// If exists: there is a "session" in progress:
 	// - machine already booted and startup scripts executed
