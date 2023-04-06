@@ -46,7 +46,7 @@ jobs:
           echo "modified=${hasModif}" >> $GITHUB_ENV
       - name: Create Pull Request
         if: ${{ env.modified == 'true' }}
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           commit-message: Auto update po files
           title: Auto update po files
@@ -94,7 +94,7 @@ jobs:
           echo "modified=${hasModif}" >> $GITHUB_ENV
       - name: Create Pull Request
         if: ${{ env.modified == 'true' }}
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           commit-message: Auto update readme files
           title: Auto update readme files
@@ -141,16 +141,9 @@ jobs:
           sed -i "s/^XS-Vendored-Sources-Rust:.*/$OUTPUT/" debian/control
           echo "modified=true" >> $GITHUB_ENV
         shell: bash
-      # Since we run this job in a container, we need to manually add the safe directory due to some
-      # issues between actions/checkout and actions/runner, which seem to be triggered by multiple
-      # causes (e.g. https://github.com/actions/runner-images/issues/6775, https://github.com/actions/checkout/issues/1048#issuecomment-1356485556).
-      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
-        run: git config --global --add safe.directory /__w/adsys/adsys
       - name: Create Pull Request
         if: ${{ env.modified == 'true' }}
-        # V5 Beta needed because of some problems between this action and container runners.
-        # See more on: https://github.com/peter-evans/create-pull-request/issues/1170
-        uses: peter-evans/create-pull-request@v5-beta
+        uses: peter-evans/create-pull-request@v5
         with:
           commit-message: Auto update packaging related Rust files
           title: Auto update packaging related Rust files
