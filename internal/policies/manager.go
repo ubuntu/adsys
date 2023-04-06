@@ -299,9 +299,9 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	if _, ok := m.objectMu[objectName]; !ok {
 		m.objectMu[objectName] = &sync.Mutex{}
 	}
-	m.muMu.Unlock()
 	m.objectMu[objectName].Lock()
 	defer m.objectMu[objectName].Unlock()
+	m.muMu.Unlock()
 
 	rules := pols.GetUniqueRules()
 	action := i18n.G("Applying")
