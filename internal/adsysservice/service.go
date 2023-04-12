@@ -111,7 +111,7 @@ func (s *Service) Status(_ *adsys.Empty, stream adsys.Service_StatusServer) (err
 	}
 
 	updateUsers := fmt.Sprint(i18n.G("Can't get connected users"))
-	users, err := s.adc.ListActiveUsers(stream.Context())
+	users, err := s.adc.ListUsers(stream.Context(), true)
 	if err == nil {
 		updateUsers = fmt.Sprint(i18n.G("Connected users:"))
 		for _, u := range users {
@@ -181,15 +181,15 @@ func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) (e
 	return nil
 }
 
-// ListActiveUsers returns the list of currently active users.
-func (s *Service) ListActiveUsers(_ *adsys.Empty, stream adsys.Service_ListActiveUsersServer) (err error) {
+// ListUsers returns the list of currently active users.
+func (s *Service) ListUsers(r *adsys.ListUsersRequest, stream adsys.Service_ListUsersServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while trying to get the list of active users"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
 	}
 
-	users, err := s.adc.ListActiveUsers(stream.Context())
+	users, err := s.adc.ListUsers(stream.Context(), r.GetActive())
 	if err != nil {
 		return err
 	}

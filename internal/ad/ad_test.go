@@ -1007,44 +1007,86 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 	}
 }
 
-func TestListUsersFromCache(t *testing.T) {
+func TestListUsers(t *testing.T) {
 	t.Parallel()
 
 	hostname, err := os.Hostname()
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
 	tests := map[string]struct {
-		ccCachesToCreate []string
-		noCCacheDir      bool
+		ccCachesToCreate     []string
+		policyCachesToCreate []string
+		noCCacheDir          bool
+		noPoliciesCacheDir   bool
+
+		active bool
 
 		want    []string
 		wantErr bool
 	}{
+		// Active cases (krb5 cache)
 		"One user": {
+			active:           true,
 			ccCachesToCreate: []string{"bob@GPOONLY.COM"},
 			want:             []string{"bob@GPOONLY.COM"},
 		},
 		"Two users": {
+			active:           true,
 			ccCachesToCreate: []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
 			want:             []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
 		},
 		"None": {
+			active:           true,
 			ccCachesToCreate: []string{},
 			want:             nil,
 		},
 		"Machines are ignored": {
+			active:           true,
 			ccCachesToCreate: []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ", "myMachine"},
 			want:             []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
 		},
 		"Machine Only": {
+			active:           true,
 			ccCachesToCreate: []string{"myMachine"},
 			want:             nil,
 		},
 
+		// Policy cache cases
+		"One user, from policy cache": {
+			policyCachesToCreate: []string{"bob@GPOONLY.COM"},
+			want:                 []string{"bob@GPOONLY.COM"},
+		},
+		"Two users, from policy cache": {
+			policyCachesToCreate: []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
+			want:                 []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
+		},
+		"None, from policy cache": {
+			policyCachesToCreate: []string{},
+			want:                 nil,
+		},
+		"Machines are ignored, from policy cache": {
+			policyCachesToCreate: []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ", "myMachine"},
+			want:                 []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
+		},
+		"Machine Only, from policy cache": {
+			policyCachesToCreate: []string{"myMachine"},
+			want:                 nil,
+		},
+		"Ticket cache ignored if policy cache is requested": {
+			policyCachesToCreate: []string{"bob@GPOONLY.COM"},
+			ccCachesToCreate:     []string{"sponge@OTHERDOMAIN.BIZ", "myMachine"},
+			want:                 []string{"bob@GPOONLY.COM"},
+		},
+
 		// Error cases
 		"Error on Krb5 directory not existing": {
+			active:      true,
 			noCCacheDir: true,
 			wantErr:     true,
+		},
+		"Error on policy cache directory not existing": {
+			noPoliciesCacheDir: true,
+			wantErr:            true,
 		},
 	}
 
@@ -1069,11 +1111,19 @@ func TestListUsersFromCache(t *testing.T) {
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir))
 			require.NoError(t, err, "Setup: New should return no error")
 
+			// populate cachedir with policies
+			for _, dir := range tc.policyCachesToCreate {
+				require.NoError(t, os.Mkdir(filepath.Join(adc.PoliciesCacheDir(), dir), 0700), "Setup: can't create policy cache dir")
+			}
+
 			if tc.noCCacheDir {
 				require.NoError(t, os.RemoveAll(krb5CacheDir), "Setup: can’t remove krb5 cache directory")
 			}
+			if tc.noPoliciesCacheDir {
+				require.NoError(t, os.RemoveAll(adc.PoliciesCacheDir()), "Setup: can’t remove policies cache directory")
+			}
 
-			got, err := adc.ListActiveUsers(context.Background())
+			got, err := adc.ListUsers(context.Background(), tc.active)
 			if tc.wantErr {
 				require.Error(t, err, "ListUsersFromCache should return an error and didn't")
 				return

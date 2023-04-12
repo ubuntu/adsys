@@ -53,7 +53,7 @@ func (a *App) installPolicy() {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			return a.completeWithConnectedUsers()
+			return a.users(true), cobra.ShellCompDirectiveNoFileComp
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var target string
@@ -100,7 +100,7 @@ func (a *App) installPolicy() {
 			switch len(args) {
 			case 0:
 				// Get all connected users
-				return a.completeWithConnectedUsers()
+				return a.users(true), cobra.ShellCompDirectiveNoFileComp
 			case 1:
 				// The user has already been process, let then specifying the ticket path
 				return nil, cobra.ShellCompDirectiveDefault
@@ -121,6 +121,33 @@ func (a *App) installPolicy() {
 	updateAll = updateCmd.Flags().BoolP("all", "a", false, i18n.G("all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option."))
 	policyCmd.AddCommand(updateCmd)
 	cmdhandler.RegisterAlias(updateCmd, &a.rootCmd)
+
+	var purgeMachine, purgeAll *bool
+	purgeCmd := &cobra.Command{
+		Use:   "purge [USER_NAME]",
+		Short: i18n.G("Purges policies for the current user or a specified one"),
+		Args:  cmdhandler.ZeroOrNArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			// All and machine options don’t take arguments
+			if *purgeAll || *purgeMachine || len(args) != 0 {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			// Get all users with cached policies
+			return a.users(false), cobra.ShellCompDirectiveNoFileComp
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var user string
+			if len(args) > 0 {
+				user = args[0]
+			}
+			return a.purge(*purgeMachine, *purgeAll, user)
+		},
+	}
+	purgeMachine = purgeCmd.Flags().BoolP("machine", "m", false, i18n.G("machine purges the policy of the computer."))
+	purgeAll = purgeCmd.Flags().BoolP("all", "a", false, i18n.G("all purges the policy of the computer and all the logged in users. -m or USER_NAME cannot be used with this option."))
+	purgeCmd.MarkFlagsMutuallyExclusive("machine", "all")
+	policyCmd.AddCommand(purgeCmd)
 
 	a.rootCmd.AddCommand(policyCmd)
 }
@@ -383,20 +410,73 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 	return nil
 }
 
-func (a App) completeWithConnectedUsers() ([]string, cobra.ShellCompDirective) {
+func (a *App) purge(isComputer, purgeAll bool, target string) error {
+	// incompatible options
+	if purgeAll && target != "" {
+		return errors.New(i18n.G("machine or user arguments cannot be used with update all"))
+	}
+	if isComputer && target != "" {
+		return errors.New(i18n.G("user arguments cannot be used with machine update"))
+	}
+
 	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return err
 	}
 	defer client.Close()
-	stream, err := client.ListActiveUsers(a.ctx, &adsys.Empty{})
+
+	// get target for computer
+	if isComputer && target == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return err
+		}
+		// for malconfigured machines where /proc/sys/kernel/hostname returns the fqdn and not only the machine name, strip it
+		target, _, _ = strings.Cut(hostname, ".")
+	}
+
+	// Purge current user
+	if target == "" && !purgeAll {
+		u, err := user.Current()
+		if err != nil {
+			return fmt.Errorf("failed to retrieve current user: %w", err)
+		}
+		target = u.Username
+	}
+
+	stream, err := client.UpdatePolicy(a.ctx, &adsys.UpdatePolicyRequest{
+		IsComputer: isComputer,
+		All:        purgeAll,
+		Target:     target,
+		Purge:      true,
+	})
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return err
+	}
+
+	if _, err := stream.Recv(); err != nil && !errors.Is(err, io.EOF) {
+		return err
+	}
+
+	return nil
+}
+
+// users returns the list of connected users according to their cached policy information.
+// If active is true, the list of users is retrieved from the cached Kerberos ticket information.
+func (a App) users(active bool) []string {
+	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
+	if err != nil {
+		return nil
+	}
+	defer client.Close()
+	stream, err := client.ListUsers(a.ctx, &adsys.ListUsersRequest{Active: active})
+	if err != nil {
+		return nil
 	}
 	list, err := singleMsg(stream)
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return nil
 	}
 
-	return strings.Split(list, " "), cobra.ShellCompDirectiveNoFileComp
+	return strings.Split(list, " ")
 }

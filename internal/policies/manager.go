@@ -299,12 +299,17 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	if _, ok := m.objectMu[objectName]; !ok {
 		m.objectMu[objectName] = &sync.Mutex{}
 	}
-	m.muMu.Unlock()
 	m.objectMu[objectName].Lock()
 	defer m.objectMu[objectName].Unlock()
+	m.muMu.Unlock()
 
-	log.Infof(ctx, "Apply policy for %s (machine: %v)", objectName, isComputer)
 	rules := pols.GetUniqueRules()
+	action := i18n.G("Applying")
+	if len(rules) == 0 {
+		action = i18n.G("Unloading")
+	}
+	log.Infof(ctx, i18n.G("%s policies for %s (machine: %v)"), action, objectName, isComputer)
+
 	var g errgroup.Group
 	// Applying dconf policies take a while to complete, so it's better to start applying them before
 	// querying dbus for the Pro subscription state, as it does not rely on that.

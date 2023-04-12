@@ -113,6 +113,7 @@ socket: %s`, socket)), 0600)
 		"policy applied":              {args: []string{"policy", "applied"}},
 		"policy debug gpolist-script": {args: []string{"policy", "debug", "gpolist-script"}},
 		"policy update":               {args: []string{"policy", "update"}},
+		"policy purge":                {args: []string{"policy", "purge"}},
 		"service cat":                 {args: []string{"service", "cat"}},
 		"service status":              {args: []string{"service", "status"}},
 		"service stop":                {args: []string{"service", "stop"}},

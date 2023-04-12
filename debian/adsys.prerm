@@ -5,5 +5,9 @@ if [ "$1" = remove ] && [ "${DPKG_MAINTSCRIPT_PACKAGE_REFCOUNT:-1}" = 1 ]; then
         pam-auth-update --package --remove adsys
 fi
 
-#DEBHELPER#
+if [ "$1" = purge ] && [ "${DPKG_MAINTSCRIPT_PACKAGE_REFCOUNT:-1}" = 1 ]; then
+        adsysctl policy purge -a
+        rm -rf /var/cache/adsys
+fi
 
+#DEBHELPER#
