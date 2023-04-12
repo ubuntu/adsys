@@ -361,6 +361,31 @@ adsysctl policy applied [USER_NAME] [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
+#### adsysctl policy purge
+
+Purges policies for the current user or a specified one
+
+```
+adsysctl policy purge [USER_NAME] [flags]
+```
+
+##### Options
+
+```
+  -a, --all       all purges the policy of the computer and all the logged in users. -m or USER_NAME cannot be used with this option.
+  -h, --help      help for purge
+  -m, --machine   machine purges the policy of the computer.
+```
+
+##### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
 #### adsysctl policy update
 
 Updates/Create a policy for current user or given user with its kerberos ticket
