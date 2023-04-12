@@ -599,25 +599,10 @@ func TestPolicyUpdate(t *testing.T) {
 			args:      []string{"-m"},
 			initState: "localhost-uptodate",
 		},
-		"Purge policies for all connected": {args: []string{"--all"},
-			purge:      true,
-			initState:  "localhost-uptodate",
-			krb5ccname: "-",
-			krb5ccNamesState: []krb5ccNamesWithState{
-				{
-					src:          currentUser + ".krb5",
-					adsysSymlink: currentUser,
-				},
-				{
-					src:          "userintegrationtest@example.com.krb5",
-					adsysSymlink: "userintegrationtest@example.com",
-				},
-				{
-					src:          "ccache_EXAMPLE.COM",
-					adsysSymlink: hostname,
-					machine:      true,
-				},
-			}},
+		"Purge policies for all cached objects": {args: []string{"--all"},
+			purge:     true,
+			initState: "old-data", // old-data state has cached policies for both user and machine
+		},
 
 		// Error cases
 		"Error on applying user policies before updating the machine": {wantErr: true},

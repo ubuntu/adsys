@@ -328,25 +328,31 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	return policies.New(ctx, gposRules, assetsDbPath)
 }
 
-// ListActiveUsers return the list of active users on the system.
-func (ad *AD) ListActiveUsers(ctx context.Context) (users []string, err error) {
+// ListUsers returns the list of users on the system based on their cached policy information.
+// If active is true, the list of users is retrieved from the cached Kerberos ticket information.
+func (ad *AD) ListUsers(ctx context.Context, active bool) (users []string, err error) {
 	defer decorate.OnError(&err, i18n.G("can't list users from cache"))
 
-	log.Debug(ctx, "ListActiveUsers")
+	log.Debug(ctx, "ListUsers")
 
 	ad.Lock()
 	defer ad.Unlock()
 
-	files, err := os.ReadDir(ad.krb5CacheDir)
+	cacheDir := ad.policiesCacheDir
+	if active {
+		cacheDir = ad.krb5CacheDir
+	}
+
+	entries, err := os.ReadDir(cacheDir)
 	if err != nil {
 		return users, fmt.Errorf(i18n.G("failed to read cache directory: %v"), err)
 	}
 
-	for _, file := range files {
-		if !strings.Contains(file.Name(), "@") {
+	for _, entry := range entries {
+		if !strings.Contains(entry.Name(), "@") {
 			continue
 		}
-		users = append(users, file.Name())
+		users = append(users, entry.Name())
 	}
 	return users, nil
 }

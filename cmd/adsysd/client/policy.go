@@ -53,7 +53,7 @@ func (a *App) installPolicy() {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			return a.completeWithConnectedUsers()
+			return a.users(true), cobra.ShellCompDirectiveNoFileComp
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var target string
@@ -100,7 +100,7 @@ func (a *App) installPolicy() {
 			switch len(args) {
 			case 0:
 				// Get all connected users
-				return a.completeWithConnectedUsers()
+				return a.users(true), cobra.ShellCompDirectiveNoFileComp
 			case 1:
 				// The user has already been process, let then specifying the ticket path
 				return nil, cobra.ShellCompDirectiveDefault
@@ -133,7 +133,8 @@ func (a *App) installPolicy() {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			return a.completeWithConnectedUsers()
+			// Get all users with cached policies
+			return a.users(false), cobra.ShellCompDirectiveNoFileComp
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var user string
@@ -460,20 +461,22 @@ func (a *App) purge(isComputer, purgeAll bool, target string) error {
 	return nil
 }
 
-func (a App) completeWithConnectedUsers() ([]string, cobra.ShellCompDirective) {
+// users returns the list of connected users according to their cached policy information.
+// If active is true, the list of users is retrieved from the cached Kerberos ticket information.
+func (a App) users(active bool) []string {
 	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return nil
 	}
 	defer client.Close()
-	stream, err := client.ListActiveUsers(a.ctx, &adsys.Empty{})
+	stream, err := client.ListUsers(a.ctx, &adsys.ListUsersRequest{Active: active})
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return nil
 	}
 	list, err := singleMsg(stream)
 	if err != nil {
-		return nil, cobra.ShellCompDirectiveNoFileComp
+		return nil
 	}
 
-	return strings.Split(list, " "), cobra.ShellCompDirectiveNoFileComp
+	return strings.Split(list, " ")
 }
