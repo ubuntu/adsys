@@ -117,6 +117,9 @@ func (a *App) serviceStop(force bool) error {
 
 	if _, err := stream.Recv(); err != nil {
 		// Ignore "transport is closing" error if force (i.e immediately drop all connections) was used.
+		// EOF check is done on the same line to avoid test coverage drift when the Unavailable error is not triggered,
+		// indicating that the underlying transport is already closed before we could get a response.
+		// The error is harmless as it indicates that the server has already stopped.
 		if (force && status.Code(err) == codes.Unavailable) || errors.Is(err, io.EOF) {
 			return nil
 		}
