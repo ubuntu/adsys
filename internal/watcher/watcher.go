@@ -215,7 +215,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 	for {
 		select {
 		case event, ok := <-fsWatcher.Events:
-			if !ok {
+			if !ok || event.Name == "" {
 				continue
 			}
 			log.Debugf(ctx, i18n.G("Got event: %v"), event)

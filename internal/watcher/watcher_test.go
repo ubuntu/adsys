@@ -162,8 +162,7 @@ func TestWatchDirectory(t *testing.T) {
 						require.NoError(t, err, "Can't read file")
 						d = append(data, []byte("\n;comment string")...)
 					}
-					err := os.WriteFile(filepath.Join(temp, path), d, 0600)
-					require.NoError(t, err, "Can't update file")
+					testutils.WriteFile(t, filepath.Join(temp, path), d, os.ModePerm)
 					continue
 				}
 

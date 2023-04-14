@@ -292,9 +292,7 @@ sssd:
 		filepath.Join(dir, "run"),
 		serviceTimeout))
 
-	err := os.WriteFile(configFile, data, 0600)
-	require.NoError(t, err, "Setup: failed to write test config file")
-
+	testutils.WriteFile(t, configFile, data, os.ModePerm)
 	return configFile
 }
 
