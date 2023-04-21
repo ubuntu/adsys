@@ -77,7 +77,7 @@ See each sub-command's help for details on how to use the generated script.
 ##### Options
 
 ```
-  -h, --help   help for completion
+-h, --help   help for completion
 ```
 
 ##### Options inherited from parent commands
