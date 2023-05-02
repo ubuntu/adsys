@@ -98,21 +98,14 @@ endif
 override_dh_auto_install:
 	dh_auto_install -- --no-source
 
-	# Here we utilise a logical flaw in the cargo wrapper to our advantage:
-	# when specifying DEB_CARGO_CRATE_IN_REGISTRY=1, the wrapper will
-	# avoid adding the `--path` option, so that we can specify it ourselves
 	DEB_HOST_GNU_TYPE=$(DEB_HOST_GNU_TYPE) \
 	DEB_HOST_RUST_TYPE=$(DEB_HOST_RUST_TYPE) \
 	CARGO_HOME=$(CURDIR)/debian/cargo_home \
 	DEB_CARGO_CRATE=adsys_mount_0.1.0 \
 	DEB_CARGO_CRATE_IN_REGISTRY=1 \
-	DESTDIR=$(CURDIR)/debian/tmp \
-        $(CARGO) install --path $(ADSYS_MOUNT)
-	# Currently doesn't work because of https://github.com/rust-lang/cargo/issues/4101
-	# combined with a lack of flexibility in the cargo wrapper. That means we
-	# have to do it manually (with the build split out in dh_auto_build for good
-	# measure, even though dh-cargo does it all in the install step)
-	# dh_auto_install --buildsystem=cargo -- --path $(ADSYS_MOUNT)
+	$(CARGO) build --release
+	mkdir -p debian/tmp/usr/libexec
+	cp target/$(DEB_HOST_RUST_TYPE)/release/adsys_mount debian/tmp/usr/libexec
 
 	# PAM configuration
 	mkdir -p debian/tmp/usr/share/pam
