@@ -179,6 +179,20 @@ func TestFetch(t *testing.T) {
 			want:                map[string]string{"assets": "Distro"},
 			wantAssetsRefreshed: false,
 		},
+		"assets are not updated if local version matches, with non-standard GPT.INI casing": {
+			adDomain:            "assetsonly.com",
+			assetsURL:           "Distro",
+			existing:            map[string]string{"assets": "Distrolowercasegptextension"},
+			want:                map[string]string{"assets": "Distrolowercasegptextension"},
+			wantAssetsRefreshed: false,
+		},
+		"assets are not updated if remote version matches, with non-standard GPT.INI casing": {
+			adDomain:            "assetsonly.com",
+			assetsURL:           "Distrolowercasegptextension",
+			existing:            map[string]string{"assets": "Distro"},
+			want:                map[string]string{"assets": "Distro"},
+			wantAssetsRefreshed: false,
+		},
 		"existing assets are kept if no assets downloadable provided": {
 			adDomain:            "assetsonly.com",
 			assetsURL:           "",
