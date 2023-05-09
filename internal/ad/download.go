@@ -40,6 +40,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/mvo5/libsmbclient-go"
@@ -172,12 +173,13 @@ func needsDownload(ctx context.Context, client *libsmbclient.Client, g *download
 	defer g.mu.RUnlock()
 
 	var localVersion, remoteVersion int
-	gptIniPath := filepath.Join(localPath, "GPT.INI")
-	if f, err := os.Open(filepath.Clean(gptIniPath)); err == nil {
-		defer decorate.LogFuncOnErrorContext(ctx, f.Close)
+	if gptIniPath, err := findLocalGPTIni(localPath); err == nil {
+		if f, err := os.Open(filepath.Clean(gptIniPath)); err == nil {
+			defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
-		if localVersion, err = getGPOVersion(ctx, f, g.name); err != nil {
-			log.Warningf(ctx, "Invalid local GPT.INI for %s: %v\nDownloading it again…", g.name, err)
+			if localVersion, err = getGPOVersion(ctx, f, g.name); err != nil {
+				log.Warningf(ctx, "Invalid local GPT.INI for %s: %v\nDownloading it again…", g.name, err)
+			}
 		}
 	}
 
@@ -329,4 +331,26 @@ func downloadRecursive(ctx context.Context, client *libsmbclient.Client, url, de
 		}
 	}
 	return nil
+}
+
+// findLocalGPTIni will look for a GPT.INI file in the given path (non-recursive).
+// To account for case differences in the filename/extension, try the canonical
+// name first (all uppercase), then walk the directory and check each entry.
+func findLocalGPTIni(path string) (string, error) {
+	if _, err := os.Stat(filepath.Join(path, "GPT.INI")); err == nil {
+		return filepath.Join(path, "GPT.INI"), nil
+	}
+
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return "", fmt.Errorf(i18n.G("could not read directory %q: %w"), path, err)
+	}
+
+	for _, entry := range entries {
+		if strings.EqualFold(entry.Name(), "GPT.INI") {
+			return filepath.Join(path, entry.Name()), nil
+		}
+	}
+
+	return "", fmt.Errorf(i18n.G("could not find GPT.INI in %q"), path)
 }
