@@ -243,7 +243,7 @@ msgstr ""
 msgid "Applying mount policy to machine %q"
 msgstr ""
 
-#: internal/ad/download.go:137
+#: internal/ad/download.go:138
 msgid "Assets directory is already up to date"
 msgstr ""
 
@@ -315,7 +315,7 @@ msgstr ""
 msgid "Control() error: %s"
 msgstr ""
 
-#: internal/ad/download.go:256
+#: internal/ad/download.go:258
 msgid "Could not clean up temporary directory:"
 msgstr ""
 
@@ -375,7 +375,7 @@ msgstr ""
 msgid "Documentation"
 msgstr ""
 
-#: internal/ad/download.go:306
+#: internal/ad/download.go:308
 #, c-format
 msgid "Downloading %s"
 msgstr ""
@@ -446,7 +446,7 @@ msgstr ""
 msgid "Format type (markdown, raw or html)."
 msgstr ""
 
-#: internal/ad/download.go:139
+#: internal/ad/download.go:140
 msgid "GPO %q is already up to date"
 msgstr ""
 
@@ -515,7 +515,7 @@ msgstr ""
 msgid "No entries found for the apparmor %s policy"
 msgstr ""
 
-#: internal/ad/download.go:220
+#: internal/ad/download.go:222
 #, c-format
 msgid "No version key found in GPT.INI for %s, assuming 0"
 msgstr ""
@@ -891,7 +891,7 @@ msgstr ""
 msgid "can't change mode of script %qto %o: %v"
 msgstr ""
 
-#: internal/ad/download.go:169
+#: internal/ad/download.go:170
 #, c-format
 msgid "can't check if %s needs refreshing"
 msgstr ""
@@ -987,11 +987,11 @@ msgstr ""
 msgid "can't determine start time of client process"
 msgstr ""
 
-#: internal/ad/download.go:106
+#: internal/ad/download.go:107
 msgid "can't download %q"
 msgstr ""
 
-#: internal/ad/download.go:64
+#: internal/ad/download.go:65
 msgid "can't download all gpos and assets"
 msgstr ""
 
@@ -1179,7 +1179,7 @@ msgstr ""
 msgid "context request grpc peer creeds information is not a peerCredsInfo."
 msgstr ""
 
-#: internal/ad/download.go:246
+#: internal/ad/download.go:248
 msgid "could not close directory: %v"
 msgstr ""
 
@@ -1193,6 +1193,10 @@ msgstr ""
 
 #: internal/ad/backends/sss/sss.go:64
 msgid "could not find AD domain name corresponding to %q"
+msgstr ""
+
+#: internal/ad/download.go:355
+msgid "could not find GPT.INI in %q"
 msgstr ""
 
 #: cmd/adsysd/integration_tests/adsysctl_doc_test.go:223
@@ -1228,6 +1232,10 @@ msgstr ""
 
 #: internal/adsysservice/doc.go:67
 msgid "could not read chapter %q: %v"
+msgstr ""
+
+#: internal/ad/download.go:346
+msgid "could not read directory %q: %w"
 msgstr ""
 
 #: internal/policies/mount/mount.go:518
@@ -1297,7 +1305,7 @@ msgstr ""
 msgid "don't display colorized version."
 msgstr ""
 
-#: internal/ad/download.go:233
+#: internal/ad/download.go:235
 msgid "download %q failed"
 msgstr ""
 
@@ -1618,7 +1626,7 @@ msgstr ""
 msgid "invalid policy"
 msgstr ""
 
-#: internal/ad/download.go:205
+#: internal/ad/download.go:207
 msgid "invalid remote GPT.INI"
 msgstr ""
 
