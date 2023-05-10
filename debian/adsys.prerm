@@ -8,6 +8,9 @@ fi
 if [ "$1" = purge ] && [ "${DPKG_MAINTSCRIPT_PACKAGE_REFCOUNT:-1}" = 1 ]; then
         adsysctl policy purge -a
         rm -rf /var/cache/adsys
+        # Remove adsys-managed machine dconf database
+        rm -f /etc/dconf/db/machine
+        rm -rf /etc/dconf/db/machine.d
 fi
 
 #DEBHELPER#

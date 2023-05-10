@@ -101,6 +101,21 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		}
 	}
 
+	// Only clean up user databases/profiles if there are no entries to apply.
+	// We don't clean up the machine database because we don't know if there's any user GPO depending on it.
+	if !isComputer && len(entries) == 0 {
+		if err := os.RemoveAll(dbPath); err != nil {
+			return fmt.Errorf(i18n.G("can't remove user dconf database directory: %v"), err)
+		}
+		if er := os.RemoveAll(filepath.Join(dbsPath, objectName)); er != nil {
+			return fmt.Errorf(i18n.G("can't remove user dconf binary database: %v"), er)
+		}
+		if err := os.RemoveAll(filepath.Join(profilesPath, objectName)); err != nil {
+			return fmt.Errorf(i18n.G("can't remove user dconf profile: %v"), err)
+		}
+		return nil
+	}
+
 	// Create profiles for users only
 	if !isComputer {
 		// Profile must be readable by everyone
