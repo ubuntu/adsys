@@ -236,8 +236,8 @@ func writeIfChanged(path string, content string) (done bool, err error) {
 }
 
 // writeProfile creates or updates a dconf profile file.
-// The adsys systemd-db should always be the first systemd-db in the file to enforce their values
-// (upper systemd-db in the profile wins).
+// The adsys system-db should always be the first system-db in the file to enforce their values
+// (upper system-db in the profile wins).
 func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	defer decorate.OnError(&err, i18n.G("can't update user profile %s"), profilesPath)
 
