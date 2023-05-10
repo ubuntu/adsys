@@ -1,11 +1,12 @@
 name: Sync GitHub issues to Jira
 on: [issues, issue_comment]
+
 jobs:
   sync-issues:
     name: Sync issues to Jira
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: ubuntu/sync-issues-github-jira@v1
-      with:
-        webhook-url: ${{ secrets.JIRA_WEBHOOK_URL }}
-        component: 'Active Directory'
+      - uses: canonical/sync-issues-github-jira@v1
+        with:
+          webhook-url: ${{ secrets.JIRA_WEBHOOK_URL }}
+          component: 'S-Enterprise'
