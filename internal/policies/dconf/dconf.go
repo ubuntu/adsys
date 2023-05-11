@@ -95,7 +95,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	dbsPath := filepath.Join(dconfDir, "db")
 	dbPath := filepath.Join(dbsPath, objectName+".d")
 
-	if !isComputer {
+	if !isComputer && len(entries) > 0 {
 		if _, err := os.Stat(filepath.Join(dbsPath, "machine.d", "locks", "adsys")); err != nil {
 			return fmt.Errorf(i18n.G("machine dconf database is required before generating a policy for an user. This one returns: %v"), err)
 		}

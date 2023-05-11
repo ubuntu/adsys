@@ -40,6 +40,7 @@ func TestApplyPolicy(t *testing.T) {
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			existingDconfDir: "user-with-disabled-value"},
 		"User empty state, with existing machine policy": {entries: []entry.Entry{}, existingDconfDir: "existing-user"},
+		"User empty state": {entries: []entry.Entry{}, existingDconfDir: "-"},
 
 		// Machine cases
 		"First boot": {entries: []entry.Entry{
