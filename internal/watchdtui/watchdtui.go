@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/bubbles/cursor"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -195,7 +196,7 @@ func newStyledTextInput() textinput.Model {
 	t := textinput.New()
 	t.CursorStyle = cursorStyle
 	t.CharLimit = 1024
-	t.SetCursorMode(textinput.CursorStatic)
+	t.Cursor.SetMode(cursor.CursorStatic)
 	return t
 }
 
