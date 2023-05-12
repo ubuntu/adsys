@@ -4,7 +4,7 @@
 
 
 [1;38;5;166mDirectories:[0m
-[1;38;5;166m> [0mfoo/bar[1;7;38;5;166m [0m
+[1;38;5;166m> [0mfoo/bar[7m [0m
 [38;5;220m#ABSPATH#/foo/bar: is not a directory[0m
 
 [ [38;5;240mInstall[0m ]

@@ -4,7 +4,7 @@
 
 
 [1;38;5;166mDirectories:[0m
-[1;38;5;166m> [0mfoo/bar/./qux/../../baz[1;7;38;5;166m [0m
+[1;38;5;166m> [0mfoo/bar/./qux/../../baz[7m [0m
 [38;5;220m#ABSPATH#/foo/baz: directory does not exist, please enter a valid path[0m
 
 [ [38;5;240mInstall[0m ]
