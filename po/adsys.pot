@@ -89,7 +89,7 @@ msgstr ""
 msgid "%s is an invalid schema: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:426
+#: internal/policies/dconf/dconf.go:441
 msgid "%s is not a valid gsettings signature: %v"
 msgstr ""
 
@@ -188,7 +188,7 @@ msgstr ""
 msgid "- can't read content -"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:129
+#: internal/policies/dconf/dconf.go:144
 msgid "- error on %s: %v"
 msgstr ""
 
@@ -1058,7 +1058,7 @@ msgstr ""
 msgid "can't load configuration"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:430
+#: internal/policies/dconf/dconf.go:445
 msgid "can't parse %q as %q: %v"
 msgstr ""
 
@@ -1087,6 +1087,18 @@ msgstr ""
 msgid "can't remove unused apparmor assets"
 msgstr ""
 
+#: internal/policies/dconf/dconf.go:111
+msgid "can't remove user dconf binary database: %v"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:108
+msgid "can't remove user dconf database directory: %v"
+msgstr ""
+
+#: internal/policies/dconf/dconf.go:114
+msgid "can't remove user dconf profile: %v"
+msgstr ""
+
 #: internal/policies/apparmor/apparmor.go:202
 #: internal/policies/apparmor/apparmor.go:208
 msgid "can't rename apparmor directory %q to %q: %v"
@@ -1098,7 +1110,7 @@ msgid "can't run scripts listed in %s"
 msgstr ""
 
 #: internal/policies/apparmor/apparmor.go:643
-#: internal/policies/dconf/dconf.go:206 internal/policies/mount/mount.go:400
+#: internal/policies/dconf/dconf.go:221 internal/policies/mount/mount.go:400
 #, c-format
 msgid "can't save %s"
 msgstr ""
@@ -1137,7 +1149,7 @@ msgstr ""
 msgid "can't update directories to watch"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:227
+#: internal/policies/dconf/dconf.go:242
 #, c-format
 msgid "can't update user profile %s"
 msgstr ""
@@ -1277,7 +1289,7 @@ msgstr ""
 msgid "couldn't send ready notification to systemd: %v"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:198
+#: internal/policies/dconf/dconf.go:213
 msgid "dconf update failed: %v"
 msgstr ""
 
@@ -1309,7 +1321,7 @@ msgstr ""
 msgid "download %q failed"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:421
+#: internal/policies/dconf/dconf.go:436
 msgid "empty signature for %v"
 msgstr ""
 
@@ -1339,7 +1351,7 @@ msgstr ""
 msgid "error when applying mount policy to machine %q"
 msgstr ""
 
-#: internal/policies/dconf/dconf.go:418
+#: internal/policies/dconf/dconf.go:433
 msgid "error while checking signature"
 msgstr ""
 
