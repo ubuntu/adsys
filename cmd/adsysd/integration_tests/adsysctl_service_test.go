@@ -333,7 +333,7 @@ func TestServiceStatus(t *testing.T) {
 
 			// Create users krb5cc and GPO caches
 			if !tc.noCacheUsersMachine {
-				krb5UserDir := filepath.Join(adsysDir, "run", "krb5cc")
+				krb5UserDir := filepath.Join(adsysDir, "run", "krb5cc", "tracking")
 				err := os.MkdirAll(krb5UserDir, 0750)
 				require.NoError(t, err, "Setup: could not create gpo cache dir: %v", err)
 				for _, user := range []string{"user1@example.com", "user2@example.com"} {

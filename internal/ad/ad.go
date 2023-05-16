@@ -11,6 +11,7 @@ import (
 	_ "embed" // embed gpolist python binary.
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/url"
 	"os"
@@ -132,7 +133,7 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 	}
 
 	krb5CacheDir := filepath.Join(args.runDir, "krb5cc")
-	if err := os.MkdirAll(krb5CacheDir, 0700); err != nil {
+	if err := os.MkdirAll(filepath.Join(krb5CacheDir, "tracking"), 0700); err != nil {
 		return nil, err
 	}
 	sysvolCacheDir := filepath.Join(args.cacheDir, "sysvol")
@@ -181,10 +182,12 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return pols, fmt.Errorf(i18n.G("user name %q should be of the form %s@DOMAIN"), objectName, objectName)
 	}
 
-	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
 	if objectClass == ComputerObject && objectName != ad.hostname {
 		return pols, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
 	}
+
+	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
+	krb5CCSymlink := filepath.Join(ad.krb5CacheDir, "tracking", objectName)
 	// Create a ccache symlink on first fetch for future calls (on refresh for instance)
 	if userKrb5CCName != "" || objectClass == ComputerObject {
 		src := userKrb5CCName
@@ -195,9 +198,16 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 				return pols, err
 			}
 		}
-		if err := ad.ensureKrb5CCName(src, krb5CCPath); err != nil {
+
+		// Create a symlink to the ccache file
+		if err := ad.ensureKrb5CCSymlink(src, krb5CCSymlink); err != nil {
 			return pols, err
 		}
+	}
+
+	// Ensure we have an up-to-date copy of the ccache file
+	if err := ad.ensureKrb5CCCopy(krb5CCSymlink, krb5CCPath); err != nil {
+		return pols, err
 	}
 
 	var online bool
@@ -340,7 +350,7 @@ func (ad *AD) ListUsers(ctx context.Context, active bool) (users []string, err e
 
 	cacheDir := ad.policiesCacheDir
 	if active {
-		cacheDir = ad.krb5CacheDir
+		cacheDir = filepath.Join(ad.krb5CacheDir, "tracking")
 	}
 
 	entries, err := os.ReadDir(cacheDir)
@@ -357,16 +367,15 @@ func (ad *AD) ListUsers(ctx context.Context, active bool) (users []string, err e
 	return users, nil
 }
 
-// ensureKrb5CCName manages user ccname symlinks.
-// It handles concurrent calls, and only recreate the symlink if we want to point to
-// a new destination.
-func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't create symlink for caching"))
-
+// ensureKrb5CCSymlink manages user ccname ticket symlinks.
+// It handles concurrent calls, and works by creating a symlink to the
+// actual ticket for tracking purposes.
+// It only recreates the symlink if we want to point to a new destination.
+func (ad *AD) ensureKrb5CCSymlink(srcKrb5CCName, dstKrb5CCName string) error {
 	ad.Lock()
 	defer ad.Unlock()
 
-	srcKrb5CCName, err = filepath.Abs(srcKrb5CCName)
+	srcKrb5CCName, err := filepath.Abs(srcKrb5CCName)
 	if err != nil {
 		return fmt.Errorf(i18n.G("can't get absolute path of ccname to symlink to: %v"), err)
 	}
@@ -383,9 +392,72 @@ func (ad *AD) ensureKrb5CCName(srcKrb5CCName, dstKrb5CCName string) (err error) 
 		}
 	}
 
+	if err := os.MkdirAll(filepath.Dir(dstKrb5CCName), 0700); err != nil {
+		return fmt.Errorf(i18n.G("failed to create parent directory for symlink: %w"), err)
+	}
+
 	if err := os.Symlink(srcKrb5CCName, dstKrb5CCName); err != nil {
 		return err
 	}
+	return nil
+}
+
+// ensureKrb5CCCopy checks if the cached krb5cc ticket is up to date and updates
+// it if not.
+// The file ownership is changed to the calling user (root) in order to satisfy
+// the Heimdal implementation of Kerberos.
+// To track modifications to the krb5cc file we look at the mtime of the
+// original ticket and keep it up to date with
+// the copy.
+func (ad *AD) ensureKrb5CCCopy(krb5CCSymlink, krb5CCCopyName string) error {
+	ad.Lock()
+	defer ad.Unlock()
+
+	krb5CCSrc, err := os.Readlink(krb5CCSymlink)
+	if err != nil {
+		return fmt.Errorf(i18n.G("failed to read krb5cc symlink: %w"), err)
+	}
+
+	if copyStat, err := os.Stat(krb5CCCopyName); err == nil {
+		// We already have a copy of the ticket, let's check if we need to update it
+		srcStat, err := os.Stat(krb5CCSrc)
+		if err != nil {
+			return fmt.Errorf(i18n.G("failed to stat source ticket: %w"), err)
+		}
+
+		// The source ticket is not newer than the destination one, no need to update
+		if !srcStat.ModTime().After(copyStat.ModTime()) {
+			return nil
+		}
+	}
+
+	// The ticket is either not present or outdated, let's update it
+	// Copy the ticket
+	if err := copyFile(krb5CCSrc, krb5CCCopyName, 0600); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// copyFile copies a file from src to dst, using the specified mode.
+func copyFile(src, dst string, mode os.FileMode) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf(i18n.G("failed to open source file: %w"), err)
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
+	if err != nil {
+		return fmt.Errorf(i18n.G("failed to open destination file: %w"), err)
+	}
+	defer dstFile.Close()
+
+	if _, err := io.Copy(dstFile, srcFile); err != nil {
+		return fmt.Errorf(i18n.G("failed to copy file: %w"), err)
+	}
+
 	return nil
 }
 

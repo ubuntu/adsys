@@ -32,7 +32,6 @@ class SamDB:
         # the samba bindings knows how to deal with it.
         if krb5ccname.startswith("FILE:"):
             krb5ccname = krb5ccname[5:]
-        krb5ccname = os.readlink(krb5ccname)
         if not os.path.exists(krb5ccname):
             raise Exception("KRB5CCNAME ticket does not exists")
 

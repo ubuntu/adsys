@@ -992,6 +992,7 @@ func TestPolicyUpdate(t *testing.T) {
 					err := os.MkdirAll(krb5currentDir, 0750)
 					require.NoError(t, err, "Setup: could not create machine sss cache")
 				}
+				var danglingSymlink bool
 				if krb5.src != "" {
 					if !filepath.IsAbs(krb5.src) {
 						krb5.src = filepath.Join(krb5currentDir, krb5.src)
@@ -1004,6 +1005,7 @@ func TestPolicyUpdate(t *testing.T) {
 					require.NoError(t, err, "Setup: Could not write ticket content")
 				} else {
 					// dangling symlink
+					danglingSymlink = true
 					krb5.src = "/some/unexisting/ticket"
 				}
 
@@ -1011,8 +1013,18 @@ func TestPolicyUpdate(t *testing.T) {
 					continue
 				}
 
-				err = os.Symlink(krb5.src, filepath.Join(krb5ccDir, krb5.adsysSymlink))
+				// Symlink ticket to krb5ccDir
+				err = os.MkdirAll(filepath.Join(krb5ccDir, "tracking"), 0700)
+				require.NoError(t, err, "Setup: could not create krb5 ticket directory")
+				err = os.Symlink(krb5.src, filepath.Join(krb5ccDir, "tracking", krb5.adsysSymlink))
 				require.NoError(t, err, "Setup: could not set krb5 file adsys symlink")
+
+				if danglingSymlink {
+					continue
+				}
+
+				// If our symlink is valid, make a copy of the ticket
+				testutils.Copy(t, krb5.src, filepath.Join(krb5ccDir, krb5.adsysSymlink))
 			}
 
 			if tc.krb5ccname == "" {
