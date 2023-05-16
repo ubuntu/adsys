@@ -89,10 +89,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\interface\toolkit-accessibility" valueName="metaValues">
       <parentCategory ref="UbuntuAccessibility" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -133,10 +141,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\a11y\applications\screen-keyboard-enabled" valueName="metaValues">
       <parentCategory ref="UbuntuAccessibility" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopA11yApplicationsScreenKeyboardEnabled" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -177,10 +193,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\a11y\applications\screen-magnifier-enabled" valueName="metaValues">
       <parentCategory ref="UbuntuAccessibility" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopA11yApplicationsScreenMagnifierEnabled" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -221,10 +245,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\a11y\applications\screen-reader-enabled" valueName="metaValues">
       <parentCategory ref="UbuntuAccessibility" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopA11yApplicationsScreenReaderEnabled" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -265,10 +297,15 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundPictureUri" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUri)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureUri)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureUri)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri" valueName="metaValues">
       <parentCategory ref="UbuntuBackground" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureUri" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopBackgroundPictureUri" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2310DconfOrgGnomeDesktopBackgroundPictureUri" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopBackgroundPictureUri" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -294,8 +331,8 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundPictureOptions" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureOptions)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureOptions)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options" valueName="metaValues">
       <parentCategory ref="UbuntuBackground" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions" valueName="all">
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions0)">
@@ -329,6 +366,47 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopBackgroundPictureOptions6)">
+            <value>
+              <string>spanned</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions" valueName="23.10">
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions0)">
+            <value>
+              <string>none</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions1)">
+            <value>
+              <string>wallpaper</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions2)">
+            <value>
+              <string>centered</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions3)">
+            <value>
+              <string>scaled</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions4)">
+            <value>
+              <string>stretched</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions5)">
+            <value>
+              <string>zoom</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopBackgroundPictureOptions6)">
             <value>
               <string>spanned</string>
             </value>
@@ -503,10 +581,15 @@
     <policy name="UbuntuUserDconfOrgGnomeShellFavoriteApps" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeShellFavoriteApps)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeShellFavoriteApps)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeShellFavoriteApps)" key="Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps" valueName="metaValues">
       <parentCategory ref="UbuntuShell" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"23.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"23.10":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeShellFavoriteApps" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeShellFavoriteApps" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2310DconfOrgGnomeShellFavoriteApps" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeShellFavoriteApps" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -532,10 +615,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundShowDesktopIcons)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons" valueName="metaValues">
       <parentCategory ref="UbuntuShell" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundShowDesktopIcons" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopBackgroundShowDesktopIcons" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopBackgroundShowDesktopIcons" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -576,10 +667,18 @@
     <policy name="UbuntuUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton)" key="Software\Policies\Ubuntu\dconf\org\gnome\shell\extensions\dash-to-dock\show-show-apps-button" valueName="metaValues">
       <parentCategory ref="UbuntuShell" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeShellExtensionsDashToDockShowShowAppsButton" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -620,8 +719,8 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopInterfaceClockFormat" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockFormat)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockFormat)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockFormat)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\interface\clock-format" valueName="metaValues">
       <parentCategory ref="UbuntuClock" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockFormat" valueName="all">
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat0)">
@@ -630,6 +729,22 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopInterfaceClockFormat1)">
+            <value>
+              <string>12h</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopInterfaceClockFormat" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemUser2310DconfOrgGnomeDesktopInterfaceClockFormat" valueName="23.10">
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopInterfaceClockFormat0)">
+            <value>
+              <string>24h</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopInterfaceClockFormat1)">
             <value>
               <string>12h</string>
             </value>
@@ -704,10 +819,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopInterfaceClockShowDate" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowDate)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockShowDate)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowDate)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\interface\clock-show-date" valueName="metaValues">
       <parentCategory ref="UbuntuClock" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopInterfaceClockShowDate" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopInterfaceClockShowDate" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -748,10 +871,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopInterfaceClockShowWeekday" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopInterfaceClockShowWeekday)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopInterfaceClockShowWeekday)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\interface\clock-show-weekday" valueName="metaValues">
       <parentCategory ref="UbuntuClock" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -792,10 +923,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopNotificationsShowBanners" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowBanners)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopNotificationsShowBanners)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowBanners)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\notifications\show-banners" valueName="metaValues">
       <parentCategory ref="UbuntuNotifications" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowBanners" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopNotificationsShowBanners" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopNotificationsShowBanners" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -836,10 +975,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableCommandLine" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableCommandLine)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableCommandLine)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-command-line" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableCommandLine" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopLockdownDisableCommandLine" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopLockdownDisableCommandLine" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -880,10 +1027,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableLogOut" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLogOut)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableLogOut)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLogOut)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-log-out" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLogOut" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopLockdownDisableLogOut" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopLockdownDisableLogOut" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -924,10 +1079,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableUserSwitching" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableUserSwitching)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableUserSwitching)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-user-switching" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableUserSwitching" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopLockdownDisableUserSwitching" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopLockdownDisableUserSwitching" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -968,10 +1131,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisablePrinting" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrinting)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisablePrinting)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrinting)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-printing" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrinting" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopLockdownDisablePrinting" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopLockdownDisablePrinting" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1012,10 +1183,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisablePrintSetup" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisablePrintSetup)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisablePrintSetup)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-print-setup" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisablePrintSetup" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopLockdownDisablePrintSetup" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopLockdownDisablePrintSetup" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1056,10 +1235,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableSaveToDisk)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-save-to-disk" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableSaveToDisk" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopLockdownDisableSaveToDisk" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopLockdownDisableSaveToDisk" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1100,10 +1287,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\user-administration-disabled" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1144,10 +1339,15 @@
     <policy name="UbuntuUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\media-keys\control-center" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"23.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"23.10":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2310DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -1173,10 +1373,15 @@
     <policy name="UbuntuUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\media-keys\terminal" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"23.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"23.10":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2310DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeSettingsDaemonPluginsMediaKeysTerminal" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -1202,10 +1407,15 @@
     <policy name="UbuntuUserDconfOrgGnomeShellKeybindingsToggleOverview" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleOverview)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeShellKeybindingsToggleOverview)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeShellKeybindingsToggleOverview)" key="Software\Policies\Ubuntu\dconf\org\gnome\shell\keybindings\toggle-overview" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"23.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"23.10":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeShellKeybindingsToggleOverview" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeShellKeybindingsToggleOverview" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2310DconfOrgGnomeShellKeybindingsToggleOverview" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeShellKeybindingsToggleOverview" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -1231,10 +1441,15 @@
     <policy name="UbuntuUserDconfOrgGnomeShellKeybindingsToggleApplicationView" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeShellKeybindingsToggleApplicationView)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeShellKeybindingsToggleApplicationView)" key="Software\Policies\Ubuntu\dconf\org\gnome\shell\keybindings\toggle-application-view" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"[]","meta":"as"},"22.04":{"empty":"[]","meta":"as"},"22.10":{"empty":"[]","meta":"as"},"23.04":{"empty":"[]","meta":"as"},"23.10":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"as"},"22.04":{"meta":"as"},"22.10":{"meta":"as"},"23.04":{"meta":"as"},"23.10":{"meta":"as"},"all":{"meta":"as"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllDconfOrgGnomeShellKeybindingsToggleApplicationView" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeShellKeybindingsToggleApplicationView" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2310DconfOrgGnomeShellKeybindingsToggleApplicationView" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeShellKeybindingsToggleApplicationView" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -1269,10 +1484,15 @@
     <policy name="UbuntuUserDconfOrgGnomeMutterOverlayKey" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeMutterOverlayKey)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeMutterOverlayKey)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeMutterOverlayKey)" key="Software\Policies\Ubuntu\dconf\org\gnome\mutter\overlay-key" valueName="metaValues">
       <parentCategory ref="UbuntuKeyboardShortcuts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemUserAllDconfOrgGnomeMutterOverlayKey" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeMutterOverlayKey" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2310DconfOrgGnomeMutterOverlayKey" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeMutterOverlayKey" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -1298,10 +1518,15 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopScreensaverPictureUri" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureUri)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopScreensaverPictureUri)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopScreensaverPictureUri)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\screensaver\picture-uri" valueName="metaValues">
       <parentCategory ref="UbuntuScreensaver" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemUserAllDconfOrgGnomeDesktopScreensaverPictureUri" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopScreensaverPictureUri" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2310DconfOrgGnomeDesktopScreensaverPictureUri" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopScreensaverPictureUri" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -1327,8 +1552,8 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopScreensaverPictureOptions" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopScreensaverPictureOptions)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopScreensaverPictureOptions)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopScreensaverPictureOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\screensaver\picture-options" valueName="metaValues">
       <parentCategory ref="UbuntuScreensaver" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions" valueName="all">
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions0)">
@@ -1362,6 +1587,47 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopScreensaverPictureOptions6)">
+            <value>
+              <string>spanned</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions" valueName="23.10">
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions0)">
+            <value>
+              <string>none</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions1)">
+            <value>
+              <string>wallpaper</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions2)">
+            <value>
+              <string>centered</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions3)">
+            <value>
+              <string>scaled</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions4)">
+            <value>
+              <string>stretched</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions5)">
+            <value>
+              <string>zoom</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2310DconfOrgGnomeDesktopScreensaverPictureOptions6)">
             <value>
               <string>spanned</string>
             </value>
@@ -1536,10 +1802,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopNotificationsShowInLockScreen" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopNotificationsShowInLockScreen)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopNotificationsShowInLockScreen)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\notifications\show-in-lock-screen" valueName="metaValues">
       <parentCategory ref="UbuntuScreensaver" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1580,10 +1854,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownDisableLockScreen" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownDisableLockScreen)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownDisableLockScreen)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\disable-lock-screen" valueName="metaValues">
       <parentCategory ref="UbuntuScreensaver" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownDisableLockScreen" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopLockdownDisableLockScreen" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopLockdownDisableLockScreen" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1624,10 +1906,18 @@
     <policy name="UbuntuUserDconfOrgGnomeDesktopMediaHandlingAutomount" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopMediaHandlingAutomount)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopMediaHandlingAutomount)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopMediaHandlingAutomount)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\media-handling\automount" valueName="metaValues">
       <parentCategory ref="UbuntuPeripherals" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopMediaHandlingAutomount" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopMediaHandlingAutomount" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2310DconfOrgGnomeDesktopMediaHandlingAutomount" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1668,10 +1958,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableRestartButtons)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\disable-restart-buttons" valueName="metaValues">
       <parentCategory ref="UbuntuLoginScreen" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableRestartButtons" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenDisableRestartButtons" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenDisableRestartButtons" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1712,10 +2010,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\notifications\show-in-lock-screen" valueName="metaValues">
       <parentCategory ref="UbuntuLoginScreen" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeDesktopNotificationsShowInLockScreen" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1756,10 +2062,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopNotificationsShowBanners)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\notifications\show-banners" valueName="metaValues">
       <parentCategory ref="UbuntuLoginScreen" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopNotificationsShowBanners" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeDesktopNotificationsShowBanners" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeDesktopNotificationsShowBanners" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1800,10 +2114,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\toolkit-accessibility" valueName="metaValues">
       <parentCategory ref="UbuntuLoginScreen" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeDesktopInterfaceToolkitAccessibility" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1844,10 +2166,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenDisableUserList" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenDisableUserList)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenDisableUserList)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\disable-user-list" valueName="metaValues">
       <parentCategory ref="UbuntuLoginScreen" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenDisableUserList" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenDisableUserList" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenDisableUserList" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1888,10 +2218,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\enable-password-authentication" valueName="metaValues">
       <parentCategory ref="UbuntuAuthentication" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenEnablePasswordAuthentication" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1932,10 +2270,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\enable-fingerprint-authentication" valueName="metaValues">
       <parentCategory ref="UbuntuAuthentication" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenEnableFingerprintAuthentication" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -1976,10 +2322,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\enable-smartcard-authentication" valueName="metaValues">
       <parentCategory ref="UbuntuAuthentication" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenEnableSmartcardAuthentication" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -2020,10 +2374,15 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenAllowedFailures" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenAllowedFailures)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenAllowedFailures)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\allowed-failures" valueName="metaValues">
       <parentCategory ref="UbuntuAuthentication" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"22.10":{"empty":"0","meta":"i"},"23.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"22.10":{"meta":"i"},"23.04":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"22.10":{"empty":"0","meta":"i"},"23.04":{"empty":"0","meta":"i"},"23.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"22.10":{"meta":"i"},"23.04":{"meta":"i"},"23.10":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
       <elements>
         <decimal id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenAllowedFailures" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2049,8 +2408,8 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockFormat)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat0)">
@@ -2059,6 +2418,22 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockFormat1)">
+            <value>
+              <string>12h</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2310GdmDconfOrgGnomeDesktopInterfaceClockFormat" valueName="23.10">
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfOrgGnomeDesktopInterfaceClockFormat0)">
+            <value>
+              <string>24h</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfOrgGnomeDesktopInterfaceClockFormat1)">
             <value>
               <string>12h</string>
             </value>
@@ -2133,10 +2508,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowDate)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-date" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeDesktopInterfaceClockShowDate" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -2177,10 +2560,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeDesktopInterfaceClockShowWeekday" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -2221,10 +2612,18 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenBannerMessageEnable)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageEnable" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenBannerMessageEnable" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenBannerMessageEnable" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -2265,10 +2664,15 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenBannerMessageText" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenBannerMessageText)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenBannerMessageText)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenBannerMessageText" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2294,10 +2698,15 @@
     <policy name="UbuntuMachineGdmDconfOrgGnomeLoginScreenLogo" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfOrgGnomeLoginScreenLogo)" explainText="$(string.UbuntuExplainTextMachineGdmDconfOrgGnomeLoginScreenLogo)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfOrgGnomeLoginScreenLogo)" key="Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\logo" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllGdmDconfOrgGnomeLoginScreenLogo" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfOrgGnomeLoginScreenLogo" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310GdmDconfOrgGnomeLoginScreenLogo" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304GdmDconfOrgGnomeLoginScreenLogo" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2323,10 +2732,15 @@
     <policy name="UbuntuMachineGdmDconfComUbuntuLoginScreenBackgroundColor" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor)" explainText="$(string.UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundColor)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundColor)" key="Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-color" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundColor" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfComUbuntuLoginScreenBackgroundColor" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310GdmDconfComUbuntuLoginScreenBackgroundColor" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundColor" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2352,10 +2766,15 @@
     <policy name="UbuntuMachineGdmDconfComUbuntuLoginScreenBackgroundPictureUri" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundPictureUri)" explainText="$(string.UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundPictureUri)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundPictureUri)" key="Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-picture-uri" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310GdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304GdmDconfComUbuntuLoginScreenBackgroundPictureUri" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2381,8 +2800,8 @@
     <policy name="UbuntuMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat)" explainText="$(string.UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundRepeat)" key="Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-repeat" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat0)">
@@ -2416,6 +2835,47 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundRepeat6)">
+            <value>
+              <string>round</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat" valueName="23.10">
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat0)">
+            <value>
+              <string>default</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat1)">
+            <value>
+              <string>repeat</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat2)">
+            <value>
+              <string>repeat-x</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat3)">
+            <value>
+              <string>repeat-y</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat4)">
+            <value>
+              <string>no-repeat</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat5)">
+            <value>
+              <string>space</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundRepeat6)">
             <value>
               <string>round</string>
             </value>
@@ -2590,8 +3050,8 @@
     <policy name="UbuntuMachineGdmDconfComUbuntuLoginScreenBackgroundSize" class="Machine" displayName="$(string.UbuntuDisplayMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize)" explainText="$(string.UbuntuExplainTextMachineGdmDconfComUbuntuLoginScreenBackgroundSize)" presentation="$(presentation.UbuntuPresentationMachineGdmDconfComUbuntuLoginScreenBackgroundSize)" key="Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-size" valueName="metaValues">
       <parentCategory ref="UbuntuInterface" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize0)">
@@ -2610,6 +3070,32 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachineAllGdmDconfComUbuntuLoginScreenBackgroundSize3)">
+            <value>
+              <string>contain</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2310GdmDconfComUbuntuLoginScreenBackgroundSize" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2310GdmDconfComUbuntuLoginScreenBackgroundSize" valueName="23.10">
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundSize0)">
+            <value>
+              <string>default</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundSize1)">
+            <value>
+              <string>auto</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundSize2)">
+            <value>
+              <string>cover</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310GdmDconfComUbuntuLoginScreenBackgroundSize3)">
             <value>
               <string>contain</string>
             </value>
@@ -2739,10 +3225,15 @@
     <policy name="UbuntuMachineScriptsStartup" class="Machine" displayName="$(string.UbuntuDisplayMachineAllScriptsStartup)" explainText="$(string.UbuntuExplainTextMachineScriptsStartup)" presentation="$(presentation.UbuntuPresentationMachineScriptsStartup)" key="Software\Policies\Ubuntu\scripts\startup" valueName="metaValues">
       <parentCategory ref="UbuntuComputerScripts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllScriptsStartup" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ScriptsStartup" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2310ScriptsStartup" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ScriptsStartup" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2768,10 +3259,15 @@
     <policy name="UbuntuMachineScriptsShutdown" class="Machine" displayName="$(string.UbuntuDisplayMachineAllScriptsShutdown)" explainText="$(string.UbuntuExplainTextMachineScriptsShutdown)" presentation="$(presentation.UbuntuPresentationMachineScriptsShutdown)" key="Software\Policies\Ubuntu\scripts\shutdown" valueName="metaValues">
       <parentCategory ref="UbuntuComputerScripts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllScriptsShutdown" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ScriptsShutdown" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2310ScriptsShutdown" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ScriptsShutdown" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2797,10 +3293,15 @@
     <policy name="UbuntuMachineApparmorApparmorMachine" class="Machine" displayName="$(string.UbuntuDisplayMachineAllApparmorApparmorMachine)" explainText="$(string.UbuntuExplainTextMachineApparmorApparmorMachine)" presentation="$(presentation.UbuntuPresentationMachineApparmorApparmorMachine)" key="Software\Policies\Ubuntu\apparmor\apparmor-machine" valueName="metaValues">
       <parentCategory ref="UbuntuSystemWideApplicationConfinement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllApparmorApparmorMachine" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ApparmorApparmorMachine" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2310ApparmorApparmorMachine" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ApparmorApparmorMachine" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2826,10 +3327,18 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\ambient-enabled" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerAmbientEnabled" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -2870,10 +3379,15 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\idle-brightness" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"22.10":{"empty":"0","meta":"i"},"23.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"22.10":{"meta":"i"},"23.04":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"22.10":{"empty":"0","meta":"i"},"23.04":{"empty":"0","meta":"i"},"23.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"22.10":{"meta":"i"},"23.04":{"meta":"i"},"23.10":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
       <elements>
         <decimal id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerIdleBrightness" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -2899,10 +3413,18 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\idle-dim" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerIdleDim" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -2943,8 +3465,8 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\lid-close-ac-action" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0)">
@@ -2978,6 +3500,47 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction" valueName="23.10">
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseAcAction6)">
             <value>
               <string>logout</string>
             </value>
@@ -3152,8 +3715,8 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\lid-close-battery-action" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0)">
@@ -3187,6 +3750,47 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction" valueName="23.10">
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseBatteryAction6)">
             <value>
               <string>logout</string>
             </value>
@@ -3361,10 +3965,18 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\lid-close-suspend-with-external-monitor" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -3405,8 +4017,8 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\power-button-action" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0)">
@@ -3425,6 +4037,32 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction" valueName="23.10">
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction0)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction2)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction3)">
             <value>
               <string>interactive</string>
             </value>
@@ -3539,10 +4177,18 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\power-saver-profile-on-low-battery" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
-      <disabledValue><string>{"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <enabledValue><string>{"22.04":{"empty":"false","meta":"b"},"22.10":{"empty":"false","meta":"b"},"23.04":{"empty":"false","meta":"b"},"23.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"22.04":{"meta":"b"},"22.10":{"meta":"b"},"23.04":{"meta":"b"},"23.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
       <elements>
         <boolean id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerPowerSaverProfileOnLowBattery" valueName="23.10">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
@@ -3575,10 +4221,15 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-ac-timeout" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"22.10":{"empty":"0","meta":"i"},"23.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"22.10":{"meta":"i"},"23.04":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"22.10":{"empty":"0","meta":"i"},"23.04":{"empty":"0","meta":"i"},"23.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"22.10":{"meta":"i"},"23.04":{"meta":"i"},"23.10":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
       <elements>
         <decimal id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcTimeout" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -3604,8 +4255,8 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-ac-type" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0)">
@@ -3639,6 +4290,47 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType" valueName="23.10">
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveAcType6)">
             <value>
               <string>logout</string>
             </value>
@@ -3813,10 +4505,15 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-battery-timeout" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"22.10":{"empty":"0","meta":"i"},"23.04":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"22.10":{"meta":"i"},"23.04":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"i"},"22.04":{"empty":"0","meta":"i"},"22.10":{"empty":"0","meta":"i"},"23.04":{"empty":"0","meta":"i"},"23.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"i"},"22.04":{"meta":"i"},"22.10":{"meta":"i"},"23.04":{"meta":"i"},"23.10":{"meta":"i"},"all":{"meta":"i"}}</string></disabledValue>
       <elements>
         <decimal id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryTimeout" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -3842,8 +4539,8 @@
     <policy name="UbuntuMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-battery-type" valueName="metaValues">
       <parentCategory ref="UbuntuPowerManagement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
       <elements>
         <enum id="UbuntuElemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" valueName="all">
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0)">
@@ -3877,6 +4574,47 @@
             </value>
           </item>
           <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6)">
+            <value>
+              <string>logout</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType" valueName="23.10">
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType0)">
+            <value>
+              <string>blank</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType1)">
+            <value>
+              <string>suspend</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType2)">
+            <value>
+              <string>shutdown</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType3)">
+            <value>
+              <string>hibernate</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType4)">
+            <value>
+              <string>interactive</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType5)">
+            <value>
+              <string>nothing</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2310DconfOrgGnomeSettingsDaemonPluginsPowerSleepInactiveBatteryType6)">
             <value>
               <string>logout</string>
             </value>
@@ -4051,10 +4789,15 @@
     <policy name="UbuntuMachineMountSystemMounts" class="Machine" displayName="$(string.UbuntuDisplayMachineAllMountSystemMounts)" explainText="$(string.UbuntuExplainTextMachineMountSystemMounts)" presentation="$(presentation.UbuntuPresentationMachineMountSystemMounts)" key="Software\Policies\Ubuntu\mount\system-mounts" valueName="metaValues">
       <parentCategory ref="UbuntuSystemDriveMapping" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemMachineAllMountSystemMounts" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310MountSystemMounts" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachine2310MountSystemMounts" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304MountSystemMounts" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4080,10 +4823,15 @@
     <policy name="UbuntuMachineProxyProxyHttp" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyHttp)" explainText="$(string.UbuntuExplainTextMachineProxyProxyHttp)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyHttp)" key="Software\Policies\Ubuntu\proxy\proxy\http" valueName="metaValues">
       <parentCategory ref="UbuntuSystemProxyConfiguration" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"all":{}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"DISABLED":{},"all":{}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllProxyProxyHttp" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ProxyProxyHttp" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310ProxyProxyHttp" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ProxyProxyHttp" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4109,10 +4857,15 @@
     <policy name="UbuntuMachineProxyProxyHttps" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyHttps)" explainText="$(string.UbuntuExplainTextMachineProxyProxyHttps)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyHttps)" key="Software\Policies\Ubuntu\proxy\proxy\https" valueName="metaValues">
       <parentCategory ref="UbuntuSystemProxyConfiguration" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"all":{}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"DISABLED":{},"all":{}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllProxyProxyHttps" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ProxyProxyHttps" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310ProxyProxyHttps" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ProxyProxyHttps" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4138,10 +4891,15 @@
     <policy name="UbuntuMachineProxyProxyFtp" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyFtp)" explainText="$(string.UbuntuExplainTextMachineProxyProxyFtp)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyFtp)" key="Software\Policies\Ubuntu\proxy\proxy\ftp" valueName="metaValues">
       <parentCategory ref="UbuntuSystemProxyConfiguration" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"all":{}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"DISABLED":{},"all":{}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllProxyProxyFtp" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ProxyProxyFtp" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310ProxyProxyFtp" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ProxyProxyFtp" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4167,10 +4925,15 @@
     <policy name="UbuntuMachineProxyProxySocks" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxySocks)" explainText="$(string.UbuntuExplainTextMachineProxyProxySocks)" presentation="$(presentation.UbuntuPresentationMachineProxyProxySocks)" key="Software\Policies\Ubuntu\proxy\proxy\socks" valueName="metaValues">
       <parentCategory ref="UbuntuSystemProxyConfiguration" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"all":{}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"DISABLED":{},"all":{}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllProxyProxySocks" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ProxyProxySocks" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310ProxyProxySocks" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ProxyProxySocks" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4196,10 +4959,15 @@
     <policy name="UbuntuMachineProxyProxyNoProxy" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyNoProxy)" explainText="$(string.UbuntuExplainTextMachineProxyProxyNoProxy)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyNoProxy)" key="Software\Policies\Ubuntu\proxy\proxy\no-proxy" valueName="metaValues">
       <parentCategory ref="UbuntuSystemProxyConfiguration" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"all":{}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"DISABLED":{},"all":{}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllProxyProxyNoProxy" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ProxyProxyNoProxy" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310ProxyProxyNoProxy" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ProxyProxyNoProxy" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4225,10 +4993,15 @@
     <policy name="UbuntuMachineProxyProxyAuto" class="Machine" displayName="$(string.UbuntuDisplayMachineAllProxyProxyAuto)" explainText="$(string.UbuntuExplainTextMachineProxyProxyAuto)" presentation="$(presentation.UbuntuPresentationMachineProxyProxyAuto)" key="Software\Policies\Ubuntu\proxy\proxy\auto" valueName="metaValues">
       <parentCategory ref="UbuntuSystemProxyConfiguration" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"all":{}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"DISABLED":{},"all":{}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemMachineAllProxyProxyAuto" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachine2310ProxyProxyAuto" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachine2310ProxyProxyAuto" valueName="23.10" />
         <boolean id="UbuntuOverrideElemMachine2304ProxyProxyAuto" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4254,10 +5027,15 @@
     <policy name="UbuntuUserScriptsLogon" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogon)" explainText="$(string.UbuntuExplainTextUserScriptsLogon)" presentation="$(presentation.UbuntuPresentationUserScriptsLogon)" key="Software\Policies\Ubuntu\scripts\logon" valueName="metaValues">
       <parentCategory ref="UbuntuUserScripts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllScriptsLogon" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310ScriptsLogon" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2310ScriptsLogon" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304ScriptsLogon" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4283,10 +5061,15 @@
     <policy name="UbuntuUserScriptsLogoff" class="User" displayName="$(string.UbuntuDisplayUserAllScriptsLogoff)" explainText="$(string.UbuntuExplainTextUserScriptsLogoff)" presentation="$(presentation.UbuntuPresentationUserScriptsLogoff)" key="Software\Policies\Ubuntu\scripts\logoff" valueName="metaValues">
       <parentCategory ref="UbuntuUserScripts" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllScriptsLogoff" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310ScriptsLogoff" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2310ScriptsLogoff" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304ScriptsLogoff" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4312,10 +5095,15 @@
     <policy name="UbuntuUserApparmorApparmorUsers" class="User" displayName="$(string.UbuntuDisplayUserAllApparmorApparmorUsers)" explainText="$(string.UbuntuExplainTextUserApparmorApparmorUsers)" presentation="$(presentation.UbuntuPresentationUserApparmorApparmorUsers)" key="Software\Policies\Ubuntu\apparmor\apparmor-users" valueName="metaValues">
       <parentCategory ref="UbuntuUserApplicationConfinement" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"all":{}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"DISABLED":{},"all":{}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"all":{}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{},"22.04":{},"22.10":{},"23.04":{},"23.10":{},"DISABLED":{},"all":{}}</string></disabledValue>
       <elements>
         <text id="UbuntuElemUserAllApparmorApparmorUsers" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310ApparmorApparmorUsers" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2310ApparmorApparmorUsers" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304ApparmorApparmorUsers" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
@@ -4341,10 +5129,15 @@
     <policy name="UbuntuUserMountUserMounts" class="User" displayName="$(string.UbuntuDisplayUserAllMountUserMounts)" explainText="$(string.UbuntuExplainTextUserMountUserMounts)" presentation="$(presentation.UbuntuPresentationUserMountUserMounts)" key="Software\Policies\Ubuntu\mount\user-mounts" valueName="metaValues">
       <parentCategory ref="UbuntuUserDriveMapping" />
       <supportedOn ref="Ubuntu" />
-      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
-      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
+      <enabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"all":{"strategy":"append"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"strategy":"append"},"22.04":{"strategy":"append"},"22.10":{"strategy":"append"},"23.04":{"strategy":"append"},"23.10":{"strategy":"append"},"DISABLED":{},"all":{"strategy":"append"}}</string></disabledValue>
       <elements>
         <multiText id="UbuntuElemUserAllMountUserMounts" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310MountUserMounts" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemUser2310MountUserMounts" valueName="23.10" />
         <boolean id="UbuntuOverrideElemUser2304MountUserMounts" valueName="Override23.04">
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
