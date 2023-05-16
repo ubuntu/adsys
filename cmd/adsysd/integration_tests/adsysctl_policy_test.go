@@ -451,7 +451,7 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "old-data",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_EXAMPLE.COM",
+					src:          "ccache_OFFLINE",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -473,7 +473,7 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_EXAMPLE.COM",
+					src:          "ccache_OFFLINE",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -497,7 +497,7 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_EXAMPLE.COM",
+					src:          "ccache_OFFLINE",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
