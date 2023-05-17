@@ -11,7 +11,6 @@ import (
 	_ "embed" // embed gpolist python binary.
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"net/url"
 	"os"
@@ -433,32 +432,26 @@ func (ad *AD) ensureKrb5CCCopy(krb5CCSymlink, krb5CCCopyName string) error {
 
 	// The ticket is either not present or outdated, let's update it
 	// Copy the ticket
-	if err := copyFile(krb5CCSrc, krb5CCCopyName, 0600); err != nil {
+	if err := safeCopyFile(krb5CCSrc, krb5CCCopyName, 0600); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// copyFile copies a file from src to dst, using the specified mode.
-func copyFile(src, dst string, mode os.FileMode) error {
-	srcFile, err := os.Open(src)
+// safeCopyFile copies a file from src to dst, using the specified mode.
+// It first writes to a temporary file in the same directory as dst, then
+// renames it to dst, ensuring the write is atomic.
+func safeCopyFile(src, dst string, mode os.FileMode) error {
+	content, err := os.ReadFile(src)
 	if err != nil {
-		return fmt.Errorf(i18n.G("failed to open source file: %w"), err)
+		return fmt.Errorf(i18n.G("failed to read source file: %w"), err)
 	}
-	defer srcFile.Close()
-
-	dstFile, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
-	if err != nil {
-		return fmt.Errorf(i18n.G("failed to open destination file: %w"), err)
-	}
-	defer dstFile.Close()
-
-	if _, err := io.Copy(dstFile, srcFile); err != nil {
-		return fmt.Errorf(i18n.G("failed to copy file: %w"), err)
+	if err := os.WriteFile(dst+".new", content, mode); err != nil {
+		return err
 	}
 
-	return nil
+	return os.Rename(dst+".new", dst)
 }
 
 func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass) (r []policies.GPO, err error) {
