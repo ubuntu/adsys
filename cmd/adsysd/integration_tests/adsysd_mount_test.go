@@ -13,7 +13,7 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
-func TestUserMountHandler(t *testing.T) {
+func TestAdsysdMount(t *testing.T) {
 	tests := map[string]struct {
 		mountsFile    string
 		sessionAnswer string
