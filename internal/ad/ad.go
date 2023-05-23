@@ -361,6 +361,13 @@ func (ad *AD) ListUsers(ctx context.Context, active bool) (users []string, err e
 		if !strings.Contains(entry.Name(), "@") {
 			continue
 		}
+
+		// Silently skip over dangling symlinks
+		if active {
+			if _, err := os.Stat(filepath.Join(cacheDir, entry.Name())); err != nil && errors.Is(err, fs.ErrNotExist) {
+				continue
+			}
+		}
 		users = append(users, entry.Name())
 	}
 	return users, nil

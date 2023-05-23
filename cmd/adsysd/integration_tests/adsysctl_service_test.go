@@ -333,16 +333,17 @@ func TestServiceStatus(t *testing.T) {
 
 			// Create users krb5cc and GPO caches
 			if !tc.noCacheUsersMachine {
+				krb5ccSrcDir := t.TempDir()
 				krb5UserDir := filepath.Join(adsysDir, "run", "krb5cc", "tracking")
 				err := os.MkdirAll(krb5UserDir, 0750)
 				require.NoError(t, err, "Setup: could not create gpo cache dir: %v", err)
 				for _, user := range []string{"user1@example.com", "user2@example.com"} {
-					f, err := os.Create(filepath.Join(krb5UserDir, user))
-					require.NoError(t, err, "Setup: could not create krb5 cache dir for %s: %v", user, err)
-					f.Close()
-					f, err = os.Create(filepath.Join(cachedPoliciesDir, user))
-					require.NoError(t, err, "Setup: could not create gpo cache dir for %s: %v", user, err)
-					f.Close()
+					err := os.WriteFile(filepath.Join(krb5ccSrcDir, user), []byte("Krb5CC Ticket data"), 0600)
+					require.NoError(t, err, "Setup: could not create krb5 cache for %s", user)
+					err = os.Symlink(filepath.Join(krb5ccSrcDir, user), filepath.Join(krb5UserDir, user))
+					require.NoError(t, err, "Setup: could not create krb5 symlink for %s", user)
+					err = os.WriteFile(filepath.Join(cachedPoliciesDir, user), []byte("GPO cache data"), 0600)
+					require.NoError(t, err, "Setup: could not create gpo cache dir for %s", user)
 				}
 				// TODO: change modification time? (golden)
 			}

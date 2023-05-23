@@ -1035,6 +1035,7 @@ func TestListUsers(t *testing.T) {
 
 	tests := map[string]struct {
 		ccCachesToCreate     []string
+		ccDanglingSymlinks   []string
 		policyCachesToCreate []string
 		noCCacheDir          bool
 		noPoliciesCacheDir   bool
@@ -1054,6 +1055,12 @@ func TestListUsers(t *testing.T) {
 			active:           true,
 			ccCachesToCreate: []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
 			want:             []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
+		},
+		"Two users, dangling symlink for one": {
+			active:             true,
+			ccCachesToCreate:   []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
+			ccDanglingSymlinks: []string{"bob@GPOONLY.COM"},
+			want:               []string{"sponge@OTHERDOMAIN.BIZ"},
 		},
 		"None": {
 			active:           true,
@@ -1122,9 +1129,16 @@ func TestListUsers(t *testing.T) {
 			if len(tc.ccCachesToCreate) > 0 {
 				require.NoError(t, os.MkdirAll(krb5CacheDir, 0700), "Setup: can’t create krb5cc cache dir")
 				for _, f := range tc.ccCachesToCreate {
-					require.NoError(t, os.Symlink("nonexistent", filepath.Join(krb5CacheDir, f)),
+					srcPath := setKrb5CC(t, f)
+					require.NoError(t, os.Symlink(srcPath, filepath.Join(krb5CacheDir, f)),
 						"Setup: symlink creation of krb5cc failed")
 				}
+			}
+
+			for _, f := range tc.ccDanglingSymlinks {
+				srcPath, err := os.Readlink(filepath.Join(krb5CacheDir, f))
+				require.NoError(t, err, "Setup: can’t read krb5cc symlink target")
+				require.NoError(t, os.Remove(srcPath), "Setup: can’t remove krb5cc symlink target")
 			}
 
 			adc, err := ad.New(context.Background(), mock.Backend{Dom: "gpoonly.com", ServURL: "ldap://myserver.gpoonly.com"}, hostname,

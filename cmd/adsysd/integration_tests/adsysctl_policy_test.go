@@ -344,6 +344,26 @@ func TestPolicyUpdate(t *testing.T) {
 					machine:      true,
 				},
 			}},
+		"Refresh with one dangling symlink ignores the respective user": {args: []string{"--all"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					// dangling adsys symlink for this user
+					//src:          "userintegrationtest@example.com.krb5",
+					adsysSymlink: "userintegrationtest@example.com",
+				},
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
 		"Refresh some connected": {args: []string{"--all"},
 			initState:  "old-data",
 			krb5ccname: "-",
@@ -871,30 +891,6 @@ func TestPolicyUpdate(t *testing.T) {
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
-				{
-					src:          "ccache_EXAMPLE.COM",
-					adsysSymlink: hostname,
-					machine:      true,
-				},
-			},
-			wantErr: true,
-		},
-		// FIXME: if one user fails (ticket expired for a long time, do we really want to fail there?
-		// we say we are failing, but the other were updated)
-		// maybe only a warning if better
-		"Error on refresh with one user failing": {args: []string{"--all"},
-			initState:  "old-data",
-			krb5ccname: "-",
-			krb5ccNamesState: []krb5ccNamesWithState{
-				{
-					src:          currentUser + ".krb5",
-					adsysSymlink: currentUser,
-				},
-				{
-					// dangling adsys symlink for this user
-					//src:          "userintegrationtest@example.com.krb5",
-					adsysSymlink: "userintegrationtest@example.com",
-				},
 				{
 					src:          "ccache_EXAMPLE.COM",
 					adsysSymlink: hostname,
