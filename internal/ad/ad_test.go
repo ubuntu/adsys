@@ -745,7 +745,10 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		objectName2         string
 		userKrb5CCBaseName1 string
 		userKrb5CCBaseName2 string
-		restart             bool
+
+		restart       bool
+		modifyKrb5CC  bool
+		symlinkKrb5CC bool
 
 		wantErr bool
 	}{
@@ -773,6 +776,20 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			objectName2:         "bob@ASSETSANDGPO.COM",
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "bobNew",
+		},
+		"Second call without Krb5CCName refreshes ticket copy if needed": {
+			objectName1:         "bob@ASSETSANDGPO.COM",
+			objectName2:         "bob@ASSETSANDGPO.COM",
+			userKrb5CCBaseName1: "bob",
+			userKrb5CCBaseName2: "EMPTY",
+			modifyKrb5CC:        true,
+		},
+		"Second call without Krb5CCName replaces previous symlinks in the original path": {
+			objectName1:         "bob@ASSETSANDGPO.COM",
+			objectName2:         "bob@ASSETSANDGPO.COM",
+			userKrb5CCBaseName1: "bob",
+			userKrb5CCBaseName2: "EMPTY",
+			symlinkKrb5CC:       true,
 		},
 
 		// Machine for assets cases
@@ -836,6 +853,18 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			require.NoError(t, err, "Setup: can't load wanted policies")
 			assertEqualPolicies(t, want, entries, tc.objectName1 == hostname)
 
+			if tc.modifyKrb5CC {
+				err = os.WriteFile(krb5CCName, []byte("KRB5 Ticket modified content"), 0600)
+				require.NoError(t, err, "Setup: cannot modify krb5cc file")
+			}
+
+			if tc.symlinkKrb5CC {
+				err = os.Remove(filepath.Join(rundir, "krb5cc", tc.objectName1))
+				require.NoError(t, err, "Setup: cannot remove krb5cc copy")
+				err = os.Symlink(krb5CCName, filepath.Join(rundir, "krb5cc", tc.objectName1))
+				require.NoError(t, err, "Setup: cannot create symlink")
+			}
+
 			// Recreate the ticket if needed or reset it to empty for refresh
 			if tc.userKrb5CCBaseName2 != "" {
 				if tc.userKrb5CCBaseName2 == "EMPTY" {
@@ -856,6 +885,16 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			// Second call
 			entries, err = adc.GetPolicies(context.Background(), tc.objectName2, objectClass, krb5CCName)
 			require.NoError(t, err, "GetPolicies should return no error")
+
+			if tc.modifyKrb5CC {
+				krb5ccContents, err := os.ReadFile(filepath.Join(rundir, "krb5cc", tc.objectName2))
+				require.NoError(t, err, "Setup: can't read krb5cc file contents")
+				assert.Equal(t, "KRB5 Ticket modified content", string(krb5ccContents), "changes to krb5cc file should be reflected in the copy")
+			}
+
+			stat, err := os.Lstat(filepath.Join(rundir, "krb5cc", tc.objectName2))
+			require.NoError(t, err, "Setup: can't stat krb5cc file")
+			require.True(t, stat.Mode().IsRegular(), "krb5cc file should be a regular file")
 
 			wantPolicyDir = filepath.Join("testdata", "sysvolcache", strings.ToLower(tc.objectName2))
 			if tc.objectName2 == hostname {
@@ -1015,6 +1054,7 @@ func TestListUsers(t *testing.T) {
 
 	tests := map[string]struct {
 		ccCachesToCreate     []string
+		ccDanglingSymlinks   []string
 		policyCachesToCreate []string
 		noCCacheDir          bool
 		noPoliciesCacheDir   bool
@@ -1034,6 +1074,12 @@ func TestListUsers(t *testing.T) {
 			active:           true,
 			ccCachesToCreate: []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
 			want:             []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
+		},
+		"Two users, dangling symlink for one": {
+			active:             true,
+			ccCachesToCreate:   []string{"bob@GPOONLY.COM", "sponge@OTHERDOMAIN.BIZ"},
+			ccDanglingSymlinks: []string{"bob@GPOONLY.COM"},
+			want:               []string{"sponge@OTHERDOMAIN.BIZ"},
 		},
 		"None": {
 			active:           true,
@@ -1098,13 +1144,20 @@ func TestListUsers(t *testing.T) {
 			cachedir, rundir := t.TempDir(), t.TempDir()
 
 			// populate rundir with users and machines
-			krb5CacheDir := filepath.Join(rundir, "krb5cc")
+			krb5CacheDir := filepath.Join(rundir, "krb5cc", "tracking")
 			if len(tc.ccCachesToCreate) > 0 {
 				require.NoError(t, os.MkdirAll(krb5CacheDir, 0700), "Setup: can’t create krb5cc cache dir")
 				for _, f := range tc.ccCachesToCreate {
-					require.NoError(t, os.Symlink("nonexistent", filepath.Join(krb5CacheDir, f)),
+					srcPath := setKrb5CC(t, f)
+					require.NoError(t, os.Symlink(srcPath, filepath.Join(krb5CacheDir, f)),
 						"Setup: symlink creation of krb5cc failed")
 				}
+			}
+
+			for _, f := range tc.ccDanglingSymlinks {
+				srcPath, err := os.Readlink(filepath.Join(krb5CacheDir, f))
+				require.NoError(t, err, "Setup: can’t read krb5cc symlink target")
+				require.NoError(t, os.Remove(srcPath), "Setup: can’t remove krb5cc symlink target")
 			}
 
 			adc, err := ad.New(context.Background(), mock.Backend{Dom: "gpoonly.com", ServURL: "ldap://myserver.gpoonly.com"}, hostname,

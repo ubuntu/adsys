@@ -344,6 +344,26 @@ func TestPolicyUpdate(t *testing.T) {
 					machine:      true,
 				},
 			}},
+		"Refresh with one dangling symlink ignores the respective user": {args: []string{"--all"},
+			initState:  "old-data",
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+				{
+					// dangling adsys symlink for this user
+					//src:          "userintegrationtest@example.com.krb5",
+					adsysSymlink: "userintegrationtest@example.com",
+				},
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+		},
 		"Refresh some connected": {args: []string{"--all"},
 			initState:  "old-data",
 			krb5ccname: "-",
@@ -451,7 +471,7 @@ func TestPolicyUpdate(t *testing.T) {
 			initState: "old-data",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_EXAMPLE.COM",
+					src:          "ccache_OFFLINE",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -473,7 +493,7 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_EXAMPLE.COM",
+					src:          "ccache_OFFLINE",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -497,7 +517,7 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{
-					src:          "ccache_EXAMPLE.COM",
+					src:          "ccache_OFFLINE",
 					adsysSymlink: hostname,
 					machine:      true,
 				},
@@ -879,30 +899,6 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		// FIXME: if one user fails (ticket expired for a long time, do we really want to fail there?
-		// we say we are failing, but the other were updated)
-		// maybe only a warning if better
-		"Error on refresh with one user failing": {args: []string{"--all"},
-			initState:  "old-data",
-			krb5ccname: "-",
-			krb5ccNamesState: []krb5ccNamesWithState{
-				{
-					src:          currentUser + ".krb5",
-					adsysSymlink: currentUser,
-				},
-				{
-					// dangling adsys symlink for this user
-					//src:          "userintegrationtest@example.com.krb5",
-					adsysSymlink: "userintegrationtest@example.com",
-				},
-				{
-					src:          "ccache_EXAMPLE.COM",
-					adsysSymlink: hostname,
-					machine:      true,
-				},
-			},
-			wantErr: true,
-		},
 		"Error on unexisting user": {
 			initState: "localhost-uptodate",
 			args:      []string{"doesnotexists@example.com", "adsystestuser@example.com.krb5"},
@@ -992,6 +988,7 @@ func TestPolicyUpdate(t *testing.T) {
 					err := os.MkdirAll(krb5currentDir, 0750)
 					require.NoError(t, err, "Setup: could not create machine sss cache")
 				}
+				var danglingSymlink bool
 				if krb5.src != "" {
 					if !filepath.IsAbs(krb5.src) {
 						krb5.src = filepath.Join(krb5currentDir, krb5.src)
@@ -1004,6 +1001,7 @@ func TestPolicyUpdate(t *testing.T) {
 					require.NoError(t, err, "Setup: Could not write ticket content")
 				} else {
 					// dangling symlink
+					danglingSymlink = true
 					krb5.src = "/some/unexisting/ticket"
 				}
 
@@ -1011,8 +1009,18 @@ func TestPolicyUpdate(t *testing.T) {
 					continue
 				}
 
-				err = os.Symlink(krb5.src, filepath.Join(krb5ccDir, krb5.adsysSymlink))
+				// Symlink ticket to krb5ccDir
+				err = os.MkdirAll(filepath.Join(krb5ccDir, "tracking"), 0700)
+				require.NoError(t, err, "Setup: could not create krb5 ticket directory")
+				err = os.Symlink(krb5.src, filepath.Join(krb5ccDir, "tracking", krb5.adsysSymlink))
 				require.NoError(t, err, "Setup: could not set krb5 file adsys symlink")
+
+				if danglingSymlink {
+					continue
+				}
+
+				// If our symlink is valid, make a copy of the ticket
+				testutils.Copy(t, krb5.src, filepath.Join(krb5ccDir, krb5.adsysSymlink))
 			}
 
 			if tc.krb5ccname == "" {
