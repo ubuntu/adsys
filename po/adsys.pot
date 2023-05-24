@@ -29,7 +29,7 @@ msgid ""
 "  - %s"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:499
+#: internal/watchdtui/watchdtui.go:500
 msgid ""
 "\n"
 "Service already exists and will be reconfigured\n"
@@ -62,7 +62,7 @@ msgid ""
 "Note:"
 msgstr ""
 
-#: internal/ad/ad.go:524
+#: internal/ad/ad.go:596
 #, c-format
 msgid ""
 "%s\n"
@@ -70,7 +70,7 @@ msgid ""
 "Server URL: %s"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:476
+#: internal/watchdtui/watchdtui.go:477
 #, c-format
 msgid "%s installing service... please wait."
 msgstr ""
@@ -80,7 +80,7 @@ msgstr ""
 msgid "%s is a directory. Ignoring."
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:426
+#: internal/watchdtui/watchdtui.go:427
 #, c-format
 msgid "%s is a directory; will create %s.yaml inside"
 msgstr ""
@@ -111,7 +111,7 @@ msgstr ""
 msgid "%s requires a valid subcommand"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:414
+#: internal/watchdtui/watchdtui.go:415
 #, c-format
 msgid "%s will be the absolute path"
 msgstr ""
@@ -136,7 +136,7 @@ msgstr ""
 msgid "%s. %s"
 msgstr ""
 
-#: internal/ad/ad.go:446 internal/ad/ad.go:458
+#: internal/ad/ad.go:518 internal/ad/ad.go:530
 msgid "%s: %v"
 msgstr ""
 
@@ -150,26 +150,26 @@ msgstr ""
 msgid "%s: Locked to system default"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:457
+#: internal/watchdtui/watchdtui.go:458
 #, c-format
 msgid "%s: directory does not exist, please enter a valid path"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:431
+#: internal/watchdtui/watchdtui.go:432
 #, c-format
 msgid "%s: file already exists and will be overwritten"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:460
+#: internal/watchdtui/watchdtui.go:461
 #, c-format
 msgid "%s: is not a directory"
 msgstr ""
 
-#: internal/ad/ad.go:514
+#: internal/ad/ad.go:586
 msgid "**Can't check if we have an active connection**\n"
 msgstr ""
 
-#: internal/ad/ad.go:516
+#: internal/ad/ad.go:588
 msgid "**Offline mode** using cached policies\n"
 msgstr ""
 
@@ -287,12 +287,12 @@ msgid ""
 "create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:167
+#: internal/watchdtui/watchdtui.go:168
 #, c-format
 msgid "Config file location (leave blank for default: %s)"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:168
+#: internal/watchdtui/watchdtui.go:169
 msgid "Config file: "
 msgstr ""
 
@@ -319,7 +319,7 @@ msgstr ""
 msgid "Could not clean up temporary directory:"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:480
+#: internal/watchdtui/watchdtui.go:481
 msgid "Could not install service: %v\n"
 msgstr ""
 
@@ -363,11 +363,11 @@ msgstr ""
 msgid "Did you mean this?\n"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:504
+#: internal/watchdtui/watchdtui.go:505
 msgid "Directories:"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:178
+#: internal/watchdtui/watchdtui.go:179
 msgid "Directory to watch (one per line)"
 msgstr ""
 
@@ -475,7 +475,7 @@ msgstr ""
 msgid "Got event: %v"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:466
+#: internal/watchdtui/watchdtui.go:467
 msgid "Install"
 msgstr ""
 
@@ -631,7 +631,7 @@ msgstr ""
 msgid "SSSd config file path"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:484
+#: internal/watchdtui/watchdtui.go:485
 msgid "Service adwatchd was successfully installed and is now running."
 msgstr ""
 
@@ -710,7 +710,7 @@ msgstr ""
 msgid "The provided entries are not supported by the %s mount manager: %v"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:489
+#: internal/watchdtui/watchdtui.go:490
 msgid "Ubuntu AD Watch Daemon Installer"
 msgstr ""
 
@@ -745,7 +745,7 @@ msgstr ""
 msgid "Unloading %d apparmor policies: %v"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:468
+#: internal/watchdtui/watchdtui.go:469
 msgid "Update"
 msgstr ""
 
@@ -967,10 +967,6 @@ msgstr ""
 msgid "can't create scripts manager"
 msgstr ""
 
-#: internal/ad/ad.go:364
-msgid "can't create symlink for caching"
-msgstr ""
-
 #: internal/policies/mount/mount.go:160
 msgid "can't create user directory %q for %q: %w"
 msgstr ""
@@ -1007,7 +1003,7 @@ msgstr ""
 msgid "can't generate expanded categories"
 msgstr ""
 
-#: internal/ad/ad.go:371
+#: internal/ad/ad.go:386
 msgid "can't get absolute path of ccname to symlink to: %v"
 msgstr ""
 
@@ -1016,7 +1012,7 @@ msgstr ""
 msgid "can't get cached policies from %s"
 msgstr ""
 
-#: internal/ad/ad.go:151 internal/ad/ad.go:222
+#: internal/ad/ad.go:151 internal/ad/ad.go:231
 msgid "can't get current Server URL: %w"
 msgstr ""
 
@@ -1042,7 +1038,7 @@ msgstr ""
 msgid "can't install command flag bindings: %v"
 msgstr ""
 
-#: internal/ad/ad.go:334
+#: internal/ad/ad.go:343
 msgid "can't list users from cache"
 msgstr ""
 
@@ -1452,6 +1448,10 @@ msgstr ""
 msgid "failed to create new mount manager"
 msgstr ""
 
+#: internal/ad/ad.go:402
+msgid "failed to create parent directory for symlink: %w"
+msgstr ""
+
 #: internal/systemd/systemd.go:75
 #, c-format
 msgid "failed to disable unit %s"
@@ -1517,8 +1517,12 @@ msgstr ""
 msgid "failed to parse entry values"
 msgstr ""
 
-#: internal/ad/ad.go:348
+#: internal/ad/ad.go:357
 msgid "failed to read cache directory: %v"
+msgstr ""
+
+#: internal/ad/ad.go:424
+msgid "failed to read krb5cc symlink: %w"
 msgstr ""
 
 #: internal/ad/admxgen/files.go:39
@@ -1533,11 +1537,15 @@ msgstr ""
 msgid "failed to read overrides files: %w"
 msgstr ""
 
+#: internal/ad/ad.go:455
+msgid "failed to read source file: %w"
+msgstr ""
+
 #: internal/systemd/systemd.go:85
 msgid "failed to reload units"
 msgstr ""
 
-#: internal/ad/ad.go:382
+#: internal/ad/ad.go:397
 msgid "failed to remove existing symlink: %v"
 msgstr ""
 
@@ -1553,7 +1561,7 @@ msgstr ""
 msgid "failed to retrieve status for service"
 msgstr ""
 
-#: internal/ad/ad.go:243
+#: internal/ad/ad.go:252
 msgid ""
 "failed to retrieve the list of GPO (exited with %d): %v\n"
 "%s"
@@ -1574,6 +1582,10 @@ msgstr ""
 #: internal/systemd/systemd.go:35
 #, c-format
 msgid "failed to start unit %s"
+msgstr ""
+
+#: internal/ad/ad.go:431
+msgid "failed to stat source ticket: %w"
 msgstr ""
 
 #: internal/watchdservice/watchdservice.go:163
@@ -1656,7 +1668,7 @@ msgid ""
 "This one returns: %v"
 msgstr ""
 
-#: internal/ad/ad.go:212
+#: internal/ad/ad.go:221
 msgid "machine is offline and policies cache is unavailable: %v"
 msgstr ""
 
@@ -1775,7 +1787,7 @@ msgstr ""
 msgid "permission denied"
 msgstr ""
 
-#: internal/watchdtui/watchdtui.go:445
+#: internal/watchdtui/watchdtui.go:446
 msgid "please enter at least one directory"
 msgstr ""
 
@@ -1795,7 +1807,7 @@ msgstr ""
 msgid "request to act on user action should have a user name attached"
 msgstr ""
 
-#: internal/ad/ad.go:186
+#: internal/ad/ad.go:185
 msgid "requested a type computer of %q which isn't current host %q"
 msgstr ""
 
