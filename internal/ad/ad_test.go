@@ -746,8 +746,9 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 		userKrb5CCBaseName1 string
 		userKrb5CCBaseName2 string
 
-		restart      bool
-		modifyKrb5CC bool
+		restart       bool
+		modifyKrb5CC  bool
+		symlinkKrb5CC bool
 
 		wantErr bool
 	}{
@@ -782,6 +783,13 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 			userKrb5CCBaseName1: "bob",
 			userKrb5CCBaseName2: "EMPTY",
 			modifyKrb5CC:        true,
+		},
+		"Second call without Krb5CCName replaces previous symlinks in the original path": {
+			objectName1:         "bob@ASSETSANDGPO.COM",
+			objectName2:         "bob@ASSETSANDGPO.COM",
+			userKrb5CCBaseName1: "bob",
+			userKrb5CCBaseName2: "EMPTY",
+			symlinkKrb5CC:       true,
 		},
 
 		// Machine for assets cases
@@ -850,6 +858,13 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 				require.NoError(t, err, "Setup: cannot modify krb5cc file")
 			}
 
+			if tc.symlinkKrb5CC {
+				err = os.Remove(filepath.Join(rundir, "krb5cc", tc.objectName1))
+				require.NoError(t, err, "Setup: cannot remove krb5cc copy")
+				err = os.Symlink(krb5CCName, filepath.Join(rundir, "krb5cc", tc.objectName1))
+				require.NoError(t, err, "Setup: cannot create symlink")
+			}
+
 			// Recreate the ticket if needed or reset it to empty for refresh
 			if tc.userKrb5CCBaseName2 != "" {
 				if tc.userKrb5CCBaseName2 == "EMPTY" {
@@ -876,6 +891,10 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 				require.NoError(t, err, "Setup: can't read krb5cc file contents")
 				assert.Equal(t, "KRB5 Ticket modified content", string(krb5ccContents), "changes to krb5cc file should be reflected in the copy")
 			}
+
+			stat, err := os.Lstat(filepath.Join(rundir, "krb5cc", tc.objectName2))
+			require.NoError(t, err, "Setup: can't stat krb5cc file")
+			require.True(t, stat.Mode().IsRegular(), "krb5cc file should be a regular file")
 
 			wantPolicyDir = filepath.Join("testdata", "sysvolcache", strings.ToLower(tc.objectName2))
 			if tc.objectName2 == hostname {

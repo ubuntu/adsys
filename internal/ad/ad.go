@@ -424,7 +424,7 @@ func (ad *AD) ensureKrb5CCCopy(krb5CCSymlink, krb5CCCopyName string) error {
 		return fmt.Errorf(i18n.G("failed to read krb5cc symlink: %w"), err)
 	}
 
-	if copyStat, err := os.Stat(krb5CCCopyName); err == nil {
+	if copyStat, err := os.Lstat(krb5CCCopyName); err == nil && copyStat.Mode()&os.ModeSymlink == 0 {
 		// We already have a copy of the ticket, let's check if we need to update it
 		srcStat, err := os.Stat(krb5CCSrc)
 		if err != nil {
