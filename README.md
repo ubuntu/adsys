@@ -1310,6 +1310,34 @@ adsysctl policy debug gpolist-script [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
+#### adsysd mount
+
+Mount the locations listed in the specified file for the current user
+
+```
+adsysd mount MOUNTS_FILE [flags]
+```
+
+##### Options
+
+```
+  -h, --help   help for mount
+```
+
+##### Options inherited from parent commands
+
+```
+      --ad-backend string       Active Directory authentication backend (default "sssd")
+      --cache-dir string        directory where ADsys caches GPOs downloads and policies. (default "/var/cache/adsys")
+  -c, --config string           use a specific configuration file
+      --run-dir string          directory where ADsys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
 #### adsysd runscripts
 
 Runs scripts in the given subdirectory
