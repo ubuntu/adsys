@@ -6,7 +6,7 @@ ConditionPathExists=/run/adsys/users/%U/mounts
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/libexec/adsys_mount /run/adsys/users/%U/mounts
+ExecStart=/sbin/adsysd mount /run/adsys/users/%U/mounts
 
 [Install]
 WantedBy=default.target
