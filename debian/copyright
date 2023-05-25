@@ -233,67 +233,6 @@ Files: vendor/github.com/ubuntu/decorate/*
 Copyright: Canonical
 License: MIT
 
-Files: vendor_rust/autocfg/*
-Copyright: 2018 Josh Stone
-License: MIT
-
-Files: vendor_rust/bitflags/*
-       vendor_rust/libc/*
-       vendor_rust/heck/*
-       vendor_rust/log/*
-       vendor_rust/quote/*
-       vendor_rust/time/*
-Copyright: 2014-2020 The Rust Project Developers
-License: MIT
-
-Files: vendor_rust/cfg-if/*
-       vendor_rust/pkg-config/*
-       vendor_rust/proc-macro2/*
-       vendor_rust/toml/*
-Copyright: 2014 Alex Crichton
-License: MIT
-
-Files: vendor_rust/cfg-expr/*
-Copyright: 2019 Embark Studios
-License: MIT
-
-Files: vendor_rust/futures-*/*
-Copyright: 2017 The Tokio Authors / 2016 Alex Crichton
-License: MIT
-
-Files: vendor_rust/pin-utils/*
-Copyright: 2018 The pin-utils authors
-License: MIT
-
-Files: vendor_rust/proc-macro-error-attr/*
-       vendor_rust/proc-macro-error/*
-Copyright: 2019-2020 CreepySkeleton
-License: MIT
-
-Files: vendor_rust/slab/*
-Copyright: 2019 Carl Lerche
-License: MIT
-
-Files: vendor_rust/smallvec/*
-Copyright: 2018 The Servo Project Developers
-License: MIT
-
-Files: vendor_rust/unicode-ident/*
-Copyright: 1991-2022 Unicode, Inc.
-License: Unicode
-
-Files: vendor_rust/version-compare/*
-Copyright: 2017 Tim Visée
-License: MIT
-
-Files: vendor_rust/version_check/*
-Copyright: 2017-2018 Sergio Benitez
-License: MIT
-
-Files: vendor_rust/winapi/*
-Copyright: 2015-2018 The winapi-rs Developers
-License: MIT
-
 License: Apache-2.0
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
