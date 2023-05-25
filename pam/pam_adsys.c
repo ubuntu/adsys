@@ -45,6 +45,7 @@
 #include <security/pam_modutil.h>
 
 #define ADSYS_POLICIES_DIR "/var/cache/adsys/policies/%s"
+#define SSSD_CONF_PATH "/etc/sssd/sssd.conf"
 
 /*
  * Refresh the group policies of current user
@@ -198,19 +199,96 @@ static int update_machine_policy(pam_handle_t *pamh, int debug) {
 }
 
 /*
+ * Get default domain suffix from SSSD_CONF_PATH
+ */
+static char *get_default_sss_domain(pam_handle_t *pamh) {
+    FILE *f = fopen(SSSD_CONF_PATH, "r");
+    if (f == NULL) {
+        pam_syslog(pamh, LOG_ERR, "Failed to open sssd.conf");
+        return NULL;
+    }
+
+    size_t buffsize = 256;
+    char *buf = malloc(sizeof(char) * buffsize);
+    char *domain = NULL;
+    while (getline(&buf, &buffsize, f) != -1) {
+        char *line = buf;
+        // ignores whitespaces listed before the config key
+        while (strlen(line) > 0 && (*line == ' ' || *line == '\t')) {
+            line++;
+        }
+        if (strncmp(line, "default_domain_suffix", 21) == 0) {
+            domain = strchr(line, '=');
+            if (domain == NULL) {
+                pam_syslog(pamh, LOG_ERR, "Could not find value for key 'default_domain_suffix' in sssd.conf");
+                break;
+            }
+            while (*++domain == ' ') continue;
+            char *newline = strchr(domain, '\n');
+            if (newline != NULL) {
+                *newline = '\0';
+            }
+            break;
+        }
+    }
+    fclose(f);
+
+    char *ret = strdup(domain);
+    free(buf);
+    return ret;
+}
+
+/*
+ * Converts domain\user to user@domain format
+ */
+static char *slash_to_at_username(const char *username) {
+    char *backslash = strchr(username, '\\');
+    if (backslash != NULL) {
+        char *ret = malloc((strlen(username) + 1) * sizeof(char));
+        strcpy(ret, backslash + 1);
+        strcat(ret, "@");
+        strncpy(ret + strlen(ret), username, backslash - username);
+        return ret;
+    }
+    return strdup(username);
+}
+
+/*
  * Set DCONF_PROFILE for current user
  */
 static int set_dconf_profile(pam_handle_t *pamh, const char *username, int debug) {
     int retval = PAM_SUCCESS;
 
+    char *profile_name = slash_to_at_username(username);
+
+    // We need to check if the profile name does not already contain the domain.
+    if (strchr(profile_name, '@') == NULL) {
+        char *domain = get_default_sss_domain(pamh);
+        if (domain != NULL) {
+            free(profile_name);
+            profile_name = (char *)malloc((strlen(username) + strlen(domain) + 2) * sizeof(char));
+            strcpy(profile_name, username);
+            strcat(profile_name, "@");
+            strcat(profile_name, domain);
+            free(domain);
+        }
+    }
+    // We need to lowercase the profile_name, as it can have uppercased letters and we
+    // always normalize it in adsys.
+    for (char *s = profile_name; *s; s++) {
+        *s = tolower(*s);
+    }
+
     char *envvar;
-    if (asprintf(&envvar, "DCONF_PROFILE=%s", username) < 0) {
+    if (asprintf(&envvar, "DCONF_PROFILE=%s", profile_name) < 0) {
         pam_syslog(pamh, LOG_CRIT, "out of memory");
+        free(profile_name);
         return PAM_BUF_ERR;
     }
 
     retval = pam_putenv(pamh, envvar);
     _pam_drop(envvar);
+    free(profile_name);
     return retval;
 }
 
