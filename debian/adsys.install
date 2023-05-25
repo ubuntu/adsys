@@ -1,7 +1,6 @@
 sbin/adsys*
 lib/
 usr/lib
-usr/libexec
 usr/share/bash-completion
 usr/share/locale
 usr/share/man
