@@ -17,12 +17,11 @@ jobs:
   quality:
     name: Code quality and mod files up to date
     runs-on: ubuntu-latest
-    container: ubuntu:latest
     steps:
       - name: Install dependencies
         run: |
-          DEBIAN_FRONTEND=noninteractive apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ${{ env.apt_dependencies }}
+          sudo DEBIAN_FRONTEND=noninteractive apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install -y ${{ env.apt_dependencies }}
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3
@@ -52,6 +51,12 @@ jobs:
         if: ${{ always() }}
       - name: Building
         run: go build ./...
+        if: ${{ always() }}
+      - name: C code formatting
+        uses: jidicula/clang-format-action@v4.11.0
+        with:
+          include-regex: '^.*\.(c|h)$' # Makes sure to run only on C (source and header) files
+          exclude-regex: 'vendor' # Excludes the vendor directory
         if: ${{ always() }}
 
   tests:

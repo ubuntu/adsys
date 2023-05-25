@@ -1,13 +1,11 @@
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-
 #include <wbclient.h>
 
-char *get_mock_behavior()
-{
+char *get_mock_behavior() {
     char *behavior = getenv("ADSYS_WBCLIENT_BEHAVIOR");
     if (behavior == NULL) {
         printf("ADSYS_WBCLIENT_BEHAVIOR not set, exiting...");
@@ -16,8 +14,7 @@ char *get_mock_behavior()
     return behavior;
 }
 
-wbcErr wbcLookupDomainController(const char *domain, uint32_t flags, struct wbcDomainControllerInfo **dc_info)
-{
+wbcErr wbcLookupDomainController(const char *domain, uint32_t flags, struct wbcDomainControllerInfo **dc_info) {
     char *behavior = get_mock_behavior();
     if (strcmp(behavior, "error_getting_dc_name") == 0) {
         return WBC_ERR_UNKNOWN_FAILURE;
@@ -30,8 +27,7 @@ wbcErr wbcLookupDomainController(const char *domain, uint32_t flags, struct wbcD
     return WBC_ERR_SUCCESS;
 }
 
-wbcErr wbcInterfaceDetails(struct wbcInterfaceDetails **details)
-{
+wbcErr wbcInterfaceDetails(struct wbcInterfaceDetails **details) {
     char *behavior = get_mock_behavior();
     if (strcmp(behavior, "domain_not_found") == 0) {
         return WBC_ERR_DOMAIN_NOT_FOUND;
@@ -44,8 +40,7 @@ wbcErr wbcInterfaceDetails(struct wbcInterfaceDetails **details)
     return WBC_ERR_SUCCESS;
 }
 
-wbcErr wbcDomainInfo(const char *domain, struct wbcDomainInfo **dinfo)
-{
+wbcErr wbcDomainInfo(const char *domain, struct wbcDomainInfo **dinfo) {
     char *behavior = get_mock_behavior();
     if (strcmp(behavior, "error_getting_online_status") == 0) {
         return WBC_ERR_UNKNOWN_FAILURE;

@@ -31,26 +31,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <syslog.h>
 #include <unistd.h>
 
 #define PAM_SM_AUTH
 #define PAM_SM_SESSION
 
+#include <security/_pam_macros.h>
+#include <security/pam_ext.h>
 #include <security/pam_modules.h>
 #include <security/pam_modutil.h>
-#include <security/pam_ext.h>
-#include <security/_pam_macros.h>
 
 #define ADSYS_POLICIES_DIR "/var/cache/adsys/policies/%s"
 
 /*
  * Refresh the group policies of current user
  */
-static int update_policy(pam_handle_t * pamh, const char *username, const char *krb5ccname, int debug)
-{
+static int update_policy(pam_handle_t *pamh, const char *username, const char *krb5ccname, int debug) {
     int retval;
     retval = pam_info(pamh, "Applying user settings");
     if (retval != PAM_SUCCESS) {
@@ -83,35 +82,27 @@ static int update_policy(pam_handle_t * pamh, const char *username, const char *
         return PAM_SYSTEM_ERR;
     }
 
-    if (pid > 0) {		/* parent */
+    if (pid > 0) { /* parent */
         pid_t retval;
         int status = 0;
 
-        while ((retval = waitpid(pid, &status, 0)) == -1
-               && errno == EINTR) ;
+        while ((retval = waitpid(pid, &status, 0)) == -1 && errno == EINTR) {
+        };
 
-        if (retval == (pid_t) - 1) {
-            pam_syslog(pamh, LOG_ERR,
-                   "waitpid returns with -1: %m");
+        if (retval == (pid_t)-1) {
+            pam_syslog(pamh, LOG_ERR, "waitpid returns with -1: %m");
             free(arggv);
             return PAM_SYSTEM_ERR;
         } else if (status != 0) {
             if (WIFEXITED(status)) {
-                pam_syslog(pamh, LOG_ERR,
-                       "adsysctl update %s %s failed: exit code %d",
-                       username, krb5ccname,
-                       WEXITSTATUS(status));
+                pam_syslog(pamh, LOG_ERR, "adsysctl update %s %s failed: exit code %d", username, krb5ccname,
+                           WEXITSTATUS(status));
             } else if (WIFSIGNALED(status)) {
-                pam_syslog(pamh, LOG_ERR,
-                       "adsysctl update %s %s failed: caught signal %d%s",
-                       username, krb5ccname,
-                       WTERMSIG(status),
-                       WCOREDUMP(status) ? " (core dumped)"
-                       : "");
+                pam_syslog(pamh, LOG_ERR, "adsysctl update %s %s failed: caught signal %d%s", username, krb5ccname,
+                           WTERMSIG(status), WCOREDUMP(status) ? " (core dumped)" : "");
             } else {
-                pam_syslog(pamh, LOG_ERR,
-                       "adsysctl update %s %s failed: unknown status 0x%x",
-                       username, krb5ccname, status);
+                pam_syslog(pamh, LOG_ERR, "adsysctl update %s %s failed: unknown status 0x%x", username, krb5ccname,
+                           status);
             }
             free(arggv);
             return PAM_CRED_ERR;
@@ -119,7 +110,7 @@ static int update_policy(pam_handle_t * pamh, const char *username, const char *
         free(arggv);
         return PAM_SUCCESS;
 
-    } else {		/* child */
+    } else { /* child */
         if (debug) {
             pam_syslog(pamh, LOG_DEBUG, "Calling %s ...", arggv[0]);
         }
@@ -131,14 +122,13 @@ static int update_policy(pam_handle_t * pamh, const char *username, const char *
         _exit(i);
     }
 
-    return PAM_SYSTEM_ERR;	/* will never be reached. */
+    return PAM_SYSTEM_ERR; /* will never be reached. */
 }
 
 /*
  * Refresh the group policies of machine
  */
-static int update_machine_policy(pam_handle_t * pamh, int debug)
-{
+static int update_machine_policy(pam_handle_t *pamh, int debug) {
     int retval;
     retval = pam_info(pamh, "Applying machine settings");
     if (retval != PAM_SUCCESS) {
@@ -166,33 +156,25 @@ static int update_machine_policy(pam_handle_t * pamh, int debug)
         return PAM_SYSTEM_ERR;
     }
 
-    if (pid > 0) {		/* parent */
+    if (pid > 0) { /* parent */
         pid_t retval;
         int status = 0;
 
-        while ((retval = waitpid(pid, &status, 0)) == -1
-               && errno == EINTR) ;
+        while ((retval = waitpid(pid, &status, 0)) == -1 && errno == EINTR) {
+        };
 
-        if (retval == (pid_t) - 1) {
-            pam_syslog(pamh, LOG_ERR,
-                   "waitpid returns with -1: %m");
+        if (retval == (pid_t)-1) {
+            pam_syslog(pamh, LOG_ERR, "waitpid returns with -1: %m");
             free(arggv);
             return PAM_SYSTEM_ERR;
         } else if (status != 0) {
             if (WIFEXITED(status)) {
-                pam_syslog(pamh, LOG_ERR,
-                       "adsysctl update -m failed: exit code %d",
-                       WEXITSTATUS(status));
+                pam_syslog(pamh, LOG_ERR, "adsysctl update -m failed: exit code %d", WEXITSTATUS(status));
             } else if (WIFSIGNALED(status)) {
-                pam_syslog(pamh, LOG_ERR,
-                       "adsysctl update -m failed: caught signal %d%s",
-                       WTERMSIG(status),
-                       WCOREDUMP(status) ? " (core dumped)"
-                       : "");
+                pam_syslog(pamh, LOG_ERR, "adsysctl update -m failed: caught signal %d%s", WTERMSIG(status),
+                           WCOREDUMP(status) ? " (core dumped)" : "");
             } else {
-                pam_syslog(pamh, LOG_ERR,
-                       "adsysctl update -m failed: unknown status 0x%x",
-                       status);
+                pam_syslog(pamh, LOG_ERR, "adsysctl update -m failed: unknown status 0x%x", status);
             }
             free(arggv);
             return PAM_CRED_ERR;
@@ -200,7 +182,7 @@ static int update_machine_policy(pam_handle_t * pamh, int debug)
         free(arggv);
         return PAM_SUCCESS;
 
-    } else {		/* child */
+    } else { /* child */
         if (debug) {
             pam_syslog(pamh, LOG_DEBUG, "Calling %s ...", arggv[0]);
         }
@@ -212,15 +194,13 @@ static int update_machine_policy(pam_handle_t * pamh, int debug)
         _exit(i);
     }
 
-    return PAM_SYSTEM_ERR;	/* will never be reached. */
+    return PAM_SYSTEM_ERR; /* will never be reached. */
 }
 
 /*
  * Set DCONF_PROFILE for current user
  */
-static int set_dconf_profile(pam_handle_t * pamh, const char *username,
-                 int debug)
-{
+static int set_dconf_profile(pam_handle_t *pamh, const char *username, int debug) {
     int retval = PAM_SUCCESS;
 
     char *envvar;
@@ -234,21 +214,11 @@ static int set_dconf_profile(pam_handle_t * pamh, const char *username,
     return retval;
 }
 
-PAM_EXTERN int
-pam_sm_authenticate(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
-    return PAM_IGNORE;
-}
+PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) { return PAM_IGNORE; }
 
-PAM_EXTERN int
-pam_sm_setcred(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
-    return PAM_IGNORE;
-}
+PAM_EXTERN int pam_sm_setcred(pam_handle_t *pamh, int flags, int argc, const char **argv) { return PAM_IGNORE; }
 
-PAM_EXTERN int
-pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
-{
+PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
     int retval = PAM_SUCCESS;
 
     int debug = 0;
@@ -258,14 +228,14 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
         if (strcasecmp(argv[optargc], "debug") == 0) {
             debug = 1;
         } else {
-            break;	/* Unknown option. */
+            break; /* Unknown option. */
         }
     }
 
     const char *username;
     if (pam_get_item(pamh, PAM_USER, (void *)&username) != PAM_SUCCESS) {
         D(("pam_get_item failed for PAM_USER"));
-        return PAM_SYSTEM_ERR;	/* let pam_get_item() log the error */
+        return PAM_SYSTEM_ERR; /* let pam_get_item() log the error */
     }
 
     /*
@@ -292,7 +262,8 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
     }
 
     /*
-      trying to update machine policy first if no machine gpo cache (meaning adsysd boot service failed due to being offline for instance)
+      trying to update machine policy first if no machine gpo cache (meaning adsysd boot service failed due to being
+      offline for instance)
     */
     char hostname[HOST_NAME_MAX + 1];
     char cache_path[HOST_NAME_MAX + 1 + strlen(ADSYS_POLICIES_DIR) - 2];
@@ -315,11 +286,6 @@ pam_sm_open_session(pam_handle_t * pamh, int flags, int argc, const char **argv)
     return update_policy(pamh, username, krb5ccname, debug);
 }
 
-PAM_EXTERN int
-pam_sm_close_session(pam_handle_t * pamh, int flags, int argc,
-             const char **argv)
-{
-    return PAM_SUCCESS;
-}
+PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, const char **argv) { return PAM_SUCCESS; }
 
 /* end of module definition */
