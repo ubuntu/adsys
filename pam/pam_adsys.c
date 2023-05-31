@@ -25,6 +25,7 @@
 
 #define _GNU_SOURCE
 
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <pwd.h>
@@ -223,7 +224,18 @@ static char *get_default_sss_domain(pam_handle_t *pamh) {
                 pam_syslog(pamh, LOG_ERR, "Could not find value for key 'default_domain_suffix' in sssd.conf");
                 break;
             }
-            while (*++domain == ' ') continue;
+            // Ignores whitespaces and tabs right after the '='
+            do {
+                domain++;
+            } while (strlen(domain) > 0 && (*domain == ' ' || *domain == '\t'));
+
+            // For cases where sssd.conf has something like "default_domain_suffix =       \n"
+            if (strlen(domain) <= 1) {
+                pam_syslog(pamh, LOG_ERR, "Could not find valid value for 'default_domain_suffix' in sssd.conf");
+                domain = NULL;
+                break;
+            }
+
             char *newline = strchr(domain, '\n');
             if (newline != NULL) {
                 *newline = '\0';
@@ -232,6 +244,11 @@ static char *get_default_sss_domain(pam_handle_t *pamh) {
         }
     }
     fclose(f);
+
+    if (domain == NULL) {
+        free(buf);
+        return NULL;
+    }
 
     char *ret = strdup(domain);
     free(buf);
