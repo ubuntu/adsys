@@ -9,4 +9,4 @@ RemainAfterExit=yes
 ExecStart=/sbin/adsysd mount /run/adsys/users/%U/mounts
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical-session.target
