@@ -1,3 +1,43 @@
+adsys (0.12.0) UNRELEASED; urgency=medium
+  [ Denison Barbosa ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  [ Jean-Baptiste Lallement ]
+  * Release 0.12.0 (LP: #2020682)
+    - Fix DCONF_PROFILE not considering default_domain_suffix on sssd.conf
+    - Go implementation for the user mount handler
+    - Remove Rust source code from adsys
+    - Rework Kerberos ticket handling logic:
+      - to satisfy the Heimdal implementation of Kerberos, we now store and use a
+        root-owned copy of the cached ticket
+      - the ticket lifetime is still handled via a symlink, and the copy is kept
+        up to date based on the original ticket timestamp
+    - Ensure empty state for dconf policy
+    - Handle case mismatches in GPT.INI file name
+    - Refactor ListActiveUsers gRPC function
+    - Add adsysctl policy purge command to purge applied policies
+    - Rework policy application sync strategy
+    - Print logs when policies are up to date
+    - Bump Go version to 1.20
+    - Update dependencies to latest:
+      - github.com/charmbracelet/bubbles
+      - github.com/charmbracelet/bubbletea
+      - github.com/sirupsen/logrus
+      - github.com/spf13/cobra
+      - github.com/stretchr/testify
+      - golang.org/x/net
+      - golang.org/x/sync
+      - golang.org/x/sys
+      - google.golang.org/grpc
+    - CI and quality of life changes not affecting package functionality:
+      - peter-evans/create-pull-request
+      - Apply clang-format to C source files
+      - Remove Rust related code from CI and tests
+      - Improve test consistency
+      - Fix documentation example images
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Fri, 26 May 2023 07:11:55 -0400
+
 adsys (0.11.0) lunar; urgency=medium
 
   [ Denison Barbosa ]
