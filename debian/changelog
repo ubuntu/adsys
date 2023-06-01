@@ -1,4 +1,5 @@
 adsys (0.12.0) UNRELEASED; urgency=medium
+
   [ Denison Barbosa ]
   [ Didier Roche ]
   [ Gabriel Nagy ]
@@ -8,10 +9,10 @@ adsys (0.12.0) UNRELEASED; urgency=medium
     - Go implementation for the user mount handler
     - Remove Rust source code from adsys
     - Rework Kerberos ticket handling logic:
-      - to satisfy the Heimdal implementation of Kerberos, we now store and use a
-        root-owned copy of the cached ticket
-      - the ticket lifetime is still handled via a symlink, and the copy is kept
-        up to date based on the original ticket timestamp
+      - to satisfy the Heimdal implementation of Kerberos, we now store and use
+        a root-owned copy of the cached ticket
+      - the ticket lifetime is still handled via a symlink, and the copy is
+        kept up to date based on the original ticket timestamp
     - Ensure empty state for dconf policy
     - Handle case mismatches in GPT.INI file name
     - Refactor ListActiveUsers gRPC function
