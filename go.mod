@@ -16,7 +16,7 @@ require (
 	github.com/kardianos/service v1.2.2
 	github.com/muesli/termenv v0.15.1
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
-	github.com/sirupsen/logrus v1.9.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
