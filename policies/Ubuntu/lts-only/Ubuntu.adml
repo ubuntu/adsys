@@ -91,6 +91,16 @@ Supported on Ubuntu 20.04, 22.04.</string>
       <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopBackgroundPictureUri">Picture URI</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureUriDark">URI to use for the background image. Note that the backend only supports local (file://) URIs.
+
+- Type: dconf
+- Key: /org/gnome/desktop/background/picture-uri-dark
+- Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 22.04.</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUriDark">Picture URI (dark)</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureOptions">Determines how the image set by wallpaper_filename is rendered. Possible values are “none”, “wallpaper”, “centered”, “scaled”, “stretched”, “zoom”, “spanned”.
 
 - Type: dconf
@@ -1380,6 +1390,12 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <textBox refId="UbuntuElemUser2004DconfOrgGnomeDesktopBackgroundPictureUri">
           <label></label>
           <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
+        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureUriDark">
+        <textBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureUriDark">
+          <label>Picture URI (dark)</label>
+          <defaultValue></defaultValue>
         </textBox>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureOptions">
