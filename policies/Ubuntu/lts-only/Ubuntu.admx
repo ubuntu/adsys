@@ -217,6 +217,15 @@
         <text id="UbuntuElemUser2004DconfOrgGnomeDesktopBackgroundPictureUri" valueName="20.04" />
       </elements>
     </policy>
+    <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundPictureUriDark" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUriDark)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureUriDark)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureUriDark)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark" valueName="metaValues">
+      <parentCategory ref="UbuntuBackground" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"22.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"22.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="all" />
+      </elements>
+    </policy>
     <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundPictureOptions" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureOptions)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureOptions)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options" valueName="metaValues">
       <parentCategory ref="UbuntuBackground" />
       <supportedOn ref="Ubuntu" />

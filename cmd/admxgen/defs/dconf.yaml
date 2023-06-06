@@ -3,6 +3,7 @@
 - objectpath: "/org/gnome/desktop/a11y/applications/screen-magnifier-enabled"
 - objectpath: "/org/gnome/desktop/a11y/applications/screen-reader-enabled"
 - objectpath: "/org/gnome/desktop/background/picture-uri"
+- objectpath: "/org/gnome/desktop/background/picture-uri-dark"
 - objectpath: "/org/gnome/desktop/background/picture-options"
 - objectpath: "/org/gnome/shell/favorite-apps"
 - objectpath: "/org/gnome/desktop/background/show-desktop-icons"
