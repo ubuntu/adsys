@@ -21,7 +21,7 @@ jobs:
           go-version-file: go.mod
       - run: |
           mkdir /tmp/adsys
-          CO_ENABLED=0 go build ./cmd/admxgen/
+          CGO_ENABLED=0 go build ./cmd/admxgen/
       - name: Upload admxgen
         uses: actions/upload-artifact@v3
         with:
