@@ -328,6 +328,35 @@
         <text id="UbuntuElemUser2004DconfOrgGnomeDesktopBackgroundPictureUri" valueName="20.04" />
       </elements>
     </policy>
+    <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundPictureUriDark" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureUriDark)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureUriDark)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureUriDark)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark" valueName="metaValues">
+      <parentCategory ref="UbuntuBackground" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"22.04":{"empty":"''","meta":"s"},"22.10":{"empty":"''","meta":"s"},"23.04":{"empty":"''","meta":"s"},"23.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"22.04":{"meta":"s"},"22.10":{"meta":"s"},"23.04":{"meta":"s"},"23.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemUserAllDconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="all" />
+        <boolean id="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="Override23.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2310DconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="23.10" />
+        <boolean id="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="Override23.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2304DconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="23.04" />
+        <boolean id="UbuntuOverrideElemUser2210DconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="Override22.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2210DconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="22.10" />
+        <boolean id="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemUser2204DconfOrgGnomeDesktopBackgroundPictureUriDark" valueName="22.04" />
+      </elements>
+    </policy>
     <policy name="UbuntuUserDconfOrgGnomeDesktopBackgroundPictureOptions" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopBackgroundPictureOptions)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopBackgroundPictureOptions)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopBackgroundPictureOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options" valueName="metaValues">
       <parentCategory ref="UbuntuBackground" />
       <supportedOn ref="Ubuntu" />
