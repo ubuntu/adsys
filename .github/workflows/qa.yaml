@@ -1,4 +1,4 @@
-name: QA
+name: QA & sanity checks
 on:
   push:
     branches:
@@ -10,12 +10,12 @@ on:
 env:
   apt_dependencies: >-
     ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
-    libwbclient-dev pkg-config protobuf-compiler python3-coverage samba sudo
+    libwbclient-dev pkg-config python3-coverage samba sudo
     libglib2.0-dev gvfs
 
 jobs:
-  quality:
-    name: Code quality and mod files up to date
+  sanity:
+    name: Code sanity
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
@@ -25,33 +25,11 @@ jobs:
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - name: Go code sanity check
+        uses: canonical/desktop-engineering/gh-actions/go/code-sanity@main
         with:
-          go-version-file: go.mod
-      - name: Get version of golanci-lint to use
-        id: cilint-version-fetch
-        # This handles "require foo version" and "require (\nfoo version\n)"" formats
-        run: echo "version=$(grep golangci-lint tools/go.mod | rev | cut -f1 -d' ' | rev)" >> $GITHUB_OUTPUT
-      - name: Code formatting, vet, static checker Security…
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: ${{ steps.cilint-version-fetch.outputs.version }}
-          args: "--config .golangci-ci.yaml"
-      - name: Module files are up to date
-        run: |
-          set -eu
-
-          go mod tidy
-          MODIFIED=`git status --porcelain go.sum go.mod`
-          if [ -n "$MODIFIED" ]; then
-              echo "ERROR: go module files aren't up to date:"
-              git --no-pager diff go.mod go.sum
-              exit 1
-          fi
-        if: ${{ always() }}
-      - name: Building
-        run: go build ./...
-        if: ${{ always() }}
+          golangci-lint-configfile: ".golangci-ci.yaml"
+          tools-directory: "tools"
       - name: C code formatting
         uses: jidicula/clang-format-action@v4.11.0
         with:
@@ -150,59 +128,3 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: installer/Output/adwatchd_setup.exe
-
-  generators:
-    name: Generated files are up to date
-    runs-on: ubuntu-latest
-    container: ubuntu:latest
-    steps:
-      # Add dependencies
-      - name: Install dependencies
-        run: |
-          DEBIAN_FRONTEND=noninteractive apt update
-          DEBIAN_FRONTEND=noninteractive apt install -y ${{ env.apt_dependencies }}
-      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
-        run: git config --global --add safe.directory /__w/adsys/adsys
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
-        with:
-          go-version-file: go.mod
-      - name: Install go grpc protoc generator
-        run: |
-          set -eu
-
-          cd tools/
-          go install google.golang.org/protobuf/cmd/protoc-gen-go \
-            google.golang.org/grpc/cmd/protoc-gen-go-grpc
-          cd -
-      - name: Check generated files
-        run: |
-          set -eu
-
-          # Ignore mod file changes; doc/ and README.md and po files
-          # Modules are handled in another check and aren't related to generator
-          # po and README.md files will be automatically updated once master in master.
-          git update-index --assume-unchanged go.* po/* doc/*.md README.md
-          on_exit() {
-              # Restore files
-              git update-index --no-assume-unchanged go.* po/* doc/*.md README.md
-          }
-          trap on_exit EXIT INT QUIT ABRT PIPE TERM
-
-          go generate ./...
-
-          # Handle everything but po and assets files
-          modified_files=`git status --porcelain --untracked-files=no`
-
-          # Check generated files
-          MODIFIED=""
-          if [ -n "$modified_files" ]; then
-              # Ignore assets modification time and protoc version.
-              MODIFIED=`git difftool -y -x "diff -I 'modTime' -I '^//.*protoc.*v'"`
-          fi
-
-          if [ -n "$MODIFIED" ]; then
-              echo "ERROR: 'go generate' modified files:"
-              git --no-pager diff
-              exit 1
-          fi
