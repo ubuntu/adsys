@@ -25,7 +25,6 @@ var (
 	successStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#99cc99"))
 	blurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 	hintStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFCC00"))
-	cursorStyle  = focusedStyle.Copy()
 	noStyle      = lipgloss.NewStyle()
 	boldStyle    = lipgloss.NewStyle().Bold(true)
 	titleStyle   = lipgloss.NewStyle().Underline(true).Bold(true)
@@ -194,7 +193,6 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 // newStyledTextInput returns a new text input with the default style.
 func newStyledTextInput() textinput.Model {
 	t := textinput.New()
-	t.CursorStyle = cursorStyle
 	t.CharLimit = 1024
 	t.Cursor.SetMode(cursor.CursorStatic)
 	return t
