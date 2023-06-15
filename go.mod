@@ -26,7 +26,7 @@ require (
 	github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117
 	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5
 	golang.org/x/net v0.11.0
-	golang.org/x/sync v0.2.0
+	golang.org/x/sync v0.3.0
 	golang.org/x/sys v0.9.0
 	golang.org/x/text v0.10.0
 	google.golang.org/grpc v1.55.0
