@@ -14,6 +14,7 @@ service service {
   rpc ListDoc(ListDocRequest) returns (stream StringResponse);
   rpc ListUsers(ListUsersRequest) returns (stream StringResponse);
   rpc GPOListScript(Empty) returns (stream StringResponse);
+  rpc CertAutoEnrollScript(Empty) returns (stream StringResponse);
 }
 
 message Empty {}
