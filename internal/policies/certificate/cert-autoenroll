@@ -1,0 +1,88 @@
+#!/usr/bin/python3
+
+import argparse
+import os
+import sys
+import tempfile
+
+from collections import namedtuple
+
+from samba import param
+from samba.credentials import MUST_USE_KERBEROS, Credentials
+
+from vendor_samba.gp.gpclass import get_dc_hostname, get_deleted_gpos_list, GPOStorage
+from vendor_samba.gp import gp_cert_auto_enroll_ext as cae
+
+GPO = namedtuple('GPO', ['file_sys_path', 'name'])
+
+PRIVATE_DIR = '/var/lib/adsys/private/certs'
+TRUST_DIR = '/var/lib/adsys/certs'
+
+class adsys_cert_auto_enroll(cae.gp_cert_auto_enroll_ext):
+    # the default implementation overrides the path to the pol file, we don't want that
+    # also account for the case insensitivity of the filesystem
+    def parse(self, path):
+        if os.path.isfile(path):
+            return self.read(path)
+
+        policy_path = os.path.dirname(os.path.dirname(path))
+        for f in os.listdir(policy_path):
+            if f.lower() == 'machine':
+                return self.read(os.path.join(policy_path, f, 'Registry.pol'))
+
+        raise Exception('Could not find policy file for %s' % path)
+
+def smb_config(realm, enable_debug):
+    config = "[global]\nrealm = %s\n" % realm
+    if enable_debug:
+        config += "log level = 10\n"
+    return config
+
+def main():
+    parser = argparse.ArgumentParser(description='Certificate autoenrollment via Samba')
+    parser.add_argument('realm', type=str,
+                        help='The realm of the domain, e.g. example.com')
+    parser.add_argument('gpo_paths', type=str,
+                        help='Comma-separated list of paths to the GPOs to apply. \
+                        e.g. /var/cache/adsys/sysvol/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}')
+    parser.add_argument('--state-dir', type=str,
+                        default='/var/lib/adsys',
+                        help='Directory to store GPO state in.')
+    parser.add_argument('--debug', action='store_true',
+                        help='Enable samba debug output.')
+
+    args = parser.parse_args()
+
+    gpo_paths = args.gpo_paths.split(',')
+    state_dir = args.state_dir
+
+    # Create needed directories if they don't exist
+    for directory in [state_dir, TRUST_DIR, PRIVATE_DIR]:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+    gpos = [GPO(gpo, os.path.basename(gpo)) for gpo in gpo_paths]
+
+    c = Credentials()
+    c.set_kerberos_state(MUST_USE_KERBEROS)
+
+    with tempfile.NamedTemporaryFile(prefix='smb_conf') as smb_conf:
+        smb_conf.write(smb_config(args.realm, args.debug).encode('utf-8'))
+        smb_conf.flush()
+
+        lp = param.LoadParm(smb_conf.name)
+        c.guess(lp)
+
+        store = GPOStorage(os.path.join(state_dir, 'cert_gpo_state.tdb'))
+
+        username = c.get_username()
+        gp_db = store.get_gplog(username)
+        deleted_gpos = get_deleted_gpos_list(gp_db, gpos)
+        ext = adsys_cert_auto_enroll(lp, c, username, store)
+        ext.process_group_policy(deleted_gpos, gpos,
+                                 trust_dir='/var/lib/adsys/certs',
+                                 private_dir='/var/lib/adsys/private/certs',
+                                 global_trust_dir='/usr/local/share/ca-certificates')
+
+if __name__ == "__main__":
+    sys.exit(main())

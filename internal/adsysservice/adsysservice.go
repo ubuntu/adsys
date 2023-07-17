@@ -282,7 +282,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	if args.systemUnitDir != "" {
 		policyOptions = append(policyOptions, policies.WithSystemUnitDir(args.systemUnitDir))
 	}
-	m, err := policies.NewManager(bus, hostname, policyOptions...)
+	m, err := policies.NewManager(bus, hostname, adBackend, policyOptions...)
 	if err != nil {
 		return nil, err
 	}

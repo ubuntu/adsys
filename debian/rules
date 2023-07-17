@@ -56,6 +56,10 @@ override_dh_auto_install:
 	cp -a systemd/*.timer debian/tmp/lib/systemd/system/
 	cp -a systemd/user/*.service debian/tmp/usr/lib/systemd/user/
 
+	# vendored python modules
+	mkdir -p debian/tmp/usr/share/adsys
+	cp -a internal/policies/certificate/python debian/tmp/usr/share/adsys/
+
 # Separate windows binaries
 ifeq ($(WINDOWS_BUILD),1)
 	mkdir -p debian/tmp/usr/share/adsys/windows

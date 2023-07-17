@@ -33,10 +33,12 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/ad/backends"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/apparmor"
+	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/policies/gdm"
@@ -57,15 +59,19 @@ var ProOnlyRules = []string{"privilege", "scripts", "mount", "apparmor", "proxy"
 // Manager handles all managers for various policy handlers.
 type Manager struct {
 	policiesCacheDir string
+	sysvolCacheDir   string
 	hostname         string
 
-	dconf     *dconf.Manager
-	privilege *privilege.Manager
-	scripts   *scripts.Manager
-	mount     *mount.Manager
-	gdm       *gdm.Manager
-	apparmor  *apparmor.Manager
-	proxy     *proxy.Manager
+	backend backends.Backend
+
+	dconf       *dconf.Manager
+	privilege   *privilege.Manager
+	scripts     *scripts.Manager
+	mount       *mount.Manager
+	gdm         *gdm.Manager
+	apparmor    *apparmor.Manager
+	proxy       *proxy.Manager
+	certificate *certificate.Manager
 
 	subscriptionDbus dbus.BusObject
 
@@ -88,6 +94,7 @@ type systemdCaller interface {
 
 type options struct {
 	cacheDir      string
+	stateDir      string
 	dconfDir      string
 	sudoersDir    string
 	policyKitDir  string
@@ -195,7 +202,7 @@ func WithSystemdCaller(p systemdCaller) Option {
 }
 
 // NewManager returns a new manager with all default policy handlers.
-func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, err error) {
+func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
 
 	defaultSystemdCaller, err := systemd.New(bus)
@@ -206,6 +213,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 	// defaults
 	args := options{
 		cacheDir:      consts.DefaultCacheDir,
+		stateDir:      consts.DefaultStateDir,
 		runDir:        consts.DefaultRunDir,
 		apparmorDir:   consts.DefaultApparmorDir,
 		systemUnitDir: consts.DefaultSystemUnitDir,
@@ -256,6 +264,13 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 	}
 	proxyManager := proxy.New(bus, proxyOptions...)
 
+	// certificate manager
+	certificateManager := certificate.New(backend.Domain(),
+		certificate.WithRunDir(args.runDir),
+		certificate.WithStateDir(args.stateDir),
+		certificate.WithCacheDir(args.cacheDir),
+	)
+
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {
 		if args.gdm, err = gdm.New(gdm.WithDconf(dconfManager)); err != nil {
@@ -264,6 +279,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 	}
 
 	policiesCacheDir := filepath.Join(args.cacheDir, PoliciesCacheBaseName)
+	sysvolCacheDir := filepath.Join(args.cacheDir, "sysvol")
 	if err := os.MkdirAll(policiesCacheDir, 0700); err != nil {
 		return nil, err
 	}
@@ -272,7 +288,9 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 		dbus.ObjectPath(consts.SubscriptionDbusObjectPath))
 
 	return &Manager{
+		backend:          backend,
 		policiesCacheDir: policiesCacheDir,
+		sysvolCacheDir:   sysvolCacheDir,
 		hostname:         hostname,
 		dconf:            dconfManager,
 		privilege:        privilegeManager,
@@ -280,6 +298,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 		mount:            mountManager,
 		apparmor:         apparmorManager,
 		proxy:            proxyManager,
+		certificate:      certificateManager,
 		gdm:              args.gdm,
 
 		subscriptionDbus: subscriptionDbus,
@@ -304,6 +323,7 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	m.muMu.Unlock()
 
 	rules := pols.GetUniqueRules()
+	gpoPaths := m.GPOPaths(ctx, pols)
 	action := i18n.G("Applying")
 	if len(rules) == 0 {
 		action = i18n.G("Unloading")
@@ -336,6 +356,11 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	})
 	g.Go(func() error {
 		return m.proxy.ApplyPolicy(ctx, objectName, isComputer, rules["proxy"])
+	})
+	g.Go(func() error {
+		// Ignore error as we don't want to fail because of online status this late in the process
+		isOnline, _ := m.backend.IsOnline()
+		return m.certificate.ApplyPolicy(ctx, objectName, isComputer, isOnline, gpoPaths)
 	})
 	if err := g.Wait(); err != nil {
 		return err
@@ -402,6 +427,20 @@ func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachin
 		return time.Time{}, fmt.Errorf(i18n.G("policies were not applied for %q: %v"), objectName, err)
 	}
 	return info.ModTime(), nil
+}
+
+func (m *Manager) GPOPaths(ctx context.Context, pols *Policies) []string {
+	var paths []string
+	for _, gpo := range pols.GPOs {
+		gpoPath := filepath.Join(m.sysvolCacheDir, "Policies", gpo.ID)
+		if _, err := os.Stat(gpoPath); err != nil {
+			log.Warningf(ctx, "GPO %q with ID %q not found in sysvol cache", gpo.Name, gpo.ID)
+			continue
+		}
+		paths = append(paths, gpoPath)
+	}
+
+	return paths
 }
 
 // GetSubscriptionState returns the subscription status from Ubuntu Pro.

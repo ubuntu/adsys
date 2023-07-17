@@ -477,7 +477,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			defer ad.downloadables[name].mu.RUnlock()
 			_ = ad.downloadables[name].testConcurrent
 
-			log.Debugf(ctx, "Parsing GPO %q", name)
+			log.Debugf(ctx, "Parsing GPO %q with ID %q", name, gpoWithRules.ID)
 
 			// We need to consider the uppercase version of the name as well,
 			// which could occur in some of the default GPOs such as Default
