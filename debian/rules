@@ -4,9 +4,9 @@
 export GOCACHE=$(shell mktemp -d /tmp/gocache-XXXX)
 
 WIN_ARCHS := amd64 arm64
-WIN_GOFLAGS := -ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$(shell dpkg-parsechangelog -S Version) --mod=vendor
-export GOFLAGS := $(WIN_GOFLAGS) -buildmode=pie
-
+COMMON_GOFLAGS := -ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$(shell dpkg-parsechangelog -S Version) -mod=vendor -tags=withmo
+export GOFLAGS := $(COMMON_GOFLAGS) -buildmode=pie
+export WIN_GOFLAGS := $(COMMON_GOFLAGS)
 # PIE on Windows is only supported for amd64
 ifeq ($(shell dpkg --print-architecture),amd64)
 	WIN_GOFLAGS += -buildmode=pie
@@ -36,7 +36,7 @@ override_dh_auto_build:
 	# Build on linux only adsysd itself, and not generator or Windows binaries
 	DH_GOLANG_BUILDPKG=github.com/ubuntu/adsys/cmd/adsysd dh_auto_build
 
-# Build the Windows executables for adwatchd where applicable
+	# Build the Windows executables for adwatchd where applicable
 ifeq ($(WINDOWS_BUILD),1)
 	GOFLAGS="$(WIN_GOFLAGS)" GOOS=windows DH_GOLANG_BUILDPKG=github.com/ubuntu/adsys/cmd/adwatchd dh_auto_build
 endif
