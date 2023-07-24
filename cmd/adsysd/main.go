@@ -12,6 +12,7 @@ import (
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
 	"github.com/ubuntu/adsys/cmd/adsysd/daemon"
 	"github.com/ubuntu/adsys/internal/consts"
+	"github.com/ubuntu/adsys/po"
 	"github.com/ubuntu/go-i18n"
 )
 
@@ -39,7 +40,7 @@ type app interface {
 }
 
 func run(a app) int {
-	i18n.InitI18nDomain(consts.TEXTDOMAIN, nil)
+	i18n.InitI18nDomain(consts.TEXTDOMAIN, po.Files)
 	defer installSignalHandler(a)()
 
 	log.SetFormatter(&log.TextFormatter{

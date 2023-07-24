@@ -10,11 +10,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/cmd/adwatchd/commands"
 	"github.com/ubuntu/adsys/internal/consts"
+	"github.com/ubuntu/adsys/po"
 	"github.com/ubuntu/go-i18n"
 )
 
 func run(a *commands.App) int {
-	i18n.InitI18nDomain(consts.TEXTDOMAIN, nil)
+	i18n.InitI18nDomain(consts.TEXTDOMAIN, po.Files)
 	defer installSignalHandler(a)()
 	log.SetFormatter(&log.TextFormatter{
 		DisableLevelTruncation: true,
