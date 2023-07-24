@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -17,7 +17,7 @@ import (
 func (a *App) installService() {
 	mainCmd := &cobra.Command{
 		Use:   "service COMMAND",
-		Short: i18n.G("Service management"),
+		Short: gotext.Get("Service management"),
 		Args:  cmdhandler.SubcommandsRequiredWithSuggestions,
 		RunE:  cmdhandler.NoCmd,
 	}
@@ -25,7 +25,7 @@ func (a *App) installService() {
 
 	cmd := &cobra.Command{
 		Use:               "cat",
-		Short:             i18n.G("Print service logs"),
+		Short:             gotext.Get("Print service logs"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
 		RunE:              func(cmd *cobra.Command, args []string) error { return a.serviceCat() },
@@ -34,7 +34,7 @@ func (a *App) installService() {
 
 	cmd = &cobra.Command{
 		Use:               "status",
-		Short:             i18n.G("Print service status"),
+		Short:             gotext.Get("Print service status"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
 		RunE:              func(cmd *cobra.Command, args []string) error { return a.getStatus() },
@@ -44,12 +44,12 @@ func (a *App) installService() {
 	var stopForce *bool
 	cmd = &cobra.Command{
 		Use:               "stop",
-		Short:             i18n.G("Requests to stop the service once all connections are done"),
+		Short:             gotext.Get("Requests to stop the service once all connections are done"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
 		RunE:              func(cmd *cobra.Command, args []string) error { return a.serviceStop(*stopForce) },
 	}
-	stopForce = cmd.Flags().BoolP("force", "f", false, i18n.G("force will shut it down immediately and drop existing connections."))
+	stopForce = cmd.Flags().BoolP("force", "f", false, gotext.Get("force will shut it down immediately and drop existing connections."))
 	mainCmd.AddCommand(cmd)
 }
 

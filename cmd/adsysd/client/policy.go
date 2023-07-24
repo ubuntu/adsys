@@ -10,19 +10,19 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 func (a *App) installPolicy() {
 	policyCmd := &cobra.Command{
 		Use:   "policy COMMAND",
-		Short: i18n.G("Policy management"),
+		Short: gotext.Get("Policy management"),
 		Args:  cmdhandler.SubcommandsRequiredWithSuggestions,
 		RunE:  cmdhandler.NoCmd,
 	}
@@ -30,7 +30,7 @@ func (a *App) installPolicy() {
 	var distro *string
 	mainCmd := &cobra.Command{
 		Use:   "admx lts-only|all",
-		Short: i18n.G("Dump windows policy definitions"),
+		Short: gotext.Get("Dump windows policy definitions"),
 		Args:  cobra.ExactArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
@@ -40,13 +40,13 @@ func (a *App) installPolicy() {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error { return a.getPolicyDefinitions(args[0], *distro) },
 	}
-	distro = mainCmd.Flags().StringP("distro", "", consts.DistroID, i18n.G("distro for which to retrieve policy definition."))
+	distro = mainCmd.Flags().StringP("distro", "", consts.DistroID, gotext.Get("distro for which to retrieve policy definition."))
 	policyCmd.AddCommand(mainCmd)
 
 	var details, all, nocolor, isMachine *bool
 	appliedCmd := &cobra.Command{
 		Use:   "applied [USER_NAME]",
-		Short: i18n.G("Print last applied GPOs for current or given user/machine"),
+		Short: gotext.Get("Print last applied GPOs for current or given user/machine"),
 		Args:  cmdhandler.ZeroOrNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
@@ -63,16 +63,16 @@ func (a *App) installPolicy() {
 			return a.dumpPolicies(target, *details, *all, *nocolor, *isMachine)
 		},
 	}
-	details = appliedCmd.Flags().BoolP("details", "", false, i18n.G("show applied rules in addition to GPOs."))
-	all = appliedCmd.Flags().BoolP("all", "a", false, i18n.G("show overridden rules in each GPOs."))
-	nocolor = appliedCmd.Flags().BoolP("no-color", "", false, i18n.G("don't display colorized version."))
-	isMachine = appliedCmd.Flags().BoolP("machine", "m", false, i18n.G("show applied rules to the machine."))
+	details = appliedCmd.Flags().BoolP("details", "", false, gotext.Get("show applied rules in addition to GPOs."))
+	all = appliedCmd.Flags().BoolP("all", "a", false, gotext.Get("show overridden rules in each GPOs."))
+	nocolor = appliedCmd.Flags().BoolP("no-color", "", false, gotext.Get("don't display colorized version."))
+	isMachine = appliedCmd.Flags().BoolP("machine", "m", false, gotext.Get("show applied rules to the machine."))
 	policyCmd.AddCommand(appliedCmd)
 	cmdhandler.RegisterAlias(appliedCmd, &a.rootCmd)
 
 	debugCmd := &cobra.Command{
 		Use:    "debug",
-		Short:  i18n.G("Debug various policy infos"),
+		Short:  gotext.Get("Debug various policy infos"),
 		Hidden: true,
 		Args:   cmdhandler.SubcommandsRequiredWithSuggestions,
 		RunE:   cmdhandler.NoCmd,
@@ -80,7 +80,7 @@ func (a *App) installPolicy() {
 	policyCmd.AddCommand(debugCmd)
 	gpoListCmd := &cobra.Command{
 		Use:               "gpolist-script",
-		Short:             i18n.G("Write GPO list python embeeded script in current directory"),
+		Short:             gotext.Get("Write GPO list python embeeded script in current directory"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
 		RunE:              func(cmd *cobra.Command, args []string) error { return a.dumpGPOListScript() },
@@ -90,7 +90,7 @@ func (a *App) installPolicy() {
 	var updateMachine, updateAll *bool
 	updateCmd := &cobra.Command{
 		Use:   "update [USER_NAME KERBEROS_TICKET_PATH]",
-		Short: i18n.G("Updates/Create a policy for current user or given user with its kerberos ticket"),
+		Short: gotext.Get("Updates/Create a policy for current user or given user with its kerberos ticket"),
 		Args:  cmdhandler.ZeroOrNArgs(2),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			// All and machine options don’t take arguments
@@ -117,15 +117,15 @@ func (a *App) installPolicy() {
 			return a.update(*updateMachine, *updateAll, user, krb5cc)
 		},
 	}
-	updateMachine = updateCmd.Flags().BoolP("machine", "m", false, i18n.G("machine updates the policy of the computer."))
-	updateAll = updateCmd.Flags().BoolP("all", "a", false, i18n.G("all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option."))
+	updateMachine = updateCmd.Flags().BoolP("machine", "m", false, gotext.Get("machine updates the policy of the computer."))
+	updateAll = updateCmd.Flags().BoolP("all", "a", false, gotext.Get("all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option."))
 	policyCmd.AddCommand(updateCmd)
 	cmdhandler.RegisterAlias(updateCmd, &a.rootCmd)
 
 	var purgeMachine, purgeAll *bool
 	purgeCmd := &cobra.Command{
 		Use:   "purge [USER_NAME]",
-		Short: i18n.G("Purges policies for the current user or a specified one"),
+		Short: gotext.Get("Purges policies for the current user or a specified one"),
 		Args:  cmdhandler.ZeroOrNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			// All and machine options don’t take arguments
@@ -144,8 +144,8 @@ func (a *App) installPolicy() {
 			return a.purge(*purgeMachine, *purgeAll, user)
 		},
 	}
-	purgeMachine = purgeCmd.Flags().BoolP("machine", "m", false, i18n.G("machine purges the policy of the computer."))
-	purgeAll = purgeCmd.Flags().BoolP("all", "a", false, i18n.G("all purges the policy of the computer and all the logged in users. -m or USER_NAME cannot be used with this option."))
+	purgeMachine = purgeCmd.Flags().BoolP("machine", "m", false, gotext.Get("machine purges the policy of the computer."))
+	purgeAll = purgeCmd.Flags().BoolP("all", "a", false, gotext.Get("all purges the policy of the computer and all the logged in users. -m or USER_NAME cannot be used with this option."))
 	purgeCmd.MarkFlagsMutuallyExclusive("machine", "all")
 	policyCmd.AddCommand(purgeCmd)
 
@@ -305,9 +305,9 @@ func colorizePolicies(policies string) (string, error) {
 			indent := "        - "
 			if disabledKey {
 				if currentPoliciesType == "dconf" {
-					e = fmt.Sprintf(i18n.G("%s: Locked to system default"), e)
+					e = gotext.Get("%s: Locked to system default", e)
 				} else {
-					e = fmt.Sprintf(i18n.G("%s: Disabled"), e)
+					e = gotext.Get("%s: Disabled", e)
 				}
 			}
 			if overridden {
@@ -362,10 +362,10 @@ func (s *stringsBuilderWithError) Println(l string) {
 func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 	// incompatible options
 	if updateAll && (isComputer || target != "" || krb5cc != "") {
-		return errors.New(i18n.G("machine or user arguments cannot be used with update all"))
+		return errors.New(gotext.Get("machine or user arguments cannot be used with update all"))
 	}
 	if isComputer && (target != "" || krb5cc != "") {
-		return errors.New(i18n.G("user arguments cannot be used with machine update"))
+		return errors.New(gotext.Get("user arguments cannot be used with machine update"))
 	}
 
 	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
@@ -413,10 +413,10 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 func (a *App) purge(isComputer, purgeAll bool, target string) error {
 	// incompatible options
 	if purgeAll && target != "" {
-		return errors.New(i18n.G("machine or user arguments cannot be used with update all"))
+		return errors.New(gotext.Get("machine or user arguments cannot be used with update all"))
 	}
 	if isComputer && target != "" {
-		return errors.New(i18n.G("user arguments cannot be used with machine update"))
+		return errors.New(gotext.Get("user arguments cannot be used with machine update"))
 	}
 
 	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())

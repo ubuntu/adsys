@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/watchdservice"
 	"github.com/ubuntu/adsys/internal/watchdtui"
 	"golang.org/x/exp/slices"
@@ -65,8 +65,8 @@ func New(opts ...option) *App {
 	a.options = args
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s [COMMAND]", watchdconfig.CmdName),
-		Short: i18n.G("AD watch daemon"),
-		Long:  i18n.G(`Watch directories for changes and bump the relevant GPT.ini versions.`),
+		Short: gotext.Get("AD watch daemon"),
+		Long:  gotext.Get(`Watch directories for changes and bump the relevant GPT.ini versions.`),
 		Args:  cobra.NoArgs,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Command parsing has been successful. Returns runtime (or
@@ -112,7 +112,7 @@ func New(opts ...option) *App {
 
 				if !slices.Equal(oldDirs, a.config.Dirs) {
 					if err := a.service.UpdateDirs(context.Background(), a.config.Dirs); err != nil {
-						log.Warningf(context.Background(), i18n.G("failed to update directories: %v"), err)
+						log.Warning(context.Background(), gotext.Get("failed to update directories: %v", err))
 						a.config.Dirs = oldDirs
 					}
 				}

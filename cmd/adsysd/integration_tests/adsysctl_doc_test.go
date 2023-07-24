@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/doc"
-	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 func TestDocChapter(t *testing.T) {
@@ -207,7 +207,7 @@ func getTestChapter(t *testing.T, chapterPrefix string) (fullName string, stripp
 
 	fs, err := doc.Dir.ReadDir(".")
 	if err != nil {
-		t.Fatalf(i18n.G("could not list documentation directory: %v"), err)
+		t.Fatal(gotext.Get("could not list documentation directory: %v", err))
 	}
 
 	// Sort all file names while they have their prefix
@@ -220,7 +220,7 @@ func getTestChapter(t *testing.T, chapterPrefix string) (fullName string, stripp
 	}
 
 	if name == "" {
-		t.Fatalf(i18n.G("could not find chapter starting with %s"), chapterPrefix)
+		t.Fatal(gotext.Get("could not find chapter starting with %s", chapterPrefix))
 	}
 
 	return name, strings.TrimSuffix(name, ".md"), strings.TrimPrefix(strings.TrimSuffix(name, ".md"), chapterPrefix+"-")
