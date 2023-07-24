@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,18 +11,18 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/doc"
 	"github.com/ubuntu/adsys/internal/adsysservice"
-	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 func (a *App) installDoc() {
 	var format, dest *string
 	docCmd := &cobra.Command{
 		Use:   "doc [CHAPTER]",
-		Short: i18n.G("Documentation"),
+		Short: gotext.Get("Documentation"),
 		Args:  cobra.MaximumNArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
@@ -51,8 +52,8 @@ func (a *App) installDoc() {
 			return a.getDocumentation(chapter, *format, *dest)
 		},
 	}
-	format = docCmd.Flags().StringP("format", "f", "markdown", i18n.G("Format type (markdown, raw or html)."))
-	dest = docCmd.Flags().StringP("dest", "d", "", i18n.G("Write documentation file(s) to this directory."))
+	format = docCmd.Flags().StringP("format", "f", "markdown", gotext.Get("Format type (markdown, raw or html)."))
+	dest = docCmd.Flags().StringP("dest", "d", "", gotext.Get("Write documentation file(s) to this directory."))
 
 	a.rootCmd.AddCommand(docCmd)
 }
@@ -132,10 +133,10 @@ func (a *App) getDocumentation(chapter, format, dest string) error {
 
 		// Dump documentation in a directory
 		if err = os.MkdirAll(dest, 0750); err != nil {
-			return fmt.Errorf(i18n.G("can't create %q"), dest)
+			return errors.New(gotext.Get("can't create %q", dest))
 		}
 		if err := os.WriteFile(filepath.Join(dest, filename+ext), []byte(out), 0600); err != nil {
-			return fmt.Errorf(i18n.G("can't write documentation chapter %q: %v"), filename+ext, err)
+			return errors.New(gotext.Get("can't write documentation chapter %q: %v", filename+ext, err))
 		}
 	}
 

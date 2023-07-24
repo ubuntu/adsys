@@ -6,8 +6,8 @@ import (
 	"syscall"
 
 	"github.com/kardianos/service"
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"golang.org/x/sys/unix"
 )
 
@@ -16,7 +16,7 @@ import (
 func (a *App) Quit(sig syscall.Signal) error {
 	a.WaitReady()
 	if !service.Interactive() {
-		log.Debug(context.Background(), i18n.G("Calling quit on a non-interactive service is useless"))
+		log.Debug(context.Background(), gotext.Get("Calling quit on a non-interactive service is useless"))
 		return nil
 	}
 
