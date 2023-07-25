@@ -41,10 +41,12 @@ func TestApplyPolicies(t *testing.T) {
 		isNotSubscribed                 bool
 		secondCallWithNoSubscription    bool
 		noUbuntuProxyManager            bool
+		backendOfflineError             bool
 
 		wantErr bool
 	}{
 		"Succeed": {policiesDir: "all_entry_types"},
+		"Succeed if checking for backend online status returns an error":         {backendOfflineError: true, policiesDir: "all_entry_types"},
 		"Second call with no rules deletes everything":                           {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: true},
 		"Second call with no rules don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: false},
 
