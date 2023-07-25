@@ -98,6 +98,7 @@ func TestApplyPolicies(t *testing.T) {
 
 			m, err := policies.NewManager(bus,
 				hostname,
+				mockBackend{},
 				policies.WithCacheDir(cacheDir),
 				policies.WithRunDir(runDir),
 				policies.WithDconfDir(dconfDir),
@@ -282,7 +283,7 @@ func TestDumpPolicies(t *testing.T) {
 			t.Parallel()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, mockBackend{}, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
@@ -349,7 +350,7 @@ func TestLastUpdateFor(t *testing.T) {
 			t.Parallel()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, mockBackend{}, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
@@ -411,7 +412,7 @@ func TestGetSubscriptionState(t *testing.T) {
 			}()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, mockBackend{}, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			got := m.GetSubscriptionState(context.Background())
@@ -435,3 +436,20 @@ func (d *mockProxyApplier) Call(_ string, _ dbus.Flags, _ ...interface{}) *dbus.
 
 	return &dbus.Call{Err: errApply}
 }
+
+// mockBackend is a mock for the backend object.
+type mockBackend struct {
+	wantOnlineErr bool
+}
+
+func (m mockBackend) Domain() string                            { return "example.com" }
+func (m mockBackend) ServerURL(context.Context) (string, error) { return "adc.example.com", nil }
+func (m mockBackend) HostKrb5CCName() (string, error)           { return "/tmp/krb5cc_0", nil }
+func (m mockBackend) DefaultDomainSuffix() string               { return "example.com" }
+func (m mockBackend) IsOnline() (bool, error) {
+	if m.wantOnlineErr {
+		return false, errors.New("mock error")
+	}
+	return true, nil
+}
+func (m mockBackend) Config() string { return "mock config" }

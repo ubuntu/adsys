@@ -33,6 +33,7 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/ubuntu/adsys/internal/ad/backends"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
@@ -66,6 +67,8 @@ type Manager struct {
 	gdm       *gdm.Manager
 	apparmor  *apparmor.Manager
 	proxy     *proxy.Manager
+	backend backends.Backend
+
 
 	subscriptionDbus dbus.BusObject
 
@@ -195,7 +198,7 @@ func WithSystemdCaller(p systemdCaller) Option {
 }
 
 // NewManager returns a new manager with all default policy handlers.
-func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, err error) {
+func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts ...Option) (m *Manager, err error) {
 	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
 
 	defaultSystemdCaller, err := systemd.New(bus)
@@ -272,6 +275,7 @@ func NewManager(bus *dbus.Conn, hostname string, opts ...Option) (m *Manager, er
 		dbus.ObjectPath(consts.SubscriptionDbusObjectPath))
 
 	return &Manager{
+		backend:          backend,
 		policiesCacheDir: policiesCacheDir,
 		hostname:         hostname,
 		dconf:            dconfManager,
