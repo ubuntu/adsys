@@ -1,0 +1,3 @@
+enroll keypress example.com --policy_servers_json null --state_dir #TMPDIR#/statedir
+KRB5CCNAME=#TMPDIR#/rundir/krb5cc/keypress
+PYTHONPATH=#TMPDIR#/sharedir/python

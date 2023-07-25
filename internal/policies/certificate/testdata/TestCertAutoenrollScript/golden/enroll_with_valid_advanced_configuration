@@ -1,0 +1,48 @@
+Loading smb.conf
+[global]
+realm = example.com
+
+Loading state file: #TMPDIR#/state/cert_gpo_state_keypress.tdb
+Enroll called
+
+guid: adsys-cert-autoenroll-keypress
+trust_dir: #TMPDIR#/trust; exists: True
+private_dir: #TMPDIR#/private; exists: True
+global_trust_dir: #TMPDIR#/ca-certificates; exists: False
+
+entries:
+keyname: Software\Policies\Microsoft\Cryptography\PolicyServers\37c9dc30f207f27f61a2f7c3aed598a6e2920b54
+valuename: AuthFlags
+type: 4
+data: 2
+
+keyname: Software\Policies\Microsoft\Cryptography\PolicyServers\37c9dc30f207f27f61a2f7c3aed598a6e2920b54
+valuename: Cost
+type: 4
+data: 2147483645
+
+keyname: Software\Policies\Microsoft\Cryptography\PolicyServers\37c9dc30f207f27f61a2f7c3aed598a6e2920b54
+valuename: Flags
+type: 4
+data: 20
+
+keyname: Software\Policies\Microsoft\Cryptography\PolicyServers\37c9dc30f207f27f61a2f7c3aed598a6e2920b54
+valuename: FriendlyName
+type: 1
+data: ActiveDirectoryEnrollmentPolicy
+
+keyname: Software\Policies\Microsoft\Cryptography\PolicyServers\37c9dc30f207f27f61a2f7c3aed598a6e2920b54
+valuename: PolicyID
+type: 1
+data: {A5E9BF57-71C6-443A-B7FC-79EFA6F73EBD}
+
+keyname: Software\Policies\Microsoft\Cryptography\PolicyServers\37c9dc30f207f27f61a2f7c3aed598a6e2920b54
+valuename: URL
+type: 1
+data: LDAP:
+
+keyname: Software\Policies\Microsoft\Cryptography\PolicyServers
+valuename: Flags
+type: 4
+data: 0
+

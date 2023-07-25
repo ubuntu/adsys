@@ -9,3 +9,6 @@ class Credentials():
 
     def guess(self, val):
         pass
+
+    def get_username(self):
+        pass

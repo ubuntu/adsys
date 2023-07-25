@@ -21,8 +21,14 @@ const (
 	// DefaultCacheDir is the default path for adsys system cache directory.
 	DefaultCacheDir = "/var/cache/adsys"
 
+	// DefaultStateDir is the default path for adsys system state directory.
+	DefaultStateDir = "/var/lib/adsys"
+
 	// DefaultRunDir is the default path for adsys run directory.
 	DefaultRunDir = "/run/adsys"
+
+	// DefaultShareDir is the default path for adsys share directory.
+	DefaultShareDir = "/usr/share/adsys"
 
 	// DefaultClientTimeout is the maximum default time in seconds between 2 server activities before the client returns and abort the request.
 	DefaultClientTimeout = 30
