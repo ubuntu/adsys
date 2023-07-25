@@ -41,6 +41,9 @@ ifeq ($(WINDOWS_BUILD),1)
 	GOFLAGS="$(WIN_GOFLAGS)" GOOS=windows DH_GOLANG_BUILDPKG=github.com/ubuntu/adsys/cmd/adwatchd dh_auto_build
 endif
 
+	# Build mo files
+	go run vendor/github.com/ubuntu/go-i18n/cmd/compile-mo/*.go adsys po/ debian/tmp/user/share/locale/
+
 override_dh_auto_install:
 	dh_auto_install -- --no-source
 
