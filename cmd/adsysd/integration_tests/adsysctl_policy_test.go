@@ -1088,25 +1088,32 @@ func TestPolicyUpdate(t *testing.T) {
 	}
 }
 
-func TestPolicyDebugGPOListScript(t *testing.T) {
-	gpolistSrc, err := os.ReadFile(filepath.Join(rootProjectDir, "internal/ad/adsys-gpolist"))
-	require.NoError(t, err, "Setup: failed to load source of adsys-gpolist")
-
+func TestPolicyDebugScriptDump(t *testing.T) {
 	tests := map[string]struct {
+		script  string
+		cmdName string
+		path    string
+
 		systemAnswer     string
 		daemonNotStarted bool
 
 		wantErr bool
 	}{
-		"Get adsys-gpolist script":     {systemAnswer: "polkit_yes"},
-		"Version is always authorized": {systemAnswer: "polkit_no"},
+		"Get adsys-gpolist script":             {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_yes"},
+		"Get cert-autoenroll script":           {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", systemAnswer: "polkit_yes"},
+		"adsys-gpolist is always authorized":   {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_no"},
+		"cert-autoenroll is always authorized": {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", systemAnswer: "polkit_no"},
 
-		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
+		"Error on daemon not responding for adsys-gpolist":   {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", daemonNotStarted: true, wantErr: true},
+		"Error on daemon not responding for cert-autoenroll": {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			dbusAnswer(t, tc.systemAnswer)
+
+			scriptSrc, err := os.ReadFile(filepath.Join(rootProjectDir, tc.path, tc.script))
+			require.NoError(t, err, "Setup: failed to load source of %s script", tc.script)
 
 			conf := createConf(t)
 			if !tc.daemonNotStarted {
@@ -1115,21 +1122,21 @@ func TestPolicyDebugGPOListScript(t *testing.T) {
 
 			testutils.Chdir(t, os.TempDir())
 
-			_, err := runClient(t, conf, "policy", "debug", "gpolist-script")
+			_, err = runClient(t, conf, "policy", "debug", tc.cmdName)
 			if tc.wantErr {
 				require.Error(t, err, "client should exit with an error")
 				return
 			}
 
-			f, err := os.Stat("adsys-gpolist")
-			require.NoError(t, err, "gpo list script should exists")
+			f, err := os.Stat(tc.script)
+			require.NoError(t, err, "%s script should exists", tc.script)
 
 			require.NotEqual(t, 0, f.Mode()&0111, "Script should be executable")
 
-			got, err := os.ReadFile("adsys-gpolist")
-			require.NoError(t, err, "gpo list script is not readable")
+			got, err := os.ReadFile(tc.script)
+			require.NoError(t, err, "%s script is not readable", tc.script)
 
-			require.Equal(t, string(gpolistSrc), string(got), "Script content should match source")
+			require.Equal(t, string(scriptSrc), string(got), "Script content should match source")
 		})
 	}
 }

@@ -11,6 +11,7 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/sync/errgroup"
 )
@@ -151,6 +152,23 @@ func (s *Service) GPOListScript(_ *adsys.Empty, stream adsys.Service_GPOListScri
 		Msg: ad.AdsysGpoListCode,
 	}); err != nil {
 		log.Warningf(stream.Context(), "couldn't send gpo list to client: %v", err)
+	}
+
+	return nil
+}
+
+// CertAutoEnrollScript returns the embedded certificate autoenrollment python script.
+func (s *Service) CertAutoEnrollScript(_ *adsys.Empty, stream adsys.Service_CertAutoEnrollScriptServer) (err error) {
+	defer decorate.OnError(&err, i18n.G("error while getting certificate autoenrollment script"))
+
+	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
+		return err
+	}
+
+	if err := stream.Send(&adsys.StringResponse{
+		Msg: certificate.CertEnrollCode,
+	}); err != nil {
+		log.Warningf(stream.Context(), "couldn't send certificate autoenrollment script to client: %v", err)
 	}
 
 	return nil

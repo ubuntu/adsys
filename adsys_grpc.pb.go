@@ -30,6 +30,7 @@ const (
 	Service_ListDoc_FullMethodName                 = "/service/ListDoc"
 	Service_ListUsers_FullMethodName               = "/service/ListUsers"
 	Service_GPOListScript_FullMethodName           = "/service/GPOListScript"
+	Service_CertAutoEnrollScript_FullMethodName    = "/service/CertAutoEnrollScript"
 )
 
 // ServiceClient is the client API for Service service.
@@ -47,6 +48,7 @@ type ServiceClient interface {
 	ListDoc(ctx context.Context, in *ListDocRequest, opts ...grpc.CallOption) (Service_ListDocClient, error)
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (Service_ListUsersClient, error)
 	GPOListScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_GPOListScriptClient, error)
+	CertAutoEnrollScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CertAutoEnrollScriptClient, error)
 }
 
 type serviceClient struct {
@@ -409,6 +411,38 @@ func (x *serviceGPOListScriptClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
+func (c *serviceClient) CertAutoEnrollScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CertAutoEnrollScriptClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[11], Service_CertAutoEnrollScript_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &serviceCertAutoEnrollScriptClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Service_CertAutoEnrollScriptClient interface {
+	Recv() (*StringResponse, error)
+	grpc.ClientStream
+}
+
+type serviceCertAutoEnrollScriptClient struct {
+	grpc.ClientStream
+}
+
+func (x *serviceCertAutoEnrollScriptClient) Recv() (*StringResponse, error) {
+	m := new(StringResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
@@ -424,6 +458,7 @@ type ServiceServer interface {
 	ListDoc(*ListDocRequest, Service_ListDocServer) error
 	ListUsers(*ListUsersRequest, Service_ListUsersServer) error
 	GPOListScript(*Empty, Service_GPOListScriptServer) error
+	CertAutoEnrollScript(*Empty, Service_CertAutoEnrollScriptServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -463,6 +498,9 @@ func (UnimplementedServiceServer) ListUsers(*ListUsersRequest, Service_ListUsers
 }
 func (UnimplementedServiceServer) GPOListScript(*Empty, Service_GPOListScriptServer) error {
 	return status.Errorf(codes.Unimplemented, "method GPOListScript not implemented")
+}
+func (UnimplementedServiceServer) CertAutoEnrollScript(*Empty, Service_CertAutoEnrollScriptServer) error {
+	return status.Errorf(codes.Unimplemented, "method CertAutoEnrollScript not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 
@@ -708,6 +746,27 @@ func (x *serviceGPOListScriptServer) Send(m *StringResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Service_CertAutoEnrollScript_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Empty)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).CertAutoEnrollScript(m, &serviceCertAutoEnrollScriptServer{stream})
+}
+
+type Service_CertAutoEnrollScriptServer interface {
+	Send(*StringResponse) error
+	grpc.ServerStream
+}
+
+type serviceCertAutoEnrollScriptServer struct {
+	grpc.ServerStream
+}
+
+func (x *serviceCertAutoEnrollScriptServer) Send(m *StringResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -769,6 +828,11 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GPOListScript",
 			Handler:       _Service_GPOListScript_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CertAutoEnrollScript",
+			Handler:       _Service_CertAutoEnrollScript_Handler,
 			ServerStreams: true,
 		},
 	},
