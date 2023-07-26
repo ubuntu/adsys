@@ -42,7 +42,7 @@ ifeq ($(WINDOWS_BUILD),1)
 endif
 
 	# Build mo files
-	go run vendor/github.com/ubuntu/go-i18n/cmd/compile-mo/*.go adsys po/ debian/tmp/user/share/locale/
+	go run vendor/github.com/ubuntu/go-i18n/cmd/compile-mo/*.go adsys po/ obj-$(DEB_TARGET_GNU_TYPE)/locale
 
 override_dh_auto_install:
 	dh_auto_install -- --no-source
@@ -58,6 +58,9 @@ override_dh_auto_install:
 	cp -a systemd/*.socket debian/tmp/lib/systemd/system/
 	cp -a systemd/*.timer debian/tmp/lib/systemd/system/
 	cp -a systemd/user/*.service debian/tmp/usr/lib/systemd/user/
+
+	# compiled locales
+	cp -a obj-$(DEB_TARGET_GNU_TYPE)/locale debian/tmp/usr/share/locale/
 
 # Separate windows binaries
 ifeq ($(WINDOWS_BUILD),1)
