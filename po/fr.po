@@ -7,94 +7,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: internal/watchdtui/watchdtui.go:499
-msgid ""
-"\n"
-"Service already exists and will be reconfigured\n"
-msgstr ""
-"\n"
-"Le service existe déjà et sera reconfiguré\n"
-
-#: cmd/adsysd/client/version.go:44
-msgid "%s		%s"
-msgstr "%s		%s"
-
-#: cmd/adsysd/daemon/version.go:23
-#: cmd/adsysd/client/version.go:27
-#: cmd/adwatchd/commands/version.go:24
-msgid "%s	%s"
-msgstr ""
-
-#: cmd/adwatchd/commands/run.go:38
-msgid "%s, use --force to override"
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:310
-msgid "%s: Disabled"
-msgstr ""
-
-#: cmd/adsysd/daemon/daemon.go:64
-msgid "OLD traduction to be removed"
-msgstr "Traduction à supprimer"
-
-#: cmd/adwatchd/commands/main.go:68
-msgid "AD watch daemon"
-msgstr ""
-
-#: cmd/adsysd/daemon/daemon.go:159
-msgid "Active Directory authentication backend"
-msgstr ""
-
-#: cmd/adsysd/client/client.go:46
-msgid "Active Directory integration bridging toolset command line tool."
-msgstr ""
-
-#: cmd/adsysd/daemon/daemon.go:65
-msgid "Active Directory integration bridging toolset daemon."
-msgstr ""
-
-#: cmd/adwatchd/commands/main_linux.go:19
-msgid "Calling quit on a non-interactive service is useless"
-msgstr ""
-
-#: cmd/adwatchd/commands/run.go:21
-msgid ""
-"Can run as a service through the service manager or interactively as a standalone application.\n"
-"\n"
-"The program will monitor the configured directories for changes and bump the appropriate GPT.ini versions anytime a change is detected.\n"
-"If a GPT.ini file does not exist for a directory, a warning will be issued and the file will be created. If the GPT.ini file is incompatible or malformed, the program will report an error.\n"
-msgstr ""
-
-#: cmd/admxgen/main.go:94
-msgid "Collects all intermediary policy definition files in SOURCE directory to create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."
-msgstr ""
-
-#: cmd/admxgen/main.go:93
-msgid "Create finale admx and adml files"
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:75
-msgid "Debug various policy infos"
-msgstr ""
-
-#: cmd/adsysd/client/doc.go:25
-msgid "Documentation"
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:33
-msgid "Dump windows policy definitions"
-msgstr ""
-
-#: cmd/adsysd/client/doc.go:55
-msgid "Format type (markdown, raw or html)."
+#: cmd/admxgen/main.go:35
+msgid "Generate Active Directory admx and adml files"
 msgstr ""
 
 #: cmd/admxgen/main.go:36
 msgid "Generate ADMX and intermediary working files from a list of policy definition files."
 msgstr ""
 
-#: cmd/admxgen/main.go:35
-msgid "Generate Active Directory admx and adml files"
+#: cmd/admxgen/main.go:45
+msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
+msgstr ""
+
+#: cmd/admxgen/main.go:70
+msgid "Generates intermediary policy definition files"
 msgstr ""
 
 #: cmd/admxgen/main.go:71
@@ -103,31 +29,148 @@ msgid ""
 "The generated definition file will be of the form expanded_policies.RELEASE.yaml"
 msgstr ""
 
-#: cmd/admxgen/main.go:70
-msgid "Generates intermediary policy definition files"
+#: cmd/admxgen/main.go:78
+msgid "root filesystem path to use. Default to /."
 msgstr ""
 
-#: cmd/adwatchd/commands/service.go:100
-msgid ""
-"Installs the %s service.\n"
-"\n"
-"The service will be installed as a Windows service.\n"
+#: cmd/admxgen/main.go:79
+msgid "current session to consider for dconf per-session\n"
 msgstr ""
 
-#: cmd/adwatchd/commands/service.go:99
-msgid "Installs the service"
+#: cmd/admxgen/main.go:93
+msgid "Create finale admx and adml files"
 msgstr ""
 
-#: cmd/adwatchd/commands/service.go:16
-msgid "Manages the %s service"
+#: cmd/admxgen/main.go:94
+msgid "Collects all intermediary policy definition files in SOURCE directory to create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."
+msgstr ""
+
+#: cmd/admxgen/main.go:100
+msgid "override supported releases in categories definition file and will takes all yaml files in SOURCE directory and use the basename as their versions."
+msgstr ""
+
+#: cmd/admxgen/main.go:101
+msgid "avoid fail but display a warning if some keys are not available in a release. This is the case when news keys are added to non-lts releases."
+msgstr ""
+
+#: cmd/admxgen/main.go:103
+msgid "can't install command flag bindings: %v"
+msgstr ""
+
+#: cmd/adsysd/client/client.go:45
+msgid "AD integration client"
+msgstr ""
+
+#: cmd/adsysd/client/client.go:46
+msgid "Active Directory integration bridging toolset command line tool."
+msgstr ""
+
+#: cmd/adsysd/client/client.go:93
+msgid "time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."
+msgstr ""
+
+#: cmd/adsysd/client/doc.go:25
+msgid "Documentation"
+msgstr ""
+
+#: cmd/adsysd/client/doc.go:55
+msgid "Format type (markdown, raw or html)."
+msgstr ""
+
+#: cmd/adsysd/client/doc.go:56
+msgid "Write documentation file(s) to this directory."
+msgstr ""
+
+#: cmd/adsysd/client/doc.go:136
+msgid "can't create %q"
+msgstr ""
+
+#: cmd/adsysd/client/doc.go:139
+msgid "can't write documentation chapter %q: %v"
 msgstr ""
 
 #: cmd/adsysd/client/policy.go:25
 msgid "Policy management"
 msgstr ""
 
+#: cmd/adsysd/client/policy.go:33
+msgid "Dump windows policy definitions"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:43
+msgid "distro for which to retrieve policy definition."
+msgstr ""
+
 #: cmd/adsysd/client/policy.go:49
 msgid "Print last applied GPOs for current or given user/machine"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:66
+msgid "show applied rules in addition to GPOs."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:67
+msgid "show overridden rules in each GPOs."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:68
+msgid "don't display colorized version."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:69
+msgid "show applied rules to the machine."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:75
+msgid "Debug various policy infos"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:83
+msgid "Write GPO list python embeeded script in current directory"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:93
+msgid "Updates/Create a policy for current user or given user with its kerberos ticket"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:120
+msgid "machine updates the policy of the computer."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:121
+msgid "all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:128
+msgid "Purges policies for the current user or a specified one"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:147
+msgid "machine purges the policy of the computer."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:148
+msgid "all purges the policy of the computer and all the logged in users. -m or USER_NAME cannot be used with this option."
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:308
+msgid "%s: Locked to system default"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:310
+msgid "%s: Disabled"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:416
+msgid "machine or user arguments cannot be used with update all"
+msgstr ""
+
+#: cmd/adsysd/client/policy.go:419
+msgid "user arguments cannot be used with machine update"
+msgstr ""
+
+#: cmd/adsysd/client/service.go:20
+msgid "Service management"
 msgstr ""
 
 #: cmd/adsysd/client/service.go:28
@@ -138,153 +181,28 @@ msgstr ""
 msgid "Print service status"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:128
-msgid "Purges policies for the current user or a specified one"
-msgstr ""
-
-#: cmd/adsysd/daemon/scripts.go:36
-msgid "Ready state sent to systemd"
-msgstr ""
-
 #: cmd/adsysd/client/service.go:47
 msgid "Requests to stop the service once all connections are done"
 msgstr ""
 
-#: cmd/adwatchd/commands/service.go:66
-msgid "Restarts the %s service."
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:65
-msgid "Restarts the service"
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:79
-msgid "Returns service status"
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:80
-msgid "Returns the status of the %s service."
+#: cmd/adsysd/client/service.go:52
+msgid "force will shut it down immediately and drop existing connections."
 msgstr ""
 
 #: cmd/adsysd/client/version.go:17
 msgid "Returns version of client and service"
 msgstr ""
 
-#: cmd/adsysd/daemon/version.go:14
-#: cmd/adwatchd/commands/version.go:15
-msgid "Returns version of service and exits"
+#: cmd/adsysd/client/version.go:44
+msgid "%s		%s"
+msgstr "%s		%s"
+
+#: cmd/adsysd/daemon/daemon.go:64
+msgid "AD integration daemon"
 msgstr ""
 
-#: cmd/adsysd/daemon/scripts.go:18
-msgid "Runs scripts in the given subdirectory"
-msgstr ""
-
-#: cmd/adsysd/daemon/daemon.go:163
-msgid "SSSd cache directory"
-msgstr ""
-
-#: cmd/adsysd/daemon/daemon.go:161
-msgid "SSSd config file path"
-msgstr ""
-
-#: cmd/adsysd/client/service.go:20
-msgid "Service management"
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:38
-msgid "Starts the %s service."
-msgstr ""
-
-#: cmd/adwatchd/commands/run.go:20
-msgid "Starts the directory watch loop"
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:37
-msgid "Starts the service"
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:52
-msgid "Stops the %s service."
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:51
-msgid "Stops the service"
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:17
-msgid "The service command allows the user to interact with the %s service. It can manage and query the service status, and also install and uninstall the service."
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:119
-msgid "Uninstalls the %s service."
-msgstr ""
-
-#: cmd/adwatchd/commands/service.go:118
-msgid "Uninstalls the service"
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:93
-msgid "Updates/Create a policy for current user or given user with its kerberos ticket"
-msgstr ""
-
-#: cmd/adwatchd/commands/main.go:69
-msgid "Watch directories for changes and bump the relevant GPT.ini versions."
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:83
-msgid "Write GPO list python embeeded script in current directory"
-msgstr ""
-
-#: cmd/adsysd/client/doc.go:56
-msgid "Write documentation file(s) to this directory."
-msgstr ""
-
-#: cmd/adwatchd/commands/run.go:54
-msgid "a `directory` to check for changes (can be specified multiple times)"
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:148
-msgid "all purges the policy of the computer and all the logged in users. -m or USER_NAME cannot be used with this option."
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:121
-msgid "all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option."
-msgstr ""
-
-#: cmd/adsysd/daemon/scripts.go:23
-msgid "allow ORDER_FILE to be missing once the scripts are ready."
-msgstr ""
-
-#: cmd/adwatchd/commands/run.go:35
-msgid "another instance of the %s service is already running"
-msgstr ""
-
-#: cmd/admxgen/main.go:101
-msgid "avoid fail but display a warning if some keys are not available in a release. This is the case when news keys are added to non-lts releases."
-msgstr ""
-
-#: cmd/adsysd/client/doc.go:136
-msgid "can't create %q"
-msgstr ""
-
-#: cmd/admxgen/main.go:47
-#: cmd/admxgen/main.go:82
-#: cmd/admxgen/main.go:103
-msgid "can't install command flag bindings: %v"
-msgstr ""
-
-#: cmd/adsysd/client/doc.go:139
-msgid "can't write documentation chapter %q: %v"
-msgstr ""
-
-#: cmd/adsysd/daemon/scripts.go:34
-msgid "couldn't send ready notification to systemd: %v"
-msgstr ""
-
-#: cmd/admxgen/main.go:79
-msgid ""
-"current session to consider for dconf per-session\n"
-"	overrides. Default to ""."
+#: cmd/adsysd/daemon/daemon.go:65
+msgid "Active Directory integration bridging toolset daemon."
 msgstr ""
 
 #: cmd/adsysd/daemon/daemon.go:151
@@ -295,76 +213,157 @@ msgstr ""
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:43
-msgid "distro for which to retrieve policy definition."
+#: cmd/adsysd/daemon/daemon.go:156
+msgid "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:68
-msgid "don't display colorized version."
+#: cmd/adsysd/daemon/daemon.go:159
+msgid "Active Directory authentication backend"
+msgstr ""
+
+#: cmd/adsysd/daemon/daemon.go:161
+msgid "SSSd config file path"
+msgstr ""
+
+#: cmd/adsysd/daemon/daemon.go:163
+msgid "SSSd cache directory"
+msgstr ""
+
+#: cmd/adsysd/daemon/scripts.go:18
+msgid "Runs scripts in the given subdirectory"
+msgstr ""
+
+#: cmd/adsysd/daemon/scripts.go:23
+msgid "allow ORDER_FILE to be missing once the scripts are ready."
+msgstr ""
+
+#: cmd/adsysd/daemon/scripts.go:34
+msgid "couldn't send ready notification to systemd: %v"
+msgstr ""
+
+#: cmd/adsysd/daemon/scripts.go:36
+msgid "Ready state sent to systemd"
+msgstr ""
+
+#: cmd/adwatchd/commands/main.go:68
+msgid "AD watch daemon"
+msgstr ""
+
+#: cmd/adwatchd/commands/main.go:69
+msgid "Watch directories for changes and bump the relevant GPT.ini versions."
 msgstr ""
 
 #: cmd/adwatchd/commands/main.go:115
 msgid "failed to update directories: %v"
 msgstr ""
 
-#: cmd/adwatchd/commands/run.go:62
-msgid "force the program to run even if another instance is already running"
+#: cmd/adwatchd/commands/main_linux.go:19
+msgid "Calling quit on a non-interactive service is useless"
 msgstr ""
 
-#: cmd/adsysd/client/service.go:52
-msgid "force will shut it down immediately and drop existing connections."
+#: cmd/adwatchd/commands/run.go:20
+msgid "Starts the directory watch loop"
 msgstr ""
 
-#: cmd/admxgen/main.go:45
-msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:365
-#: cmd/adsysd/client/policy.go:416
-msgid "machine or user arguments cannot be used with update all"
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:147
-msgid "machine purges the policy of the computer."
-msgstr ""
-
-#: cmd/adsysd/client/policy.go:120
-msgid "machine updates the policy of the computer."
-msgstr ""
-
-#: cmd/admxgen/main.go:100
-msgid "override supported releases in categories definition file and will takes all yaml files in SOURCE directory and use the basename as their versions."
-msgstr ""
-
-#: cmd/admxgen/main.go:78
-msgid "root filesystem path to use. Default to /."
+#: cmd/adwatchd/commands/run.go:21
+msgid ""
+"Can run as a service through the service manager or interactively as a standalone application.\n"
+"\n"
+"The program will monitor the configured directories for changes and bump the appropriate GPT.ini versions anytime a change is detected.\n"
+"If a GPT.ini file does not exist for a directory, a warning will be issued and the file will be created. If the GPT.ini file is incompatible or malformed, the program will report an error.\n"
 msgstr ""
 
 #: cmd/adwatchd/commands/run.go:29
 msgid "run command needs at least one directory to watch either with --dirs or via the configuration file"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:66
-msgid "show applied rules in addition to GPOs."
+#: cmd/adwatchd/commands/run.go:35
+msgid "another instance of the %s service is already running"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:69
-msgid "show applied rules to the machine."
+#: cmd/adwatchd/commands/run.go:38
+msgid "%s, use --force to override"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:67
-msgid "show overridden rules in each GPOs."
+#: cmd/adwatchd/commands/run.go:54
+msgid "a `directory` to check for changes (can be specified multiple times)"
 msgstr ""
 
-#: cmd/adsysd/client/client.go:93
-msgid "time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."
+#: cmd/adwatchd/commands/run.go:62
+msgid "force the program to run even if another instance is already running"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:156
-msgid "time in seconds without activity before the service exists. 0 for no timeout."
+#: cmd/adwatchd/commands/service.go:16
+msgid "Manages the %s service"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:368
-#: cmd/adsysd/client/policy.go:419
-msgid "user arguments cannot be used with machine update"
+#: cmd/adwatchd/commands/service.go:17
+msgid "The service command allows the user to interact with the %s service. It can manage and query the service status, and also install and uninstall the service."
 msgstr ""
+
+#: cmd/adwatchd/commands/service.go:37
+msgid "Starts the service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:38
+msgid "Starts the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:51
+msgid "Stops the service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:52
+msgid "Stops the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:65
+msgid "Restarts the service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:66
+msgid "Restarts the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:79
+msgid "Returns service status"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:80
+msgid "Returns the status of the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:99
+msgid "Installs the service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:100
+msgid ""
+"Installs the %s service.\n"
+"\n"
+"The service will be installed as a Windows service.\n"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:118
+msgid "Uninstalls the service"
+msgstr ""
+
+#: cmd/adwatchd/commands/service.go:119
+msgid "Uninstalls the %s service."
+msgstr ""
+
+#: cmd/adwatchd/commands/version.go:15
+msgid "Returns version of service and exits"
+msgstr ""
+
+#: cmd/adwatchd/commands/version.go:24
+msgid "%s	%s"
+msgstr ""
+
+#: internal/watchdtui/watchdtui.go:499
+msgid ""
+"\n"
+"Service already exists and will be reconfigured\n"
+msgstr ""
+"\n"
+"Le service existe déjà et sera reconfiguré\n"
