@@ -259,6 +259,8 @@ github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117 h1:XQpsQG5lqRJlx4m
 github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117/go.mod h1:mx0TjbqsaDD9DUT5gA1s3hw47U6RIbbIBfvGzR85K0g=
 github.com/ubuntu/go-i18n v0.0.0-20230724134041-32292db45b27 h1:bNEvIwIm39Ex1nVl/mie6DHvN3xhqV62+ljpgrfSArw=
 github.com/ubuntu/go-i18n v0.0.0-20230724134041-32292db45b27/go.mod h1:myaM6fuBuA+lr97lVLe8P8HjuFwagCz2ZAtViwysXLM=
+github.com/ubuntu/go-i18n v0.0.0-20230726113825-11c262eeb520 h1:N4/7uItvb/GoT7NgpeGcafqOmIeSn5lGViITJvGE7OY=
+github.com/ubuntu/go-i18n v0.0.0-20230726113825-11c262eeb520/go.mod h1:MUQLSHrZiUWrTgtkIgKa6rGaidZKmVtImD0x7DNay0I=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
