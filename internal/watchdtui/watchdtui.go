@@ -15,6 +15,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/leonelquinteros/gotext"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/watchdservice"
@@ -495,7 +496,7 @@ func (m model) View() string {
 		b.WriteString(hintStyle.Render(m.inputs[0].Err.Error()))
 	}
 	if m.serviceExists {
-		b.WriteString(hintStyle.Render(i18n.G("\nService already exists and will be reconfigured\n")))
+		b.WriteString(hintStyle.Render(gotext.Get("\nService already exists and will be reconfigured\n")))
 	}
 
 	b.WriteString("\n\n")
