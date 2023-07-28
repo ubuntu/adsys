@@ -54,7 +54,7 @@ import (
 
 // ProOnlyRules are the rules that are only available for Pro subscribers. They
 // will be filtered otherwise.
-var ProOnlyRules = []string{"privilege", "scripts", "mount", "apparmor", "proxy"}
+var ProOnlyRules = []string{"privilege", "scripts", "mount", "apparmor", "proxy", "certificate"}
 
 // Manager handles all managers for various policy handlers.
 type Manager struct {
@@ -107,6 +107,7 @@ type options struct {
 	gdm           *gdm.Manager
 
 	apparmorParserCmd []string
+	certAutoenrollCmd []string
 }
 
 // Option reprents an optional function to change Policies behavior.
@@ -116,6 +117,14 @@ type Option func(*options) error
 func WithCacheDir(p string) Option {
 	return func(o *options) error {
 		o.cacheDir = p
+		return nil
+	}
+}
+
+// WithStateDir specifies a personalized state directory.
+func WithStateDir(p string) Option {
+	return func(o *options) error {
+		o.stateDir = p
 		return nil
 	}
 }
@@ -148,6 +157,14 @@ func WithPolicyKitDir(p string) Option {
 func WithRunDir(p string) Option {
 	return func(o *options) error {
 		o.runDir = p
+		return nil
+	}
+}
+
+// WithShareDir specifies a personalized share directory.
+func WithShareDir(p string) Option {
+	return func(o *options) error {
+		o.shareDir = p
 		return nil
 	}
 }
@@ -197,6 +214,14 @@ func WithProxyApplier(p proxy.Caller) Option {
 func WithSystemdCaller(p systemdCaller) Option {
 	return func(o *options) error {
 		o.systemdCaller = p
+		return nil
+	}
+}
+
+// WithCertAutoenrollCmd specifies a personalized certificate autoenroll command.
+func WithCertAutoenrollCmd(cmd []string) Option {
+	return func(o *options) error {
+		o.certAutoenrollCmd = cmd
 		return nil
 	}
 }
@@ -266,11 +291,15 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 	proxyManager := proxy.New(bus, proxyOptions...)
 
 	// certificate manager
-	certificateManager := certificate.New(backend.Domain(),
+	certificateOpts := []certificate.Option{
 		certificate.WithStateDir(args.stateDir),
 		certificate.WithRunDir(args.runDir),
 		certificate.WithShareDir(args.shareDir),
-	)
+	}
+	if args.certAutoenrollCmd != nil {
+		certificateOpts = append(certificateOpts, certificate.WithCertAutoenrollCmd(args.certAutoenrollCmd))
+	}
+	certificateManager := certificate.New(backend.Domain(), certificateOpts...)
 
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {

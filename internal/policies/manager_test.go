@@ -56,12 +56,13 @@ func TestApplyPolicies(t *testing.T) {
 		"Second call with no subscription don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: false},
 
 		// Error cases
-		"Error when applying dconf policy":     {policiesDir: "dconf_failing", wantErr: true},
-		"Error when applying privilege policy": {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
-		"Error when applying scripts policy":   {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
-		"Error when applying apparmor policy":  {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
-		"Error when applying mount policy":     {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
-		"Error when applying proxy policy":     {noUbuntuProxyManager: true, policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying dconf policy":       {policiesDir: "dconf_failing", wantErr: true},
+		"Error when applying privilege policy":   {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying scripts policy":     {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying apparmor policy":    {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying mount policy":       {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying proxy policy":       {noUbuntuProxyManager: true, policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying certificate policy": {policiesDir: "certificate_failing", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -82,6 +83,8 @@ func TestApplyPolicies(t *testing.T) {
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
 			apparmorDir := filepath.Join(fakeRootDir, "etc", "apparmor.d", "adsys")
 			systemUnitDir := filepath.Join(fakeRootDir, "etc", "systemd", "system")
+			stateDir := filepath.Join(fakeRootDir, "var", "lib", "adsys")
+			shareDir := filepath.Join(fakeRootDir, "usr", "share", "adsys")
 			loadedPoliciesFile := filepath.Join(fakeRootDir, "sys", "kernel", "security", "apparmor", "profiles")
 
 			err = os.MkdirAll(filepath.Dir(loadedPoliciesFile), 0700)
@@ -102,13 +105,16 @@ func TestApplyPolicies(t *testing.T) {
 				hostname,
 				mockBackend{},
 				policies.WithCacheDir(cacheDir),
+				policies.WithStateDir(stateDir),
 				policies.WithRunDir(runDir),
+				policies.WithShareDir(shareDir),
 				policies.WithDconfDir(dconfDir),
 				policies.WithPolicyKitDir(policyKitDir),
 				policies.WithSudoersDir(sudoersDir),
 				policies.WithApparmorDir(apparmorDir),
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
+				policies.WithCertAutoenrollCmd([]string{"/bin/true"}),
 				policies.WithSystemUnitDir(systemUnitDir),
 				policies.WithProxyApplier(&mockProxyApplier{wantApplyError: tc.noUbuntuProxyManager}),
 				policies.WithSystemdCaller(&testutils.MockSystemdCaller{}),

@@ -56,3 +56,7 @@ gpos:
       disabled: true
     - key: proxy/no-proxy
       value: localhost,127.0.0.1,::1
+    certificate:
+    - key: autoenroll
+      value: "7"
+      disabled: false

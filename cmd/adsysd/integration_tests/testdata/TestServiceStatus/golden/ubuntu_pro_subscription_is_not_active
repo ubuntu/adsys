@@ -6,6 +6,7 @@ Next Refresh: Tue May 25 14:55
 
 Ubuntu Pro subscription is not active on this machine. Rules belonging to the following policy types will not be applied:
   - apparmor
+  - certificate
   - mount
   - privilege
   - proxy

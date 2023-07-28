@@ -9,6 +9,10 @@ gpos:
                 usr.bin.bar
                 nested/usr.bin.baz
               disabled: false
+        certificate:
+            - key: autoenroll
+              value: "7"
+              disabled: false
         dconf:
             - key: path/to/key1
               value: ValueOfKey1
