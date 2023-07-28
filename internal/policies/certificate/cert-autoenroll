@@ -40,9 +40,9 @@ def main():
     parser.add_argument('--policy_servers_json', type=str,
                         help='GPO entries for advanced configuration of the policy servers. \
                         Must be in JSON format.')
-    parser.add_argument('--state_dir', type=str,
-                        default='/var/lib/adsys',
-                        help='Directory to store GPO state in.')
+    parser.add_argument('--samba_cache_dir', type=str,
+                        default='/var/lib/adsys/samba',
+                        help='Directory to store GPO Samba cache in.')
     parser.add_argument('--private_dir', type=str,
                         default='/var/lib/adsys/private/certs',
                         help='Directory to store private keys in.')
@@ -57,13 +57,13 @@ def main():
 
     args = parser.parse_args()
 
-    state_dir = args.state_dir
+    samba_cache_dir = args.samba_cache_dir
     trust_dir = args.trust_dir
     private_dir = args.private_dir
     global_trust_dir = args.global_trust_dir
 
     # Create needed directories if they don't exist
-    for directory in [state_dir, trust_dir, private_dir, global_trust_dir]:
+    for directory in [samba_cache_dir, trust_dir, private_dir, global_trust_dir]:
         if not os.path.exists(directory):
             perms = 0o700 if directory == private_dir else 0o755
             os.makedirs(directory, mode=perms)
@@ -77,7 +77,7 @@ def main():
         c.set_kerberos_state(MUST_USE_KERBEROS)
         c.guess(lp)
         username = c.get_username()
-        store = GPOStorage(os.path.join(state_dir, f'cert_gpo_state_{args.object_name}.tdb'))
+        store = GPOStorage(os.path.join(samba_cache_dir, f'cert_gpo_state_{args.object_name}.tdb'))
 
         ext = adsys_cert_auto_enroll(lp, c, username, store)
         guid = f'adsys-cert-autoenroll-{args.object_name}'

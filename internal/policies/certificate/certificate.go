@@ -42,7 +42,7 @@ import (
 // the policy in ApplyPolicy.
 type Manager struct {
 	domain          string
-	stateDir        string
+	sambaCacheDir   string
 	krb5CacheDir    string
 	vendorPythonDir string
 	certEnrollCmd   []string
@@ -131,7 +131,7 @@ func New(domain string, opts ...Option) *Manager {
 
 	return &Manager{
 		domain:          domain,
-		stateDir:        args.stateDir,
+		sambaCacheDir:   filepath.Join(args.stateDir, "samba"),
 		krb5CacheDir:    filepath.Join(args.runDir, "krb5cc"),
 		vendorPythonDir: filepath.Join(args.shareDir, "python"),
 		certEnrollCmd:   args.certAutoenrollCmd,
@@ -204,7 +204,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	if err := m.runScript(ctx, action, objectName,
 		"--policy_servers_json", string(jsonGPOData),
-		"--state_dir", m.stateDir,
+		"--samba_cache_dir", m.sambaCacheDir,
 	); err != nil {
 		return err
 	}

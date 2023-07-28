@@ -119,7 +119,7 @@ func TestCertAutoenrollScript(t *testing.T) {
 				testutils.MakeReadOnly(t, tmpdir)
 			}
 
-			args := append(tc.args, "--state_dir", stateDir, "--private_dir", privateDir, "--trust_dir", trustDir, "--global_trust_dir", globalTrustDir)
+			args := append(tc.args, "--samba_cache_dir", stateDir, "--private_dir", privateDir, "--trust_dir", trustDir, "--global_trust_dir", globalTrustDir)
 
 			// #nosec G204: we control the command line name and only change it for tests
 			cmd := exec.Command(certAutoenrollCmd, args...)
