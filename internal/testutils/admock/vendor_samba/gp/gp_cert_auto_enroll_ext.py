@@ -14,9 +14,9 @@ class gp_cert_auto_enroll_ext(object):
         print('Enroll called')
         print()
         print(f'guid: {guid}')
-        print(f'trust_dir: {trust_dir}; exists: {os.path.exists(trust_dir)}')
-        print(f'private_dir: {private_dir}; exists: {os.path.exists(private_dir)}')
-        print(f'global_trust_dir: {global_trust_dir}; exists: {os.path.exists(global_trust_dir)}')
+        print(f'trust_dir: {trust_dir}; mode: {oct(os.stat(trust_dir).st_mode)}')
+        print(f'private_dir: {private_dir}; mode: {oct(os.stat(private_dir).st_mode)}')
+        print(f'global_trust_dir: {global_trust_dir}; mode: {oct(os.stat(global_trust_dir).st_mode)}')
 
         if entries == []:
             return

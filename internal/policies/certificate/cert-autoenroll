@@ -65,9 +65,10 @@ def main():
     global_trust_dir = args.global_trust_dir
 
     # Create needed directories if they don't exist
-    for directory in [state_dir, trust_dir, private_dir]:
+    for directory in [state_dir, trust_dir, private_dir, global_trust_dir]:
         if not os.path.exists(directory):
-            os.makedirs(directory)
+            perms = 0o700 if directory == private_dir else 0o755
+            os.makedirs(directory, mode=perms)
 
     with tempfile.NamedTemporaryFile(prefix='smb_conf') as smb_conf:
         smb_conf.write(smb_config(args.realm, args.debug).encode('utf-8'))
