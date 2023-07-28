@@ -7,10 +7,10 @@
 // parse the relevant GPOs and delegate to an external Python script that will
 // request Samba to enroll or un-enroll the machine for certificates.
 //
-// No action is taken if the certificate GPO is disabled, not configured, or
-// absent.
-// If the enroll flag is not set, the machine will be un-enrolled,
-// namely the certificates will be removed and monitoring will stop.
+// If the GPO is disabled/not configured, the policy manager will attempt to
+// unenroll the machine only if traces of Samba cache are found on the disk.
+// If the enroll flag is unchecked, the machine will be unenrolled, namely the
+// certificates will be removed and monitoring will stop.
 // If any errors occur during the enrollment process, the manager will log them
 // prior to failing.
 package certificate
@@ -145,19 +145,28 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == "autoenroll" })
-	if idx == -1 {
-		log.Debug(ctx, "Certificate autoenrollment is not configured")
-		return nil
-	}
-
 	if !isComputer {
 		log.Debug(ctx, "Certificate policy is only supported for computers, skipping...")
 		return nil
 	}
 
 	if !isOnline {
-		log.Info(ctx, i18n.G("AD backend is offline, skipping certificate policy"))
+		log.Debug(ctx, i18n.G("AD backend is offline, skipping certificate policy"))
+		return nil
+	}
+
+	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == "autoenroll" })
+	if idx == -1 {
+		// If the Samba cache directory doesn't exist, we don't have anything to unenroll
+		if _, err := os.Stat(m.sambaCacheDir); err != nil && os.IsNotExist(err) {
+			return nil
+		}
+
+		log.Debug(ctx, "Certificate autoenrollment is not configured, unenrolling machine")
+		if err := m.runScript(ctx, "unenroll", objectName, "--samba_cache_dir", m.sambaCacheDir); err != nil {
+			return err
+		}
+
 		return nil
 	}
 

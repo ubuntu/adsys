@@ -86,6 +86,7 @@ def main():
             ext.enroll(guid, entries, trust_dir, private_dir, global_trust_dir)
         else:
             ext.unenroll(guid)
+            os.removedirs(samba_cache_dir)
 
 def gpo_entries(entries_json):
     """

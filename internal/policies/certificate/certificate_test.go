@@ -43,15 +43,22 @@ func TestPolicyApply(t *testing.T) {
 
 		autoenrollScriptError bool
 		runScript             bool
+		sambaDirExists        bool
 
 		wantErr bool
 	}{
-		"Computer, no entries":                                   {},
+		// No-op cases
+		"Computer, no entries":          {},
+		"Computer, autoenroll disabled": {entries: []entry.Entry{{Key: "autoenroll", Value: disabledValue}}},
+		"Computer, domain is offline":   {entries: []entry.Entry{enrollEntry}, isOffline: true},
+
+		// Enroll cases
 		"Computer, configured to enroll":                         {entries: []entry.Entry{enrollEntry}, runScript: true},
 		"Computer, configured to enroll, advanced configuration": {entries: append(advancedConfigurationEntries, enrollEntry), runScript: true},
-		"Computer, configured to unenroll":                       {entries: []entry.Entry{{Key: "autoenroll", Value: unenrollValue}}, runScript: true},
-		"Computer, autoenroll disabled":                          {entries: []entry.Entry{{Key: "autoenroll", Value: disabledValue}}},
-		"Computer, domain is offline":                            {entries: []entry.Entry{enrollEntry}, isOffline: true},
+
+		// Unenroll cases
+		"Computer, configured to unenroll":          {entries: []entry.Entry{{Key: "autoenroll", Value: unenrollValue}}, runScript: true},
+		"Computer, no entries, Samba cache present": {sambaDirExists: true, runScript: true},
 
 		"User, autoenroll not supported": {isUser: true, entries: []entry.Entry{enrollEntry}},
 
@@ -66,6 +73,11 @@ func TestPolicyApply(t *testing.T) {
 			t.Parallel()
 
 			tmpdir := t.TempDir()
+			sambaCacheDir := filepath.Join(tmpdir, "statedir", "samba")
+			if tc.sambaDirExists {
+				require.NoError(t, os.MkdirAll(sambaCacheDir, 0750), "Setup: Samba cache dir should be created")
+			}
+
 			autoenrollCmdOutputFile := filepath.Join(tmpdir, "autoenroll-output")
 			autoenrollCmd := mockAutoenrollScript(t, autoenrollCmdOutputFile, tc.autoenrollScriptError)
 

@@ -11,6 +11,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/testutils"
+	"golang.org/x/exp/slices"
 )
 
 const advancedConfigurationJSON = `[
@@ -137,6 +138,10 @@ func TestCertAutoenrollScript(t *testing.T) {
 			got := strings.ReplaceAll(string(out), tmpdir, "#TMPDIR#")
 			want := testutils.LoadWithUpdateFromGolden(t, got)
 			require.Equal(t, want, got, "Unexpected output from cert-autoenroll script")
+
+			if slices.Contains(tc.args, "unenroll") {
+				require.NoDirExists(t, filepath.Join(stateDir, "samba"), "Samba cache directory should have been removed on unenroll")
+			}
 		})
 	}
 }
