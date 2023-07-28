@@ -6,8 +6,6 @@ import os
 import sys
 import tempfile
 
-from collections import namedtuple
-
 from samba import param
 from samba.credentials import MUST_USE_KERBEROS, Credentials
 from samba.dcerpc import preg
