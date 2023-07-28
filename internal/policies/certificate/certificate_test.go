@@ -65,6 +65,11 @@ func TestPolicyApply(t *testing.T) {
 		// Error cases
 		"Error on autoenroll script failure": {autoenrollScriptError: true, entries: []entry.Entry{enrollEntry}, wantErr: true},
 		"Error on invalid autoenroll value":  {entries: []entry.Entry{{Key: "autoenroll", Value: "notanumber"}}, wantErr: true},
+		"Error on invalid advanced configuration value": {
+			entries: []entry.Entry{
+				enrollEntry,
+				{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Flags", Value: "NotANumber"},
+			}, wantErr: true},
 	}
 
 	for name, tc := range tests {

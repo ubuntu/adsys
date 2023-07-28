@@ -194,7 +194,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		keyparts := strings.Split(entry.Key, "/")
 		keyname := strings.Join(keyparts[:len(keyparts)-1], `\`)
 		valuename := keyparts[len(keyparts)-1]
-		polSrvRegistryEntries = append(polSrvRegistryEntries, gpoEntry{keyname, valuename, gpoData(entry.Value, valuename), gpoType(valuename)})
+		gpoData, err := gpoData(entry.Value, valuename)
+		if err != nil {
+			return fmt.Errorf(i18n.G("failed to parse policy entry value: %w"), err)
+		}
+		polSrvRegistryEntries = append(polSrvRegistryEntries, gpoEntry{keyname, valuename, gpoData, gpoType(valuename)})
 
 		log.Debugf(ctx, "Certificate policy entry: %#v", entry)
 	}
@@ -249,13 +253,12 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 }
 
 // gpoData returns the data for a GPO entry.
-func gpoData(data, value string) any {
+func gpoData(data, value string) (any, error) {
 	if slices.Contains(integerGPOValues, value) {
-		intData, _ := strconv.Atoi(data)
-		return intData
+		return strconv.Atoi(data)
 	}
 
-	return data
+	return data, nil
 }
 
 // gpoType returns the type for a GPO entry.
