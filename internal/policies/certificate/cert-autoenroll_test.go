@@ -60,8 +60,6 @@ const advancedConfigurationJSON = `[
 ]`
 
 func TestCertAutoenrollScript(t *testing.T) {
-	t.Parallel()
-
 	coverageOn := testutils.PythonCoverageToGoFormat(t, "cert-autoenroll", false)
 	certAutoenrollCmd := "./cert-autoenroll"
 	if coverageOn {
@@ -108,8 +106,6 @@ func TestCertAutoenrollScript(t *testing.T) {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
 			tmpdir := t.TempDir()
 			stateDir := filepath.Join(tmpdir, "state")
 			privateDir := filepath.Join(tmpdir, "private")
