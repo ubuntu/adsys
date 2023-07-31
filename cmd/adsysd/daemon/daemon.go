@@ -40,14 +40,16 @@ type daemonConfig struct {
 
 	Socket   string
 	CacheDir string `mapstructure:"cache_dir"`
+	StateDir string `mapstructure:"state_dir"`
 	RunDir   string `mapstructure:"run_dir"`
 
-	DconfDir      string `mapstructure:"dconf_dir"`
-	SudoersDir    string `mapstructure:"sudoers_dir"`
-	PolicyKitDir  string `mapstructure:"policykit_dir"`
-	ApparmorDir   string `mapstructure:"apparmor_dir"`
-	ApparmorFsDir string `mapstructure:"apparmorfs_dir"`
-	SystemUnitDir string `mapstructure:"systemunit_dir"`
+	DconfDir       string `mapstructure:"dconf_dir"`
+	SudoersDir     string `mapstructure:"sudoers_dir"`
+	PolicyKitDir   string `mapstructure:"policykit_dir"`
+	ApparmorDir    string `mapstructure:"apparmor_dir"`
+	ApparmorFsDir  string `mapstructure:"apparmorfs_dir"`
+	SystemUnitDir  string `mapstructure:"systemunit_dir"`
+	GlobalTrustDir string `mapstructure:"global_trust_dir"`
 
 	AdBackend     string         `mapstructure:"ad_backend"`
 	SSSdConfig    sss.Config     `mapstructure:"sssd"`
@@ -111,6 +113,7 @@ func New() *App {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			adsys, err := adsysservice.New(context.Background(),
 				adsysservice.WithCacheDir(a.config.CacheDir),
+				adsysservice.WithStateDir(a.config.StateDir),
 				adsysservice.WithRunDir(a.config.RunDir),
 				adsysservice.WithDconfDir(a.config.DconfDir),
 				adsysservice.WithSudoersDir(a.config.SudoersDir),
@@ -118,6 +121,7 @@ func New() *App {
 				adsysservice.WithApparmorDir(a.config.ApparmorDir),
 				adsysservice.WithApparmorFsDir(a.config.ApparmorFsDir),
 				adsysservice.WithSystemUnitDir(a.config.SystemUnitDir),
+				adsysservice.WithGlobalTrustDir(a.config.GlobalTrustDir),
 				adsysservice.WithADBackend(a.config.AdBackend),
 				adsysservice.WithSSSConfig(a.config.SSSdConfig),
 				adsysservice.WithWinbindConfig(a.config.WinbindConfig),

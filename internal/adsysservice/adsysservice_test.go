@@ -57,12 +57,14 @@ func TestNew(t *testing.T) {
 
 			temp := t.TempDir()
 			adsysCacheDir := filepath.Join(temp, "parentcache", "cache")
+			adsysStateDir := filepath.Join(temp, "var", "lib")
 			adsysRunDir := filepath.Join(temp, "parentrun", "run")
 			dconfDir := filepath.Join(temp, "dconf")
 			sudoersDir := filepath.Join(temp, "sudoers.d")
 			policyKitDir := filepath.Join(temp, "polkit-1")
 			apparmorDir := filepath.Join(temp, "apparmor.d", "adsys")
 			apparmorFsDir := filepath.Join(temp, "apparmorfs")
+			globalTrustDir := filepath.Join(temp, "ca-certificates")
 			if tc.existingAdsysDirs {
 				require.NoError(t, os.MkdirAll(adsysCacheDir, 0700), "Setup: could not create adsys cache directory")
 				require.NoError(t, os.MkdirAll(adsysRunDir, 0700), "Setup: could not create adsys run directory")
@@ -86,12 +88,14 @@ func TestNew(t *testing.T) {
 
 			options := []adsysservice.Option{
 				adsysservice.WithCacheDir(adsysCacheDir),
+				adsysservice.WithStateDir(adsysStateDir),
 				adsysservice.WithRunDir(adsysRunDir),
 				adsysservice.WithDconfDir(dconfDir),
 				adsysservice.WithSudoersDir(sudoersDir),
 				adsysservice.WithPolicyKitDir(policyKitDir),
 				adsysservice.WithApparmorDir(apparmorDir),
 				adsysservice.WithApparmorFsDir(apparmorFsDir),
+				adsysservice.WithGlobalTrustDir(globalTrustDir),
 				adsysservice.WithSSSConfig(sssdConfig),
 				adsysservice.WithWinbindConfig(winbindConfig),
 			}

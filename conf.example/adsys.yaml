@@ -5,12 +5,14 @@ socket: /tmp/adsysd/socket
 # Service only configuration
 service_timeout: 3600
 cache_dir: /tmp/adsysd/cache
+state_dir: /tmp/adsysd/lib
 run_dir: /tmp/adsysd/run
 dconf_dir: /etc/dconf
 sudoers_dir: /etc/sudoers.d
 policykit_dir: /etc/polkit-1
 apparmor_dir: /etc/apparmor.d/adsys
 apparmorfs_dir: /sys/kernel/security/apparmor
+global_trust_dir: /usr/local/share/ca-certificates
 
 # Backend selection: sssd (default) or winbind
 #ad_backend: sssd
