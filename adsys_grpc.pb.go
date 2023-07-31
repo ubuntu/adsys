@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -36,9 +37,9 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceClient interface {
-	Cat(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CatClient, error)
-	Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error)
-	Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_StatusClient, error)
+	Cat(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Service_CatClient, error)
+	Version(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Service_VersionClient, error)
+	Status(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Service_StatusClient, error)
 	Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (Service_StopClient, error)
 	UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (Service_UpdatePolicyClient, error)
 	DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (Service_DumpPoliciesClient, error)
@@ -46,7 +47,7 @@ type ServiceClient interface {
 	GetDoc(ctx context.Context, in *GetDocRequest, opts ...grpc.CallOption) (Service_GetDocClient, error)
 	ListDoc(ctx context.Context, in *ListDocRequest, opts ...grpc.CallOption) (Service_ListDocClient, error)
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (Service_ListUsersClient, error)
-	GPOListScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_GPOListScriptClient, error)
+	GPOListScript(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Service_GPOListScriptClient, error)
 }
 
 type serviceClient struct {
@@ -57,7 +58,7 @@ func NewServiceClient(cc grpc.ClientConnInterface) ServiceClient {
 	return &serviceClient{cc}
 }
 
-func (c *serviceClient) Cat(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CatClient, error) {
+func (c *serviceClient) Cat(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Service_CatClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[0], Service_Cat_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -89,7 +90,7 @@ func (x *serviceCatClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
-func (c *serviceClient) Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_VersionClient, error) {
+func (c *serviceClient) Version(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Service_VersionClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[1], Service_Version_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -121,7 +122,7 @@ func (x *serviceVersionClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
-func (c *serviceClient) Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_StatusClient, error) {
+func (c *serviceClient) Status(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Service_StatusClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[2], Service_Status_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -169,7 +170,7 @@ func (c *serviceClient) Stop(ctx context.Context, in *StopRequest, opts ...grpc.
 }
 
 type Service_StopClient interface {
-	Recv() (*Empty, error)
+	Recv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
@@ -177,8 +178,8 @@ type serviceStopClient struct {
 	grpc.ClientStream
 }
 
-func (x *serviceStopClient) Recv() (*Empty, error) {
-	m := new(Empty)
+func (x *serviceStopClient) Recv() (*emptypb.Empty, error) {
+	m := new(emptypb.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -201,7 +202,7 @@ func (c *serviceClient) UpdatePolicy(ctx context.Context, in *UpdatePolicyReques
 }
 
 type Service_UpdatePolicyClient interface {
-	Recv() (*Empty, error)
+	Recv() (*emptypb.Empty, error)
 	grpc.ClientStream
 }
 
@@ -209,8 +210,8 @@ type serviceUpdatePolicyClient struct {
 	grpc.ClientStream
 }
 
-func (x *serviceUpdatePolicyClient) Recv() (*Empty, error) {
-	m := new(Empty)
+func (x *serviceUpdatePolicyClient) Recv() (*emptypb.Empty, error) {
+	m := new(emptypb.Empty)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -377,7 +378,7 @@ func (x *serviceListUsersClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
-func (c *serviceClient) GPOListScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_GPOListScriptClient, error) {
+func (c *serviceClient) GPOListScript(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (Service_GPOListScriptClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[10], Service_GPOListScript_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -413,9 +414,9 @@ func (x *serviceGPOListScriptClient) Recv() (*StringResponse, error) {
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility
 type ServiceServer interface {
-	Cat(*Empty, Service_CatServer) error
-	Version(*Empty, Service_VersionServer) error
-	Status(*Empty, Service_StatusServer) error
+	Cat(*emptypb.Empty, Service_CatServer) error
+	Version(*emptypb.Empty, Service_VersionServer) error
+	Status(*emptypb.Empty, Service_StatusServer) error
 	Stop(*StopRequest, Service_StopServer) error
 	UpdatePolicy(*UpdatePolicyRequest, Service_UpdatePolicyServer) error
 	DumpPolicies(*DumpPoliciesRequest, Service_DumpPoliciesServer) error
@@ -423,7 +424,7 @@ type ServiceServer interface {
 	GetDoc(*GetDocRequest, Service_GetDocServer) error
 	ListDoc(*ListDocRequest, Service_ListDocServer) error
 	ListUsers(*ListUsersRequest, Service_ListUsersServer) error
-	GPOListScript(*Empty, Service_GPOListScriptServer) error
+	GPOListScript(*emptypb.Empty, Service_GPOListScriptServer) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -431,13 +432,13 @@ type ServiceServer interface {
 type UnimplementedServiceServer struct {
 }
 
-func (UnimplementedServiceServer) Cat(*Empty, Service_CatServer) error {
+func (UnimplementedServiceServer) Cat(*emptypb.Empty, Service_CatServer) error {
 	return status.Errorf(codes.Unimplemented, "method Cat not implemented")
 }
-func (UnimplementedServiceServer) Version(*Empty, Service_VersionServer) error {
+func (UnimplementedServiceServer) Version(*emptypb.Empty, Service_VersionServer) error {
 	return status.Errorf(codes.Unimplemented, "method Version not implemented")
 }
-func (UnimplementedServiceServer) Status(*Empty, Service_StatusServer) error {
+func (UnimplementedServiceServer) Status(*emptypb.Empty, Service_StatusServer) error {
 	return status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
 func (UnimplementedServiceServer) Stop(*StopRequest, Service_StopServer) error {
@@ -461,7 +462,7 @@ func (UnimplementedServiceServer) ListDoc(*ListDocRequest, Service_ListDocServer
 func (UnimplementedServiceServer) ListUsers(*ListUsersRequest, Service_ListUsersServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListUsers not implemented")
 }
-func (UnimplementedServiceServer) GPOListScript(*Empty, Service_GPOListScriptServer) error {
+func (UnimplementedServiceServer) GPOListScript(*emptypb.Empty, Service_GPOListScriptServer) error {
 	return status.Errorf(codes.Unimplemented, "method GPOListScript not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
@@ -478,7 +479,7 @@ func RegisterServiceServer(s grpc.ServiceRegistrar, srv ServiceServer) {
 }
 
 func _Service_Cat_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Empty)
+	m := new(emptypb.Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -499,7 +500,7 @@ func (x *serviceCatServer) Send(m *StringResponse) error {
 }
 
 func _Service_Version_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Empty)
+	m := new(emptypb.Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -520,7 +521,7 @@ func (x *serviceVersionServer) Send(m *StringResponse) error {
 }
 
 func _Service_Status_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Empty)
+	m := new(emptypb.Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -549,7 +550,7 @@ func _Service_Stop_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Service_StopServer interface {
-	Send(*Empty) error
+	Send(*emptypb.Empty) error
 	grpc.ServerStream
 }
 
@@ -557,7 +558,7 @@ type serviceStopServer struct {
 	grpc.ServerStream
 }
 
-func (x *serviceStopServer) Send(m *Empty) error {
+func (x *serviceStopServer) Send(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -570,7 +571,7 @@ func _Service_UpdatePolicy_Handler(srv interface{}, stream grpc.ServerStream) er
 }
 
 type Service_UpdatePolicyServer interface {
-	Send(*Empty) error
+	Send(*emptypb.Empty) error
 	grpc.ServerStream
 }
 
@@ -578,7 +579,7 @@ type serviceUpdatePolicyServer struct {
 	grpc.ServerStream
 }
 
-func (x *serviceUpdatePolicyServer) Send(m *Empty) error {
+func (x *serviceUpdatePolicyServer) Send(m *emptypb.Empty) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -688,7 +689,7 @@ func (x *serviceListUsersServer) Send(m *StringResponse) error {
 }
 
 func _Service_GPOListScript_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Empty)
+	m := new(emptypb.Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
