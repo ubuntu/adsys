@@ -47,6 +47,7 @@ msgstr "translated singular"
 )
 
 func TestTranslations(t *testing.T) {
+	t.Skip("WILL BE REMOVED")
 	defaultLocaleDir := filepath.Join(t.TempDir(), "locale")
 	compileMoFiles(t, defaultLocaleDir)
 

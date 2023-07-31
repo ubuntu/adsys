@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/config"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/grpc/grpcerror"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 )
 
@@ -42,8 +42,8 @@ func New() *App {
 	a.ctx, a.cancel = context.WithCancel(context.Background())
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
-		Short: i18n.G("AD integration client"),
-		Long:  i18n.G(`Active Directory integration bridging toolset command line tool.`),
+		Short: gotext.Get("AD integration client"),
+		Long:  gotext.Get(`Active Directory integration bridging toolset command line tool.`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
@@ -90,7 +90,7 @@ func New() *App {
 	cmdhandler.InstallConfigFlag(&a.rootCmd, true)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
-	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultClientTimeout, i18n.G("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
+	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultClientTimeout, gotext.Get("time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."))
 	decorate.LogOnError(a.viper.BindPFlag("client_timeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
 	// subcommands

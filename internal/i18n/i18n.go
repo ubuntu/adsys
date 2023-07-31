@@ -6,9 +6,6 @@ package i18n
  * and adapted to follow common go best practices.
  */
 
-//go:generate go run generate-locales.go update-po ../../po/adsys.pot ../../po
-//go:generate go run generate-locales.go generate-mo adsys ../../po ../../generated
-
 import (
 	"fmt"
 	"os"

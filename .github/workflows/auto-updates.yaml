@@ -18,34 +18,20 @@ jobs:
     name: Update po files
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
-        run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y gettext
       # Checkout code with git
       - uses: actions/checkout@v3
         with:
           ref: main
-      # Install go
-      - uses: actions/setup-go@v4
+      - name: Update pot and po files
+        uses: ubuntu/go-i18n@main
         with:
-          go-version-file: go.mod
-      # Update po if needed
-      - name: Check po files
-        id: checkpo
-        run: |
-          set -eu
-
-          hasModif="false"
-          go generate ./internal/i18n/
-          # Exclude line diffs only
-          MODIFIED=$(git difftool -y -x "diff -Nup -I '^#: '" po/)
-          if [ -n "$MODIFIED" ]; then
-            hasModif="true"
-          fi
-          echo "modified=${hasModif}" >> $GITHUB_ENV
+          domain: "adsys"
+          entrypoints: "cmd/adsysd,cmd/admxgen,cmd/adwatchd"
+      - name: Check if there is a diff
+        id: po-diff
+        uses: canonical/desktop-engineering/gh-actions/common/has-diff@main
       - name: Create Pull Request
-        if: ${{ env.modified == 'true' }}
+        if: ${{ steps.po-diff.outputs.diff == 'true' }}
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: Auto update po files
@@ -55,7 +41,7 @@ jobs:
           branch: auto-update-po
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Push branch
-        if: ${{ env.modified == 'true' }}
+        if: ${{ steps.po-diff.outputs.diff == 'true' }}
         run: |
           git push origin auto-update-po:main
 

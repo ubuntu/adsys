@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/ad/backends/sss"
@@ -17,7 +18,6 @@ import (
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/daemon"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 )
 
@@ -61,8 +61,8 @@ func New() *App {
 	a := App{ready: make(chan struct{})}
 	a.rootCmd = cobra.Command{
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
-		Short: i18n.G("AD integration daemon"),
-		Long:  i18n.G(`Active Directory integration bridging toolset daemon.`),
+		Short: gotext.Get("AD integration daemon"),
+		Long:  gotext.Get(`Active Directory integration bridging toolset daemon.`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
@@ -148,19 +148,19 @@ func New() *App {
 	cmdhandler.InstallConfigFlag(&a.rootCmd, true)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
-	a.rootCmd.PersistentFlags().StringP("cache-dir", "", consts.DefaultCacheDir, i18n.G("directory where ADsys caches GPOs downloads and policies."))
+	a.rootCmd.PersistentFlags().StringP("cache-dir", "", consts.DefaultCacheDir, gotext.Get("directory where ADsys caches GPOs downloads and policies."))
 	decorate.LogOnError(a.viper.BindPFlag("cache_dir", a.rootCmd.PersistentFlags().Lookup("cache-dir")))
-	a.rootCmd.PersistentFlags().StringP("run-dir", "", consts.DefaultRunDir, i18n.G("directory where ADsys stores transient information erased on reboot."))
+	a.rootCmd.PersistentFlags().StringP("run-dir", "", consts.DefaultRunDir, gotext.Get("directory where ADsys stores transient information erased on reboot."))
 	decorate.LogOnError(a.viper.BindPFlag("run_dir", a.rootCmd.PersistentFlags().Lookup("run-dir")))
 
-	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, i18n.G("time in seconds without activity before the service exists. 0 for no timeout."))
+	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, gotext.Get("time in seconds without activity before the service exists. 0 for no timeout."))
 	decorate.LogOnError(a.viper.BindPFlag("service_timeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
 
-	a.rootCmd.PersistentFlags().StringP("ad-backend", "", "sssd", i18n.G("Active Directory authentication backend"))
+	a.rootCmd.PersistentFlags().StringP("ad-backend", "", "sssd", gotext.Get("Active Directory authentication backend"))
 	decorate.LogOnError(a.viper.BindPFlag("ad_backend", a.rootCmd.PersistentFlags().Lookup("ad-backend")))
-	a.rootCmd.PersistentFlags().StringP("sssd.config", "", consts.DefaultSSSConf, i18n.G("SSSd config file path"))
+	a.rootCmd.PersistentFlags().StringP("sssd.config", "", consts.DefaultSSSConf, gotext.Get("SSSd config file path"))
 	decorate.LogOnError(a.viper.BindPFlag("sssd.config", a.rootCmd.PersistentFlags().Lookup("sssd.config")))
-	a.rootCmd.PersistentFlags().StringP("sssd.cache-dir", "", consts.DefaultSSSCacheDir, i18n.G("SSSd cache directory"))
+	a.rootCmd.PersistentFlags().StringP("sssd.cache-dir", "", consts.DefaultSSSCacheDir, gotext.Get("SSSd cache directory"))
 	decorate.LogOnError(a.viper.BindPFlag("sssd.cache_dir", a.rootCmd.PersistentFlags().Lookup("sssd.cache-dir")))
 
 	// subcommands
