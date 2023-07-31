@@ -45,6 +45,7 @@ type Manager struct {
 	stateDir        string
 	krb5CacheDir    string
 	vendorPythonDir string
+	globalTrustDir  string
 	certEnrollCmd   []string
 
 	mu sync.Mutex // Prevents multiple instances of the certificate manager from running in parallel
@@ -81,6 +82,7 @@ type options struct {
 	stateDir          string
 	runDir            string
 	shareDir          string
+	globalTrustDir    string
 	certAutoenrollCmd []string
 }
 
@@ -108,6 +110,13 @@ func WithShareDir(p string) func(*options) {
 	}
 }
 
+// WithGlobalTrustDir overrides the default global trust store directory.
+func WithGlobalTrustDir(p string) func(*options) {
+	return func(a *options) {
+		a.globalTrustDir = p
+	}
+}
+
 // WithCertAutoenrollCmd overrides the default certificate autoenroll command.
 func WithCertAutoenrollCmd(cmd []string) func(*options) {
 	return func(a *options) {
@@ -122,6 +131,7 @@ func New(domain string, opts ...Option) *Manager {
 		stateDir:          consts.DefaultStateDir,
 		runDir:            consts.DefaultRunDir,
 		shareDir:          consts.DefaultShareDir,
+		globalTrustDir:    consts.DefaultGlobalTrustDir,
 		certAutoenrollCmd: []string{"python3", "-c", CertEnrollCode},
 	}
 	// applied options
@@ -134,6 +144,7 @@ func New(domain string, opts ...Option) *Manager {
 		stateDir:        args.stateDir,
 		krb5CacheDir:    filepath.Join(args.runDir, "krb5cc"),
 		vendorPythonDir: filepath.Join(args.shareDir, "python"),
+		globalTrustDir:  args.globalTrustDir,
 		certEnrollCmd:   args.certAutoenrollCmd,
 	}
 }
@@ -163,7 +174,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		}
 
 		log.Debug(ctx, "Certificate autoenrollment is not configured, unenrolling machine")
-		if err := m.runScript(ctx, "unenroll", objectName, "--state_dir", m.stateDir); err != nil {
+		if err := m.runScript(ctx, "unenroll", objectName); err != nil {
 			return err
 		}
 
@@ -215,10 +226,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf(i18n.G("failed to marshal policy server registry entries: %v"), err)
 	}
 
-	if err := m.runScript(ctx, action, objectName,
-		"--policy_servers_json", string(jsonGPOData),
-		"--state_dir", m.stateDir,
-	); err != nil {
+	if err := m.runScript(ctx, action, objectName, "--policy_servers_json", string(jsonGPOData)); err != nil {
 		return err
 	}
 
@@ -227,7 +235,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 // runScript runs the certificate autoenrollment script with the given arguments.
 func (m *Manager) runScript(ctx context.Context, action, objectName string, extraArgs ...string) error {
-	scriptArgs := []string{action, objectName, m.domain}
+	scriptArgs := []string{action, objectName, m.domain, "--state_dir", m.stateDir, "--global_trust_dir", m.globalTrustDir}
 	scriptArgs = append(scriptArgs, extraArgs...)
 	cmdArgs := append(m.certEnrollCmd, scriptArgs...)
 	cmdCtx, cancel := context.WithTimeout(ctx, time.Second*10)
