@@ -29,6 +29,10 @@ msgid ""
 "The generated definition file will be of the form expanded_policies.RELEASE.yaml"
 msgstr ""
 
+#: cmd/admxgen/main.go:78
+msgid "root filesystem path to use. Default to /."
+msgstr ""
+
 #: cmd/admxgen/main.go:79
 msgid "current session to consider for dconf per-session\n"
 msgstr ""
@@ -351,10 +355,6 @@ msgstr ""
 #: cmd/adwatchd/commands/version.go:15
 msgid "Returns version of service and exits"
 msgstr ""
-
-#: cmd/adsysd/daemon/daemon.go:64
-msgid "OLD translation to be removed"
-msgstr "Traduction à supprimer"
 
 #: cmd/adwatchd/commands/version.go:24
 msgid "%s	%s"
