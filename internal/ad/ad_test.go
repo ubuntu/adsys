@@ -396,6 +396,24 @@ func TestGetPolicies(t *testing.T) {
 					}}},
 			}},
 		},
+		"Include non Ubuntu keys used to configure certificate autoenrollment": {
+			objectName:  hostname,
+			objectClass: ad.ComputerObject,
+			gpoListArgs: []string{"gpoonly.com", hostname + ":filtered-with-certificate-autoenrollment"},
+			want: policies.Policies{GPOs: []policies.GPO{
+				{ID: "filtered-with-certificate-autoenrollment", Name: "filtered-with-certificate-autoenrollment-name", Rules: map[string][]entry.Entry{
+					"certificate": {
+						{Key: "autoenroll", Value: "1"},
+						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/Flags", Value: "0"},
+						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/URL", Value: "LDAP:"},
+						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/PolicyID", Value: "{A5E9BF57-71C6-443A-B7FC-79EFA6F73EBD}"},
+						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/FriendlyName", Value: "Active Directory Enrollment Policy"},
+						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Flags", Value: "20"},
+						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/AuthFlags", Value: "2"},
+						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Cost", Value: "2147483645"},
+					}}},
+			}},
+		},
 		"Ignore errors on non Ubuntu keys": {
 			gpoListArgs: []string{"gpoonly.com", "bob:unsupported-with-errors"},
 			want: policies.Policies{GPOs: []policies.GPO{
