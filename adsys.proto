@@ -1,22 +1,22 @@
 syntax = "proto3";
 
+import "google/protobuf/empty.proto";
+
 option go_package = "github.com/ubuntu/adsys";
 
 service service {
-  rpc Cat(Empty) returns (stream StringResponse);
-  rpc Version(Empty) returns (stream StringResponse);
-  rpc Status(Empty) returns (stream StringResponse);
-  rpc Stop(StopRequest) returns (stream Empty);
-  rpc UpdatePolicy(UpdatePolicyRequest) returns (stream Empty);
+  rpc Cat(google.protobuf.Empty) returns (stream StringResponse);
+  rpc Version(google.protobuf.Empty) returns (stream StringResponse);
+  rpc Status(google.protobuf.Empty) returns (stream StringResponse);
+  rpc Stop(StopRequest) returns (stream google.protobuf.Empty);
+  rpc UpdatePolicy(UpdatePolicyRequest) returns (stream google.protobuf.Empty);
   rpc DumpPolicies(DumpPoliciesRequest) returns (stream StringResponse);
   rpc DumpPoliciesDefinitions(DumpPolicyDefinitionsRequest) returns (stream DumpPolicyDefinitionsResponse);
   rpc GetDoc(GetDocRequest) returns (stream StringResponse);
   rpc ListDoc(ListDocRequest) returns (stream StringResponse);
   rpc ListUsers(ListUsersRequest) returns (stream StringResponse);
-  rpc GPOListScript(Empty) returns (stream StringResponse);
+  rpc GPOListScript(google.protobuf.Empty) returns (stream StringResponse);
 }
-
-message Empty {}
 
 message ListUsersRequest {
   bool active = 1;
