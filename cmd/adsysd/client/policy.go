@@ -17,6 +17,7 @@ import (
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (a *App) installPolicy() {
@@ -258,7 +259,7 @@ func (a *App) dumpGPOListScript() error {
 	}
 	defer client.Close()
 
-	stream, err := client.GPOListScript(a.ctx, &adsys.Empty{})
+	stream, err := client.GPOListScript(a.ctx, &emptypb.Empty{})
 	if err != nil {
 		return err
 	}

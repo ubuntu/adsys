@@ -24,6 +24,7 @@ import (
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/testutils"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const dockerSystemDaemonsImage = "ghcr.io/ubuntu/adsys/systemdaemons:0.1"
@@ -134,7 +135,7 @@ type timeoutOnVersionServer struct {
 	callbackHandled chan struct{}
 }
 
-func (server *timeoutOnVersionServer) Version(_ *adsys.Empty, s adsys.Service_VersionServer) error {
+func (server *timeoutOnVersionServer) Version(_ *emptypb.Empty, s adsys.Service_VersionServer) error {
 	defer close(server.callbackHandled)
 	select {
 	case <-s.Context().Done():

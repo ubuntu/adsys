@@ -13,6 +13,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // UpdatePolicy refreshes or creates a policy for current user or user given as argument.
@@ -140,7 +141,7 @@ func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest,
 }
 
 // GPOListScript returns the embedded GPO python list script.
-func (s *Service) GPOListScript(_ *adsys.Empty, stream adsys.Service_GPOListScriptServer) (err error) {
+func (s *Service) GPOListScript(_ *emptypb.Empty, stream adsys.Service_GPOListScriptServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while getting gpo list script"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {

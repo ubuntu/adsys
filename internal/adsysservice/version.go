@@ -7,10 +7,11 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Version returns version from server.
-func (s *Service) Version(_ *adsys.Empty, stream adsys.Service_VersionServer) (err error) {
+func (s *Service) Version(_ *emptypb.Empty, stream adsys.Service_VersionServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while getting daemon version"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {

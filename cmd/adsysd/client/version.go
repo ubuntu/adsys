@@ -5,10 +5,10 @@ import (
 
 	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
-	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/consts"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (a *App) installVersion() {
@@ -32,7 +32,7 @@ func (a App) getVersion() (err error) {
 	}
 	defer client.Close()
 
-	stream, err := client.Version(a.ctx, &adsys.Empty{})
+	stream, err := client.Version(a.ctx, &emptypb.Empty{})
 	if err != nil {
 		return err
 	}

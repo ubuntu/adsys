@@ -18,12 +18,13 @@ import (
 	"github.com/ubuntu/decorate"
 	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Cat forwards any messages from all requests to the client.
 // Anything logged by the server on stdout, stderr or via the standard logger.
 // Only one call at a time can be performed here.
-func (s *Service) Cat(_ *adsys.Empty, stream adsys.Service_CatServer) (err error) {
+func (s *Service) Cat(_ *emptypb.Empty, stream adsys.Service_CatServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while trying to display daemon output"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
@@ -59,7 +60,7 @@ func (ss streamWriter) Write(b []byte) (n int, err error) {
 }
 
 // Status returns internal daemon status to the client.
-func (s *Service) Status(_ *adsys.Empty, stream adsys.Service_StatusServer) (err error) {
+func (s *Service) Status(_ *emptypb.Empty, stream adsys.Service_StatusServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while getting daemon status"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {

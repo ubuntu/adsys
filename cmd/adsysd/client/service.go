@@ -12,6 +12,7 @@ import (
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func (a *App) installService() {
@@ -61,7 +62,7 @@ func (a *App) serviceCat() error {
 	}
 	defer client.Close()
 
-	stream, err := client.Cat(a.ctx, &adsys.Empty{})
+	stream, err := client.Cat(a.ctx, &emptypb.Empty{})
 	if err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func (a App) getStatus() (err error) {
 	}
 	defer client.Close()
 
-	stream, err := client.Status(a.ctx, &adsys.Empty{})
+	stream, err := client.Status(a.ctx, &emptypb.Empty{})
 	if err != nil {
 		return err
 	}
