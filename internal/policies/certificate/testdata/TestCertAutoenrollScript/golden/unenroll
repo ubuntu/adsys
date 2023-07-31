@@ -2,7 +2,7 @@ Loading smb.conf
 [global]
 realm = example.com
 
-Loading state file: #TMPDIR#/state/cert_gpo_state_keypress.tdb
+Loading state file: #STATEDIR#/samba/cert_gpo_state_keypress.tdb
 Unenroll called
 guid: adsys-cert-autoenroll-keypress
 remove: ['ZXhhbXBsZS1DQQ==']

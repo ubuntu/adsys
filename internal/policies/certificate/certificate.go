@@ -42,7 +42,7 @@ import (
 // the policy in ApplyPolicy.
 type Manager struct {
 	domain          string
-	sambaCacheDir   string
+	stateDir        string
 	krb5CacheDir    string
 	vendorPythonDir string
 	certEnrollCmd   []string
@@ -131,7 +131,7 @@ func New(domain string, opts ...Option) *Manager {
 
 	return &Manager{
 		domain:          domain,
-		sambaCacheDir:   filepath.Join(args.stateDir, "samba"),
+		stateDir:        args.stateDir,
 		krb5CacheDir:    filepath.Join(args.runDir, "krb5cc"),
 		vendorPythonDir: filepath.Join(args.shareDir, "python"),
 		certEnrollCmd:   args.certAutoenrollCmd,
@@ -158,12 +158,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == "autoenroll" })
 	if idx == -1 {
 		// If the Samba cache directory doesn't exist, we don't have anything to unenroll
-		if _, err := os.Stat(m.sambaCacheDir); err != nil && os.IsNotExist(err) {
+		if _, err := os.Stat(filepath.Join(m.stateDir, "samba")); err != nil && os.IsNotExist(err) {
 			return nil
 		}
 
 		log.Debug(ctx, "Certificate autoenrollment is not configured, unenrolling machine")
-		if err := m.runScript(ctx, "unenroll", objectName, "--samba_cache_dir", m.sambaCacheDir); err != nil {
+		if err := m.runScript(ctx, "unenroll", objectName, "--state_dir", m.stateDir); err != nil {
 			return err
 		}
 
@@ -217,7 +217,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	if err := m.runScript(ctx, action, objectName,
 		"--policy_servers_json", string(jsonGPOData),
-		"--samba_cache_dir", m.sambaCacheDir,
+		"--state_dir", m.stateDir,
 	); err != nil {
 		return err
 	}

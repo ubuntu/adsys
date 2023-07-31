@@ -40,15 +40,9 @@ def main():
     parser.add_argument('--policy_servers_json', type=str,
                         help='GPO entries for advanced configuration of the policy servers. \
                         Must be in JSON format.')
-    parser.add_argument('--samba_cache_dir', type=str,
-                        default='/var/lib/adsys/samba',
-                        help='Directory to store GPO Samba cache in.')
-    parser.add_argument('--private_dir', type=str,
-                        default='/var/lib/adsys/private/certs',
-                        help='Directory to store private keys in.')
-    parser.add_argument('--trust_dir', type=str,
-                        default='/var/lib/adsys/certs',
-                        help='Directory to store trusted certificates in.')
+    parser.add_argument('--state_dir', type=str,
+                        default='/var/lib/adsys',
+                        help='Directory to store all certificate-related files in.')
     parser.add_argument('--global_trust_dir', type=str,
                         default='/usr/local/share/ca-certificates',
                         help='Directory to symlink root CA certificates to.')
@@ -57,9 +51,9 @@ def main():
 
     args = parser.parse_args()
 
-    samba_cache_dir = args.samba_cache_dir
-    trust_dir = args.trust_dir
-    private_dir = args.private_dir
+    samba_cache_dir = os.path.join(args.state_dir, 'samba')
+    trust_dir = os.path.join(args.state_dir, 'certs')
+    private_dir = os.path.join(args.state_dir, 'private', 'certs')
     global_trust_dir = args.global_trust_dir
 
     # Create needed directories if they don't exist
