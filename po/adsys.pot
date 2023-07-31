@@ -27,11 +27,11 @@ msgstr ""
 msgid "%s, use --force to override"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:310
+#: cmd/adsysd/client/policy.go:338
 msgid "%s: Disabled"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:308
+#: cmd/adsysd/client/policy.go:336
 msgid "%s: Locked to system default"
 msgstr ""
 
@@ -144,7 +144,7 @@ msgstr ""
 msgid "Print service status"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:128
+#: cmd/adsysd/client/policy.go:136
 msgid "Purges policies for the current user or a specified one"
 msgstr ""
 
@@ -229,7 +229,7 @@ msgstr ""
 msgid "Uninstalls the service"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:93
+#: cmd/adsysd/client/policy.go:101
 msgid "Updates/Create a policy for current user or given user with its kerberos ticket"
 msgstr ""
 
@@ -241,6 +241,10 @@ msgstr ""
 msgid "Write GPO list python embeeded script in current directory"
 msgstr ""
 
+#: cmd/adsysd/client/policy.go:91
+msgid "Write certificate autoenrollment python embedded script in current directory"
+msgstr ""
+
 #: cmd/adsysd/client/doc.go:56
 msgid "Write documentation file(s) to this directory."
 msgstr ""
@@ -249,11 +253,11 @@ msgstr ""
 msgid "a `directory` to check for changes (can be specified multiple times)"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:148
+#: cmd/adsysd/client/policy.go:156
 msgid "all purges the policy of the computer and all the logged in users. -m or USER_NAME cannot be used with this option."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:121
+#: cmd/adsysd/client/policy.go:129
 msgid "all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option."
 msgstr ""
 
@@ -325,16 +329,16 @@ msgstr ""
 msgid "issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:365
-#: cmd/adsysd/client/policy.go:416
+#: cmd/adsysd/client/policy.go:393
+#: cmd/adsysd/client/policy.go:444
 msgid "machine or user arguments cannot be used with update all"
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:147
+#: cmd/adsysd/client/policy.go:155
 msgid "machine purges the policy of the computer."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:120
+#: cmd/adsysd/client/policy.go:128
 msgid "machine updates the policy of the computer."
 msgstr ""
 
@@ -370,7 +374,7 @@ msgstr ""
 msgid "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/client/policy.go:368
-#: cmd/adsysd/client/policy.go:419
+#: cmd/adsysd/client/policy.go:396
+#: cmd/adsysd/client/policy.go:447
 msgid "user arguments cannot be used with machine update"
 msgstr ""
