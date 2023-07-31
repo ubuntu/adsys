@@ -41,6 +41,13 @@ const (
 	UserObject ObjectClass = "user"
 	// ComputerObject is a computer representation in AD.
 	ComputerObject ObjectClass = "computer"
+
+	// certAutoEnrollKey is the GPO entry that configures certificate autoenrollment.
+	certAutoEnrollKey string = "Software/Policies/Microsoft/Cryptography/AutoEnrollment/AEPolicy"
+
+	// policyServerPrefix is the GPO prefix containing keys that configure
+	// policy servers for certificate enrollment.
+	policyServersPrefix string = "Software/Policies/Microsoft/Cryptography/PolicyServers/"
 )
 
 type gpo downloadable
@@ -522,6 +529,16 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			var currentKey string
 			var overrideEnabled bool
 			for _, pol := range pols {
+				// Rewrite the certificate autoenrollment key so we can easily
+				// use it in the policy manager
+				if pol.Key == certAutoEnrollKey {
+					pol.Key = fmt.Sprintf("%scertificate/autoenroll/all", keyFilterPrefix)
+				}
+
+				if strings.HasPrefix(pol.Key, policyServersPrefix) {
+					pol.Key = fmt.Sprintf("%scertificate/%s/all", keyFilterPrefix, pol.Key)
+				}
+
 				// Only consider supported policies for this distro
 				if !strings.HasPrefix(pol.Key, keyFilterPrefix) {
 					continue

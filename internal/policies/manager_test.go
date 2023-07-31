@@ -41,10 +41,12 @@ func TestApplyPolicies(t *testing.T) {
 		isNotSubscribed                 bool
 		secondCallWithNoSubscription    bool
 		noUbuntuProxyManager            bool
+		backendOfflineError             bool
 
 		wantErr bool
 	}{
 		"Succeed": {policiesDir: "all_entry_types"},
+		"Succeed if checking for backend online status returns an error":         {backendOfflineError: true, policiesDir: "all_entry_types"},
 		"Second call with no rules deletes everything":                           {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: true},
 		"Second call with no rules don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: false},
 
@@ -54,12 +56,13 @@ func TestApplyPolicies(t *testing.T) {
 		"Second call with no subscription don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: false},
 
 		// Error cases
-		"Error when applying dconf policy":     {policiesDir: "dconf_failing", wantErr: true},
-		"Error when applying privilege policy": {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
-		"Error when applying scripts policy":   {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
-		"Error when applying apparmor policy":  {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
-		"Error when applying mount policy":     {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
-		"Error when applying proxy policy":     {noUbuntuProxyManager: true, policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying dconf policy":       {policiesDir: "dconf_failing", wantErr: true},
+		"Error when applying privilege policy":   {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying scripts policy":     {makeDirReadOnly: "run/adsys/machine", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying apparmor policy":    {makeDirReadOnly: "etc/apparmor.d/adsys", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying mount policy":       {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying proxy policy":       {noUbuntuProxyManager: true, policiesDir: "all_entry_types", wantErr: true},
+		"Error when applying certificate policy": {policiesDir: "certificate_failing", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -80,6 +83,8 @@ func TestApplyPolicies(t *testing.T) {
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
 			apparmorDir := filepath.Join(fakeRootDir, "etc", "apparmor.d", "adsys")
 			systemUnitDir := filepath.Join(fakeRootDir, "etc", "systemd", "system")
+			stateDir := filepath.Join(fakeRootDir, "var", "lib", "adsys")
+			shareDir := filepath.Join(fakeRootDir, "usr", "share", "adsys")
 			loadedPoliciesFile := filepath.Join(fakeRootDir, "sys", "kernel", "security", "apparmor", "profiles")
 
 			err = os.MkdirAll(filepath.Dir(loadedPoliciesFile), 0700)
@@ -98,14 +103,18 @@ func TestApplyPolicies(t *testing.T) {
 
 			m, err := policies.NewManager(bus,
 				hostname,
+				mockBackend{},
 				policies.WithCacheDir(cacheDir),
+				policies.WithStateDir(stateDir),
 				policies.WithRunDir(runDir),
+				policies.WithShareDir(shareDir),
 				policies.WithDconfDir(dconfDir),
 				policies.WithPolicyKitDir(policyKitDir),
 				policies.WithSudoersDir(sudoersDir),
 				policies.WithApparmorDir(apparmorDir),
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
+				policies.WithCertAutoenrollCmd([]string{"/bin/true"}),
 				policies.WithSystemUnitDir(systemUnitDir),
 				policies.WithProxyApplier(&mockProxyApplier{wantApplyError: tc.noUbuntuProxyManager}),
 				policies.WithSystemdCaller(&testutils.MockSystemdCaller{}),
@@ -282,7 +291,7 @@ func TestDumpPolicies(t *testing.T) {
 			t.Parallel()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, mockBackend{}, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
@@ -349,7 +358,7 @@ func TestLastUpdateFor(t *testing.T) {
 			t.Parallel()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, mockBackend{}, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			err = os.MkdirAll(filepath.Join(cacheDir, policies.PoliciesCacheBaseName), 0750)
@@ -411,7 +420,7 @@ func TestGetSubscriptionState(t *testing.T) {
 			}()
 
 			cacheDir, runDir := t.TempDir(), t.TempDir()
-			m, err := policies.NewManager(bus, hostname, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
+			m, err := policies.NewManager(bus, hostname, mockBackend{}, policies.WithCacheDir(cacheDir), policies.WithRunDir(runDir))
 			require.NoError(t, err, "Setup: couldn’t get a new policy manager")
 
 			got := m.GetSubscriptionState(context.Background())
@@ -435,3 +444,20 @@ func (d *mockProxyApplier) Call(_ string, _ dbus.Flags, _ ...interface{}) *dbus.
 
 	return &dbus.Call{Err: errApply}
 }
+
+// mockBackend is a mock for the backend object.
+type mockBackend struct {
+	wantOnlineErr bool
+}
+
+func (m mockBackend) Domain() string                            { return "example.com" }
+func (m mockBackend) ServerURL(context.Context) (string, error) { return "adc.example.com", nil }
+func (m mockBackend) HostKrb5CCName() (string, error)           { return "/tmp/krb5cc_0", nil }
+func (m mockBackend) DefaultDomainSuffix() string               { return "example.com" }
+func (m mockBackend) IsOnline() (bool, error) {
+	if m.wantOnlineErr {
+		return false, errors.New("mock error")
+	}
+	return true, nil
+}
+func (m mockBackend) Config() string { return "mock config" }

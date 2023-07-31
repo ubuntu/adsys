@@ -86,6 +86,14 @@ func (a *App) installPolicy() {
 		RunE:              func(cmd *cobra.Command, args []string) error { return a.dumpGPOListScript() },
 	}
 	debugCmd.AddCommand(gpoListCmd)
+	certEnrollCmd := &cobra.Command{
+		Use:               "cert-autoenroll-script",
+		Short:             gotext.Get("Write certificate autoenrollment python embedded script in current directory"),
+		Args:              cobra.NoArgs,
+		ValidArgsFunction: cmdhandler.NoValidArgs,
+		RunE:              func(cmd *cobra.Command, args []string) error { return a.dumpCertEnrollScript() },
+	}
+	debugCmd.AddCommand(certEnrollCmd)
 
 	var updateMachine, updateAll *bool
 	updateCmd := &cobra.Command{
@@ -269,6 +277,26 @@ func (a *App) dumpGPOListScript() error {
 	}
 
 	return os.WriteFile("adsys-gpolist", []byte(script), 0600)
+}
+
+func (a *App) dumpCertEnrollScript() error {
+	client, err := adsysservice.NewClient(a.config.Socket, a.getTimeout())
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	stream, err := client.CertAutoEnrollScript(a.ctx, &adsys.Empty{})
+	if err != nil {
+		return err
+	}
+
+	script, err := singleMsg(stream)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile("cert-autoenroll", []byte(script), 0600)
 }
 
 func colorizePolicies(policies string) (string, error) {
