@@ -711,6 +711,22 @@ func TestPolicyUpdate(t *testing.T) {
 			systemAnswer: "apply_proxy_fail",
 			wantErr:      true,
 		},
+		"Error on system certificate autoenroll failing": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState: "localhost-uptodate",
+			// this generates an error when parent directories are not writable
+			readOnlyDirs: []string{
+				"lib", // state directory
+			},
+			wantErr: true,
+		},
 		"Error on host is offline, without policies": {
 			sssdConf:  "sssd.conf-offline",
 			initState: "old-data",
@@ -1073,6 +1089,7 @@ func TestPolicyUpdate(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join(goldenPath, "polkit-1"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "apparmor.d", "adsys"), filepath.Join(goldenPath, "apparmor.d", "adsys"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "systemd", "system"), filepath.Join(goldenPath, "systemd", "system"), update)
+			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "lib"), filepath.Join(goldenPath, "lib"), update)
 
 			// Current user can have different UID depending on where it’s running. We can’t mock it as we rely on current uid
 			// in the process for authorization check. Just make it generic.
