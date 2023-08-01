@@ -196,3 +196,20 @@ jobs:
           branch: auto-update-policydefinitions-${{ steps.get-branch-name.outputs.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
+
+  open-issue-on-fail:
+    name: Open issue on failure
+    runs-on: ubuntu-latest
+    needs: integrate-ad
+    if: ${{ failure() }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create issue if build failed
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: .github/workflows/adm-builds-fail.md
+          search_existing: open
+          update_existing: true
