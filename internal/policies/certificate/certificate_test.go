@@ -32,7 +32,7 @@ var advancedConfigurationEntries = []entry.Entry{
 	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/Flags", Value: "0"},
 }
 
-func TestPolicyApply(t *testing.T) {
+func TestApplyPolicy(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
