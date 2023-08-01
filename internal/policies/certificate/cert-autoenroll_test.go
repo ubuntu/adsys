@@ -110,6 +110,9 @@ func TestCertAutoenrollScript(t *testing.T) {
 			sambaCacheDir := filepath.Join(stateDir, "samba")
 			globalTrustDir := filepath.Join(stateDir, "ca-certificates")
 
+			// Create a dummy cache file to ensure we don't fail when removing a non-empty directory
+			testutils.CreatePath(t, filepath.Join(sambaCacheDir, "cert_gpo_state_HOST.tdb"))
+
 			if tc.readOnlyPath {
 				testutils.MakeReadOnly(t, stateDir)
 			}

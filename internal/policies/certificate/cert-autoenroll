@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import tempfile
+import shutil
 
 from samba import param
 from samba.credentials import MUST_USE_KERBEROS, Credentials
@@ -80,7 +81,8 @@ def main():
             ext.enroll(guid, entries, trust_dir, private_dir, global_trust_dir)
         else:
             ext.unenroll(guid)
-            os.removedirs(samba_cache_dir)
+            if os.path.exists(samba_cache_dir):
+                shutil.rmtree(samba_cache_dir)
 
 def gpo_entries(entries_json):
     """
