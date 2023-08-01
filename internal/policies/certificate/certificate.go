@@ -245,7 +245,7 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 	cmd := exec.CommandContext(cmdCtx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(),
 		fmt.Sprintf("KRB5CCNAME=%s", filepath.Join(m.krb5CacheDir, objectName)),
-		fmt.Sprintf("PYTHONPATH=%s", m.vendorPythonDir),
+		fmt.Sprintf("PYTHONPATH=%s:%s", os.Getenv("PYTHONPATH"), m.vendorPythonDir),
 	)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
