@@ -92,19 +92,20 @@ type systemdCaller interface {
 }
 
 type options struct {
-	cacheDir      string
-	stateDir      string
-	dconfDir      string
-	sudoersDir    string
-	policyKitDir  string
-	runDir        string
-	shareDir      string
-	apparmorDir   string
-	apparmorFsDir string
-	systemUnitDir string
-	proxyApplier  proxy.Caller
-	systemdCaller systemdCaller
-	gdm           *gdm.Manager
+	cacheDir       string
+	stateDir       string
+	dconfDir       string
+	sudoersDir     string
+	policyKitDir   string
+	runDir         string
+	shareDir       string
+	apparmorDir    string
+	apparmorFsDir  string
+	systemUnitDir  string
+	globalTrustDir string
+	proxyApplier   proxy.Caller
+	systemdCaller  systemdCaller
+	gdm            *gdm.Manager
 
 	apparmorParserCmd []string
 	certAutoenrollCmd []string
@@ -202,6 +203,15 @@ func WithSystemUnitDir(p string) Option {
 	}
 }
 
+// WithGlobalTrustDir specifies a personalized global trust directory for use
+// with the certificate manager.
+func WithGlobalTrustDir(p string) Option {
+	return func(o *options) error {
+		o.globalTrustDir = p
+		return nil
+	}
+}
+
 // WithProxyApplier specifies a personalized proxy applier for the proxy policy manager.
 func WithProxyApplier(p proxy.Caller) Option {
 	return func(o *options) error {
@@ -237,14 +247,15 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 
 	// defaults
 	args := options{
-		cacheDir:      consts.DefaultCacheDir,
-		stateDir:      consts.DefaultStateDir,
-		runDir:        consts.DefaultRunDir,
-		shareDir:      consts.DefaultShareDir,
-		apparmorDir:   consts.DefaultApparmorDir,
-		systemUnitDir: consts.DefaultSystemUnitDir,
-		systemdCaller: defaultSystemdCaller,
-		gdm:           nil,
+		cacheDir:       consts.DefaultCacheDir,
+		stateDir:       consts.DefaultStateDir,
+		runDir:         consts.DefaultRunDir,
+		shareDir:       consts.DefaultShareDir,
+		apparmorDir:    consts.DefaultApparmorDir,
+		systemUnitDir:  consts.DefaultSystemUnitDir,
+		globalTrustDir: consts.DefaultGlobalTrustDir,
+		systemdCaller:  defaultSystemdCaller,
+		gdm:            nil,
 	}
 	// applied options (including dconf manager used by gdm)
 	for _, o := range opts {
@@ -295,6 +306,7 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 		certificate.WithStateDir(args.stateDir),
 		certificate.WithRunDir(args.runDir),
 		certificate.WithShareDir(args.shareDir),
+		certificate.WithGlobalTrustDir(args.globalTrustDir),
 	}
 	if args.certAutoenrollCmd != nil {
 		certificateOpts = append(certificateOpts, certificate.WithCertAutoenrollCmd(args.certAutoenrollCmd))

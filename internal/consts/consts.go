@@ -58,6 +58,8 @@ const (
 	DefaultApparmorDir = "/etc/apparmor.d/adsys"
 	// DefaultSystemUnitDir is the default directory for systemd unit files.
 	DefaultSystemUnitDir = "/etc/systemd/system"
+	// DefaultGlobalTrustDir is the default directory for the global trust store.
+	DefaultGlobalTrustDir = "/usr/local/share/ca-certificates"
 )
 
 // SSSD related properties.

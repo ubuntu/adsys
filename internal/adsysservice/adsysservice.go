@@ -46,28 +46,32 @@ type Service struct {
 }
 
 type state struct {
-	cacheDir      string
-	runDir        string
-	dconfDir      string
-	sudoersDir    string
-	policyKitDir  string
-	apparmorDir   string
-	systemUnitDir string
+	cacheDir       string
+	stateDir       string
+	runDir         string
+	dconfDir       string
+	sudoersDir     string
+	policyKitDir   string
+	apparmorDir    string
+	systemUnitDir  string
+	globalTrustDir string
 }
 
 type options struct {
-	cacheDir      string
-	runDir        string
-	dconfDir      string
-	sudoersDir    string
-	policyKitDir  string
-	apparmorDir   string
-	apparmorFsDir string
-	systemUnitDir string
-	adBackend     string
-	sssConfig     sss.Config
-	winbindConfig winbind.Config
-	authorizer    authorizerer
+	cacheDir       string
+	stateDir       string
+	runDir         string
+	dconfDir       string
+	sudoersDir     string
+	policyKitDir   string
+	apparmorDir    string
+	apparmorFsDir  string
+	systemUnitDir  string
+	globalTrustDir string
+	adBackend      string
+	sssConfig      sss.Config
+	winbindConfig  winbind.Config
+	authorizer     authorizerer
 }
 type option func(*options) error
 
@@ -79,6 +83,14 @@ type authorizerer interface {
 func WithCacheDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.cacheDir = p
+		return nil
+	}
+}
+
+// WithStateDir specifies a personalized daemon state directory.
+func WithStateDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.stateDir = p
 		return nil
 	}
 }
@@ -137,6 +149,14 @@ func WithApparmorFsDir(p string) func(o *options) error {
 func WithSystemUnitDir(p string) func(o *options) error {
 	return func(o *options) error {
 		o.systemUnitDir = p
+		return nil
+	}
+}
+
+// WithGlobalTrustDir specifies a personalized directory for global trust store.
+func WithGlobalTrustDir(p string) func(o *options) error {
+	return func(o *options) error {
+		o.globalTrustDir = p
 		return nil
 	}
 }
@@ -261,6 +281,9 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	if args.cacheDir != "" {
 		policyOptions = append(policyOptions, policies.WithCacheDir(args.cacheDir))
 	}
+	if args.stateDir != "" {
+		policyOptions = append(policyOptions, policies.WithStateDir(args.stateDir))
+	}
 	if args.dconfDir != "" {
 		policyOptions = append(policyOptions, policies.WithDconfDir(args.dconfDir))
 	}
@@ -282,6 +305,9 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	if args.systemUnitDir != "" {
 		policyOptions = append(policyOptions, policies.WithSystemUnitDir(args.systemUnitDir))
 	}
+	if args.globalTrustDir != "" {
+		policyOptions = append(policyOptions, policies.WithGlobalTrustDir(args.globalTrustDir))
+	}
 	m, err := policies.NewManager(bus, hostname, adBackend, policyOptions...)
 	if err != nil {
 		return nil, err
@@ -295,13 +321,15 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 		policyManager: m,
 		authorizer:    args.authorizer,
 		state: state{
-			cacheDir:      args.cacheDir,
-			dconfDir:      args.dconfDir,
-			sudoersDir:    args.sudoersDir,
-			policyKitDir:  args.policyKitDir,
-			runDir:        args.runDir,
-			apparmorDir:   args.apparmorDir,
-			systemUnitDir: args.systemUnitDir,
+			cacheDir:       args.cacheDir,
+			stateDir:       args.stateDir,
+			dconfDir:       args.dconfDir,
+			sudoersDir:     args.sudoersDir,
+			policyKitDir:   args.policyKitDir,
+			runDir:         args.runDir,
+			apparmorDir:    args.apparmorDir,
+			systemUnitDir:  args.systemUnitDir,
+			globalTrustDir: args.globalTrustDir,
 		},
 		initSystemTime: initSysTime,
 		bus:            bus,

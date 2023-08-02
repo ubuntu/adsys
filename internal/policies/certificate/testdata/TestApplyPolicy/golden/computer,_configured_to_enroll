@@ -1,0 +1,3 @@
+enroll keypress example.com --state_dir #TMPDIR#/statedir --global_trust_dir /usr/local/share/ca-certificates --policy_servers_json null
+KRB5CCNAME=#TMPDIR#/rundir/krb5cc/keypress
+PYTHONPATH=:#TMPDIR#/sharedir/python

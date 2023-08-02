@@ -3,10 +3,10 @@ Loading smb.conf
 realm = example.com
 log level = 10
 
-Loading state file: #TMPDIR#/state/cert_gpo_state_keypress.tdb
+Loading state file: #STATEDIR#/samba/cert_gpo_state_keypress.tdb
 Enroll called
 
 guid: adsys-cert-autoenroll-keypress
-trust_dir: #TMPDIR#/trust; mode: 0o40755
-private_dir: #TMPDIR#/private; mode: 0o40700
-global_trust_dir: #TMPDIR#/ca-certificates; mode: 0o40755
+trust_dir: #STATEDIR#/certs; mode: 0o40755
+private_dir: #STATEDIR#/private/certs; mode: 0o40700
+global_trust_dir: #STATEDIR#/ca-certificates; mode: 0o40755

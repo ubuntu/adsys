@@ -106,17 +106,18 @@ func TestCertAutoenrollScript(t *testing.T) {
 		tc := tc
 		name := name
 		t.Run(name, func(t *testing.T) {
-			tmpdir := t.TempDir()
-			stateDir := filepath.Join(tmpdir, "state")
-			privateDir := filepath.Join(tmpdir, "private")
-			trustDir := filepath.Join(tmpdir, "trust")
-			globalTrustDir := filepath.Join(tmpdir, "ca-certificates")
+			stateDir := t.TempDir()
+			sambaCacheDir := filepath.Join(stateDir, "samba")
+			globalTrustDir := filepath.Join(stateDir, "ca-certificates")
+
+			// Create a dummy cache file to ensure we don't fail when removing a non-empty directory
+			testutils.CreatePath(t, filepath.Join(sambaCacheDir, "cert_gpo_state_HOST.tdb"))
 
 			if tc.readOnlyPath {
-				testutils.MakeReadOnly(t, tmpdir)
+				testutils.MakeReadOnly(t, stateDir)
 			}
 
-			args := append(tc.args, "--samba_cache_dir", stateDir, "--private_dir", privateDir, "--trust_dir", trustDir, "--global_trust_dir", globalTrustDir)
+			args := append(tc.args, "--state_dir", stateDir, "--global_trust_dir", globalTrustDir)
 
 			// #nosec G204: we control the command line name and only change it for tests
 			cmd := exec.Command(certAutoenrollCmd, args...)
@@ -131,12 +132,12 @@ func TestCertAutoenrollScript(t *testing.T) {
 			}
 			require.NoErrorf(t, err, "cert-autoenroll should have exited successfully: %s", string(out))
 
-			got := strings.ReplaceAll(string(out), tmpdir, "#TMPDIR#")
+			got := strings.ReplaceAll(string(out), stateDir, "#STATEDIR#")
 			want := testutils.LoadWithUpdateFromGolden(t, got)
 			require.Equal(t, want, got, "Unexpected output from cert-autoenroll script")
 
 			if slices.Contains(tc.args, "unenroll") {
-				require.NoDirExists(t, filepath.Join(stateDir, "samba"), "Samba cache directory should have been removed on unenroll")
+				require.NoDirExists(t, sambaCacheDir, "Samba cache directory should have been removed on unenroll")
 			}
 		})
 	}

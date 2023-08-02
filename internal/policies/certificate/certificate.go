@@ -42,9 +42,10 @@ import (
 // the policy in ApplyPolicy.
 type Manager struct {
 	domain          string
-	sambaCacheDir   string
+	stateDir        string
 	krb5CacheDir    string
 	vendorPythonDir string
+	globalTrustDir  string
 	certEnrollCmd   []string
 
 	mu sync.Mutex // Prevents multiple instances of the certificate manager from running in parallel
@@ -81,6 +82,7 @@ type options struct {
 	stateDir          string
 	runDir            string
 	shareDir          string
+	globalTrustDir    string
 	certAutoenrollCmd []string
 }
 
@@ -108,6 +110,13 @@ func WithShareDir(p string) func(*options) {
 	}
 }
 
+// WithGlobalTrustDir overrides the default global trust store directory.
+func WithGlobalTrustDir(p string) func(*options) {
+	return func(a *options) {
+		a.globalTrustDir = p
+	}
+}
+
 // WithCertAutoenrollCmd overrides the default certificate autoenroll command.
 func WithCertAutoenrollCmd(cmd []string) func(*options) {
 	return func(a *options) {
@@ -122,6 +131,7 @@ func New(domain string, opts ...Option) *Manager {
 		stateDir:          consts.DefaultStateDir,
 		runDir:            consts.DefaultRunDir,
 		shareDir:          consts.DefaultShareDir,
+		globalTrustDir:    consts.DefaultGlobalTrustDir,
 		certAutoenrollCmd: []string{"python3", "-c", CertEnrollCode},
 	}
 	// applied options
@@ -131,9 +141,10 @@ func New(domain string, opts ...Option) *Manager {
 
 	return &Manager{
 		domain:          domain,
-		sambaCacheDir:   filepath.Join(args.stateDir, "samba"),
+		stateDir:        args.stateDir,
 		krb5CacheDir:    filepath.Join(args.runDir, "krb5cc"),
 		vendorPythonDir: filepath.Join(args.shareDir, "python"),
+		globalTrustDir:  args.globalTrustDir,
 		certEnrollCmd:   args.certAutoenrollCmd,
 	}
 }
@@ -158,12 +169,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == "autoenroll" })
 	if idx == -1 {
 		// If the Samba cache directory doesn't exist, we don't have anything to unenroll
-		if _, err := os.Stat(m.sambaCacheDir); err != nil && os.IsNotExist(err) {
+		if _, err := os.Stat(filepath.Join(m.stateDir, "samba")); err != nil && os.IsNotExist(err) {
 			return nil
 		}
 
 		log.Debug(ctx, "Certificate autoenrollment is not configured, unenrolling machine")
-		if err := m.runScript(ctx, "unenroll", objectName, "--samba_cache_dir", m.sambaCacheDir); err != nil {
+		if err := m.runScript(ctx, "unenroll", objectName); err != nil {
 			return err
 		}
 
@@ -215,10 +226,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return fmt.Errorf(i18n.G("failed to marshal policy server registry entries: %v"), err)
 	}
 
-	if err := m.runScript(ctx, action, objectName,
-		"--policy_servers_json", string(jsonGPOData),
-		"--samba_cache_dir", m.sambaCacheDir,
-	); err != nil {
+	if err := m.runScript(ctx, action, objectName, "--policy_servers_json", string(jsonGPOData)); err != nil {
 		return err
 	}
 
@@ -227,7 +235,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 // runScript runs the certificate autoenrollment script with the given arguments.
 func (m *Manager) runScript(ctx context.Context, action, objectName string, extraArgs ...string) error {
-	scriptArgs := []string{action, objectName, m.domain}
+	scriptArgs := []string{action, objectName, m.domain, "--state_dir", m.stateDir, "--global_trust_dir", m.globalTrustDir}
 	scriptArgs = append(scriptArgs, extraArgs...)
 	cmdArgs := append(m.certEnrollCmd, scriptArgs...)
 	cmdCtx, cancel := context.WithTimeout(ctx, time.Second*10)
@@ -237,7 +245,7 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 	cmd := exec.CommandContext(cmdCtx, cmdArgs[0], cmdArgs[1:]...)
 	cmd.Env = append(os.Environ(),
 		fmt.Sprintf("KRB5CCNAME=%s", filepath.Join(m.krb5CacheDir, objectName)),
-		fmt.Sprintf("PYTHONPATH=%s", m.vendorPythonDir),
+		fmt.Sprintf("PYTHONPATH=%s:%s", os.Getenv("PYTHONPATH"), m.vendorPythonDir),
 	)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout

@@ -236,6 +236,7 @@ socket: %s/socket
 
 # Service only configuration
 cache_dir: %s/cache
+state_dir: %s/lib
 run_dir: %s/run
 service_timeout: 30
 
@@ -254,7 +255,8 @@ policykit_dir: %s/polkit-1
 apparmor_dir: %s/apparmor.d/adsys
 apparmorfs_dir: %s/apparmorfs
 systemunit_dir: %s/systemd/system
-`, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir))
+global_trust_dir: %s/share/ca-certificates
+`, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir))
 
 	testutils.WriteFile(t, confFile, confData, os.ModePerm)
 	require.NoError(t, os.MkdirAll(filepath.Join(args.adsysDir, "dconf"), 0750), "Setup: should create dconf dir")

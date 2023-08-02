@@ -1,3 +1,0 @@
-unenroll keypress example.com --samba_cache_dir #TMPDIR#/statedir/samba
-KRB5CCNAME=#TMPDIR#/rundir/krb5cc/keypress
-PYTHONPATH=#TMPDIR#/sharedir/python
