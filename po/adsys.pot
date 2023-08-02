@@ -39,7 +39,7 @@ msgstr ""
 msgid "AD integration client"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:64
+#: cmd/adsysd/daemon/daemon.go:66
 msgid "AD integration daemon"
 msgstr ""
 
@@ -47,7 +47,7 @@ msgstr ""
 msgid "AD watch daemon"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:159
+#: cmd/adsysd/daemon/daemon.go:163
 msgid "Active Directory authentication backend"
 msgstr ""
 
@@ -55,7 +55,7 @@ msgstr ""
 msgid "Active Directory integration bridging toolset command line tool."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:65
+#: cmd/adsysd/daemon/daemon.go:67
 msgid "Active Directory integration bridging toolset daemon."
 msgstr ""
 
@@ -185,11 +185,11 @@ msgstr ""
 msgid "Runs scripts in the given subdirectory"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:163
+#: cmd/adsysd/daemon/daemon.go:167
 msgid "SSSd cache directory"
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:161
+#: cmd/adsysd/daemon/daemon.go:165
 msgid "SSSd config file path"
 msgstr ""
 
@@ -297,11 +297,11 @@ msgid ""
 "	overrides. Default to ""."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:151
+#: cmd/adsysd/daemon/daemon.go:155
 msgid "directory where ADsys caches GPOs downloads and policies."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:153
+#: cmd/adsysd/daemon/daemon.go:157
 msgid "directory where ADsys stores transient information erased on reboot."
 msgstr ""
 
@@ -370,7 +370,7 @@ msgstr ""
 msgid "time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."
 msgstr ""
 
-#: cmd/adsysd/daemon/daemon.go:156
+#: cmd/adsysd/daemon/daemon.go:160
 msgid "time in seconds without activity before the service exists. 0 for no timeout."
 msgstr ""
 
