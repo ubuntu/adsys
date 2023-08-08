@@ -13,6 +13,7 @@ from samba.dcerpc import preg
 
 from vendor_samba.gp.gpclass import GPOStorage
 from vendor_samba.gp import gp_cert_auto_enroll_ext as cae
+from vendor_samba.gp.util.logging import logger_init
 
 class adsys_cert_auto_enroll(cae.gp_cert_auto_enroll_ext):
     def enroll(self, guid, entries, trust_dir, private_dir, global_trust_dir):
@@ -73,6 +74,9 @@ def main():
         c.guess(lp)
         username = c.get_username()
         store = GPOStorage(os.path.join(samba_cache_dir, f'cert_gpo_state_{args.object_name}.tdb'))
+
+        # Set up logging
+        logger_init('cert-autoenroll', lp.log_level())
 
         ext = adsys_cert_auto_enroll(lp, c, username, store)
         guid = f'adsys-cert-autoenroll-{args.object_name}'
