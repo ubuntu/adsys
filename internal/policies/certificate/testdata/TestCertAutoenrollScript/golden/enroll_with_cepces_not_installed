@@ -1,0 +1,6 @@
+Loading smb.conf
+[global]
+realm = example.com
+
+Loading state file: #STATEDIR#/samba/cert_gpo_state_keypress.tdb
+WARNING: certmonger and/or cepces not found, skipping certificate enrollment

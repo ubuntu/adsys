@@ -965,6 +965,15 @@ func TestPolicyUpdate(t *testing.T) {
 
 			t.Setenv("ADSYS_WBCLIENT_BEHAVIOR", tc.winbindMockBehavior)
 
+			// Create fake certmonger and cepces binaries for the certificate manager
+			binDir := t.TempDir()
+			for _, executable := range []string{"getcert", "cepces-submit"} {
+				// #nosec G306. We want this asset to be executable.
+				err := os.WriteFile(filepath.Join(binDir, executable), []byte("#!/bin/sh\necho $@\n"), 0755)
+				require.NoError(t, err, "Setup: could not create %q binary", executable)
+			}
+			t.Setenv("PATH", binDir+":"+os.Getenv("PATH"))
+
 			// Some tests will need some initial state assets
 			for _, k := range tc.clearDirs {
 				err := os.RemoveAll(filepath.Join(adsysDir, k))

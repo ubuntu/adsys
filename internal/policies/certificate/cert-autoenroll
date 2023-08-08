@@ -13,7 +13,7 @@ from samba.dcerpc import preg
 
 from vendor_samba.gp.gpclass import GPOStorage
 from vendor_samba.gp import gp_cert_auto_enroll_ext as cae
-from vendor_samba.gp.util.logging import logger_init
+from vendor_samba.gp.util.logging import logger_init, log
 
 class adsys_cert_auto_enroll(cae.gp_cert_auto_enroll_ext):
     def enroll(self, guid, entries, trust_dir, private_dir, global_trust_dir):
@@ -78,6 +78,10 @@ def main():
         # Set up logging
         logger_init('cert-autoenroll', lp.log_level())
 
+        if not cepces_submit() or not certmonger():
+            log.warning('certmonger and/or cepces not found, skipping certificate enrollment')
+            return
+
         ext = adsys_cert_auto_enroll(lp, c, username, store)
         guid = f'adsys-cert-autoenroll-{args.object_name}'
         if args.action == 'enroll':
@@ -126,6 +130,13 @@ def gpo_entries(entries_json):
             raise ValueError(f'GPO data must be a JSON array of objects') from exc
     return entries
 
+def cepces_submit():
+    certmonger_dirs = [os.environ.get('PATH'), '/usr/lib/certmonger',
+                       '/usr/libexec/certmonger']
+    return shutil.which('cepces-submit', path=':'.join(certmonger_dirs))
+
+def certmonger():
+    return shutil.which('getcert')
 
 if __name__ == "__main__":
     sys.exit(main())
