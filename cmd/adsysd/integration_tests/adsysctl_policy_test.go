@@ -216,6 +216,7 @@ func TestPolicyUpdate(t *testing.T) {
 		readOnlyDirs        []string
 		winbindMockBehavior string
 		purge               bool
+		missingCertmonger   bool
 
 		wantErr bool
 	}{
@@ -603,6 +604,21 @@ func TestPolicyUpdate(t *testing.T) {
 			initState:    "localhost-uptodate",
 			systemAnswer: "no_proxy_object",
 		},
+		"Does not error when certmonger or cepces is not available": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState: "localhost-uptodate",
+			addPaths: []string{
+				"lib/private", // make parent of private dir a file
+			},
+			missingCertmonger: true,
+		},
 
 		// Purge cases
 		"Purge current user policies": {
@@ -966,13 +982,15 @@ func TestPolicyUpdate(t *testing.T) {
 			t.Setenv("ADSYS_WBCLIENT_BEHAVIOR", tc.winbindMockBehavior)
 
 			// Create fake certmonger and cepces binaries for the certificate manager
-			binDir := t.TempDir()
-			for _, executable := range []string{"getcert", "cepces-submit"} {
-				// #nosec G306. We want this asset to be executable.
-				err := os.WriteFile(filepath.Join(binDir, executable), []byte("#!/bin/sh\necho $@\n"), 0755)
-				require.NoError(t, err, "Setup: could not create %q binary", executable)
+			if !tc.missingCertmonger {
+				binDir := t.TempDir()
+				for _, executable := range []string{"getcert", "cepces-submit"} {
+					// #nosec G306. We want this asset to be executable.
+					err := os.WriteFile(filepath.Join(binDir, executable), []byte("#!/bin/sh\necho $@\n"), 0755)
+					require.NoError(t, err, "Setup: could not create %q binary", executable)
+				}
+				t.Setenv("PATH", binDir+":"+os.Getenv("PATH"))
 			}
-			t.Setenv("PATH", binDir+":"+os.Getenv("PATH"))
 
 			// Some tests will need some initial state assets
 			for _, k := range tc.clearDirs {

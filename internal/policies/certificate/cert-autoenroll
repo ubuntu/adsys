@@ -58,29 +58,29 @@ def main():
     private_dir = os.path.join(args.state_dir, 'private', 'certs')
     global_trust_dir = args.global_trust_dir
 
-    # Create needed directories if they don't exist
-    for directory in [samba_cache_dir, trust_dir, private_dir, global_trust_dir]:
-        if not os.path.exists(directory):
-            perms = 0o700 if directory == private_dir else 0o755
-            os.makedirs(directory, mode=perms)
-
     with tempfile.NamedTemporaryFile(prefix='smb_conf') as smb_conf:
         smb_conf.write(smb_config(args.realm, args.debug).encode('utf-8'))
         smb_conf.flush()
 
         lp = param.LoadParm(smb_conf.name)
-        c = Credentials()
-        c.set_kerberos_state(MUST_USE_KERBEROS)
-        c.guess(lp)
-        username = c.get_username()
-        store = GPOStorage(os.path.join(samba_cache_dir, f'cert_gpo_state_{args.object_name}.tdb'))
-
         # Set up logging
         logger_init('cert-autoenroll', lp.log_level())
 
         if not cepces_submit() or not certmonger():
             log.warning('certmonger and/or cepces not found, skipping certificate enrollment')
             return
+
+        # Create needed directories if they don't exist
+        for directory in [samba_cache_dir, trust_dir, private_dir, global_trust_dir]:
+            if not os.path.exists(directory):
+                perms = 0o700 if directory == private_dir else 0o755
+                os.makedirs(directory, mode=perms)
+
+        c = Credentials()
+        c.set_kerberos_state(MUST_USE_KERBEROS)
+        c.guess(lp)
+        username = c.get_username()
+        store = GPOStorage(os.path.join(samba_cache_dir, f'cert_gpo_state_{args.object_name}.tdb'))
 
         ext = adsys_cert_auto_enroll(lp, c, username, store)
         guid = f'adsys-cert-autoenroll-{args.object_name}'
