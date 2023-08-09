@@ -16,7 +16,6 @@
 package certificate
 
 import (
-	"bytes"
 	"context"
 	_ "embed" // embed cert enroll python script
 	"encoding/json"
@@ -247,16 +246,14 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 		fmt.Sprintf("KRB5CCNAME=%s", filepath.Join(m.krb5CacheDir, objectName)),
 		fmt.Sprintf("PYTHONPATH=%s:%s", os.Getenv("PYTHONPATH"), m.vendorPythonDir),
 	)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
 	smbsafe.WaitExec()
 	defer smbsafe.DoneExec()
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf(i18n.G("failed to run certificate autoenrollment script (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, stderr.String())
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf(i18n.G("failed to run certificate autoenrollment script (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, string(output))
 	}
-	log.Infof(ctx, i18n.G("Certificate autoenrollment script ran successfully\n%s"), stdout.String())
+	log.Infof(ctx, i18n.G("Certificate autoenrollment script ran successfully\n%s"), string(output))
 	return nil
 }
 

@@ -80,6 +80,9 @@ func TestCertAutoenrollScript(t *testing.T) {
 		readOnlyPath    bool
 		autoenrollError bool
 
+		missingCertmonger bool
+		missingCepces     bool
+
 		wantErr bool
 	}{
 		"Enroll with simple configuration":                   {args: []string{"enroll", "keypress", "example.com"}},
@@ -88,6 +91,10 @@ func TestCertAutoenrollScript(t *testing.T) {
 		"Enroll with valid advanced configuration":           {args: []string{"enroll", "keypress", "example.com", "--policy_servers_json", compactedJSON.String()}},
 
 		"Unenroll": {args: []string{"unenroll", "keypress", "example.com"}},
+
+		// Missing binary cases
+		"Enroll with certmonger not installed": {args: []string{"enroll", "keypress", "example.com"}, missingCertmonger: true},
+		"Enroll with cepces not installed":     {args: []string{"enroll", "keypress", "example.com"}, missingCepces: true},
 
 		// Error cases
 		"Error on missing arguments": {args: []string{"enroll"}, wantErr: true},
@@ -109,6 +116,17 @@ func TestCertAutoenrollScript(t *testing.T) {
 			stateDir := t.TempDir()
 			sambaCacheDir := filepath.Join(stateDir, "samba")
 			globalTrustDir := filepath.Join(stateDir, "ca-certificates")
+			binDir := t.TempDir()
+			if !tc.missingCertmonger {
+				// #nosec G306. We want this asset to be executable.
+				err := os.WriteFile(filepath.Join(binDir, "getcert"), []byte("#!/bin/sh\necho $@\n"), 0755)
+				require.NoError(t, err, "Setup: could not create getcert binary")
+			}
+			if !tc.missingCepces {
+				// #nosec G306. We want this asset to be executable.
+				err := os.WriteFile(filepath.Join(binDir, "cepces-submit"), []byte("#!/bin/sh\necho $@\n"), 0755)
+				require.NoError(t, err, "Setup: could not create cepces binary")
+			}
 
 			// Create a dummy cache file to ensure we don't fail when removing a non-empty directory
 			testutils.CreatePath(t, filepath.Join(sambaCacheDir, "cert_gpo_state_HOST.tdb"))
@@ -121,7 +139,10 @@ func TestCertAutoenrollScript(t *testing.T) {
 
 			// #nosec G204: we control the command line name and only change it for tests
 			cmd := exec.Command(certAutoenrollCmd, args...)
-			cmd.Env = append(os.Environ(), "PYTHONPATH="+pythonPath)
+			cmd.Env = append(os.Environ(),
+				"PYTHONPATH="+pythonPath,
+				"PATH="+binDir+":"+os.Getenv("PATH"),
+			)
 			if tc.autoenrollError {
 				cmd.Env = append(os.Environ(), "ADSYS_WANT_AUTOENROLL_ERROR=1")
 			}
