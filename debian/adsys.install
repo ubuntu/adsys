@@ -7,6 +7,7 @@ usr/share/man
 usr/share/polkit-1
 usr/share/pam-configs
 usr/share/zsh
+usr/share/adsys/python
 
 # blank conffiles
 debian/99-adsys-privilege-enforcement.conf etc/polkit-1/localauthority.conf.d/

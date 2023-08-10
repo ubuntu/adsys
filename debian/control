@@ -5,7 +5,7 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Build-Depends: debhelper-compat (= 13),
                dh-apport,
                dh-golang,
-               golang-go (>= 2:1.16~),
+               golang-go (>= 2:1.20~),
                libsmbclient-dev,
                libdbus-1-dev,
                libglib2.0-dev,
@@ -23,7 +23,8 @@ Homepage: https://github.com/ubuntu/adsys
 Description: AD SYStem integration
  ADSys is an AD SYStem tool to integrate GPOs with a linux system.
  It allows one to handle machine and users GPOs, mapping them to dconf keys,
- apparmor rules, mounts, proxy settings and running scripts at different points in time.
+ apparmor rules, mounts, proxy settings, certificate autoenrollment and running
+ scripts at different points in time.
 
 
 Package: adsys
@@ -44,6 +45,7 @@ Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Suggests: curlftpfs,
           ubuntu-proxy-manager,
+          python3-cepces,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
 

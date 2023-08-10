@@ -33,8 +33,6 @@ var advancedConfigurationEntries = []entry.Entry{
 }
 
 func TestApplyPolicy(t *testing.T) {
-	t.Parallel()
-
 	tests := map[string]struct {
 		entries []entry.Entry
 
@@ -75,7 +73,17 @@ func TestApplyPolicy(t *testing.T) {
 	for name, tc := range tests {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+			// Test with a clean PYTHONPATH to avoid differences in the golden file output
+			origPythonPath, existed := os.LookupEnv("PYTHONPATH")
+			err := os.Unsetenv("PYTHONPATH")
+			require.NoError(t, err, "Setup: Unable to unset PYTHONPATH")
+			defer func() {
+				if !existed {
+					return
+				}
+				err := os.Setenv("PYTHONPATH", origPythonPath)
+				require.NoError(t, err, "Teardown: Unable to restore PYTHONPATH")
+			}()
 
 			tmpdir := t.TempDir()
 			sambaCacheDir := filepath.Join(tmpdir, "statedir", "samba")
@@ -94,7 +102,7 @@ func TestApplyPolicy(t *testing.T) {
 				certificate.WithCertAutoenrollCmd(autoenrollCmd),
 			)
 
-			err := m.ApplyPolicy(context.Background(), "keypress", !tc.isUser, !tc.isOffline, tc.entries)
+			err = m.ApplyPolicy(context.Background(), "keypress", !tc.isUser, !tc.isOffline, tc.entries)
 			if tc.wantErr {
 				require.Error(t, err, "ApplyPolicy should fail")
 				return

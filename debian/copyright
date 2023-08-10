@@ -233,6 +233,10 @@ Files: vendor/github.com/ubuntu/decorate/*
 Copyright: Canonical
 License: MIT
 
+Files: internal/policies/certificate/python/vendor_samba/*
+Copyright: 2021 David Mulder <dmulder@suse.com>
+License: GPL-3+
+
 License: Apache-2.0
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
