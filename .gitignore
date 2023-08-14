@@ -41,3 +41,4 @@ debian/adsys-windows
 node_modules
 package-lock.json
 package.json
+samba-patched/

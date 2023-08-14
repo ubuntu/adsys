@@ -1,0 +1,91 @@
+name: Patch vendored Samba code
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # run on a weekly cadence
+  workflow_dispatch:
+
+env:
+  checkout_files: |
+    python/samba/gp/gp_cert_auto_enroll_ext.py
+    python/samba/gp/gpclass.py
+    python/samba/gp/util/logging.py
+
+jobs:
+  check-for-changes:
+    name: Check for changes in vendored code
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.compute-diff.outputs.changed }}
+      samba-ref: ${{ steps.compute-diff.outputs.samba-ref }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Checkout Samba files
+        uses: actions/checkout@v3
+        with:
+          repository: samba-team/samba
+          sparse-checkout: ${{ env.checkout_files }}
+          sparse-checkout-cone-mode: false
+          path: samba-git
+      - name: Check for changes
+        id: compute-diff
+        run: |
+          echo "samba-ref=$(git -C samba-git rev-parse HEAD)" >> $GITHUB_OUTPUT
+          for file in $checkout_files; do
+            if ! diff -q samba-git/$file .github/samba/$file; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              break
+            fi
+          done
+      - name: Upload
+        if: ${{ steps.compute-diff.outputs.changed == 'true' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: samba
+          path: |
+            samba-git
+            !samba-git/.git
+
+  patch-vendored-code:
+    name: Patch vendored code
+    runs-on: ubuntu-latest
+    needs: check-for-changes
+    if: ${{ needs.check-for-changes.outputs.changed == 'true' }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Replace with updated Samba source
+        uses: actions/download-artifact@v3
+        with:
+          path: .github
+      - name: Prepare patch working directory
+        run: cp -a .github/samba samba-patched
+      - name: Prepare pull request body
+        run: echo 'Automated changes to vendored Samba code - [`${{ needs.check-for-changes.outputs.samba-ref }}`](https://github.com/samba-team/samba/tree/${{ needs.check-for-changes.outputs.samba-ref }})' > samba-patched/pr-body
+      - name: Apply patch series
+        run: patch -f -d samba-patched -r rejected --no-backup-if-mismatch -p1 < <(cat .github/samba/_patches/*.patch)
+      - name: Add rejected hunks to PR body
+        if: ${{ failure() }}
+        run: |
+          if [ -f samba-patched/rejected ]; then
+            echo "### Rejected hunks:" >> samba-patched/pr-body
+            echo '```patch' >> samba-patched/pr-body
+            cat samba-patched/rejected >> samba-patched/pr-body
+            echo '```' >> samba-patched/pr-body
+          else
+            echo "No rejected hunks, please check job output for failure details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> samba-patched/pr-body
+          fi
+      - name: Replace vendored code
+        run: cp -a samba-patched/python/samba/* internal/policies/certificate/python/vendor_samba
+      - name: Create Pull Request
+        if: ${{ always() }}
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: Auto update vendored Samba code
+          title: Auto update vendored Samba code
+          labels: automated pr
+          body-path: samba-patched/pr-body
+          add-paths: |
+            .github/samba/
+            internal/policies/certificate/python/vendor_samba/
+          branch: auto-update-samba
+          token: ${{ secrets.GITHUB_TOKEN }}
