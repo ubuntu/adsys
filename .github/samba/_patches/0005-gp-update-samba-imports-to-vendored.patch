@@ -1,0 +1,52 @@
+From acf2d7e0cd96e03c5d8edadce7736f3e4d6922f0 Mon Sep 17 00:00:00 2001
+From: Gabriel Nagy <gabriel.nagy@canonical.com>
+Date: Mon, 14 Aug 2023 13:34:32 +0300
+Subject: [PATCH 5/5] gp: update samba imports to vendored
+
+Signed-off-by: Gabriel Nagy <gabriel.nagy@canonical.com>
+---
+ python/samba/gp/gp_cert_auto_enroll_ext.py | 6 +++---
+ python/samba/gp/gpclass.py                 | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/python/samba/gp/gp_cert_auto_enroll_ext.py b/python/samba/gp/gp_cert_auto_enroll_ext.py
+index 30ff07ba433..54be3bc2823 100644
+--- a/python/samba/gp/gp_cert_auto_enroll_ext.py
++++ b/python/samba/gp/gp_cert_auto_enroll_ext.py
+@@ -17,17 +17,17 @@
+ import os
+ import operator
+ import requests
+-from samba.gp.gpclass import gp_pol_ext, gp_applier, GPOSTATE
++from vendor_samba.gp.gpclass import gp_pol_ext, gp_applier, GPOSTATE
+ from samba import Ldb
+ from ldb import SCOPE_SUBTREE, SCOPE_BASE
+ from samba.auth import system_session
+-from samba.gp.gpclass import get_dc_hostname
++from vendor_samba.gp.gpclass import get_dc_hostname
+ import base64
+ from shutil import which
+ from subprocess import Popen, PIPE
+ import re
+ import json
+-from samba.gp.util.logging import log
++from vendor_samba.gp.util.logging import log
+ import struct
+ try:
+     from cryptography.hazmat.primitives.serialization.pkcs7 import \
+diff --git a/python/samba/gp/gpclass.py b/python/samba/gp/gpclass.py
+index 605f94f3317..0ef86576de2 100644
+--- a/python/samba/gp/gpclass.py
++++ b/python/samba/gp/gpclass.py
+@@ -40,7 +40,7 @@ from samba.dcerpc import preg
+ from samba.dcerpc import misc
+ from samba.ndr import ndr_pack, ndr_unpack
+ from samba.credentials import SMB_SIGNING_REQUIRED
+-from samba.gp.util.logging import log
++from vendor_samba.gp.util.logging import log
+ from hashlib import blake2b
+ import numbers
+ from samba.common import get_string
+-- 
+2.41.0
+

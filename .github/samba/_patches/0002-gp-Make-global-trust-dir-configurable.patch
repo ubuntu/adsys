@@ -1,0 +1,114 @@
+From 10c33ec5da7e19e5710f44eaa91be6906dc59e2a Mon Sep 17 00:00:00 2001
+From: Gabriel Nagy <gabriel.nagy@canonical.com>
+Date: Fri, 11 Aug 2023 18:39:13 +0300
+Subject: [PATCH 2/5] gp: Make global trust dir configurable
+
+The global trust directory differs between Linux distributions, e.g. on
+Debian-based systems the directory performing a similar function is
+`/usr/local/share/ca-certificates`.
+
+Make the path configurable similar to the other certificate directories,
+while defaulting to the previous one to maintain backwards
+compatibility.
+
+Signed-off-by: Gabriel Nagy <gabriel.nagy@canonical.com>
+---
+ python/samba/gp/gp_cert_auto_enroll_ext.py | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/python/samba/gp/gp_cert_auto_enroll_ext.py b/python/samba/gp/gp_cert_auto_enroll_ext.py
+index 312c8ddf467..bf6dcc4a98d 100644
+--- a/python/samba/gp/gp_cert_auto_enroll_ext.py
++++ b/python/samba/gp/gp_cert_auto_enroll_ext.py
+@@ -45,7 +45,6 @@ cert_wrap = b"""
+ -----BEGIN CERTIFICATE-----
+ %s
+ -----END CERTIFICATE-----"""
+-global_trust_dir = '/etc/pki/trust/anchors'
+ endpoint_re = '(https|HTTPS)://(?P<server>[a-zA-Z0-9.-]+)/ADPolicyProvider' + \
+               '_CEP_(?P<auth>[a-zA-Z]+)/service.svc/CEP'
+ 
+@@ -249,7 +248,7 @@ def getca(ca, url, trust_dir):
+     return root_certs
+ 
+ 
+-def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
++def cert_enroll(ca, ldb, trust_dir, private_dir, global_trust_dir, auth='Kerberos'):
+     """Install the root certificate chain."""
+     data = dict({'files': [], 'templates': []}, **ca)
+     url = 'http://%s/CertSrv/mscep/mscep.dll/pkiclient.exe?' % ca['hostname']
+@@ -351,11 +350,13 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
+         self.cache_add_attribute(guid, attribute, data)
+ 
+     def process_group_policy(self, deleted_gpo_list, changed_gpo_list,
+-                             trust_dir=None, private_dir=None):
++                             trust_dir=None, private_dir=None, global_trust_dir=None):
+         if trust_dir is None:
+             trust_dir = self.lp.cache_path('certs')
+         if private_dir is None:
+             private_dir = self.lp.private_path('certs')
++        if global_trust_dir is None:
++            global_trust_dir = '/etc/pki/trust/anchors'
+         if not os.path.exists(trust_dir):
+             os.mkdir(trust_dir, mode=0o755)
+         if not os.path.exists(private_dir):
+@@ -385,7 +386,8 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
+                         if enroll:
+                             ca_names = self.__enroll(gpo.name,
+                                                      pol_conf.entries,
+-                                                     trust_dir, private_dir)
++                                                     trust_dir, private_dir,
++                                                     global_trust_dir)
+ 
+                             # Cleanup any old CAs that have been removed
+                             ca_attrs = [base64.b64encode(n.encode()).decode() \
+@@ -399,7 +401,7 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
+                             self.clean(gpo.name, remove=ca_attrs)
+ 
+     def __read_cep_data(self, guid, ldb, end_point_information,
+-                        trust_dir, private_dir):
++                        trust_dir, private_dir, global_trust_dir):
+         """Read CEP Data.
+ 
+         [MS-CAESO] 4.4.5.3.2.4
+@@ -454,19 +456,19 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
+                     cas = fetch_certification_authorities(ldb)
+                     for _ca in cas:
+                         self.apply(guid, _ca, cert_enroll, _ca, ldb, trust_dir,
+-                                   private_dir)
++                                   private_dir, global_trust_dir)
+                         ca_names.append(_ca['name'])
+                 # If EndPoint.URI starts with "HTTPS//":
+                 elif ca['URL'].lower().startswith('https://'):
+                     self.apply(guid, ca, cert_enroll, ca, ldb, trust_dir,
+-                               private_dir, auth=ca['auth'])
++                               private_dir, global_trust_dir, auth=ca['auth'])
+                     ca_names.append(ca['name'])
+                 else:
+                     edata = { 'endpoint': ca['URL'] }
+                     log.error('Unrecognized endpoint', edata)
+             return ca_names
+ 
+-    def __enroll(self, guid, entries, trust_dir, private_dir):
++    def __enroll(self, guid, entries, trust_dir, private_dir, global_trust_dir):
+         url = 'ldap://%s' % get_dc_hostname(self.creds, self.lp)
+         ldb = Ldb(url=url, session_info=system_session(),
+                   lp=self.lp, credentials=self.creds)
+@@ -476,12 +478,12 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
+         if len(end_point_information) > 0:
+             ca_names.extend(self.__read_cep_data(guid, ldb,
+                                                  end_point_information,
+-                                                 trust_dir, private_dir))
++                                                 trust_dir, private_dir, global_trust_dir))
+         else:
+             cas = fetch_certification_authorities(ldb)
+             for ca in cas:
+                 self.apply(guid, ca, cert_enroll, ca, ldb, trust_dir,
+-                           private_dir)
++                           private_dir, global_trust_dir)
+                 ca_names.append(ca['name'])
+         return ca_names
+ 
+-- 
+2.41.0
+
