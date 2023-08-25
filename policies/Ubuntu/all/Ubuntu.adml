@@ -105,7 +105,9 @@ Supported on Ubuntu 20.04, 22.04, 23.04, 23.10.</string>
 
 - Type: dconf
 - Key: /org/gnome/desktop/background/picture-uri-dark
-- Default: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
+- Default for 22.04: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
+- Default for 23.04: &#39;file:///usr/share/backgrounds/warty-final-ubuntu.png&#39;
+- Default for 23.10: &#39;file:///usr/share/backgrounds/ubuntu-wallpaper-d.png&#39;
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
@@ -1718,7 +1720,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <checkBox refId="UbuntuOverrideElemUser2310DconfOrgGnomeDesktopBackgroundPictureUriDark" defaultChecked="false">Override value for 23.10:</checkBox>
         <textBox refId="UbuntuElemUser2310DconfOrgGnomeDesktopBackgroundPictureUriDark">
           <label></label>
-          <defaultValue>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</defaultValue>
+          <defaultValue>'file:///usr/share/backgrounds/ubuntu-wallpaper-d.png'</defaultValue>
         </textBox>
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2304DconfOrgGnomeDesktopBackgroundPictureUriDark" defaultChecked="false">Override value for 23.04:</checkBox>
