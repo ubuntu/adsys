@@ -45,10 +45,12 @@ cert_wrap = b"""
 -----BEGIN CERTIFICATE-----
 %s
 -----END CERTIFICATE-----"""
-global_trust_dir = '/etc/pki/trust/anchors'
 endpoint_re = '(https|HTTPS)://(?P<server>[a-zA-Z0-9.-]+)/ADPolicyProvider' + \
               '_CEP_(?P<auth>[a-zA-Z]+)/service.svc/CEP'
 
+global_trust_dirs = ['/etc/pki/trust/anchors',           # SUSE
+                     '/etc/pki/ca-trust/source/anchors', # RHEL/Fedora
+                     '/usr/local/share/ca-certificates'] # Debian/Ubuntu
 
 def octet_string_to_objectGUID(data):
     """Convert an octet string to an objectGUID."""
@@ -156,7 +158,7 @@ def fetch_certification_authorities(ldb):
     for es in res:
         data = { 'name': get_string(es['cn'][0]),
                  'hostname': get_string(es['dNSHostName'][0]),
-                 'cACertificate': get_string(es['cACertificate'][0])
+                 'cACertificate': get_string(base64.b64encode(es['cACertificate'][0]))
                }
         result.append(data)
     return result
@@ -174,8 +176,7 @@ def fetch_template_attrs(ldb, name, attrs=None):
         return {'msPKI-Minimal-Key-Size': ['2048']}
 
 def format_root_cert(cert):
-    cert = base64.b64encode(cert.encode())
-    return cert_wrap % re.sub(b"(.{64})", b"\\1\n", cert, 0, re.DOTALL)
+    return cert_wrap % re.sub(b"(.{64})", b"\\1\n", cert.encode(), 0, re.DOTALL)
 
 def find_cepces_submit():
     certmonger_dirs = [os.environ.get("PATH"), '/usr/lib/certmonger',
@@ -239,7 +240,8 @@ def getca(ca, url, trust_dir):
         certs = load_der_pkcs7_certificates(r.content)
         for i in range(0, len(certs)):
             cert = certs[i].public_bytes(Encoding.PEM)
-            dest = '%s.%d' % (root_cert, i)
+            filename, extension = root_cert.rsplit('.', 1)
+            dest = '%s.%d.%s' % (filename, i, extension)
             with open(dest, 'wb') as w:
                 w.write(cert)
             root_certs.append(dest)
@@ -249,12 +251,29 @@ def getca(ca, url, trust_dir):
     return root_certs
 
 
+def find_global_trust_dir():
+    """Return the global trust dir using known paths from various Linux distros."""
+    for trust_dir in global_trust_dirs:
+        if os.path.isdir(trust_dir):
+            return trust_dir
+    return global_trust_dirs[0]
+
+def update_ca_command():
+    """Return the command to update the CA trust store."""
+    return which('update-ca-certificates') or which('update-ca-trust')
+
+def changed(new_data, old_data):
+    """Return True if any key present in both dicts has changed."""
+    return any((new_data[k] != old_data[k] if k in old_data else False) \
+            for k in new_data.keys())
+
 def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
     """Install the root certificate chain."""
     data = dict({'files': [], 'templates': []}, **ca)
     url = 'http://%s/CertSrv/mscep/mscep.dll/pkiclient.exe?' % ca['hostname']
     root_certs = getca(ca, url, trust_dir)
     data['files'].extend(root_certs)
+    global_trust_dir = find_global_trust_dir()
     for src in root_certs:
         # Symlink the certs to global trust dir
         dst = os.path.join(global_trust_dir, os.path.basename(src))
@@ -273,7 +292,7 @@ def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
             # already exists. Ignore the FileExistsError. Preserve the
             # existing symlink in the unapply data.
             data['files'].append(dst)
-    update = which('update-ca-certificates')
+    update = update_ca_command()
     if update is not None:
         Popen([update]).wait()
     # Setup Certificate Auto Enrollment
@@ -337,12 +356,12 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
         # If the policy has changed, unapply, then apply new policy
         old_val = self.cache_get_attribute_value(guid, attribute)
         old_data = json.loads(old_val) if old_val is not None else {}
-        if all([(ca[k] == old_data[k] if k in old_data else False) \
-                    for k in ca.keys()]) or \
-                self.cache_get_apply_state() == GPOSTATE.ENFORCE:
+        templates = ['%s.%s' % (ca['name'], t.decode()) for t in get_supported_templates(ca['hostname'])]
+        new_data = { 'templates': templates, **ca }
+        if changed(new_data, old_data) or self.cache_get_apply_state() == GPOSTATE.ENFORCE:
             self.unapply(guid, attribute, old_val)
-        # If policy is already applied, skip application
-        if old_val is not None and \
+        # If policy is already applied and unchanged, skip application
+        if old_val is not None and not changed(new_data, old_data) and \
                 self.cache_get_apply_state() != GPOSTATE.ENFORCE:
             return
 
@@ -396,7 +415,7 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
                             # remove any existing policy
                             ca_attrs = \
                                 self.cache_get_all_attribute_values(gpo.name)
-                            self.clean(gpo.name, remove=ca_attrs)
+                            self.clean(gpo.name, remove=list(ca_attrs.keys()))
 
     def __read_cep_data(self, guid, ldb, end_point_information,
                         trust_dir, private_dir):
