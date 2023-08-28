@@ -48,6 +48,9 @@ cert_wrap = b"""
 endpoint_re = '(https|HTTPS)://(?P<server>[a-zA-Z0-9.-]+)/ADPolicyProvider' + \
               '_CEP_(?P<auth>[a-zA-Z]+)/service.svc/CEP'
 
+global_trust_dirs = ['/etc/pki/trust/anchors',           # SUSE
+                     '/etc/pki/ca-trust/source/anchors', # RHEL/Fedora
+                     '/usr/local/share/ca-certificates'] # Debian/Ubuntu
 
 def octet_string_to_objectGUID(data):
     """Convert an octet string to an objectGUID."""
@@ -248,12 +251,29 @@ def getca(ca, url, trust_dir):
     return root_certs
 
 
-def cert_enroll(ca, ldb, trust_dir, private_dir, global_trust_dir, auth='Kerberos'):
+def find_global_trust_dir():
+    """Return the global trust dir using known paths from various Linux distros."""
+    for trust_dir in global_trust_dirs:
+        if os.path.isdir(trust_dir):
+            return trust_dir
+    return global_trust_dirs[0]
+
+def update_ca_command():
+    """Return the command to update the CA trust store."""
+    return which('update-ca-certificates') or which('update-ca-trust')
+
+def changed(new_data, old_data):
+    """Return True if any key present in both dicts has changed."""
+    return any((new_data[k] != old_data[k] if k in old_data else False) \
+            for k in new_data.keys())
+
+def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
     """Install the root certificate chain."""
     data = dict({'files': [], 'templates': []}, **ca)
     url = 'http://%s/CertSrv/mscep/mscep.dll/pkiclient.exe?' % ca['hostname']
     root_certs = getca(ca, url, trust_dir)
     data['files'].extend(root_certs)
+    global_trust_dir = find_global_trust_dir()
     for src in root_certs:
         # Symlink the certs to global trust dir
         dst = os.path.join(global_trust_dir, os.path.basename(src))
@@ -272,7 +292,7 @@ def cert_enroll(ca, ldb, trust_dir, private_dir, global_trust_dir, auth='Kerbero
             # already exists. Ignore the FileExistsError. Preserve the
             # existing symlink in the unapply data.
             data['files'].append(dst)
-    update = which('update-ca-certificates')
+    update = update_ca_command()
     if update is not None:
         Popen([update]).wait()
     # Setup Certificate Auto Enrollment
@@ -338,12 +358,10 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
         old_data = json.loads(old_val) if old_val is not None else {}
         templates = ['%s.%s' % (ca['name'], t.decode()) for t in get_supported_templates(ca['hostname'])]
         new_data = { 'templates': templates, **ca }
-        if any((new_data[k] != old_data[k] if k in old_data else False) \
-                    for k in new_data.keys()) or \
-                self.cache_get_apply_state() == GPOSTATE.ENFORCE:
+        if changed(new_data, old_data) or self.cache_get_apply_state() == GPOSTATE.ENFORCE:
             self.unapply(guid, attribute, old_val)
-        # If policy is already applied, skip application
-        if old_val is not None and \
+        # If policy is already applied and unchanged, skip application
+        if old_val is not None and not changed(new_data, old_data) and \
                 self.cache_get_apply_state() != GPOSTATE.ENFORCE:
             return
 
@@ -352,13 +370,11 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
         self.cache_add_attribute(guid, attribute, data)
 
     def process_group_policy(self, deleted_gpo_list, changed_gpo_list,
-                             trust_dir=None, private_dir=None, global_trust_dir=None):
+                             trust_dir=None, private_dir=None):
         if trust_dir is None:
             trust_dir = self.lp.cache_path('certs')
         if private_dir is None:
             private_dir = self.lp.private_path('certs')
-        if global_trust_dir is None:
-            global_trust_dir = '/etc/pki/trust/anchors'
         if not os.path.exists(trust_dir):
             os.mkdir(trust_dir, mode=0o755)
         if not os.path.exists(private_dir):
@@ -388,8 +404,7 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
                         if enroll:
                             ca_names = self.__enroll(gpo.name,
                                                      pol_conf.entries,
-                                                     trust_dir, private_dir,
-                                                     global_trust_dir)
+                                                     trust_dir, private_dir)
 
                             # Cleanup any old CAs that have been removed
                             ca_attrs = [base64.b64encode(n.encode()).decode() \
@@ -403,7 +418,7 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
                             self.clean(gpo.name, remove=list(ca_attrs.keys()))
 
     def __read_cep_data(self, guid, ldb, end_point_information,
-                        trust_dir, private_dir, global_trust_dir):
+                        trust_dir, private_dir):
         """Read CEP Data.
 
         [MS-CAESO] 4.4.5.3.2.4
@@ -458,19 +473,19 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
                     cas = fetch_certification_authorities(ldb)
                     for _ca in cas:
                         self.apply(guid, _ca, cert_enroll, _ca, ldb, trust_dir,
-                                   private_dir, global_trust_dir)
+                                   private_dir)
                         ca_names.append(_ca['name'])
                 # If EndPoint.URI starts with "HTTPS//":
                 elif ca['URL'].lower().startswith('https://'):
                     self.apply(guid, ca, cert_enroll, ca, ldb, trust_dir,
-                               private_dir, global_trust_dir, auth=ca['auth'])
+                               private_dir, auth=ca['auth'])
                     ca_names.append(ca['name'])
                 else:
                     edata = { 'endpoint': ca['URL'] }
                     log.error('Unrecognized endpoint', edata)
             return ca_names
 
-    def __enroll(self, guid, entries, trust_dir, private_dir, global_trust_dir):
+    def __enroll(self, guid, entries, trust_dir, private_dir):
         url = 'ldap://%s' % get_dc_hostname(self.creds, self.lp)
         ldb = Ldb(url=url, session_info=system_session(),
                   lp=self.lp, credentials=self.creds)
@@ -480,12 +495,12 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
         if len(end_point_information) > 0:
             ca_names.extend(self.__read_cep_data(guid, ldb,
                                                  end_point_information,
-                                                 trust_dir, private_dir, global_trust_dir))
+                                                 trust_dir, private_dir))
         else:
             cas = fetch_certification_authorities(ldb)
             for ca in cas:
                 self.apply(guid, ca, cert_enroll, ca, ldb, trust_dir,
-                           private_dir, global_trust_dir)
+                           private_dir)
                 ca_names.append(ca['name'])
         return ca_names
 
