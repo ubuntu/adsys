@@ -1139,7 +1139,7 @@ Supported on Ubuntu 20.04, 22.04, 23.04, 23.10.</string>
       <string id="UbuntuDisplayMachine2304DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
       <string id="UbuntuDisplayMachine2204DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
       <string id="UbuntuDisplayMachine2004DconfOrgGnomeSettingsDaemonPluginsPowerLidCloseSuspendWithExternalMonitor">Laptop lid, when closed, will suspend even if there is an external monitor plugged in</string>
-      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">The action to take when the system power button is pressed. This action is hard-coded (and the setting ignored) on virtual machines (power off) and tablets (suspend).
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeSettingsDaemonPluginsPowerPowerButtonAction">The action to take when the system power button is pressed. Virtual machines only honor the &#39;nothing&#39; action, and will shutdown otherwise. Tablets always suspend, ignoring all the other action options.
 
 - Type: dconf
 - Key: /org/gnome/settings-daemon/plugins/power/power-button-action
