@@ -8,7 +8,6 @@ Enroll called
 guid: adsys-cert-autoenroll-keypress
 trust_dir: #STATEDIR#/certs; mode: 0o40755
 private_dir: #STATEDIR#/private/certs; mode: 0o40700
-global_trust_dir: #STATEDIR#/ca-certificates; mode: 0o40755
 
 entries:
 keyname: Software\Policies\Microsoft\Cryptography\PolicyServers\37c9dc30f207f27f61a2f7c3aed598a6e2920b54

@@ -9,4 +9,3 @@ Enroll called
 guid: adsys-cert-autoenroll-keypress
 trust_dir: #STATEDIR#/certs; mode: 0o40755
 private_dir: #STATEDIR#/private/certs; mode: 0o40700
-global_trust_dir: #STATEDIR#/ca-certificates; mode: 0o40755

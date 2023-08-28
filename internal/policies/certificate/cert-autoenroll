@@ -16,8 +16,8 @@ from vendor_samba.gp import gp_cert_auto_enroll_ext as cae
 from vendor_samba.gp.util.logging import logger_init, log
 
 class adsys_cert_auto_enroll(cae.gp_cert_auto_enroll_ext):
-    def enroll(self, guid, entries, trust_dir, private_dir, global_trust_dir):
-        self._gp_cert_auto_enroll_ext__enroll(guid, entries, trust_dir, private_dir, global_trust_dir)
+    def enroll(self, guid, entries, trust_dir, private_dir):
+        self._gp_cert_auto_enroll_ext__enroll(guid, entries, trust_dir, private_dir)
 
     def unenroll(self, guid):
         ca_attrs = self.cache_get_all_attribute_values(guid)
@@ -86,7 +86,7 @@ def main():
         guid = f'adsys-cert-autoenroll-{args.object_name}'
         if args.action == 'enroll':
             entries = gpo_entries(args.policy_servers_json)
-            ext.enroll(guid, entries, trust_dir, private_dir, global_trust_dir)
+            ext.enroll(guid, entries, trust_dir, private_dir)
         else:
             ext.unenroll(guid)
             if os.path.exists(samba_cache_dir):

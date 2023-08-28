@@ -7,7 +7,7 @@ class gp_cert_auto_enroll_ext(object):
     def cache_get_all_attribute_values(self, _guid):
         return {'ZXhhbXBsZS1DQQ==': '{"files": ["/var/lib/adsys/certs/galacticcafe-CA.0.crt"]}'}
 
-    def __enroll(self, guid, entries, trust_dir, private_dir, global_trust_dir):
+    def __enroll(self, guid, entries, trust_dir, private_dir):
         if os.getenv('ADSYS_WANT_AUTOENROLL_ERROR'):
             raise Exception('Autoenroll error requested')
 
@@ -16,7 +16,6 @@ class gp_cert_auto_enroll_ext(object):
         print(f'guid: {guid}')
         print(f'trust_dir: {trust_dir}; mode: {oct(os.stat(trust_dir).st_mode)}')
         print(f'private_dir: {private_dir}; mode: {oct(os.stat(private_dir).st_mode)}')
-        print(f'global_trust_dir: {global_trust_dir}; mode: {oct(os.stat(global_trust_dir).st_mode)}')
 
         if entries == []:
             return
