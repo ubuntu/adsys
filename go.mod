@@ -14,7 +14,7 @@ require (
 	github.com/golang/protobuf v1.5.3
 	github.com/gomarkdown/markdown v0.0.0-20210514010506-3b9f47219fe7
 	github.com/kardianos/service v1.2.2
-	github.com/leonelquinteros/gotext v1.5.3-0.20230718140014-1f7d156c36eb
+	github.com/leonelquinteros/gotext v1.5.3-0.20230829162019-37f474cfb069
 	github.com/muesli/termenv v0.15.2
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
 	github.com/sirupsen/logrus v1.9.3
@@ -25,7 +25,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
 	github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117
-	github.com/ubuntu/go-i18n v0.0.0-20230726150627-6a6e736c9394
+	github.com/ubuntu/go-i18n v0.0.0-20230830081132-d6654b958899
 	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5
 	golang.org/x/net v0.14.0
 	golang.org/x/sync v0.3.0
