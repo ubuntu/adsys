@@ -406,7 +406,10 @@ Supported on Ubuntu 20.04, 22.04, 23.04, 23.10.</string>
 
 - Type: dconf
 - Key: /org/gnome/shell/keybindings/toggle-overview
-- Default: [&#34;&lt;Super&gt;s&#34;]
+- Default for 20.04: [&#34;&lt;Super&gt;s&#34;]
+- Default for 22.04: [&#34;&lt;Super&gt;s&#34;]
+- Default for 23.04: [&#34;&lt;Super&gt;s&#34;]
+- Default for 23.10: []
 
 Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
 
