@@ -33,12 +33,10 @@ from samba.net import Net
 from samba.dcerpc import nbt
 from samba.samba3 import libsmb_samba_internal as libsmb
 import samba.gpo as gpo
-from samba.param import LoadParm
 from uuid import UUID
 from tempfile import NamedTemporaryFile
 from samba.dcerpc import preg
-from samba.dcerpc import misc
-from samba.ndr import ndr_pack, ndr_unpack
+from samba.ndr import ndr_unpack
 from samba.credentials import SMB_SIGNING_REQUIRED
 from vendor_samba.gp.util.logging import log
 from hashlib import blake2b
@@ -350,25 +348,28 @@ class gp_ext(object):
 
 class gp_inf_ext(gp_ext):
     def read(self, data_file):
-        policy = open(data_file, 'rb').read()
+        with open(data_file, 'rb') as f:
+            policy = f.read()
         inf_conf = ConfigParser(interpolation=None)
         inf_conf.optionxform = str
         try:
-            inf_conf.readfp(StringIO(policy.decode()))
+            inf_conf.read_file(StringIO(policy.decode()))
         except UnicodeDecodeError:
-            inf_conf.readfp(StringIO(policy.decode('utf-16')))
+            inf_conf.read_file(StringIO(policy.decode('utf-16')))
         return inf_conf
 
 
 class gp_pol_ext(gp_ext):
     def read(self, data_file):
-        raw = open(data_file, 'rb').read()
+        with open(data_file, 'rb') as f:
+            raw = f.read()
         return ndr_unpack(preg.file, raw)
 
 
 class gp_xml_ext(gp_ext):
     def read(self, data_file):
-        raw = open(data_file, 'rb').read()
+        with open(data_file, 'rb') as f:
+            raw = f.read()
         try:
             return etree.fromstring(raw.decode())
         except UnicodeDecodeError:
@@ -550,7 +551,7 @@ class gp_file_applier(gp_applier):
         old_val = self.cache_get_attribute_value(guid, attribute)
         # Ignore removal if this policy is applied and hasn't changed
         old_val_hash, old_val_files = self.__parse_value(old_val, sep)
-        if (old_val_hash != value_hash or \
+        if (old_val_hash != value_hash or
                 self.cache_get_apply_state() == GPOSTATE.ENFORCE) or \
                 not all([os.path.exists(f) for f in old_val_files]):
             self.unapply(guid, attribute, old_val_files)
