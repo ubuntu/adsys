@@ -1,7 +1,7 @@
-From a201b971295c069b2120f0ba53ee51cc2e337da7 Mon Sep 17 00:00:00 2001
+From afac4cbfda68d67d49afdd8cf82863023323b33c Mon Sep 17 00:00:00 2001
 From: Gabriel Nagy <gabriel.nagy@canonical.com>
 Date: Mon, 14 Aug 2023 13:55:27 +0300
-Subject: [PATCH 1/5] Revert gpclass.py to 65ab33dffab2
+Subject: [PATCH] Revert gpclass.py to 65ab33dffab2
 
 This is to ensure compatibility with older Samba versions such as the
 one on Jammy. We don't benefit from these changes for our certificate
@@ -11,26 +11,26 @@ applier use case anyway.
  1 file changed, 9 insertions(+), 340 deletions(-)
 
 diff --git a/python/samba/gp/gpclass.py b/python/samba/gp/gpclass.py
-index d70643421d0..605f94f3317 100644
+index c2d612c5952..c6106a30d6e 100644
 --- a/python/samba/gp/gpclass.py
 +++ b/python/samba/gp/gpclass.py
 @@ -21,7 +21,7 @@ import errno
  import tdb
  import pwd
  sys.path.insert(0, "bin/python")
--from samba import NTSTATUSError, WERRORError
+-from samba import WERRORError
 +from samba import NTSTATUSError
  from configparser import ConfigParser
  from io import StringIO
  import traceback
-@@ -44,15 +44,6 @@ from samba.gp.util.logging import log
+@@ -42,15 +42,6 @@ from samba.gp.util.logging import log
  from hashlib import blake2b
  import numbers
  from samba.common import get_string
 -from samba.samdb import SamDB
 -from samba.auth import system_session
 -import ldb
--from samba.dsdb import UF_WORKSTATION_TRUST_ACCOUNT, UF_SERVER_TRUST_ACCOUNT, GPLINK_OPT_ENFORCE, GPLINK_OPT_DISABLE, GPO_INHERIT, GPO_BLOCK_INHERITANCE
+-from samba.dsdb import UF_WORKSTATION_TRUST_ACCOUNT, UF_SERVER_TRUST_ACCOUNT, GPLINK_OPT_ENFORCE, GPLINK_OPT_DISABLE, GPO_BLOCK_INHERITANCE
 -from samba.auth import AUTH_SESSION_INFO_DEFAULT_GROUPS, AUTH_SESSION_INFO_AUTHENTICATED, AUTH_SESSION_INFO_SIMPLE_PRIVILEGES
 -from samba.dcerpc import security
 -import samba.security
@@ -39,7 +39,7 @@ index d70643421d0..605f94f3317 100644
  
  try:
      from enum import Enum
-@@ -445,7 +436,7 @@ class gp_applier(object):
+@@ -446,7 +437,7 @@ class gp_applier(object):
  
          The importance here is the digest of the data makes the attribute
          reproducible and uniquely identifies it. Hashing the name with
@@ -48,7 +48,7 @@ index d70643421d0..605f94f3317 100644
          text in a different file. Using this attribute generator is optional.
          '''
          data = b''.join([get_bytes(arg) for arg in [*args]])
-@@ -513,33 +504,6 @@ class gp_applier(object):
+@@ -514,33 +505,6 @@ class gp_applier(object):
                      self.unapply(guid, attribute, value, **kwargs)
  
  
@@ -82,7 +82,7 @@ index d70643421d0..605f94f3317 100644
  class gp_file_applier(gp_applier):
      '''Group Policy File Applier/Unapplier/Modifier
      Subclass of abstract class gp_applier for monitoring policy applied
-@@ -609,312 +573,17 @@ def get_dc_hostname(creds, lp):
+@@ -610,312 +574,17 @@ def get_dc_hostname(creds, lp):
                                                            nbt.NBT_SERVER_DS))
      return cldap_ret.pdc_dns_name
  
@@ -188,7 +188,7 @@ index d70643421d0..605f94f3317 100644
 -                       '(objectclass=*)', ['gPLink', 'gPOptions'])
 -    if res.count != 1:
 -        raise ldb.LdbError(ldb.ERR_NO_SUCH_OBJECT, 'get_gpo_link: no result')
--    if not 'gPLink' in res.msgs[0]:
+-    if 'gPLink' not in res.msgs[0]:
 -        raise ldb.LdbError(ldb.ERR_NO_SUCH_ATTRIBUTE,
 -            "get_gpo_link: no 'gPLink' attribute found for '{}'".format(link_dn)
 -        )
@@ -401,7 +401,7 @@ index d70643421d0..605f94f3317 100644
  
  
  def cache_gpo_dir(conn, cache, sub_dir):
-@@ -1009,7 +678,7 @@ def apply_gp(lp, creds, store, gp_extensions, username, target, force=False):
+@@ -1010,7 +679,7 @@ def apply_gp(lp, creds, store, gp_extensions, username, target, force=False):
              if target == 'Computer':
                  ext.process_group_policy(del_gpos, changed_gpos)
              else:
@@ -411,5 +411,5 @@ index d70643421d0..605f94f3317 100644
          except Exception as e:
              log.error('Failed to apply extension  %s' % str(ext))
 -- 
-2.41.0
+2.42.0
 
