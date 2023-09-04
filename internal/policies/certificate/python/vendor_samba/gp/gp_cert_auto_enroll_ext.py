@@ -264,7 +264,7 @@ def update_ca_command():
 
 def changed(new_data, old_data):
     """Return True if any key present in both dicts has changed."""
-    return any((new_data[k] != old_data[k] if k in old_data else False) \
+    return any((new_data[k] != old_data[k] if k in old_data else False)
             for k in new_data.keys())
 
 def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
@@ -335,7 +335,7 @@ def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
 
 class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
     def __str__(self):
-        return 'Cryptography\AutoEnrollment'
+        return r'Cryptography\AutoEnrollment'
 
     def unapply(self, guid, attribute, value):
         ca_cn = base64.b64decode(attribute)
@@ -387,7 +387,7 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
 
         for gpo in changed_gpo_list:
             if gpo.file_sys_path:
-                section = 'Software\Policies\Microsoft\Cryptography\AutoEnrollment'
+                section = r'Software\Policies\Microsoft\Cryptography\AutoEnrollment'
                 pol_file = 'MACHINE/Registry.pol'
                 path = os.path.join(gpo.file_sys_path, pol_file)
                 pol_conf = self.parse(path)
@@ -407,7 +407,7 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
                                                      trust_dir, private_dir)
 
                             # Cleanup any old CAs that have been removed
-                            ca_attrs = [base64.b64encode(n.encode()).decode() \
+                            ca_attrs = [base64.b64encode(n.encode()).decode()
                                     for n in ca_names]
                             self.clean(gpo.name, keep=ca_attrs)
                         else:
@@ -507,7 +507,7 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
     def rsop(self, gpo):
         output = {}
         pol_file = 'MACHINE/Registry.pol'
-        section = 'Software\Policies\Microsoft\Cryptography\AutoEnrollment'
+        section = r'Software\Policies\Microsoft\Cryptography\AutoEnrollment'
         if gpo.file_sys_path:
             path = os.path.join(gpo.file_sys_path, pol_file)
             pol_conf = self.parse(path)

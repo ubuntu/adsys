@@ -21,7 +21,7 @@ import errno
 import tdb
 import pwd
 sys.path.insert(0, "bin/python")
-from samba import NTSTATUSError, WERRORError
+from samba import WERRORError
 from configparser import ConfigParser
 from io import StringIO
 import traceback
@@ -33,12 +33,10 @@ from samba.net import Net
 from samba.dcerpc import nbt
 from samba.samba3 import libsmb_samba_internal as libsmb
 import samba.gpo as gpo
-from samba.param import LoadParm
 from uuid import UUID
 from tempfile import NamedTemporaryFile
 from samba.dcerpc import preg
-from samba.dcerpc import misc
-from samba.ndr import ndr_pack, ndr_unpack
+from samba.ndr import ndr_unpack
 from samba.credentials import SMB_SIGNING_REQUIRED
 from samba.gp.util.logging import log
 from hashlib import blake2b
@@ -47,7 +45,7 @@ from samba.common import get_string
 from samba.samdb import SamDB
 from samba.auth import system_session
 import ldb
-from samba.dsdb import UF_WORKSTATION_TRUST_ACCOUNT, UF_SERVER_TRUST_ACCOUNT, GPLINK_OPT_ENFORCE, GPLINK_OPT_DISABLE, GPO_INHERIT, GPO_BLOCK_INHERITANCE
+from samba.dsdb import UF_WORKSTATION_TRUST_ACCOUNT, UF_SERVER_TRUST_ACCOUNT, GPLINK_OPT_ENFORCE, GPLINK_OPT_DISABLE, GPO_BLOCK_INHERITANCE
 from samba.auth import AUTH_SESSION_INFO_DEFAULT_GROUPS, AUTH_SESSION_INFO_AUTHENTICATED, AUTH_SESSION_INFO_SIMPLE_PRIVILEGES
 from samba.dcerpc import security
 import samba.security
@@ -359,25 +357,28 @@ class gp_ext(object):
 
 class gp_inf_ext(gp_ext):
     def read(self, data_file):
-        policy = open(data_file, 'rb').read()
+        with open(data_file, 'rb') as f:
+            policy = f.read()
         inf_conf = ConfigParser(interpolation=None)
         inf_conf.optionxform = str
         try:
-            inf_conf.readfp(StringIO(policy.decode()))
+            inf_conf.read_file(StringIO(policy.decode()))
         except UnicodeDecodeError:
-            inf_conf.readfp(StringIO(policy.decode('utf-16')))
+            inf_conf.read_file(StringIO(policy.decode('utf-16')))
         return inf_conf
 
 
 class gp_pol_ext(gp_ext):
     def read(self, data_file):
-        raw = open(data_file, 'rb').read()
+        with open(data_file, 'rb') as f:
+            raw = f.read()
         return ndr_unpack(preg.file, raw)
 
 
 class gp_xml_ext(gp_ext):
     def read(self, data_file):
-        raw = open(data_file, 'rb').read()
+        with open(data_file, 'rb') as f:
+            raw = f.read()
         try:
             return etree.fromstring(raw.decode())
         except UnicodeDecodeError:
@@ -586,7 +587,7 @@ class gp_file_applier(gp_applier):
         old_val = self.cache_get_attribute_value(guid, attribute)
         # Ignore removal if this policy is applied and hasn't changed
         old_val_hash, old_val_files = self.__parse_value(old_val, sep)
-        if (old_val_hash != value_hash or \
+        if (old_val_hash != value_hash or
                 self.cache_get_apply_state() == GPOSTATE.ENFORCE) or \
                 not all([os.path.exists(f) for f in old_val_files]):
             self.unapply(guid, attribute, old_val_files)
@@ -711,7 +712,7 @@ def get_gpo_link(samdb, link_dn):
                        '(objectclass=*)', ['gPLink', 'gPOptions'])
     if res.count != 1:
         raise ldb.LdbError(ldb.ERR_NO_SUCH_OBJECT, 'get_gpo_link: no result')
-    if not 'gPLink' in res.msgs[0]:
+    if 'gPLink' not in res.msgs[0]:
         raise ldb.LdbError(ldb.ERR_NO_SUCH_ATTRIBUTE,
             "get_gpo_link: no 'gPLink' attribute found for '{}'".format(link_dn)
         )
