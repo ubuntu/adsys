@@ -19,9 +19,9 @@ jobs:
       changed: ${{ steps.compute-diff.outputs.changed }}
       samba-ref: ${{ steps.compute-diff.outputs.samba-ref }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Checkout Samba files
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: samba-team/samba
           sparse-checkout: ${{ env.checkout_files }}
@@ -52,7 +52,7 @@ jobs:
     needs: check-for-changes
     if: ${{ needs.check-for-changes.outputs.changed == 'true' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Replace with updated Samba source
         uses: actions/download-artifact@v3
         with:

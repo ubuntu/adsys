@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout code with git
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: main
       - name: Update pot and po files
@@ -56,7 +56,7 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt update
           sudo DEBIAN_FRONTEND=noninteractive apt install -y ${{ env.apt_dependencies }}
       # Checkout code with git
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: main
       # Install go
