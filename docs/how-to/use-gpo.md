@@ -40,7 +40,7 @@ The change is now visible on the greeter.
 1. Select the list of favorite desktop applications setting in `User Configuration > Policies > Administrative Templates > Ubuntu  > Desktop > Shell > List of desktop file IDs for favorite applications`.
 1. Enter a list of valid .desktop file IDs, one per line, like the following:
 
-```raw
+```
 libreoffice-writer.desktop
 snap-store_ubuntu-software.desktop
 yelp.desktop
@@ -92,7 +92,7 @@ There is a default value for all the releases and an override for each supported
 The **right pane** of the GPO Management editor contains the general information about the GPO including:
 
 * The description of the setting
-* The type of settings (eg dconf)
+* The type of settings (e.g. dconf)
 * The path of the key in our schema
 * The default value of the key that is used if nothing is set on the left pane. Note that if defaults differ between releases, this will be a list per release.
 * The list of releases that support this setting.
@@ -118,7 +118,7 @@ A multiline text field is used for this case. A list can be:
 * One item per line: any end of line will be considered as a delimiter
 Example:
 
-```raw
+```
 libreoffice.desktop
 firefox.desktop
 nautilus.desktop
@@ -126,7 +126,7 @@ nautilus.desktop
 
 * Multiple items on one line: a coma `,` is the item delimiter:
 
-```raw
+```
 libreoffice.desktop, firefox.desktop, nautilus.desktop
 ```
 
@@ -134,7 +134,7 @@ libreoffice.desktop, firefox.desktop, nautilus.desktop
 
 * Both syntaxes can be combined:
 
-```raw
+```
 libreoffice.desktop, firefox.desktop
 nautilus.desktop
 ```
@@ -143,7 +143,7 @@ The type can be either text or numeric:
 
 * Text list:
 
-```raw
+```
 libreoffice.desktop
 firefox.desktop
 nautilus.desktop
@@ -151,7 +151,7 @@ nautilus.desktop
 
 * Decimal list:
 
-```raw
+```none
 42
 300
 10
@@ -165,7 +165,7 @@ Ensure that you enter the valid type of list, as expected by dconf setting. ADSy
 >
 >Text list:
 >
->```raw
+>```none
 >'42'
 >'300'
 >'10'

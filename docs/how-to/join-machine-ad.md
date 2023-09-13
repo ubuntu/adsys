@@ -31,7 +31,7 @@ Once all the information has been entered and is valid, press **"Continue"** to 
 
 At the end of the installation you can reboot the machine and you are ready to log in as a user of the domain on first boot.
 
-If anything goes wrong with the join process during installation, you will be notified by a dialog box. You can still reboot the machine, log in as the administrator user of the machine (ie the user you entered in the page **"Who are you?"**) and troubleshoot the issue. The [Ubuntu Server Guide](https://ubuntu.com/server/docs/service-sssd) provides instructions to perform such troubleshooting.
+If anything goes wrong with the join process during installation, you will be notified by a dialog box. You can still reboot the machine, log in as the administrator user of the machine (i.e. the user you entered in the page **"Who are you?"**) and troubleshoot the issue. The [Ubuntu Server Guide](https://ubuntu.com/server/docs/service-sssd) provides instructions to perform such troubleshooting.
 
 ## Join manually using SSSD
 
@@ -45,7 +45,7 @@ All these operations are perfectly described in the [Ubuntu Server Guide “Serv
 
 In addition to SSSD, ADSys supports using Winbind as a backend. The easiest way to join a domain using Winbind is to use the `realmd` utility, as described in the [Samba - Active Directory](https://ubuntu.com/server/docs/samba-active-directory) guide.
 
-ADSys uses SSSD as a default backend, so Winbind has to be opted into explicitly via the following config option in `adsys.yaml`:
+ADSys uses SSSD as a default backend, so Winbind has to be opted into explicitly via the following configuration option in `adsys.yaml`:
 
 ```yaml
 ad_backend: winbind

@@ -102,7 +102,7 @@ To load completions for every new session, execute once:
 
  adsysctl completion bash > /etc/bash_completion.d/adsysctl
 
-###### macOS
+###### MacOS
 
  adsysctl completion bash > $(brew --prefix)/etc/bash_completion.d/adsysctl
 
@@ -224,7 +224,7 @@ To load completions for every new session, execute once:
 
  adsysctl completion zsh > "${fpath[1]}/_adsysctl"
 
-###### macOS
+###### MacOS
 
  adsysctl completion zsh > $(brew --prefix)/share/zsh/site-functions/_adsysctl
 
@@ -376,7 +376,7 @@ adsysctl policy purge [USER_NAME] [flags]
 
 #### adsysctl policy update
 
-Updates/Create a policy for current user or given user with its kerberos ticket
+Updates/Create a policy for current user or given user with its Kerberos ticket
 
 ```
 adsysctl policy update [USER_NAME KERBEROS_TICKET_PATH] [flags]
@@ -621,7 +621,7 @@ To load completions for every new session, execute once:
 
  adsysd completion bash > /etc/bash_completion.d/adsysd
 
-###### macOS
+###### MacOS
 
  adsysd completion bash > $(brew --prefix)/etc/bash_completion.d/adsysd
 
@@ -758,7 +758,7 @@ To load completions for every new session, execute once:
 
  adsysd completion zsh > "${fpath[1]}/_adsysd"
 
-###### macOS
+###### MacOS
 
  adsysd completion zsh > $(brew --prefix)/share/zsh/site-functions/_adsysd
 
@@ -879,7 +879,7 @@ To load completions for every new session, execute once:
 
  adwatchd completion bash > /etc/bash_completion.d/adwatchd
 
-###### macOS
+###### MacOS
 
  adwatchd completion bash > $(brew --prefix)/etc/bash_completion.d/adwatchd
 
@@ -992,7 +992,7 @@ To load completions for every new session, execute once:
 
  adwatchd completion zsh > "${fpath[1]}/_adwatchd"
 
-###### macOS
+###### MacOS
 
  adwatchd completion zsh > $(brew --prefix)/share/zsh/site-functions/_adwatchd
 
@@ -1288,7 +1288,7 @@ adsysctl policy debug cert-autoenroll-script [flags]
 
 #### adsysctl policy debug gpolist-script
 
-Write GPO list python embeeded script in current directory
+Write GPO list python embedded script in current directory
 
 ```
 adsysctl policy debug gpolist-script [flags]
