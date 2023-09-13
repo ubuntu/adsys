@@ -31,9 +31,9 @@ For more information read the Microsoft documentation ["create and manage the Ce
 
 Once loaded successfully in Active Directory, the Ubuntu specific settings are available in the **Group Policy Management Editor** under `[Policy Name] > Computer Configuration > Policies > Administrative Templates > Ubuntu` for the machine policies and `[Policy Name] > User Configuration > Policies > Administrative Templates > Ubuntu` for the user policies.
 
-![Ubuntu GPOs in Active Directory](images/gpo_editor-tree.png)
+![Ubuntu GPOs in Active Directory](../images/gpo_editor-tree.png)
 
-![Ubuntu Settings details page](images/gpo_editor-details.png)
+![Ubuntu Settings details page](../images/gpo_editor-details.png)
 
 ## Recommended readings
 
