@@ -9,12 +9,7 @@ It simplifies the task of configuring Ubuntu systems in a Microsoft Active Direc
 ADSys is valuable for system administrators who wish to manage Ubuntu Desktop clients in a centralized manner through Microsoft Active Directory.
 
 ```{toctree}
-:orphan:
-<!-- This file must be deleted before going live -->
-readme.rst
-
 :hidden:
-
 how-to/index
 CLI reference <cli-reference>
 ```

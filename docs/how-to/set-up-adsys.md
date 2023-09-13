@@ -33,4 +33,4 @@ For the home directory to be created automatically on login, the `pam_mkhomedir`
 sudo pam-auth-update --enable mkhomedir
 ```
 
-Options such as the home directory path template, shell and others can be tweaked in `/etc/samba/smb.conf` and are documented in the [`smb.conf(5)`](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html) manpage.
+Options such as the home directory path template, shell and others can be tweaked in `/etc/samba/smb.conf` and are documented in the [`smb.conf(5)`](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html) man page.

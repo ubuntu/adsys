@@ -80,7 +80,7 @@ func (a *App) installPolicy() {
 	policyCmd.AddCommand(debugCmd)
 	gpoListCmd := &cobra.Command{
 		Use:               "gpolist-script",
-		Short:             gotext.Get("Write GPO list python embeeded script in current directory"),
+		Short:             gotext.Get("Write GPO list python embedded script in current directory"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
 		RunE:              func(cmd *cobra.Command, args []string) error { return a.dumpGPOListScript() },
