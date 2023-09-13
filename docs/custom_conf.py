@@ -15,11 +15,11 @@ import datetime
 ############################################################
 
 # Product name
-project = 'Documentation starter pack'
+project = 'Active Directory bridging toolset'
 author = 'Canonical Group Ltd'
 
 # Uncomment if your product uses release numbers
-# release = '1.0'
+release = '0.13.0'
 
 # The default value uses the current year as the copyright year.
 #
@@ -53,7 +53,7 @@ html_favicon = '.sphinx/_static/favicon.png'
 html_context = {
 
     # Change to the link to your product website (without "https://")
-    'product_page': 'documentation.ubuntu.com',
+    'product_page': 'github.com/ubuntu/adsys',
 
     # Add your product tag to ".sphinx/_static" and change the path
     # here (start with "_static"), default is the circle of friends
@@ -65,14 +65,14 @@ html_context = {
     'discourse': 'https://discourse.ubuntu.com',
 
     # Change to the GitHub info for your project
-    'github_url': 'https://github.com/canonical/starter-pack',
+    'github_url': 'https://github.com/ubuntu/adsys',
 
     # Change to the branch for this version of the documentation
     'github_version': 'main',
 
     # Change to the folder that contains the documentation
     # (usually "/" or "/docs/")
-    'github_folder': '/',
+    'github_folder': '/docs/',
 
     # Change to an empty value if your GitHub repo doesn't have issues enabled.
     # This will disable the feedback button and the issue link in the footer.
