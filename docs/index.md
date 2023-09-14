@@ -11,7 +11,9 @@ ADSys is valuable for system administrators who wish to manage Ubuntu Desktop cl
 ```{toctree}
 :hidden:
 how-to/index
-CLI reference <cli-reference>
+reference/index
+
+
 ```
 
 ## Project and community
