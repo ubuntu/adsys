@@ -112,7 +112,7 @@ run_dir: /tmp/adsysd/run
 # Backend selection: sssd (default) or winbind
 ad_backend: sssd
 
-# SSSd configuration
+# SSSD configuration
 sssd:
   config: /etc/sssd.conf
   cache_dir: /var/lib/sss/db
@@ -133,7 +133,7 @@ client_timeout: 60
 Increase the verbosity of the daemon or client. By default, only warnings and error logs are printed. This value is set between 0 and 3. This has the same effect as the `-v` and `-vv` flags.
 
 * **socket**
-Path the unix socket for communication between clients and daemon. This can be overridden by the `--socket` option. Defaults to `/run/adsysd.sock` (monitored by systemd for socket activation).
+Path the Unix socket for communication between clients and daemon. This can be overridden by the `--socket` option. Defaults to `/run/adsysd.sock` (monitored by systemd for socket activation).
 
 ### Service only configuration
 
@@ -151,7 +151,7 @@ The run directory contains the links to the kerberos tickets for the machine and
 
 #### Backend specific options
 
-##### SSSd
+##### SSSD
 
 * **config**
 
@@ -204,4 +204,4 @@ There are additional configuration options matching the adsysd command line opti
 
 ## Reference guide
 
-Do not hesitate to use the shell completion and the `help` subcommands to get more informations about the subcommands.
+Do not hesitate to use the shell completion and the `help` subcommands to get more information about the subcommands.

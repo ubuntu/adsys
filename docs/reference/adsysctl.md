@@ -228,7 +228,7 @@ adsysd          0.5
 
 ### Documentation
 
-An offline version of this documentation is available in the deamon. It will render the documentation on the command line.
+An offline version of this documentation is available in the daemon. It will render the documentation on the command line.
 
 You can get a list of all chapters with their titles:
 
