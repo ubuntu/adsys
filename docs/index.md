@@ -1,4 +1,4 @@
-# ADSys
+# ADSys Documentation
 
 ADSys is the Active Directory Group Policy client for Ubuntu.
 
@@ -10,11 +10,44 @@ ADSys is valuable for system administrators who wish to manage Ubuntu Desktop cl
 
 ```{toctree}
 :hidden:
+tutorial/index
 how-to/index
 reference/index
+explanation/index
 
 
 ```
+
+## In this documentation
+
+````{grid} 1 1 2 2
+
+```{grid-item} [Tutorials](tutorial/index)
+
+**Start here**: a hands-on introduction to ADSys for new users
+```
+
+```{grid-item} [How-to guides](how-to/index)
+
+**Step-by-step guides** covering key operations and common tasks
+```
+
+````
+
+````{grid} 1 1 2 2
+:reverse:
+
+```{grid-item} [Reference](reference/index)
+
+**Technical information** - specifications, APIs, architecture
+```
+
+```{grid-item} [Explanation](explanation/index)
+
+**Discussion and clarification** of key topics
+```
+
+````
 
 ## Project and community
 
