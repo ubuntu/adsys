@@ -1,7 +1,15 @@
 # Technical Reference
 
-Technical information - specifications, APIs, architecture
+This section consolidates technical details on ADSys, including specifications, APIs, and architecture.
 
+ADSys is composed of a daemon and a command line interface.
+
+The daemon - `adsysd` - implements the Group Policy protocol. It relies on Kerberos, Samba and LDAP for authentication and policy retrieval.
+
+The command line interface - `adsysctl` - controls the daemon and reports its status.
+
+````{grid} 1 1 2 2
+```{grid-item}
 ## Commands
 
 ```{toctree}
@@ -10,6 +18,7 @@ adsysd <adsys-daemon>
 adsysctl command <adsysctl>
 ```
 
+```{grid-item}
 ## Reference
 
 ```{toctree}
@@ -17,3 +26,17 @@ adsysctl command <adsysctl>
 CLI reference <cli-reference>
 ADSys Watch Daemon <adwatchd>
 ```
+
+
+````
+
+## Supported releases
+
+**ADSys** is supported on Ubuntu starting from **20.04.2 LTS**, and tested with Windows Server 2019.
+
+Only Active Directory on-premise is supported.
+
+## Recommended readings
+
+* `adsysd help` or `man adsysd`.
+* `adsysctl help` or `man adsysctl`.
