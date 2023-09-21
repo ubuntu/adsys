@@ -49,6 +49,7 @@ https
 idempotency
 IIS
 incrementation
+incrementing
 infos
 ini
 installable
@@ -94,6 +95,7 @@ sysvol
 TDB
 TODO
 toolset
+Transactional
 txt
 ubuntu
 UI

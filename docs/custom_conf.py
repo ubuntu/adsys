@@ -19,7 +19,7 @@ project = 'Active Directory bridging toolset'
 author = 'Canonical Group Ltd'
 
 # Uncomment if your product uses release numbers
-release = '0.13.0'
+# release = '0.13.0'
 
 # The default value uses the current year as the copyright year.
 #
