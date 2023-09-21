@@ -11,6 +11,7 @@ This is the configuration needed on Windows Domain Controller.
 ```{toctree}
 :titlesonly:
 Set up AD <set-up-ad>
+Set up adwatchd <set-up-adwatchd>
 ```
 
 ### Linux client machine
