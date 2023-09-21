@@ -18,7 +18,7 @@ Access control and file permissions should be configured on the shared location.
 
 User mount policies are located under `Computer Configuration > Policies > Administrative Templates > Ubuntu > Client management > System Drive Mapping`, as shown in the following picture.
 
-![Path to User Drive Mapping policy](../images/system-mounts-policy-loc.png)
+![Path to User Drive Mapping policy](../images/explanation/network-shares/system-mounts-policy-loc.png)
 
 ### Setting up the policy
 
@@ -30,7 +30,7 @@ Additional mount options are not supported yet.
 
 All entries must be separated by a line break.
 
-![List of user mounts example](../images/system-mounts-list.png)
+![List of user mounts example](../images/explanation/network-shares/system-mounts-list.png)
 
 ### Rules precedence
 
@@ -54,7 +54,7 @@ Credentials authentication for mounts are disabled on ADSys. Instead, authentica
 
 User mount policies are located under `User Configuration > Policies > Administrative Templates > Ubuntu > Session management > User Drive Mapping`, as shown in the following picture.
 
-![Path to User Drive Mapping policy](../images/user-mounts-policy-loc.png)
+![Path to User Drive Mapping policy](../images/explanation/network-shares/user-mounts-policy-loc.png)
 
 ### Setting up the policy
 
@@ -62,7 +62,7 @@ The format is a list of shared drives that should be mounted for the user. They 
 
 All entries must be separated by a line break.
 
-![List of user mounts example](../images/user-mounts-list.png)
+![List of user mounts example](../images/explanation/network-shares/user-mounts-list.png)
 
 The mount process is handled with GVfs and it defines in which directory the shared drive will be mounted into. Usually, it's mounted under `/run/user/%U/gvfs/`.
 
