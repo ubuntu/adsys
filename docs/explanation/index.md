@@ -10,7 +10,7 @@ Managers available with ADSys are
 
 ```{toctree}
 :titlesonly:
-dconf <dconf>
+GSettings <dconf>
 Privileges Management <privileges>
 Scripts <scripts>
 AppArmor Profiles <apparmor>
