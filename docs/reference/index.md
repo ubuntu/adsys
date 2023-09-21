@@ -15,4 +15,5 @@ adsysctl command <adsysctl>
 ```{toctree}
 :titlesonly:
 CLI reference <cli-reference>
+ADSys Watch Daemon <adwatchd>
 ```
