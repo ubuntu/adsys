@@ -194,7 +194,7 @@ More information is available in the [next chapter](adsysctl.md) covering adsysc
 
 **ADSys** uses a privilege mechanism based on polkit to manage authorizations. Many commands require elevated privileges to be executed. If the adsys client is executed with insufficient privileges to execute a command, the user will be prompted to enter its password. If allowed then the command will be executed and denied otherwise.
 
-![Polkit authentication dialog](../images/daemon-polkit.png)
+![Polkit authentication dialog](../images/reference/adsys-daemon/daemon-polkit.png)
 
 This is configurable by the administrator as any service controlled by polkit. For more information `man polkit`.
 

@@ -6,7 +6,7 @@ Proxy settings are configurable under the following GPO path:
 
 * System-wide level, located in `Computer Configuration > Policies > Administrative Templates > Ubuntu > Client management > System proxy configuration`
 
-![System proxy settings in GPO editor](../images/system-proxy-settings-list.png)
+![System proxy settings in GPO editor](../images/explanation/proxy/system-proxy-settings-list.png)
 
 ## Feature availability
 
@@ -33,7 +33,7 @@ The `System proxy configuration` category provides a list of configurable proxy 
 * Ignored hosts
 * Auto configuration URL
 
-![HTTP proxy setting in GPO editor](../images/system-proxy-settings-focus.png)
+![HTTP proxy setting in GPO editor](../images/explanation/proxy/system-proxy-settings-focus.png)
 
 Configured settings will then be forwarded to `ubuntu-proxy-manager` which will apply them on all supported backends (e.g. environment variables, APT, GSettings). For an up-to-date list of supported backends, proxy formats and behaviors, refer to the ubuntu-proxy-manager [documentation](https://github.com/ubuntu/ubuntu-proxy-manager/blob/main/README.md).
 

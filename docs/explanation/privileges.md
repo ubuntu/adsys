@@ -4,7 +4,7 @@ The Admin privilege manager allows to grant or revoke superuser privileges for t
 
 All those settings are globally enforced on the machine and are available at `Computer Configuration > Policies > Administrative Templates > Ubuntu > Client management > Privilege Authorization`.
 
-![Privileges screen in AD](../images/privileges-options.png)
+![Privileges screen in AD](../images/explanation/privileges/privileges-options.png)
 
 ## Feature availability
 

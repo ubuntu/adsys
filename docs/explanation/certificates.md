@@ -6,7 +6,7 @@ Unlike the other ADSys policy managers which are configured in the special Ubunt
 
 * Computer Configuration > Policies > Windows Settings > Security Settings > Public Key Policies > Certificate Services Client - Auto-Enrollment
 
-![Certificate GPO tree view](../images/certificate-settings.png)
+![Certificate GPO tree view](../images/explanation/certificates/certificate-settings.png)
 
 ## Feature availability
 
@@ -38,7 +38,7 @@ Auto-enrollment configuration will override any settings referenced higher in th
 
 Certificate auto-enrollment is configured by setting the **Configuration Model** to **Enabled** and ticking the following checkbox: **Update certificates that use certificate templates**.
 
-![Certificate GPO properties](../images/certificate-gpo.png)
+![Certificate GPO properties](../images/explanation/certificates/certificate-gpo.png)
 
 The policy can be disabled by performing _any_ of the following:
 
@@ -51,7 +51,7 @@ For more advanced configuration, a list of policy servers can be specified in th
 
 * Computer Configuration > Policies > Windows Settings > Security Settings > Public Key Policies > Certificate Services Client - Certificate Enrollment Policy
 
-![Certificate advanced configuration](../images/advanced-configuration.png)
+![Certificate advanced configuration](../images/explanation/certificates/advanced-configuration.png)
 
 ## Applying the policy
 

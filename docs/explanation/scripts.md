@@ -9,7 +9,7 @@ Those scripts, can be triggered on:
 
 Scripts can be shell scripts, or any binary that can be executed on Linux.
 
-![Scripts options in AD](../images/gpo-scripts.png)
+![Scripts options in AD](../images/explanation/scripts/gpo-scripts.png)
 
 ## Feature availability
 
@@ -25,7 +25,7 @@ Scripts must be available in the assets sharing directory on your Active Directo
 
 In this directory, next to `Policies` in your domain folder, create a directory matching your distribution name. For instance `Ubuntu`, which will be the assets sharing directory.
 
-![Assets folder in sysvol](../images/assets-folder.png)
+![Assets folder in sysvol](../images/explanation/scripts/assets-folder.png)
 
 It must also contain a `GPT.ini` file of the form:
 
@@ -49,7 +49,7 @@ Making manual changes to a file every time scripts are changed can be unproducti
 
 The form is a list of scripts path, relative to the `scripts/` subdirectory of your assets sharing file system, one per line.
 
-![List of scripts example](../images/scripts-list.png)
+![List of scripts example](../images/explanation/scripts/scripts-list.png)
 
 ### Not configured or Disabled
 

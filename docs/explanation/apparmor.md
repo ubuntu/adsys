@@ -23,7 +23,7 @@ AppArmor profiles must be available in the assets sharing directory on your Acti
 
 In this directory, next to `Policies` in your domain folder, create a directory matching your distribution name. For instance `Ubuntu`, which will be the assets sharing directory.
 
-![Assets folder in sysvol](../images/assets-folder.png)
+![Assets folder in sysvol](../images/explanation/apparmor/assets-folder.png)
 
 It must also contain a `GPT.ini` file of the form:
 
@@ -53,7 +53,7 @@ We highly recommend developing AppArmor profiles separately from ADSys, testing 
 
 The form is a list of AppArmor profile paths, relative to the `apparmor/` subdirectory of your assets sharing file system, one per line.
 
-![List of machine profiles example](../images/apparmor-machine-ui.png)
+![List of machine profiles example](../images/explanation/apparmor/apparmor-machine-ui.png)
 
 When set to enabled, adsys will load the configured AppArmor profiles on refresh. AppArmor's caching functionality is leveraged to ensure redundant reloads are kept to a minimum, i.e. a loaded profile will be parsed again only if a change occurred in the profile definition.
 
@@ -67,7 +67,7 @@ AppArmor supports confining executables on a user-by-user basis via the [`pam_ap
 
 The form accepts a path to a single file, relative to the `apparmor/` directory of your assets sharing file system.
 
-![User profile entry example](../images/apparmor-user-ui.png)
+![User profile entry example](../images/explanation/apparmor/apparmor-user-ui.png)
 
 ### Installing the AppArmor PAM module
 
