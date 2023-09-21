@@ -35,16 +35,15 @@ explanation/index
 ````
 
 ````{grid} 1 1 2 2
-:reverse:
-
-```{grid-item} [Reference](reference/index)
-
-**Technical information** - specifications, APIs, architecture
-```
 
 ```{grid-item} [Explanation](explanation/index)
 
 **Discussion and clarification** of key topics
+```
+
+```{grid-item} [Reference](reference/index)
+
+**Technical information** - specifications, APIs, architecture
 ```
 
 ````
@@ -55,6 +54,6 @@ ADSys is a member of the Ubuntu family. It’s an open source project that warml
 
 * [Code of conduct](https://ubuntu.com/community/code-of-conduct)
 * [Join us in the Ubuntu Community](https://discourse.ubuntu.com/c/desktop/8)
-* [Contribute](https://github.com/ubuntu/adsys/blob/main/CONTRIBUTING.md)
+* [Contribute](https://github.com/ubuntu/adsys/blob/main/CONTRIBUTING.md) or [Report an issue](https://github.com/ubuntu/adsys/issues/new)
 * [Thinking about using ADSys for your next project? Get in touch!](https://ubuntu.com/contact-us/form?product=generic-contact-us)
 * [Licensed under GPL v3](https://github.com/ubuntu/adsys/blob/main/LICENSE)
