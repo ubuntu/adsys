@@ -17,4 +17,5 @@ AppArmor Profiles <apparmor>
 Network Shares <network-shares>
 Network Proxy <proxy>
 Certificates Auto-Enrolment <certificates>
+Security Policy <security-policy>
 ```
