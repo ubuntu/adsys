@@ -1265,7 +1265,7 @@ adsysctl policy debug [flags]
 
 #### adsysctl policy debug cert-autoenroll-script
 
-Write certificate autoenrollment python embedded script in current directory
+Write certificate auto-enrollment python embedded script in current directory
 
 ```
 adsysctl policy debug cert-autoenroll-script [flags]
