@@ -1,3 +1,28 @@
+adsys (0.13.1) mantic; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  * Fix pam_adsys build (LP: #2037270)
+  * Switch to upstream gotext version and align go-i18n (LP: #2037271)
+  * Add documentation for certificate policy manager
+  * CI and quality of life changes not impacting package functionality:
+    - Workflow to auto-patch vendored Samba code
+    - Fix typo on build command for the admxgen package
+    - Switch to reusable code quality action in CI
+    - Apply issue template changes
+    - Open issue when ADMX/L builds fail
+  * Update dependencies to latest:
+    - github.com/charmbracelet/lipgloss
+    - github.com/golangci/golangci-lint
+    - github.com/gomarkdown/markdown
+    - golang.org/x/net
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Mon, 25 Sep 2023 14:55:32 +0300
+
 adsys (0.13.0) mantic; urgency=medium
 
   [ Denison Barbosa ]
