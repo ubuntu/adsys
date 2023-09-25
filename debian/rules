@@ -4,8 +4,9 @@
 export GOCACHE=$(shell mktemp -d /tmp/gocache-XXXX)
 
 WIN_ARCHS := amd64 arm64
+# Tags should always come last as we append to them in other parts of the build
 COMMON_GOFLAGS := -ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$(shell dpkg-parsechangelog -S Version) -mod=vendor -tags=withmo
-export GOFLAGS := $(COMMON_GOFLAGS) -buildmode=pie
+export GOFLAGS := -buildmode=pie $(COMMON_GOFLAGS)
 export WIN_GOFLAGS := $(COMMON_GOFLAGS)
 # PIE on Windows is only supported for amd64
 ifeq ($(shell dpkg --print-architecture),amd64)
@@ -81,4 +82,4 @@ endif
 	# Create adsysctl command
 	ln -s adsysd debian/tmp/sbin/adsysctl
 	# Run go generate to install assets, but don’t regenerate them
-	GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/tmp go generate -x -tags tools $(GOFLAGS) ./...
+	GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/tmp go generate -x $(GOFLAGS),tools ./...
