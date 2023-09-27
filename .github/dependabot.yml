@@ -8,7 +8,6 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      include: "scope"
       prefix: "deps(go)"
 
   - package-ecosystem: "gomod"
@@ -16,7 +15,6 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      include: "scope"
       prefix: "deps(go-tools)"
 
   - package-ecosystem: "github-actions"
@@ -26,5 +24,4 @@ updates:
     schedule:
       interval: "daily"
     commit-message:
-      include: "scope"
       prefix: "deps(ci)"
