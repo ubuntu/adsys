@@ -1,0 +1,38 @@
+diff --git a/debian/control b/debian/control
+index d6fb19f2..f9f9fe0c 100644
+--- a/debian/control
++++ b/debian/control
+@@ -2,10 +2,10 @@ Source: adsys
+ Section: admin
+ Priority: optional
+ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+-Build-Depends: debhelper-compat (= 13),
++Build-Depends: debhelper-compat (= 12),
+                dh-apport,
+                dh-golang,
+-               golang-go (>= 2:1.20~),
++               golang-1.20-go,
+                libsmbclient-dev,
+                libdbus-1-dev,
+                libglib2.0-dev,
+diff --git a/debian/rules b/debian/rules
+index 43646c6a..0708aa3d 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -25,6 +25,9 @@ export DH_GOLANG_INSTALL_ALL := 1
+ # Tests needing sudo will be skipped automatically
+ export ADSYS_SKIP_INTEGRATION_TESTS=1
+
++# Run with Go 1.20
++export PATH := /usr/lib/go-1.20/bin/:$(PATH)
++
+ %:
+        dh $@ --buildsystem=golang --with=golang,apport
+
+@@ -83,3 +86,5 @@ endif
+        ln -s adsysd debian/tmp/sbin/adsysctl
+        # Run go generate to install assets, but don’t regenerate them
+        GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/tmp go generate -x $(GOFLAGS),tools ./...
++
++override_dh_dwz:
+
