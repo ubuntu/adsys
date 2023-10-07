@@ -68,7 +68,7 @@ jobs:
           sudo -E $(which go) test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=set $SUDO_PACKAGES
 
           # Combine coverage files, and filter out test utilities and generated files
-          grep -hv -e "testutils" -e "pb.go:" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
+          grep -hv -e "testutils" -e "pb.go:" -e "/e2e/" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
       - name: Run tests (with race detector)
         run: |
           go test -race ./...
