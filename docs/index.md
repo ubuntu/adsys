@@ -10,12 +10,11 @@ ADSys is valuable for system administrators who wish to manage Ubuntu Desktop cl
 
 ```{toctree}
 :hidden:
+
 tutorial/index
 how-to/index
 reference/index
 explanation/index
-
-
 ```
 
 ## In this documentation

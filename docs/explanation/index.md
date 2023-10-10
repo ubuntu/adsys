@@ -10,6 +10,7 @@ Managers available with ADSys are
 
 ```{toctree}
 :titlesonly:
+
 GSettings <dconf>
 Privileges Management <privileges>
 Scripts <scripts>
