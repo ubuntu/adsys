@@ -15,7 +15,7 @@ import datetime
 ############################################################
 
 # Product name
-project = 'Active Directory bridging toolset'
+project = 'Active Directory GPO support'
 author = 'Canonical Group Ltd'
 
 # Uncomment if your product uses release numbers
