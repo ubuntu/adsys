@@ -2,11 +2,12 @@
 
 This section consolidates technical details on ADSys, including specifications, APIs, and architecture.
 
-ADSys is composed of a daemon and a command line interface.
+On the linux side, ADSys is composed of a daemon and a command line interface:
 
-The daemon - `adsysd` - implements the Group Policy protocol. It relies on Kerberos, Samba and LDAP for authentication and policy retrieval.
+* The daemon - `adsysd` - implements the Group Policy protocol. It relies on Kerberos, Samba and LDAP for authentication and policy retrieval.
+* The command line interface - `adsysctl` - controls the daemon and reports its status.
 
-The command line interface - `adsysctl` - controls the daemon and reports its status.
+A Windows daemon, `adwatchd` can be installed on the domain controller to automatically refresh assets without system administrator interventions.
 
 ````{grid} 1 1 2 2
 ```{grid-item}
