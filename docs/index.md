@@ -15,7 +15,6 @@ how-to/index
 reference/index
 explanation/index
 
-
 ```
 
 ## In this documentation
