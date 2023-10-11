@@ -13,4 +13,5 @@ const (
 	PackageBuilt      State = "package_built"
 	ClientProvisioned State = "client_provisioned"
 	ADProvisioned     State = "ad_provisioned"
+	Deprovisioned     State = "deprovisioned"
 )
