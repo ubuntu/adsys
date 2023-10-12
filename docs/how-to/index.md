@@ -20,7 +20,8 @@ This section outlines how to join your client machine to the domain, install ADS
 
 ```{toctree}
 :titlesonly:
-Join machine to AD <join-machine-ad>
+Join machine to AD during installation<join-ad-installation>
+Join machine to AD manually<join-ad-manually>
 Set up ADSys <set-up-adsys>
 ```
 

@@ -2,7 +2,7 @@
 
 This section consolidates technical details on ADSys, including specifications, APIs, and architecture.
 
-On the linux side, ADSys is composed of a daemon and a command line interface:
+On the Linux side, ADSys is composed of a daemon and a command line interface:
 
 * The daemon - `adsysd` - implements the Group Policy protocol. It relies on Kerberos, Samba and LDAP for authentication and policy retrieval.
 * The command line interface - `adsysctl` - controls the daemon and reports its status.
