@@ -140,12 +140,21 @@ func action(ctx context.Context, cmd *command.Command) error {
 	defer client.Close()
 
 	// Install required dependencies
+	log.Infof("Installing eatmydata to speed up package installation...")
+	if _, err := client.Run(ctx, `echo force-unsafe-io | sudo tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io && \
+sudo DEBIAN_FRONTEND=noninteractive apt-get update && \
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y eatmydata`); err != nil {
+		return fmt.Errorf("failed to set up eatmydata: %w", err)
+	}
+
 	log.Infof("Installing required packages on VM...")
-	out, err = client.Run(ctx, `sudo DEBIAN_FRONTEND=noninteractive apt-get update && \
-sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y && \
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-desktop realmd nfs-common cifs-utils`)
-	log.Debugf("apt-get output: %s", out)
-	if err != nil {
+	if _, err := client.Run(ctx, `echo force-unsafe-io | sudo tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io && \
+sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get update && \
+sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get upgrade -y && \
+sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get install -y ubuntu-desktop realmd nfs-common cifs-utils && \
+sudo sync && \
+sudo rm -f /etc/dpkg/dpkg.cfg.d/force-unsafe-io
+`); err != nil {
 		return fmt.Errorf("failed to install required packages: %w", err)
 	}
 
@@ -170,7 +179,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-desktop realmd nfs
 	if err != nil {
 		return fmt.Errorf("failed to create cloud-init script directory: %w", err)
 	}
-	_, err = client.Run(ctx, "sudo cp /home/azureuser/provision.sh /var/lib/cloud/scripts/per-once/provision.sh")
+	_, err = client.Run(ctx, "sudo mv /home/azureuser/provision.sh /var/lib/cloud/scripts/per-once/provision.sh")
 	if err != nil {
 		return fmt.Errorf("failed to copy cloud-init script: %w", err)
 	}
