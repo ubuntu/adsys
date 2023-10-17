@@ -83,7 +83,7 @@ jobs:
               force="--force"
           fi
 
-          IMAGE_VERSION=$(go run ./e2e/cmd/00_check_vm_image --codename ${{ matrix.codename }} ${force})
+          IMAGE_VERSION=$(go run ./e2e/cmd/build_image/00_check_vm_image --codename ${{ matrix.codename }} ${force})
           if [ ! -z "${IMAGE_VERSION}" ]; then
               echo image-version=$IMAGE_VERSION >> $GITHUB_OUTPUT
           fi
@@ -100,8 +100,8 @@ jobs:
       - name: Build base VM
         if: steps.check-vm-template.outputs.image-version != ''
         run: |
-          go run ./e2e/cmd/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }} --ssh-key ~/.ssh/id_rsa-e2e
+          go run ./e2e/cmd/build_image/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }} --ssh-key ~/.ssh/id_rsa-e2e
       - name: Create template version
         if: steps.check-vm-template.outputs.image-version != ''
         run: |
-          go run ./e2e/cmd/02_create_vm_template
+          go run ./e2e/cmd/build_image/02_create_vm_template
