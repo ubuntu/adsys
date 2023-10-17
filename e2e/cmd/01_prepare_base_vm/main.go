@@ -1,5 +1,5 @@
 // Package main provides a script to create a base VM that can be turned into a
-// template for integration tests.
+// template for E2E tests.
 package main
 
 import (
@@ -20,7 +20,7 @@ import (
 )
 
 var vmImage, codename, sshKey string
-var preserve bool
+var keep bool
 
 func main() {
 	os.Exit(run())
@@ -33,14 +33,14 @@ func run() int {
 	)
 	cmd.Usage = fmt.Sprintf(`go run ./%s [options]
 
-Create a base VM that can be turned into a template for integration tests.
+Create a base VM that can be turned into a template for E2E tests.
 
 Options:
  --vm-image              Required: name of the Azure VM image to use as a base
-                         image (e.g. Ubuntu2204, canonical:0001-com-ubuntu-server-focal:20_04-lts-gen2:latest)
+                         image (e.g. Ubuntu2204, canonical:0001-com-ubuntu-minimal-focal:20_04-lts-gen2:latest)
  --codename              Required: codename of the Ubuntu release (e.g. focal)
  --ssh-key               SSH private key to use for authentication (default: ~/.ssh/id_rsa)
- -p, --preserve          Don't destroy VM if template creation fails (default: false)
+ -k, --keep              Don't destroy VM if template creation fails (default: false)
 
 This script will:
  - create a VM from the specified Azure VM image
@@ -49,13 +49,13 @@ This script will:
  - stop and deallocate the VM
 
 The machine must be authenticated to Azure via the Azure CLI.
-The machine must be connected to the ADSys integration tests VPN.`, filepath.Base(os.Args[0]))
+The machine must be connected to the ADSys E2E tests VPN.`, filepath.Base(os.Args[0]))
 
 	cmd.AddStringFlag(&vmImage, "vm-image", "", "")
 	cmd.AddStringFlag(&codename, "codename", "", "")
 	cmd.AddStringFlag(&sshKey, "ssh-key", "", "")
-	cmd.AddBoolFlag(&preserve, "preserve", false, "")
-	cmd.AddBoolFlag(&preserve, "p", false, "")
+	cmd.AddBoolFlag(&keep, "keep", false, "")
+	cmd.AddBoolFlag(&keep, "k", false, "")
 
 	return cmd.Execute(context.Background())
 }
@@ -82,7 +82,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	inv := cmd.Inventory
-	vmName := fmt.Sprintf("adsys-integration-%s-%s", inv.Codename, inv.UUID)
+	vmName := fmt.Sprintf("adsys-e2e-template-%s-%s", inv.Codename, inv.UUID)
 
 	log.Infof("Creating VM %q from image %q with codename %q", vmName, vmImage, codename)
 	out, _, err := az.RunCommand(ctx, "vm", "create",
@@ -98,10 +98,10 @@ func action(ctx context.Context, cmd *command.Command) error {
 		"--subnet", "default",
 		"--nic-delete-option", "Delete",
 		"--public-ip-address", "",
-		"--ssh-key-name", "adsys-integration",
+		"--ssh-key-name", "adsys-e2e",
 		"--storage-sku", "StandardSSD_LRS",
 		"--os-disk-delete-option", "Delete",
-		"--tags", "project=AD", "subproject=adsys-integration-tests", "lifetime=6h",
+		"--tags", "project=AD", "subproject=adsys-e2e-tests", "lifetime=6h",
 	)
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 		}
 		log.Error(err)
 
-		if preserve {
+		if keep {
 			log.Infof("Preserving VM as requested...")
 			return
 		}
@@ -149,7 +149,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-desktop realmd nfs
 		return fmt.Errorf("failed to install required packages: %w", err)
 	}
 
-	// Upload provisioning script
+	// Upload first run script
 	log.Infof("Staging first run script to VM...")
 	scriptsDir, err := scripts.Dir()
 	if err != nil {

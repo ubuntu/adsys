@@ -17,7 +17,7 @@ import (
 )
 
 var codename string
-var preserve bool
+var keep bool
 
 func main() {
 	os.Exit(run())
@@ -35,7 +35,7 @@ placed in the output/ directory relative to the root of the repository.
 
 Options:
  --codename       Required: codename of the Ubuntu release to build for (e.g. focal)
- -p, --preserve   Don't remove the build container after finishing (default: false)
+ -k, --keep       Don't remove the build container after finishing (default: false)
 
 This script will:
  - build the adsys package in a Docker container from the current source tree for the given codename
@@ -43,8 +43,8 @@ This script will:
 `, filepath.Base(os.Args[0]))
 
 	cmd.AddStringFlag(&codename, "codename", "", "")
-	cmd.AddBoolFlag(&preserve, "preserve", false, "")
-	cmd.AddBoolFlag(&preserve, "p", false, "")
+	cmd.AddBoolFlag(&keep, "k", false, "")
+	cmd.AddBoolFlag(&keep, "keep", false, "")
 
 	return cmd.Execute(context.Background())
 }
@@ -78,7 +78,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 
 	// Run the container
 	dockerArgs := []string{"run"}
-	if !preserve {
+	if !keep {
 		dockerArgs = append(dockerArgs, "--rm")
 	}
 

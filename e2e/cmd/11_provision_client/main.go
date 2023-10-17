@@ -1,5 +1,5 @@
 // Package main provides a script to create a disposable Ubuntu VM on Azure,
-// join it to the integration tests domain and install the previously built
+// join it to the E2E tests domain and install the previously built
 // adsys package.
 package main
 
@@ -20,7 +20,7 @@ import (
 	"github.com/ubuntu/adsys/e2e/scripts"
 )
 
-var preserve bool
+var keep bool
 var sshKey, adPassword string
 
 func main() {
@@ -34,7 +34,7 @@ func run() int {
 	)
 	cmd.Usage = fmt.Sprintf(`go run ./%s [options]
 
-Create a disposable Ubuntu VM on Azure, join it to the integration tests domain
+Create a disposable Ubuntu VM on Azure, join it to the E2E tests domain
 and install the adsys package.
 
 This requires an inventory file containing the codename of the Ubuntu release
@@ -43,16 +43,16 @@ environment variable.
 
 Options:
  --ssh-key           SSH private key to use for authentication (default: ~/.ssh/id_rsa)
- -p, --preserve      Don't destroy VM if provisioning fails (default: false)
+ -k, --keep          Don't destroy VM if provisioning fails (default: false)
 
 This script will:
  - create a VM from the specified codename
- - join the VM to the integration tests domain
+ - join the VM to the E2E tests domain
  - install the previously built adsys package on the VM`, filepath.Base(os.Args[0]))
 
 	cmd.AddStringFlag(&sshKey, "ssh-key", "", "")
-	cmd.AddBoolFlag(&preserve, "preserve", false, "")
-	cmd.AddBoolFlag(&preserve, "p", false, "")
+	cmd.AddBoolFlag(&keep, "k", false, "")
+	cmd.AddBoolFlag(&keep, "keep", false, "")
 
 	return cmd.Execute(context.Background())
 }
@@ -89,7 +89,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	uuid := uuid.NewString()
-	vmName := fmt.Sprintf("adsys-integration-%s-%s", codename, uuid)
+	vmName := fmt.Sprintf("adsys-e2e-tests-%s-%s", codename, uuid)
 
 	// Get subscription ID
 	out, _, err := az.RunCommand(ctx, "account", "show", "--query", "id", "--output", "tsv")
@@ -115,7 +115,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 		"--public-ip-address", "",
 		"--storage-sku", "StandardSSD_LRS",
 		"--os-disk-delete-option", "Delete",
-		"--tags", "project=AD", "subproject=adsys-integration-tests", "lifetime=6h",
+		"--tags", "project=AD", "subproject=adsys-e2e-tests", "lifetime=6h",
 	)
 	if err != nil {
 		return err
@@ -128,7 +128,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 		}
 		log.Error(err)
 
-		if preserve {
+		if keep {
 			log.Infof("Preserving VM as requested...")
 			return
 		}

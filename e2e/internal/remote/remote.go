@@ -45,7 +45,7 @@ func NewClient(host string, username string, sshKeyPath string) (Client, error) 
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
-		// nolint:gosec // This is used for integration tests where machines are created on the fly
+		// nolint:gosec // This is used for E2E tests where machines are created on the fly
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         10 * time.Second,
 	}
