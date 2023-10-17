@@ -1,5 +1,5 @@
 * Domain(): example.com
-* ServerURL ERROR(): error while trying to look up AD server address on winbind: could not get domain controller name for domain "example.com"
+* ServerFQDN ERROR(): error while trying to look up AD server address on winbind: could not get domain controller name for domain "example.com"
 * IsOnline(): true
 * HostKrb5CCName(): /tmp/krb5cc_0
 * DefaultDomainSuffix(): example.com

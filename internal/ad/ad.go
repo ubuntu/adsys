@@ -153,11 +153,11 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 	}
 
 	domain := configBackend.Domain()
-	serverURL, err := configBackend.ServerURL(ctx)
+	serverFQDN, err := configBackend.ServerFQDN(ctx)
 	if err != nil && !errors.Is(err, backends.ErrNoActiveServer) {
-		return nil, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)
+		return nil, fmt.Errorf(i18n.G("can't get current Server FQDN: %w"), err)
 	}
-	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, serverURL)
+	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, serverFQDN)
 
 	return &AD{
 		hostname:         hostname,
@@ -233,14 +233,14 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	// We need an AD DC to connect to
-	adServerURL, err := ad.configBackend.ServerURL(ctx)
+	adServerFQDN, err := ad.configBackend.ServerFQDN(ctx)
 	if err != nil {
-		return policies.Policies{}, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)
+		return policies.Policies{}, fmt.Errorf(i18n.G("can't get current Server FQDN: %w"), err)
 	}
 
 	// Otherwise, try fetching the GPO list from LDAP
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
-	scriptArgs := []string{"--objectclass", string(objectClass), adServerURL, objectName}
+	scriptArgs := []string{"--objectclass", string(objectClass), adServerFQDN, objectName}
 	cmdArgs := append(args, scriptArgs...)
 	cmdCtx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
@@ -605,12 +605,12 @@ func (ad *AD) GetInfo(ctx context.Context) (msg string) {
 		online = fmt.Sprint(i18n.G("**Offline mode** using cached policies\n"))
 	}
 	domain := ad.configBackend.Domain()
-	server, err := ad.configBackend.ServerURL(ctx)
+	server, err := ad.configBackend.ServerFQDN(ctx)
 	if err != nil {
 		server = "Unknown"
 	}
 
-	return fmt.Sprintf(i18n.G("%s\n%sDomain: %s\nServer URL: %s"), config, online, domain, server)
+	return fmt.Sprintf(i18n.G("%s\n%sDomain: %s\nServer FQDN: %s"), config, online, domain, server)
 }
 
 // NormalizeTargetName transforms the specified target to values adsys knows.

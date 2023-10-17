@@ -10,7 +10,7 @@ Active Directory:
   Configuration: testdata/sssd-configs/sssd.conf-example.com
   Cache: /tmp/sss_cache
   Domain: example.com
-  Server URL: adc.example.com
+  Server FQDN: adc.example.com
 
 Daemon:
   Timeout after 30s

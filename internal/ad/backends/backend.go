@@ -12,11 +12,11 @@ import (
 type Backend interface {
 	// Domain returns current server domain.
 	Domain() string
-	// ServerURL returns current server URL.
+	// ServerFQDN returns current server FQDN.
 	// It returns first any static configuration and goes dynamic if the backend provides this.
 	// If the dynamic lookup worked, but there is still no server URL found (for instance, backend
 	// if offline), the error raised is of type ErrorNoActiveServer.
-	ServerURL(context.Context) (string, error)
+	ServerFQDN(context.Context) (string, error)
 	// HostKrb5CCName computes and returns the absolute path of the machine krb5 ticket.
 	HostKrb5CCName() (string, error)
 	// DefaultDomainSuffix returns current default domain suffix.
@@ -29,6 +29,6 @@ type Backend interface {
 
 var (
 	// ErrNoActiveServer is an error receive when there is no active server and no static configuration
-	// This is received in ServerURL.
+	// This is received in ServerFQDN.
 	ErrNoActiveServer = errors.New(i18n.G("no active server found"))
 )

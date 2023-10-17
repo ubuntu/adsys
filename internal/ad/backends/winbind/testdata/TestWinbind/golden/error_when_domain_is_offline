@@ -1,5 +1,5 @@
 * Domain(): example.com
-* ServerURL(): adcontroller.example.com
+* ServerFQDN(): adcontroller.example.com
 * IsOnline(): false
 * HostKrb5CCName(): /tmp/krb5cc_0
 * DefaultDomainSuffix(): example.com

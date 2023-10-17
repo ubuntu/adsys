@@ -21,10 +21,10 @@ func FormatBackendCalls(t *testing.T, backend backends.Backend) string {
 	var got bytes.Buffer
 	got.WriteString(fmt.Sprintf("* Domain(): %s\n", backend.Domain()))
 
-	serverURL, err := backend.ServerURL(context.Background())
-	serverLine := fmt.Sprintf("* ServerURL(): %s\n", serverURL)
+	serverFQDN, err := backend.ServerFQDN(context.Background())
+	serverLine := fmt.Sprintf("* ServerFQDN(): %s\n", serverFQDN)
 	if err != nil {
-		serverLine = fmt.Sprintf("* ServerURL ERROR(): %s\n", err)
+		serverLine = fmt.Sprintf("* ServerFQDN ERROR(): %s\n", err)
 	}
 	got.WriteString(serverLine)
 

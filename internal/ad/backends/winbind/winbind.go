@@ -67,9 +67,9 @@ import (
 	"github.com/ubuntu/decorate"
 )
 
-// Winbind is the backend object with domain and url information.
+// Winbind is the backend object with domain and DC information.
 type Winbind struct {
-	staticServerURL     string
+	staticServerFQDN    string
 	domain              string
 	defaultDomainSuffix string
 	kinitCmd            []string
@@ -114,7 +114,7 @@ func New(ctx context.Context, c Config, hostname string, opts ...Option) (w Winb
 	}
 
 	return Winbind{
-		staticServerURL:     c.ADServer,
+		staticServerFQDN:    c.ADServer,
 		domain:              c.ADDomain,
 		defaultDomainSuffix: c.ADDomain,
 		kinitCmd:            args.kinitCmd,
@@ -156,24 +156,24 @@ func (w Winbind) DefaultDomainSuffix() string {
 	return w.defaultDomainSuffix
 }
 
-// ServerURL returns current server URL.
+// ServerFQDN returns current server FQDN.
 // It returns first any static configuration. If nothing is found, it will fetch
 // the active server from winbind.
-func (w Winbind) ServerURL(ctx context.Context) (serverURL string, err error) {
+func (w Winbind) ServerFQDN(ctx context.Context) (serverFQDN string, err error) {
 	defer decorate.OnError(&err, i18n.G("error while trying to look up AD server address on winbind"))
 
-	if w.staticServerURL != "" {
-		return strings.TrimPrefix(w.staticServerURL, "ldap://"), nil
+	if w.staticServerFQDN != "" {
+		return strings.TrimPrefix(w.staticServerFQDN, "ldap://"), nil
 	}
 
 	log.Debugf(ctx, "Triggering autodiscovery of AD server because winbind configuration does not provide an ad_server for %q", w.domain)
-	serverURL, err = dcName(w.domain)
+	serverFQDN, err = dcName(w.domain)
 	if err != nil {
 		return "", err
 	}
-	serverURL = strings.TrimPrefix(serverURL, `\\`)
+	serverFQDN = strings.TrimPrefix(serverFQDN, `\\`)
 
-	return serverURL, nil
+	return serverFQDN, nil
 }
 
 // Config returns a stringified configuration for Winbind backend.

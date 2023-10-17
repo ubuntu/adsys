@@ -1,5 +1,5 @@
 * Domain(): noactiveserver.example.com
-* ServerURL ERROR(): error while trying to look up AD server address on SSSD for "noactiveserver.example.com": no active server found
+* ServerFQDN ERROR(): error while trying to look up AD server address on SSSD for "noactiveserver.example.com": no active server found
 * IsOnline(): true
 * HostKrb5CCName(): /var/lib/sss/db/ccache_NOACTIVESERVER.EXAMPLE.COM
 * DefaultDomainSuffix(): noactiveserver.example.com

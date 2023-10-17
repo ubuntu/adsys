@@ -17,12 +17,12 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-// SSS is the backend object with domain and url information.
+// SSS is the backend object with domain and DC information.
 type SSS struct {
 	domain              string
 	domainDbus          dbus.BusObject
-	serverURL           string
-	staticServerURL     string
+	serverFQDN          string
+	staticServerFQDN    string
 	hostKrb5CCName      string
 	defaultDomainSuffix string
 
@@ -71,10 +71,10 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 	domainDbus := bus.Object(consts.SSSDDbusRegisteredName,
 		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, domainToObjectPath(domain))))
 
-	// Server url
-	staticServerURL := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_server").String()
-	if staticServerURL != "" {
-		staticServerURL = strings.TrimPrefix(staticServerURL, "ldap://")
+	// Server FQDN
+	staticServerFQDN := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_server").String()
+	if staticServerFQDN != "" {
+		staticServerFQDN = strings.TrimPrefix(staticServerFQDN, "ldap://")
 	}
 
 	// local machine sssd krb5 cache
@@ -83,8 +83,8 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 	return SSS{
 		domain:              domain,
 		domainDbus:          domainDbus,
-		serverURL:           staticServerURL,
-		staticServerURL:     staticServerURL,
+		serverFQDN:          staticServerFQDN,
+		staticServerFQDN:    staticServerFQDN,
 		hostKrb5CCName:      hostKrb5CCName,
 		defaultDomainSuffix: defaultDomainSuffix,
 
@@ -97,27 +97,27 @@ func (sss SSS) Domain() string {
 	return sss.domain
 }
 
-// ServerURL returns current server URL.
+// ServerFQDN returns current server FQDN.
 // It returns first any static configuration. If nothing is found, it will fetch the active server from sssd.
-// If the dynamic lookup worked, but there is still no server URL found (for instance, backend
+// If the dynamic lookup worked, but there is still no server FQDN found (for instance, backend
 // if offline), the error raised is of type ErrorNoActiveServer.
-func (sss SSS) ServerURL(ctx context.Context) (serverURL string, err error) {
+func (sss SSS) ServerFQDN(ctx context.Context) (serverFQDN string, err error) {
 	defer decorate.OnError(&err, i18n.G("error while trying to look up AD server address on SSSD for %q"), sss.domain)
 
-	if sss.staticServerURL != "" {
-		return sss.staticServerURL, nil
+	if sss.staticServerFQDN != "" {
+		return sss.staticServerFQDN, nil
 	}
 	log.Debugf(ctx, "Triggering autodiscovery of AD server triggered because sssd.conf does not provide an ad_server for %q", sss.domain)
 
 	// Try to update from SSSD the current active AD server
-	if err := sss.domainDbus.Call(consts.SSSDDbusInterface+".ActiveServer", 0, "AD").Store(&serverURL); err != nil {
+	if err := sss.domainDbus.Call(consts.SSSDDbusInterface+".ActiveServer", 0, "AD").Store(&serverFQDN); err != nil {
 		return "", err
 	}
-	if serverURL == "" {
+	if serverFQDN == "" {
 		return "", backends.ErrNoActiveServer
 	}
 
-	return strings.TrimPrefix(serverURL, "ldap://"), nil
+	return strings.TrimPrefix(serverFQDN, "ldap://"), nil
 }
 
 // HostKrb5CCName returns the absolute path of the machine krb5 ticket.

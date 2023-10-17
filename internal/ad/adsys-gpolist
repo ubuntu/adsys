@@ -220,8 +220,8 @@ def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
 
 def main():
     parser = argparse.ArgumentParser(description='List GPOs for a user or computer.')
-    parser.add_argument('url', metavar='URL', type=str,
-                        help='URL of the domain controller (without ldap:// prefix). \
+    parser.add_argument('fqdn', metavar='FQDN', type=str,
+                        help='FQDN of the domain controller (without ldap:// prefix). \
                         e.g. dc.example.com')
     parser.add_argument('accountname', help='Name of the object to search for.')
     parser.add_argument('--objectclass', type=str,
@@ -231,14 +231,14 @@ def main():
     args = parser.parse_args()
 
     accountname = args.accountname
-    url = args.url
+    fqdn = args.fqdn
 
     # Users don’t need @, as we already have the specific-domain ticket
     if args.objectclass == ObjectClass.user:
         accountname = accountname.split('@')[0]
 
     try:
-        samdb = connectLDAP("ldap://" + url)
+        samdb = connectLDAP("ldap://" + fqdn)
     except Exception as exc:
         # Could be a private _ldb.Error, check status
         if len(exc.args) > 1:

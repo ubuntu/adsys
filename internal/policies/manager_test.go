@@ -450,10 +450,10 @@ type mockBackend struct {
 	wantOnlineErr bool
 }
 
-func (m mockBackend) Domain() string                            { return "example.com" }
-func (m mockBackend) ServerURL(context.Context) (string, error) { return "adc.example.com", nil }
-func (m mockBackend) HostKrb5CCName() (string, error)           { return "/tmp/krb5cc_0", nil }
-func (m mockBackend) DefaultDomainSuffix() string               { return "example.com" }
+func (m mockBackend) Domain() string                             { return "example.com" }
+func (m mockBackend) ServerFQDN(context.Context) (string, error) { return "adc.example.com", nil }
+func (m mockBackend) HostKrb5CCName() (string, error)            { return "/tmp/krb5cc_0", nil }
+func (m mockBackend) DefaultDomainSuffix() string                { return "example.com" }
 func (m mockBackend) IsOnline() (bool, error) {
 	if m.wantOnlineErr {
 		return false, errors.New("mock error")

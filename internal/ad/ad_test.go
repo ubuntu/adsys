@@ -29,20 +29,20 @@ func TestNew(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
 	tests := map[string]struct {
-		sysvolCacheDirExists  bool
-		cacheDirRO            bool
-		runDirRO              bool
-		backendServerURLError error
+		sysvolCacheDirExists   bool
+		cacheDirRO             bool
+		runDirRO               bool
+		backendServerFQDNError error
 
 		wantErr bool
 	}{
 		"create KRB5 and Sysvol cache directory":                {},
-		"no active server in backend does not fail ad creation": {backendServerURLError: backends.ErrNoActiveServer},
+		"no active server in backend does not fail ad creation": {backendServerFQDNError: backends.ErrNoActiveServer},
 
-		"failed to create KRB5 cache directory":     {runDirRO: true, wantErr: true},
-		"failed to create Sysvol cache directory":   {cacheDirRO: true, wantErr: true},
-		"failed to create Policies cache directory": {sysvolCacheDirExists: true, cacheDirRO: true, wantErr: true},
-		"error on backend ServerURL random failure": {backendServerURLError: errors.New("Some failure on ServerURL"), wantErr: true},
+		"failed to create KRB5 cache directory":      {runDirRO: true, wantErr: true},
+		"failed to create Sysvol cache directory":    {cacheDirRO: true, wantErr: true},
+		"failed to create Policies cache directory":  {sysvolCacheDirExists: true, cacheDirRO: true, wantErr: true},
+		"error on backend ServerFQDN random failure": {backendServerFQDNError: errors.New("Some failure on ServerFQDN"), wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -61,7 +61,7 @@ func TestNew(t *testing.T) {
 				testutils.MakeReadOnly(t, cacheDir)
 			}
 
-			adc, err := ad.New(context.Background(), mock.Backend{ErrServerURL: tc.backendServerURLError}, hostname,
+			adc, err := ad.New(context.Background(), mock.Backend{ErrServerFQDN: tc.backendServerFQDNError}, hostname,
 				ad.WithRunDir(runDir),
 				ad.WithCacheDir(cacheDir))
 			if tc.wantErr {
@@ -480,12 +480,12 @@ func TestGetPolicies(t *testing.T) {
 			gpoListArgs: []string{"gpoonly.com", hostname + ":standard"},
 			wantErr:     true,
 		},
-		"Error on backend ServerURL call failed": {
+		"Error on backend ServerFQDN call failed": {
 			backend: mock.Backend{
 				Dom:    "gpoonly.com",
 				Online: true,
 				// This error is skipped by New(), but not by GetPolicies
-				ErrServerURL: backends.ErrNoActiveServer,
+				ErrServerFQDN: backends.ErrNoActiveServer,
 			},
 			gpoListArgs: []string{"gpoonly.com", "bob:standard"},
 			wantErr:     true,
@@ -1215,16 +1215,16 @@ func TestGetInfo(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get hostname for tests.")
 
 	tests := map[string]struct {
-		online       bool
-		errIsOnline  bool
-		ErrServerURL error
+		online        bool
+		errIsOnline   bool
+		ErrServerFQDN error
 	}{
 		"Info reported from backend, online":  {online: true},
 		"Info reported from backend, offline": {online: false},
 
 		"Report unknown state if IsOnline calls fail": {errIsOnline: true},
 		// This error is skipped by New(), but not by GetInfo
-		"Report unknown state if ServerURL calls fail": {ErrServerURL: backends.ErrNoActiveServer},
+		"Report unknown state if ServerFQDN calls fail": {ErrServerFQDN: backends.ErrNoActiveServer},
 	}
 
 	for name, tc := range tests {
@@ -1236,7 +1236,7 @@ func TestGetInfo(t *testing.T) {
 				mock.Backend{
 					Dom: "example.com", ServURL: "myserver.example.com",
 					Online:      tc.online,
-					ErrIsOnline: tc.errIsOnline, ErrServerURL: tc.ErrServerURL},
+					ErrIsOnline: tc.errIsOnline, ErrServerFQDN: tc.ErrServerFQDN},
 				hostname,
 				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()))
 			require.NoError(t, err, "Setup: New should return no error")

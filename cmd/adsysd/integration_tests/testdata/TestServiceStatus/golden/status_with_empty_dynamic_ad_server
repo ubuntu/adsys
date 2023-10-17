@@ -11,7 +11,7 @@ Active Directory:
   Configuration: testdata/sssd-configs/sssd.conf-online_no_active_server
   Cache: /tmp/sss_cache
   Domain: online_no_active_server
-  Server URL: Unknown
+  Server FQDN: Unknown
 
 Daemon:
   Timeout after 30s

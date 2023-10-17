@@ -53,16 +53,16 @@ func TestSSSD(t *testing.T) {
 		// So, it can fails or work. Decide depending on the file existence.
 		"No sssd conf loads the default": {sssdConf: ""},
 
-		// ServerURL error cases (this doesn't fail New)
-		"ServerURL() does not fail when we do not need an active server":        {sssdConf: "active-server-err.example.com-with-server"},
-		"Error returned by ServerURL() on no config nor active server provided": {sssdConf: "no-active-server-example.com"},
-		"Error returned by ServerURL() when calls is erroring out":              {sssdConf: "active-server-err.example.com"},
+		// ServerFQDN error cases (this doesn't fail New)
+		"ServerFQDN() does not fail when we do not need an active server":        {sssdConf: "active-server-err.example.com-with-server"},
+		"Error returned by ServerFQDN() on no config nor active server provided": {sssdConf: "no-active-server-example.com"},
+		"Error returned by ServerFQDN() when calls is erroring out":              {sssdConf: "active-server-err.example.com"},
 
 		// IsOnline error case (this doesn't fail New)
 		"Error returned by IsOnline()  when calls is erroring out": {sssdConf: "is-online-err-example.com"},
 
-		// Common ServerURL and IsOnline error cases (this doesn't fail New)
-		"Error returned by ServerURL() and IsOnline() when DBUS has no object": {sssdConf: "domain-without-dbus.example.com"},
+		// Common ServerFQDN and IsOnline error cases (this doesn't fail New)
+		"Error returned by ServerFQDN() and IsOnline() when DBUS has no object": {sssdConf: "domain-without-dbus.example.com"},
 
 		// Error cases
 		"Error on sssd conf does not exists":   {sssdConf: "does_no_exists", wantErr: true},
