@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/maruel/natural"
 	log "github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/e2e/internal/az"
 	"github.com/ubuntu/adsys/e2e/internal/command"
@@ -61,7 +60,8 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	isDevelopmentVersion := strings.Contains(cmd.Inventory.BaseVMImage, "daily")
-	nextImageVersion := incrementVersion(latestImageVersion, isDevelopmentVersion)
+	buildNumber := az.ImageBuildNumber(cmd.Inventory.BaseVMImage)
+	nextImageVersion := constructNewVersion(latestImageVersion, buildNumber, isDevelopmentVersion)
 
 	// Destroy VM if template creation fails
 	defer func() {
@@ -134,26 +134,30 @@ func action(ctx context.Context, cmd *command.Command) error {
 	return nil
 }
 
-func incrementVersion(version string, dev bool) string {
-	firstVersion := "0.0.1"
-	// Non-development images begin at 1.0.0
-	if !dev {
-		firstVersion = "1.0.0"
-		if natural.Less(version, firstVersion) {
-			return firstVersion
-		}
+// constructNewVersion builds a new version number for the image definition.
+// If the major and minor versions are identical, the patch version is incremented.
+// Otherwise, the patch version is reset to 0.
+func constructNewVersion(prevVersion, buildNumber string, dev bool) string {
+	newMajor := "1"
+	if dev {
+		newMajor = "0"
 	}
+	newMinor := buildNumber
 
-	parts := strings.Split(version, ".")
-	if len(parts) != 3 {
-		return firstVersion
-	}
-
-	patch, err := strconv.Atoi(parts[2])
+	parts := strings.Split(prevVersion, ".")
+	prevMajor := parts[0]
+	prevMinor := parts[1]
+	prevPatch, err := strconv.Atoi(parts[2])
 	if err != nil {
-		return firstVersion
+		return fmt.Sprintf("%s.%s.0", newMajor, newMinor)
 	}
-	patch++
 
-	return fmt.Sprintf("%s.%d", strings.Join(parts[:2], "."), patch)
+	newPatch := prevPatch
+	newPatch++
+	// Reset patch version if major or minor version changed
+	if prevMajor != newMajor || prevMinor != buildNumber {
+		newPatch = 0
+	}
+
+	return fmt.Sprintf("%s.%s.%d", newMajor, buildNumber, newPatch)
 }

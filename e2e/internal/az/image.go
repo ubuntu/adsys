@@ -8,6 +8,7 @@ import (
 
 	"github.com/maruel/natural"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 )
 
 // Image contains information about an Azure image.
@@ -20,6 +21,9 @@ type Image struct {
 	Version      string `json:"version"`
 }
 
+// Images represents a list of Azure images.
+type Images []Image
+
 type imageVersion struct {
 	Version string `json:"name"`
 }
@@ -30,11 +34,11 @@ func ImageDefinitionName(codename string) string {
 	return fmt.Sprintf("ubuntu-desktop-%s", codename)
 }
 
-// Images returns a list of Azure images for the given codename.
-func Images(ctx context.Context, codename string) ([]Image, error) {
+// ImageList returns a list of Azure images for the given codename.
+func ImageList(ctx context.Context, codename string) (Images, error) {
 	out, _, err := RunCommand(ctx, "vm", "image", "list",
 		"--publisher", "Canonical",
-		"--offer", fmt.Sprintf("0001-com-ubuntu-server-%s", codename),
+		"--offer", fmt.Sprintf("0001-com-ubuntu-minimal-%s", codename),
 		"--all",
 	)
 	if err != nil {
@@ -49,14 +53,44 @@ func Images(ctx context.Context, codename string) ([]Image, error) {
 	return images, nil
 }
 
-// Daily returns true if the given image is a daily image.
-func (i Image) Daily() bool {
-	return i.Architecture == "x64" && i.isGen2Image() && i.isDailyImage()
+// LatestDaily returns the latest daily image for the given codename.
+func (images Images) LatestDaily() (Image, error) {
+	// Prepare list of eligible images
+	dailyImages := []Image{}
+	for _, image := range images {
+		if image.Architecture == "x64" && image.isGen2Image() && image.isDailyImage() {
+			dailyImages = append(dailyImages, image)
+		}
+	}
+
+	if len(dailyImages) == 0 {
+		return Image{}, fmt.Errorf("no daily image found")
+	}
+
+	// Reverse sort images by version
+	slices.SortFunc(dailyImages, func(i, j Image) bool { return j.Version < i.Version })
+
+	return dailyImages[0], nil
 }
 
-// Stable returns true if the given image is a stable image.
-func (i Image) Stable() bool {
-	return i.Architecture == "x64" && i.isGen2Image() && !i.isDailyImage()
+// LatestStable returns the latest stable image for the given codename.
+func (images Images) LatestStable() (Image, error) {
+	// Prepare list of eligible images
+	stableImages := []Image{}
+	for _, image := range images {
+		if image.Architecture == "x64" && image.isGen2Image() && !image.isDailyImage() {
+			stableImages = append(stableImages, image)
+		}
+	}
+
+	if len(stableImages) == 0 {
+		return Image{}, fmt.Errorf("no stable image found")
+	}
+
+	// Reverse sort images by version
+	slices.SortFunc(stableImages, func(i, j Image) bool { return j.Version < i.Version })
+
+	return stableImages[0], nil
 }
 
 func (i Image) isDailyImage() bool {
@@ -96,4 +130,15 @@ func LatestImageVersion(ctx context.Context, imageDefinition string) (string, er
 	}
 
 	return latestVersion, nil
+}
+
+// ImageBuildNumber returns the build number of the image given a version in the following format
+// Canonical:0001-com-ubuntu-minimal-mantic:minimal-23_10-gen2:23.10.202310110 (202310110).
+func ImageBuildNumber(baseVMImage string) string {
+	urnParts := strings.Split(baseVMImage, ":")
+	version := urnParts[len(urnParts)-1]
+	versionParts := strings.Split(version, ".")
+	buildNumber := versionParts[len(versionParts)-1]
+
+	return buildNumber
 }

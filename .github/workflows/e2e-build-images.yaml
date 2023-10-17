@@ -71,33 +71,37 @@ jobs:
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/id_rsa-integration
-          chmod 600 ~/.ssh/id_rsa-integration
+          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/id_rsa-e2e
+          chmod 600 ~/.ssh/id_rsa-e2e
       - name: Check if template needs to be created
-        continue-on-error: true
         id: check-vm-template
         run: |
-          set -o pipefail
+          set -eu
+
+          force=""
           if [ "${{ inputs.force }}" = "true" ]; then
               force="--force"
           fi
-          go run ./e2e/cmd/00_check_vm_image --codename ${{ matrix.codename }} ${force} | tee image_urn.txt
+
+          IMAGE_VERSION=$(go run ./e2e/cmd/00_check_vm_image --codename ${{ matrix.codename }} ${force})
+          if [ ! -z "${IMAGE_VERSION}" ]; then
+              echo image-version=$IMAGE_VERSION >> $GITHUB_OUTPUT
+          fi
 
       # These steps only run if the template needs to be created
       - name: Set up VPN connection
         uses: ./.github/actions/azure-sstpc-vpn
-        if: steps.check-vm-template.outcome == 'success'
+        if: steps.check-vm-template.outputs.image-version != ''
         with:
           gateway: ${{ secrets.VPN_GATEWAY }}
           ca: ${{ secrets.VPN_CA }}
           cert: ${{ secrets.VPN_CERT }}
           key: ${{ secrets.VPN_KEY }}
       - name: Build base VM
-        if: steps.check-vm-template.outcome == 'success'
+        if: steps.check-vm-template.outputs.image-version != ''
         run: |
-          URN=$(cat image_urn.txt)
-          go run ./e2e/cmd/01_prepare_base_vm --vm-image ${URN} --codename ${{ matrix.codename }} --ssh-key ~/.ssh/id_rsa-integration
+          go run ./e2e/cmd/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }} --ssh-key ~/.ssh/id_rsa-e2e
       - name: Create template version
-        if: steps.check-vm-template.outcome == 'success'
+        if: steps.check-vm-template.outputs.image-version != ''
         run: |
           go run ./e2e/cmd/02_create_vm_template
