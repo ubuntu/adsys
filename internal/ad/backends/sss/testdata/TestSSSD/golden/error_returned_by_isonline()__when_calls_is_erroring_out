@@ -1,5 +1,5 @@
 * Domain(): isonlineerr.example.com
-* ServerURL(): ldap://dynamic_active_server.isonlineerr.example.com
+* ServerURL(): dynamic_active_server.isonlineerr.example.com
 * IsOnline ERROR(): failed to retrieve offline state from SSSD: IsOnline dbus call Error
 * HostKrb5CCName(): /var/lib/sss/db/ccache_ISONLINEERR.EXAMPLE.COM
 * DefaultDomainSuffix(): isonlineerr.example.com

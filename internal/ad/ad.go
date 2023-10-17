@@ -232,7 +232,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return cachedPolicies, nil
 	}
 
-	// We need an AD LDAP url to connect to
+	// We need an AD DC to connect to
 	adServerURL, err := ad.configBackend.ServerURL(ctx)
 	if err != nil {
 		return policies.Policies{}, fmt.Errorf(i18n.G("can't get current Server URL: %w"), err)

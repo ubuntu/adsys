@@ -1,5 +1,5 @@
 * Domain(): noactiveserver.example.com
-* ServerURL(): ldap://mystaticserver.example.com
+* ServerURL(): mystaticserver.example.com
 * IsOnline(): true
 * HostKrb5CCName(): /var/lib/sss/db/ccache_NOACTIVESERVER.EXAMPLE.COM
 * DefaultDomainSuffix(): noactiveserver.example.com

@@ -162,18 +162,18 @@ func (w Winbind) DefaultDomainSuffix() string {
 func (w Winbind) ServerURL(ctx context.Context) (serverURL string, err error) {
 	defer decorate.OnError(&err, i18n.G("error while trying to look up AD server address on winbind"))
 
-	if w.staticServerURL != "" && !strings.HasPrefix(w.staticServerURL, "ldap://") {
-		return fmt.Sprintf("ldap://%s", w.staticServerURL), nil
+	if w.staticServerURL != "" {
+		return strings.TrimPrefix(w.staticServerURL, "ldap://"), nil
 	}
 
 	log.Debugf(ctx, "Triggering autodiscovery of AD server because winbind configuration does not provide an ad_server for %q", w.domain)
-	dc, err := dcName(w.domain)
+	serverURL, err = dcName(w.domain)
 	if err != nil {
 		return "", err
 	}
-	dc = strings.TrimPrefix(dc, `\\`)
+	serverURL = strings.TrimPrefix(serverURL, `\\`)
 
-	return fmt.Sprintf("ldap://%s", dc), nil
+	return serverURL, nil
 }
 
 // Config returns a stringified configuration for Winbind backend.

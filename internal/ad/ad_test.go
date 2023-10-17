@@ -558,7 +558,7 @@ func TestGetPolicies(t *testing.T) {
 				}
 			}
 			if tc.backend.ServURL == "" {
-				tc.backend.ServURL = "ldap://myserver." + tc.backend.Dom
+				tc.backend.ServURL = "myserver." + tc.backend.Dom
 			}
 			// we file in host_ccache to not have to reset it in every single test
 			if tc.backend.HostKrb5CCNamePath == "" {
@@ -696,7 +696,7 @@ func TestGetPoliciesOffline(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			tc.backend.ServURL = "ldap://myserver." + tc.backend.Dom
+			tc.backend.ServURL = "myserver." + tc.backend.Dom
 			tc.backend.HostKrb5CCNamePath = filepath.Join(t.TempDir(), "host_ccache")
 			testutils.CreatePath(t, tc.backend.HostKrb5CCNamePath)
 
@@ -848,7 +848,7 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 
 			backend := mock.Backend{
 				Dom:                "assetsandgpo.com",
-				ServURL:            "ldap://UNUSED:1636/",
+				ServURL:            "UNUSED:1636",
 				HostKrb5CCNamePath: filepath.Join(t.TempDir(), "host_ccache"),
 				Online:             true,
 			}
@@ -1007,7 +1007,7 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 
 			backend := mock.Backend{
 				Dom:                "assetsandgpo.com",
-				ServURL:            "ldap://UNUSED:1636/",
+				ServURL:            "UNUSED:1636",
 				HostKrb5CCNamePath: filepath.Join(t.TempDir(), "host_ccache"),
 				Online:             true,
 			}
@@ -1178,7 +1178,7 @@ func TestListUsers(t *testing.T) {
 				require.NoError(t, os.Remove(srcPath), "Setup: can’t remove krb5cc symlink target")
 			}
 
-			adc, err := ad.New(context.Background(), mock.Backend{Dom: "gpoonly.com", ServURL: "ldap://myserver.gpoonly.com"}, hostname,
+			adc, err := ad.New(context.Background(), mock.Backend{Dom: "gpoonly.com", ServURL: "myserver.gpoonly.com"}, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir))
 			require.NoError(t, err, "Setup: New should return no error")
 
@@ -1234,7 +1234,7 @@ func TestGetInfo(t *testing.T) {
 
 			adc, err := ad.New(context.Background(),
 				mock.Backend{
-					Dom: "example.com", ServURL: "ldap://myserver.example.com",
+					Dom: "example.com", ServURL: "myserver.example.com",
 					Online:      tc.online,
 					ErrIsOnline: tc.errIsOnline, ErrServerURL: tc.ErrServerURL},
 				hostname,
@@ -1289,7 +1289,7 @@ func TestNormalizeTargetName(t *testing.T) {
 			t.Parallel()
 
 			adc, err := ad.New(context.Background(),
-				mock.Backend{Dom: tc.defaultDomainSuffix, ServURL: "ldap://myserver.gpoonly.com"}, // Dom is the default domain suffix in the mock
+				mock.Backend{Dom: tc.defaultDomainSuffix, ServURL: "myserver.gpoonly.com"}, // Dom is the default domain suffix in the mock
 				hostname,
 				ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()))
 			require.NoError(t, err, "Setup: New should return no error")

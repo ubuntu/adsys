@@ -1,5 +1,5 @@
 * Domain(): offline.example.com
-* ServerURL(): ldap://dynamic_active_server.offline.example.com
+* ServerURL(): dynamic_active_server.offline.example.com
 * IsOnline(): false
 * HostKrb5CCName(): /var/lib/sss/db/ccache_OFFLINE.EXAMPLE.COM
 * DefaultDomainSuffix(): offline.example.com

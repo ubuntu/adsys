@@ -73,8 +73,8 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 
 	// Server url
 	staticServerURL := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_server").String()
-	if staticServerURL != "" && !strings.HasPrefix(staticServerURL, "ldap://") {
-		staticServerURL = fmt.Sprintf("ldap://%s", staticServerURL)
+	if staticServerURL != "" {
+		staticServerURL = strings.TrimPrefix(staticServerURL, "ldap://")
 	}
 
 	// local machine sssd krb5 cache
@@ -117,11 +117,7 @@ func (sss SSS) ServerURL(ctx context.Context) (serverURL string, err error) {
 		return "", backends.ErrNoActiveServer
 	}
 
-	if !strings.HasPrefix(serverURL, "ldap://") {
-		serverURL = fmt.Sprintf("ldap://%s", serverURL)
-	}
-
-	return serverURL, nil
+	return strings.TrimPrefix(serverURL, "ldap://"), nil
 }
 
 // HostKrb5CCName returns the absolute path of the machine krb5 ticket.
