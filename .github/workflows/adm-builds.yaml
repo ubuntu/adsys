@@ -40,8 +40,8 @@ jobs:
     steps:
       - name: Install needed binaries
         run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y distro-info jq
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info jq
       - name: Build matrix for supported ADSys, Ubuntu, and docker releases
         id: set-supported-releases
         run: |
@@ -96,8 +96,8 @@ jobs:
       - name: Install desktop with all default package in container
         run: |
           export DEBIAN_FRONTEND=noninteractive
-          apt update
-          apt -y install ubuntu-desktop
+          apt-get update
+          apt-get -y install ubuntu-desktop
       - name: Collect support keys
         run: |
           chmod 755 ./admxgen
@@ -127,8 +127,8 @@ jobs:
     steps:
       - name: Install needed binaries
         run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y distro-info
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
       - name: Download all available artifacts
         uses: actions/download-artifact@v3
         with:

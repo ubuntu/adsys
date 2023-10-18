@@ -23,8 +23,8 @@ jobs:
     steps:
       - name: Install needed binaries
         run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y distro-info
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
       - name: Build matrix
         id: set-supported-releases
         run: |

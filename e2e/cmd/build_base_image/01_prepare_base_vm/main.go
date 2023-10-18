@@ -142,15 +142,13 @@ func action(ctx context.Context, cmd *command.Command) error {
 	// Install required dependencies
 	log.Infof("Installing eatmydata to speed up package installation...")
 	if _, err := client.Run(ctx, `echo force-unsafe-io | sudo tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io && \
-sudo DEBIAN_FRONTEND=noninteractive apt-get update && \
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y eatmydata`); err != nil {
+sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y eatmydata`); err != nil {
 		return fmt.Errorf("failed to set up eatmydata: %w", err)
 	}
 
 	log.Infof("Installing required packages on VM...")
 	if _, err := client.Run(ctx, `echo force-unsafe-io | sudo tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io && \
-sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get update && \
-sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get upgrade -y && \
+sudo eatmydata apt-get update && sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get upgrade -y && \
 sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get install -y ubuntu-desktop realmd nfs-common cifs-utils && \
 sudo sync && \
 sudo rm -f /etc/dpkg/dpkg.cfg.d/force-unsafe-io
