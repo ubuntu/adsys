@@ -1,0 +1,27 @@
+diff --git a/debian/control b/debian/control
+index d6fb19f2..85eab447 100644
+--- a/debian/control
++++ b/debian/control
+@@ -5,7 +5,7 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+ Build-Depends: debhelper-compat (= 13),
+                dh-apport,
+                dh-golang,
+-               golang-go (>= 2:1.20~),
++               golang-1.20-go,
+                libsmbclient-dev,
+                libdbus-1-dev,
+                libglib2.0-dev,
+diff --git a/debian/rules b/debian/rules
+index 43646c6a..b984a796 100755
+--- a/debian/rules
++++ b/debian/rules
+@@ -25,5 +25,8 @@ export DH_GOLANG_INSTALL_ALL := 1
+ # Tests needing sudo will be skipped automatically
+ export ADSYS_SKIP_INTEGRATION_TESTS=1
+
++# Run with Go 1.20
++export PATH := /usr/lib/go-1.20/bin/:$(PATH)
++
+ %:
+        dh $@ --buildsystem=golang --with=golang,apport
+

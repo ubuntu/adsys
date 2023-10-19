@@ -1,0 +1,107 @@
+name: E2E - Build image templates
+
+on:
+  workflow_dispatch:
+    inputs:
+      codenames:
+        description: 'Comma-separated list of codenames to build for (e.g. "mantic", "focal") - will build for all supported releases if not specified'
+        type: string
+        required: false
+      force:
+        description: 'Force building new templates even if they already exist'
+        type: boolean
+        required: false
+  schedule:
+    - cron: '42 0 * * 0' # 00:42 UTC every Sunday
+
+jobs:
+  supported-releases:
+    name: Build matrix for supported ADSys and Ubuntu releases
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-supported-releases.outputs.matrix }}
+    steps:
+      - name: Install needed binaries
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
+      - name: Build matrix
+        id: set-supported-releases
+        run: |
+          set -eu
+
+          all="$(distro-info --supported-esm) $(distro-info --supported)"
+          all="$(echo $all | tr ' ' '\n' | sort -u)"
+
+          releases=""
+
+          for r in ${all}; do
+              # Filter out unsupported LTS releases
+              if [ "${r}" = "trusty" -o "${r}" = "xenial" -o "${r}" = "bionic" ]; then
+                  continue
+              fi
+
+              if [ -n "${releases}" ]; then
+                  releases="${releases}, "
+              fi
+              releases="${releases}'${r}'"
+          done
+
+          echo matrix="${releases}" >> $GITHUB_OUTPUT
+
+  build-template:
+    name: Build VM template
+    runs-on: ubuntu-latest
+    concurrency:
+      group: template-build-${{ matrix.codename }}
+    needs:
+      - supported-releases
+    strategy:
+      matrix:
+        codename: ${{ fromJSON(format('[{0}]', inputs.codenames || needs.supported-releases.outputs.matrix)) }}
+      fail-fast: false
+    steps:
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/id_rsa-e2e
+          chmod 600 ~/.ssh/id_rsa-e2e
+      - name: Check if template needs to be created
+        id: check-vm-template
+        run: |
+          set -eu
+
+          force=""
+          if [ "${{ inputs.force }}" = "true" ]; then
+              force="--force"
+          fi
+
+          IMAGE_VERSION=$(go run ./e2e/cmd/build_image/00_check_vm_image --codename ${{ matrix.codename }} ${force})
+          if [ ! -z "${IMAGE_VERSION}" ]; then
+              echo image-version=$IMAGE_VERSION >> $GITHUB_OUTPUT
+          fi
+
+      # These steps only run if the template needs to be created
+      - name: Set up VPN connection
+        uses: ./.github/actions/azure-sstpc-vpn
+        if: steps.check-vm-template.outputs.image-version != ''
+        with:
+          gateway: ${{ secrets.VPN_GATEWAY }}
+          ca: ${{ secrets.VPN_CA }}
+          cert: ${{ secrets.VPN_CERT }}
+          key: ${{ secrets.VPN_KEY }}
+      - name: Build base VM
+        if: steps.check-vm-template.outputs.image-version != ''
+        run: |
+          go run ./e2e/cmd/build_image/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }} --ssh-key ~/.ssh/id_rsa-e2e
+      - name: Create template version
+        if: steps.check-vm-template.outputs.image-version != ''
+        run: |
+          go run ./e2e/cmd/build_image/02_create_vm_template

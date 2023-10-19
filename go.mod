@@ -13,10 +13,14 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/golang/protobuf v1.5.3
 	github.com/gomarkdown/markdown v0.0.0-20230922105210-14b16010c2ee
+	github.com/google/uuid v1.3.0
 	github.com/kardianos/service v1.2.2
 	github.com/leonelquinteros/gotext v1.5.3-0.20230829162019-37f474cfb069
+	github.com/maruel/natural v1.1.0
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.15.2
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
+	github.com/pkg/sftp v1.13.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
 	github.com/spf13/cobra v1.7.0
@@ -26,6 +30,7 @@ require (
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
 	github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117
 	github.com/ubuntu/go-i18n v0.0.0-20230830081132-d6654b958899
+	golang.org/x/crypto v0.14.0
 	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5
 	golang.org/x/net v0.17.0
 	golang.org/x/sync v0.4.0
@@ -50,6 +55,7 @@ require (
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/kr/fs v0.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -63,6 +69,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect

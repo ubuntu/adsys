@@ -53,8 +53,8 @@ jobs:
     steps:
       - name: Install dependencies
         run: |
-          sudo DEBIAN_FRONTEND=noninteractive apt update
-          sudo DEBIAN_FRONTEND=noninteractive apt install -y ${{ env.apt_dependencies }}
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
       # Checkout code with git
       - uses: actions/checkout@v4
         with:

@@ -17,6 +17,7 @@ vendor/
 
 # Package artefacts
 obj-x86_64-linux-gnu/
+output/
 installer/Output
 
 # Various cruft to not consider by default
@@ -36,6 +37,9 @@ debian/adsys-windows
 /adsysd
 /adsysctl
 /adsys.yaml
+
+# E2E testing
+inventory.yaml
 
 # GitHub CI temporary files
 node_modules

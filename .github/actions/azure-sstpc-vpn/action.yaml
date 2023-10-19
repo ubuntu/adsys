@@ -1,0 +1,91 @@
+name: Connect to Azure SSTP VPN
+description: 'Connects to Azure SSTP VPN using EAP-TLS authentication'
+
+inputs:
+  gateway:
+    description: Gateway to connect to, e.g. azuregateway-UUID.vpn.azure.com
+    required: true
+  ca:
+    description: CA certificate to use for the connection
+    required: true
+  cert:
+    description: Certificate to use for the connection
+    required: true
+  key:
+    description: Private key to use for the connection
+    required: true
+  routes:
+    description: Routes to add after connecting
+    required: false
+    default: 10.1.0.0/16
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install required packages from PPA
+      shell: bash
+      run: |
+        sudo add-apt-repository -y ppa:gabuscus/ppp
+        sudo apt-get update
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y sstp-client
+    - name: Write certificate data to disk
+      shell: bash
+      env:
+        CA: ${{ inputs.ca }}
+        CERT: ${{ inputs.cert }}
+        KEY: ${{ inputs.key }}
+      run: |
+        sudo mkdir -p /vpn-certificates
+        sudo tee /vpn-certificates/ca.pem > /dev/null <<< "${{ env.CA }}"
+        sudo tee /vpn-certificates/cert.pem > /dev/null <<< "${{ env.CERT }}"
+        sudo tee /vpn-certificates/key.pem > /dev/null <<< "${{ env.KEY }}"
+        sudo chmod 600 /vpn-certificates/key.pem
+    - name: Prepare peer configuration
+      shell: bash
+      env:
+        GATEWAY: ${{ inputs.gateway }}
+      run: |
+        CN=$(sudo openssl x509 -noout -subject -nameopt multiline -in /vpn-certificates/cert.pem | sed -n 's/ *commonName *= //p')
+
+        sudo tee /etc/ppp/peers/azure-vpn > /dev/null << EOF
+        remotename      azure-vpn
+        linkname        azure-vpn
+        ipparam         azure-vpn
+        pty             "sstpc --cert-warn --log-stderr --ipparam azure-vpn --nolaunchpppd --ca-cert /vpn-certificates/ca.pem ${GATEWAY}"
+        name            ${CN}
+        plugin          /usr/lib/pppd/2.5.0/sstp-pppd-plugin.so
+        sstp-sock       /run/sstpc/sstpc-azure-vpn
+        require-eap
+        refuse-mschap-v2
+        refuse-pap
+        refuse-chap
+        refuse-mschap
+        nobsdcomp
+        nodeflate
+        noauth
+        noipv6
+        nodefaultroute6
+        ca              /vpn-certificates/ca.pem
+        cert            /vpn-certificates/cert.pem
+        key             /vpn-certificates/key.pem
+        EOF
+
+    - name: Establish VPN connection
+      shell: bash
+      run: |
+        sudo pon azure-vpn
+    - name: Wait for VPN connection to be up
+      shell: bash
+      run: |
+        timeout 30 bash -c 'while ! ip a | grep ppp0 | grep -q ,UP; do sleep 5; done'
+    - name: Add routes if requested
+      shell: bash
+      if: ${{ inputs.routes }} != ''
+      env:
+        ROUTES: ${{ inputs.routes }}
+      run: |
+        # split routes by comma
+        IFS=',' read -ra ADDR <<< "${{ env.ROUTES }}"
+        for i in "${ADDR[@]}"; do
+            sudo ip route add $i dev ppp0
+        done
