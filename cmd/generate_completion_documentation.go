@@ -60,12 +60,13 @@ func main() {
 		if generators.InstallOnlyMode() {
 			return
 		}
-		updateFromCmd(commands, "README.md")
 	case "update-doc-cli-ref":
 		if generators.InstallOnlyMode() {
 			return
 		}
-		updateFromCmd(commands, filepath.Join("doc", "16.-Command-line-reference.md"))
+		for _, cmd := range commands {
+			updateDocReferenceFromCmd(cmd, filepath.Join("docs", "reference", fmt.Sprintf("%s-cli.md", strings.ToLower(cmd.Name()))))
+		}
 	default:
 		log.Fatalf(usage, os.Args[0])
 	}
@@ -121,9 +122,9 @@ func genManPages(cmds []cobra.Command, dir string) {
 	}
 }
 
-// updateFromCmd creates a file containing the detail of the commands
+// updateDocReferenceFromCmd creates a file containing the detail of the commands
 // the target filePath is relative to the root of the project
-func updateFromCmd(cmds []cobra.Command, filePath string) {
+func updateDocReferenceFromCmd(cmd cobra.Command, filePath string) {
 	_, current, _, ok := runtime.Caller(1)
 	if !ok {
 		log.Fatal("Couldn't find current file name")
@@ -131,58 +132,22 @@ func updateFromCmd(cmds []cobra.Command, filePath string) {
 
 	targetFile := filepath.Join(filepath.Dir(current), "..", filePath)
 
-	in, err := os.Open(targetFile)
-	if err != nil {
-		log.Fatalf("Couldn't open source readme file: %v", err)
-	}
-	defer in.Close()
-
 	tmp, err := os.Create(targetFile + ".new")
 	if err != nil {
 		log.Fatalf("Couldn't create temporary readme file: %v", err)
 	}
 	defer tmp.Close()
 
-	src := bufio.NewScanner(in)
-	// Write header
-	for src.Scan() {
-		mustWriteLine(tmp, src.Text())
-		if src.Text() == "## Usage" {
-			mustWriteLine(tmp, "")
-			break
-		}
-	}
-	if err := src.Err(); err != nil {
-		log.Fatalf("Error when scanning source readme file: %v", err)
-	}
+	mustWriteLine(tmp, fmt.Sprintf("# %s command line\n", cmd.Name()))
 
 	// Write markdown
-	user, hidden := getCmdsAndHiddens(cmds)
-	mustWriteLine(tmp, "### User commands\n")
+	user, hidden := getUserAndHiddenCmds(cmd)
+	mustWriteLine(tmp, "## User commands\n")
 	filterCommandMarkdown(user, tmp)
-	mustWriteLine(tmp, "### Hidden commands\n")
+	mustWriteLine(tmp, "## Hidden commands\n")
 	mustWriteLine(tmp, "Those commands are hidden from help and should primarily be used by the system or for debugging.\n")
 	filterCommandMarkdown(hidden, tmp)
 
-	// Write footer (skip previously generated content)
-	skip := true
-	for src.Scan() {
-		if strings.HasPrefix(src.Text(), "## ") {
-			skip = false
-		}
-		if skip {
-			continue
-		}
-
-		mustWriteLine(tmp, src.Text())
-	}
-	if err := src.Err(); err != nil {
-		log.Fatalf("Error when scanning source readme file: %v", err)
-	}
-
-	if err := in.Close(); err != nil {
-		log.Fatalf("Couldn't close source Rreadme file: %v", err)
-	}
 	if err := tmp.Close(); err != nil {
 		log.Fatalf("Couldn't close temporary readme file: %v", err)
 	}
@@ -234,21 +199,12 @@ func genManTreeFromOpts(cmd *cobra.Command, opts doc.GenManTreeOptions) error {
 	return doc.GenMan(cmd, &headerCopy, f)
 }
 
-func getCmdsAndHiddens(cmds []cobra.Command) (user []cobra.Command, hidden []cobra.Command) {
-	for _, cmd := range cmds {
-		cmd := cmd
-		// Run ExecuteC to install completion and help commands
-		_, _ = cmd.ExecuteC()
-		user = append(user, cmd)
-		user = append(user, collectSubCmds(cmd, false /* selectHidden */, false /* parentWasHidden */)...)
-	}
-
-	for _, cmd := range cmds {
-		cmd := cmd
-		// Run ExecuteC to install completion and help commands
-		_, _ = cmd.ExecuteC()
-		hidden = append(hidden, collectSubCmds(cmd, true /* selectHidden */, false /* parentWasHidden */)...)
-	}
+func getUserAndHiddenCmds(cmd cobra.Command) (user []cobra.Command, hidden []cobra.Command) {
+	// Run ExecuteC to install completion and help commands
+	_, _ = cmd.ExecuteC()
+	user = append(user, cmd)
+	user = append(user, collectSubCmds(cmd, false /* selectHidden */, false /* parentWasHidden */)...)
+	hidden = append(hidden, collectSubCmds(cmd, true /* selectHidden */, false /* parentWasHidden */)...)
 
 	return user, hidden
 }
@@ -305,9 +261,9 @@ func filterCommandMarkdown(cmds []cobra.Command, w io.Writer) {
 			continue
 		}
 
-		// Add 2 levels of subindentation
+		// Add 1 level of subindentation
 		if strings.HasPrefix(l, "##") {
-			l = "##" + l
+			l = "#" + l
 		}
 
 		// Special case # Linux an # macOS in shell completion:
