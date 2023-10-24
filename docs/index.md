@@ -22,12 +22,14 @@ explanation/index
 
 ````{grid} 1 1 2 2
 
-```{grid-item} [Tutorials](tutorial/index)
+```{grid-item}
+### [Tutorials](tutorial/index)
 
 **Start here**: a hands-on introduction to ADSys for new users
 ```
 
-```{grid-item} [How-to guides](how-to/index)
+```{grid-item}
+### [How-to guides](how-to/index)
 
 **Step-by-step guides** covering key operations and common tasks
 ```
@@ -36,12 +38,14 @@ explanation/index
 
 ````{grid} 1 1 2 2
 
-```{grid-item} [Explanation](explanation/index)
+```{grid-item}
+### [Explanation](explanation/index)
 
 **Discussion and clarification** of key topics
 ```
 
-```{grid-item} [Reference](reference/index)
+```{grid-item}
+### [Reference](reference/index)
 
 **Technical information** - specifications, APIs, architecture
 ```
