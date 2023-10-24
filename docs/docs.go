@@ -5,11 +5,11 @@ import (
 	"embed"
 )
 
-// Dir is the embedded directory containing documentation
+// Dir is the embedded directory containing documentation.
 // Only embed structured documentation.
 //
 //go:embed index.md tutorial/*.md how-to/*.md explanation/*.md reference/*.md
 var Dir embed.FS
 
-// Root of ReadTheDoc
+// RTDRootURL is the root url of ReadTheDoc adsys documentation.
 const RTDRootURL = "https://canonical-adsys.readthedocs-hosted.com/en/documentation_bootstrap"

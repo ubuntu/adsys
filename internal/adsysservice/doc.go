@@ -16,15 +16,13 @@ import (
 	"github.com/ubuntu/decorate"
 )
 
-// GetDoc returns a chapter documentation from server
+// GetDoc returns a chapter documentation from server.
 func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServer) (err error) {
 	defer decorate.OnError(&err, i18n.G("error while getting documentation"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
 	}
-
-	onlineDocURL := docs.RTDRootURL
 
 	// Get all documentation metadata
 	_, chaptersToFiles, filesToTitle, err := docStructure(docs.Dir, "index.md", "")
@@ -40,7 +38,7 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 		return fmt.Errorf("no documentation found for %q", r.GetChapter())
 	}
 
-	out, err := renderDocumentationPage(p, filesToTitle, onlineDocURL)
+	out, err := renderDocumentationPage(p, filesToTitle)
 	if err != nil {
 		return fmt.Errorf(i18n.G("could not read chapter %q: %v"), chapter, err)
 	}
@@ -83,7 +81,7 @@ func docStructure(dir embed.FS, indexFilePath, parentChapterName string) (ordere
 
 	f, err := dir.Open(indexFilePath)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("could not get main index file: %v", err)
+		return nil, nil, nil, fmt.Errorf("could not get main index file: %w", err)
 	}
 	defer f.Close()
 
@@ -168,7 +166,7 @@ func docStructure(dir embed.FS, indexFilePath, parentChapterName string) (ordere
 	}
 
 	if s.Err() != nil {
-		return nil, nil, nil, fmt.Errorf("can't scan index file: %v", err)
+		return nil, nil, nil, fmt.Errorf("can't scan index file: %w", err)
 	}
 
 	return orderedChapters, chaptersToFiles, filesToTitle, err
@@ -190,7 +188,7 @@ func titleFromPage(dir embed.FS, path string) (string, error) {
 	title := strings.TrimPrefix(strings.TrimSpace(s.Text()), "# ")
 
 	if s.Err() != nil {
-		return "", fmt.Errorf("can't scan file: %v", s.Err())
+		return "", fmt.Errorf("can't scan file: %w", s.Err())
 	}
 
 	return title, nil
@@ -204,7 +202,7 @@ func toCmdlineChapterName(t, parentChapterName string) string {
 	return strings.ToLower(strings.ReplaceAll(strings.TrimSpace(t), " ", "-"))
 }
 
-func renderDocumentationPage(p string, filesToTitle map[string]string, onlineDocURL string) (string, error) {
+func renderDocumentationPage(p string, filesToTitle map[string]string) (string, error) {
 	var out strings.Builder
 
 	currentDir := filepath.Dir(p)
@@ -272,7 +270,7 @@ func renderDocumentationPage(p string, filesToTitle map[string]string, onlineDoc
 	}
 
 	if s.Err() != nil {
-		return "", fmt.Errorf("can't scan file: %v", s.Err())
+		return "", fmt.Errorf("can't scan file: %w", s.Err())
 	}
 
 	return out.String(), nil
@@ -280,13 +278,15 @@ func renderDocumentationPage(p string, filesToTitle map[string]string, onlineDoc
 
 var reURL = regexp.MustCompile(`\.\./images/(.+/)*`)
 
+// imageURLToRTDURL rewrites images links to match Read the Docs format.
 func imageURLToRTDURL(imageLine string) string {
 	return reURL.ReplaceAllString(imageLine, docs.RTDRootURL+"/_images/")
 }
 
-// Regular expression pattern to match [title](URL)
+// Regular expression pattern to match [title](URL).
 var reInternalLinksURL = regexp.MustCompile(`\[(.*?)\]\(.*?\)`)
 
+// stripInternalLinks strips the link part from URL.
 func stripInternalLinks(line string) string {
 	if strings.Contains(line, "http") {
 		return line
