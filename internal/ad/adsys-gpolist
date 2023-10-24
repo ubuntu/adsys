@@ -283,8 +283,17 @@ def main():
         return ReturnCode.GPO_FAILED
 
     for g in gpos:
-        print("%s\tsmb:%s" % (g[0], str(g[1]).replace("\\", "/")))
+        gpo_name = g[0]
+        gpo_path = parse_gpo_path(g[1], fqdn)
+        print("%s\t%s" % (gpo_name, gpo_path))
 
+def parse_gpo_path(gpo_path, dc_fqdn):
+    ''' Parse a GPO path to a SMB path with the appropriate DC FQDN '''
+    path = str(gpo_path).replace("\\", "/")
+    parts = path[2:].split("/")
+    parts[0] = dc_fqdn
+
+    return "smb://" +"/".join(parts)
 
 if __name__ == "__main__":
     exit(main())

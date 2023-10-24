@@ -1,3 +1,3 @@
-RnDDep3 GPO	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/RnDDep3_GPO
-RnD GPO	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/RnD_GPO
-Default Domain Policy	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}
+RnDDep3 GPO	smb://ldap_url/SYSVOL/gpoonly.com/Policies/RnDDep3_GPO
+RnD GPO	smb://ldap_url/SYSVOL/gpoonly.com/Policies/RnD_GPO
+Default Domain Policy	smb://ldap_url/SYSVOL/gpoonly.com/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}

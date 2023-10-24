@@ -979,6 +979,9 @@ func TestPolicyUpdate(t *testing.T) {
 				tc.backend = "sssd"
 			}
 
+			if tc.winbindMockBehavior == "" {
+				tc.winbindMockBehavior = "integration_tests"
+			}
 			t.Setenv("ADSYS_WBCLIENT_BEHAVIOR", tc.winbindMockBehavior)
 
 			// Create fake certmonger and cepces binaries for the certificate manager

@@ -1,1 +1,1 @@
-RnDDepBlockInheritance GPO	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/RnDDepBlockInheritance_GPO
+RnDDepBlockInheritance GPO	smb://ldap_url/SYSVOL/gpoonly.com/Policies/RnDDepBlockInheritance_GPO
