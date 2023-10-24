@@ -13,4 +13,4 @@ There are two commands available:
 * The `run` command starts the directory watch loop in foreground mode. This is useful for debugging purposes, as it can be called with the same arguments as the service.
 * The `service` provides a set of subcommands to manage the service.
 
-For detailed descriptions and configuration options of `adwatchd`, refer to the [Command line reference](cli-reference.md) section.
+For detailed descriptions and configuration options of `adwatchd`, refer to the [Command line reference](adwatchd-cli.md) section.

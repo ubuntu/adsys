@@ -11,23 +11,24 @@ A Windows daemon, `adwatchd` can be installed on the domain controller to automa
 
 ````{grid} 1 1 2 2
 ```{grid-item}
-## Commands
-
-```{toctree}
-:titlesonly:
-adsysd <adsys-daemon>
-adsysctl command <adsysctl>
-```
-
-```{grid-item}
 ## Reference
 
 ```{toctree}
 :titlesonly:
-CLI reference <cli-reference>
-ADSys Watch Daemon <adwatchd>
+ADSys Control (adsysctl)<adsysctl>
+ADSys Daemon (adsysd)<adsys-daemon>
+ADSys Watch Daemon (adwatchd)<adwatchd>
 ```
 
+```{grid-item}
+## Command line
+
+```{toctree}
+:titlesonly:
+adsysctl<adsysctl-cli>
+adsysd<adsysd-cli>
+adwatchd<adwatchd-cli>
+```
 
 ````
 
