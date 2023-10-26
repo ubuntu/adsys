@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -398,6 +399,7 @@ func runDaemons() (teardown func()) {
 		answers[mode] = filepath.Join(dir, mode)
 	}
 
+	var errsDocker error
 	var wg sync.WaitGroup
 	for answer, socketDir := range answers {
 		answer := answer
@@ -423,9 +425,9 @@ func runDaemons() (teardown func()) {
 				answer,
 			)
 			out, _ := cmd.CombinedOutput()
-			// Docker stop -t 0 will kill it anyway the container with exit code 143
-			if cmd.ProcessState.ExitCode() > 0 && cmd.ProcessState.ExitCode() != 143 {
-				log.Fatalf("Error running system daemons container named %q:\n%v", answer, string(out))
+			// Docker stop -t 0 will kill it anyway the container with exit code 143 or 137 in mantic (-t 0 does not work there)
+			if cmd.ProcessState.ExitCode() > 0 && cmd.ProcessState.ExitCode() != 137 && cmd.ProcessState.ExitCode() != 143 {
+				errsDocker = errors.Join(errsDocker, fmt.Errorf("Error running system daemons container named %q:\nExit code: %d\n%v", answer, cmd.ProcessState.ExitCode(), string(out)))
 			}
 		}()
 	}
@@ -438,6 +440,11 @@ func runDaemons() (teardown func()) {
 	// TODO: wait for polkit containers to be ready
 	time.Sleep(5 * time.Second)
 
+	// Check if we got startup docker error
+	if errsDocker != nil {
+		log.Fatalf("Setup: docker errors (some may still be ALIVE): %v", errsDocker)
+	}
+
 	return func() {
 		defer func() {
 			err := os.RemoveAll(dir)
@@ -447,13 +454,20 @@ func runDaemons() (teardown func()) {
 		}()
 
 		for answer := range answers {
-			// #nosec G204: we control the args in tests
-			out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
-			if err != nil {
-				log.Fatalf("Teardown: can’t stop system daemons container: %v", string(out))
-			}
+			answer := answer
+			go func() {
+				// #nosec G204: we control the args in tests
+				out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
+				if err != nil {
+					errsDocker = errors.Join(errsDocker, fmt.Errorf("Teardown: can't stop system daemons container: %v", string(out)))
+				}
+			}()
 		}
+
 		wg.Wait()
+		if errsDocker != nil {
+			log.Fatalf("Teardown: docker errors: %v", errsDocker)
+		}
 	}
 }
 
