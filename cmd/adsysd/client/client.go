@@ -45,6 +45,14 @@ func New() *App {
 		Short: gotext.Get("AD integration client"),
 		Long:  gotext.Get(`Active Directory integration bridging toolset command line tool.`),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// __complete does not parse flag. Only get interested into our config flag
+			if cmd.Name() == cobra.ShellCompRequestCmd {
+				for i, arg := range args {
+					if arg == "-c" || arg == "--config" {
+						cmd.Flags().Set("config", args[i+1])
+					}
+				}
+			}
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
 			err := config.Init("adsys", a.rootCmd, a.viper, func(refreshed bool) error {
