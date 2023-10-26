@@ -1,5 +1,5 @@
 diff --git a/debian/control b/debian/control
-index d6fb19f2..85eab447 100644
+index d6fb19f2..93764223 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -5,7 +5,7 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
@@ -12,10 +12,10 @@ index d6fb19f2..85eab447 100644
                 libdbus-1-dev,
                 libglib2.0-dev,
 diff --git a/debian/rules b/debian/rules
-index 43646c6a..b984a796 100755
+index 43646c6a..403e7bb9 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -25,5 +25,8 @@ export DH_GOLANG_INSTALL_ALL := 1
+@@ -25,9 +25,14 @@ export DH_GOLANG_INSTALL_ALL := 1
  # Tests needing sudo will be skipped automatically
  export ADSYS_SKIP_INTEGRATION_TESTS=1
 
@@ -23,5 +23,10 @@ index 43646c6a..b984a796 100755
 +export PATH := /usr/lib/go-1.20/bin/:$(PATH)
 +
  %:
-        dh $@ --buildsystem=golang --with=golang,apport
+	dh $@ --buildsystem=golang --with=golang,apport
 
++override_dh_dwz:
++
+ override_dh_auto_clean:
+ 	dh_auto_clean
+ 	# Create the vendor directory when building the source package

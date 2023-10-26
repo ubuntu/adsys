@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -113,6 +114,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 		"--subnet", "default",
 		"--nic-delete-option", "Delete",
 		"--public-ip-address", "",
+		"--ssh-key-name", "adsys-e2e",
 		"--storage-sku", "StandardSSD_LRS",
 		"--os-disk-delete-option", "Delete",
 		"--tags", "project=AD", "subproject=adsys-e2e-tests", "lifetime=6h",
@@ -146,6 +148,9 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	ipAddress := vm.IP
 	id := vm.ID
+
+	// Sleep for a bit to let the VM finish booting
+	time.Sleep(5 * time.Second)
 
 	client, err := remote.NewClient(ipAddress, "root", sshKey)
 	if err != nil {
