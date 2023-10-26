@@ -11,7 +11,7 @@ service service {
   rpc DumpPolicies(DumpPoliciesRequest) returns (stream StringResponse);
   rpc DumpPoliciesDefinitions(DumpPolicyDefinitionsRequest) returns (stream DumpPolicyDefinitionsResponse);
   rpc GetDoc(GetDocRequest) returns (stream StringResponse);
-  rpc ListDoc(ListDocRequest) returns (stream StringResponse);
+  rpc ListDoc(Empty) returns (stream ListDocReponse);
   rpc ListUsers(ListUsersRequest) returns (stream StringResponse);
   rpc GPOListScript(Empty) returns (stream StringResponse);
   rpc CertAutoEnrollScript(Empty) returns (stream StringResponse);
@@ -60,6 +60,6 @@ message GetDocRequest {
   string chapter = 1;
 }
 
-message ListDocRequest {
-  bool raw = 1; // Set to true to not format the output of the table of content
+message ListDocReponse {
+  repeated string chapters = 1;
 }

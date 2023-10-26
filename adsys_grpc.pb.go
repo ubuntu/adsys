@@ -45,7 +45,7 @@ type ServiceClient interface {
 	DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (Service_DumpPoliciesClient, error)
 	DumpPoliciesDefinitions(ctx context.Context, in *DumpPolicyDefinitionsRequest, opts ...grpc.CallOption) (Service_DumpPoliciesDefinitionsClient, error)
 	GetDoc(ctx context.Context, in *GetDocRequest, opts ...grpc.CallOption) (Service_GetDocClient, error)
-	ListDoc(ctx context.Context, in *ListDocRequest, opts ...grpc.CallOption) (Service_ListDocClient, error)
+	ListDoc(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_ListDocClient, error)
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (Service_ListUsersClient, error)
 	GPOListScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_GPOListScriptClient, error)
 	CertAutoEnrollScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_CertAutoEnrollScriptClient, error)
@@ -315,7 +315,7 @@ func (x *serviceGetDocClient) Recv() (*StringResponse, error) {
 	return m, nil
 }
 
-func (c *serviceClient) ListDoc(ctx context.Context, in *ListDocRequest, opts ...grpc.CallOption) (Service_ListDocClient, error) {
+func (c *serviceClient) ListDoc(ctx context.Context, in *Empty, opts ...grpc.CallOption) (Service_ListDocClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[8], Service_ListDoc_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
@@ -331,7 +331,7 @@ func (c *serviceClient) ListDoc(ctx context.Context, in *ListDocRequest, opts ..
 }
 
 type Service_ListDocClient interface {
-	Recv() (*StringResponse, error)
+	Recv() (*ListDocReponse, error)
 	grpc.ClientStream
 }
 
@@ -339,8 +339,8 @@ type serviceListDocClient struct {
 	grpc.ClientStream
 }
 
-func (x *serviceListDocClient) Recv() (*StringResponse, error) {
-	m := new(StringResponse)
+func (x *serviceListDocClient) Recv() (*ListDocReponse, error) {
+	m := new(ListDocReponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -455,7 +455,7 @@ type ServiceServer interface {
 	DumpPolicies(*DumpPoliciesRequest, Service_DumpPoliciesServer) error
 	DumpPoliciesDefinitions(*DumpPolicyDefinitionsRequest, Service_DumpPoliciesDefinitionsServer) error
 	GetDoc(*GetDocRequest, Service_GetDocServer) error
-	ListDoc(*ListDocRequest, Service_ListDocServer) error
+	ListDoc(*Empty, Service_ListDocServer) error
 	ListUsers(*ListUsersRequest, Service_ListUsersServer) error
 	GPOListScript(*Empty, Service_GPOListScriptServer) error
 	CertAutoEnrollScript(*Empty, Service_CertAutoEnrollScriptServer) error
@@ -490,7 +490,7 @@ func (UnimplementedServiceServer) DumpPoliciesDefinitions(*DumpPolicyDefinitions
 func (UnimplementedServiceServer) GetDoc(*GetDocRequest, Service_GetDocServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetDoc not implemented")
 }
-func (UnimplementedServiceServer) ListDoc(*ListDocRequest, Service_ListDocServer) error {
+func (UnimplementedServiceServer) ListDoc(*Empty, Service_ListDocServer) error {
 	return status.Errorf(codes.Unimplemented, "method ListDoc not implemented")
 }
 func (UnimplementedServiceServer) ListUsers(*ListUsersRequest, Service_ListUsersServer) error {
@@ -684,7 +684,7 @@ func (x *serviceGetDocServer) Send(m *StringResponse) error {
 }
 
 func _Service_ListDoc_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ListDocRequest)
+	m := new(Empty)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -692,7 +692,7 @@ func _Service_ListDoc_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Service_ListDocServer interface {
-	Send(*StringResponse) error
+	Send(*ListDocReponse) error
 	grpc.ServerStream
 }
 
@@ -700,7 +700,7 @@ type serviceListDocServer struct {
 	grpc.ServerStream
 }
 
-func (x *serviceListDocServer) Send(m *StringResponse) error {
+func (x *serviceListDocServer) Send(m *ListDocReponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 

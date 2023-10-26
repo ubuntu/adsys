@@ -1,53 +1,44 @@
 package adsys_test
 
 import (
-	"os"
+	"io/fs"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/leonelquinteros/gotext"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/ubuntu/adsys/doc"
 )
 
 func TestDocChapter(t *testing.T) {
 	t.Setenv("GLAMOUR_STYLE", "notty")
 
-	fullName, strippedExt, baseName := getTestChapter(t, "02.")
-
 	tests := map[string]struct {
-		chapter          string
-		format           string
-		withDest         bool
-		modifyCase       bool
+		chapter string
+
 		systemAnswer     string
 		daemonNotStarted bool
 
-		wantErr bool
+		wantInDoc string
+		wantErr   bool
 	}{
-		"Get documentation chapter": {chapter: baseName},
-		"Get raw documentation":     {chapter: baseName, format: "raw"},
-		"Get html documentation":    {chapter: baseName, format: "html"},
+		"Get documentation chapter":                     {chapter: "how-to-guides/set-up-ad", wantInDoc: "# How to set up the Active Directory Server"},
+		"Get documentation chapter with incorrect case": {chapter: "HoW-to-guIdes/set-Up-AD", wantInDoc: "# How to set up the Active Directory Server"},
 
-		"Write all documentation":            {withDest: true},
-		"Write one documentation":            {chapter: baseName, withDest: true},
-		"Write documentation in raw format":  {chapter: baseName, format: "raw", withDest: true},
-		"Write documentation in html format": {chapter: baseName, format: "html", withDest: true},
+		// Section cases
+		"Section using alias":                  {chapter: "how-to-guides", wantInDoc: "# How-to guides"},
+		"Section using alias terminated by /":  {chapter: "how-to-guides/", wantInDoc: "# How-to guides"},
+		"Section using title instead of alias": {chapter: "explanation", wantInDoc: "Scripts execution"},
 
-		// Tried to match filename
-		"Get documentation chapter with prefix":            {chapter: strippedExt},
-		"Get documentation chapter with full name":         {chapter: fullName},
-		"Get documentation chapter with non matching case": {chapter: baseName, modifyCase: true},
+		// Main index cases
+		"Get main index with no parameter":         {wantInDoc: "# ADSys Documentation"},
+		"Get main index with index title doc name": {chapter: "adsys-documentation", wantInDoc: "# ADSys Documentation"},
 
-		"Get documentation is always authorized": {systemAnswer: "polkit_no", chapter: baseName},
+		"Get documentation is always authorized": {systemAnswer: "polkit_no", chapter: "how-to-guides/set-up-ad", wantInDoc: "# How to set up the Active Directory Server"},
 
 		// Error cases
-		"Error on daemon not responding":               {daemonNotStarted: true, wantErr: true},
-		"Error on nonexistent chapter":                 {chapter: "nonexistent-chapter", wantErr: true},
-		"Error on exact name matching with wrong case": {chapter: fullName, modifyCase: true, wantErr: true},
-		"Error on documentation in unknown format":     {format: "unknown format", wantErr: true},
+		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
+		"Error on nonexistent chapter":   {chapter: "nonexistent-chapter", wantErr: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -56,13 +47,6 @@ func TestDocChapter(t *testing.T) {
 				tc.systemAnswer = "polkit_yes"
 			}
 			dbusAnswer(t, tc.systemAnswer)
-
-			if tc.modifyCase {
-				tc.chapter = strings.ToUpper(tc.chapter)
-				if strings.HasSuffix(tc.chapter, ".MD") {
-					tc.chapter = strings.TrimSuffix(tc.chapter, ".MD") + ".md"
-				}
-			}
 
 			conf := createConf(t)
 			if !tc.daemonNotStarted {
@@ -73,16 +57,7 @@ func TestDocChapter(t *testing.T) {
 			if tc.chapter != "" {
 				args = append(args, tc.chapter)
 			}
-			if tc.format != "" {
-				args = append(args, "--format", tc.format)
-			}
-			var dest string
-			if tc.withDest {
-				dest = t.TempDir()
-				err := os.RemoveAll(dest)
-				require.NoError(t, err, "Setup: can’t delete destination directory")
-				args = append(args, "--dest", dest)
-			}
+
 			out, err := runClient(t, conf, args...)
 			if tc.wantErr {
 				require.Error(t, err, "client should exit with an error")
@@ -92,69 +67,28 @@ func TestDocChapter(t *testing.T) {
 			require.NoError(t, err, "client should exit with no error")
 
 			// Printing on stdout
-			if !tc.withDest {
-				require.NotEmpty(t, out, "some documentation is printed")
-				// Images urls are translated to online version
-				assert.NotContains(t, out, "(images/", "No local images are referenced")
+			require.NotEmpty(t, out, "some documentation is printed")
+			require.Contains(t, out, tc.wantInDoc, "Contains part of the expected doc content")
 
-				switch tc.format {
-				case "markdown":
-					assert.True(t, strings.HasPrefix(out, "\n  "), "markdown should be rendered")
-					assert.Contains(t, out, "###", "markdown should be printed")
-				case "html":
-					assert.Contains(t, out, "<html>", "html should be printed")
-				case "raw":
-					assert.False(t, strings.HasPrefix(out, "\n  "), "markdown should not be rendered")
-				}
-				return
-			}
-
-			// Documentation written on disk
-			fs, err := os.ReadDir(dest)
-			require.NoError(t, err, "Destination directory exists")
-			if tc.chapter == "" {
-				require.True(t, len(fs) > 1, "Multiple files are created when requesting the whole documentation")
-			}
-			for _, f := range fs {
-				content, err := os.ReadFile(filepath.Join(dest, f.Name()))
-				require.NoError(t, err, "Can't read destination file")
-
-				out = string(content)
-				var ext string
-				switch tc.format {
-				case "markdown":
-					ext = ".md"
-					assert.True(t, strings.HasPrefix(out, "\n  "), "markdown should be rendered")
-					assert.Contains(t, out, "###", "markdown should be printed")
-				case "html":
-					ext = ".html"
-					assert.Contains(t, out, "<html>", "html should be printed")
-				case "raw":
-					assert.False(t, strings.HasPrefix(out, "\n  "), "markdown should not be rendered")
-				}
-				require.True(t, strings.HasSuffix(f.Name(), ext), "File %q has expected suffix: %q", f.Name(), ext)
-			}
+			// Note: (../images will be invalid when images are moved and this assertion will still be true
+			assert.NotContains(t, out, "(../images/", "Local images are referenced, and replaced with online version")
 		})
 	}
 }
 
-func TestDocList(t *testing.T) {
-	t.Setenv("GLAMOUR_STYLE", "notty")
-
+func TestDocCompletion(t *testing.T) {
 	tests := map[string]struct {
-		raw              bool
 		systemAnswer     string
 		daemonNotStarted bool
 
-		wantErr bool
+		wantCompletionEmpty bool
 	}{
-		"List every documentation chapter":        {},
-		"Raw list of everu documentation chapter": {raw: true},
+		"Completion lists main index, one section and one document": {},
 
-		"List documentation is always authorized": {systemAnswer: "polkit_no"},
+		"Completion on documentation is always authorized": {systemAnswer: "polkit_no"},
 
 		// Error cases
-		"Daemon not responding": {daemonNotStarted: true, wantErr: true},
+		"Empty completion content on daemon not responding": {daemonNotStarted: true, wantCompletionEmpty: true},
 	}
 	for name, tc := range tests {
 		tc := tc
@@ -169,59 +103,39 @@ func TestDocList(t *testing.T) {
 				defer runDaemon(t, conf)()
 			}
 
-			args := []string{"doc"}
-			if tc.raw {
-				args = append(args, "--format", "raw")
-			}
+			args := []string{"__complete", "doc", ""}
 			out, err := runClient(t, conf, args...)
-			if tc.wantErr {
-				require.Error(t, err, "client should exit with an error")
+			require.NoError(t, err, "client should exit with no error")
+
+			completions := strings.Split(out, "\n")
+
+			if tc.wantCompletionEmpty {
+				require.Len(t, completions, 2, "Should list no completion apart from :4 and empty")
 				return
 			}
 
-			require.NoError(t, err, "client should exit with no error")
-			require.NotEmpty(t, out, "some list is printed")
+			// Ensure that all interesting docs are listed here (and so. linked to their TOC)
+			var wantNumDocs int
+			docsDir := filepath.Join(rootProjectDir, "docs")
+			err = filepath.WalkDir(docsDir, func(path string, d fs.DirEntry, err error) error {
+				// Ignore directories, every reference doc under reuse and compiled content.
+				if d.IsDir() || strings.HasPrefix(path, filepath.Join(docsDir, "reuse")) || strings.HasPrefix(path, docsDir+"/.") {
+					return nil
+				}
+				if !strings.HasSuffix(d.Name(), ".md") {
+					return nil
+				}
+				wantNumDocs++
 
-			// Ensure all chapters are listed
-			fs, err := doc.Dir.ReadDir(".")
-			require.NoError(t, err, "can’t list documentation directory")
-			for _, f := range fs {
-				// Assume we respect the <prefix>-chaptername.md schema
-				n := strings.TrimSuffix(strings.SplitN(f.Name(), "-", 2)[1], ".md")
-				assert.Contains(t, out, n, "Chapter is listed")
-			}
+				return nil
+			})
+			require.NoError(t, err, "Setup: could not list existing doc on tests for tests to compare")
 
-			if tc.raw {
-				assert.False(t, strings.HasPrefix(out, "\n  "), "markdown should not be rendered")
-			} else {
-				assert.True(t, strings.HasPrefix(out, "\n  "), "markdown should be rendered")
-			}
+			// +2 as we have :4 for no file completion + empty string
+			assert.Len(t, completions, wantNumDocs+2, "Should list all available documentation md files from docs/")
+
+			assert.Contains(t, completions, "how-to-guides", "contain a section index")
+			assert.Contains(t, completions, "how-to-guides/set-up-ad", "contain a section sub chapter with alias")
 		})
 	}
-}
-
-// Returns the names(s) of the chapter used for testing corresponding to chapterPrefix,
-// so tests do not break if chapters are renamed.
-func getTestChapter(t *testing.T, chapterPrefix string) (fullName string, strippedExt string, baseName string) {
-	t.Helper()
-
-	fs, err := doc.Dir.ReadDir(".")
-	if err != nil {
-		t.Fatal(gotext.Get("could not list documentation directory: %v", err))
-	}
-
-	// Sort all file names while they have their prefix
-	var name string
-	for _, f := range fs {
-		if !strings.HasPrefix(f.Name(), chapterPrefix) {
-			continue
-		}
-		name = f.Name()
-	}
-
-	if name == "" {
-		t.Fatal(gotext.Get("could not find chapter starting with %s", chapterPrefix))
-	}
-
-	return name, strings.TrimSuffix(name, ".md"), strings.TrimPrefix(strings.TrimSuffix(name, ".md"), chapterPrefix+"-")
 }

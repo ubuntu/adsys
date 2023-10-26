@@ -152,9 +152,9 @@ func New() *App {
 	cmdhandler.InstallConfigFlag(&a.rootCmd, true)
 	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
-	a.rootCmd.PersistentFlags().StringP("cache-dir", "", consts.DefaultCacheDir, gotext.Get("directory where ADsys caches GPOs downloads and policies."))
+	a.rootCmd.PersistentFlags().StringP("cache-dir", "", consts.DefaultCacheDir, gotext.Get("directory where ADSys caches GPOs downloads and policies."))
 	decorate.LogOnError(a.viper.BindPFlag("cache_dir", a.rootCmd.PersistentFlags().Lookup("cache-dir")))
-	a.rootCmd.PersistentFlags().StringP("run-dir", "", consts.DefaultRunDir, gotext.Get("directory where ADsys stores transient information erased on reboot."))
+	a.rootCmd.PersistentFlags().StringP("run-dir", "", consts.DefaultRunDir, gotext.Get("directory where ADSys stores transient information erased on reboot."))
 	decorate.LogOnError(a.viper.BindPFlag("run_dir", a.rootCmd.PersistentFlags().Lookup("run-dir")))
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, gotext.Get("time in seconds without activity before the service exists. 0 for no timeout."))
