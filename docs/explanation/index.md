@@ -12,10 +12,10 @@ Managers available with ADSys are
 :titlesonly:
 GSettings <dconf>
 Privileges Management <privileges>
-Scripts <scripts>
+scripts
 AppArmor Profiles <apparmor>
-Network Shares <network-shares>
-Network Proxy <proxy>
+network-shares
+proxy
 Certificates Auto-Enrolment <certificates>
 Security Policy <security-policy>
 ```
