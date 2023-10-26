@@ -72,7 +72,6 @@ func TestDocChapter(t *testing.T) {
 
 			// Note: (../images will be invalid when images are moved and this assertion will still be true
 			assert.NotContains(t, out, "(../images/", "Local images are referenced, and replaced with online version")
-
 		})
 	}
 }
@@ -118,7 +117,7 @@ func TestDocCompletion(t *testing.T) {
 			// Ensure that all interesting docs are listed here (and so. linked to their TOC)
 			var wantNumDocs int
 			docsDir := filepath.Join(rootProjectDir, "docs")
-			filepath.WalkDir(docsDir, func(path string, d fs.DirEntry, err error) error {
+			err = filepath.WalkDir(docsDir, func(path string, d fs.DirEntry, err error) error {
 				// Ignore directories, every reference doc under reuse and compiled content.
 				if d.IsDir() || strings.HasPrefix(path, filepath.Join(docsDir, "reuse")) || strings.HasPrefix(path, docsDir+"/.") {
 					return nil
@@ -130,6 +129,7 @@ func TestDocCompletion(t *testing.T) {
 
 				return nil
 			})
+			require.NoError(t, err, "Setup: could not list existing doc on tests for tests to compare")
 
 			// +2 as we have :4 for no file completion + empty string
 			assert.Len(t, completions, wantNumDocs+2, "Should list all available documentation md files from docs/")

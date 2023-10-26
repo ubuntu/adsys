@@ -49,7 +49,9 @@ func New() *App {
 			if cmd.Name() == cobra.ShellCompRequestCmd {
 				for i, arg := range args {
 					if arg == "-c" || arg == "--config" {
-						cmd.Flags().Set("config", args[i+1])
+						if err := cmd.Flags().Set("config", args[i+1]); err != nil {
+							return err
+						}
 					}
 				}
 			}
