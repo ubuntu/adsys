@@ -124,25 +124,25 @@ func TestAdsysGPOList(t *testing.T) {
 
 		// Error cases
 		"Error on no network": {
-			url:            "ldap://NT_STATUS_NETWORK_UNREACHABLE",
+			url:            "NT_STATUS_NETWORK_UNREACHABLE",
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Error on unreachable ldap host": {
-			url:            "ldap://NT_STATUS_HOST_UNREACHABLE",
+			url:            "NT_STATUS_HOST_UNREACHABLE",
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Error on ldap connection refused": {
-			url:            "ldap://NT_STATUS_CONNECTION_REFUSED",
+			url:            "NT_STATUS_CONNECTION_REFUSED",
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
 		"Error on machine with no ldap": {
-			url:            "ldap://NT_STATUS_OBJECT_NAME_NOT_FOUND",
+			url:            "NT_STATUS_OBJECT_NAME_NOT_FOUND",
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
@@ -197,7 +197,7 @@ func TestAdsysGPOList(t *testing.T) {
 				tc.objectClass = "user"
 			}
 			if tc.url == "" {
-				tc.url = "ldap://ldap_url"
+				tc.url = "adcontroller.example.com"
 			}
 
 			// Ticket creation for mock

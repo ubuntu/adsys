@@ -1,5 +1,5 @@
 * Domain(): domain-without-dbus.example
-* ServerURL ERROR(): error while trying to look up AD server address on SSSD for "domain-without-dbus.example": Object does not implement the interface 'org.freedesktop.sssd.infopipe.Domains.Domain'
+* ServerFQDN ERROR(): error while trying to look up AD server address on SSSD for "domain-without-dbus.example": Object does not implement the interface 'org.freedesktop.sssd.infopipe.Domains.Domain'
 * IsOnline ERROR(): failed to retrieve offline state from SSSD: Object does not implement the interface 'org.freedesktop.sssd.infopipe.Domains.Domain'
 * HostKrb5CCName(): /var/lib/sss/db/ccache_DOMAIN-WITHOUT-DBUS.EXAMPLE
 * DefaultDomainSuffix(): domain-without-dbus.example

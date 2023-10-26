@@ -12,7 +12,7 @@ Active Directory:
   Cache: /tmp/sss_cache
   **Offline mode** using cached policies
   Domain: offline
-  Server URL: Unknown
+  Server FQDN: Unknown
 
 Daemon:
   Timeout after 30s

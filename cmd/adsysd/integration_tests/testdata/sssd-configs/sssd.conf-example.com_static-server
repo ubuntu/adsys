@@ -3,4 +3,4 @@ domains = example.com
 
 [domain/example.com]
 ad_domain = example.com
-ad_server = staticserver.example.com
+ad_server = localhost:1446

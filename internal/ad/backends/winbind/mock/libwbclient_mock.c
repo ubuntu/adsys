@@ -23,6 +23,12 @@ wbcErr wbcLookupDomainController(const char *domain, uint32_t flags, struct wbcD
     struct wbcDomainControllerInfo *dc = malloc(sizeof(struct wbcDomainControllerInfo));
     // This is the only field used at the moment
     dc->dc_name = "\\\\adcontroller.example.com";
+
+    // For integration tests, we need to use the URL to the local SMB server as
+    // we will need to download files from it
+    if (strcmp(behavior, "integration_tests") == 0) {
+        dc->dc_name = "\\\\localhost:1446";
+    }
     *dc_info = dc;
     return WBC_ERR_SUCCESS;
 }

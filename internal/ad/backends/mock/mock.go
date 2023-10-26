@@ -15,7 +15,7 @@ type Backend struct {
 	Online        bool
 	ErrIsOnline   bool
 	ErrKrb5CCName bool
-	ErrServerURL  error
+	ErrServerFQDN error
 }
 
 // Domain returns current server domain.
@@ -23,13 +23,13 @@ func (m Backend) Domain() string {
 	return m.Dom
 }
 
-// ServerURL returns current server URL.
+// ServerFQDN returns current server FQDN.
 // It returns first any static configuration and goes dynamic if the backend provides this.
 // If the dynamic lookup worked, but there is still no server URL found (for instance, backend
 // if offline), the error raised is of type ErrorNoActiveServer.
-func (m Backend) ServerURL(context.Context) (string, error) {
-	if m.ErrServerURL != nil {
-		return "", m.ErrServerURL
+func (m Backend) ServerFQDN(context.Context) (string, error) {
+	if m.ErrServerFQDN != nil {
+		return "", m.ErrServerFQDN
 	}
 	return m.ServURL, nil
 }

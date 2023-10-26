@@ -111,7 +111,10 @@ def sssd_on_bus(bus: dbus.Bus):
         False)
     main_object.AddMethods("", [
         ("IsOnline", "", "b", "ret = True"),
-        ("ActiveServer", "s", "s", 'ret = "adc.example.com"'),
+        # In real environments this is the FQDN of a domain controller
+        # For testing purposes we need to match the value to the underlying SMB
+        # server running on localhost
+        ("ActiveServer", "s", "s", 'ret = "localhost:1446"'),
     ])
 
     main_object.AddObject(

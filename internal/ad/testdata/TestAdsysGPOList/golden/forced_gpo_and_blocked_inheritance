@@ -1,3 +1,3 @@
-RnDDep2 Forced GPO	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/RnDDep2_Forced_GPO
-SubBlocked GPO	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/SubBlocked_GPO
-SubDep2BlockInheritance GPO	smb://localhost:1445/SYSVOL/gpoonly.com/Policies/SubDep2BlockInheritance_GPO
+RnDDep2 Forced GPO	smb://adcontroller.example.com/SYSVOL/gpoonly.com/Policies/RnDDep2_Forced_GPO
+SubBlocked GPO	smb://adcontroller.example.com/SYSVOL/gpoonly.com/Policies/SubBlocked_GPO
+SubDep2BlockInheritance GPO	smb://adcontroller.example.com/SYSVOL/gpoonly.com/Policies/SubDep2BlockInheritance_GPO
