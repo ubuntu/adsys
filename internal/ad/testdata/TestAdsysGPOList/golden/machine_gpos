@@ -1,3 +1,3 @@
-ITDep1 GPO	smb://ldap_url/SYSVOL/gpoonly.com/Policies/ITDep1_GPO
-IT GPO	smb://ldap_url/SYSVOL/gpoonly.com/Policies/IT_GPO
-Default Domain Policy	smb://ldap_url/SYSVOL/gpoonly.com/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}
+ITDep1 GPO	smb://adcontroller.example.com/SYSVOL/gpoonly.com/Policies/ITDep1_GPO
+IT GPO	smb://adcontroller.example.com/SYSVOL/gpoonly.com/Policies/IT_GPO
+Default Domain Policy	smb://adcontroller.example.com/SYSVOL/gpoonly.com/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}

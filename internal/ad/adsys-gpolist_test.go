@@ -197,7 +197,7 @@ func TestAdsysGPOList(t *testing.T) {
 				tc.objectClass = "user"
 			}
 			if tc.url == "" {
-				tc.url = "ldap_url"
+				tc.url = "adcontroller.example.com"
 			}
 
 			// Ticket creation for mock
