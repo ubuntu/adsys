@@ -124,14 +124,13 @@ func docStructure(dir embed.FS, indexFilePath, parentChapterName string) (ordere
 		// foo/index -> we need to parse foo/index.md to get its title name and parse its tocs
 		// alias <bar> -> we open bar to get its title name for the reverse lookup, but also adds the alias.
 		alias, p, found := strings.Cut(t, "<")
-		p = filepath.Join(root, p)
 		if found {
 			p = strings.TrimSuffix(p, ">")
 		} else {
 			p = alias
 		}
+		p = filepath.Join(root, p) + ".md"
 
-		p = p + ".md"
 		title, err := titleFromPage(dir, p)
 		if err != nil {
 			return nil, nil, nil, err
