@@ -28,11 +28,12 @@ func (a *App) installDoc() {
 			defer client.Close()
 			stream, err := client.ListDoc(a.ctx, &adsys.Empty{})
 			if err != nil {
+				log.Errorf(context.Background(), "could not connect to adsysd: %v", err)
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 			r, err := stream.Recv()
 			if err != nil {
-				log.Warningf(context.Background(), "could not receive shell completion message: %v", err)
+				log.Errorf(context.Background(), "could not receive shell completion message: %v", err)
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 			return r.GetChapters(), cobra.ShellCompDirectiveNoFileComp
