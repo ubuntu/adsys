@@ -8,8 +8,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// DefaultPath is the default path to the inventory file.
-const DefaultPath = "inventory.yaml"
+const (
+	// DefaultPath is the default path to the inventory file.
+	DefaultPath = "inventory.yaml"
+
+	// DomainControllerIP is the IP address of the domain controller.
+	DomainControllerIP = "10.1.0.4"
+)
 
 // Inventory represents the contents of an inventory file.
 type Inventory struct {

@@ -16,6 +16,15 @@ func Dir() (string, error) {
 	return filepath.Dir(currentFile), nil
 }
 
+// GPODir returns the directory containing the GPOs.
+func GPODir() (string, error) {
+	adsysRootDir, err := RootDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(adsysRootDir, "e2e", "assets", "gpo"), nil
+}
+
 // RootDir returns the root directory of the project.
 func RootDir() (string, error) {
 	currentDir, err := Dir()
