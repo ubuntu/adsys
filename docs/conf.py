@@ -90,6 +90,9 @@ linkcheck_anchors_ignore_for_url = [
     r'https://github\.com/.*'
 ]
 
+# Some Ubuntu links are unstable
+linkcheck_retries = 10
+
 ############################################################
 ### Styling
 ############################################################
