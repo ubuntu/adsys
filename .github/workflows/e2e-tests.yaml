@@ -66,8 +66,8 @@ jobs:
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/id_rsa-e2e
-          chmod 600 ~/.ssh/id_rsa-e2e
+          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/adsys-e2e.pem
+          chmod 600 ~/.ssh/adsys-e2e.pem
       - name: Build adsys deb
         run: |
           go run ./e2e/cmd/provision_resources/00_build_adsys_deb --codename ${{ matrix.codename }}
@@ -80,7 +80,7 @@ jobs:
           key: ${{ secrets.VPN_KEY }}
       - name: Provision client VM
         run: |
-          go run ./e2e/cmd/provision_resources/01_provision_client --ssh-key ~/.ssh/id_rsa-e2e
+          go run ./e2e/cmd/provision_resources/01_provision_client
       - name: Deprovision resources
         if: ${{ always() }}
         run: |
