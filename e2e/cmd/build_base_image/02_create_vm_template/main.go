@@ -82,7 +82,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}()
 
 	// If the version is empty, we need to create the image definition
-	if latestImageVersion == "" {
+	if latestImageVersion == "0.0.0" {
 		log.Infof("Creating image definition %q", imageDefinition)
 		_, _, err := az.RunCommand(ctx, "sig", "image-definition", "create",
 			"--resource-group", "AD",
