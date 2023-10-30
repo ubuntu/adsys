@@ -102,27 +102,29 @@ func (i Image) isGen2Image() bool {
 }
 
 // LatestImageVersion returns the latest image version for the given image definition.
+// If no version exists, "0.0.0" is returned.
 func LatestImageVersion(ctx context.Context, imageDefinition string) (string, error) {
+	latestVersion := "0.0.0"
+
 	out, _, err := RunCommand(ctx, "sig", "image-version", "list",
 		"--resource-group", "AD",
 		"--gallery-name", "AD",
 		"--gallery-image-definition", imageDefinition,
 	)
 	if err != nil {
-		return "", err
+		return latestVersion, err
 	}
 
 	var versions []imageVersion
 	if err := json.Unmarshal(out, &versions); err != nil {
-		return "", err
+		return latestVersion, err
 	}
 	if len(versions) == 0 {
-		return "", nil
+		return latestVersion, nil
 	}
 
 	log.Debugf("Found %d image versions: %s", len(versions), versions)
 
-	latestVersion := "0.0.0"
 	for _, v := range versions {
 		if natural.Less(latestVersion, v.Version) {
 			latestVersion = v.Version
