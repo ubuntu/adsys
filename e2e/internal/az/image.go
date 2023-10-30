@@ -11,6 +11,9 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// NullImageVersion is the version returned when no image version is found.
+const NullImageVersion = "0.0.0"
+
 // Image contains information about an Azure image.
 type Image struct {
 	Architecture string `json:"architecture"`
@@ -104,7 +107,7 @@ func (i Image) isGen2Image() bool {
 // LatestImageVersion returns the latest image version for the given image definition.
 // If no version exists, "0.0.0" is returned.
 func LatestImageVersion(ctx context.Context, imageDefinition string) (string, error) {
-	latestVersion := "0.0.0"
+	latestVersion := NullImageVersion
 
 	out, _, err := RunCommand(ctx, "sig", "image-version", "list",
 		"--resource-group", "AD",
