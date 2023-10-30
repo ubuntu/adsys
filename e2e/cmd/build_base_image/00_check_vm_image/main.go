@@ -109,7 +109,7 @@ func action(ctx context.Context, _ *command.Command) error {
 	// - Z: patch version, incremented for consecutive builds of the same minor version, starts at 0
 
 	// Handle case where we have no custom image at all
-	if latestCustomImageVersion == "0.0.0" || force {
+	if latestCustomImageVersion == az.NullImageVersion || force {
 		fmt.Println(latest.URN)
 		return nil
 	}
