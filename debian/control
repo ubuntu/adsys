@@ -5,7 +5,7 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Build-Depends: debhelper-compat (= 13),
                dh-apport,
                dh-golang,
-               golang-go (>= 2:1.20~),
+               golang-go (>= 2:1.21~),
                libsmbclient-dev,
                libdbus-1-dev,
                libglib2.0-dev,
