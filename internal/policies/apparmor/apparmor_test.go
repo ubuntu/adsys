@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -18,7 +19,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/apparmor"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/testutils"
-	"golang.org/x/exp/slices"
 )
 
 func TestApplyPolicy(t *testing.T) {

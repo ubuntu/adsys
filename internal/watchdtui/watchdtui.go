@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -19,7 +20,6 @@ import (
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/watchdservice"
-	"golang.org/x/exp/slices"
 )
 
 var (

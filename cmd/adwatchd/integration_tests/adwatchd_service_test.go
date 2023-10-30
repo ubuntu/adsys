@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -17,7 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adwatchd/commands"
 	"github.com/ubuntu/adsys/internal/testutils"
-	"golang.org/x/exp/slices"
 	"gopkg.in/ini.v1"
 )
 

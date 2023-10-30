@@ -6,12 +6,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/testutils"
-	"golang.org/x/exp/slices"
 )
 
 const advancedConfigurationJSON = `[

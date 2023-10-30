@@ -15,6 +15,7 @@ package proxy
 import (
 	"context"
 	"errors"
+	"slices"
 	"strings"
 
 	"github.com/godbus/dbus/v5"
@@ -22,7 +23,6 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
-	"golang.org/x/exp/slices"
 )
 
 // Caller is the interface to call a method on a D-Bus object.

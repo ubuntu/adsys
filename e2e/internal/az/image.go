@@ -1,14 +1,15 @@
 package az
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/maruel/natural"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/exp/slices"
 )
 
 // NullImageVersion is the version returned when no image version is found.
@@ -71,7 +72,10 @@ func (images Images) LatestDaily() (Image, error) {
 	}
 
 	// Reverse sort images by version
-	slices.SortFunc(dailyImages, func(i, j Image) bool { return j.Version < i.Version })
+	slices.SortFunc(dailyImages, func(i, j Image) int {
+		// Version format is: 23.04.20231029
+		return cmp.Compare(j.Version, i.Version)
+	})
 
 	return dailyImages[0], nil
 }
@@ -91,7 +95,10 @@ func (images Images) LatestStable() (Image, error) {
 	}
 
 	// Reverse sort images by version
-	slices.SortFunc(stableImages, func(i, j Image) bool { return j.Version < i.Version })
+	slices.SortFunc(stableImages, func(i, j Image) int {
+		// Version format is: 23.04.20231029
+		return cmp.Compare(j.Version, i.Version)
+	})
 
 	return stableImages[0], nil
 }
