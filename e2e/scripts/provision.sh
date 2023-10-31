@@ -7,6 +7,9 @@ cp /home/azureuser/.ssh/authorized_keys /etc/ssh/authorized_keys
 chmod 644 /etc/ssh/authorized_keys # needs to be world-readable
 echo "AuthorizedKeysFile /etc/ssh/authorized_keys" >> /etc/ssh/sshd_config
 
+echo "Configure PAM to create home directories on first login..."
+pam-auth-update --enable mkhomedir
+
 echo "Updating DNS resolver to use AD DNS..."
 echo "DNS=10.1.0.4" >> /etc/systemd/resolved.conf
 systemctl restart systemd-resolved
