@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -34,7 +35,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
-	"golang.org/x/exp/slices"
 )
 
 // Manager prevents running multiple Python scripts in parallel while parsing

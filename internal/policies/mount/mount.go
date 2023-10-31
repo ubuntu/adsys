@@ -21,6 +21,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -29,7 +30,6 @@ import (
 	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
-	"golang.org/x/exp/slices"
 )
 
 type options struct {

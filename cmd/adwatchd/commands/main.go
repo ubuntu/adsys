@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"sync"
 	"time"
 
@@ -17,7 +18,6 @@ import (
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/watchdservice"
 	"github.com/ubuntu/adsys/internal/watchdtui"
-	"golang.org/x/exp/slices"
 )
 
 // App encapsulates commands and options of the daemon, which can be controlled by env variables and config files.

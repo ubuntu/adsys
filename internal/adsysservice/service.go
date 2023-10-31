@@ -3,6 +3,7 @@ package adsysservice
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/stdforward"
 	"github.com/ubuntu/decorate"
-	"golang.org/x/exp/slices"
 	"google.golang.org/grpc"
 )
 

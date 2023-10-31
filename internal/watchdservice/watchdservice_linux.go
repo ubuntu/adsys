@@ -2,12 +2,12 @@ package watchdservice
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/i18n"
-	"golang.org/x/exp/slices"
 )
 
 // execStart represents the ExecStart option of a systemd service. It maps to

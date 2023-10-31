@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -48,7 +49,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/scripts"
 	"github.com/ubuntu/adsys/internal/systemd"
 	"github.com/ubuntu/decorate"
-	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -516,8 +516,8 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) []string {
 
 	// Return the filtered rules in the same order as ProOnlyRules, which is the
 	// order of the rules to apply
-	slices.SortFunc(filteredRules, func(a, b string) bool {
-		return slices.Index(ProOnlyRules, a) < slices.Index(ProOnlyRules, b)
+	slices.SortFunc(filteredRules, func(a, b string) int {
+		return slices.Index(ProOnlyRules, a) - slices.Index(ProOnlyRules, b)
 	})
 
 	return filteredRules

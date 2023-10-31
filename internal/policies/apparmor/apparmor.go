@@ -29,6 +29,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -39,7 +40,6 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
-	"golang.org/x/exp/slices"
 )
 
 // WithApparmorParserCmd overrides the default apparmor_parser command.
