@@ -156,18 +156,30 @@ sudo rm -f /etc/dpkg/dpkg.cfg.d/force-unsafe-io
 		return fmt.Errorf("failed to install required packages: %w", err)
 	}
 
-	// Upload first run script
-	log.Infof("Staging first run script to VM...")
 	scriptsDir, err := scripts.Dir()
 	if err != nil {
 		return fmt.Errorf("failed to get scripts directory: %w", err)
 	}
-	provisionScriptPath := filepath.Join(scriptsDir, "provision.sh")
-	if err := client.Upload(provisionScriptPath, "/home/azureuser/provision.sh"); err != nil {
+	// Upload and execute provision script. This sets up networking and SSH
+	// configuration.
+	log.Infof("Staging provision script to VM...")
+	if err := client.Upload(filepath.Join(scriptsDir, "provision.sh"), "/home/azureuser"); err != nil {
 		return fmt.Errorf("failed to upload provisioning script: %w", err)
 	}
+	log.Infof("Running provision script on VM...")
+	if _, err := client.Run(ctx, "sudo bash /home/azureuser/provision.sh"); err != nil {
+		return fmt.Errorf("failed to run provisioning script: %w", err)
+	}
+	if _, err := client.Run(ctx, "rm /home/azureuser/provision.sh"); err != nil {
+		return fmt.Errorf("failed to delete provisioning script after execution: %w", err)
+	}
 
-	// Prepare script to run on first boot
+	// Upload first run script and prepare it to run on first boot. This sets up
+	// a unique hostname for the VM.
+	log.Infof("Staging first run script to VM...")
+	if err := client.Upload(filepath.Join(scriptsDir, "first-run.sh"), "/home/azureuser"); err != nil {
+		return fmt.Errorf("failed to upload first run script: %w", err)
+	}
 	log.Infof("Preparing cloud-init script...")
 	_, err = client.Run(ctx, "sudo cloud-init clean")
 	if err != nil {
@@ -177,11 +189,11 @@ sudo rm -f /etc/dpkg/dpkg.cfg.d/force-unsafe-io
 	if err != nil {
 		return fmt.Errorf("failed to create cloud-init script directory: %w", err)
 	}
-	_, err = client.Run(ctx, "sudo mv /home/azureuser/provision.sh /var/lib/cloud/scripts/per-once/provision.sh")
+	_, err = client.Run(ctx, "sudo mv /home/azureuser/first-run.sh /var/lib/cloud/scripts/per-once/first-run.sh")
 	if err != nil {
 		return fmt.Errorf("failed to copy cloud-init script: %w", err)
 	}
-	_, err = client.Run(ctx, "sudo chmod +x /var/lib/cloud/scripts/per-once/provision.sh")
+	_, err = client.Run(ctx, "sudo chmod +x /var/lib/cloud/scripts/per-once/first-run.sh")
 	if err != nil {
 		return fmt.Errorf("failed to make cloud-init script executable: %w", err)
 	}
