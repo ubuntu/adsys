@@ -2,24 +2,13 @@
 
 set -eu
 
-# This script runs on the first boot of the VM.
-echo "Setting hostname..."
-hostname="$(lsb_release -cs)-$(openssl rand -hex 4)"
-hostnamectl set-hostname "$hostname"
+echo "Create global authorized_keys file..."
+cp /home/azureuser/.ssh/authorized_keys /etc/ssh/authorized_keys
+chmod 644 /etc/ssh/authorized_keys # needs to be world-readable
+echo "AuthorizedKeysFile /etc/ssh/authorized_keys" >> /etc/ssh/sshd_config
 
-echo "Adding hostname to hosts file..."
-echo "127.0.0.1 $hostname" >> /etc/hosts
-
-echo "Updating authorized_keys for root..."
-mkdir -p /root/.ssh
-chmod 700 /root/.ssh
-cp /home/azureuser/.ssh/authorized_keys /root/.ssh/authorized_keys
-chmod 600 /root/.ssh/authorized_keys
-
-echo "Allowing password authentication via SSH..."
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
-sed -i 's/KbdInteractiveAuthentication no/KbdInteractiveAuthentication yes/g' /etc/ssh/sshd_config
+echo "Configure PAM to create home directories on first login..."
+pam-auth-update --enable mkhomedir
 
 echo "Updating DNS resolver to use AD DNS..."
 echo "DNS=10.1.0.4" >> /etc/systemd/resolved.conf
