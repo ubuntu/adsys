@@ -2,16 +2,10 @@
 
 set -eu
 
-echo "Updating authorized_keys for root..."
-mkdir -p /root/.ssh
-chmod 700 /root/.ssh
-cp /home/azureuser/.ssh/authorized_keys /root/.ssh/authorized_keys
-chmod 600 /root/.ssh/authorized_keys
-
-echo "Allowing password authentication via SSH..."
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config
-sed -i 's/KbdInteractiveAuthentication no/KbdInteractiveAuthentication yes/g' /etc/ssh/sshd_config
+echo "Create global authorized_keys file..."
+cp /home/azureuser/.ssh/authorized_keys /etc/ssh/authorized_keys
+chmod 644 /etc/ssh/authorized_keys # needs to be world-readable
+echo "AuthorizedKeysFile /etc/ssh/authorized_keys" >> /etc/ssh/sshd_config
 
 echo "Updating DNS resolver to use AD DNS..."
 echo "DNS=10.1.0.4" >> /etc/systemd/resolved.conf
