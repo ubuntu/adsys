@@ -9,6 +9,10 @@ import datetime
 #
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
+#
+# If you're not familiar with Sphinx and don't want to use advanced
+# features, it is sufficient to update the settings in the "Project
+# information" section.
 
 ############################################################
 ### Project information
@@ -18,8 +22,10 @@ import datetime
 project = 'Active Directory GPO support'
 author = 'Canonical Group Ltd'
 
-# Uncomment if your product uses release numbers
-# release = '0.13.0'
+# The title you want to display for the documentation in the sidebar.
+# You might want to include a version number here.
+# To not display any title, set this option to an empty string.
+html_title = project + ' documentation'
 
 # The default value uses the current year as the copyright year.
 #
@@ -37,26 +43,33 @@ author = 'Canonical Group Ltd'
 
 copyright = '%s, %s' % (datetime.date.today().year, author)
 
-## Open Graph configuration - defines what is displayed in the website preview
-# The URL of the documentation output
+## Open Graph configuration - defines what is displayed as a link preview
+## when linking to the documentation from another website (see https://ogp.me/)
+# The URL where the documentation will be hosted (leave empty if you
+# don't know yet)
 ogp_site_url = 'https://canonical-starter-pack.readthedocs-hosted.com/'
 # The documentation website name (usually the same as the product name)
 ogp_site_name = project
-# An image or logo that is used in the preview
+# The URL of an image or logo that is used in the preview
 ogp_image = 'https://assets.ubuntu.com/v1/253da317-image-document-ubuntudocs.svg'
 
-# Update with the favicon for your product (default is the circle of friends)
+# Update with the local path to the favicon for your product
+# (default is the circle of friends)
 html_favicon = '.sphinx/_static/favicon.png'
 
 # (Some settings must be part of the html_context dictionary, while others
 #  are on root level. Don't move the settings.)
 html_context = {
 
-    # Change to the link to your product website (without "https://")
-    'product_page': 'github.com/ubuntu/adsys',
+    # Change to the link to the website of your product (without "https://")
+    # For example: "ubuntu.com/lxd" or "microcloud.is"
+    # If there is no product website, edit the header template to remove the
+    # link (see the readme for instructions).
+    'product_page': 'documentation.ubuntu.com',
 
-    # Add your product tag to ".sphinx/_static" and change the path
-    # here (start with "_static"), default is the circle of friends
+    # Add your product tag (the orange part of your logo, will be used in the
+    # header) to ".sphinx/_static" and change the path here (start with "_static")
+    # (default is the circle of friends)
     'product_tag': '_static/tag.png',
 
     # Change to the discourse instance you want to be able to link to
@@ -76,7 +89,11 @@ html_context = {
 
     # Change to an empty value if your GitHub repo doesn't have issues enabled.
     # This will disable the feedback button and the issue link in the footer.
-    'github_issues': 'enabled'
+    'github_issues': 'enabled',
+
+    # Controls the existence of Previous / Next buttons at the bottom of pages
+    # Valid options: none, prev, next, both
+    'sequential_nav': "none"
 }
 
 # If your project is on documentation.ubuntu.com, specify the project
@@ -102,6 +119,12 @@ linkcheck_ignore = [
     'http://127.0.0.1:8000'
     ]
 
+# Pages on which to ignore anchors
+# (This list will be appended to linkcheck_anchors_ignore_for_url)
+
+custom_linkcheck_anchors_ignore_for_url = [
+    ]
+
 ############################################################
 ### Additions to default configuration
 ############################################################
@@ -111,6 +134,9 @@ linkcheck_ignore = [
 
 # Add extensions
 custom_extensions = []
+
+# Add MyST extensions
+custom_myst_extensions = []
 
 # Add files or directories that should be excluded from processing.
 custom_excludes = []
@@ -131,6 +157,10 @@ custom_html_js_files = []
 # By default, the documentation includes a feedback button at the top.
 # You can disable it by setting the following configuration to True.
 disable_feedback_button = False
+
+# Add tags that you want to use for conditional inclusion of text
+# (https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#tags)
+custom_tags = []
 
 ############################################################
 ### Additional configuration
