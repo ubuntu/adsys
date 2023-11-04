@@ -36,11 +36,13 @@ extensions.extend(custom_extensions)
 # Additional MyST syntax
 myst_enable_extensions = [
     'substitution',
-    'deflist'
+    'deflist',
+    'linkify'
 ]
+myst_enable_extensions.extend(custom_myst_extensions)
 
 # Used for related links
-if 'discourse' in html_context:
+if not 'discourse_prefix' in html_context and 'discourse' in html_context:
     html_context['discourse_prefix'] = html_context['discourse'] + '/t/'
 
 # The default for notfound_urls_prefix usually works, but not for
@@ -67,7 +69,6 @@ exclude_patterns = [
     'Thumbs.db',
     '.DS_Store',
     '.sphinx',
-    'doc-cheat-sheet*',
 ]
 exclude_patterns.extend(custom_excludes)
 
@@ -89,9 +90,11 @@ if not 'conf_py_path' in html_context and 'github_folder' in html_context:
 linkcheck_anchors_ignore_for_url = [
     r'https://github\.com/.*'
 ]
+linkcheck_anchors_ignore_for_url.extend(custom_linkcheck_anchors_ignore_for_url)
 
-# Some Ubuntu links are unstable
-linkcheck_retries = 10
+# Tags cannot be added directly in custom_conf.py, so add them here
+for tag in custom_tags:
+    tags.add(tag)
 
 ############################################################
 ### Styling
@@ -110,61 +113,11 @@ if builder == 'dirhtml' or builder == 'html':
 html_theme = 'furo'
 html_last_updated_fmt = ''
 html_permalinks_icon = '¶'
-html_theme_options = {
-    'light_css_variables': {
-        'font-stack': 'Ubuntu, -apple-system, Segoe UI, Roboto, Oxygen, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif',
-        'font-stack--monospace': 'Ubuntu Mono, Consolas, Monaco, Courier, monospace',
-        'color-foreground-primary': '#111',
-        'color-foreground-secondary': 'var(--color-foreground-primary)',
-        'color-foreground-muted': '#333',
-        'color-background-secondary': '#FFF',
-        'color-background-hover': '#f2f2f2',
-        'color-brand-primary': '#111',
-        'color-brand-content': '#06C',
-        'color-api-background': '#cdcdcd',
-        'color-inline-code-background': 'rgba(0,0,0,.03)',
-        'color-sidebar-link-text': '#111',
-        'color-sidebar-item-background--current': '#ebebeb',
-        'color-sidebar-item-background--hover': '#f2f2f2',
-        'toc-font-size': 'var(--font-size--small)',
-        'color-admonition-title-background--note': 'var(--color-background-primary)',
-        'color-admonition-title-background--tip': 'var(--color-background-primary)',
-        'color-admonition-title-background--important': 'var(--color-background-primary)',
-        'color-admonition-title-background--caution': 'var(--color-background-primary)',
-        'color-admonition-title--note': '#24598F',
-        'color-admonition-title--tip': '#24598F',
-        'color-admonition-title--important': '#C7162B',
-        'color-admonition-title--caution': '#F99B11',
-        'color-highlighted-background': '#EbEbEb',
-        'color-link-underline': 'var(--color-background-primary)',
-        'color-link-underline--hover': 'var(--color-background-primary)',
-        'color-version-popup': '#772953'
-    },
-    'dark_css_variables': {
-        'color-foreground-secondary': 'var(--color-foreground-primary)',
-        'color-foreground-muted': '#CDCDCD',
-        'color-background-secondary': 'var(--color-background-primary)',
-        'color-background-hover': '#666',
-        'color-brand-primary': '#fff',
-        'color-brand-content': '#06C',
-        'color-sidebar-link-text': '#f7f7f7',
-        'color-sidebar-item-background--current': '#666',
-        'color-sidebar-item-background--hover': '#333',
-        'color-admonition-background': 'transparent',
-        'color-admonition-title-background--note': 'var(--color-background-primary)',
-        'color-admonition-title-background--tip': 'var(--color-background-primary)',
-        'color-admonition-title-background--important': 'var(--color-background-primary)',
-        'color-admonition-title-background--caution': 'var(--color-background-primary)',
-        'color-admonition-title--note': '#24598F',
-        'color-admonition-title--tip': '#24598F',
-        'color-admonition-title--important': '#C7162B',
-        'color-admonition-title--caution': '#F99B11',
-        'color-highlighted-background': '#666',
-        'color-link-underline': 'var(--color-background-primary)',
-        'color-link-underline--hover': 'var(--color-background-primary)',
-        'color-version-popup': '#F29879'
-    },
-}
+
+if html_title == '':
+    html_theme_options = {
+        'sidebar_hide_name': True
+        }
 
 ############################################################
 ### Additional files
@@ -176,6 +129,7 @@ html_css_files = [
     'custom.css',
     'header.css',
     'github_issue_links.css',
+    'furo_colors.css'
 ]
 html_css_files.extend(custom_html_css_files)
 
