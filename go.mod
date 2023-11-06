@@ -22,7 +22,7 @@ require (
 	github.com/pkg/sftp v1.13.6
 	github.com/sirupsen/logrus v1.9.3
 	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.17.0
 	github.com/stretchr/testify v1.8.4
@@ -48,7 +48,7 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
