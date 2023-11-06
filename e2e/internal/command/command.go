@@ -18,7 +18,7 @@ import (
 
 const (
 	// DefaultSSHKeyPath is the default path to the SSH private key.
-	DefaultSSHKeyPath = "~/.ssh/id_rsa"
+	DefaultSSHKeyPath = "~/.ssh/adsys-e2e.pem"
 )
 
 type cmdFunc func(context.Context, *Command) error

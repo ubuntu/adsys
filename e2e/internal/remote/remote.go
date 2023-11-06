@@ -168,6 +168,16 @@ func (c Client) Upload(localPath string, remotePath string) error {
 		remotePath = filepath.Join(remotePath, filepath.Base(localPath))
 	}
 
+	// Check if the parent directory structure exists, create it if not
+	parentDir := filepath.Dir(remotePath)
+	if _, err := ftp.Stat(parentDir); err != nil && errors.Is(err, os.ErrNotExist) {
+		log.Debugf("Creating directory %q on remote host %q", parentDir, c.RemoteAddr().String())
+		if err := ftp.MkdirAll(parentDir); err != nil {
+			return fmt.Errorf("failed to create directory %q on remote host %q: %w", parentDir, c.RemoteAddr().String(), err)
+		}
+	}
+
+	// Create the remote file
 	remote, err := ftp.Create(remotePath)
 	if err != nil {
 		return err
