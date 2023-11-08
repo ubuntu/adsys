@@ -1,19 +1,19 @@
-[1m[94mPolicies from machine configuration:[0m[0m
+[1m[94mPolicies from machine configuration:[0m[22m
 - [35mGPOName1[0m ({GPOId1})
-    - [1mdconf:[0m
+    - [1mdconf:[22m
         - path/to/key1: ValueOfKey1
         - path/to/key2: ValueOfKey2
         - path/to/systemdefault: Locked to system default
-    - [1mscripts:[0m
+    - [1mscripts:[22m
         - path/to/key3: Disabled
 - [35mGPOName2[0m ({GPOId2})
-    - [1mdconf:[0m
+    - [1mdconf:[22m
         - path/to/keyGpo2-1: ValueOfKeyGpo2-1
 
-[1m[94mPolicies from user configuration:[0m[0m
+[1m[94mPolicies from user configuration:[0m[22m
 - [35mGPOName3[0m ({GPOId2})
-    - [1mdconf:[0m
+    - [1mdconf:[22m
 [90m        - path/to/key1: ValueOfKey1\nOn\nMultilines[0m
 [90m        - path/to/key2: ValueOfKey2[0m
-    - [1mscripts:[0m
+    - [1mscripts:[22m
 [90m        - path/to/key3: Disabled[0m
