@@ -20,7 +20,7 @@ To source the `adwatchd` executable from the `adsys-windows` Ubuntu package, we 
 sudo apt install adsys-windows
 ```
 
-After a successful installation, the `adwatchd.exe` executable will be available in the `/usr/share/adsys/windows` directory. We suggest you deploy this executable to a persistent directory of your choosing on the AD Domain Controller, such as `C:\ProgramData\Ubuntu\adsys\`.
+After a successful installation, the `adwatchd.exe` executable will be available in the `/usr/share/adsys/windows` directory. We suggest you deploy this executable to a persistent directory of your choosing on the AD Domain Controller, such as `%SystemDrive%\Program Files\Ubuntu\adsys\`.
 
 ### Installing via the bespoke installer
 
