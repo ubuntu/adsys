@@ -1,0 +1,141 @@
+- displayname: Parent Category Display Name
+  parent: ubuntu:Desktop
+  policies:
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-first
+      explaintext: |-
+        description first
+
+        - Type: dconf
+        - Key: org/gnome/desktop/policy-first
+        - Default: 'Default Value first'
+        Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+        Supported on Ubuntu 20.04
+      metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+      metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+      class: Machine
+      releaseselements:
+        all:
+          key: /org/gnome/desktop/policy-first
+          displayname: summary first
+          explaintext: description first
+          elementtype: text
+          meta:
+            empty: "''"
+            meta: "s"
+          default: "'Default Value first'"
+          note: default system value is used for "Not Configured" and enforced if "Disabled".
+          release: "20.04"
+          type: dconf
+  children:
+    - displayname: Category with User and Computer
+      parent: ""
+      policies:
+        - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-child-computer
+          explaintext: |-
+            description child computer
+
+            - Type: dconf
+            - Key: org/gnome/desktop/policy-child-computer
+            - Default: 'Default Value computer'
+              Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+            Supported on Ubuntu 20.04
+          metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+          metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+          class: Machine
+          releaseselements:
+            all:
+              key: /org/gnome/desktop/policy-child-computer
+              displayname: summary child computer
+              explaintext: description child computer
+              elementtype: text
+              meta:
+                default: "''"
+                meta: "s"
+              empty: "'Default Value second'"
+              release: "20.04"
+              type: dconf
+        - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-child-user
+          explaintext: |-
+            description child user
+
+            - Type: dconf
+            - Key: org/gnome/desktop/policy-child-user
+            - Default: 'Default Value child user'
+              Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+            Supported on Ubuntu 20.04
+          metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+          metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+          class: User
+          releaseselements:
+            all:
+              key: /org/gnome/desktop/policy-child-user
+              displayname: summary computer
+              explaintext: description computer
+              elementtype: text
+              meta:
+                default: "''"
+                meta: "s"
+              empty: "'Default Value second'"
+              release: "20.04"
+              type: dconf
+    - displayname: Child Category Display Name Computer
+      parent: ""
+      policies:
+        - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-computer
+          explaintext: |-
+            description computer
+
+            - Type: dconf
+            - Key: org/gnome/desktop/policy-computer
+            - Default: 'Default Value computer'
+              Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+            Supported on Ubuntu 20.04
+          metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+          metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+          class: Machine
+          releaseselements:
+            all:
+              key: /org/gnome/desktop/policy-computer
+              displayname: summary computer
+              explaintext: description computer
+              elementtype: text
+              meta:
+                default: "''"
+                meta: "s"
+              empty: "'Default Value second'"
+              release: "20.04"
+              type: dconf
+    - displayname: Child Category Display Name in User
+      parent: ""
+      policies:
+        - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-user
+          explaintext: |-
+            description user
+
+            - Type: dconf
+            - Key: org/gnome/desktop/policy-user
+            - Default: 'Default Value user'
+              Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+            Supported on Ubuntu 20.04
+          metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+          metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+          class: User
+          releaseselements:
+            all:
+              key: /org/gnome/desktop/policy-user
+              displayname: summary user
+              explaintext: description user
+              elementtype: text
+              meta:
+                default: "''"
+                meta: "s"
+              empty: "'Default Value user'"
+              release: "20.04"
+              type: dconf
+    - displayname: Empty category
+      parent: ""

@@ -1,0 +1,29 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-string
+    explaintext: |-
+      description
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-array-string
+      - Default: ['Value1', 'Value2']
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04
+    metaenabled: '{"20.04":{"empty":"[]","meta":"as"},"all":{"empty":"[]","meta":"as"}}'
+    metadisabled: '{"20.04":{"meta":"as"},"all":{"meta":"as"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: multiText
+        meta:
+          meta: "as"
+          empty: "[]"
+        default: '[''Value1'', ''Value2'']'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf
