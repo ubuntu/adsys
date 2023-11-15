@@ -30,6 +30,16 @@ adsysd<adsysd-cli>
 adwatchd<adwatchd-cli>
 ```
 
+```{grid-item}
+## Supported policies
+
+```{toctree}
+:titlesonly:
+:maxdepth: 2
+
+policies/index
+```
+
 ````
 
 ## Supported releases
