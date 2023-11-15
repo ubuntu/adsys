@@ -23,6 +23,9 @@ var admxTemplate string
 //go:embed adml.template
 var admlTemplate string
 
+//go:embed docpolicy.md.template
+var docPolicyTemplate string
+
 // Expand will expand any policies on the system into a list of expanded policies.
 func Expand(src, dst, root, currentSession string) error {
 	release, err := adcommon.GetVersionID(root)

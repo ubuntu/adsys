@@ -1,0 +1,29 @@
+# {{.DisplayName}}
+
+{{.ExplainText}}
+
+{{ if or (ne .RangeValuesMin "") (ne .RangeValuesMax "") -}}
+
+## Valid range
+
+* Min: {{.RangeValuesMin}}
+* Max: {{.RangeValuesMax}}
+
+{{ end -}}
+
+{{- if ne (len .Choices) 0 -}}
+
+## Valid values
+
+{{ range $i, $c := .Choices -}}
+* {{$c}}
+{{ end -}}
+{{- end }}
+
+## Metadata
+
+| Element      | Value            |
+| ---          | ---              |
+| Key          | {{.Key}}         |
+| Element type | {{.ElementType}} |
+| Class:       | {{.Class}}       |

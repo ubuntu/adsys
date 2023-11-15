@@ -512,6 +512,115 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 	return nil
 }
 
+func expandedCategoriesToMD(expandedCategories []expandedCategory, rootDest string, currentRelPath string) (err error) {
+	computerDest, userDest := filepath.Join(rootDest, "Computer Policies", currentRelPath), filepath.Join(rootDest, "User Policies", currentRelPath)
+	// bootstrap first directories
+	if currentRelPath == "." {
+		for _, dest := range []string{rootDest, computerDest, userDest} {
+			if dest != rootDest {
+				if err := os.RemoveAll(dest); err != nil {
+					return err
+				}
+			}
+			if err := os.Mkdir(dest, 0700); err != nil {
+				if dest == rootDest && errors.Is(err, os.ErrExist) {
+					continue
+				}
+				return err
+			}
+		}
+	}
+
+	for _, ec := range expandedCategories {
+		// Directories: create both paths.
+		computerCategoryDir, userCategoryDir := filepath.Join(computerDest, ec.DisplayName), filepath.Join(userDest, ec.DisplayName)
+		for _, p := range []string{computerCategoryDir, userCategoryDir} {
+			if err := os.Mkdir(p, 0700); err != nil {
+				return err
+			}
+		}
+
+		// This is a list of policies in the current directory.
+		for _, p := range ec.Policies {
+			dest := computerCategoryDir
+			if p.Class == "User" {
+				dest = userCategoryDir
+			}
+			polDetails := p.ReleasesElements["all"]
+
+			input := struct {
+				Key            string
+				DisplayName    string
+				ExplainText    string
+				ElementType    string
+				Class          string
+				RangeValuesMin string
+				RangeValuesMax string
+				Choices        []string
+			}{
+				p.Key,
+				polDetails.DisplayName,
+				strings.ReplaceAll(
+					strings.ReplaceAll(
+						strings.TrimSpace(strings.TrimPrefix(p.ExplainText, "-")),
+						"[", "`["),
+					"]", "]`"),
+				string(polDetails.ElementType),
+				p.Class,
+				polDetails.RangeValues.Min,
+				polDetails.RangeValues.Max,
+				polDetails.Choices,
+			}
+
+			f, err := os.Create(filepath.Join(dest, filepath.Base(polDetails.Key)) + ".md")
+			if err != nil {
+				return fmt.Errorf(i18n.G("can't create md file: %v"), err)
+			}
+			defer decorate.LogFuncOnError(f.Close)
+			t := template.Must(template.New("doc policy").Parse(docPolicyTemplate))
+			err = t.Execute(f, input)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Expand children categories.
+		if err := expandedCategoriesToMD(ec.Children, rootDest, filepath.Join(currentRelPath, ec.DisplayName)); err != nil {
+			return err
+		}
+
+		// Remove any folders that are still empty after the expansion of children categories and policies
+		// (the leaves will be removed first, and so children empty categories are already purged).
+		for _, p := range []string{computerCategoryDir, userCategoryDir} {
+			if err := removeDirIfEmpty(p); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Remove root directories if they are empty
+	if currentRelPath == "." {
+		for _, p := range []string{computerDest, userDest, rootDest} {
+			if err := removeDirIfEmpty(p); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func removeDirIfEmpty(p string) error {
+	children, err := os.ReadDir(p)
+	if err != nil {
+		return err
+	}
+	if len(children) > 0 {
+		return nil
+	}
+	return os.Remove(p)
+}
+
 func (g generator) collectCategoriesPolicies(category expandedCategory, parent string) ([]categoryForADMX, []policyForADMX) {
 	if parent == "" {
 		parent = category.Parent
