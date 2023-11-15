@@ -163,10 +163,49 @@ jobs:
           path: Ubuntu.adm*
           if-no-files-found: error
 
+  generate-doc:
+    name: Merge keys to generated documentation
+    runs-on: ubuntu-latest
+    needs: collect-releases
+    steps:
+      - name: Install needed binaries
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
+      - name: Download all available artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: Display structure of downloaded files
+        run: |
+          set -eu
+
+          target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
+          mkdir wanted/
+          for f in $(find artifacts/policies-*/ -type f); do
+            for wanted in ${target}; do
+              if [ $(basename $f) != ${wanted}.yaml ]; then
+                continue
+              fi
+              cp $f wanted/
+            done
+          done
+          chmod +x artifacts/admxgen/admxgen
+          artifacts/admxgen/admxgen doc artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ generated-docs/
+          ls -R
+      - name: Upload adm template files
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-docs
+          path: generated-docs/*
+          if-no-files-found: error
+
   integrate:
     name: Integrate policy changes in current git tree
     runs-on: ubuntu-latest
-    needs: generate-ad
+    needs:
+      - generate-ad
+      - generate-doc
     steps:
       - uses: actions/checkout@v4
       - name: Download adm template files for "all"
@@ -179,9 +218,14 @@ jobs:
         with:
           name: adm-LTS
           path: policies/Ubuntu/lts-only
-      - name: Copy admx and adml to git
+      - name: Download generated documentation
+        uses: actions/download-artifact@v3
+        with:
+          name: generated-docs
+          path: docs/reference/policies/
+      - name: Add generated files to git
         run: |
-          git add policies/
+          git add policies/ docs/reference/policies/
       - name: Get output branch for branch name
         id: get-branch-name
         shell: bash
