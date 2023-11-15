@@ -116,8 +116,8 @@ type categoryFileStruct struct {
 	Categories        []category
 }
 
-// Generate creates and merge all policies into ADMX/ADML files.
-func Generate(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
+// GenerateAD creates and merge all policies into ADMX/ADML files.
+func GenerateAD(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
 	// Load all expanded categories
 	policies, catfs, err := loadDefinitions(categoryDefinition, src)
 	if err != nil {

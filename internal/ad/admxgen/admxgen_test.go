@@ -84,7 +84,7 @@ func TestExpand(t *testing.T) {
 	}
 }
 
-func TestGenerate(t *testing.T) {
+func TestGenerateAD(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -119,7 +119,7 @@ func TestGenerate(t *testing.T) {
 				require.NoError(t, err, "Setup: should create a file as destination")
 			}
 
-			err := admxgen.Generate(catDef, src, dst, tc.autoDetectReleases, false)
+			err := admxgen.GenerateAD(catDef, src, dst, tc.autoDetectReleases, false)
 			if tc.wantErr {
 				require.Error(t, err, "admx should have errored out")
 				return

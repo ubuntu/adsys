@@ -94,7 +94,7 @@ func installAdmx(rootCmd *cobra.Command, viper *viper.Viper) error {
 		Long:  gotext.Get("Collects all intermediary policy definition files in SOURCE directory to create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."),
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return admxgen.Generate(args[0], args[1], args[2], *autoDetectReleases, *allowMissingKeys)
+			return admxgen.GenerateAD(args[0], args[1], args[2], *autoDetectReleases, *allowMissingKeys)
 		},
 	}
 	autoDetectReleases = cmd.Flags().BoolP("auto-detect-releases", "a", false, gotext.Get("override supported releases in categories definition file and will takes all yaml files in SOURCE directory and use the basename as their versions."))
