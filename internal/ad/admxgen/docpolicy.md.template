@@ -4,7 +4,7 @@
 
 {{ if or (ne .RangeValuesMin "") (ne .RangeValuesMax "") -}}
 
-## Valid range
+<span style="font-size: larger;">**Valid range**</span>
 
 * Min: {{.RangeValuesMin}}
 * Max: {{.RangeValuesMax}}
@@ -13,14 +13,14 @@
 
 {{- if ne (len .Choices) 0 -}}
 
-## Valid values
+<span style="font-size: larger;">**Valid values**</span>
 
 {{ range $i, $c := .Choices -}}
 * {{$c}}
 {{ end -}}
 {{- end }}
 
-## Metadata
+<span style="font-size: larger;">**Metadata**</span>
 
 | Element      | Value            |
 | ---          | ---              |
