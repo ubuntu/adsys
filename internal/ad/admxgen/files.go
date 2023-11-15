@@ -159,6 +159,44 @@ func GenerateAD(categoryDefinition, src, dst string, autoDetectReleases, allowMi
 	return nil
 }
 
+// GenerateDoc creates and merge all policies into documentation files.
+func GenerateDoc(categoryDefinition, src, dst string) error {
+	// Load all expanded categories
+	policies, catfs, err := loadDefinitions(categoryDefinition, src)
+	if err != nil {
+		return err
+	}
+
+	// Collect supported releases
+	var supportedReleases []string
+	files, err := os.ReadDir(src)
+	if err != nil {
+		return fmt.Errorf("can't read source directory: %w", err)
+	}
+	for _, f := range files {
+		if !strings.HasSuffix(f.Name(), ".yaml") {
+			continue
+		}
+		n := strings.TrimSuffix(f.Name(), ".yaml")
+		supportedReleases = append(supportedReleases, n)
+	}
+
+	g := generator{
+		distroID:          catfs.DistroID,
+		supportedReleases: supportedReleases,
+	}
+	ec, err := g.generateExpandedCategories(catfs.Categories, policies, false)
+	if err != nil {
+		return err
+	}
+	err = expandedCategoriesToMD(ec, dst, ".")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy, cfs categoryFileStruct, err error) {
 	defer decorate.OnError(&err, i18n.G("can't load category definition"))
 
