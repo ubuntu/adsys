@@ -9,17 +9,18 @@ Note: default system value is used for "Not Configured" and enforced if "Disable
 
 Supported on Ubuntu 20.04
 
-## Valid range
+<span style="font-size: larger;">**Valid range**</span>
 
 * Min: -123.000000
 * Max: 15000.000000
 
 
 
-## Metadata
+<span style="font-size: larger;">**Metadata**</span>
 
 | Element      | Value            |
 | ---          | ---              |
-| Key          | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range         |
+| Location     |  Policies -> Category1 Display Name -> summary    |
+| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-decimal-with-range         |
 | Element type | decimal |
 | Class:       | Machine       |

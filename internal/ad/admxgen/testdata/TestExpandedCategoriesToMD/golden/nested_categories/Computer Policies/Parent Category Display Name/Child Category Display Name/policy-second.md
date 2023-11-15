@@ -11,10 +11,11 @@ Supported on Ubuntu 20.04
 
 
 
-## Metadata
+<span style="font-size: larger;">**Metadata**</span>
 
 | Element      | Value            |
 | ---          | ---              |
-| Key          | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second         |
+| Location     |  Policies -> Parent Category Display Name -> Child Category Display Name -> summary second    |
+| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second         |
 | Element type | text |
 | Class:       | Machine       |

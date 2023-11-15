@@ -11,10 +11,11 @@ Supported on Ubuntu 20.04
 
 
 
-## Metadata
+<span style="font-size: larger;">**Metadata**</span>
 
 | Element      | Value            |
 | ---          | ---              |
-| Key          | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-user         |
+| Location     | User Policies -> Parent Category Display Name -> Child Category Display Name in User -> summary user    |
+| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-user         |
 | Element type | text |
 | Class:       | User       |

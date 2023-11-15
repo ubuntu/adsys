@@ -9,10 +9,11 @@ Note: default system value is used for "Not Configured" and enforced if "Disable
 
 
 
-## Metadata
+<span style="font-size: larger;">**Metadata**</span>
 
 | Element      | Value            |
 | ---          | ---              |
-| Key          | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-multiple1         |
+| Location     |  Policies -> Category1 Display Name -> summary 1    |
+| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-multiple1         |
 | Element type | text |
 | Class:       | Machine       |

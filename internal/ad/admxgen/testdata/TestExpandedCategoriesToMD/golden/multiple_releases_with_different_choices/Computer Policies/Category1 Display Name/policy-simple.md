@@ -11,7 +11,7 @@ Note: default system value is used for "Not Configured" and enforced if "Disable
 
 Supported on Ubuntu 20.04, 18.04
 
-## Valid values
+<span style="font-size: larger;">**Valid values**</span>
 
 * Choice 11
 * Choice 12
@@ -19,10 +19,11 @@ Supported on Ubuntu 20.04, 18.04
 * Choice 14
 
 
-## Metadata
+<span style="font-size: larger;">**Metadata**</span>
 
 | Element      | Value            |
 | ---          | ---              |
-| Key          | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple         |
+| Location     |  Policies -> Category1 Display Name -> summary    |
+| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple         |
 | Element type | dropdownList |
 | Class:       | Machine       |

@@ -12,10 +12,11 @@ Supported on Ubuntu 20.04, 21.04, 21.10.
 
 
 
-## Metadata
+<span style="font-size: larger;">**Metadata**</span>
 
 | Element      | Value            |
 | ---          | ---              |
-| Key          | Software\Policies\Ubuntu\dconf\com\ubuntu\simple\simple-text-property         |
+| Location     | Computer Policies -> Category1 Display Name -> simple-text-property summary    |
+| Registry Key | Software\Policies\Ubuntu\dconf\com\ubuntu\simple\simple-text-property         |
 | Element type | text |
 | Class:       | Machine       |
