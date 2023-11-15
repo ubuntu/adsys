@@ -549,6 +549,7 @@ func expandedCategoriesToMD(expandedCategories []expandedCategory, rootDest stri
 			polDetails := p.ReleasesElements["all"]
 
 			input := struct {
+				Location       string
 				Key            string
 				DisplayName    string
 				ExplainText    string
@@ -558,6 +559,9 @@ func expandedCategoriesToMD(expandedCategories []expandedCategory, rootDest stri
 				RangeValuesMax string
 				Choices        []string
 			}{
+				strings.ReplaceAll(
+					strings.TrimLeft(filepath.Join(dest, filepath.Base(polDetails.DisplayName)), rootDest),
+					"/", " -> "),
 				p.Key,
 				polDetails.DisplayName,
 				strings.ReplaceAll(

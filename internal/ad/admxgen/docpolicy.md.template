@@ -24,6 +24,7 @@
 
 | Element      | Value            |
 | ---          | ---              |
-| Key          | {{.Key}}         |
+| Location     | {{.Location}}    |
+| Registry Key | {{.Key}}         |
 | Element type | {{.ElementType}} |
 | Class:       | {{.Class}}       |
