@@ -167,3 +167,10 @@ custom_tags = []
 ############################################################
 
 ## Add any configuration that is not covered by the common conf.py file.
+
+def run_before_build(app):
+    import subprocess
+    subprocess.run(['./make_toctree.sh', 'reference/policies/Computer Policies', 'reference/policies/User Policies'])
+
+def setup(app):
+    app.connect('builder-inited', run_before_build)
