@@ -79,11 +79,11 @@
     * Not configured: A setting declared higher in the GPO hierarchy will be used if available.
   type: "proxy"
 - key: "/proxy/auto"
-  displayname: "Autoconfiguration URL"
+  displayname: "Auto-configuration URL"
   explaintext: |
-    Declare system-wide proxy autoconfiguration URL.
+    Declare system-wide proxy auto-configuration URL.
 
-    Autoconfiguration URLs are always prioritzed over manual proxy settings, meaning that if all proxy options are set, the GPO client will enable automatic proxy configuration for supported backends. An empty value will remove previously set settings of the same type.
+    Auto-configuration URLs are always prioritized over manual proxy settings, meaning that if all proxy options are set, the GPO client will enable automatic proxy configuration for supported backends. An empty value will remove previously set settings of the same type.
   elementtype: "text"
   release: "any"
   note: |
