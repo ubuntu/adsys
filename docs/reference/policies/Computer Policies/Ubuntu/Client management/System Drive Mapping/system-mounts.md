@@ -17,7 +17,7 @@ By default, the mounts will be done in anonymous mode. In case of authentication
 
 If the tag is added, the mount will require Kerberos authentication in order to occur.
 
-The supported protocols / filsystems are the same as the ones supported by the mount command.
+The supported protocols / file systems are the same as the ones supported by the mount command.
 They are listed on the mount man page on https://man7.org/linux/man-pages/man8/mount.8.html
 It's up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
 
