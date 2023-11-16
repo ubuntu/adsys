@@ -131,6 +131,11 @@ func docStructure(dir embed.FS, indexFilePath, parentChapterName string) (ordere
 		}
 		p = filepath.Join(root, p) + ".md"
 
+		// Automated generated policies, ignore them.
+		if p == "reference/policies/index.md" {
+			continue
+		}
+
 		title, err := titleFromPage(dir, p)
 		if err != nil {
 			return nil, nil, nil, err
