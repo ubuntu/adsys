@@ -1,0 +1,87 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-choices
+    explaintext: |-
+      description
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-choices
+      - Default for 20.04: Choice 3
+      - Default for 18.04: Choice 2
+      - Default for 16.04: Unmatched default
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04, 18.04
+    metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"18.04":{"empty":"''''","meta":"s"},"16.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+    metadisabled: '{"20.04":{"meta":"s"},"18.04":{"meta":"s"},"16.04":{"meta":"s"},"all":{"meta":"s"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta:
+          meta: "s"
+          empty: ''''''
+        default: 'Choice 3'
+        note: default system value is used  for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
+      "20.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta:
+          meta: "s"
+          empty: ''''''
+        default: 'Choice 3'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
+      "18.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta:
+          meta: "s"
+          empty: ''''''
+        default: 'Choice 2'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "18.04"
+        type: dconf
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
+      "16.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta:
+          meta: "s"
+          empty: ''''''
+        default: 'Unmatched default'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "16.04"
+        type: dconf
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4

@@ -84,7 +84,7 @@ func TestExpand(t *testing.T) {
 	}
 }
 
-func TestGenerate(t *testing.T) {
+func TestGenerateAD(t *testing.T) {
 	t.Parallel()
 
 	tests := map[string]struct {
@@ -119,7 +119,7 @@ func TestGenerate(t *testing.T) {
 				require.NoError(t, err, "Setup: should create a file as destination")
 			}
 
-			err := admxgen.Generate(catDef, src, dst, tc.autoDetectReleases, false)
+			err := admxgen.GenerateAD(catDef, src, dst, tc.autoDetectReleases, false)
 			if tc.wantErr {
 				require.Error(t, err, "admx should have errored out")
 				return
@@ -139,6 +139,52 @@ func TestGenerate(t *testing.T) {
 
 			assert.Equal(t, wantADMX, string(gotADMX), "expected and got admx content differs")
 			assert.Equal(t, wantADML, string(gotADML), "expected and got adml content differs")
+		})
+	}
+}
+
+func TestGenerateDoc(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		autoDetectReleases bool
+		destIsFile         bool
+
+		wantErr bool
+	}{
+		"releases from yaml":                      {},
+		"autodetect overrides releases from yaml": {autoDetectReleases: true},
+
+		// Error cases
+		"invalid definition file":  {wantErr: true},
+		"category expansion fails": {wantErr: true},
+		"doc generation fails":     {destIsFile: true, wantErr: true},
+	}
+	for name, tc := range tests {
+		name := name
+
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			catDef := filepath.Join(testutils.TestFamilyPath(t), name+".yaml")
+			src := filepath.Join(testutils.TestFamilyPath(t), "src")
+			dst := filepath.Join(t.TempDir(), "subdir")
+
+			if tc.destIsFile {
+				f, err := os.Create(dst)
+				f.Close()
+				require.NoError(t, err, "Setup: should create a file as destination")
+			}
+
+			err := admxgen.GenerateDoc(catDef, src, dst)
+			if tc.wantErr {
+				require.Error(t, err, "GenerateDoc should have errored out")
+				return
+			}
+			require.NoError(t, err, "GenerateDoc failed but shouldn't have")
+
+			testutils.CompareTreesWithFiltering(t, dst, testutils.GoldenPath(t), testutils.Update())
 		})
 	}
 }

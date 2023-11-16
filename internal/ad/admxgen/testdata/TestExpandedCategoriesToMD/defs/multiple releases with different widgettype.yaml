@@ -1,0 +1,55 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple
+    explaintext: |-
+      description
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-simple
+      - Default for 20.04: 'Default Value'
+      - Default for 18.04: true
+
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04, 18.04
+    metaenabled: '{"20.04":{"empty":"''''","meta":"s"},{"18.04":{"empty":"false","meta":"b"},"all":{"empty":"''''","meta":"s"}}'
+    metadisabled: '{"20.04":{"meta":"s"},{"18.04":{"meta":"b"},"all":{"meta":"s"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: text
+        meta:
+          empty: ''''''
+          meta: "s"
+        default: '''Default Value'''
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf
+      "20.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: text
+        meta:
+          empty: ''''''
+          meta: "s"
+        default: '''Default Value'''
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf
+      "18.04":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: boolean
+        meta:
+          empty: "false"
+          meta: "b"
+        default: 'true'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "18.04"
+        type: dconf

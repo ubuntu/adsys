@@ -1,0 +1,58 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-multiple1
+    explaintext: |-
+      description 1
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-multiple1
+      - Default: 'Default Value 1'
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: text
+    metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+    metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-multiple1
+        displayname: summary 1
+        explaintext: description 1
+        elementtype: text
+        meta:
+          meta: "s"
+          empty: ''''''
+        default: '''Default Value 1'''
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf
+
+
+- displayname: Category2 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-multiple2
+    explaintext: |-
+      description 2
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-multiple2
+      - Default: 'Default Value 2'
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+    elementtype: text
+    metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+    metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-multiple2
+        displayname: summary 2
+        explaintext: description 2
+        elementtype: text
+        meta:
+          meta: "s"
+          empty: ''''''
+        default: '''Default Value 2'''
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf

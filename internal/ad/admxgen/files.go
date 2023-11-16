@@ -23,6 +23,9 @@ var admxTemplate string
 //go:embed adml.template
 var admlTemplate string
 
+//go:embed docpolicy.md.template
+var docPolicyTemplate string
+
 // Expand will expand any policies on the system into a list of expanded policies.
 func Expand(src, dst, root, currentSession string) error {
 	release, err := adcommon.GetVersionID(root)
@@ -116,8 +119,8 @@ type categoryFileStruct struct {
 	Categories        []category
 }
 
-// Generate creates and merge all policies into ADMX/ADML files.
-func Generate(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
+// GenerateAD creates and merge all policies into ADMX/ADML files.
+func GenerateAD(categoryDefinition, src, dst string, autoDetectReleases, allowMissingKeys bool) error {
 	// Load all expanded categories
 	policies, catfs, err := loadDefinitions(categoryDefinition, src)
 	if err != nil {
@@ -149,6 +152,44 @@ func Generate(categoryDefinition, src, dst string, autoDetectReleases, allowMiss
 		return err
 	}
 	err = g.expandedCategoriesToADMX(ec, dst)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GenerateDoc creates and merge all policies into documentation files.
+func GenerateDoc(categoryDefinition, src, dst string) error {
+	// Load all expanded categories
+	policies, catfs, err := loadDefinitions(categoryDefinition, src)
+	if err != nil {
+		return err
+	}
+
+	// Collect supported releases
+	var supportedReleases []string
+	files, err := os.ReadDir(src)
+	if err != nil {
+		return fmt.Errorf("can't read source directory: %w", err)
+	}
+	for _, f := range files {
+		if !strings.HasSuffix(f.Name(), ".yaml") {
+			continue
+		}
+		n := strings.TrimSuffix(f.Name(), ".yaml")
+		supportedReleases = append(supportedReleases, n)
+	}
+
+	g := generator{
+		distroID:          catfs.DistroID,
+		supportedReleases: supportedReleases,
+	}
+	ec, err := g.generateExpandedCategories(catfs.Categories, policies, false)
+	if err != nil {
+		return err
+	}
+	err = expandedCategoriesToMD(ec, dst, ".")
 	if err != nil {
 		return err
 	}

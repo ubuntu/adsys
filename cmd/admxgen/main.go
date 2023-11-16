@@ -57,6 +57,10 @@ func main() {
 		log.Error(err)
 		os.Exit(2)
 	}
+	if err := installDoc(&rootCmd, viper); err != nil {
+		log.Error(err)
+		os.Exit(2)
+	}
 
 	if err := rootCmd.Execute(); err != nil {
 		log.Error(err)
@@ -94,11 +98,29 @@ func installAdmx(rootCmd *cobra.Command, viper *viper.Viper) error {
 		Long:  gotext.Get("Collects all intermediary policy definition files in SOURCE directory to create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."),
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return admxgen.Generate(args[0], args[1], args[2], *autoDetectReleases, *allowMissingKeys)
+			return admxgen.GenerateAD(args[0], args[1], args[2], *autoDetectReleases, *allowMissingKeys)
 		},
 	}
 	autoDetectReleases = cmd.Flags().BoolP("auto-detect-releases", "a", false, gotext.Get("override supported releases in categories definition file and will takes all yaml files in SOURCE directory and use the basename as their versions."))
 	allowMissingKeys = cmd.Flags().BoolP("allow-missing-keys", "k", false, gotext.Get(`avoid fail but display a warning if some keys are not available in a release. This is the case when news keys are added to non-lts releases.`))
+	if err := bindFlags(viper, cmd.Flags()); err != nil {
+		return errors.New(gotext.Get("can't install command flag bindings: %v", err))
+	}
+
+	rootCmd.AddCommand(cmd)
+	return nil
+}
+
+func installDoc(rootCmd *cobra.Command, viper *viper.Viper) error {
+	cmd := &cobra.Command{
+		Use:   "doc CATEGORIES_DEF.YAML SOURCE DEST",
+		Short: gotext.Get("Create markdown documentation"),
+		Long:  gotext.Get("Collects all intermediary policy definition files in SOURCE directory to create markdown documentation in DEST, based on CATEGORIES_DEF.yaml."),
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return admxgen.GenerateDoc(args[0], args[1], args[2])
+		},
+	}
 	if err := bindFlags(viper, cmd.Flags()); err != nil {
 		return errors.New(gotext.Get("can't install command flag bindings: %v", err))
 	}

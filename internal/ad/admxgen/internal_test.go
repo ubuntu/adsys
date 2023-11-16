@@ -218,6 +218,86 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 	}
 }
 
+func TestExpandedCategoriesToMD(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		destIsFile bool
+
+		wantErr bool
+	}{
+		"simple":              {},
+		"nested categories":   {},
+		"multiple categories": {},
+
+		// Basic keys: no options means a key with no children and no types on it
+		"basic key": {},
+
+		"user policy":                          {},
+		"nested categories, classes and empty": {},
+
+		// Types
+		"boolean":               {},
+		"decimal":               {},
+		"decimal with range":    {},
+		"decimal with min only": {},
+		"decimal with max only": {},
+		// TODO: range with min or max < 0 -> text
+		"long decimal":         {},
+		"array of strings":     {},
+		"array of integers":    {},
+		"choices":              {},
+		"choices with default": {},
+		"double":               {},
+		"double with range":    {},
+
+		// Multiple releases
+		"multiple releases for one key":                             {},
+		"multiple releases with different widgettype":               {},
+		"multiple releases with different choices":                  {},
+		"multiple releases with different ranges":                   {},
+		"multiple releases with all widgets and different defaults": {},
+
+		// meta cases
+		"no meta enabled":  {},
+		"no meta disabled": {},
+		"no meta at all":   {},
+
+		// Error Cases
+		"error on destination creation": {destIsFile: true, wantErr: true},
+	}
+	for name, tc := range tests {
+		name := name
+
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			dst := filepath.Join(t.TempDir(), "subdir")
+
+			if tc.destIsFile {
+				f, err := os.Create(dst)
+				f.Close()
+				require.NoError(t, err, "Setup: should create a file as destination")
+			}
+
+			var ec []expandedCategory
+			ecF, err := os.ReadFile(filepath.Join(testutils.TestFamilyPath(t), "defs", name+".yaml"))
+			require.NoError(t, err, "Setup: failed to load expanded categories from file")
+			err = yaml.Unmarshal(ecF, &ec)
+			require.NoError(t, err, "Setup: failed to unmarshal expanded categories")
+
+			err = expandedCategoriesToMD(ec, dst, ".")
+			if tc.wantErr {
+				require.Error(t, err, "expandedCategoriesToMD should have errored out")
+				return
+			}
+			require.NoError(t, err, "expandedCategoriesToMD failed but shouldn't have")
+
+			testutils.CompareTreesWithFiltering(t, dst, testutils.GoldenPath(t), testutils.Update())
+		})
+	}
+}
+
 func TestMain(m *testing.M) {
 	testutils.InstallUpdateFlag()
 	flag.Parse()
