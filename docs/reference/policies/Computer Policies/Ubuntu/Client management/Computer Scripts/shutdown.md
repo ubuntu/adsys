@@ -1,6 +1,6 @@
 # Shutdown scripts
 
-Define scripts that are executed on machine poweroff.
+Define scripts that are executed on machine power off.
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
 

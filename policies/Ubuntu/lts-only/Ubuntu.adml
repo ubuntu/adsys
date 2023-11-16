@@ -774,7 +774,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuDisplayMachineAllScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2204ScriptsStartup">Startup scripts</string>
       <string id="UbuntuDisplayMachine2004ScriptsStartup">Startup scripts</string>
-      <string id="UbuntuExplainTextMachineScriptsShutdown">Define scripts that are executed on machine poweroff.
+      <string id="UbuntuExplainTextMachineScriptsShutdown">Define scripts that are executed on machine power off.
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
 
@@ -1071,7 +1071,7 @@ By default, the mounts will be done in anonymous mode. In case of authentication
 
 If the tag is added, the mount will require Kerberos authentication in order to occur.
 
-The supported protocols / filsystems are the same as the ones supported by the mount command.
+The supported protocols / file systems are the same as the ones supported by the mount command.
 They are listed on the mount man page on https://man7.org/linux/man-pages/man8/mount.8.html
 It&#39;s up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
 
@@ -1200,9 +1200,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuDisplayMachineAllProxyProxyNoProxy">Ignored hosts</string>
       <string id="UbuntuDisplayMachine2204ProxyProxyNoProxy">Ignored hosts</string>
       <string id="UbuntuDisplayMachine2004ProxyProxyNoProxy">Ignored hosts</string>
-      <string id="UbuntuExplainTextMachineProxyProxyAuto">Declare system-wide proxy autoconfiguration URL.
+      <string id="UbuntuExplainTextMachineProxyProxyAuto">Declare system-wide proxy auto-configuration URL.
 
-Autoconfiguration URLs are always prioritzed over manual proxy settings, meaning that if all proxy options are set, the GPO client will enable automatic proxy configuration for supported backends. An empty value will remove previously set settings of the same type.
+Auto-configuration URLs are always prioritized over manual proxy settings, meaning that if all proxy options are set, the GPO client will enable automatic proxy configuration for supported backends. An empty value will remove previously set settings of the same type.
 
 
 - Type: proxy
@@ -1217,9 +1217,9 @@ Note: -
 Supported on Ubuntu 20.04, 22.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.</string>
-      <string id="UbuntuDisplayMachineAllProxyProxyAuto">Autoconfiguration URL</string>
-      <string id="UbuntuDisplayMachine2204ProxyProxyAuto">Autoconfiguration URL</string>
-      <string id="UbuntuDisplayMachine2004ProxyProxyAuto">Autoconfiguration URL</string>
+      <string id="UbuntuDisplayMachineAllProxyProxyAuto">Auto-configuration URL</string>
+      <string id="UbuntuDisplayMachine2204ProxyProxyAuto">Auto-configuration URL</string>
+      <string id="UbuntuDisplayMachine2004ProxyProxyAuto">Auto-configuration URL</string>
       <string id="UbuntuExplainTextUserScriptsLogon">Define scripts that are executed the first time an user logon until it exits from all sessions.
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
@@ -2115,7 +2115,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       </presentation>
       <presentation id="UbuntuPresentationMachineProxyProxyAuto">
         <textBox refId="UbuntuElemMachineAllProxyProxyAuto">
-          <label>Autoconfiguration URL</label>
+          <label>Auto-configuration URL</label>
           <defaultValue></defaultValue>
         </textBox>
         <text/>
