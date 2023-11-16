@@ -12,4 +12,4 @@ import (
 var Dir embed.FS
 
 // RTDRootURL is the root url of ReadTheDoc adsys documentation.
-const RTDRootURL = "https://canonical-adsys.readthedocs-hosted.com/en/documentation_bootstrap"
+const RTDRootURL = "https://canonical-adsys.readthedocs-hosted.com/en/latest"
