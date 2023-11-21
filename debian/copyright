@@ -189,10 +189,6 @@ Files: vendor/github.com/dlclark/regexp2/*
 Copyright: Doug Clark / Microsoft Corporation
 License: MIT
 
-Files: vendor/github.com/gomarkdown/markdown/*
-Copyright: 2018 Krzysztof Kowalczyk / 2018 Authors / 2011 Russ Ross
-License: BSD-2
-
 Files: vendor/github.com/gorilla/css/*
 Copyright: 2013 Gorilla web toolkit
 License: BSD-3
