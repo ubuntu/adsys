@@ -10,6 +10,7 @@ ADSys is valuable for system administrators who wish to manage Ubuntu Desktop cl
 
 ```{toctree}
 :hidden:
+tutorial/index
 how-to/index
 reference/index
 explanation/index
@@ -20,22 +21,26 @@ explanation/index
 ````{grid} 1 1 2 2
 
 ```{grid-item}
+### [Tutorials](tutorial/index)
+
+**Start here**: a hands-on introduction to ADSys for new users
+```
+
+```{grid-item}
 ### [How-to guides](how-to/index)
 
 **Step-by-step guides** covering key operations and common tasks
 ```
+
+````
+
+````{grid} 1 1 2 2
 
 ```{grid-item}
 ### [Explanation](explanation/index)
 
 **Discussion and clarification** of key topics
 ```
-
-
-````
-
-````{grid} 1 1 2 2
-
 
 ```{grid-item}
 ### [Reference](reference/index)
