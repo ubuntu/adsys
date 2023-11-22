@@ -1,3 +1,40 @@
+adsys (0.13.2) noble; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  [ Jean-Baptiste Lallement ]
+  * Ensure GPO URLs contain the FQDN of the domain controller (LP: #2024377)
+  * Add runtime dependency on nfs-common (LP: #2044112)
+  * Documentation changes:
+    - Switch to Read the Docs for project documentation
+    - Generate documentation from policy definitions
+    - Fix installation path of adwatchd
+  * CI and quality of life changes not impacting package functionality:
+    - Bump go version to 1.21.4
+    - Fix docker stop behavior on integration tests
+    - Add e2e tests provisioning workflow
+    - Reduce the amount of workflows to be run
+    - Remove scopes from dependabot config
+  * Update dependencies to latest:
+    - github.com/charmbracelet/lipgloss
+    - github.com/fatih/color
+    - github.com/fsnotify/fsnotify
+    - github.com/golangci/golangci-lint
+    - github.com/google/uuid
+    - github.com/maruel/natural
+    - github.com/pkg/sftp
+    - github.com/spf13/cobra
+    - github.com/spf13/viper
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Tue, 21 Nov 2023 12:53:10 +0200
+
 adsys (0.13.1) mantic; urgency=medium
 
   [ Denison Barbosa ]
