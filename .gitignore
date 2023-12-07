@@ -26,7 +26,6 @@ installer/Output
 
 # Packaging artefacts
 debian/*debhelper*
-debian/debhelper-build-stamp
 debian/files
 debian/*.substvars
 debian/tmp
