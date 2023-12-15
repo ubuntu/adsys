@@ -39,7 +39,7 @@ jobs:
           done
       - name: Upload
         if: ${{ steps.compute-diff.outputs.changed == 'true' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: samba
           path: |
@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Replace with updated Samba source
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: .github
       - name: Prepare patch working directory

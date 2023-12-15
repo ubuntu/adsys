@@ -119,7 +119,7 @@ jobs:
         # detection enabled and the code is mostly platform independent, this
         # should be a safe action to take.
       - name: Attach installer artifact to workflow run
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: adwatchd_setup
           path: installer/Output/adwatchd_setup.exe
