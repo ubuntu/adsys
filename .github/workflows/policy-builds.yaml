@@ -23,7 +23,7 @@ jobs:
           mkdir /tmp/adsys
           CGO_ENABLED=0 go build ./cmd/admxgen/
       - name: Upload admxgen
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: admxgen
           path: |
@@ -111,7 +111,7 @@ jobs:
           artifacts_name=${artifacts_name/:/-}
           echo "artifacts_name=${artifacts_name}" >> $GITHUB_ENV
       - name: Generated definition files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: policies-${{ env.artifacts_name }}
           path: out/*
@@ -157,7 +157,7 @@ jobs:
           artifacts/admxgen/admxgen admx --auto-detect-releases ${allowflag} artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ .
           ls -R
       - name: Upload adm template files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: adm-${{ matrix.releases }}
           path: Ubuntu.adm*
@@ -194,7 +194,7 @@ jobs:
           artifacts/admxgen/admxgen doc artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ generated-docs/
           ls -R
       - name: Upload adm template files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: generated-docs
           path: generated-docs/*

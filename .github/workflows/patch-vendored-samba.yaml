@@ -39,7 +39,7 @@ jobs:
           done
       - name: Upload
         if: ${{ steps.compute-diff.outputs.changed == 'true' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: samba
           path: |
