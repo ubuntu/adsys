@@ -48,10 +48,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/text/cases"
@@ -99,19 +99,19 @@ type generator struct {
 
 var (
 	// defaultAppendNote is the default note for append-type policies. It will be used unless a specific note is provided.
-	defaultAppendNote = i18n.G(`
+	defaultAppendNote = gotext.Get(`
  * Enabled: The value(s) referenced in the entry are applied on the client machine.
  * Disabled: The value(s) are removed from the target machine.
  * Not configured: Value(s) declared higher in the GPO hierarchy will be used if available.`)
 
 	// defaultOverrideNote is the default note for override-type policies. It will be used unless a specific note is provided.
-	defaultOverrideNote = i18n.G(`
+	defaultOverrideNote = gotext.Get(`
  * Enabled: The value(s) referenced in the entry are applied on the client machine.
  * Disabled: The value(s) are removed from the target machine.`)
 )
 
 func (g generator) generateExpandedCategories(categories []category, policies []common.ExpandedPolicy, allowMissingKeys bool) (ep []expandedCategory, err error) {
-	defer decorate.OnError(&err, i18n.G("can't generate expanded categories"))
+	defer decorate.OnError(&err, gotext.Get("can't generate expanded categories"))
 
 	// noPoliciesOn is a map to attest that each release was assigned at least one property
 	noPoliciesOn := make(map[string]struct{})
@@ -203,7 +203,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 
 			if supportedOn == "" {
 				if release != "all" {
-					supportedOn = fmt.Sprintf(i18n.G("Supported on %s %s"), g.distroID, release)
+					supportedOn = gotext.Get("Supported on %s %s", g.distroID, release)
 				}
 			} else {
 				supportedOn = fmt.Sprintf("%s, %s", supportedOn, release)
@@ -216,7 +216,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			}
 			defaultString = p.Default
 
-			defaults = append(defaults, fmt.Sprintf(i18n.G("- Default for %s: %s"), release, p.Default))
+			defaults = append(defaults, gotext.Get("- Default for %s: %s", release, p.Default))
 
 			if release > highestRelease {
 				highestRelease = release
@@ -254,10 +254,10 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 			explainText = fmt.Sprintf("%s\n%s", explainText, strings.Join(defaults, "\n"))
 		} else if defaultString != "" {
 			// All defaults are the same and not empty
-			explainText = fmt.Sprintf("%s\n%s", explainText, fmt.Sprintf(i18n.G("- Default: %s"), defaultString))
+			explainText = fmt.Sprintf("%s\n%s", explainText, gotext.Get("- Default: %s", defaultString))
 		}
 
-		explainText = fmt.Sprintf(i18n.G("%s\n\nNote:"), explainText)
+		explainText = gotext.Get("%s\n\nNote:", explainText)
 		var note string
 		if releasesElements["all"].Note != "" {
 			note = releasesElements["all"].Note
@@ -280,13 +280,13 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		// Mention if any of the policies require Ubuntu Pro
 		// Currently this only applies to non-dconf policies
 		if typePol != dconfPolicyType {
-			explainText = fmt.Sprintf("%s\n\n%s", explainText, i18n.G("An Ubuntu Pro subscription on the client is required to apply this policy."))
+			explainText = fmt.Sprintf("%s\n\n%s", explainText, gotext.Get("An Ubuntu Pro subscription on the client is required to apply this policy."))
 		}
 
 		// prepare meta for the whole policy
 		metaEnabled, err := json.Marshal(metasEnabled)
 		if err != nil {
-			return nil, errors.New(i18n.G("failed to marshal enabled meta data"))
+			return nil, errors.New(gotext.Get("failed to marshal enabled meta data"))
 		}
 		// We can’t have metaEnabled or metaDisabled being strictly equals:
 		// some AD servers thinks they that disabled means
@@ -296,7 +296,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		}
 		metaDisabled, err := json.Marshal(metasDisabled)
 		if err != nil {
-			return nil, errors.New(i18n.G("failed to marshal disabled meta data"))
+			return nil, errors.New(gotext.Get("failed to marshal disabled meta data"))
 		}
 
 		mergedPolicies[key] = mergedPolicy{
@@ -315,7 +315,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		for r := range noPoliciesOn {
 			releases = append(releases, r)
 		}
-		return nil, fmt.Errorf(i18n.G("some releases have no policies attached to them while being listed in categories: %v"), releases)
+		return nil, errors.New(gotext.Get("some releases have no policies attached to them while being listed in categories: %v", releases))
 	}
 
 	// 2. Inflate policies in categories, keep policy order from category list
@@ -325,7 +325,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		var policies []mergedPolicy
 
 		if cat.DefaultPolicyClass == "" {
-			return expandedCategory{}, fmt.Errorf(i18n.G("%s needs a default policy class"), cat.DisplayName)
+			return expandedCategory{}, errors.New(gotext.Get("%s needs a default policy class", cat.DisplayName))
 		}
 		defaultPolicyClass, err := common.ValidClass(cat.DefaultPolicyClass)
 		if err != nil {
@@ -340,12 +340,12 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 		for _, p := range cat.Policies {
 			pol, ok := mergedPolicies[p]
 			if !ok {
-				msg := fmt.Sprintf(i18n.G("policy %s referenced in %q does not exist in any supported releases"), p, cat.DisplayName)
+				err := errors.New(gotext.Get("policy %s referenced in %q does not exist in any supported releases", p, cat.DisplayName))
 				if allowMissingKeys {
-					log.Warningf(context.Background(), msg)
+					log.Warning(context.Background(), err)
 					continue
 				}
-				return expandedCategory{}, errors.New(msg)
+				return expandedCategory{}, err
 			}
 			if pol.Class == "" {
 				pol.Class = defaultPolicyClass
@@ -386,7 +386,7 @@ func (g generator) generateExpandedCategories(categories []category, policies []
 
 	// Check that all policies are at least attached once
 	if len(unattachedPolicies) > 0 {
-		return nil, fmt.Errorf(i18n.G("the following policies have not been assigned to a category: %v"), unattachedPolicies)
+		return nil, errors.New(gotext.Get("the following policies have not been assigned to a category: %v", unattachedPolicies))
 	}
 
 	return expandedCategories, nil
@@ -459,7 +459,7 @@ func (g generator) toID(key string, s ...string) string {
 }
 
 func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategory, dest string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't generate ADMX files"))
+	defer decorate.OnError(&err, gotext.Get("can't generate ADMX files"))
 
 	var inputCategories []categoryForADMX
 	var inputPolicies []policyForADMX
@@ -476,7 +476,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 	}{g.distroID, inputCategories, inputPolicies}
 
 	if err := os.MkdirAll(dest, 0750); err != nil {
-		return fmt.Errorf(i18n.G("can't create destination directory for AD policies: %v"), err)
+		return errors.New(gotext.Get("can't create destination directory for AD policies: %v", err))
 	}
 
 	funcMap := template.FuncMap{
@@ -487,7 +487,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 
 	f, err := os.Create(filepath.Join(dest, g.distroID+".admx"))
 	if err != nil {
-		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
+		return errors.New(gotext.Get("can't create admx file: %v", err))
 	}
 	defer decorate.LogFuncOnError(f.Close)
 	t := template.Must(template.New("admx.template").Funcs(funcMap).Parse(admxTemplate))
@@ -500,7 +500,7 @@ func (g generator) expandedCategoriesToADMX(expandedCategories []expandedCategor
 
 	f, err = os.Create(filepath.Join(dest, g.distroID+".adml"))
 	if err != nil {
-		return fmt.Errorf(i18n.G("can't create admx file: %v"), err)
+		return errors.New(gotext.Get("can't create admx file: %v", err))
 	}
 	defer decorate.LogFuncOnError(f.Close)
 	t = template.Must(template.New("adml.template").Funcs(funcMap).Parse(admlTemplate))
@@ -578,7 +578,7 @@ func expandedCategoriesToMD(expandedCategories []expandedCategory, rootDest stri
 
 			f, err := os.Create(filepath.Join(dest, filepath.Base(polDetails.Key)) + ".md")
 			if err != nil {
-				return fmt.Errorf(i18n.G("can't create md file: %v"), err)
+				return errors.New(gotext.Get("can't create md file: %v", err))
 			}
 			defer decorate.LogFuncOnError(f.Close)
 			t := template.Must(template.New("doc policy").Parse(docPolicyTemplate))

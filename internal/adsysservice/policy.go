@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/adsysservice/actions"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/decorate"
@@ -19,7 +19,7 @@ import (
 // UpdatePolicy refreshes or creates a policy for current user or user given as argument.
 // It can purge the policy instead of updating it if requested.
 func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Service_UpdatePolicyServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while updating policy"))
+	defer decorate.OnError(&err, gotext.Get("error while updating policy"))
 
 	objectClass := ad.UserObject
 	if r.GetIsComputer() || r.GetAll() {
@@ -84,7 +84,7 @@ func (s *Service) updatePolicyFor(ctx context.Context, isComputer bool, target s
 
 // DumpPolicies displays all applied policies for a given user.
 func (s *Service) DumpPolicies(r *adsys.DumpPoliciesRequest, stream adsys.Service_DumpPoliciesServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while displaying applied policies"))
+	defer decorate.OnError(&err, gotext.Get("error while displaying applied policies"))
 
 	objectClass := ad.UserObject
 	if r.GetIsComputer() {
@@ -119,7 +119,7 @@ func (s *Service) DumpPolicies(r *adsys.DumpPoliciesRequest, stream adsys.Servic
 
 // DumpPoliciesDefinitions dumps requested policy definitions stored in daemon at build time.
 func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest, stream adsys.Service_DumpPoliciesDefinitionsServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while dumping policy definitions"))
+	defer decorate.OnError(&err, gotext.Get("error while dumping policy definitions"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
@@ -142,7 +142,7 @@ func (s *Service) DumpPoliciesDefinitions(r *adsys.DumpPolicyDefinitionsRequest,
 
 // GPOListScript returns the embedded GPO python list script.
 func (s *Service) GPOListScript(_ *adsys.Empty, stream adsys.Service_GPOListScriptServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while getting gpo list script"))
+	defer decorate.OnError(&err, gotext.Get("error while getting gpo list script"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
@@ -159,7 +159,7 @@ func (s *Service) GPOListScript(_ *adsys.Empty, stream adsys.Service_GPOListScri
 
 // CertAutoEnrollScript returns the embedded certificate autoenrollment python script.
 func (s *Service) CertAutoEnrollScript(_ *adsys.Empty, stream adsys.Service_CertAutoEnrollScriptServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while getting certificate autoenrollment script"))
+	defer decorate.OnError(&err, gotext.Get("error while getting certificate autoenrollment script"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err

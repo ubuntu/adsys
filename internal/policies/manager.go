@@ -25,6 +25,7 @@ package policies
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -34,10 +35,10 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/ad/backends"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/apparmor"
 	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
@@ -238,7 +239,7 @@ func WithCertAutoenrollCmd(cmd []string) Option {
 
 // NewManager returns a new manager with all default policy handlers.
 func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts ...Option) (m *Manager, err error) {
-	defer decorate.OnError(&err, i18n.G("can't create a new policy handlers manager"))
+	defer decorate.OnError(&err, gotext.Get("can't create a new policy handlers manager"))
 
 	defaultSystemdCaller, err := systemd.New(bus)
 	if err != nil {
@@ -351,7 +352,7 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 // ApplyPolicies generates a computer or user policy based on a list of entries
 // retrieved from a directory service.
 func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComputer bool, pols *Policies) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to apply policy to %q"), objectName)
+	defer decorate.OnError(&err, gotext.Get("failed to apply policy to %q", objectName))
 
 	// We have a lock per objectName to prevent multiple instances of ApplyPolicies for the same object.
 	m.muMu.Lock()
@@ -363,11 +364,11 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	m.muMu.Unlock()
 
 	rules := pols.GetUniqueRules()
-	action := i18n.G("Applying")
+	action := gotext.Get("Applying")
 	if len(rules) == 0 {
-		action = i18n.G("Unloading")
+		action = gotext.Get("Unloading")
 	}
-	log.Infof(ctx, i18n.G("%s policies for %s (machine: %v)"), action, objectName, isComputer)
+	log.Info(ctx, gotext.Get("%s policies for %s (machine: %v)", action, objectName, isComputer))
 
 	var g errgroup.Group
 	// Applying dconf policies take a while to complete, so it's better to start applying them before
@@ -377,7 +378,7 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	})
 	if !m.GetSubscriptionState(ctx) {
 		if filteredRules := filterRules(ctx, rules); len(filteredRules) > 0 {
-			log.Warningf(ctx, i18n.G("Rules from the following policy types will be filtered out as the machine is not enrolled to Ubuntu Pro: %s"), strings.Join(filteredRules, ", "))
+			log.Warning(ctx, gotext.Get("Rules from the following policy types will be filtered out as the machine is not enrolled to Ubuntu Pro: %s", strings.Join(filteredRules, ", ")))
 		}
 	}
 
@@ -419,7 +420,7 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 // DumpPolicies displays the currently applied policies and rules (since last update) for objectName.
 // It can in addition show the rules and overridden content.
 func (m *Manager) DumpPolicies(ctx context.Context, objectName string, computerOnly, withRules, withOverridden bool) (msg string, err error) {
-	defer decorate.OnError(&err, i18n.G("failed to dump policies for %q"), objectName)
+	defer decorate.OnError(&err, gotext.Get("failed to dump policies for %q", objectName))
 
 	log.Infof(ctx, "Dumping policies for %s", objectName)
 
@@ -427,22 +428,22 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, computerO
 
 	var alreadyProcessedRules map[string]struct{}
 	if !computerOnly {
-		fmt.Fprintln(&out, i18n.G("Policies from machine configuration:"))
+		fmt.Fprintln(&out, gotext.Get("Policies from machine configuration:"))
 		policiesHost, err := NewFromCache(ctx, filepath.Join(m.policiesCacheDir, m.hostname))
 		if err != nil {
-			return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), m.hostname, err)
+			return "", errors.New(gotext.Get("no policy applied for %q: %v", m.hostname, err))
 		}
 		for _, g := range policiesHost.GPOs {
 			alreadyProcessedRules = g.Format(&out, withRules, withOverridden, alreadyProcessedRules)
 		}
-		fmt.Fprintln(&out, i18n.G("Policies from user configuration:"))
+		fmt.Fprintln(&out, gotext.Get("Policies from user configuration:"))
 	}
 
 	// Load target policies
 	policiesTarget, err := NewFromCache(ctx, filepath.Join(m.policiesCacheDir, objectName))
 	if err != nil {
-		log.Infof(ctx, i18n.G("User %q not found on cache."), objectName)
-		return "", fmt.Errorf(i18n.G("no policy applied for %q: %v"), objectName, err)
+		log.Info(ctx, gotext.Get("User %q not found on cache.", objectName))
+		return "", errors.New(gotext.Get("no policy applied for %q: %v", objectName, err))
 	}
 	for _, g := range policiesTarget.GPOs {
 		alreadyProcessedRules = g.Format(&out, withRules, withOverridden, alreadyProcessedRules)
@@ -453,7 +454,7 @@ func (m *Manager) DumpPolicies(ctx context.Context, objectName string, computerO
 
 // LastUpdateFor returns the last update time for object or current machine.
 func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachine bool) (t time.Time, err error) {
-	defer decorate.OnError(&err, i18n.G("failed to get policy last update time %q (machine: %q)"), objectName, isMachine)
+	defer decorate.OnError(&err, gotext.Get("failed to get policy last update time %q (machine: %v)", objectName, isMachine))
 
 	log.Infof(ctx, "Get policies last update time %q (machine: %t)", objectName, isMachine)
 
@@ -463,7 +464,7 @@ func (m *Manager) LastUpdateFor(ctx context.Context, objectName string, isMachin
 
 	info, err := os.Stat(filepath.Join(m.policiesCacheDir, objectName))
 	if err != nil {
-		return time.Time{}, fmt.Errorf(i18n.G("policies were not applied for %q: %v"), objectName, err)
+		return time.Time{}, errors.New(gotext.Get("policies were not applied for %q: %v", objectName, err))
 	}
 	return info.ModTime(), nil
 }

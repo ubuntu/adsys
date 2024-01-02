@@ -2,16 +2,17 @@ package admxgen
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/dconf"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v3"
@@ -34,12 +35,12 @@ func Expand(src, dst, root, currentSession string) error {
 	}
 
 	if _, err = os.Stat(src); err != nil {
-		return fmt.Errorf(i18n.G("failed to access definition files: %w"), err)
+		return errors.New(gotext.Get("failed to access definition files: %v", err))
 	}
 	// Expand policies for all supported yaml files
 	files, err := filepath.Glob(filepath.Join(src, "*.yaml"))
 	if err != nil {
-		return fmt.Errorf(i18n.G("failed to read list of definition files: %w"), err)
+		return errors.New(gotext.Get("failed to read list of definition files: %v", err))
 	}
 
 	expandedPoliciesStream := make(chan []common.ExpandedPolicy, len(files))
@@ -198,7 +199,7 @@ func GenerateDoc(categoryDefinition, src, dst string) error {
 }
 
 func loadDefinitions(categoryDefinition, src string) (ep []common.ExpandedPolicy, cfs categoryFileStruct, err error) {
-	defer decorate.OnError(&err, i18n.G("can't load category definition"))
+	defer decorate.OnError(&err, gotext.Get("can't load category definition"))
 
 	var nilCategoryFileStruct categoryFileStruct
 

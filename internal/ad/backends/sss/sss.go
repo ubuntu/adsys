@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/ad/backends"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 	"gopkg.in/ini.v1"
 )
@@ -37,7 +37,7 @@ type Config struct {
 
 // New returns a sss backend loaded from Config.
 func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
-	defer decorate.OnError(&err, i18n.G("can't get domain configuration from %+v"), c)
+	defer decorate.OnError(&err, gotext.Get("can't get domain configuration from %+v", c))
 
 	log.Debug(ctx, "Loading SSS configuration for AD backend")
 
@@ -57,11 +57,11 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 	// Take first domain as domain for machine and all users
 	sssdDomain := strings.Split(cfg.Section("sssd").Key("domains").String(), ",")[0]
 	if sssdDomain == "" {
-		return SSS{}, errors.New(i18n.G("failed to find default sssd domain in sssd.conf"))
+		return SSS{}, errors.New(gotext.Get("failed to find default sssd domain in sssd.conf"))
 	}
 	domain := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_domain").String()
 	if domain == "" {
-		return SSS{}, fmt.Errorf(i18n.G("could not find AD domain name corresponding to %q"), sssdDomain)
+		return SSS{}, errors.New(gotext.Get("could not find AD domain name corresponding to %q", sssdDomain))
 	}
 
 	if defaultDomainSuffix == "" {
@@ -102,7 +102,7 @@ func (sss SSS) Domain() string {
 // If the dynamic lookup worked, but there is still no server FQDN found (for instance, backend
 // if offline), the error raised is of type ErrorNoActiveServer.
 func (sss SSS) ServerFQDN(ctx context.Context) (serverFQDN string, err error) {
-	defer decorate.OnError(&err, i18n.G("error while trying to look up AD server address on SSSD for %q"), sss.domain)
+	defer decorate.OnError(&err, gotext.Get("error while trying to look up AD server address on SSSD for %q", sss.domain))
 
 	if sss.staticServerFQDN != "" {
 		return sss.staticServerFQDN, nil
@@ -134,7 +134,7 @@ func (sss SSS) DefaultDomainSuffix() string {
 func (sss SSS) IsOnline() (bool, error) {
 	var online bool
 	if err := sss.domainDbus.Call(consts.SSSDDbusInterface+".IsOnline", 0).Store(&online); err != nil {
-		return false, fmt.Errorf(i18n.G("failed to retrieve offline state from SSSD: %v"), err)
+		return false, errors.New(gotext.Get("failed to retrieve offline state from SSSD: %v", err))
 	}
 	return online, nil
 }

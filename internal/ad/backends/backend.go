@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/leonelquinteros/gotext"
 )
 
 // Backend is the common interface for all backends.
@@ -30,5 +30,5 @@ type Backend interface {
 var (
 	// ErrNoActiveServer is an error receive when there is no active server and no static configuration
 	// This is received in ServerFQDN.
-	ErrNoActiveServer = errors.New(i18n.G("no active server found"))
+	ErrNoActiveServer = errors.New(gotext.Get("no active server found"))
 )

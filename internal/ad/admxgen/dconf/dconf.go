@@ -3,6 +3,7 @@ package dconf
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -12,9 +13,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	log "github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/internal/ad/admxgen/common"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 	"gopkg.in/ini.v1"
 )
@@ -53,7 +54,7 @@ var (
 // Generate creates a set of expanded policies from a list of policies and
 // dconf schemas available on the machine.
 func Generate(policies []Policy, release string, root, currentSessions string) (ep []common.ExpandedPolicy, err error) {
-	defer decorate.OnError(&err, i18n.G("can't generate dconf expanded policies"))
+	defer decorate.OnError(&err, gotext.Get("can't generate dconf expanded policies"))
 
 	s, d, err := loadSchemasFromDisk(filepath.Join(root, schemasPath))
 	if err != nil {
@@ -127,7 +128,7 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 			Class:       class,
 			Release:     release,
 			Default:     defaultVal,
-			Note:        i18n.G(`default system value is used for "Not Configured" and enforced if "Disabled".`),
+			Note:        gotext.Get(`default system value is used for "Not Configured" and enforced if "Disabled".`),
 			Type:        "dconf",
 			RangeValues: s.RangeValues,
 			Choices:     s.Choices,
@@ -159,11 +160,11 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 				min = "0"
 			}
 			if min == "NaN" || min == "Inf" {
-				return nil, fmt.Errorf(i18n.G("min value for long decimal is not a valid float: %s"), min)
+				return nil, errors.New(gotext.Get("min value for long decimal is not a valid float: %s", min))
 			}
 			s, err := strconv.ParseFloat(min, 64)
 			if err != nil {
-				return nil, fmt.Errorf(i18n.G("min value for long decimal is not a valid float: %v"), err)
+				return nil, errors.New(gotext.Get("min value for long decimal is not a valid float: %v", err))
 			}
 			min = fmt.Sprintf("%f", math.Max(0, s))
 			ep.RangeValues.Min = min
@@ -227,7 +228,7 @@ type schemaList struct {
 }
 
 func loadSchemasFromDisk(path string) (entries map[string]schemaEntry, defaultsForPath map[string]string, err error) {
-	defer decorate.OnError(&err, i18n.G("error while loading schemas"))
+	defer decorate.OnError(&err, gotext.Get("error while loading schemas"))
 
 	entries = make(map[string]schemaEntry)
 	enums := make(map[string][]string)
@@ -236,24 +237,24 @@ func loadSchemasFromDisk(path string) (entries map[string]schemaEntry, defaultsF
 	// load schemas
 	schemas, err := filepath.Glob(filepath.Join(path, "*.xml"))
 	if err != nil {
-		return nil, nil, fmt.Errorf(i18n.G("failed to read list of schemas: %w"), err)
+		return nil, nil, errors.New(gotext.Get("failed to read list of schemas: %v", err))
 	}
 
 	for _, p := range schemas {
 		f, err := os.Open(filepath.Clean(p))
 		if err != nil {
-			return nil, nil, fmt.Errorf(i18n.G("cannot open file: %w"), err)
+			return nil, nil, errors.New(gotext.Get("cannot open file: %v", err))
 		}
 		defer decorate.LogFuncOnError(f.Close)
 
 		d, err := io.ReadAll(f)
 		if err != nil {
-			return nil, nil, fmt.Errorf(i18n.G("cannot read schema data: %w"), err)
+			return nil, nil, errors.New(gotext.Get("cannot read schema data: %v", err))
 		}
 
 		var sl schemaList
 		if err := xml.Unmarshal(d, &sl); err != nil {
-			return nil, nil, fmt.Errorf(i18n.G("%s is an invalid schema: %v"), p, err)
+			return nil, nil, errors.New(gotext.Get("%s is an invalid schema: %v", p, err))
 		}
 
 		for _, s := range sl.Schema {
@@ -323,7 +324,7 @@ func loadSchemasFromDisk(path string) (entries map[string]schemaEntry, defaultsF
 		if e.enumID != "" {
 			var ok bool
 			if e.Choices, ok = enums[e.enumID]; !ok {
-				return nil, nil, fmt.Errorf(i18n.G("enum id %s referenced by %s doesn't exist in list of enums"), e.enumID, e.Schema)
+				return nil, nil, errors.New(gotext.Get("enum id %s referenced by %s doesn't exist in list of enums", e.enumID, e.Schema))
 			}
 			e.enumID = ""
 			entries[k] = e
@@ -333,7 +334,7 @@ func loadSchemasFromDisk(path string) (entries map[string]schemaEntry, defaultsF
 	// Load override files to override defaults
 	overrides, err := filepath.Glob(filepath.Join(path, "*.gschema.override"))
 	if err != nil {
-		return nil, nil, fmt.Errorf(i18n.G("failed to read overrides files: %w"), err)
+		return nil, nil, errors.New(gotext.Get("failed to read overrides files: %v", err))
 	}
 
 	sort.Strings(overrides)

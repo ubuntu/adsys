@@ -8,8 +8,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/leonelquinteros/gotext"
 	log "github.com/sirupsen/logrus"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 )
 
@@ -66,7 +66,7 @@ func AddStderrWriter(w io.Writer) (remove func(), err error) {
 }
 
 func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error) {
-	defer decorate.OnError(&err, i18n.G("can't redirect output"))
+	defer decorate.OnError(&err, gotext.Get("can't redirect output"))
 
 	// Initialize our forwarder
 	var onceErr error

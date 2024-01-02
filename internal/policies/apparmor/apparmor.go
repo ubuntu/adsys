@@ -34,9 +34,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
@@ -111,7 +111,7 @@ type AssetsDumper func(ctx context.Context, relSrc, dest string, uid int, gid in
 // 7a. If apparmor_parser fails, move /etc/apparmor.d/adsys/<object>.old to /etc/apparmor.d/adsys/<object>
 // 7b. If apparmor_parser succeeds, remove /etc/apparmor.d/adsys/<object>.old.
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry, assetsDumper AssetsDumper) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply apparmor policy to %s"), objectName)
+	defer decorate.OnError(&err, gotext.Get("can't apply apparmor policy to %s", objectName))
 
 	objectDir := "machine"
 	if !isComputer {
@@ -131,7 +131,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			return err
 		}
 		// Otherwise, just let the user know
-		log.Warningf(ctx, i18n.G("Apparmor is not available on this system: %v"), err)
+		log.Warning(ctx, gotext.Get("Apparmor is not available on this system: %v", err))
 		return nil
 	}
 	m.apparmorParserCmd[0] = absPath
@@ -139,13 +139,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	// If we have no entries, attempt to unload them and remove the apparmor directory
 	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == fmt.Sprintf("apparmor-%s", objectDir) })
 	if idx == -1 || entries[idx].Disabled {
-		log.Debugf(ctx, fmt.Sprintf(i18n.G("No entries found for the apparmor %s policy"), objectDir))
+		log.Debug(ctx, gotext.Get("No entries found for the apparmor %s policy", objectDir))
 		return m.unloadAllRules(ctx, objectName, isComputer)
 	}
 
-	log.Debugf(ctx, i18n.G("Applying apparmor %s policy to %s"), objectDir, objectName)
+	log.Debug(ctx, gotext.Get("Applying apparmor %s policy to %s", objectDir, objectName))
 	if err := os.MkdirAll(apparmorPath, 0750); err != nil {
-		return fmt.Errorf(i18n.G("can't create apparmor directory %q: %v"), apparmorPath, err)
+		return errors.New(gotext.Get("can't create apparmor directory %q: %v", apparmorPath, err))
 	}
 
 	switch objectDir {
@@ -160,7 +160,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 // applyUserPolicy applies apparmor policies for the machine object.
 func (m *Manager) applyMachinePolicy(ctx context.Context, e entry.Entry, apparmorPath string, assetsDumper AssetsDumper) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply machine policy"))
+	defer decorate.OnError(&err, gotext.Get("can't apply machine policy"))
 
 	existingProfiles, err := filesInDir(apparmorPath)
 	if err != nil {
@@ -183,11 +183,11 @@ func (m *Manager) applyMachinePolicy(ctx context.Context, e entry.Entry, apparmo
 	// Remove any existing stale directories
 	oldApparmorPath := apparmorPath + ".old"
 	if err := os.RemoveAll(oldApparmorPath); err != nil {
-		return fmt.Errorf(i18n.G("can't remove old apparmor directory %q: %v"), oldApparmorPath, err)
+		return errors.New(gotext.Get("can't remove old apparmor directory %q: %v", oldApparmorPath, err))
 	}
 	newApparmorPath := apparmorPath + ".new"
 	if err := os.RemoveAll(newApparmorPath); err != nil {
-		return fmt.Errorf(i18n.G("can't remove new apparmor directory %q: %v"), newApparmorPath, err)
+		return errors.New(gotext.Get("can't remove new apparmor directory %q: %v", newApparmorPath, err))
 	}
 
 	// Dump assets to the adsys/machine.new/ subdirectory with correct
@@ -199,13 +199,13 @@ func (m *Manager) applyMachinePolicy(ctx context.Context, e entry.Entry, apparmo
 
 	// Rename existing apparmor policy to .old
 	if err := os.Rename(apparmorPath, oldApparmorPath); err != nil {
-		return fmt.Errorf(i18n.G("can't rename apparmor directory %q to %q: %v"), apparmorPath, oldApparmorPath, err)
+		return errors.New(gotext.Get("can't rename apparmor directory %q to %q: %v", apparmorPath, oldApparmorPath, err))
 	}
 	defer cleanupOldApparmorDir(ctx, oldApparmorPath, apparmorPath)
 
 	// Rename new apparmor policy to current
 	if err := os.Rename(newApparmorPath, apparmorPath); err != nil {
-		return fmt.Errorf(i18n.G("can't rename apparmor directory %q to %q: %v"), newApparmorPath, apparmorPath, err)
+		return errors.New(gotext.Get("can't rename apparmor directory %q to %q: %v", newApparmorPath, apparmorPath, err))
 	}
 
 	// Get the list of files to run apparmor_parser on
@@ -244,20 +244,20 @@ func (m *Manager) applyMachinePolicy(ctx context.Context, e entry.Entry, apparmo
 		out, err := cmd.CombinedOutput()
 		smbsafe.DoneExec()
 		if err != nil {
-			return fmt.Errorf(i18n.G("failed to load apparmor rules: %w\n%s"), err, string(out))
+			return errors.New(gotext.Get("failed to load apparmor rules: %v\n%s", err, string(out)))
 		}
 	}
 
 	// Loading rules succeeded, remove old apparmor policy dir
 	if err := os.RemoveAll(oldApparmorPath); err != nil {
-		return fmt.Errorf(i18n.G("can't remove old apparmor directory %q: %v"), oldApparmorPath, err)
+		return errors.New(gotext.Get("can't remove old apparmor directory %q: %v", oldApparmorPath, err))
 	}
 	return nil
 }
 
 // applyUserPolicy applies apparmor policies for the user object.
 func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPath string, username string, assetsDumper AssetsDumper) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply user policy"))
+	defer decorate.OnError(&err, gotext.Get("can't apply user policy"))
 
 	// Create a temporary filepath to be used by the assets dumper and dump all
 	// assets in order to get our user policy
@@ -273,7 +273,7 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 
 	// The user policy is always a single file
 	if len(profilePaths) != 1 {
-		return fmt.Errorf(i18n.G("expected exactly one profile, got %d"), len(profilePaths))
+		return errors.New(gotext.Get("expected exactly one profile, got %d", len(profilePaths)))
 	}
 	profilePath := profilePaths[0]
 	profileContents, err := os.ReadFile(profilePath)
@@ -301,7 +301,7 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 	// Reload apparmor machine profiles to ensure that updates to the user policy are applied
 	existingProfiles, err := filesInDir(filepath.Join(m.apparmorDir, "machine"))
 	if errors.Is(err, os.ErrNotExist) {
-		log.Warningf(ctx, i18n.G("No apparmor machine profiles configured for this machine, skipping reload"))
+		log.Warningf(ctx, gotext.Get("No apparmor machine profiles configured for this machine, skipping reload"))
 		return nil
 	}
 	if err != nil {
@@ -325,11 +325,11 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 			restoreErr = os.WriteFile(filepath.Join(apparmorPath, username), oldContent, 0600)
 		}
 		if restoreErr != nil {
-			log.Warningf(ctx, i18n.G("Failed to restore old apparmor user profile: %v"), restoreErr)
+			log.Warning(ctx, gotext.Get("Failed to restore old apparmor user profile: %v", restoreErr))
 		}
 
 		// Return the execution error
-		return fmt.Errorf(i18n.G("failed to load apparmor rules: %w\n%s"), err, string(out))
+		return errors.New(gotext.Get("failed to load apparmor rules: %v\n%s", err, string(out)))
 	}
 	return nil
 }
@@ -340,7 +340,7 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 // If isComputer is true, only rules pertaining to the given user are unloaded.
 // No action is taken if the directory doesn't exist.
 func (m *Manager) unloadAllRules(ctx context.Context, objectName string, isComputer bool) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't unload apparmor rules"))
+	defer decorate.OnError(&err, gotext.Get("can't unload apparmor rules"))
 
 	machinePoliciesPath := filepath.Join(m.apparmorDir, "machine")
 	pathToRemove := machinePoliciesPath
@@ -417,12 +417,12 @@ func (m *Manager) policiesFromFiles(ctx context.Context, profiles []string) (pol
 	err = cmd.Run()
 	smbsafe.DoneExec()
 	if err != nil {
-		return nil, fmt.Errorf(i18n.G("failed to get apparmor policies: %w\n%s"), err, errb.String())
+		return nil, errors.New(gotext.Get("failed to get apparmor policies: %v\n%s", err, errb.String()))
 	}
 	// Execution succeeded but we still got something on stderr, let the user know
 	if errb.Len() > 0 {
-		log.Warningf(ctx, i18n.G(`Got stderr output from apparmor_parser:
-%s`), errb.String())
+		log.Warning(ctx, gotext.Get(`Got stderr output from apparmor_parser:
+%s`, errb.String()))
 	}
 
 	for _, line := range strings.Split(outb.String(), "\n") {
@@ -443,7 +443,7 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 		return nil
 	}
 
-	log.Debugf(ctx, i18n.G("Unloading %d apparmor policies: %v"), len(policies), policies)
+	log.Debug(ctx, gotext.Get("Unloading %d apparmor policies: %v", len(policies), policies))
 	apparmorParserCmd := append(m.apparmorParserCmd, "-R")
 	// #nosec G204 - We are in control of the arguments
 	cmd := exec.CommandContext(ctx, apparmorParserCmd[0], apparmorParserCmd[1:]...)
@@ -464,7 +464,7 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 			}
 			// For each policy, declare an empty block to remove it.
 			if _, err := io.WriteString(stdin, fmt.Sprintf("profile %s {}\n", policy)); err != nil {
-				log.Warningf(ctx, i18n.G("Couldn't write to apparmor parser stdin: %v"), err)
+				log.Warning(ctx, gotext.Get("Couldn't write to apparmor parser stdin: %v", err))
 			}
 		}
 	}()
@@ -472,7 +472,7 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 	smbsafe.WaitExec()
 	defer smbsafe.DoneExec()
 	if out, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf(i18n.G("failed to unload apparmor policies: %w\n%s"), err, string(out))
+		return errors.New(gotext.Get("failed to unload apparmor policies: %v\n%s", err, string(out)))
 	}
 	return nil
 }
@@ -480,11 +480,11 @@ func (m *Manager) unloadPolicies(ctx context.Context, policies []string) error {
 // loadedPolicies parses the given system policies file and returns the list of
 // loaded apparmor policies.
 func (m *Manager) loadedPolicies() (policies []string, err error) {
-	defer decorate.OnError(&err, i18n.G("can't parse loaded apparmor policies"))
+	defer decorate.OnError(&err, gotext.Get("can't parse loaded apparmor policies"))
 
 	file, err := os.Open(m.loadedPoliciesFile)
 	if err != nil {
-		return nil, fmt.Errorf(i18n.G("failed to open %q: %w"), m.loadedPoliciesFile, err)
+		return nil, errors.New(gotext.Get("failed to open %q: %v", m.loadedPoliciesFile, err))
 	}
 	defer file.Close()
 
@@ -516,11 +516,11 @@ func cleanupOldApparmorDir(ctx context.Context, oldApparmorPath, apparmorPath st
 
 	// Otherwise, we need to restore the old apparmor directory
 	if err := os.RemoveAll(apparmorPath); err != nil {
-		log.Warningf(ctx, i18n.G("Couldn't remove new apparmor directory: %v"), err)
+		log.Warning(ctx, gotext.Get("Couldn't remove new apparmor directory: %v", err))
 	}
 
 	if err := os.Rename(oldApparmorPath, apparmorPath); err != nil {
-		log.Warningf(ctx, i18n.G("Couldn't restore previous apparmor directory: %v"), err)
+		log.Warning(ctx, gotext.Get("Couldn't restore previous apparmor directory: %v", err))
 	}
 }
 
@@ -537,10 +537,10 @@ func filesFromEntry(e entry.Entry, apparmorPath string) ([]string, error) {
 		profileFilePath := filepath.Join(apparmorPath, profile)
 		info, err := os.Stat(profileFilePath)
 		if err != nil {
-			return nil, fmt.Errorf(i18n.G("apparmor profile %q is not accessible: %w"), err)
+			return nil, errors.New(gotext.Get("apparmor profile %q is not accessible: %v", profile, err))
 		}
 		if info.IsDir() {
-			return nil, fmt.Errorf(i18n.G("apparmor profile %q is a directory and not a file"), profile)
+			return nil, errors.New(gotext.Get("apparmor profile %q is a directory and not a file", profile))
 		}
 
 		// Clean and deduplicate the profile file paths
@@ -556,7 +556,7 @@ func filesFromEntry(e entry.Entry, apparmorPath string) ([]string, error) {
 // removeUnusedAssets removes all files/directories in the given directory that
 // are not in the given list of files.
 func removeUnusedAssets(apparmorPath string, filesToKeep []string) (e error) {
-	defer decorate.OnError(&e, i18n.G("can't remove unused apparmor assets"))
+	defer decorate.OnError(&e, gotext.Get("can't remove unused apparmor assets"))
 
 	return filepath.WalkDir(apparmorPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -640,7 +640,7 @@ func intersection(a, b []string) []string {
 
 // writeIfChanged will only write to path if content is different from current content.
 func writeIfChanged(path string, content string) (oldContent []byte, changed bool, err error) {
-	defer decorate.OnError(&err, i18n.G("can't save %s"), path)
+	defer decorate.OnError(&err, gotext.Get("can't save %s", path))
 
 	oldContent, err = os.ReadFile(path)
 	if err == nil && string(oldContent) == content {

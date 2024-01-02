@@ -6,7 +6,6 @@ package watcher
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -15,8 +14,8 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/kardianos/service"
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 	"gopkg.in/ini.v1"
 )
@@ -58,7 +57,7 @@ func init() {
 // New returns a new Watcher instance.
 func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, error) {
 	if len(initialDirs) == 0 {
-		return nil, errors.New(i18n.G("no directories to watch"))
+		return nil, errors.New(gotext.Get("no directories to watch"))
 	}
 
 	// Set default options
@@ -104,7 +103,7 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 				go func() {
 					defer close(watching)
 					if errWatching := w.watch(ctx, dirs, initError); errWatching != nil {
-						log.Warningf(ctx, i18n.G("Watch failed: %v"), errWatching)
+						log.Warning(ctx, gotext.Get("Watch failed: %v", errWatching))
 					}
 				}()
 				err := <-initError
@@ -112,7 +111,7 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 
 			case stopCmd:
 				if watching == nil {
-					cmdErr <- errors.New(i18n.G("the service is already stopping or not running"))
+					cmdErr <- errors.New(gotext.Get("the service is already stopping or not running"))
 					break
 				}
 
@@ -140,7 +139,7 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 // asynchronously. When our function exits, the service manager registers a
 // signal handler that calls Stop when a signal is received.
 func (w *Watcher) Start(_ service.Service) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't start service"))
+	defer decorate.OnError(&err, gotext.Get("can't start service"))
 
 	return w.send(nil, startCmd, nil)
 }
@@ -149,7 +148,7 @@ func (w *Watcher) Start(_ service.Service) (err error) {
 // Documentation states that the function should not take more than a few
 // seconds to execute.
 func (w *Watcher) Stop(_ service.Service) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't stop service"))
+	defer decorate.OnError(&err, gotext.Get("can't stop service"))
 
 	return w.send(nil, stopCmd, nil)
 }
@@ -167,21 +166,21 @@ func (w *Watcher) send(ctx *context.Context, action int, dirs []string) error {
 // UpdateDirs restarts watch loop with new directories. No action is taken if
 // one or more directories do not exist.
 func (w *Watcher) UpdateDirs(ctx context.Context, dirs []string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't update directories to watch"))
-	log.Debugf(ctx, i18n.G("Updating directories to %v"), dirs)
+	defer decorate.OnError(&err, gotext.Get("can't update directories to watch"))
+	log.Debug(ctx, gotext.Get("Updating directories to %v", dirs))
 
 	if len(dirs) == 0 {
-		return errors.New(i18n.G("need at least one directory to watch"))
+		return errors.New(gotext.Get("need at least one directory to watch"))
 	}
 
 	for _, dir := range dirs {
 		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			return fmt.Errorf(i18n.G("directory %q does not exist"), dir)
+			return errors.New(gotext.Get("directory %q does not exist", dir))
 		}
 	}
 
 	if err := w.send(&ctx, stopCmd, nil); err != nil {
-		log.Warningf(ctx, i18n.G("Error stopping watcher: %v"), err)
+		log.Warning(ctx, gotext.Get("Error stopping watcher: %v", err))
 	}
 
 	return w.send(&ctx, startCmd, dirs)
@@ -189,18 +188,18 @@ func (w *Watcher) UpdateDirs(ctx context.Context, dirs []string) (err error) {
 
 // watch is the main watch loop.
 func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- error) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't watch over %v"), dirs)
+	defer decorate.OnError(&err, gotext.Get("can't watch over %v", dirs))
 
 	fsWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		initError <- fmt.Errorf(i18n.G("could not initialize fsnotify watcher: %v"), err)
+		initError <- errors.New(gotext.Get("could not initialize fsnotify watcher: %v", err))
 	}
 	defer fsWatcher.Close()
 
 	// Collect directories to watch.
 	for _, dir := range dirs {
 		if err := watchSubDirs(ctx, fsWatcher, dir); err != nil {
-			initError <- fmt.Errorf(i18n.G("failed to watch directory %q: %v"), dir, err)
+			initError <- errors.New(gotext.Get("failed to watch directory %q: %v", dir, err))
 		}
 	}
 
@@ -218,7 +217,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			if !ok || event.Name == "" {
 				continue
 			}
-			log.Debugf(ctx, i18n.G("Got event: %v"), event)
+			log.Debug(ctx, gotext.Get("Got event: %v", event))
 
 			// If the modified file is our own change, ignore it.
 			if strings.EqualFold(filepath.Base(event.Name), gptFileName) {
@@ -228,18 +227,18 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			if event.Has(fsnotify.Create) {
 				fileInfo, err := os.Stat(event.Name)
 				if err != nil {
-					log.Warningf(ctx, i18n.G("Failed to stat: %s"), err)
+					log.Warning(ctx, gotext.Get("Failed to stat: %s", err))
 					continue
 				}
 
 				// Add new detected files and directories to the watch list.
 				if fileInfo.IsDir() {
 					if err := watchSubDirs(ctx, fsWatcher, event.Name); err != nil {
-						log.Warningf(ctx, i18n.G("Failed to watch: %s"), err)
+						log.Warning(ctx, gotext.Get("Failed to watch: %s", err))
 					}
 				} else if fileInfo.Mode().IsRegular() {
 					if err := fsWatcher.Add(event.Name); err != nil {
-						log.Warningf(ctx, i18n.G("Failed add watcher on %q: %s"), event.Name, err)
+						log.Warning(ctx, gotext.Get("Failed add watcher on %q: %s", event.Name, err))
 					}
 				}
 			}
@@ -247,7 +246,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			// Remove deleted or renamed files/directories from the watch list.
 			if event.Has(fsnotify.Remove) || event.Has(fsnotify.Rename) {
 				if err := fsWatcher.Remove(event.Name); err != nil {
-					log.Debugf(ctx, i18n.G("Failed to remove watcher on %q: %s"), event.Name, err)
+					log.Debug(ctx, gotext.Get("Failed to remove watcher on %q: %s", event.Name, err))
 				}
 			}
 
@@ -289,7 +288,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 
 		case err, ok := <-fsWatcher.Errors:
 			if ok {
-				log.Warningf(ctx, i18n.G("Got event error: %v"), err)
+				log.Warning(ctx, gotext.Get("Got event error: %v", err))
 			}
 			continue
 
@@ -298,7 +297,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			updateVersions(ctx, modifiedRootDirs)
 
 		case <-ctx.Done():
-			log.Infof(ctx, i18n.G("Watcher stopped"))
+			log.Infof(ctx, gotext.Get("Watcher stopped"))
 			// Check if there was a timer in progress to not miss an update before exiting.
 			if refreshTimer.Stop() {
 				updateVersions(ctx, modifiedRootDirs)
@@ -310,14 +309,14 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 
 // watchSubDirs walks a given directory and adds all subdirectories to the watch list.
 func watchSubDirs(ctx context.Context, fsWatcher *fsnotify.Watcher, path string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't watch directory and children of %s"), path)
-	log.Debugf(ctx, i18n.G("Watching %s and children"), path)
+	defer decorate.OnError(&err, gotext.Get("can't watch directory and children of %s", path))
+	log.Debug(ctx, gotext.Get("Watching %s and children", path))
 
 	err = filepath.WalkDir(path, func(p string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		log.Debugf(ctx, i18n.G("Watching: %v"), p)
+		log.Debug(ctx, gotext.Get("Watching: %v", p))
 		return fsWatcher.Add(p)
 	})
 	return err
@@ -344,7 +343,7 @@ func getRootDir(path string, rootDirs []string) (string, error) {
 		}
 	}
 	if rootDir == "" {
-		return "", fmt.Errorf(i18n.G("no root directory matching %s found"), path)
+		return "", errors.New(gotext.Get("no root directory matching %s found", path))
 	}
 
 	return rootDir, nil
@@ -355,21 +354,21 @@ func updateVersions(ctx context.Context, modifiedRootDirs []string) {
 	for _, dir := range modifiedRootDirs {
 		gptIniPath := filepath.Join(dir, gptFileName)
 		if err := bumpVersion(ctx, gptIniPath); err != nil {
-			log.Warningf(ctx, i18n.G("Failed to bump %s version: %s"), gptIniPath, err)
+			log.Warning(ctx, gotext.Get("Failed to bump %s version: %s", gptIniPath, err))
 		}
 	}
 }
 
 // bumpVersion does the actual bumping of the version in the given GPT.ini file.
 func bumpVersion(ctx context.Context, path string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't bump version for %s"), path)
-	log.Infof(ctx, i18n.G("Bumping version for %s"), path)
+	defer decorate.OnError(&err, gotext.Get("can't bump version for %s", path))
+	log.Info(ctx, gotext.Get("Bumping version for %s", path))
 
 	cfg, err := ini.Load(path)
 
 	// If the file doesn't exist, create it and initialize the key to be updated.
 	if err != nil {
-		log.Infof(ctx, i18n.G("error loading ini contents: %v, creating a new file"), err)
+		log.Info(ctx, gotext.Get("error loading ini contents: %v, creating a new file", err))
 		cfg = ini.Empty()
 		if _, err := cfg.Section("General").NewKey("Version", "0"); err != nil {
 			return err

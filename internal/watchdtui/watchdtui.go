@@ -18,7 +18,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/leonelquinteros/gotext"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/watchdservice"
 )
 
@@ -165,8 +164,8 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 
 		switch i {
 		case 0:
-			t.Placeholder = fmt.Sprintf(i18n.G("Config file location (leave blank for default: %s)"), m.defaultConfig)
-			t.Prompt = i18n.G("Config file: ")
+			t.Placeholder = gotext.Get("Config file location (leave blank for default: %s)", m.defaultConfig)
+			t.Prompt = gotext.Get("Config file: ")
 			t.PromptStyle = boldStyle
 			t.Focus()
 
@@ -176,7 +175,7 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 				t.SetValue(configFile)
 			}
 		case 1:
-			t.Placeholder = i18n.G("Directory to watch (one per line)")
+			t.Placeholder = gotext.Get("Directory to watch (one per line)")
 		}
 
 		m.inputs[i] = t
@@ -411,7 +410,7 @@ func updateConfigInputError(input *textinput.Model) {
 	if errors.Is(err, os.ErrNotExist) {
 		input.Err = nil
 		if !filepath.IsAbs(value) {
-			input.Err = fmt.Errorf(i18n.G("%s will be the absolute path"), absPath)
+			input.Err = errors.New(gotext.Get("%s will be the absolute path", absPath))
 		}
 		return
 	}
@@ -423,12 +422,12 @@ func updateConfigInputError(input *textinput.Model) {
 	}
 
 	if stat.IsDir() {
-		input.Err = fmt.Errorf(i18n.G("%s is a directory; will create %s.yaml inside"), absPath, watchdconfig.CmdName)
+		input.Err = errors.New(gotext.Get("%s is a directory; will create %s.yaml inside", absPath, watchdconfig.CmdName))
 		return
 	}
 
 	if stat.Mode().IsRegular() {
-		input.Err = fmt.Errorf(i18n.G("%s: file already exists and will be overwritten"), absPath)
+		input.Err = errors.New(gotext.Get("%s: file already exists and will be overwritten", absPath))
 		return
 	}
 
@@ -442,7 +441,7 @@ func (m *model) updateDirInputErrorAndStyle(i int) {
 	if m.inputs[i].Value() == "" {
 		m.inputs[i].Err = nil
 		if len(m.inputs) == 2 {
-			m.inputs[i].Err = errors.New(i18n.G("please enter at least one directory"))
+			m.inputs[i].Err = errors.New(gotext.Get("please enter at least one directory"))
 		}
 		return
 	}
@@ -454,18 +453,18 @@ func (m *model) updateDirInputErrorAndStyle(i int) {
 	m.inputs[i].TextStyle = successStyle
 
 	if stat, err := os.Stat(absPath); err != nil {
-		m.inputs[i].Err = fmt.Errorf(i18n.G("%s: directory does not exist, please enter a valid path"), absPath)
+		m.inputs[i].Err = errors.New(gotext.Get("%s: directory does not exist, please enter a valid path", absPath))
 		m.inputs[i].TextStyle = noStyle
 	} else if !stat.IsDir() {
-		m.inputs[i].Err = fmt.Errorf(i18n.G("%s: is not a directory"), absPath)
+		m.inputs[i].Err = errors.New(gotext.Get("%s: is not a directory", absPath))
 		m.inputs[i].TextStyle = noStyle
 	}
 }
 
 func (m model) submitText() string {
-	text := i18n.G("Install")
+	text := gotext.Get("Install")
 	if m.prevConfig != "" {
-		text = i18n.G("Update")
+		text = gotext.Get("Update")
 	}
 	return text
 }
@@ -473,20 +472,20 @@ func (m model) submitText() string {
 // View renders the UI based on the data in the model.
 func (m model) View() string {
 	if m.loading {
-		return fmt.Sprintf(i18n.G("%s installing service... please wait."), m.spinner.View())
+		return gotext.Get("%s installing service... please wait.", m.spinner.View())
 	}
 
 	if err := m.err; err != nil {
-		return fmt.Sprintf(i18n.G("Could not install service: %v\n"), err)
+		return gotext.Get("Could not install service: %v\n", err)
 	}
 
 	if !m.typing {
-		return fmt.Sprintln(i18n.G("Service adwatchd was successfully installed and is now running."))
+		return fmt.Sprintln(gotext.Get("Service adwatchd was successfully installed and is now running."))
 	}
 
 	var b strings.Builder
 
-	b.WriteString(titleStyle.Render(i18n.G("Ubuntu AD Watch Daemon Installer")))
+	b.WriteString(titleStyle.Render(gotext.Get("Ubuntu AD Watch Daemon Installer")))
 	b.WriteString("\n\n")
 
 	// Display config input and hint
@@ -501,7 +500,7 @@ func (m model) View() string {
 
 	b.WriteString("\n\n")
 
-	directoriesMsg := i18n.G("Directories:")
+	directoriesMsg := gotext.Get("Directories:")
 	if m.focusIndex > 0 && m.focusIndex < len(m.inputs) {
 		b.WriteString(focusedStyle.Render(directoriesMsg))
 	} else {
