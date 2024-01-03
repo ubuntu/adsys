@@ -15,7 +15,7 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
 )
@@ -52,7 +52,7 @@ type meta struct {
 
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
 func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
-	defer decorate.OnError(&err, i18n.G("can't parse policy"))
+	defer decorate.OnError(&err, gotext.Get("can't parse policy"))
 
 	ent, err := readPolicy(r)
 	if err != nil {
@@ -180,7 +180,7 @@ type policyFileHeader struct {
 }
 
 func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
-	defer decorate.OnError(&err, i18n.G("invalid policy"))
+	defer decorate.OnError(&err, gotext.Get("invalid policy"))
 
 	validPolicyFileHeader := policyFileHeader{
 		Signature: 0x67655250,
@@ -303,7 +303,7 @@ func decodeUtf16(b []byte) (string, error) {
 
 // getMetaValues returns meta values (including empty value) for options.
 func getMetaValues(data []byte, keypath string) (metaValues map[string]meta, err error) {
-	defer decorate.OnError(&err, i18n.G("can't decode meta value for %s: %v"), keypath, err)
+	defer decorate.OnError(&err, gotext.Get("can't decode meta value for %s: %v", keypath, err))
 
 	metaValues = make(map[string]meta)
 	v, err := decodeUtf16(data)

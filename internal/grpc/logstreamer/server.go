@@ -8,8 +8,8 @@ import (
 	"math/big"
 	"strconv"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/sirupsen/logrus"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -40,10 +40,10 @@ func StreamServerInterceptor(localLogger *logrus.Logger) func(srv interface{}, s
 
 		// create and log request ID
 		idRequest := fmt.Sprintf("%s:%s", clientID, createID())
-		if err := ssLogs.sendLogs(logrus.DebugLevel.String(), "", fmt.Sprintf(i18n.G("Connecting as [[%s]]"), idRequest)); err != nil {
-			localLogger.Warningf(localLogFormatWithID, idRequest, i18n.G("Couldn't send initial connection log to client"))
+		if err := ssLogs.sendLogs(logrus.DebugLevel.String(), "", gotext.Get("Connecting as [[%s]]", idRequest)); err != nil {
+			localLogger.Warningf(localLogFormatWithID, idRequest, gotext.Get("Couldn't send initial connection log to client"))
 		}
-		Infof(context.Background(), i18n.G("New connection from client [[%s]]"), idRequest)
+		Info(context.Background(), gotext.Get("New connection from client [[%s]]", idRequest))
 
 		// attach stream logger options to context so that we can log locally and remotely from context
 		ssLogs.ctx = context.WithValue(ss.Context(), logContextKey, logContext{
@@ -85,14 +85,14 @@ func extractMetaFromContext(ctx context.Context) (clientID string, withCaller bo
 	// decorate depends on logstreamer: we can’t use it here
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf(i18n.G("invalid metdata from client: %v\n. Please use the StreamClientInterceptor: %v"), err)
+			err = errors.New(gotext.Get("invalid metdata from client: %v\n. Please use the StreamClientInterceptor: %v", clientID, err))
 		}
 	}()
 
 	// extract logs metadata from the client
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return "", false, errors.New(i18n.G("missing client metadata"))
+		return "", false, errors.New(gotext.Get("missing client metadata"))
 	}
 	clientID, err = validUniqueMdEntry(md, clientIDKey)
 	if err != nil {
@@ -104,7 +104,7 @@ func extractMetaFromContext(ctx context.Context) (clientID string, withCaller bo
 	}
 	withCaller, err = strconv.ParseBool(withCallerRaw)
 	if err != nil {
-		return "", false, fmt.Errorf(i18n.G("%s isn't a boolean: %v"), clientWantCallerKey, err)
+		return "", false, errors.New(gotext.Get("%s isn't a boolean: %v", clientWantCallerKey, err))
 	}
 
 	return clientID, withCaller, nil
@@ -113,10 +113,10 @@ func extractMetaFromContext(ctx context.Context) (clientID string, withCaller bo
 func validUniqueMdEntry(md metadata.MD, key string) (string, error) {
 	v := md.Get(key)
 	if len(v) == 0 {
-		return "", fmt.Errorf(i18n.G("missing metadata %s for incoming request"), key)
+		return "", errors.New(gotext.Get("missing metadata %s for incoming request", key))
 	}
 	if len(v) != 1 {
-		return "", fmt.Errorf(i18n.G("invalid metadata %s for incoming request: %q"), key, v)
+		return "", errors.New(gotext.Get("invalid metadata %s for incoming request: %q", key, v))
 	}
 	return v[0], nil
 }

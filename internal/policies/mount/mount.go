@@ -26,8 +26,8 @@ import (
 	"strings"
 
 	"github.com/coreos/go-systemd/v22/unit"
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
 )
@@ -65,7 +65,7 @@ type systemdCaller interface {
 
 // New creates a Manager to handle mount policies.
 func New(runDir string, systemUnitDir string, systemdCaller systemdCaller, opts ...Option) (m *Manager, err error) {
-	defer decorate.OnError(&err, i18n.G("failed to create new mount manager"))
+	defer decorate.OnError(&err, gotext.Get("failed to create new mount manager"))
 
 	o := options{
 		userLookup:    user.Lookup,
@@ -102,7 +102,7 @@ func New(runDir string, systemUnitDir string, systemdCaller systemdCaller, opts 
 
 // ApplyPolicy generates mount policies based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply mount policy to %s"), objectName)
+	defer decorate.OnError(&err, gotext.Get("can't apply mount policy to %s", objectName))
 
 	log.Debugf(ctx, "Applying mount policy to %s", objectName)
 
@@ -120,12 +120,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	})
 
 	if i == -1 {
-		log.Debugf(ctx, i18n.G("The provided entries are not supported by the %s mount manager: %v"), key, entries)
+		log.Debug(ctx, gotext.Get("The provided entries are not supported by the %s mount manager: %v", key, entries))
 		return m.cleanup(ctx, objectName, isComputer)
 	}
 
 	if entries[i].Disabled {
-		log.Debugf(ctx, i18n.G("The entry %q is disabled and will be skipped"), entries[i].Key)
+		log.Debug(ctx, gotext.Get("The entry %q is disabled and will be skipped", entries[i].Key))
 		return m.cleanup(ctx, objectName, isComputer)
 	}
 
@@ -136,20 +136,20 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 }
 
 func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, entry entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to apply policy for user %q"), username)
+	defer decorate.OnError(&err, gotext.Get("failed to apply policy for user %q", username))
 
 	log.Debugf(ctx, "Applying mount policy to user %q", username)
 
 	var uid, gid int
 	u, err := m.userLookup(username)
 	if err != nil {
-		return fmt.Errorf(i18n.G("could not retrieve user for %q: %w"), err)
+		return errors.New(gotext.Get("could not retrieve user for %q: %v", username, err))
 	}
 	if uid, err = strconv.Atoi(u.Uid); err != nil {
-		return fmt.Errorf(i18n.G("couldn't convert %q to a valid uid for %q"), u.Uid, username)
+		return errors.New(gotext.Get("couldn't convert %q to a valid uid for %q", u.Uid, username))
 	}
 	if gid, err = strconv.Atoi(u.Gid); err != nil {
-		return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), u.Gid, username)
+		return errors.New(gotext.Get("couldn't convert %q to a valid gid for %q", u.Gid, username))
 	}
 
 	objectPath := filepath.Join(m.runDir, "users", u.Uid)
@@ -157,7 +157,7 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 
 	// This creates the user directory and set its ownership to the current user.
 	if err := mkdirAllWithUIDGID(objectPath, uid, gid); err != nil {
-		return fmt.Errorf(i18n.G("can't create user directory %q for %q: %w"), objectPath, username, err)
+		return errors.New(gotext.Get("can't create user directory %q for %q: %v", objectPath, username, err))
 	}
 
 	parsedValues, err := parseEntryValues(ctx, entry)
@@ -181,9 +181,9 @@ func (m *Manager) applyUserMountsPolicy(ctx context.Context, username string, en
 }
 
 func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName string, entry entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("error when applying mount policy to machine %q"), machineName)
+	defer decorate.OnError(&err, gotext.Get("error when applying mount policy to machine %q", machineName))
 
-	log.Debugf(ctx, i18n.G("Applying mount policy to machine %q"), machineName)
+	log.Debug(ctx, gotext.Get("Applying mount policy to machine %q", machineName))
 
 	parsedValues, err := parseEntryValues(ctx, entry)
 	if err != nil {
@@ -237,7 +237,7 @@ func (m *Manager) applySystemMountsPolicy(ctx context.Context, machineName strin
 			return err
 		}
 		if err := m.systemdCaller.StartUnit(ctx, name); err != nil {
-			log.Warningf(ctx, i18n.G("failed to start unit %q: %v"), name, err)
+			log.Warning(ctx, gotext.Get("failed to start unit %q: %v", name, err))
 		}
 	}
 
@@ -347,10 +347,10 @@ func whatStringFromInfo(mi mountInfo) string {
 
 // parseEntryValues parses the entry value, trimming whitespaces and removing duplicates.
 func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error) {
-	defer decorate.OnError(&err, i18n.G("failed to parse entry values"))
+	defer decorate.OnError(&err, gotext.Get("failed to parse entry values"))
 
 	if e.Err != nil {
-		return nil, fmt.Errorf(i18n.G("entry is errored: %w"), e.Err)
+		return nil, errors.New(gotext.Get("entry is errored: %v", e.Err))
 	}
 
 	seen := make(map[string]string)
@@ -364,9 +364,9 @@ func parseEntryValues(ctx context.Context, e entry.Entry) (p []string, err error
 		tmp := strings.TrimPrefix(v, krbTag)
 		if prev, ok := seen[tmp]; ok {
 			if prev == v {
-				log.Debugf(ctx, i18n.G("Value %q is duplicated."), v)
+				log.Debug(ctx, gotext.Get("Value %q is duplicated.", v))
 			} else {
-				log.Warningf(ctx, i18n.G("The location %q was already set up to be mounted with different options or authentication. The first provided value %q will be used instead."), v, prev)
+				log.Warning(ctx, gotext.Get("The location %q was already set up to be mounted with different options or authentication. The first provided value %q will be used instead.", v, prev))
 			}
 			continue
 		}
@@ -389,7 +389,7 @@ func checkValue(value string) error {
 
 	// Value left: protocol://<hostname-or-ip>/<shared-path>
 	if _, hostnameAndPath, found := strings.Cut(tmp, ":"); !found || !strings.HasPrefix(hostnameAndPath, "//") {
-		return fmt.Errorf(i18n.G("entry %q is badly formatted"), value)
+		return errors.New(gotext.Get("entry %q is badly formatted", value))
 	}
 
 	return nil
@@ -397,7 +397,7 @@ func checkValue(value string) error {
 
 // writeIfChanged will only write to path if content is different from current content.
 func writeIfChanged(path string, content string) (done bool, err error) {
-	defer decorate.OnError(&err, i18n.G("can't save %s"), path)
+	defer decorate.OnError(&err, gotext.Get("can't save %s", path))
 
 	if oldContent, err := os.ReadFile(path); err == nil && string(oldContent) == content {
 		return false, nil
@@ -416,7 +416,7 @@ func writeIfChanged(path string, content string) (done bool, err error) {
 
 // writeFileWithUIDGID writes the content into the specified path and changes its ownership to the specified uid/gid.
 func writeFileWithUIDGID(path string, uid, gid int, content string) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed when writing file %s"), path)
+	defer decorate.OnError(&err, gotext.Get("failed when writing file %s", path))
 
 	// #nosec G306. This should be world-readable.
 	if err = os.WriteFile(path+".new", []byte(content+"\n"), 0600); err != nil {
@@ -438,7 +438,7 @@ func writeFileWithUIDGID(path string, uid, gid int, content string) (err error) 
 // mkdirAllWithUIDGID create a directory and sets its ownership to the specified uid and gid.
 func mkdirAllWithUIDGID(p string, uid, gid int) error {
 	if err := os.MkdirAll(p, 0750); err != nil {
-		return fmt.Errorf(i18n.G("can't create directory %q: %v"), p, err)
+		return fmt.Errorf(gotext.Get("can't create directory %q: %v", p, err))
 	}
 
 	return chown(p, nil, uid, gid)
@@ -447,7 +447,7 @@ func mkdirAllWithUIDGID(p string, uid, gid int) error {
 // chown either chown the file descriptor attached, or the path if this one is null to uid and gid.
 // It will know if we should skip chown for tests.
 func chown(p string, f *os.File, uid, gid int) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't chown %q"), p)
+	defer decorate.OnError(&err, gotext.Get("can't chown %q", p))
 
 	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
 		uid = -1
@@ -464,9 +464,9 @@ func chown(p string, f *os.File, uid, gid int) (err error) {
 
 // cleanup removes the files generated when applying the mount policy to an object.
 func (m *Manager) cleanup(ctx context.Context, objectName string, isComputer bool) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to clean up mount policy files for %q"), objectName)
+	defer decorate.OnError(&err, gotext.Get("failed to clean up mount policy files for %q", objectName))
 
-	log.Debugf(ctx, i18n.G("Cleaning up mount policy files for %q"), objectName)
+	log.Debugf(ctx, gotext.Get("Cleaning up mount policy files for %q", objectName))
 
 	if !isComputer {
 		var u *user.User
@@ -485,9 +485,9 @@ func (m *Manager) cleanup(ctx context.Context, objectName string, isComputer boo
 
 // cleanupMountsFile removes the mounts file, if there is any, created for the user with the specified uid.
 func (m *Manager) cleanupMountsFile(ctx context.Context, uid string) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to clean up mounts file"))
+	defer decorate.OnError(&err, gotext.Get("failed to clean up mounts file"))
 
-	log.Debugf(ctx, i18n.G("Cleaning up mounts file for user with uid %q"), uid)
+	log.Debug(ctx, gotext.Get("Cleaning up mounts file for user with uid %q", uid))
 
 	p := filepath.Join(m.runDir, "users", uid, "mounts")
 
@@ -501,12 +501,12 @@ func (m *Manager) cleanupMountsFile(ctx context.Context, uid string) (err error)
 
 // cleanupMountUnits removes all the mount units generated by adsys for the current system.
 func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to clean up the mount units"))
+	defer decorate.OnError(&err, gotext.Get("failed to clean up the mount units"))
 
 	for _, unit := range units {
 		// Tries to stop the unit before disabling and removing it.
 		if err := m.systemdCaller.StopUnit(ctx, unit); err != nil {
-			log.Warningf(ctx, i18n.G("Failed to stop unit %q: %v"), unit, err)
+			log.Warning(ctx, gotext.Get("Failed to stop unit %q: %v", unit, err))
 		}
 
 		// Disables the unit before removing it.
@@ -515,7 +515,7 @@ func (m *Manager) cleanupMountUnits(ctx context.Context, units []string) (err er
 		}
 
 		if err := os.Remove(filepath.Join(m.systemUnitDir, unit)); err != nil {
-			return fmt.Errorf(i18n.G("could not remove file %q: %w"), unit, err)
+			return errors.New(gotext.Get("could not remove file %q: %v", unit, err))
 		}
 	}
 

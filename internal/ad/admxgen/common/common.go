@@ -2,9 +2,10 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/leonelquinteros/gotext"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -77,7 +78,7 @@ func ValidClass(class string) (string, error) {
 	c := cases.Title(language.Und, cases.NoLower).String(class)
 
 	if c != "" && c != "User" && c != "Machine" {
-		return "", fmt.Errorf(i18n.G("invalid class %q"), class)
+		return "", errors.New(gotext.Get("invalid class %q", class))
 	}
 
 	return c, nil

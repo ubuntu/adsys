@@ -8,7 +8,7 @@ import (
 
 	systemdDbus "github.com/coreos/go-systemd/v22/dbus"
 	"github.com/godbus/dbus/v5"
-	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/decorate"
 )
 
@@ -32,7 +32,7 @@ func New(bus *dbus.Conn) (*DefaultCaller, error) {
 
 // StartUnit starts the given unit.
 func (s DefaultCaller) StartUnit(ctx context.Context, unit string) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to start unit %s"), unit)
+	defer decorate.OnError(&err, gotext.Get("failed to start unit %s", unit))
 
 	reschan := make(chan string)
 	if _, err = s.conn.StartUnitContext(ctx, unit, "replace", reschan); err != nil {
@@ -40,14 +40,14 @@ func (s DefaultCaller) StartUnit(ctx context.Context, unit string) (err error) {
 	}
 
 	if job := <-reschan; job != jobDone {
-		return errors.New(i18n.G("start job failed"))
+		return errors.New(gotext.Get("start job failed"))
 	}
 	return nil
 }
 
 // StopUnit stops the given unit.
 func (s DefaultCaller) StopUnit(ctx context.Context, unit string) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to stop unit %s"), unit)
+	defer decorate.OnError(&err, gotext.Get("failed to stop unit %s", unit))
 
 	reschan := make(chan string)
 	if _, err = s.conn.StopUnitContext(ctx, unit, "replace", reschan); err != nil {
@@ -55,14 +55,14 @@ func (s DefaultCaller) StopUnit(ctx context.Context, unit string) (err error) {
 	}
 
 	if job := <-reschan; job != jobDone {
-		return errors.New(i18n.G("stop job failed"))
+		return errors.New(gotext.Get("stop job failed"))
 	}
 	return nil
 }
 
 // EnableUnit enables the given unit.
 func (s DefaultCaller) EnableUnit(ctx context.Context, unit string) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to enable unit %s"), unit)
+	defer decorate.OnError(&err, gotext.Get("failed to enable unit %s", unit))
 
 	if _, _, err := s.conn.EnableUnitFilesContext(ctx, []string{unit}, false, true); err != nil {
 		return err
@@ -72,7 +72,7 @@ func (s DefaultCaller) EnableUnit(ctx context.Context, unit string) (err error) 
 
 // DisableUnit disables the given unit.
 func (s DefaultCaller) DisableUnit(ctx context.Context, unit string) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to disable unit %s"), unit)
+	defer decorate.OnError(&err, gotext.Get("failed to disable unit %s", unit))
 
 	if _, err := s.conn.DisableUnitFilesContext(ctx, []string{unit}, false); err != nil {
 		return err
@@ -82,7 +82,7 @@ func (s DefaultCaller) DisableUnit(ctx context.Context, unit string) (err error)
 
 // DaemonReload scans and reloads unit files. This is an equivalent to systemctl daemon-reload.
 func (s DefaultCaller) DaemonReload(ctx context.Context) (err error) {
-	defer decorate.OnError(&err, i18n.G("failed to reload units"))
+	defer decorate.OnError(&err, gotext.Get("failed to reload units"))
 
 	return s.conn.ReloadContext(ctx)
 }

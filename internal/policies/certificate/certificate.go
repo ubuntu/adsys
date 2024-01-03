@@ -19,6 +19,7 @@ import (
 	"context"
 	_ "embed" // embed cert enroll python script
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -29,9 +30,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
@@ -150,7 +151,7 @@ func New(domain string, opts ...Option) *Manager {
 
 // ApplyPolicy runs the certificate autoenrollment script to enroll or un-enroll the machine.
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer, isOnline bool, entries []entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply certificate policy"))
+	defer decorate.OnError(&err, gotext.Get("can't apply certificate policy"))
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -161,7 +162,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	if !isOnline {
-		log.Debug(ctx, i18n.G("AD backend is offline, skipping certificate policy"))
+		log.Debug(ctx, gotext.Get("AD backend is offline, skipping certificate policy"))
 		return nil
 	}
 
@@ -185,7 +186,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	entry := entries[idx]
 	value, err := strconv.Atoi(entry.Value)
 	if err != nil {
-		return fmt.Errorf(i18n.G("failed to parse certificate policy entry value: %w"), err)
+		return errors.New(gotext.Get("failed to parse certificate policy entry value: %v", err))
 	}
 
 	if value&disabledFlag == disabledFlag {
@@ -206,7 +207,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		valuename := keyparts[len(keyparts)-1]
 		gpoData, err := gpoData(entry.Value, valuename)
 		if err != nil {
-			return fmt.Errorf(i18n.G("failed to parse policy entry value: %w"), err)
+			return errors.New(gotext.Get("failed to parse policy entry value: %v", err))
 		}
 		polSrvRegistryEntries = append(polSrvRegistryEntries, gpoEntry{keyname, valuename, gpoData, gpoType(valuename)})
 
@@ -222,7 +223,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	jsonGPOData, err := json.Marshal(polSrvRegistryEntries)
 	if err != nil {
-		return fmt.Errorf(i18n.G("failed to marshal policy server registry entries: %v"), err)
+		return errors.New(gotext.Get("failed to marshal policy server registry entries: %v", err))
 	}
 
 	if err := m.runScript(ctx, action, objectName, "--policy_servers_json", string(jsonGPOData)); err != nil {
@@ -251,9 +252,9 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf(i18n.G("failed to run certificate autoenrollment script (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, string(output))
+		return errors.New(gotext.Get("failed to run certificate autoenrollment script (exited with %d): %v\n%s", cmd.ProcessState.ExitCode(), err, string(output)))
 	}
-	log.Infof(ctx, i18n.G("Certificate autoenrollment script ran successfully\n%s"), string(output))
+	log.Info(ctx, gotext.Get("Certificate autoenrollment script ran successfully\n%s", string(output)))
 	return nil
 }
 

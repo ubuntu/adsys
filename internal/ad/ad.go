@@ -20,12 +20,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/ad/backends"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	"github.com/ubuntu/adsys/internal/ad/registry"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
@@ -117,7 +117,7 @@ var AdsysGpoListCode string
 
 // New returns an AD object to manage concurrency, with a local kr5 ticket from machine keytab.
 func New(ctx context.Context, configBackend backends.Backend, hostname string, opts ...Option) (ad *AD, err error) {
-	defer decorate.OnError(&err, i18n.G("can't create Active Directory object"))
+	defer decorate.OnError(&err, gotext.Get("can't create Active Directory object"))
 
 	versionID, err := adcommon.GetVersionID("/")
 	if err != nil {
@@ -155,7 +155,7 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 	domain := configBackend.Domain()
 	serverFQDN, err := configBackend.ServerFQDN(ctx)
 	if err != nil && !errors.Is(err, backends.ErrNoActiveServer) {
-		return nil, fmt.Errorf(i18n.G("can't get current Server FQDN: %w"), err)
+		return nil, errors.New(gotext.Get("can't get current Server FQDN: %v", err))
 	}
 	log.Debugf(ctx, "Backend is SSSD. AD domain: %q, server from configuration: %q", domain, serverFQDN)
 
@@ -180,16 +180,16 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 // The GPOs are returned from the highest priority in the hierarchy, with enforcement in reverse order
 // to the lowest priority.
 func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass ObjectClass, userKrb5CCName string) (pols policies.Policies, err error) {
-	defer decorate.OnError(&err, i18n.G("can't get policies for %q"), objectName)
+	defer decorate.OnError(&err, gotext.Get("can't get policies for %q", objectName))
 
 	log.Debugf(ctx, "GetPolicies for %q, type %q", objectName, objectClass)
 
 	if objectClass == UserObject && !strings.Contains(objectName, "@") {
-		return pols, fmt.Errorf(i18n.G("user name %q should be of the form %s@DOMAIN"), objectName, objectName)
+		return pols, errors.New(gotext.Get("user name %q should be of the form %s@DOMAIN", objectName, objectName))
 	}
 
 	if objectClass == ComputerObject && objectName != ad.hostname {
-		return pols, fmt.Errorf(i18n.G("requested a type computer of %q which isn't current host %q"), objectName, ad.hostname)
+		return pols, errors.New(gotext.Get("requested a type computer of %q which isn't current host %q", objectName, ad.hostname))
 	}
 
 	krb5CCPath := filepath.Join(ad.krb5CacheDir, objectName)
@@ -225,7 +225,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	if !online {
 		var cachedPolicies policies.Policies
 		if cachedPolicies, err = policies.NewFromCache(ctx, filepath.Join(ad.policiesCacheDir, objectName)); err != nil {
-			return cachedPolicies, fmt.Errorf(i18n.G("machine is offline and policies cache is unavailable: %v"), err)
+			return cachedPolicies, errors.New(gotext.Get("machine is offline and policies cache is unavailable: %v", err))
 		}
 
 		log.Infof(ctx, "Can't reach AD: machine is offline and %q policies are applied using previous online update", objectName)
@@ -235,7 +235,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// We need an AD DC to connect to
 	adServerFQDN, err := ad.configBackend.ServerFQDN(ctx)
 	if err != nil {
-		return policies.Policies{}, fmt.Errorf(i18n.G("can't get current Server FQDN: %w"), err)
+		return policies.Policies{}, errors.New(gotext.Get("can't get current Server FQDN: %v", err))
 	}
 
 	// Otherwise, try fetching the GPO list from LDAP
@@ -256,7 +256,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	err = cmd.Run()
 	smbsafe.DoneExec()
 	if err != nil {
-		return pols, fmt.Errorf(i18n.G("failed to retrieve the list of GPO (exited with %d): %v\n%s"), cmd.ProcessState.ExitCode(), err, stderr.String())
+		return pols, errors.New(gotext.Get("failed to retrieve the list of GPO (exited with %d): %v\n%s", cmd.ProcessState.ExitCode(), err, stderr.String()))
 	}
 
 	downloadables := make(map[string]string)
@@ -347,7 +347,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 // ListUsers returns the list of users on the system based on their cached policy information.
 // If active is true, the list of users is retrieved from the cached Kerberos ticket information.
 func (ad *AD) ListUsers(ctx context.Context, active bool) (users []string, err error) {
-	defer decorate.OnError(&err, i18n.G("can't list users from cache"))
+	defer decorate.OnError(&err, gotext.Get("can't list users from cache"))
 
 	log.Debug(ctx, "ListUsers")
 
@@ -361,7 +361,7 @@ func (ad *AD) ListUsers(ctx context.Context, active bool) (users []string, err e
 
 	entries, err := os.ReadDir(cacheDir)
 	if err != nil {
-		return users, fmt.Errorf(i18n.G("failed to read cache directory: %v"), err)
+		return users, errors.New(gotext.Get("failed to read cache directory: %v", err))
 	}
 
 	for _, entry := range entries {
@@ -390,7 +390,7 @@ func (ad *AD) ensureKrb5CCSymlink(srcKrb5CCName, dstKrb5CCName string) error {
 
 	srcKrb5CCName, err := filepath.Abs(srcKrb5CCName)
 	if err != nil {
-		return fmt.Errorf(i18n.G("can't get absolute path of ccname to symlink to: %v"), err)
+		return errors.New(gotext.Get("can't get absolute path of ccname to symlink to: %v", err))
 	}
 
 	src, err := os.Readlink(dstKrb5CCName)
@@ -401,12 +401,12 @@ func (ad *AD) ensureKrb5CCSymlink(srcKrb5CCName, dstKrb5CCName string) error {
 		}
 		// Delete the symlink to create a new one.
 		if err := os.Remove(dstKrb5CCName); err != nil {
-			return fmt.Errorf(i18n.G("failed to remove existing symlink: %v"), err)
+			return errors.New(gotext.Get("failed to remove existing symlink: %v", err))
 		}
 	}
 
 	if err := os.MkdirAll(filepath.Dir(dstKrb5CCName), 0700); err != nil {
-		return fmt.Errorf(i18n.G("failed to create parent directory for symlink: %w"), err)
+		return errors.New(gotext.Get("failed to create parent directory for symlink: %v", err))
 	}
 
 	if err := os.Symlink(srcKrb5CCName, dstKrb5CCName); err != nil {
@@ -428,14 +428,14 @@ func (ad *AD) ensureKrb5CCCopy(krb5CCSymlink, krb5CCCopyName string) error {
 
 	krb5CCSrc, err := os.Readlink(krb5CCSymlink)
 	if err != nil {
-		return fmt.Errorf(i18n.G("failed to read krb5cc symlink: %w"), err)
+		return errors.New(gotext.Get("failed to read krb5cc symlink: %v", err))
 	}
 
 	if copyStat, err := os.Lstat(krb5CCCopyName); err == nil && copyStat.Mode()&os.ModeSymlink == 0 {
 		// We already have a copy of the ticket, let's check if we need to update it
 		srcStat, err := os.Stat(krb5CCSrc)
 		if err != nil {
-			return fmt.Errorf(i18n.G("failed to stat source ticket: %w"), err)
+			return errors.New(gotext.Get("failed to stat source ticket: %v", err))
 		}
 
 		// The source ticket is not newer than the destination one, no need to update
@@ -459,7 +459,7 @@ func (ad *AD) ensureKrb5CCCopy(krb5CCSymlink, krb5CCCopyName string) error {
 func safeCopyFile(src, dst string, mode os.FileMode) error {
 	content, err := os.ReadFile(src)
 	if err != nil {
-		return fmt.Errorf(i18n.G("failed to read source file: %w"), err)
+		return errors.New(gotext.Get("failed to read source file: %v", err))
 	}
 	if err := os.WriteFile(dst+".new", content, mode); err != nil {
 		return err
@@ -522,7 +522,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			// Decode and apply policies in gpo order. First win
 			pols, err := registry.DecodePolicy(f)
 			if err != nil {
-				return fmt.Errorf(i18n.G("%s: %v"), f.Name(), err)
+				return errors.New(gotext.Get("%s: %v", f.Name(), err))
 			}
 
 			// filter keys to be overridden
@@ -544,7 +544,7 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 					continue
 				}
 				if pol.Err != nil {
-					return fmt.Errorf(i18n.G("%s: %v"), f.Name(), pol.Err)
+					return errors.New(gotext.Get("%s: %v", f.Name(), pol.Err))
 				}
 				pol.Key = strings.TrimPrefix(pol.Key, keyFilterPrefix)
 
@@ -600,9 +600,9 @@ func (ad *AD) GetInfo(ctx context.Context) (msg string) {
 	var online string
 	if isOnline, err := ad.configBackend.IsOnline(); err != nil {
 		log.Warning(ctx, err)
-		online = fmt.Sprint(i18n.G("**Can't check if we have an active connection**\n"))
+		online = fmt.Sprint(gotext.Get("**Can't check if we have an active connection**\n"))
 	} else if !isOnline {
-		online = fmt.Sprint(i18n.G("**Offline mode** using cached policies\n"))
+		online = fmt.Sprint(gotext.Get("**Offline mode** using cached policies\n"))
 	}
 	domain := ad.configBackend.Domain()
 	server, err := ad.configBackend.ServerFQDN(ctx)
@@ -610,7 +610,7 @@ func (ad *AD) GetInfo(ctx context.Context) (msg string) {
 		server = "Unknown"
 	}
 
-	return fmt.Sprintf(i18n.G("%s\n%sDomain: %s\nServer FQDN: %s"), config, online, domain, server)
+	return gotext.Get("%s\n%sDomain: %s\nServer FQDN: %s", config, online, domain, server)
 }
 
 // NormalizeTargetName transforms the specified target to values adsys knows.
@@ -648,10 +648,10 @@ func (ad *AD) NormalizeTargetName(ctx context.Context, target string, objectClas
 	case 1:
 		baseUser = c[0]
 	default:
-		return "", fmt.Errorf(i18n.G(`only one \ is permitted in domain\username. Got: %s`), target)
+		return "", errors.New(gotext.Get(`only one \ is permitted in domain\username. Got: %s`, target))
 	}
 	if domainSuffix == "" && ad.configBackend.DefaultDomainSuffix() == "" {
-		return "", fmt.Errorf(i18n.G(`no domain provided for user %q and no default domain in sssd.conf`), target)
+		return "", errors.New(gotext.Get(`no domain provided for user %q and no default domain in sssd.conf`, target))
 	}
 	if domainSuffix == "" {
 		domainSuffix = ad.configBackend.DefaultDomainSuffix()

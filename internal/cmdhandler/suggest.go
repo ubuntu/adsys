@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
-	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 // SubcommandsRequiredWithSuggestions will ensure we have a subcommand provided by the user and augments it with
 // suggestion for commands, alias and help on root command.
 func SubcommandsRequiredWithSuggestions(cmd *cobra.Command, args []string) error {
-	requireMsg := i18n.G("%s requires a valid subcommand")
+	// FIXME: bypass Get not supported only string without the command itself unfortunately
+	requireMsg := "%s " + gotext.Get("requires a valid subcommand")
 	// This will be triggered if cobra didn't find any subcommands.
 	// Find some suggestions.
 	var suggestions []string
@@ -48,14 +49,14 @@ func SubcommandsRequiredWithSuggestions(cmd *cobra.Command, args []string) error
 
 	var suggestionsMsg string
 	if len(suggestions) > 0 {
-		suggestionsMsg += i18n.G("Did you mean this?\n")
+		suggestionsMsg += gotext.Get("Did you mean this?\n")
 		for _, s := range suggestions {
-			suggestionsMsg += fmt.Sprintf(i18n.G("\t%v\n"), s)
+			suggestionsMsg += gotext.Get("\t%v\n", s)
 		}
 	}
 
 	if suggestionsMsg != "" {
-		requireMsg = fmt.Sprintf(i18n.G("%s. %s"), requireMsg, suggestionsMsg)
+		requireMsg = gotext.Get("%s. %s", requireMsg, suggestionsMsg)
 	}
 
 	return fmt.Errorf(requireMsg, cmd.Name())

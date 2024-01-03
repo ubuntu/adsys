@@ -43,9 +43,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/mvo5/libsmbclient-go"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/sync/errgroup"
@@ -62,7 +62,7 @@ This should not be called concurrently.
 It returns if the assets were refreshed or not.
 */
 func (ad *AD) fetch(ctx context.Context, krb5Ticket string, downloadables map[string]string) (assetsWereRefreshed bool, err error) {
-	defer decorate.OnError(&err, i18n.G("can't download all gpos and assets"))
+	defer decorate.OnError(&err, gotext.Get("can't download all gpos and assets"))
 
 	// protect env variable and map creation
 	ad.fetchMu.Lock()
@@ -104,7 +104,7 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, downloadables map[st
 			g = ad.downloadables[name]
 		}
 		errg.Go(func() (err error) {
-			defer decorate.OnError(&err, i18n.G("can't download %q"), g.name)
+			defer decorate.OnError(&err, gotext.Get("can't download %q", g.name))
 
 			smbsafe.WaitSmb()
 			defer smbsafe.DoneSmb()
@@ -135,9 +135,9 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, downloadables map[st
 
 			if !shouldDownload {
 				if g.isAssets {
-					log.Infof(ctx, i18n.G("Assets directory is already up to date"))
+					log.Info(ctx, gotext.Get("Assets directory is already up to date"))
 				} else {
-					log.Infof(ctx, i18n.G("GPO %q is already up to date"), g.name)
+					log.Info(ctx, gotext.Get("GPO %q is already up to date", g.name))
 				}
 
 				return nil
@@ -167,7 +167,7 @@ var errNoGPTINI = errors.New("no GPT.INI file")
 // needsDownload returns if the downloadable should be refreshed.
 // This is done by comparing GPT.INI Version= content.
 func needsDownload(ctx context.Context, client *libsmbclient.Client, g *downloadable, localPath string) (updateNeeded bool, err error) {
-	defer decorate.OnError(&err, i18n.G("can't check if %s needs refreshing"), g.name)
+	defer decorate.OnError(&err, gotext.Get("can't check if %s needs refreshing", g.name))
 
 	g.mu.RLock()
 	defer g.mu.RUnlock()
@@ -204,7 +204,7 @@ func needsDownload(ctx context.Context, client *libsmbclient.Client, g *download
 }
 
 func getGPOVersion(ctx context.Context, r io.Reader, downloadableName string) (version int, err error) {
-	defer decorate.OnError(&err, i18n.G("invalid remote GPT.INI"))
+	defer decorate.OnError(&err, gotext.Get("invalid remote GPT.INI"))
 
 	buf, err := io.ReadAll(r)
 	if err != nil {
@@ -219,7 +219,7 @@ func getGPOVersion(ctx context.Context, r io.Reader, downloadableName string) (v
 	// If the file exists but doesn't contain a Version key, we log a message and return 0
 	// This is the case for some Default Domain Policy GPOs
 	if !cfg.Section("General").HasKey("Version") {
-		log.Infof(ctx, i18n.G("No version key found in GPT.INI for %s, assuming 0"), downloadableName)
+		log.Info(ctx, gotext.Get("No version key found in GPT.INI for %s, assuming 0", downloadableName))
 		return 0, nil
 	}
 
@@ -232,7 +232,7 @@ func getGPOVersion(ctx context.Context, r io.Reader, downloadableName string) (v
 
 // downloadDir will dl in a temporary directory and only commit it if fully downloaded without any errors.
 func downloadDir(ctx context.Context, client *libsmbclient.Client, url, dest string) (err error) {
-	defer decorate.OnError(&err, i18n.G("download %q failed"), url)
+	defer decorate.OnError(&err, gotext.Get("download %q failed", url))
 
 	smbsafe.WaitSmb()
 	defer smbsafe.DoneSmb()
@@ -245,7 +245,7 @@ func downloadDir(ctx context.Context, client *libsmbclient.Client, url, dest str
 
 	// It is a directory: recursive download
 	if err := d.Closedir(); err != nil {
-		return fmt.Errorf(i18n.G("could not close directory: %v"), err)
+		return errors.New(gotext.Get("could not close directory: %v", err))
 	}
 
 	tmpdest, err := os.MkdirTemp(filepath.Dir(dest), fmt.Sprintf("%s.*", filepath.Base(dest)))
@@ -255,7 +255,7 @@ func downloadDir(ctx context.Context, client *libsmbclient.Client, url, dest str
 	// Always to try remove temporary directory, so that in case of any failures, it’s not left behind
 	defer func() {
 		if err := os.RemoveAll(tmpdest); err != nil {
-			log.Info(ctx, i18n.G("Could not clean up temporary directory:"), err)
+			log.Info(ctx, gotext.Get("Could not clean up temporary directory:"), err)
 		}
 	}()
 	if err := downloadRecursive(ctx, client, url, tmpdest); err != nil {
@@ -305,7 +305,7 @@ func downloadRecursive(ctx context.Context, client *libsmbclient.Client, url, de
 
 		switch dirent.Type {
 		case libsmbclient.SmbcFile:
-			log.Debugf(ctx, i18n.G("Downloading %s"), entityURL)
+			log.Debug(ctx, gotext.Get("Downloading %s", entityURL))
 			f, err := client.Open(entityURL, 0, 0)
 			if err != nil {
 				return err
@@ -343,7 +343,7 @@ func findLocalGPTIni(path string) (string, error) {
 
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		return "", fmt.Errorf(i18n.G("could not read directory %q: %w"), path, err)
+		return "", errors.New(gotext.Get("could not read directory %q: %v", path, err))
 	}
 
 	for _, entry := range entries {
@@ -352,5 +352,5 @@ func findLocalGPTIni(path string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf(i18n.G("could not find GPT.INI in %q"), path)
+	return "", errors.New(gotext.Get("could not find GPT.INI in %q", path))
 }

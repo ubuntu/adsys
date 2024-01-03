@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/decorate"
 )
 
@@ -17,7 +17,7 @@ const KeyPrefix = "Software/Policies"
 
 // GetVersionID returns from root a the VERSION_ID field of os-release.
 func GetVersionID(root string) (versionID string, err error) {
-	defer decorate.OnError(&err, i18n.G("cannot get versionID"))
+	defer decorate.OnError(&err, gotext.Get("cannot get versionID"))
 
 	releaseFile := filepath.Join(root, "etc/os-release")
 

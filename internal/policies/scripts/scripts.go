@@ -25,9 +25,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
 )
@@ -59,7 +59,7 @@ type Option func(*options)
 
 // New creates a manager with a specific scripts directory.
 func New(runDir string, unitStarter unitStarter, opts ...Option) (m *Manager, err error) {
-	defer decorate.OnError(&err, i18n.G("can't create scripts manager"))
+	defer decorate.OnError(&err, gotext.Get("can't create scripts manager"))
 
 	// defaults
 	args := options{
@@ -93,7 +93,7 @@ type AssetsDumper func(ctx context.Context, relSrc, dest string, uid int, gid in
 
 // ApplyPolicy generates a privilege policy based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry, assetsDumper AssetsDumper) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply scripts policy to %s"), objectName)
+	defer decorate.OnError(&err, gotext.Get("can't apply scripts policy to %s", objectName))
 
 	log.Debugf(ctx, "Applying scripts policy to %s", objectName)
 
@@ -102,13 +102,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	if !isComputer {
 		user, err := m.userLookup(objectName)
 		if err != nil {
-			return fmt.Errorf(i18n.G("couldn't retrieve user for %q: %v"), objectName, err)
+			return errors.New(gotext.Get("couldn't retrieve user for %q: %v", objectName, err))
 		}
 		if uid, err = strconv.Atoi(user.Uid); err != nil {
-			return fmt.Errorf(i18n.G("couldn't convert %q to a valid uid for %q"), user.Uid, objectName)
+			return errors.New(gotext.Get("couldn't convert %q to a valid uid for %q", user.Uid, objectName))
 		}
 		if gid, err = strconv.Atoi(user.Gid); err != nil {
-			return fmt.Errorf(i18n.G("couldn't convert %q to a valid gid for %q"), user.Gid, objectName)
+			return errors.New(gotext.Get("couldn't convert %q to a valid gid for %q", user.Gid, objectName))
 		}
 
 		objectDir = filepath.Join("users", user.Uid)
@@ -137,10 +137,10 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	// This creates objectDirPath and scriptsDir directory.
 	// We chown objectDirPath and scripts (user specific) to uid:gid of the user. Nothing is done for the machine
 	if err := mkdirAllWithUIDGid(objectPath, uid, gid); err != nil {
-		return fmt.Errorf(i18n.G("can't create object directory %q: %v"), objectPath, err)
+		return errors.New(gotext.Get("can't create object directory %q: %v", objectPath, err))
 	}
 	if err := mkdirAllWithUIDGid(scriptsPath, uid, gid); err != nil {
-		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), scriptsPath, err)
+		return errors.New(gotext.Get("can't create scripts directory %q: %v", scriptsPath, err))
 	}
 
 	// Dump assets to scripts/scripts/ subdirectory with correct ownership. If no assets is present while entries != nil, we want to return an error.
@@ -165,14 +165,14 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			log.Debugf(ctx, "%q: found %q. Marking as executable %q", e.Key, script, scriptFilePath)
 			info, err := os.Stat(scriptFilePath)
 			if errors.Is(err, os.ErrNotExist) {
-				return fmt.Errorf(i18n.G("script %q doesn't exist in SYSVOL scripts/ subdirectory"), script)
+				return errors.New(gotext.Get("script %q doesn't exist in SYSVOL scripts/ subdirectory", script))
 			}
 			if info.IsDir() {
-				return fmt.Errorf(i18n.G("script %q is a directory and not a file to execute"), script)
+				return errors.New(gotext.Get("script %q is a directory and not a file to execute", script))
 			}
 			// nolint:gosec // G302 - scripts need rx permissions
 			if err := os.Chmod(scriptFilePath, 0550); err != nil {
-				return fmt.Errorf(i18n.G("can't change mode of script %qto %o: %v"), scriptFilePath, 0550, err)
+				return errors.New(gotext.Get("can't change mode of script %qto %o: %v", scriptFilePath, 0550, err))
 			}
 
 			// append it to the list of our scripts
@@ -225,7 +225,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 // RunScripts executes all scripts in directory if ready and not already executed.
 // allowOrderMissing will not require order to exists if we are ready to execute.
 func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't run scripts listed in %s"), order)
+	defer decorate.OnError(&err, gotext.Get("can't run scripts listed in %s", order))
 
 	log.Infof(ctx, "Calling RunScripts on %q", order)
 
@@ -233,7 +233,7 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 
 	// Ensure we are ready to execute
 	if _, err := os.Stat(filepath.Join(baseDir, readyFlag)); err != nil {
-		return fmt.Errorf(i18n.G("%q is not ready to execute scripts"), order)
+		return errors.New(gotext.Get("%q is not ready to execute scripts", order))
 	}
 
 	// create running flag for the user or machine
@@ -273,7 +273,7 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 		return err
 	}
 	if info.IsDir() {
-		return fmt.Errorf(i18n.G("%q is a directory and not a file"), order)
+		return errors.New(gotext.Get("%q is a directory and not a file", order))
 	}
 
 	scanner := bufio.NewScanner(f)
@@ -300,14 +300,14 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 
 func mkdirAllWithUIDGid(p string, uid, gid int) error {
 	if err := os.MkdirAll(p, 0750); err != nil {
-		return fmt.Errorf(i18n.G("can't create scripts directory %q: %v"), p, err)
+		return fmt.Errorf(gotext.Get("can't create scripts directory %q: %v", p, err))
 	}
 
 	return chown(p, nil, uid, gid)
 }
 
 func createFlagFile(ctx context.Context, path string, uid, gid int) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't create flag file %q"), path)
+	defer decorate.OnError(&err, gotext.Get("can't create flag file %q", path))
 
 	log.Debugf(ctx, "Create script flag %q", path)
 	f, err := os.Create(path)
@@ -325,7 +325,7 @@ func createFlagFile(ctx context.Context, path string, uid, gid int) (err error) 
 // chown either chown the file descriptor attached, or the path if this one is null to uid and gid.
 // It will know if we should skip chown for tests.
 func chown(p string, f *os.File, uid, gid int) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't chown %q"), p)
+	defer decorate.OnError(&err, gotext.Get("can't chown %q", p))
 
 	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
 		uid = -1

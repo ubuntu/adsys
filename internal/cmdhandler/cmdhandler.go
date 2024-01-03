@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 )
 
@@ -35,7 +35,7 @@ func NoValidArgs(_ *cobra.Command, _ []string, _ string) ([]string, cobra.ShellC
 // README and manpage refers to them in each subsection (parents are differents, but only one is kept if we use the same object).
 func RegisterAlias(cmd, parent *cobra.Command) {
 	alias := *cmd
-	t := fmt.Sprintf(i18n.G("Alias of %q"), cmd.CommandPath())
+	t := gotext.Get("Alias of %q", cmd.CommandPath())
 	if alias.Long != "" {
 		t = fmt.Sprintf("%s (%s)", alias.Long, t)
 	}
@@ -45,14 +45,14 @@ func RegisterAlias(cmd, parent *cobra.Command) {
 
 // InstallVerboseFlag adds the -v and -vv options and returns the reference to it.
 func InstallVerboseFlag(cmd *cobra.Command, viper *viper.Viper) *int {
-	r := cmd.PersistentFlags().CountP("verbose", "v", i18n.G("issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"))
+	r := cmd.PersistentFlags().CountP("verbose", "v", gotext.Get("issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"))
 	decorate.LogOnError(viper.BindPFlag("verbose", cmd.PersistentFlags().Lookup("verbose")))
 	return r
 }
 
 // InstallSocketFlag adds the -s and --sockets options and returns the reference to it.
 func InstallSocketFlag(cmd *cobra.Command, viper *viper.Viper, defaultPath string) *string {
-	s := cmd.PersistentFlags().StringP("socket", "s", defaultPath, i18n.G("socket path to use between daemon and client. Can be overridden by systemd socket activation."))
+	s := cmd.PersistentFlags().StringP("socket", "s", defaultPath, gotext.Get("socket path to use between daemon and client. Can be overridden by systemd socket activation."))
 	decorate.LogOnError(viper.BindPFlag("socket", cmd.PersistentFlags().Lookup("socket")))
 	return s
 }
@@ -63,7 +63,7 @@ func InstallConfigFlag(cmd *cobra.Command, persistent bool) *string {
 	if persistent {
 		target = cmd.PersistentFlags()
 	}
-	return target.StringP("config", "c", "", i18n.G("use a specific configuration file"))
+	return target.StringP("config", "c", "", gotext.Get("use a specific configuration file"))
 }
 
 // CalledCmd returns the actual command called by the user inferred from the arguments.

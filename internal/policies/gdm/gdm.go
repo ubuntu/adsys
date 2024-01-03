@@ -9,8 +9,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
@@ -37,7 +37,7 @@ func WithDconf(m *dconf.Manager) func(o *options) error {
 
 // New returns a new manager for gdm policy handlers.
 func New(opts ...option) (m *Manager, err error) {
-	defer decorate.OnError(&err, i18n.G("can't create a new gdm handler manager"))
+	defer decorate.OnError(&err, gotext.Get("can't create a new gdm handler manager"))
 
 	// defaults
 	args := options{
@@ -57,7 +57,7 @@ func New(opts ...option) (m *Manager, err error) {
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, entries []entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply gdm policy"))
+	defer decorate.OnError(&err, gotext.Get("can't apply gdm policy"))
 
 	log.Debug(ctx, "ApplyPolicy gdm policy")
 

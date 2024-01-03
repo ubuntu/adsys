@@ -61,8 +61,8 @@ import (
 	"strings"
 	"unsafe"
 
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
 )
@@ -93,7 +93,7 @@ type options struct {
 
 // New returns a winbind backend loaded from Config.
 func New(ctx context.Context, c Config, hostname string, opts ...Option) (w Winbind, err error) {
-	defer decorate.OnError(&err, i18n.G("can't get domain configuration from %+v"), c)
+	defer decorate.OnError(&err, gotext.Get("can't get domain configuration from %+v", c))
 
 	// defaults
 	args := options{
@@ -144,8 +144,8 @@ func (w Winbind) HostKrb5CCName() (string, error) {
 	smbsafe.WaitExec()
 	defer smbsafe.DoneExec()
 	if cmd, err := exec.Command(cmdArgs[0], cmdArgs[1:]...).CombinedOutput(); err != nil {
-		return "", fmt.Errorf(i18n.G(`could not get krb5 cached ticket for %q: %w:
-%s`), principal, err, string(cmd))
+		return "", errors.New(gotext.Get(`could not get krb5 cached ticket for %q: %v:
+%s`, principal, err, string(cmd)))
 	}
 
 	return target, nil
@@ -160,7 +160,7 @@ func (w Winbind) DefaultDomainSuffix() string {
 // It returns first any static configuration. If nothing is found, it will fetch
 // the active server from winbind.
 func (w Winbind) ServerFQDN(ctx context.Context) (serverFQDN string, err error) {
-	defer decorate.OnError(&err, i18n.G("error while trying to look up AD server address on winbind"))
+	defer decorate.OnError(&err, gotext.Get("error while trying to look up AD server address on winbind"))
 
 	if w.staticServerFQDN != "" {
 		return strings.TrimPrefix(w.staticServerFQDN, "ldap://"), nil
@@ -187,7 +187,7 @@ func (w Winbind) IsOnline() (bool, error) {
 	defer C.free(unsafe.Pointer(cDomain))
 	online, err := C.is_online(cDomain)
 	if err != nil {
-		err = fmt.Errorf(i18n.G("could not get online status for domain %q: status code %d"), w.domain, err)
+		err = errors.New(gotext.Get("could not get online status for domain %q: status code %d", w.domain, err))
 	}
 	return bool(online), err
 }
@@ -195,7 +195,7 @@ func (w Winbind) IsOnline() (bool, error) {
 func domainName() (string, error) {
 	dc := C.get_domain_name()
 	if dc == nil {
-		return "", errors.New(i18n.G("could not get domain name"))
+		return "", errors.New(gotext.Get("could not get domain name"))
 	}
 	defer C.free(unsafe.Pointer(dc))
 	return C.GoString(dc), nil
@@ -206,7 +206,7 @@ func dcName(domain string) (string, error) {
 	defer C.free(unsafe.Pointer(cDomain))
 	dc := C.get_dc_name(cDomain)
 	if dc == nil {
-		return "", fmt.Errorf(i18n.G("could not get domain controller name for domain %q"), domain)
+		return "", errors.New(gotext.Get("could not get domain controller name for domain %q", domain))
 	}
 	defer C.free(unsafe.Pointer(dc))
 	return C.GoString(dc), nil

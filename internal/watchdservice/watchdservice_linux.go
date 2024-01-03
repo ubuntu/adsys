@@ -1,13 +1,14 @@
 package watchdservice
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/consts"
-	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 // execStart represents the ExecStart option of a systemd service. It maps to
@@ -44,7 +45,7 @@ func (s *WatchdService) serviceArgs() (string, string, error) {
 	var execStarts []execStart
 	err = svcUnit.StoreProperty(fmt.Sprintf("%s.ExecStart", consts.SystemdDbusServiceInterface), &execStarts)
 	if err != nil || len(execStarts) == 0 {
-		return "", "", fmt.Errorf(i18n.G("could not find %s unit on systemd bus: no service installed? %v"), s.Name(), err)
+		return "", "", errors.New(gotext.Get("could not find %s unit on systemd bus: no service installed? %v", s.Name(), err))
 	}
 
 	binPath := execStarts[0].BinPath
