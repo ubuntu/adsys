@@ -23,14 +23,13 @@ require (
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
 	github.com/pkg/sftp v1.13.6
 	github.com/sirupsen/logrus v1.9.3
-	github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.17.0
 	github.com/stretchr/testify v1.8.4
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
 	github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117
-	github.com/ubuntu/go-i18n v0.0.0-20230830081132-d6654b958899
+	github.com/ubuntu/go-i18n v0.0.0-20231113092927-594c1754ca47
 	golang.org/x/crypto v0.17.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/net v0.19.0

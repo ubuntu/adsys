@@ -4,6 +4,7 @@ package daemon
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -12,8 +13,8 @@ import (
 
 	"github.com/coreos/go-systemd/v22/activation"
 	"github.com/coreos/go-systemd/v22/daemon"
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 	"google.golang.org/grpc"
 )
@@ -69,7 +70,7 @@ func WithServerQuit(f func(context.Context)) func(o *options) error {
 // New returns an new, initialized daemon server, which handles systemd activation.
 // If systemd activation is used, it will override any socket passed here.
 func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option) (d *Daemon, err error) {
-	defer decorate.OnError(&err, i18n.G("can't create daemon"))
+	defer decorate.OnError(&err, gotext.Get("can't create daemon"))
 
 	// defaults
 	args := options{
@@ -110,7 +111,7 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 		d.useSocketActivation = true
 		d.lis <- listeners[0]
 	default:
-		return nil, fmt.Errorf(i18n.G("unexpected number of systemd socket activation (%d != 1)"), len(listeners))
+		return nil, errors.New(gotext.Get("unexpected number of systemd socket activation (%d != 1)", len(listeners)))
 	}
 
 	d.grpcserver = d.registerGRPCServer(d)
@@ -128,7 +129,7 @@ func (d *Daemon) UseSocket(socket string) (err error) {
 		return nil
 	}
 
-	defer decorate.OnError(&err, i18n.G("can't listen on new socket %q"), socket)
+	defer decorate.OnError(&err, gotext.Get("can't listen on new socket %q", socket))
 
 	lis, err := net.Listen("unix", socket)
 	if err != nil {
@@ -155,12 +156,12 @@ func (d *Daemon) UseSocket(socket string) (err error) {
 // When the server stop listening, the socket is removed automatically.
 // Configuration can be reloaded and we will then listen on the new socket.
 func (d *Daemon) Listen() (err error) {
-	defer decorate.OnError(&err, i18n.G("can't serve"))
+	defer decorate.OnError(&err, gotext.Get("can't serve"))
 
 	if sent, err := d.systemdSdNotifier(false, "READY=1"); err != nil {
-		return fmt.Errorf(i18n.G("couldn't send ready notification to systemd: %v"), err)
+		return errors.New(gotext.Get("couldn't send ready notification to systemd: %v", err))
 	} else if sent {
-		log.Debug(context.Background(), i18n.G("Ready state sent to systemd"))
+		log.Debug(context.Background(), gotext.Get("Ready state sent to systemd"))
 	}
 
 	lis := <-d.lis
@@ -170,7 +171,7 @@ func (d *Daemon) Listen() (err error) {
 
 	// handle socket configuration reloading
 	for {
-		log.Infof(context.Background(), i18n.G("Serving on %s"), lis.Addr().String())
+		log.Info(context.Background(), gotext.Get("Serving on %s", lis.Addr().String()))
 		if err := (d.grpcserver.Serve(lis)); err != nil {
 			return fmt.Errorf("unable to start GRPC server: %w", err)
 		}
@@ -188,7 +189,7 @@ func (d *Daemon) Listen() (err error) {
 		d.socketMu.Unlock()
 		d.grpcserver = d.registerGRPCServer(d)
 	}
-	log.Debug(context.Background(), i18n.G("Quitting"))
+	log.Debug(context.Background(), gotext.Get("Quitting"))
 	d.serverQuit(context.Background())
 
 	return nil
@@ -210,15 +211,15 @@ func (d *Daemon) Quit(force bool) {
 
 // stop gracefully stops the grpc server unless force is true.
 func (d *Daemon) stop(force bool) {
-	log.Info(context.Background(), i18n.G("Stopping daemon requested."))
+	log.Info(context.Background(), gotext.Get("Stopping daemon requested."))
 	if force {
 		d.grpcserver.Stop()
 		return
 	}
 
-	log.Info(context.Background(), i18n.G("Wait for active requests to close."))
+	log.Info(context.Background(), gotext.Get("Wait for active requests to close."))
 	d.grpcserver.GracefulStop()
-	log.Debug(context.Background(), i18n.G("All connections have now ended."))
+	log.Debug(context.Background(), gotext.Get("All connections have now ended."))
 }
 
 // GetSocketAddr returns currently used socket address by daemon.

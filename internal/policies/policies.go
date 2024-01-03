@@ -8,7 +8,6 @@ import (
 	"archive/zip"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -16,8 +15,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/exp/mmap"
@@ -47,7 +46,7 @@ type Policies struct {
 // We pass directly the compressed DB and don’t save immediately in cache as we will do it
 // once the gpos are all treated.
 func New(ctx context.Context, gpos []GPO, assetsDBPath string) (pols Policies, err error) {
-	defer decorate.OnError(&err, i18n.G("can't created new policies"))
+	defer decorate.OnError(&err, gotext.Get("can't created new policies"))
 
 	log.Debugf(ctx, "Creating new policies")
 
@@ -67,7 +66,7 @@ func New(ctx context.Context, gpos []GPO, assetsDBPath string) (pols Policies, e
 
 // NewFromCache returns cached policies loaded from the p cache directory.
 func NewFromCache(ctx context.Context, p string) (pols Policies, err error) {
-	defer decorate.OnError(&err, i18n.G("can't get cached policies from %s"), p)
+	defer decorate.OnError(&err, gotext.Get("can't get cached policies from %s", p))
 
 	log.Debugf(ctx, "Loading policies from cache using %s", p)
 
@@ -107,7 +106,7 @@ func openAssetsInMemory(assetsDB string) (assets *assetsFromMMAP, err error) {
 
 	r, err := zip.NewReader(f, int64(f.Len()))
 	if err != nil {
-		return nil, fmt.Errorf(i18n.G("invalid zip db archive: %w"), err)
+		return nil, errors.New(gotext.Get("invalid zip db archive: %v", err))
 	}
 
 	return &assetsFromMMAP{
@@ -120,7 +119,7 @@ func openAssetsInMemory(assetsDB string) (assets *assetsFromMMAP, err error) {
 // Save serializes in p policies.
 // Do not save again if p is already the origin. We don’t allow modifying GPOs or assets on the object.
 func (pols *Policies) Save(p string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't save policies to %s"), p)
+	defer decorate.OnError(&err, gotext.Get("can't save policies to %s", p))
 
 	if err := os.MkdirAll(p, 0700); err != nil {
 		return err
@@ -218,17 +217,17 @@ func (r *readerAtToReader) Read(p []byte) (n int, err error) {
 // The destination directory or file should not exists.
 // A uid or gid different from -1 means that every directories and files will be chown to that user and group.
 func (pols *Policies) SaveAssetsTo(ctx context.Context, relSrc, dest string, uid, gid int) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't save assets to %s"), dest)
+	defer decorate.OnError(&err, gotext.Get("can't save assets to %s", dest))
 
 	log.Debugf(ctx, "export assets %q to %q", relSrc, dest)
 
 	if pols.assets == nil {
-		return errors.New(i18n.G("no assets attached"))
+		return errors.New(gotext.Get("no assets attached"))
 	}
 
 	// error out if dest exists
 	if _, err := os.Stat(dest); !errors.Is(err, fs.ErrNotExist) {
-		return fmt.Errorf(i18n.G("destination %q already exists"), dest)
+		return errors.New(gotext.Get("destination %q already exists", dest))
 	}
 
 	baseDir := strings.TrimSuffix(relSrc, "/")
@@ -240,7 +239,7 @@ func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string, uid, g
 	relSrc = strings.TrimSuffix(relSrc, "/")
 
 	if relSrc == "" {
-		return errors.New(i18n.G("no relSrc provided to look into database archive"))
+		return errors.New(gotext.Get("no relSrc provided to look into database archive"))
 	}
 
 	dstPath := filepath.Join(dest, strings.TrimPrefix(relSrc, baseDir))
@@ -300,7 +299,7 @@ func (pols *Policies) saveAssetsRecursively(relSrc, dest, baseDir string, uid, g
 
 // CompressAssets allow compressing all assets from SYSVOL in a single zip file.
 func CompressAssets(ctx context.Context, p string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't compress assets from %s"), p)
+	defer decorate.OnError(&err, gotext.Get("can't compress assets from %s", p))
 
 	log.Debugf(ctx, "compress assets from %q", p)
 
@@ -431,7 +430,7 @@ func (pols Policies) GetUniqueRules() map[string][]entry.Entry {
 // chown either chown the file descriptor attached, or the path if this one is null to uid and gid.
 // It will know if we should skip chown for tests.
 func chown(p string, f *os.File, uid, gid int) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't chown %q"), p)
+	defer decorate.OnError(&err, gotext.Get("can't chown %q", p))
 
 	if os.Getenv("ADSYS_SKIP_ROOT_CALLS") != "" {
 		uid = -1

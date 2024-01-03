@@ -15,8 +15,8 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 	"google.golang.org/grpc/peer"
 )
@@ -53,7 +53,7 @@ func withRoot(root string) func(*Authorizer) {
 
 // New returns a new authorizer.
 func New(bus *dbus.Conn, options ...func(*Authorizer)) (auth *Authorizer, err error) {
-	defer decorate.OnError(&err, i18n.G("can't create new authorizer"))
+	defer decorate.OnError(&err, gotext.Get("can't create new authorizer"))
 
 	authority := bus.Object("org.freedesktop.PolicyKit1",
 		"/org/freedesktop/PolicyKit1/Authority")
@@ -108,17 +108,17 @@ type authResult struct {
 // IsAllowedFromContext returns nil if the user is allowed to perform an operation.
 // The pid and uid are extracted from peerCredsInfo grpc context.
 func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (err error) {
-	log.Debug(ctx, i18n.G("Check if grpc request peer is authorized"))
+	log.Debug(ctx, gotext.Get("Check if grpc request peer is authorized"))
 
-	defer decorate.OnError(&err, i18n.G("permission denied"))
+	defer decorate.OnError(&err, gotext.Get("permission denied"))
 
 	p, ok := peer.FromContext(ctx)
 	if !ok {
-		return errors.New(i18n.G("context request doesn't have grpc peer creds informations."))
+		return errors.New(gotext.Get("context request doesn't have grpc peer creds informations."))
 	}
 	pci, ok := p.AuthInfo.(peerCredsInfo)
 	if !ok {
-		return errors.New(i18n.G("context request grpc peer creeds information is not a peerCredsInfo."))
+		return errors.New(gotext.Get("context request grpc peer creeds information is not a peerCredsInfo."))
 	}
 
 	// Is it an action needing user checking?
@@ -126,15 +126,15 @@ func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (er
 	if action.SelfID != "" {
 		userName, ok := ctx.Value(OnUserKey).(string)
 		if !ok {
-			return errors.New(i18n.G("request to act on user action should have a user name attached"))
+			return errors.New(gotext.Get("request to act on user action should have a user name attached"))
 		}
 		user, err := a.userLookup(userName)
 		if err != nil {
-			return fmt.Errorf(i18n.G("couldn't retrieve user for %q: %v"), userName, err)
+			return errors.New(gotext.Get("couldn't retrieve user for %q: %v", userName, err))
 		}
 		uid, err := strconv.Atoi(user.Uid)
 		if err != nil {
-			return fmt.Errorf(i18n.G("couldn't convert %q to a valid uid for %q"), user.Uid, userName)
+			return errors.New(gotext.Get("couldn't convert %q to a valid uid for %q", user.Uid, userName))
 		}
 		actionUID = uint32(uid)
 	}
@@ -147,10 +147,10 @@ func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (er
 // (self or others).
 func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid uint32, actionUID uint32) error {
 	if uid == 0 {
-		log.Debug(ctx, i18n.G("Authorized as being administrator"))
+		log.Debug(ctx, gotext.Get("Authorized as being administrator"))
 		return nil
 	} else if action == ActionAlwaysAllowed {
-		log.Debug(ctx, i18n.G("Any user always authorized"))
+		log.Debug(ctx, gotext.Get("Any user always authorized"))
 		return nil
 	} else if action.SelfID != "" {
 		action.ID = action.OtherID
@@ -161,7 +161,7 @@ func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid
 
 	f, err := os.Open(filepath.Join(a.root, fmt.Sprintf("proc/%d/stat", pid)))
 	if err != nil {
-		return fmt.Errorf(i18n.G("couldn't open stat file for process: %v"), err)
+		return errors.New(gotext.Get("couldn't open stat file for process: %v", err))
 	}
 	defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
@@ -185,13 +185,13 @@ func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid
 		"org.freedesktop.PolicyKit1.Authority.CheckAuthorization", dbus.FlagAllowInteractiveAuthorization,
 		subject, action.ID, details, checkAllowInteraction, "").Store(&result)
 	if err != nil {
-		return fmt.Errorf(i18n.G("call to polkit failed: %v"), err)
+		return errors.New(gotext.Get("call to polkit failed: %v", err))
 	}
 
-	log.Debugf(ctx, i18n.G("Polkit call result, authorized: %t"), result.IsAuthorized)
+	log.Debug(ctx, gotext.Get("Polkit call result, authorized: %t", result.IsAuthorized))
 
 	if !result.IsAuthorized {
-		return errors.New(i18n.G("polkit denied access"))
+		return errors.New(gotext.Get("polkit denied access"))
 	}
 	return nil
 }
@@ -202,7 +202,7 @@ func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid
 //
 //	https://cgit.freedesktop.org/polkit/tree/src/polkit/polkitunixprocess.c
 func getStartTimeFromReader(r io.Reader) (t uint64, err error) {
-	defer decorate.OnError(&err, i18n.G("can't determine start time of client process"))
+	defer decorate.OnError(&err, gotext.Get("can't determine start time of client process"))
 
 	data, err := io.ReadAll(r)
 	if err != nil {
@@ -220,19 +220,19 @@ func getStartTimeFromReader(r io.Reader) (t uint64, err error) {
 	// starttime field.
 	idx := strings.IndexByte(contents, ')')
 	if idx < 0 {
-		return 0, errors.New(i18n.G("parsing error: missing )"))
+		return 0, errors.New(gotext.Get("parsing error: missing )"))
 	}
 	idx += 2 // skip ") "
 	if idx > len(contents) {
-		return 0, errors.New(i18n.G("parsing error: ) at the end"))
+		return 0, errors.New(gotext.Get("parsing error: ) at the end"))
 	}
 	tokens := strings.Split(contents[idx:], " ")
 	if len(tokens) < 20 {
-		return 0, errors.New(i18n.G("parsing error: less fields than required"))
+		return 0, errors.New(gotext.Get("parsing error: less fields than required"))
 	}
 	v, err := strconv.ParseUint(tokens[19], 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf(i18n.G("parsing error: %v"), err)
+		return 0, errors.New(gotext.Get("parsing error: %v", err))
 	}
 	return v, nil
 }

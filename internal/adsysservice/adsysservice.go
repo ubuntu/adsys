@@ -3,12 +3,14 @@ package adsysservice
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/leonelquinteros/gotext"
 	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/ad"
@@ -22,7 +24,6 @@ import (
 	"github.com/ubuntu/adsys/internal/grpc/interceptorschain"
 	"github.com/ubuntu/adsys/internal/grpc/logconnections"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/decorate"
 	"google.golang.org/grpc"
@@ -189,7 +190,7 @@ func WithWinbindConfig(c winbind.Config) func(o *options) error {
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
 func New(ctx context.Context, opts ...option) (s *Service, err error) {
-	defer decorate.OnError(&err, i18n.G("couldn't create adsys service"))
+	defer decorate.OnError(&err, gotext.Get("couldn't create adsys service"))
 
 	// defaults
 	args := options{}
@@ -261,7 +262,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 		adBackend, err = winbind.New(ctx, args.winbindConfig, hostname)
 	}
 	if err != nil {
-		return nil, fmt.Errorf(i18n.G("could not initialize AD backend: %v"), err)
+		return nil, errors.New(gotext.Get("could not initialize AD backend: %v", err))
 	}
 
 	adc, err := ad.New(ctx, adBackend, hostname, adOptions...)
@@ -354,7 +355,7 @@ func (s *Service) RegisterGRPCServer(d *daemon.Daemon) *grpc.Server {
 // Quit cleans every ressources than the service was using.
 func (s *Service) Quit(ctx context.Context) {
 	if err := s.bus.Close(); err != nil {
-		log.Warningf(ctx, i18n.G("Can't disconnect system dbus: %v"), err)
+		log.Warning(ctx, gotext.Get("Can't disconnect system dbus: %v", err))
 	}
 }
 

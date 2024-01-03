@@ -3,9 +3,8 @@ package grpcerror
 
 import (
 	"errors"
-	"fmt"
 
-	"github.com/ubuntu/adsys/internal/i18n"
+	"github.com/leonelquinteros/gotext"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -26,16 +25,16 @@ func Format(err error, daemonName string) error {
 	switch st.Code() {
 	// no daemon
 	case codes.Unavailable:
-		err = fmt.Errorf(i18n.G("Couldn't connect to %s daemon: %v"), daemonName, st.Message())
+		err = errors.New(gotext.Get("Couldn't connect to %s daemon: %v", daemonName, st.Message()))
 	// timeout
 	case codes.DeadlineExceeded:
-		err = errors.New(i18n.G("Service took too long to respond. Disconnecting client."))
+		err = errors.New(gotext.Get("Service took too long to respond. Disconnecting client."))
 	// regular error without annotation
 	case codes.Unknown:
-		err = fmt.Errorf(i18n.G("Error from server: %v"), st.Message())
+		err = errors.New(gotext.Get("Error from server: %v", st.Message()))
 	// grpc error, just format it
 	default:
-		err = fmt.Errorf(i18n.G("Error %s from server: %v"), st.Code(), st.Message())
+		err = errors.New(gotext.Get("Error %s from server: %v", st.Code(), st.Message()))
 	}
 	return err
 }

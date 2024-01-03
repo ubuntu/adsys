@@ -9,12 +9,13 @@ package log
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/sirupsen/logrus"
-	"github.com/ubuntu/adsys/internal/i18n"
 )
 
 const (
@@ -173,7 +174,7 @@ func log(ctx context.Context, level logrus.Level, args ...interface{}) {
 	}
 
 	if err := logLocallyMaybeRemote(level, caller, msg, localLogger, idRequest, sendStream); err != nil {
-		localLogger.Warningf(localLogFormatWithID, idRequest, i18n.G("couldn't send logs to client"))
+		localLogger.Warningf(localLogFormatWithID, idRequest, gotext.Get("couldn't send logs to client"))
 	}
 }
 
@@ -181,7 +182,7 @@ func logLocallyMaybeRemote(level logrus.Level, caller, msg string, localLogger *
 	// decorate depends on logstreamer: we can’t use it here
 	defer func() {
 		if err != nil {
-			err = fmt.Errorf(i18n.G("can't send logs to client: %v"), err)
+			err = errors.New(gotext.Get("can't send logs to client: %v", err))
 		}
 	}()
 

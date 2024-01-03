@@ -9,12 +9,12 @@ import (
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/leonelquinteros/gotext"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 )
 
@@ -40,7 +40,7 @@ func SetVerboseMode(level int) {
 // to let you deserialize the initial configuration and returns any errors.
 // Then, it automatically watches any configuration changes and will call configChanged with refresh set to true.
 func Init(name string, cmd cobra.Command, vip *viper.Viper, configChanged func(refreshed bool) error) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't load configuration"))
+	defer decorate.OnError(&err, gotext.Get("can't load configuration"))
 
 	// Force a visit of the local flags so persistent flags for all parents are merged.
 	cmd.LocalFlags()
@@ -62,7 +62,7 @@ func Init(name string, cmd cobra.Command, vip *viper.Viper, configChanged func(r
 		vip.AddConfigPath("/etc/")
 		// Add the executable path to the config search path.
 		if binPath, err := os.Executable(); err != nil {
-			log.Warningf(context.Background(), i18n.G("Failed to get current executable path, not adding it as a config dir: %v"), err)
+			log.Warning(context.Background(), gotext.Get("Failed to get current executable path, not adding it as a config dir: %v", err))
 		} else {
 			vip.AddConfigPath(filepath.Dir(binPath))
 		}

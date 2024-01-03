@@ -3,22 +3,23 @@ package adsysservice
 import (
 	"bufio"
 	"embed"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"regexp"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/docs"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/decorate"
 )
 
 // GetDoc returns a chapter documentation from server.
 func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while getting documentation"))
+	defer decorate.OnError(&err, gotext.Get("error while getting documentation"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
@@ -27,7 +28,7 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 	// Get all documentation metadata
 	_, chaptersToFiles, filesToTitle, err := docStructure(docs.Dir, "index.md", "")
 	if err != nil {
-		return fmt.Errorf(i18n.G("could not list documentation directory: %v"), err)
+		return errors.New(gotext.Get("could not list documentation directory: %v", err))
 	}
 
 	// Find a match, removing trailing / for directory folder.
@@ -40,7 +41,7 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 
 	out, err := renderDocumentationPage(p, filesToTitle)
 	if err != nil {
-		return fmt.Errorf(i18n.G("could not read chapter %q: %v"), chapter, err)
+		return errors.New(gotext.Get("could not read chapter %q: %v", chapter, err))
 	}
 
 	if err := stream.Send(&adsys.StringResponse{
@@ -53,7 +54,7 @@ func (s *Service) GetDoc(r *adsys.GetDocRequest, stream adsys.Service_GetDocServ
 
 // ListDoc returns a list of all documentation from server.
 func (s *Service) ListDoc(_ *adsys.Empty, stream adsys.Service_ListDocServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while listing documentation"))
+	defer decorate.OnError(&err, gotext.Get("error while listing documentation"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
@@ -61,7 +62,7 @@ func (s *Service) ListDoc(_ *adsys.Empty, stream adsys.Service_ListDocServer) (e
 
 	chapters, _, _, err := docStructure(docs.Dir, "index.md", "")
 	if err != nil {
-		return fmt.Errorf(i18n.G("could not list documentation directory: %v"), err)
+		return errors.New(gotext.Get("could not list documentation directory: %v", err))
 	}
 
 	if err := stream.Send(&adsys.ListDocReponse{
@@ -213,7 +214,7 @@ func renderDocumentationPage(p string, filesToTitle map[string]string) (string, 
 
 	f, err := docs.Dir.Open(p)
 	if err != nil {
-		return "", fmt.Errorf(i18n.G("no file %q found in documentation"), p)
+		return "", errors.New(gotext.Get("no file %q found in documentation", p))
 	}
 	defer f.Close()
 

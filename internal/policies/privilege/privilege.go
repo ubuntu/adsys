@@ -25,9 +25,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
 	"gopkg.in/ini.v1"
@@ -66,7 +66,7 @@ func NewWithDirs(sudoersDir, policyKitDir string) *Manager {
 
 // ApplyPolicy generates a privilege policy based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply privilege policy to %s"), objectName)
+	defer decorate.OnError(&err, gotext.Get("can't apply privilege policy to %s", objectName))
 
 	// We only have privilege escalation on computers.
 	if !isComputer {
@@ -247,7 +247,7 @@ func splitAndNormalizeUsersAndGroups(ctx context.Context, v string) []string {
 // It lists /etc/polkit-1/localauthority.conf.d and take the highest file in ascii order to match
 // from the [configuration] section AdminIdentities value.
 func getSystemPolkitAdminIdentities(ctx context.Context, policyKitDir string) (adminIdentities string, err error) {
-	defer decorate.OnError(&err, i18n.G("can't get existing system polkit administrators in %s"), policyKitDir)
+	defer decorate.OnError(&err, gotext.Get("can't get existing system polkit administrators in %s", policyKitDir))
 
 	polkitConfFiles, err := filepath.Glob(filepath.Join(policyKitDir, "localauthority.conf.d", "*.conf"))
 	if err != nil {
@@ -260,7 +260,7 @@ func getSystemPolkitAdminIdentities(ctx context.Context, policyKitDir string) (a
 			return "", err
 		}
 		if fi.IsDir() {
-			log.Warningf(ctx, i18n.G("%s is a directory. Ignoring."), p)
+			log.Warning(ctx, gotext.Get("%s is a directory. Ignoring.", p))
 			continue
 		}
 

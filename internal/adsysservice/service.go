@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/internal/adsysservice/actions"
 	"github.com/ubuntu/adsys/internal/authorizer"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/stdforward"
 	"github.com/ubuntu/decorate"
@@ -24,7 +24,7 @@ import (
 // Anything logged by the server on stdout, stderr or via the standard logger.
 // Only one call at a time can be performed here.
 func (s *Service) Cat(_ *adsys.Empty, stream adsys.Service_CatServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while trying to display daemon output"))
+	defer decorate.OnError(&err, gotext.Get("error while trying to display daemon output"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
 		return err
@@ -60,7 +60,7 @@ func (ss streamWriter) Write(b []byte) (n int, err error) {
 
 // Status returns internal daemon status to the client.
 func (s *Service) Status(_ *adsys.Empty, stream adsys.Service_StatusServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while getting daemon status"))
+	defer decorate.OnError(&err, gotext.Get("error while getting daemon status"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
@@ -82,8 +82,8 @@ func (s *Service) Status(_ *adsys.Empty, stream adsys.Service_StatusServer) (err
 		state.apparmorDir = consts.DefaultApparmorDir
 	}
 
-	timeout := i18n.G("unknown")
-	socket := i18n.G("unknown")
+	timeout := gotext.Get("unknown")
+	socket := gotext.Get("unknown")
 	if s.daemon != nil {
 		timeout = s.daemon.Timeout().String()
 		sock := s.daemon.GetSocketAddr()
@@ -96,47 +96,48 @@ func (s *Service) Status(_ *adsys.Empty, stream adsys.Service_StatusServer) (err
 
 	timeLayout := "Mon Jan 2 15:04"
 
-	nextRefresh := i18n.G("unknown")
+	nextRefresh := gotext.Get("unknown")
 	if next, err := s.nextRefreshTime(); err == nil {
 		nextRefresh = next.Format(timeLayout)
 	} else {
 		log.Warning(stream.Context(), err)
 	}
 
-	updateFmt := i18n.G("%s, updated on %s")
-	updateMachine := i18n.G("Machine, no gpo applied found")
+	// FIXME: gotext.Get needs to have the arguments parsed.
+	updateFmt := "%s" + gotext.Get(", updated on ") + "%s"
+	updateMachine := gotext.Get("Machine, no gpo applied found")
 	t, err := s.policyManager.LastUpdateFor(stream.Context(), "", true)
 	if err == nil {
-		updateMachine = fmt.Sprintf(updateFmt, i18n.G("Machine"), t.Format(timeLayout))
+		updateMachine = fmt.Sprintf(updateFmt, gotext.Get("Machine"), t.Format(timeLayout))
 	}
 
-	updateUsers := fmt.Sprint(i18n.G("Can't get connected users"))
+	updateUsers := fmt.Sprint(gotext.Get("Can't get connected users"))
 	users, err := s.adc.ListUsers(stream.Context(), true)
 	if err == nil {
-		updateUsers = fmt.Sprint(i18n.G("Connected users:"))
+		updateUsers = fmt.Sprint(gotext.Get("Connected users:"))
 		for _, u := range users {
 			if t, err := s.policyManager.LastUpdateFor(stream.Context(), u, false); err == nil {
 				updateUsers = updateUsers + "\n  " + fmt.Sprintf(updateFmt, u, t.Format(timeLayout))
 			} else {
-				updateUsers = updateUsers + "\n  " + fmt.Sprintf(i18n.G("%s, no gpo applied found"), u)
+				updateUsers = updateUsers + "\n  " + gotext.Get("%s, no gpo applied found", u)
 			}
 		}
 		if len(users) == 0 {
-			updateUsers = updateUsers + "\n  " + i18n.G("None")
+			updateUsers = updateUsers + "\n  " + gotext.Get("None")
 		}
 	}
 
-	ubuntuProStatus := i18n.G("Ubuntu Pro subscription is not active on this machine. Rules belonging to the following policy types will not be applied:\n")
+	ubuntuProStatus := gotext.Get("Ubuntu Pro subscription is not active on this machine. Rules belonging to the following policy types will not be applied:\n")
 	proOnlyRules := slices.Clone(policies.ProOnlyRules)
 	slices.Sort(proOnlyRules)
 	ubuntuProStatus = ubuntuProStatus + "  - " + strings.Join(proOnlyRules, "\n  - ")
 
 	subscriptionEnabled := s.policyManager.GetSubscriptionState(stream.Context())
 	if subscriptionEnabled {
-		ubuntuProStatus = i18n.G("Ubuntu Pro subscription active.")
+		ubuntuProStatus = gotext.Get("Ubuntu Pro subscription active.")
 	}
 
-	status := fmt.Sprintf(i18n.G(`%s
+	status := gotext.Get(`%s
 %s
 Next Refresh: %s
 
@@ -153,7 +154,7 @@ Daemon:
   Dconf path: %s
   Sudoers path: %s
   PolicyKit path: %s
-  Apparmor path: %s`), updateMachine, updateUsers, nextRefresh,
+  Apparmor path: %s`, updateMachine, updateUsers, nextRefresh,
 		ubuntuProStatus,
 		strings.Join(strings.Split(adInfo, "\n"), "\n  "),
 		timeout, socket, state.cacheDir, state.runDir, state.dconfDir,
@@ -171,7 +172,7 @@ Daemon:
 // Stop requests to stop the service once all connections are done. Force will shut it down immediately and drop
 // existing connections.
 func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while trying to stop daemon"))
+	defer decorate.OnError(&err, gotext.Get("error while trying to stop daemon"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), actions.ActionServiceManage); err != nil {
 		return err
@@ -183,7 +184,7 @@ func (s *Service) Stop(r *adsys.StopRequest, stream adsys.Service_StopServer) (e
 
 // ListUsers returns the list of currently active users.
 func (s *Service) ListUsers(r *adsys.ListUsersRequest, stream adsys.Service_ListUsersServer) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while trying to get the list of active users"))
+	defer decorate.OnError(&err, gotext.Get("error while trying to get the list of active users"))
 
 	if err := s.authorizer.IsAllowedFromContext(stream.Context(), authorizer.ActionAlwaysAllowed); err != nil {
 		return err
@@ -204,10 +205,10 @@ func (s *Service) ListUsers(r *adsys.ListUsersRequest, stream adsys.Service_List
 
 // nextRefreshTime returns next adsys schedule refresh call.
 func (s Service) nextRefreshTime() (next *time.Time, err error) {
-	defer decorate.OnError(&err, i18n.G("error while trying to determine next refresh time"))
+	defer decorate.OnError(&err, gotext.Get("error while trying to determine next refresh time"))
 
 	if s.initSystemTime == nil {
-		return nil, errors.New(i18n.G("no boot system time found"))
+		return nil, errors.New(gotext.Get("no boot system time found"))
 	}
 
 	const unit = "adsys-gpo-refresh.timer"
@@ -218,11 +219,11 @@ func (s Service) nextRefreshTime() (next *time.Time, err error) {
 			strings.ReplaceAll(strings.ReplaceAll(unit, ".", "_2e"), "-", "_2d"))))
 	val, err := timerUnit.GetProperty(fmt.Sprintf("%s.NextElapseUSecMonotonic", consts.SystemdDbusTimerInterface))
 	if err != nil {
-		return nil, fmt.Errorf(i18n.G("could not find %s unit on systemd bus: no GPO refresh scheduled? %v"), unit, err)
+		return nil, errors.New(gotext.Get("could not find %s unit on systemd bus: no GPO refresh scheduled? %v", unit, err))
 	}
 	nextRaw, ok := val.Value().(uint64)
 	if !ok {
-		return nil, fmt.Errorf(i18n.G("invalid next GPO refresh value: %v"), val.Value(), err)
+		return nil, errors.New(gotext.Get("invalid next GPO refresh value for %v: %v", val.Value(), err))
 	}
 
 	nextRefresh := s.initSystemTime.Add(time.Duration(nextRaw) * time.Microsecond / time.Nanosecond)

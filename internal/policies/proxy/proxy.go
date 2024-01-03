@@ -19,8 +19,8 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/leonelquinteros/gotext"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/decorate"
 )
@@ -76,7 +76,7 @@ func New(bus *dbus.Conn, args ...Option) *Manager {
 
 // ApplyPolicy applies the system proxy policy (via a D-Bus call to ubuntu-proxy-manager).
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply proxy policy"))
+	defer decorate.OnError(&err, gotext.Get("can't apply proxy policy"))
 
 	// Proxy policies are currently only supported on computers
 	if !isComputer {
@@ -92,7 +92,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	for _, e := range entries {
 		key := e.Key[strings.LastIndex(e.Key, "/")+1:]
 		if !slices.Contains(supportedKeys, key) {
-			log.Warningf(ctx, i18n.G("Encountered unsupported key '%s' while parsing proxy entries, skipping it"), key)
+			log.Warning(ctx, gotext.Get("Encountered unsupported key '%s' while parsing proxy entries, skipping it", key))
 		}
 		args[key] = e.Value
 	}
@@ -111,7 +111,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		args["auto"]).Err; err != nil {
 		var dbusErr dbus.Error
 		if errors.As(err, &dbusErr) && dbusErr.Name == errDBusServiceUnknownName {
-			log.Warningf(ctx, i18n.G("Not applying proxy settings as ubuntu-proxy-manager is not installed: %s"), dbusErr.Error())
+			log.Warning(ctx, gotext.Get("Not applying proxy settings as ubuntu-proxy-manager is not installed: %s", dbusErr.Error()))
 			return nil
 		}
 		return err

@@ -40,9 +40,9 @@ import (
 	"sync"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
-	"github.com/ubuntu/adsys/internal/i18n"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/smbsafe"
 	"github.com/ubuntu/decorate"
@@ -66,7 +66,7 @@ func NewWithDconfDir(dir string) *Manager {
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries.
 func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer bool, entries []entry.Entry) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't apply dconf policy to %s"), objectName)
+	defer decorate.OnError(&err, gotext.Get("can't apply dconf policy to %s", objectName))
 
 	dconfDir := m.dconfDir
 	if dconfDir == "" {
@@ -97,7 +97,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	if !isComputer && len(entries) > 0 {
 		if _, err := os.Stat(filepath.Join(dbsPath, "machine.d", "locks", "adsys")); err != nil {
-			return fmt.Errorf(i18n.G("machine dconf database is required before generating a policy for an user. This one returns: %v"), err)
+			return errors.New(gotext.Get("machine dconf database is required before generating a policy for an user. This one returns: %v", err))
 		}
 	}
 
@@ -105,13 +105,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	// We don't clean up the machine database because we don't know if there's any user GPO depending on it.
 	if !isComputer && len(entries) == 0 {
 		if err := os.RemoveAll(dbPath); err != nil {
-			return fmt.Errorf(i18n.G("can't remove user dconf database directory: %v"), err)
+			return errors.New(gotext.Get("can't remove user dconf database directory: %v", err))
 		}
 		if er := os.RemoveAll(filepath.Join(dbsPath, objectName)); er != nil {
-			return fmt.Errorf(i18n.G("can't remove user dconf binary database: %v"), er)
+			return errors.New(gotext.Get("can't remove user dconf binary database: %v", err))
 		}
 		if err := os.RemoveAll(filepath.Join(profilesPath, objectName)); err != nil {
-			return fmt.Errorf(i18n.G("can't remove user dconf profile: %v"), err)
+			return errors.New(gotext.Get("can't remove user dconf profile: %v", err))
 		}
 		return nil
 	}
@@ -141,7 +141,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			// normalize common user error cases and check gsettings schema signature match.
 			e.Value = normalizeValue(e.Meta, e.Value)
 			if err := checkSignature(e.Meta, e.Value); err != nil {
-				errMsgs = append(errMsgs, fmt.Sprintf(i18n.G("- error on %s: %v"), e.Key, err))
+				errMsgs = append(errMsgs, gotext.Get("- error on %s: %v", e.Key, err))
 				continue
 			}
 
@@ -210,7 +210,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	m.dconfUpdateMu.Unlock()
 	smbsafe.DoneExec()
 	if errExec != nil {
-		err = fmt.Errorf(i18n.G("dconf update failed: %v"), out)
+		err = errors.New(gotext.Get("dconf update failed: %v", out))
 	}
 
 	return nil
@@ -218,7 +218,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 // writeIfChanged will only write to path if content is different from current content.
 func writeIfChanged(path string, content string) (done bool, err error) {
-	defer decorate.OnError(&err, i18n.G("can't save %s"), path)
+	defer decorate.OnError(&err, gotext.Get("can't save %s", path))
 
 	if oldContent, err := os.ReadFile(path); err == nil && string(oldContent) == content {
 		return false, nil
@@ -239,7 +239,7 @@ func writeIfChanged(path string, content string) (done bool, err error) {
 // The adsys system-db should always be the first system-db in the file to enforce their values
 // (upper system-db in the profile wins).
 func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
-	defer decorate.OnError(&err, i18n.G("can't update user profile %s"), profilesPath)
+	defer decorate.OnError(&err, gotext.Get("can't update user profile %s", profilesPath))
 
 	profilePath := filepath.Join(profilesPath, user)
 	log.Debugf(ctx, "Update user profile %s", profilePath)
@@ -430,19 +430,19 @@ func splitOnNonEscaped(v, sep string) []string {
 
 // checkSignature returns an error if the value doesn't match the expected variant signature.
 func checkSignature(meta, value string) (err error) {
-	defer decorate.OnError(&err, i18n.G("error while checking signature"))
+	defer decorate.OnError(&err, gotext.Get("error while checking signature"))
 
 	if meta == "" {
-		return fmt.Errorf(i18n.G("empty signature for %v"), meta)
+		return errors.New(gotext.Get("empty signature for %v", meta))
 	}
 
 	sig, err := dbus.ParseSignature(meta)
 	if err != nil {
-		return fmt.Errorf(i18n.G("%s is not a valid gsettings signature: %v"), meta, err)
+		return errors.New(gotext.Get("%s is not a valid gsettings signature: %v", meta, err))
 	}
 	_, err = dbus.ParseVariant(value, sig)
 	if err != nil {
-		return fmt.Errorf(i18n.G("can't parse %q as %q: %v"), value, meta, err)
+		return errors.New(gotext.Get("can't parse %q as %q: %v", value, meta, err))
 	}
 
 	return nil

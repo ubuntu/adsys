@@ -244,8 +244,6 @@ github.com/sagikazarmark/slog-shim v0.1.0 h1:diDBnUNK9N/354PgrxMywXnAwEr1QZcOr6g
 github.com/sagikazarmark/slog-shim v0.1.0/go.mod h1:SrcSrq8aKtyuqEI1uvTDTK1arOWRIczQRv+GVI1AkeQ=
 github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
 github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
-github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785 h1:PaunR+BhraKSLxt2awQ42zofkP+NKh/VjQ0PjIMk/y4=
-github.com/snapcore/go-gettext v0.0.0-20191107141714-82bbea49e785/go.mod h1:D3SsWAXK7wCCBZu+Vk5hc1EuKj/L3XN1puEMXTU4LrQ=
 github.com/sourcegraph/conc v0.3.0 h1:OQTbbt6P72L20UqAkXXuLOj79LfEanQ+YQFNpLA9ySo=
 github.com/sourcegraph/conc v0.3.0/go.mod h1:Sdozi7LEKbFPqYX2/J+iBAM6HpqSLTASQIKqDmF7Mt0=
 github.com/spf13/afero v1.10.0 h1:EaGW2JJh15aKOejeuJ+wpFSHnbd7GE6Wvp3TsNhb6LY=
@@ -275,8 +273,8 @@ github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae h1:vgGSvdW5Lqg+I1
 github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae/go.mod h1:quDq6Se6jlGwiIKia/itDZxqC5rj6/8OdFyMMAwTxCs=
 github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117 h1:XQpsQG5lqRJlx4mUVHcJvyyc1rdTI9nHvwrdfcuy8aM=
 github.com/ubuntu/decorate v0.0.0-20230125165522-2d5b0a9bb117/go.mod h1:mx0TjbqsaDD9DUT5gA1s3hw47U6RIbbIBfvGzR85K0g=
-github.com/ubuntu/go-i18n v0.0.0-20230830081132-d6654b958899 h1:FquZaRc8X0+ImXSHKrqb4hdzcvlCHhXDNLjxzkwit6Y=
-github.com/ubuntu/go-i18n v0.0.0-20230830081132-d6654b958899/go.mod h1:ZRhdDyx6YkKz/YiMWi0gS3uMCltgdaKz9IpkiNf/GRg=
+github.com/ubuntu/go-i18n v0.0.0-20231113092927-594c1754ca47 h1:CA2dVorxvzdsGtszqhSjyvkrXxZi4bS52ZKvP0Ko634=
+github.com/ubuntu/go-i18n v0.0.0-20231113092927-594c1754ca47/go.mod h1:ZRhdDyx6YkKz/YiMWi0gS3uMCltgdaKz9IpkiNf/GRg=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
