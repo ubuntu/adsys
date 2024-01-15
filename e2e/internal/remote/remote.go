@@ -96,8 +96,10 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	stderrScanner := bufio.NewScanner(stderr)
 	var combinedOutput []string
 	var mu sync.Mutex
+	var wg sync.WaitGroup
 
 	// Use goroutines to read and print both stdout and stderr concurrently
+	wg.Add(2)
 	go func() {
 		for stdoutScanner.Scan() {
 			line := stdoutScanner.Text()
@@ -106,6 +108,7 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 			combinedOutput = append(combinedOutput, line)
 			mu.Unlock()
 		}
+		wg.Done()
 	}()
 	go func() {
 		for stderrScanner.Scan() {
@@ -115,6 +118,7 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 			combinedOutput = append(combinedOutput, line)
 			mu.Unlock()
 		}
+		wg.Done()
 	}()
 
 	waitDone := make(chan error, 1)
@@ -129,6 +133,7 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 		}
 		return nil, fmt.Errorf("command cancelled: %w", ctx.Err())
 	case err := <-waitDone:
+		wg.Wait() // wait for scanners to finish
 		log.Infof("Command %q finished in %s", cmd, time.Since(startTime).String())
 		mu.Lock()
 		defer mu.Unlock()
