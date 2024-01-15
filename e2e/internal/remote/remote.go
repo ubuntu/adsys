@@ -27,24 +27,26 @@ type Client struct {
 }
 
 // NewClient creates a new SSH client.
-// It parses the private key from the given path and establishes a connection to
-// the remote host.
-func NewClient(host string, username string, sshKeyPath string) (Client, error) {
-	privateBytes, err := os.ReadFile(sshKeyPath)
-	if err != nil {
-		return Client{}, err
-	}
-
-	signer, err := ssh.ParsePrivateKey(privateBytes)
-	if err != nil {
-		return Client{}, err
+// It establishes a connection to the remote host using the given authentication.
+// The secret will be treated as a private key if the path exists, otherwise it
+// will be treated as a password.
+func NewClient(host string, username string, secret string) (Client, error) {
+	var authMethod ssh.AuthMethod
+	privateBytes, err := os.ReadFile(secret)
+	if err == nil {
+		signer, err := ssh.ParsePrivateKey(privateBytes)
+		if err != nil {
+			return Client{}, err
+		}
+		authMethod = ssh.PublicKeys(signer)
+	} else {
+		// Could not read file, assuming password authentication
+		authMethod = ssh.Password(secret)
 	}
 
 	config := &ssh.ClientConfig{
 		User: username,
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
-		},
+		Auth: []ssh.AuthMethod{authMethod},
 		// nolint:gosec // This is used for E2E tests where machines are created on the fly
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         10 * time.Second,
@@ -52,7 +54,7 @@ func NewClient(host string, username string, sshKeyPath string) (Client, error) 
 
 	client, err := ssh.Dial("tcp", host+":22", config)
 	if err != nil {
-		log.Fatalf("Failed to dial: %v", err)
+		return Client{}, fmt.Errorf("failed to establish connection to remote host: %w", err)
 	}
 
 	return Client{client}, nil
