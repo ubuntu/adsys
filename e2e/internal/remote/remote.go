@@ -21,6 +21,9 @@ import (
 // commandTimeout is the maximum time a command can run before being cancelled.
 const commandTimeout = 90 * time.Minute
 
+// DomainUserPassword is the password to login as domain users.
+const DomainUserPassword = "supersecretpassword"
+
 // Client represents a remote SSH client.
 type Client struct {
 	client *ssh.Client
