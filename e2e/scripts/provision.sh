@@ -10,9 +10,33 @@ echo "AuthorizedKeysFile /etc/ssh/authorized_keys" >> /etc/ssh/sshd_config
 echo "Configure PAM to create home directories on first login..."
 pam-auth-update --enable mkhomedir
 
+echo "Configure PAM to register user sessions in the systemd control group hierarchy..."
+pam-auth-update --enable systemd
+
+echo "Enabling keyboard-interactive authentication for domain users..."
+rm -rf /etc/ssh/sshd_config.d # this contains overrides that conflict with our changes
+sed -iE 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sed -iE 's/^#\?KbdInteractiveAuthentication.*/KbdInteractiveAuthentication yes/' /etc/ssh/sshd_config
+
+echo "Installing additional required packages..."
+# Work around an issue where the cifs kernel module is not available on some kernel versions
+# ref: https://www.mail-archive.com/kernel-packages@lists.launchpad.net/msg514627.html
+if [[ ! "$(lsmod)" =~ cifs ]]; then
+    DEBIAN_FRONTEND=noninteractive apt-get install -y linux-modules-extra-azure
+    echo "cifs" >> /etc/modules
+fi
+
 echo "Updating DNS resolver to use AD DNS..."
 echo "DNS=10.1.0.4" >> /etc/systemd/resolved.conf
 systemctl restart systemd-resolved
+
+# Work around an issue on Jammy where systemd-networkd times out due to eth0
+# losing connectivity shortly after boot, even though network works fine as
+# reported by Azure.
+if [ "$(lsb_release -cs)" = "jammy" ]; then
+    echo "Disabling systemd-networkd-wait-online.service on jammy..."
+    systemctl mask systemd-networkd-wait-online.service
+fi
 
 rm -f /usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf
 ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
