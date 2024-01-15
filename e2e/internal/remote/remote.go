@@ -23,7 +23,9 @@ const commandTimeout = 90 * time.Minute
 
 // Client represents a remote SSH client.
 type Client struct {
-	*ssh.Client
+	client *ssh.Client
+	config *ssh.ClientConfig
+	host   string
 }
 
 // NewClient creates a new SSH client.
@@ -57,7 +59,16 @@ func NewClient(host string, username string, secret string) (Client, error) {
 		return Client{}, fmt.Errorf("failed to establish connection to remote host: %w", err)
 	}
 
-	return Client{client}, nil
+	return Client{
+		client: client,
+		config: config,
+		host:   host,
+	}, nil
+}
+
+// Close closes the SSH connection.
+func (c *Client) Close() error {
+	return c.client.Close()
 }
 
 // Run runs the given command on the remote host and returns the combined output
@@ -67,7 +78,7 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	defer cancel()
 
 	// Create a session
-	session, err := c.NewSession()
+	session, err := c.client.NewSession()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
@@ -83,7 +94,7 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 		return nil, fmt.Errorf("failed to create stderr pipe: %w", err)
 	}
 
-	log.Infof("Running command %q on remote host %q", cmd, c.RemoteAddr().String())
+	log.Infof("Running command %q on remote host %q", cmd, c.client.RemoteAddr().String())
 
 	// Start the remote command
 	startTime := time.Now()
@@ -148,14 +159,14 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 
 // Upload uploads the given local file to the remote host.
 func (c Client) Upload(localPath string, remotePath string) error {
-	log.Infof("Uploading %q to %q on host %q", localPath, remotePath, c.RemoteAddr().String())
+	log.Infof("Uploading %q to %q on host %q", localPath, remotePath, c.client.RemoteAddr().String())
 	local, err := os.Open(localPath)
 	if err != nil {
 		return err
 	}
 	defer local.Close()
 
-	ftp, err := sftp.NewClient(c.Client,
+	ftp, err := sftp.NewClient(c.client,
 		sftp.UseConcurrentReads(true),
 		sftp.UseConcurrentWrites(true),
 		sftp.MaxConcurrentRequestsPerFile(64),
@@ -178,9 +189,9 @@ func (c Client) Upload(localPath string, remotePath string) error {
 	// Check if the parent directory structure exists, create it if not
 	parentDir := filepath.Dir(remotePath)
 	if _, err := ftp.Stat(parentDir); err != nil && errors.Is(err, os.ErrNotExist) {
-		log.Debugf("Creating directory %q on remote host %q", parentDir, c.RemoteAddr().String())
+		log.Debugf("Creating directory %q on remote host %q", parentDir, c.client.RemoteAddr().String())
 		if err := ftp.MkdirAll(parentDir); err != nil {
-			return fmt.Errorf("failed to create directory %q on remote host %q: %w", parentDir, c.RemoteAddr().String(), err)
+			return fmt.Errorf("failed to create directory %q on remote host %q: %w", parentDir, c.client.RemoteAddr().String(), err)
 		}
 	}
 
@@ -196,4 +207,49 @@ func (c Client) Upload(localPath string, remotePath string) error {
 	}
 	log.Info("File uploaded successfully")
 	return nil
+}
+
+// Reboot reboots the remote host and waits for it to come back online, then
+// reestablishes the SSH connection.
+// It first waits for the host to go offline, then returns an error if the host
+// does not come back online within 1 minute.
+func (c *Client) Reboot() error {
+	log.Infof("Rebooting host %q", c.client.RemoteAddr().String())
+	_, _ = c.Run(context.Background(), "reboot")
+
+	waitDone := make(chan error, 1)
+	go func() {
+		waitDone <- c.client.Wait()
+	}()
+
+	// Sleep a few seconds in case SSH is still available
+	time.Sleep(10 * time.Second)
+
+	// Wait for the host to go offline
+	select {
+	case <-waitDone:
+	case <-time.After(30 * time.Second):
+		return fmt.Errorf("host did not go offline in time")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	// Wait for the host to come back online
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("host %q did not come back online after reboot", c.client.RemoteAddr().String())
+		default:
+			newClient, err := ssh.Dial("tcp", c.host+":22", c.config)
+			if err == nil {
+				log.Infof("Host has rebooted successfully")
+				c.client.Close()
+				c.client = newClient
+
+				return nil
+			}
+			time.Sleep(5 * time.Second)
+		}
+	}
 }
