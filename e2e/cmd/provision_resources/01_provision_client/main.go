@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -149,8 +148,12 @@ func action(ctx context.Context, cmd *command.Command) error {
 	ipAddress := vm.IP
 	id := vm.ID
 
-	// Sleep for a bit to let the VM finish booting
-	time.Sleep(5 * time.Second)
+	// Wait for cloud-init to finish before connecting
+	_, _, err = az.RunCommand(ctx, "vm", "run-command", "invoke",
+		"--ids", id,
+		"--command-id", "RunShellScript",
+		"--scripts", "cloud-init status --wait",
+	)
 
 	client, err := remote.NewClient(ipAddress, "root", sshKey)
 	if err != nil {
