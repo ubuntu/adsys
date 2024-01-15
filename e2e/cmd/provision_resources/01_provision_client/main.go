@@ -167,7 +167,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	hostname := strings.TrimSpace(string(out))
 
-	_, err = client.Run(ctx, "sudo mkdir -p /debs")
+	_, err = client.Run(ctx, "mkdir -p /debs")
 	if err != nil {
 		return fmt.Errorf("failed to create /debs directory on VM: %w", err)
 	}
