@@ -185,6 +185,14 @@ func action(ctx context.Context, cmd *command.Command) error {
 
 	log.Infof("Installing adsys package...")
 	_, err = client.Run(ctx, "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get install -y /debs/*.deb")
+	if err != nil {
+		return fmt.Errorf("failed to install adsys package: %w", err)
+	}
+
+	// TODO: remove this once the packages installed below are MIRed and installed by default with adsys
+	log.Infof("Installing universe packages required for some policy managers...")
+	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-proxy-manager python3-cepces")
+	// Allow errors here on account on packages not being available on the tested Ubuntu version
 
 	cmd.Inventory.IP = ipAddress
 	cmd.Inventory.VMID = id
