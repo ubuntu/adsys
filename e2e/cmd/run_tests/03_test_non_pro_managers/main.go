@@ -43,8 +43,7 @@ The runner must be connected to the ADSys E2E tests VPN.`, filepath.Base(os.Args
 	return cmd.Execute(context.Background())
 }
 
-func validate(_ context.Context, cmd *command.Command) error {
-	var err error
+func validate(_ context.Context, cmd *command.Command) (err error) {
 	sshKey, err = command.ValidateAndExpandPath(cmd.Inventory.SSHKeyPath, command.DefaultSSHKeyPath)
 	if err != nil {
 		return err
