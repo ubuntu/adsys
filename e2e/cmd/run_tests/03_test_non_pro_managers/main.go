@@ -83,7 +83,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	// Assert user GPO policies were applied
-	client, err = remote.NewClient(cmd.Inventory.IP, fmt.Sprintf("%s-usr@warthogs.biz", cmd.Inventory.Hostname), "supersecretpassword")
+	client, err = remote.NewClient(cmd.Inventory.IP, fmt.Sprintf("%s-usr@warthogs.biz", cmd.Inventory.Hostname), remote.DomainUserPassword)
 	if err != nil {
 		return fmt.Errorf("failed to connect to VM: %w", err)
 	}
@@ -103,7 +103,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	// Assert admin GPO policies were applied
-	client, err = remote.NewClient(cmd.Inventory.IP, fmt.Sprintf("%s-adm@warthogs.biz", cmd.Inventory.Hostname), "supersecretpassword")
+	client, err = remote.NewClient(cmd.Inventory.IP, fmt.Sprintf("%s-adm@warthogs.biz", cmd.Inventory.Hostname), remote.DomainUserPassword)
 	if err != nil {
 		return fmt.Errorf("failed to connect to VM: %w", err)
 	}
