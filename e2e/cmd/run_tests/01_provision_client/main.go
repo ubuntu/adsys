@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -58,8 +57,7 @@ This script will:
 	return cmd.Execute(context.Background())
 }
 
-func validate(_ context.Context, _ *command.Command) error {
-	var err error
+func validate(_ context.Context, _ *command.Command) (err error) {
 	sshKey, err = command.ValidateAndExpandPath(sshKey, command.DefaultSSHKeyPath)
 	if err != nil {
 		return err
@@ -149,8 +147,12 @@ func action(ctx context.Context, cmd *command.Command) error {
 	ipAddress := vm.IP
 	id := vm.ID
 
-	// Sleep for a bit to let the VM finish booting
-	time.Sleep(5 * time.Second)
+	// Wait for cloud-init to finish before connecting
+	_, _, err = az.RunCommand(ctx, "vm", "run-command", "invoke",
+		"--ids", id,
+		"--command-id", "RunShellScript",
+		"--scripts", "cloud-init status --wait",
+	)
 
 	client, err := remote.NewClient(ipAddress, "root", sshKey)
 	if err != nil {
@@ -164,7 +166,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	hostname := strings.TrimSpace(string(out))
 
-	_, err = client.Run(ctx, "sudo mkdir -p /debs")
+	_, err = client.Run(ctx, "mkdir -p /debs")
 	if err != nil {
 		return fmt.Errorf("failed to create /debs directory on VM: %w", err)
 	}
@@ -182,6 +184,14 @@ func action(ctx context.Context, cmd *command.Command) error {
 
 	log.Infof("Installing adsys package...")
 	_, err = client.Run(ctx, "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get install -y /debs/*.deb")
+	if err != nil {
+		return fmt.Errorf("failed to install adsys package: %w", err)
+	}
+
+	// TODO: remove this once the packages installed below are MIRed and installed by default with adsys
+	log.Infof("Installing universe packages required for some policy managers...")
+	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-proxy-manager python3-cepces")
+	// Allow errors here on account on packages not being available on the tested Ubuntu version
 
 	cmd.Inventory.IP = ipAddress
 	cmd.Inventory.VMID = id

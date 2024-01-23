@@ -52,6 +52,15 @@ func WithStateTransition(from, to inventory.State) func(*options) {
 	}
 }
 
+// WithRequiredState ensures that the inventory file is in the given state,
+// without a transition being performed.
+func WithRequiredState(state inventory.State) func(*options) {
+	return func(a *options) {
+		a.fromState = state
+		a.toState = state
+	}
+}
+
 // WithValidateFunc sets the validation function for the command.
 func WithValidateFunc(validate cmdFunc) func(*options) {
 	return func(a *options) {

@@ -10,8 +10,8 @@ index d6fb19f2..f9f9fe0c 100644
 +Build-Depends: debhelper-compat (= 12),
                 dh-apport,
                 dh-golang,
--               golang-go (>= 2:1.20~),
-+               golang-1.20-go,
+-               golang-go (>= 2:1.21~),
++               golang-1.21-go,
                 libsmbclient-dev,
                 libdbus-1-dev,
                 libglib2.0-dev,
@@ -23,8 +23,8 @@ index 43646c6a..0708aa3d 100755
  # Tests needing sudo will be skipped automatically
  export ADSYS_SKIP_INTEGRATION_TESTS=1
 
-+# Run with Go 1.20
-+export PATH := /usr/lib/go-1.20/bin/:$(PATH)
++# Run with Go 1.21
++export PATH := /usr/lib/go-1.21/bin/:$(PATH)
 +
  %:
         dh $@ --buildsystem=golang --with=golang,apport

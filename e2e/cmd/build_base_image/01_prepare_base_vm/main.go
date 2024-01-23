@@ -60,8 +60,7 @@ The machine must be connected to the ADSys E2E tests VPN.`, filepath.Base(os.Arg
 	return cmd.Execute(context.Background())
 }
 
-func validate(_ context.Context, _ *command.Command) error {
-	var err error
+func validate(_ context.Context, _ *command.Command) (err error) {
 	sshKey, err = command.ValidateAndExpandPath(sshKey, command.DefaultSSHKeyPath)
 	if err != nil {
 		return err

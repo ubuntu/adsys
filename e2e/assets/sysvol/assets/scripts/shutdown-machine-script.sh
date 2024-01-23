@@ -1,2 +1,2 @@
 #!/usr/bin/sh
-touch /etc/adsys-machine-shutdown
+touch /etc/created-by-adsys-machine-shutdown-script
