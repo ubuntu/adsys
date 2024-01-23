@@ -1,2 +1,2 @@
 #!/usr/bin/sh
-touch /etc/adsys-machine-startup
+touch /etc/created-by-adsys-machine-startup-script

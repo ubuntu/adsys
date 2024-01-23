@@ -1,2 +1,2 @@
 #!/usr/bin/sh
-touch ~/adsys-user-logged-on
+touch ~/created-by-adsys-user-logon-script

@@ -94,10 +94,10 @@ func action(ctx context.Context, cmd *command.Command) error {
 		if _, err := client.Run(ctx, "systemctl stop adsys-machine-scripts"); err != nil {
 			log.Errorf("Teardown: Failed to stop machine scripts service: %v", err)
 		}
-		if _, err := client.Run(ctx, "rm -f /etc/adsys-machine-startup /etc/adsys-machine-shutdown"); err != nil {
+		if _, err := client.Run(ctx, "rm -f /etc/created-by-adsys-machine-startup-script /etc/created-by-adsys-machine-shutdown-script"); err != nil {
 			log.Errorf("Teardown: Failed to remove machine startup/shutdown scripts: %v", err)
 		}
-		if _, err := client.Run(ctx, "rm -f /home/*/adsys-admin-logged-on /home/*/adsys-admin-logged-off /home/*/adsys-user-logged-on"); err != nil {
+		if _, err := client.Run(ctx, "rm -f /home/*/created-by-adsys-admin-logon-script /home/*/created-by-adsys-admin-logoff-script /home/*/created-by-adsys-user-logon-script"); err != nil {
 			log.Errorf("Teardown: Failed to remove user scripts: %v", err)
 		}
 	}()
@@ -147,10 +147,10 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	/// Scripts
-	if err := client.RequireFileExists(ctx, "/etc/adsys-machine-startup"); err != nil {
+	if err := client.RequireFileExists(ctx, "/etc/created-by-adsys-machine-startup-script"); err != nil {
 		return err
 	}
-	if err := client.RequireNoFileExists(ctx, "/etc/adsys-machine-shutdown"); err != nil {
+	if err := client.RequireNoFileExists(ctx, "/etc/created-by-adsys-machine-shutdown-script"); err != nil {
 		return err
 	}
 
@@ -186,7 +186,7 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	if err := client.Reboot(); err != nil {
 		return err
 	}
-	if err := client.RequireFileExists(ctx, "/etc/adsys-machine-shutdown"); err != nil {
+	if err := client.RequireFileExists(ctx, "/etc/created-by-adsys-machine-shutdown-script"); err != nil {
 		return err
 	}
 
@@ -206,7 +206,7 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	}
 
 	/// User scripts
-	if err := client.RequireFileExists(ctx, "adsys-user-logged-on"); err != nil {
+	if err := client.RequireFileExists(ctx, "created-by-adsys-user-logon-script"); err != nil {
 		return err
 	}
 
@@ -229,13 +229,13 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	}
 
 	/// User scripts
-	if err := client.RequireFileExists(ctx, "adsys-user-logged-on"); err != nil {
+	if err := client.RequireFileExists(ctx, "created-by-adsys-user-logon-script"); err != nil {
 		return err
 	}
-	if err := client.RequireFileExists(ctx, "adsys-admin-logged-on"); err != nil {
+	if err := client.RequireFileExists(ctx, "created-by-adsys-admin-logon-script"); err != nil {
 		return err
 	}
-	if err := client.RequireNoFileExists(ctx, "adsys-admin-logged-off"); err != nil {
+	if err := client.RequireNoFileExists(ctx, "created-by-adsys-admin-logoff-script"); err != nil {
 		return err
 	}
 
@@ -243,7 +243,7 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	if _, err := client.Run(ctx, "systemctl --user stop adsys-user-scripts"); err != nil {
 		return err
 	}
-	if err := client.RequireFileExists(ctx, "adsys-admin-logged-off"); err != nil {
+	if err := client.RequireFileExists(ctx, "created-by-adsys-admin-logoff-script"); err != nil {
 		return err
 	}
 

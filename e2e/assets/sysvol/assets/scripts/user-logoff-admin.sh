@@ -1,2 +1,2 @@
 #!/usr/bin/sh
-touch ~/adsys-admin-logged-off
+touch ~/created-by-adsys-admin-logoff-script
