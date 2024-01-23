@@ -28,7 +28,6 @@ On the Windows side, the following roles must be installed and configured:
 * Certification Authority
 * Certificate Enrollment Policy Web Service
 * Certificate Enrollment Web Service
-* Network Device Enrollment Service
 
 ## Rules precedence
 
