@@ -190,7 +190,7 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 		return err
 	}
 
-	// Assert user GPO policies were applied
+	////// Start policies for $HOST-USR@WARTHOGS.BIZ
 	client, err = remote.NewClient(cmd.Inventory.IP, fmt.Sprintf("%s-usr@warthogs.biz", cmd.Inventory.Hostname), remote.DomainUserPassword)
 	if err != nil {
 		return fmt.Errorf("failed to connect to VM: %w", err)
@@ -209,7 +209,9 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	if err := client.RequireFileExists(ctx, "created-by-adsys-user-logon-script"); err != nil {
 		return err
 	}
+	////// End policies for $HOST-USR@WARTHOGS.BIZ
 
+	////// Start policies for $HOST-ADM@WARTHOGS.BIZ
 	// Assert admin GPO policies were applied
 	client, err = remote.NewClient(cmd.Inventory.IP, fmt.Sprintf("%s-adm@warthogs.biz", cmd.Inventory.Hostname), remote.DomainUserPassword)
 	if err != nil {
@@ -246,6 +248,7 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	if err := client.RequireFileExists(ctx, "created-by-adsys-admin-logoff-script"); err != nil {
 		return err
 	}
+	////// End policies for $HOST-ADM@WARTHOGS.BIZ
 
 	return nil
 }
