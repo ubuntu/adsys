@@ -35,6 +35,8 @@ Apply and assert Pro-only policies on the Ubuntu client.
 These policies are configured in the e2e/assets/gpo directory, and described as
 part of the ADSys QA Plan document.
 
+https://docs.google.com/document/d/1dIdhqAfNohapcTgWVVeyG7aSDMrGJekeezmoRdd_JSU/
+
 The Pro token must be set in the ADSYS_PRO_TOKEN environment variable.
 
 This script will:

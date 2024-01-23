@@ -31,6 +31,8 @@ Apply and assert non-Pro policies on the Ubuntu client.
 These policies are configured in the e2e/assets/gpo directory, and described as
 part of the ADSys QA Plan document.
 
+https://docs.google.com/document/d/1dIdhqAfNohapcTgWVVeyG7aSDMrGJekeezmoRdd_JSU/
+
 This script will:
  - reboot the client VM to trigger machine policy application
  - assert machine GPO rules were applied
