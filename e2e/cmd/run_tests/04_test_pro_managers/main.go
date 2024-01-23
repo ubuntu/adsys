@@ -110,8 +110,8 @@ func action(ctx context.Context, cmd *command.Command) error {
 		return fmt.Errorf("failed to confirm client is attached to Ubuntu Pro: %w", err)
 	}
 
-	// Reboot machine to re-apply machine policies
-	if err := client.Reboot(); err != nil {
+	// Start timer-triggered service to update policies
+	if _, err := client.Run(ctx, "systemctl restart adsys-gpo-refresh"); err != nil {
 		return err
 	}
 
@@ -147,7 +147,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	/// Scripts
-	if err := client.RequireFileExists(ctx, "/etc/created-by-adsys-machine-startup-script"); err != nil {
+	if err := client.RequireNoFileExists(ctx, "/etc/created-by-adsys-machine-startup-script"); err != nil {
 		return err
 	}
 	if err := client.RequireNoFileExists(ctx, "/etc/created-by-adsys-machine-shutdown-script"); err != nil {
@@ -182,11 +182,14 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 		}
 	}
 
-	// Reboot and check shutdown script
+	// Reboot and check machine scripts
 	if err := client.Reboot(); err != nil {
 		return err
 	}
 	if err := client.RequireFileExists(ctx, "/etc/created-by-adsys-machine-shutdown-script"); err != nil {
+		return err
+	}
+	if err := client.RequireFileExists(ctx, "/etc/created-by-adsys-machine-startup-script"); err != nil {
 		return err
 	}
 
