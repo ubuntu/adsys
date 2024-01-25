@@ -8,7 +8,7 @@ Automatically enable the "power-saver" profile using power-profiles-daemon if th
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 22.04, 23.04, 23.10, 24.04.
+Supported on Ubuntu 22.04, 23.10, 24.04.
 
 
 
