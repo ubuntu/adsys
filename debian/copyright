@@ -93,10 +93,6 @@ Files: vendor/github.com/sirupsen/*
 Copyright: 2012 Miki Tebeka <miki.tebeka@gmail.com> / 2014 Simon Eskildsen
 License: MIT
 
-Files: vendor/github.com/snapcore/go-gettext/*
-Copyright: 2016 Jonas Obrist
-License: BSD-3
-
 Files: vendor/github.com/spf13/*
 Copyright: 2011 The Go Authors.
            2014-2015 Steve Francia <spf@spf13.com>.
