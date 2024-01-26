@@ -1,3 +1,26 @@
+adsys (0.13.3) noble; urgency=medium
+
+  * Fix cert auto-enroll without NDES (LP: #2051363)
+  * Refresh policy definition files (remove Lunar support)
+  * CI and quality of life changes not impacting package functionality:
+    - Bump github actions to latest:
+      - actions/download-artifact
+      - actions/setup-go
+      - actions/upload-artifact
+  * Update dependencies to latest:
+    - github.com/charmbracelet/bubbles
+    - github.com/charmbracelet/bubbletea
+    - github.com/google/uuid
+    - github.com/spf13/viper
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Fri, 26 Jan 2024 13:57:46 +0200
+
 adsys (0.13.2) noble; urgency=medium
 
   [ Denison Barbosa ]
