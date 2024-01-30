@@ -81,7 +81,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: Auto update vendored Samba code
-          title: Auto update vendored Samba code
+          title: 'deps(vendor): auto update vendored Samba code'
           labels: automated pr
           body-path: samba-patched/pr-body
           add-paths: |
