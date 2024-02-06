@@ -13,6 +13,7 @@ import (
 	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/ubuntu/adsys"
+	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/adsysservice"
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/consts"
@@ -420,6 +421,14 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 		}
 		target = u.Username
 		krb5cc = strings.TrimPrefix(os.Getenv("KRB5CCNAME"), "FILE:")
+		if krb5cc == "" && a.config.DetectCachedTicket {
+			krb5cc, err = ad.TicketPath()
+			// Don't return an error as we might still have a cached ticket
+			// under /run/adsys/krb5cc
+			if err != nil {
+				log.Warningf(a.ctx, "Failed to get ticket path: %v", err)
+			}
+		}
 	}
 
 	stream, err := client.UpdatePolicy(a.ctx, &adsys.UpdatePolicyRequest{
