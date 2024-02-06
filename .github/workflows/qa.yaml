@@ -10,7 +10,7 @@ on:
 env:
   apt_dependencies: >-
     ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
-    libwbclient-dev pkg-config python3-coverage samba sudo
+    libkrb5-dev libwbclient-dev pkg-config python3-coverage samba sudo
     libglib2.0-dev gvfs
 
 jobs:
