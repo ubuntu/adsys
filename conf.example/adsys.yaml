@@ -28,5 +28,11 @@ winbind:
   ad_domain: domain.com
   ad_server: adc.domain.com
 
+# Whether to attempt to determine the krb5 ccache path and export it as the
+# KRB5CCNAME variable if it exists.
+# Only enable this if the authentication stack issues a cached ticket but
+# doesn't export the environment variable.
+detect_cached_ticket: false
+
 # Client only configuration
 client_timeout: 60

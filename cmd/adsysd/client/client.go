@@ -31,9 +31,10 @@ type App struct {
 }
 
 type daemonConfig struct {
-	Verbose       int
-	Socket        string
-	ClientTimeout int `mapstructure:"client_timeout"`
+	Verbose            int
+	Socket             string
+	ClientTimeout      int  `mapstructure:"client_timeout"`
+	DetectCachedTicket bool `mapstructure:"detect_cached_ticket"`
 }
 
 // New registers commands and return a new App.
