@@ -196,8 +196,9 @@ client_timeout: %d`, socket, tc.timeout)), 0600)
 type confOption func(*confOptions)
 
 type confOptions struct {
-	adsysDir string
-	backend  string
+	adsysDir           string
+	backend            string
+	detectCachedTicket bool
 }
 
 func confWithAdsysDir(adsysDir string) confOption {
@@ -209,6 +210,12 @@ func confWithAdsysDir(adsysDir string) confOption {
 func confWithBackend(backend string) confOption {
 	return func(o *confOptions) {
 		o.backend = backend
+	}
+}
+
+func confDetectCachedTicket(detectCachedTicket bool) confOption {
+	return func(o *confOptions) {
+		o.detectCachedTicket = detectCachedTicket
 	}
 }
 
@@ -257,7 +264,9 @@ apparmor_dir: %s/apparmor.d/adsys
 apparmorfs_dir: %s/apparmorfs
 systemunit_dir: %s/systemd/system
 global_trust_dir: %s/share/ca-certificates
-`, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir))
+
+detect_cached_ticket: %t
+`, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.detectCachedTicket))
 
 	testutils.WriteFile(t, confFile, confData, os.ModePerm)
 	require.NoError(t, os.MkdirAll(filepath.Join(args.adsysDir, "dconf"), 0750), "Setup: should create dconf dir")
