@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -308,18 +307,18 @@ func startDaemon(t *testing.T, setupEnv bool, args ...string) (app *daemon.App, 
 	a := daemon.New()
 	a.SetArgs(args...)
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
+	// Error must be channeled back because failed assertions outside the main
+	// test goroutine will cause a panic.
+	errCh := make(chan error)
 	go func() {
-		defer wg.Done()
-		err := a.Run()
-		require.NoError(t, err, "Run should exits without any error")
+		errCh <- a.Run()
+		close(errCh)
 	}()
 	a.WaitReady()
 	time.Sleep(50 * time.Millisecond)
 
 	return a, func() {
-		wg.Wait()
+		require.NoError(t, <-errCh, "Run should exit without any errors")
 	}
 }
 
