@@ -307,16 +307,16 @@ func startDaemon(t *testing.T, setupEnv bool, args ...string) (app *daemon.App, 
 	a := daemon.New()
 	a.SetArgs(args...)
 
-	ch := make(chan error)
+	errCh := make(chan error)
 	go func() {
-		ch <- a.Run()
-		close(ch)
+		errCh <- a.Run()
+		close(errCh)
 	}()
 	a.WaitReady()
 	time.Sleep(50 * time.Millisecond)
 
 	return a, func() {
-		require.NoError(t, <-ch, "Run should exit without any errors")
+		require.NoError(t, <-errCh, "Run should exit without any errors")
 	}
 }
 
