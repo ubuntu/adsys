@@ -78,6 +78,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           file: /tmp/coverage.combined.out
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   adwatchd-tests:
     name: Windows tests for adwatchd
