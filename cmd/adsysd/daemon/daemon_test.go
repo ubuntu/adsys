@@ -307,6 +307,8 @@ func startDaemon(t *testing.T, setupEnv bool, args ...string) (app *daemon.App, 
 	a := daemon.New()
 	a.SetArgs(args...)
 
+	// Error must be channeled back because failed assertions outside the main
+	// test goroutine will cause a panic.
 	errCh := make(chan error)
 	go func() {
 		errCh <- a.Run()
