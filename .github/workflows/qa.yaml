@@ -68,7 +68,9 @@ jobs:
           sudo -E $(which go) test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=set $SUDO_PACKAGES
 
           # Combine coverage files, and filter out test utilities and generated files
-          grep -hv -e "testutils" -e "pb.go:" -e "/e2e/" /tmp/coverage.out /tmp/coverage.sudo.out > /tmp/coverage.combined.out
+          cod_cov_dir="$(pwd)/coverage/codecov"
+          mkdir -p "${cod_cov_dir}"
+          grep -hv -e "testutils" -e "pb.go:" -e "/e2e/" /tmp/coverage.out /tmp/coverage.sudo.out > "${cod_cov_dir}/coverage.combined.out"
       - name: Run tests (with race detector)
         run: |
           go test -race ./...
@@ -77,7 +79,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          file: /tmp/coverage.combined.out
+          directory: ./coverage/codecov
           token: ${{ secrets.CODECOV_TOKEN }}
 
   adwatchd-tests:
