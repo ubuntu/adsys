@@ -46,6 +46,7 @@ func TestSSSD(t *testing.T) {
 		"Can handle special DNS domain characters": {sssdConf: "special-characters.example.com"},
 		"SSSd domain can not match ad domain":      {sssdConf: "domain-no-match-addomain"},
 		"Default domain suffix is read":            {sssdConf: "example.com-with-default-domain-suffix"},
+		"Use domain from section if no ad_domain":  {sssdConf: "example.com-without-ad_domain"},
 
 		// Special cases for config parameters
 		"Regular config, with cache dir": {sssdConf: "example.com", sssdCacheDir: "/some/specific/cachedir"},
@@ -70,6 +71,7 @@ func TestSSSD(t *testing.T) {
 		"Error on empty domains field":         {sssdConf: "empty-domains", wantErr: true},
 		"Error on no sssd section":             {sssdConf: "no-sssd-section", wantErr: true},
 		"Error on sssd domain section missing": {sssdConf: "sssddomain-missing", wantErr: true},
+		"Error on sssd domain empty section":   {sssdConf: "sssddomain-empty-section", wantErr: true},
 	}
 
 	for name, tc := range tests {
