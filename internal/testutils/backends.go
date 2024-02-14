@@ -69,3 +69,29 @@ func BuildWinbindMock(t *testing.T, goPkgPath string) string {
 
 	return libPath
 }
+
+// BuildKrb5Mock takes the path to the location of the ad internal package and
+// builds the libkrb5 mock for use with package or integration tests.
+func BuildKrb5Mock(t *testing.T, goPkgPath string) string {
+	t.Helper()
+
+	filesToCompile := []string{filepath.Join(goPkgPath, "mock", "libkrb5_mock.c")}
+
+	// We only compile the krb5_init_context mock for package tests, as on
+	// integration tests it interferes with the real krb5 library in samba.
+	if goPkgPath == "." {
+		filesToCompile = append(filesToCompile, filepath.Join(goPkgPath, "mock", "libkrb5_package_tests_mock.c"))
+	}
+
+	// Build mock libkrb5
+	tmpdir := t.TempDir()
+	libPath := filepath.Join(tmpdir, "libkrb5.so")
+	args := []string{"-fPIC", "-shared"}
+	args = append(args, filesToCompile...)
+	args = append(args, "-o", libPath)
+	// #nosec G204: this is only for tests, under controlled args
+	out, err := exec.Command("gcc", args...).CombinedOutput()
+	require.NoError(t, err, "failed to build mock libkrb5: ", string(out))
+
+	return libPath
+}

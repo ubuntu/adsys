@@ -215,8 +215,11 @@ func TestPolicyUpdate(t *testing.T) {
 		addPaths            []string
 		readOnlyDirs        []string
 		winbindMockBehavior string
+		krb5MockBehavior    string
 		purge               bool
 		missingCertmonger   bool
+		noExportKrb5cc      bool
+		detectCachedTicket  bool
 
 		wantErr bool
 	}{
@@ -227,6 +230,33 @@ func TestPolicyUpdate(t *testing.T) {
 		"Current user, first time with winbind backend": {
 			backend:   "winbind",
 			initState: "localhost-uptodate",
+		},
+		"Current user, KRB5CCNAME is not exported but present": {
+			initState:          "localhost-uptodate",
+			noExportKrb5cc:     true,
+			detectCachedTicket: true,
+			krb5MockBehavior:   "return_ccache:%s",
+		},
+		"Current user, libkrb5 not used if KRB5CCNAME is present": {
+			initState:          "localhost-uptodate",
+			detectCachedTicket: true,
+			krb5MockBehavior:   "return_ccache:%s/maybebadvalue",
+		},
+		"Current user, libkrb5 not used if setting not enabled": {
+			initState:        "localhost-uptodate",
+			krb5MockBehavior: "return_ccache:%s/maybebadvalue",
+		},
+		"Current user, librkb5 returns error but symlink is present": {
+			initState:          "localhost-uptodate",
+			detectCachedTicket: true,
+			noExportKrb5cc:     true,
+			krb5MockBehavior:   "return_empty_ccache",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:          currentUser + ".krb5",
+					adsysSymlink: currentUser,
+				},
+			},
 		},
 		"Other user, first time": {
 			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
@@ -871,6 +901,27 @@ func TestPolicyUpdate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		// Krb5 library error cases
+		"Error when libkrb5 ccache not present on disk": {
+			initState:          "localhost-uptodate",
+			noExportKrb5cc:     true,
+			detectCachedTicket: true,
+			krb5MockBehavior:   "return_ccache:%s/not_present",
+			wantErr:            true,
+		},
+		"Error when libkrb5 returns null value": {
+			initState:          "localhost-uptodate",
+			noExportKrb5cc:     true,
+			detectCachedTicket: true,
+			krb5MockBehavior:   "return_null_ccache",
+			wantErr:            true,
+		},
+		"Error when cached ticket setting not enabled": {
+			initState:        "localhost-uptodate",
+			noExportKrb5cc:   true,
+			krb5MockBehavior: "return_ccache:%s",
+			wantErr:          true,
+		},
 		// Incompatible options
 		"Error on all and specific user requested": {
 			args:       []string{"--all", "userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
@@ -1078,10 +1129,19 @@ func TestPolicyUpdate(t *testing.T) {
 				} else {
 					tc.krb5ccname = fmt.Sprintf("FILE:%s/%s", krb5dir, tc.krb5ccname)
 				}
-				t.Setenv("KRB5CCNAME", tc.krb5ccname)
+				if !tc.noExportKrb5cc {
+					t.Setenv("KRB5CCNAME", tc.krb5ccname)
+				}
 			}
 
-			conf := createConf(t, confWithAdsysDir(adsysDir), confWithBackend(tc.backend))
+			if tc.krb5MockBehavior != "" {
+				if strings.Contains(tc.krb5MockBehavior, "return_ccache") {
+					tc.krb5MockBehavior = fmt.Sprintf(tc.krb5MockBehavior, tc.krb5ccname)
+				}
+				t.Setenv("ADSYS_KRB5_BEHAVIOR", tc.krb5MockBehavior)
+			}
+
+			conf := createConf(t, confWithAdsysDir(adsysDir), confWithBackend(tc.backend), confDetectCachedTicket(tc.detectCachedTicket))
 			if tc.sssdConf != "" {
 				content, err := os.ReadFile(conf)
 				require.NoError(t, err, "Setup: can’t read configuration file")
@@ -1243,6 +1303,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 	require.NoError(t, err, "libnss-wrapper is not installed on disk, either skip integration tests or install it")
 
 	mockWinbindLibPath := testutils.BuildWinbindMock(t, filepath.Join(rootProjectDir, "internal/ad/backends/winbind"))
+	mockKrb5LibPath := testutils.BuildKrb5Mock(t, filepath.Join(rootProjectDir, "internal/ad"))
 
 	var subArgs []string
 	// We are going to only reexec ourself: only take options (without -run)
@@ -1288,7 +1349,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		fmt.Sprintf("PYTHONPATH=%s", admock),
 
 		// override user and host database
-		fmt.Sprintf("LD_PRELOAD=libnss_wrapper.so:%s", mockWinbindLibPath),
+		fmt.Sprintf("LD_PRELOAD=libnss_wrapper.so:%s:%s", mockWinbindLibPath, mockKrb5LibPath),
 		fmt.Sprintf("NSS_WRAPPER_PASSWD=%s", passwd),
 		"NSS_WRAPPER_GROUP=/etc/group",
 	)
