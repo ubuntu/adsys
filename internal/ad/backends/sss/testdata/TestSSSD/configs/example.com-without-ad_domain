@@ -1,0 +1,5 @@
+[sssd]
+domains = example.com
+
+[domain/example.com]
+id_provider = ad

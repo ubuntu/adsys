@@ -59,9 +59,14 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 	if sssdDomain == "" {
 		return SSS{}, errors.New(gotext.Get("failed to find default sssd domain in sssd.conf"))
 	}
-	domain := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_domain").String()
+	domainSection := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain))
+	if len(domainSection.KeyStrings()) == 0 {
+		return SSS{}, errors.New(gotext.Get("could not find AD domain section corresponding to %q, or the section is empty", sssdDomain))
+	}
+	domain := domainSection.Key("ad_domain").String()
 	if domain == "" {
-		return SSS{}, errors.New(gotext.Get("could not find AD domain name corresponding to %q", sssdDomain))
+		// If no ad_domain is found, use the domain from the main section
+		domain = sssdDomain
 	}
 
 	if defaultDomainSuffix == "" {
