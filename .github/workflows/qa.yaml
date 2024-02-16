@@ -30,6 +30,7 @@ jobs:
         with:
           golangci-lint-configfile: ".golangci-ci.yaml"
           tools-directory: "tools"
+          generate-diff-paths-to-ignore: po/* docs/**/*.md README.md
       - name: C code formatting
         uses: jidicula/clang-format-action@v4.11.0
         with:
