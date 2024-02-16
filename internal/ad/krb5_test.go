@@ -28,7 +28,8 @@ func TestTicketPath(t *testing.T) {
 		krb5Behavior string
 		ccacheIsDir  bool
 
-		wantErr bool
+		wantErr     bool
+		wantErrType error
 	}{
 		"Lookup is successful":                 {krb5Behavior: "return_ccache:FILE:%s"},
 		"Allow ccache without FILE identifier": {krb5Behavior: "return_ccache:%s"},
@@ -38,7 +39,7 @@ func TestTicketPath(t *testing.T) {
 		"Error when initializing context":       {krb5Behavior: "error_initializing_context", wantErr: true},
 		"Error on empty ticket path":            {krb5Behavior: "return_empty_ccache", wantErr: true},
 		"Error on NULL ticket path":             {krb5Behavior: "return_null_ccache", wantErr: true},
-		"Error on non-FILE ccache":              {krb5Behavior: "return_memory_ccache", wantErr: true},
+		"Error on non-FILE ccache":              {krb5Behavior: "return_memory_ccache", wantErrType: ad.ErrTicketNotPresent},
 	}
 
 	for name, tc := range tests {
@@ -61,8 +62,11 @@ func TestTicketPath(t *testing.T) {
 			require.NoError(t, err, "Setup: Failed to create path to ticket cache")
 
 			ticketPath, err := ad.TicketPath()
-			if tc.wantErr {
+			if tc.wantErr || tc.wantErrType != nil {
 				require.Error(t, err, "TicketPath should have errored out")
+				if tc.wantErrType != nil {
+					require.ErrorIs(t, err, tc.wantErrType, "TicketPath should have returned the expected error type")
+				}
 				return
 			}
 			require.NoError(t, err, "Call to TicketPath failed")
