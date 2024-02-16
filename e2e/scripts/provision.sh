@@ -14,7 +14,6 @@ echo "Configure PAM to register user sessions in the systemd control group hiera
 pam-auth-update --enable systemd
 
 echo "Enabling keyboard-interactive authentication for domain users..."
-rm -rf /etc/ssh/sshd_config.d # this contains overrides that conflict with our changes
 sed -iE 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
 sed -iE 's/^#\?KbdInteractiveAuthentication.*/KbdInteractiveAuthentication yes/' /etc/ssh/sshd_config
 
