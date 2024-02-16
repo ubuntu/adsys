@@ -2,6 +2,7 @@ package remote
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -29,6 +30,29 @@ func (c Client) RequireContains(ctx context.Context, cmd string, expected string
 
 	if !strings.Contains(strings.TrimSpace(string(out)), expected) {
 		return fmt.Errorf("expected %q to include %q", expected, string(out))
+	}
+
+	return nil
+}
+
+// RequireEmpty runs the given command and returns an error if the output is not empty.
+func (c Client) RequireEmpty(ctx context.Context, cmd string) error {
+	out, err := c.Run(ctx, cmd)
+	if err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(string(out)) != "" {
+		return fmt.Errorf("expected empty output, got %q", string(out))
+	}
+
+	return nil
+}
+
+// RequireNotEmpty runs the given command and returns an error if the output is empty.
+func (c Client) RequireNotEmpty(ctx context.Context, cmd string) error {
+	if err := c.RequireEmpty(ctx, cmd); err == nil {
+		return errors.New("expected non-empty output")
 	}
 
 	return nil
