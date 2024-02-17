@@ -1248,6 +1248,77 @@ func TestPolicyDebugScriptDump(t *testing.T) {
 	}
 }
 
+func TestPolicyDebugTicketPath(t *testing.T) {
+	tests := map[string]struct {
+		username string
+
+		configDisabled bool
+		pathNotPresent bool
+		pathIsDir      bool
+
+		wantOut string
+		wantErr bool
+	}{
+		"Return path for current explicit user": {},
+		"Return path for current implicit user": {username: "-"},
+
+		// No-op cases (return no error and no output)
+		"No-op when path not present on disk":        {pathNotPresent: true},
+		"No-op when detect_cached_ticket is not set": {configDisabled: true},
+
+		// Error cases
+		"Error when passed an invalid user":   {username: "invaliduser", wantErr: true},
+		"Error if ticket path is a directory": {pathIsDir: true, wantErr: true},
+	}
+	for name, tc := range tests {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			// Empty username means current user
+			if tc.username == "" {
+				u, err := user.Current()
+				require.NoError(t, err, "Setup: could not get current user")
+				tc.username = u.Username
+			}
+			// "-" username means empty argument, current user is inferred
+			if tc.username == "-" {
+				tc.username = ""
+			}
+
+			// Ensure we start and finish the test with a clean slate on disk
+			uid := os.Getuid()
+			krb5ccname := filepath.Join(os.TempDir(), fmt.Sprintf("krb5cc_%d", uid))
+			err := os.RemoveAll(krb5ccname)
+			require.NoError(t, err, "Setup: could not remove ticket path")
+			t.Cleanup(func() {
+				err := os.RemoveAll(krb5ccname)
+				require.NoError(t, err, "Teardown: could not remove ticket path")
+			})
+
+			if tc.pathIsDir {
+				err := os.MkdirAll(krb5ccname, 0700)
+				require.NoError(t, err, "Setup: could not create ticket directory")
+			} else if !tc.pathNotPresent {
+				err := os.WriteFile(krb5ccname, []byte("Some ticket content"), 0600)
+				require.NoError(t, err, "Setup: could not write ticket content")
+				tc.wantOut = krb5ccname + "\n"
+			}
+
+			if tc.configDisabled {
+				tc.wantOut = ""
+			}
+
+			conf := createConf(t, confDetectCachedTicket(!tc.configDisabled))
+			out, err := runClient(t, conf, "policy", "debug", "ticket-path", tc.username)
+			if tc.wantErr {
+				require.Error(t, err, "command should exit with an error")
+				return
+			}
+			require.NoError(t, err, "command should exit with no error")
+			require.Equal(t, tc.wantOut, out, "command output should match")
+		})
+	}
+}
+
 func modifyAndAddUsers(t *testing.T, new string, users ...string) (passwd string) {
 	t.Helper()
 	dest := filepath.Join(t.TempDir(), "passwd")
