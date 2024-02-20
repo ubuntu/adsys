@@ -56,6 +56,11 @@ jobs:
     env:
       AD_PASSWORD: ${{ secrets.AD_PASSWORD }}
     steps:
+      - name: Install required dependencies
+        run: |
+          sudo apt-get update
+          # Required for the XML to POL conversion
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-samba
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -69,8 +74,7 @@ jobs:
           echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/adsys-e2e.pem
           chmod 600 ~/.ssh/adsys-e2e.pem
       - name: Build adsys deb
-        run: |
-          go run ./e2e/cmd/provision_resources/00_build_adsys_deb --codename ${{ matrix.codename }}
+        run: go run ./e2e/cmd/run_tests/00_build_adsys_deb --codename ${{ matrix.codename }}
       - name: Set up VPN connection
         uses: ./.github/actions/azure-sstpc-vpn
         with:
@@ -79,8 +83,15 @@ jobs:
           cert: ${{ secrets.VPN_CERT }}
           key: ${{ secrets.VPN_KEY }}
       - name: Provision client VM
-        run: |
-          go run ./e2e/cmd/provision_resources/01_provision_client
+        run: go run ./e2e/cmd/run_tests/01_provision_client
+      - name: Provision AD server
+        run: go run ./e2e/cmd/run_tests/02_provision_ad
+      - name: 'Test: non-Pro managers'
+        run: go run ./e2e/cmd/run_tests/03_test_non_pro_managers
+      - name: 'Test: Pro managers'
+        run: go run ./e2e/cmd/run_tests/04_test_pro_managers
+      - name: 'Test: PAM and Kerberos ticket cache'
+        run: go run ./e2e/cmd/run_tests/05_test_pam_krb5cc
       - name: Deprovision resources
         if: ${{ always() }}
         run: |
