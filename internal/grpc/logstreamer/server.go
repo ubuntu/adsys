@@ -27,8 +27,8 @@ type logContext struct {
 // It will use serverLogger to log locally the same messages, prefixing by the request ID.
 // It will use ReportCaller value from localLogger to decide if we print the callstack (first frame outside
 // of that package).
-func StreamServerInterceptor(localLogger *logrus.Logger) func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+func StreamServerInterceptor(localLogger *logrus.Logger) func(srv interface{}, ss grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv interface{}, ss grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		clientID, withCaller, err := extractMetaFromContext(ss.Context())
 		if err != nil {
 			return err

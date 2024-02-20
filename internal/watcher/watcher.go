@@ -312,7 +312,7 @@ func watchSubDirs(ctx context.Context, fsWatcher *fsnotify.Watcher, path string)
 	defer decorate.OnError(&err, gotext.Get("can't watch directory and children of %s", path))
 	log.Debug(ctx, gotext.Get("Watching %s and children", path))
 
-	err = filepath.WalkDir(path, func(p string, d os.DirEntry, err error) error {
+	err = filepath.WalkDir(path, func(p string, _ os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
