@@ -90,7 +90,7 @@ func TestStreamClient(t *testing.T) {
 		wrappedCtx := context.WithValue(ctx, keyCtxType("second"), 44)
 		return streamer(wrappedCtx, desc, cc, method, wrappedOpts...)
 	}
-	streamer := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	streamer := func(ctx context.Context, desc *grpc.StreamDesc, _ *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		require.Equal(t, someServiceName, method, "streamer must know someService")
 		require.Equal(t, fakeStreamDesc, desc, "streamer must see the right StreamDesc")
 

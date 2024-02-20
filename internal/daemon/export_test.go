@@ -20,7 +20,7 @@ func WithSystemdSdNotifier(f func(unsetEnvironment bool, state string) (bool, er
 }
 
 func FailingOption() func(o *options) error {
-	return func(o *options) error {
+	return func(_ *options) error {
 		return errors.New("failing option")
 	}
 }

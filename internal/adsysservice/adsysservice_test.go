@@ -179,7 +179,7 @@ func TestMain(m *testing.M) {
 				Value:    uint64(1234),
 				Writable: false,
 				Emit:     prop.EmitTrue,
-				Callback: func(c *prop.Change) *dbus.Error {
+				Callback: func(_ *prop.Change) *dbus.Error {
 					return nil
 				},
 			},

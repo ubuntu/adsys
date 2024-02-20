@@ -61,7 +61,7 @@ func TestChildRecvMsgAndHandlerCalled(t *testing.T) {
 			var callHandlerNum int
 			var loggerStream grpc.ServerStream
 
-			var handler grpc.StreamHandler = func(srv interface{}, stream grpc.ServerStream) error {
+			var handler grpc.StreamHandler = func(_ interface{}, stream grpc.ServerStream) error {
 				loggerStream = stream
 				callHandlerNum++
 				var err error
