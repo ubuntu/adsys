@@ -17,7 +17,7 @@ func (a *App) installVersion() {
 		Short:             gotext.Get("Returns version of client and service"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
-		RunE:              func(cmd *cobra.Command, args []string) error { return a.getVersion() },
+		RunE:              func(_ *cobra.Command, _ []string) error { return a.getVersion() },
 	}
 	a.rootCmd.AddCommand(cmd)
 }

@@ -18,7 +18,7 @@ func NoCmd(_ *cobra.Command, _ []string) error {
 
 // ZeroOrNArgs returns an error if there are not 0 or exactly N arguments for the given command.
 func ZeroOrNArgs(n int) cobra.PositionalArgs {
-	return func(cmd *cobra.Command, args []string) error {
+	return func(_ *cobra.Command, args []string) error {
 		if len(args) != 0 && len(args) != n {
 			return fmt.Errorf("requires either no arguments or exactly %d, only received %d", n, len(args))
 		}

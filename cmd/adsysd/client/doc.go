@@ -17,7 +17,7 @@ func (a *App) installDoc() {
 		Use:   "doc [CHAPTER]",
 		Short: gotext.Get("Documentation"),
 		Args:  cobra.MaximumNArgs(1),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
@@ -38,7 +38,7 @@ func (a *App) installDoc() {
 			}
 			return r.GetChapters(), cobra.ShellCompDirectiveNoFileComp
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			var chapter string
 			if len(args) > 0 {
 				chapter = args[0]

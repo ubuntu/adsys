@@ -13,7 +13,7 @@ func (a *App) installMount() {
 		Short:  "Mount the locations listed in the specified file for the current user",
 		Args:   cobra.ExactArgs(1),
 		Hidden: true,
-		RunE:   func(cmd *cobra.Command, args []string) error { return runMounts(args[0]) },
+		RunE:   func(_ *cobra.Command, args []string) error { return runMounts(args[0]) },
 	}
 	a.rootCmd.AddCommand(cmd)
 }

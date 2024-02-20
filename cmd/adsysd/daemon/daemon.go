@@ -65,7 +65,7 @@ func New() *App {
 		Use:   fmt.Sprintf("%s COMMAND", CmdName),
 		Short: gotext.Get("AD integration daemon"),
 		Long:  gotext.Get(`Active Directory integration bridging toolset daemon.`),
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
 			// command parsing has been successful. Returns runtime (or configuration) error now and so, don’t print usage.
 			a.rootCmd.SilenceUsage = true
 			err := config.Init("adsys", a.rootCmd, a.viper, func(refreshed bool) error {
@@ -110,7 +110,7 @@ func New() *App {
 			return err
 		},
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			adsys, err := adsysservice.New(context.Background(),
 				adsysservice.WithCacheDir(a.config.CacheDir),
 				adsysservice.WithStateDir(a.config.StateDir),

@@ -68,7 +68,7 @@ func New(opts ...option) *App {
 		Short: gotext.Get("AD watch daemon"),
 		Long:  gotext.Get(`Watch directories for changes and bump the relevant GPT.ini versions.`),
 		Args:  cobra.NoArgs,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// Command parsing has been successful. Returns runtime (or
 			// configuration) error now and so, don't print usage.
 			cmd.SilenceUsage = true
@@ -155,7 +155,7 @@ func New(opts ...option) *App {
 			return nil
 		},
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			var prevConfigFile string
 
 			// Check to see if adwatchd is already installed and get its config file.
