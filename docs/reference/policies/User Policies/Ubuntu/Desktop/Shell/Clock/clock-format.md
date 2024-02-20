@@ -4,10 +4,7 @@ Whether the clock displays in 24h or 12h format
 
 - Type: dconf
 - Key: /org/gnome/desktop/interface/clock-format
-- Default for 20.04: '24h'
-- Default for 22.04: '24h'
-- Default for 23.10: '24h'
-- Default for 24.04: '12h'
+- Default: '24h'
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
