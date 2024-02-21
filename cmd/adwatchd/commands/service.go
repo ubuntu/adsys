@@ -37,7 +37,7 @@ func (a *App) serviceStart() *cobra.Command {
 		Short: gotext.Get("Starts the service"),
 		Long:  gotext.Get("Starts the %s service.", watchdconfig.CmdName),
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return a.service.Start(context.Background())
 		},
 	}
@@ -51,7 +51,7 @@ func (a *App) serviceStop() *cobra.Command {
 		Short: gotext.Get("Stops the service"),
 		Long:  gotext.Get("Stops the %s service.", watchdconfig.CmdName),
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return a.service.Stop(context.Background())
 		},
 	}
@@ -65,7 +65,7 @@ func (a *App) serviceRestart() *cobra.Command {
 		Short: gotext.Get("Restarts the service"),
 		Long:  gotext.Get("Restarts the %s service.", watchdconfig.CmdName),
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return a.service.Restart(context.Background())
 		},
 	}
@@ -79,7 +79,7 @@ func (a *App) serviceStatus() *cobra.Command {
 		Short: gotext.Get("Returns service status"),
 		Long:  gotext.Get("Returns the status of the %s service.", watchdconfig.CmdName),
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			status, err := a.service.Status(context.Background())
 			if err != nil {
 				return err
@@ -102,7 +102,7 @@ func (a *App) serviceInstall() *cobra.Command {
 The service will be installed as a Windows service.
 `, watchdconfig.CmdName),
 		Args: cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return a.service.Install(context.Background())
 		},
 	}
@@ -118,7 +118,7 @@ func (a *App) serviceUninstall() *cobra.Command {
 		Short: gotext.Get("Uninstalls the service"),
 		Long:  gotext.Get("Uninstalls the %s service.", watchdconfig.CmdName),
 		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return a.service.Uninstall(context.Background())
 		},
 	}

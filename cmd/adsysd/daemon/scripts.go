@@ -18,7 +18,7 @@ func (a *App) installRunScripts() {
 		Short:  gotext.Get("Runs scripts in the given subdirectory"),
 		Args:   cobra.ExactArgs(1),
 		Hidden: true,
-		RunE:   func(cmd *cobra.Command, args []string) error { return runScripts(args[0], *allowOrderMissing) },
+		RunE:   func(_ *cobra.Command, args []string) error { return runScripts(args[0], *allowOrderMissing) },
 	}
 	allowOrderMissing = cmd.Flags().BoolP("allow-order-missing", "", false, gotext.Get("allow ORDER_FILE to be missing once the scripts are ready."))
 	a.rootCmd.AddCommand(cmd)

@@ -28,7 +28,7 @@ func (a *App) installService() {
 		Short:             gotext.Get("Print service logs"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
-		RunE:              func(cmd *cobra.Command, args []string) error { return a.serviceCat() },
+		RunE:              func(_ *cobra.Command, _ []string) error { return a.serviceCat() },
 	}
 	mainCmd.AddCommand(cmd)
 
@@ -37,7 +37,7 @@ func (a *App) installService() {
 		Short:             gotext.Get("Print service status"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
-		RunE:              func(cmd *cobra.Command, args []string) error { return a.getStatus() },
+		RunE:              func(_ *cobra.Command, _ []string) error { return a.getStatus() },
 	}
 	mainCmd.AddCommand(cmd)
 
@@ -47,7 +47,7 @@ func (a *App) installService() {
 		Short:             gotext.Get("Requests to stop the service once all connections are done"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
-		RunE:              func(cmd *cobra.Command, args []string) error { return a.serviceStop(*stopForce) },
+		RunE:              func(_ *cobra.Command, _ []string) error { return a.serviceStop(*stopForce) },
 	}
 	stopForce = cmd.Flags().BoolP("force", "f", false, gotext.Get("force will shut it down immediately and drop existing connections."))
 	mainCmd.AddCommand(cmd)

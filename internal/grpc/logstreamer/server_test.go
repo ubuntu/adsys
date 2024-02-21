@@ -44,7 +44,7 @@ func TestStreamServerInterceptor(t *testing.T) {
 
 	callOrder := 1
 	var handlerCalled int
-	handler := func(srv interface{}, stream grpc.ServerStream) error {
+	handler := func(_ interface{}, _ grpc.ServerStream) error {
 		handlerCalled = callOrder
 		callOrder++
 		return nil
@@ -70,7 +70,7 @@ func TestStreamServerInterceptorSendLogsFails(t *testing.T) {
 
 	callOrder := 1
 	var handlerCalled int
-	handler := func(srv interface{}, stream grpc.ServerStream) error {
+	handler := func(_ interface{}, _ grpc.ServerStream) error {
 		handlerCalled = callOrder
 		callOrder++
 		return nil
@@ -115,7 +115,7 @@ func TestStreamServerInterceptorLoggerInvalidMetadata(t *testing.T) {
 
 			callOrder := 1
 			var handlerCalled int
-			handler := func(srv interface{}, stream grpc.ServerStream) error {
+			handler := func(_ interface{}, _ grpc.ServerStream) error {
 				handlerCalled = callOrder
 				callOrder++
 				return nil
@@ -168,7 +168,7 @@ func msgContains(t *testing.T, expected string, msg interface{}, description str
 
 func createLogStream(t *testing.T, level logrus.Level, callerForLocal, callerForRemote bool, sendError error) (stream grpc.ServerStream, localLogs func() string, remoteLogs func() string) {
 	t.Helper()
-	handler := func(srv interface{}, s grpc.ServerStream) error {
+	handler := func(_ interface{}, s grpc.ServerStream) error {
 		stream = s
 		return nil
 	}

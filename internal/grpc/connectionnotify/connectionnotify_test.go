@@ -28,7 +28,7 @@ func TestNoNotification(t *testing.T) {
 	pingued, s := struct{}{}, struct{}{}
 
 	var handlerCalled int
-	handler := func(srv interface{}, stream grpc.ServerStream) error {
+	handler := func(_ interface{}, _ grpc.ServerStream) error {
 		handlerCalled = callOrder
 		callOrder++
 		return nil
@@ -59,7 +59,7 @@ func TestNewConnectionNotification(t *testing.T) {
 	s := struct{}{}
 
 	var handlerCalled int
-	handler := func(srv interface{}, stream grpc.ServerStream) error {
+	handler := func(_ interface{}, _ grpc.ServerStream) error {
 		handlerCalled = callOrder
 		callOrder++
 
@@ -92,7 +92,7 @@ func TestDoneConnectionNotification(t *testing.T) {
 	s := struct{}{}
 
 	var handlerCalled int
-	handler := func(srv interface{}, stream grpc.ServerStream) error {
+	handler := func(_ interface{}, _ grpc.ServerStream) error {
 		handlerCalled = callOrder
 		callOrder++
 
@@ -111,7 +111,7 @@ func TestErrorFromHandlerReturned(t *testing.T) {
 
 	pingued, s := struct{}{}, struct{}{}
 
-	handler := func(srv interface{}, stream grpc.ServerStream) error {
+	handler := func(_ interface{}, _ grpc.ServerStream) error {
 		return errors.New("Any error")
 	}
 
@@ -124,7 +124,7 @@ func TestErrorOnNilStream(t *testing.T) {
 
 	pingued, s := struct{}{}, struct{}{}
 
-	handler := func(srv interface{}, stream grpc.ServerStream) error {
+	handler := func(_ interface{}, _ grpc.ServerStream) error {
 		return nil
 	}
 

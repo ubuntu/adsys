@@ -146,7 +146,7 @@ func TestRecvLogMsg(t *testing.T) {
 				wantErrRecvMsg: tc.errRecv,
 			}
 
-			streamCreation := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+			streamCreation := func(_ context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 				return s, nil
 			}
 			c, err := log.StreamClientInterceptor(logger)(context.Background(), nil, nil, "method", streamCreation)

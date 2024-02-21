@@ -14,7 +14,7 @@ func (a *App) installVersion() {
 		Use:   "version",
 		Short: gotext.Get("Returns version of service and exits"),
 		Args:  cobra.NoArgs,
-		RunE:  func(cmd *cobra.Command, args []string) error { return getVersion() },
+		RunE:  func(_ *cobra.Command, _ []string) error { return getVersion() },
 	}
 	a.rootCmd.AddCommand(cmd)
 }

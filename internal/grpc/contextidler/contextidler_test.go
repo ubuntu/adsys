@@ -19,7 +19,7 @@ func TestActiveConnection(t *testing.T) {
 
 	var s *clientStream
 
-	streamCreation := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	streamCreation := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		s = &clientStream{ctx: ctx}
 		return s, nil
 	}
@@ -42,7 +42,7 @@ func TestTimeoutOnInactiveConnection(t *testing.T) {
 
 	var s *clientStream
 
-	streamCreation := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	streamCreation := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		s = &clientStream{ctx: ctx}
 		return s, nil
 	}
@@ -63,7 +63,7 @@ func TestCancelOnClientSide(t *testing.T) {
 
 	clientCtx, clientCancel := context.WithCancel(context.Background())
 
-	streamCreation := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	streamCreation := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		s = &clientStream{ctx: ctx}
 		return s, nil
 	}
@@ -81,7 +81,7 @@ func TestCancelOnClientSide(t *testing.T) {
 func TestClientInterceptorFailed(t *testing.T) {
 	t.Parallel()
 
-	streamCreation := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	streamCreation := func(_ context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		return nil, errors.New("My interceptor error")
 	}
 	_, err := contextidler.StreamClientInterceptor(0)(context.Background(), nil, nil, "method", streamCreation)
@@ -94,7 +94,7 @@ func TestRecvMessageError(t *testing.T) {
 	var s *clientStream
 
 	childErr := errors.New("Server error")
-	streamCreation := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+	streamCreation := func(ctx context.Context, _ *grpc.StreamDesc, _ *grpc.ClientConn, _ string, _ ...grpc.CallOption) (grpc.ClientStream, error) {
 		s = &clientStream{wantErrRecvMsg: childErr, ctx: ctx}
 		return s, nil
 	}

@@ -24,7 +24,7 @@ The program will monitor the configured directories for changes and bump the app
 If a GPT.ini file does not exist for a directory, a warning will be issued and the file will be created. If the GPT.ini file is incompatible or malformed, the program will report an error.
 `),
 		Args: cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			if len(a.config.Dirs) < 1 {
 				return errors.New(gotext.Get("run command needs at least one directory to watch either with --dirs or via the configuration file"))
 			}

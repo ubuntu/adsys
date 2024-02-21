@@ -429,7 +429,7 @@ func FuzzDecodePolicy(f *testing.F) {
 		f.Add(d)
 	}
 
-	f.Fuzz(func(t *testing.T, d []byte) {
+	f.Fuzz(func(_ *testing.T, d []byte) {
 		r := bytes.NewReader(d)
 		_, _ = registry.DecodePolicy(r)
 	})

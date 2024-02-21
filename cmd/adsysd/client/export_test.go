@@ -10,7 +10,7 @@ import (
 func (a *App) AddWaitCommand() {
 	a.rootCmd.AddCommand(&cobra.Command{
 		Use: "wait",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			select {
 			case <-time.After(50 * time.Millisecond):
 				return errors.New("End of wait command reached")

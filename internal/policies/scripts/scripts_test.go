@@ -181,7 +181,7 @@ func makeIndependentOfCurrentUID(t *testing.T, path string, uid string) {
 	// We need to rename at the end, starting from the leaf to the start so that we don’t fail filepath.Walk()
 	// walking in currently renamed directory.
 	var toRename []string
-	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(path string, _ os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

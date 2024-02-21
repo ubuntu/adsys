@@ -36,13 +36,13 @@ func (a *App) installPolicy() {
 		Use:   "admx lts-only|all",
 		Short: gotext.Get("Dump windows policy definitions"),
 		Args:  cobra.ExactArgs(1),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 			return []string{"lts-only", "all"}, cobra.ShellCompDirectiveNoFileComp
 		},
-		RunE: func(cmd *cobra.Command, args []string) error { return a.getPolicyDefinitions(args[0], *distro) },
+		RunE: func(_ *cobra.Command, args []string) error { return a.getPolicyDefinitions(args[0], *distro) },
 	}
 	distro = mainCmd.Flags().StringP("distro", "", consts.DistroID, gotext.Get("distro for which to retrieve policy definition."))
 	policyCmd.AddCommand(mainCmd)
@@ -52,14 +52,14 @@ func (a *App) installPolicy() {
 		Use:   "applied [USER_NAME]",
 		Short: gotext.Get("Print last applied GPOs for current or given user/machine"),
 		Args:  cmdhandler.ZeroOrNArgs(1),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 			if len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
 			}
 
 			return a.users(true), cobra.ShellCompDirectiveNoFileComp
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			var target string
 			if len(args) > 0 {
 				target = args[0]
@@ -87,7 +87,7 @@ func (a *App) installPolicy() {
 		Short:             gotext.Get("Write GPO list python embedded script in current directory"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
-		RunE:              func(cmd *cobra.Command, args []string) error { return a.dumpGPOListScript() },
+		RunE:              func(_ *cobra.Command, _ []string) error { return a.dumpGPOListScript() },
 	}
 	debugCmd.AddCommand(gpoListCmd)
 	certEnrollCmd := &cobra.Command{
@@ -95,7 +95,7 @@ func (a *App) installPolicy() {
 		Short:             gotext.Get("Write certificate autoenrollment python embedded script in current directory"),
 		Args:              cobra.NoArgs,
 		ValidArgsFunction: cmdhandler.NoValidArgs,
-		RunE:              func(cmd *cobra.Command, args []string) error { return a.dumpCertEnrollScript() },
+		RunE:              func(_ *cobra.Command, _ []string) error { return a.dumpCertEnrollScript() },
 	}
 	debugCmd.AddCommand(certEnrollCmd)
 	ticketPathCmd := &cobra.Command{
@@ -120,7 +120,7 @@ The command is a no-op if the ticket is not present on disk or the detect_cached
 		Use:   "update [USER_NAME KERBEROS_TICKET_PATH]",
 		Short: gotext.Get("Updates/Create a policy for current user or given user with its kerberos ticket"),
 		Args:  cmdhandler.ZeroOrNArgs(2),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 			// All and machine options don’t take arguments
 			if *updateAll || *updateMachine {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -137,7 +137,7 @@ The command is a no-op if the ticket is not present on disk or the detect_cached
 			// We already have our 2 args: no more arg completion
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			var user, krb5cc string
 			if len(args) > 0 {
 				user, krb5cc = args[0], args[1]
@@ -155,7 +155,7 @@ The command is a no-op if the ticket is not present on disk or the detect_cached
 		Use:   "purge [USER_NAME]",
 		Short: gotext.Get("Purges policies for the current user or a specified one"),
 		Args:  cmdhandler.ZeroOrNArgs(1),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
 			// All and machine options don’t take arguments
 			if *purgeAll || *purgeMachine || len(args) != 0 {
 				return nil, cobra.ShellCompDirectiveNoFileComp
@@ -164,7 +164,7 @@ The command is a no-op if the ticket is not present on disk or the detect_cached
 			// Get all users with cached policies
 			return a.users(false), cobra.ShellCompDirectiveNoFileComp
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			var user string
 			if len(args) > 0 {
 				user = args[0]

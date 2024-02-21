@@ -239,7 +239,7 @@ func TestSdNotifier(t *testing.T) {
 
 			d, err := daemon.New(grpcRegister.registerGRPCServer, "/tmp/this/is/ignored",
 				daemon.WithSystemdActivationListener(func() ([]net.Listener, error) { return []net.Listener{l}, nil }),
-				daemon.WithSystemdSdNotifier(func(unsetEnvironment bool, state string) (bool, error) {
+				daemon.WithSystemdSdNotifier(func(_ bool, _ string) (bool, error) {
 					if tc.notifierFail {
 						return false, errors.New("systemd notifier error")
 					}

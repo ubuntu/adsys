@@ -487,7 +487,7 @@ func TestCompressAssets(t *testing.T) {
 				// We need a fixed modification and creation time on our assets to have reproducible test
 				// on zip modification time stored for content.
 				fixedTime := time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC)
-				err := filepath.WalkDir(p, func(path string, d os.DirEntry, err error) error {
+				err := filepath.WalkDir(p, func(path string, _ os.DirEntry, _ error) error {
 					return os.Chtimes(path, fixedTime, fixedTime)
 				})
 				require.NoError(t, err, "Setup: can’t set fixed time for assets")
@@ -957,7 +957,7 @@ func TestMain(m *testing.M) {
 					Value:    true,
 					Writable: true,
 					Emit:     prop.EmitTrue,
-					Callback: func(c *prop.Change) *dbus.Error { return nil },
+					Callback: func(_ *prop.Change) *dbus.Error { return nil },
 				},
 			},
 		}

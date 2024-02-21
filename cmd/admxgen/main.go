@@ -36,7 +36,7 @@ func main() {
 		Long:  gotext.Get(`Generate ADMX and intermediary working files from a list of policy definition files.`),
 		Args:  cmdhandler.SubcommandsRequiredWithSuggestions,
 		RunE:  cmdhandler.NoCmd,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
 			config.SetVerboseMode(viper.GetInt("verbose"))
 			return nil
 		},
@@ -75,7 +75,7 @@ func installExpand(rootCmd *cobra.Command, viper *viper.Viper) error {
 		Long: gotext.Get(`Generates an intermediary policy definition file into DEST directory from all the policy definition files in SOURCE directory, using the correct decoder.
 The generated definition file will be of the form expanded_policies.RELEASE.yaml`),
 		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return admxgen.Expand(args[0], args[1], viper.GetString("root"), viper.GetString("current-session"))
 		},
 	}
@@ -97,7 +97,7 @@ func installAdmx(rootCmd *cobra.Command, viper *viper.Viper) error {
 		Short: gotext.Get("Create finale admx and adml files"),
 		Long:  gotext.Get("Collects all intermediary policy definition files in SOURCE directory to create admx and adml templates in DEST, based on CATEGORIES_DEF.yaml."),
 		Args:  cobra.ExactArgs(3),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return admxgen.GenerateAD(args[0], args[1], args[2], *autoDetectReleases, *allowMissingKeys)
 		},
 	}
@@ -117,7 +117,7 @@ func installDoc(rootCmd *cobra.Command, viper *viper.Viper) error {
 		Short: gotext.Get("Create markdown documentation"),
 		Long:  gotext.Get("Collects all intermediary policy definition files in SOURCE directory to create markdown documentation in DEST, based on CATEGORIES_DEF.yaml."),
 		Args:  cobra.ExactArgs(3),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return admxgen.GenerateDoc(args[0], args[1], args[2])
 		},
 	}
