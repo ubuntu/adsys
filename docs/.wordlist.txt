@@ -17,6 +17,7 @@ JSON
 Juju
 Kubernetes
 Kubeflow
+libkrb
 Makefile
 MyST
 namespace
