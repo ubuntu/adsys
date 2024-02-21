@@ -105,7 +105,7 @@ func (a *App) installPolicy() {
 The command is a no-op if the ticket is not present on disk or the detect_cached_ticket setting is not true.`),
 		Args:              cmdhandler.ZeroOrNArgs(1),
 		ValidArgsFunction: cmdhandler.NoValidArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			var username string
 			if len(args) > 0 {
 				username = args[0]
