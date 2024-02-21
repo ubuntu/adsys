@@ -37,6 +37,9 @@ import (
 	"github.com/leonelquinteros/gotext"
 )
 
+// ErrTicketNotPresent is returned when the ticket cache is not present or not accessible
+var ErrTicketNotPresent = errors.New(gotext.Get("ticket not found or not accessible"))
+
 // TicketPath returns the path of the default kerberos ticket cache for the
 // current user.
 // It returns an error if the path is empty or does not exist on the disk.
@@ -54,7 +57,7 @@ func TicketPath() (string, error) {
 	krb5ccPath := strings.TrimPrefix(krb5cc, "FILE:")
 	fileInfo, err := os.Stat(krb5ccPath)
 	if err != nil {
-		return "", fmt.Errorf(gotext.Get("%q does not exist or is not accessible: %v", krb5ccPath, err))
+		return "", errors.Join(ErrTicketNotPresent, err)
 	}
 	if !fileInfo.Mode().IsRegular() {
 		return "", fmt.Errorf(gotext.Get("%q is not a regular file", krb5ccPath))

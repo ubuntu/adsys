@@ -309,6 +309,93 @@ static int set_dconf_profile(pam_handle_t *pamh, const char *username, int debug
     return retval;
 }
 
+/*
+ * Get the ticket path for the user by calling adsysctl policy debug ticket-path
+ */
+static int get_krb5cc_ticket_path(pam_handle_t *pamh, const char *username, char **path) {
+    char **arggv;
+    arggv = calloc(6, sizeof(char *));
+    if (arggv == NULL) {
+        return 1;
+    }
+
+    arggv[0] = "/sbin/adsysctl";
+    arggv[1] = "policy";
+    arggv[2] = "debug";
+    arggv[3] = "ticket-path";
+    arggv[4] = (char *)(username);
+    arggv[5] = NULL;
+
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        pam_syslog(pamh, LOG_ERR, "Failed to create pipe: %m");
+        return 1;
+    }
+
+    pid_t pid = fork();
+    if (pid == -1) {
+        pam_syslog(pamh, LOG_ERR, "Failed to fork process");
+        return 1;
+    }
+
+    if (pid > 0) { /* parent */
+        pid_t retval;
+        int status = 0;
+
+        while ((retval = waitpid(pid, &status, 0)) == -1 && errno == EINTR) {
+        };
+
+        if (retval == (pid_t)-1) {
+            pam_syslog(pamh, LOG_ERR, "waitpid returns with -1: %m");
+            free(arggv);
+            return 1;
+        } else if (status != 0) {
+            if (WIFEXITED(status)) {
+                pam_syslog(pamh, LOG_ERR, "adsysctl policy debug ticket-path %s failed: exit code %d", username,
+                           WEXITSTATUS(status));
+            } else if (WIFSIGNALED(status)) {
+                pam_syslog(pamh, LOG_ERR, "adsysctl policy debug ticket-path %s failed: caught signal %d%s", username,
+                           WTERMSIG(status), WCOREDUMP(status) ? " (core dumped)" : "");
+            } else {
+                pam_syslog(pamh, LOG_ERR, "adsysctl policy debug ticket-path %s failed: unknown status 0x%x", username,
+                           status);
+            }
+            free(arggv);
+            return 1;
+        }
+        free(arggv);
+        close(pipefd[1]);
+
+        char ticket_path[PATH_MAX + 1];
+        ssize_t n;
+        while ((n = read(pipefd[0], ticket_path, sizeof(ticket_path))) > 0) {
+            if (n == -1) {
+                pam_syslog(pamh, LOG_ERR, "Failed to read from pipe: %m");
+                return 1;
+            }
+            ticket_path[n] = '\0';
+            char *newline = strchr(ticket_path, '\n');
+            if (newline != NULL) {
+                *newline = '\0';
+            }
+            close(pipefd[0]);
+            *path = strdup(ticket_path);
+            return 0;
+        }
+    } else { /* child */
+        dup2(pipefd[1], STDOUT_FILENO);
+        close(pipefd[0]);
+        close(pipefd[1]);
+        execv(arggv[0], arggv);
+        int i = errno;
+        pam_syslog(pamh, LOG_ERR, "execv(%s,...) failed: %m", arggv[0]);
+        free(arggv);
+        _exit(i);
+    }
+
+    return 0; /* command had no output and exited with 0 */
+}
+
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) { return PAM_IGNORE; }
 
 PAM_EXTERN int pam_sm_setcred(pam_handle_t *pamh, int flags, int argc, const char **argv) { return PAM_IGNORE; }
@@ -340,7 +427,36 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
      */
     const char *krb5ccname = pam_getenv(pamh, "KRB5CCNAME");
     if (krb5ccname == NULL && strcmp(username, "gdm") != 0) {
-        return PAM_IGNORE;
+        char *ticket_path = NULL;
+
+        // An error here means the detect_cached_ticket setting is enabled
+        if (get_krb5cc_ticket_path(pamh, username, &ticket_path) != 0) {
+            pam_syslog(pamh, LOG_ERR, "Failed to get ticket path for user %s", username);
+            return PAM_SYSTEM_ERR;
+        };
+
+        // The detect_cached_ticket setting is disabled or we weren't able to
+        // locate a the path returned by krb5 on disk
+        if (ticket_path == NULL || *ticket_path == '\0') {
+            return PAM_IGNORE;
+        }
+
+        // We have a ticket, proceed with setting the environment variable
+        char *envvar;
+        if (asprintf(&envvar, "KRB5CCNAME=FILE:%s", ticket_path) < 0) {
+            pam_syslog(pamh, LOG_CRIT, "out of memory");
+            free(ticket_path);
+            return PAM_BUF_ERR;
+        }
+
+        retval = pam_putenv(pamh, envvar);
+        krb5ccname = strdup(ticket_path);
+        _pam_drop(envvar);
+        free(ticket_path);
+        if (retval != PAM_SUCCESS) {
+            pam_syslog(pamh, LOG_ERR, "Failed to set KRB5CCNAME to %s", ticket_path);
+            return PAM_SYSTEM_ERR;
+        }
     }
 
     // set dconf profile for AD and gdm user.

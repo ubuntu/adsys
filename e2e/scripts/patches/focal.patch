@@ -1,5 +1,5 @@
 diff --git a/debian/control b/debian/control
-index d6fb19f2..f9f9fe0c 100644
+index ccf213e0..40a2aa9f 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -2,10 +2,10 @@ Source: adsys
@@ -12,9 +12,9 @@ index d6fb19f2..f9f9fe0c 100644
                 dh-golang,
 -               golang-go (>= 2:1.21~),
 +               golang-1.21-go,
-                libsmbclient-dev,
+                apparmor,
+                dbus,
                 libdbus-1-dev,
-                libglib2.0-dev,
 diff --git a/debian/rules b/debian/rules
 index 43646c6a..0708aa3d 100755
 --- a/debian/rules

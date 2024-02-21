@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/user"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/color"
@@ -18,6 +19,8 @@ import (
 	"github.com/ubuntu/adsys/internal/cmdhandler"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
+	"github.com/ubuntu/decorate"
+	"golang.org/x/sys/unix"
 )
 
 func (a *App) installPolicy() {
@@ -95,6 +98,22 @@ func (a *App) installPolicy() {
 		RunE:              func(cmd *cobra.Command, args []string) error { return a.dumpCertEnrollScript() },
 	}
 	debugCmd.AddCommand(certEnrollCmd)
+	ticketPathCmd := &cobra.Command{
+		Use:   "ticket-path",
+		Short: gotext.Get("Print the path of the current (or given) user's Kerberos ticket"),
+		Long: gotext.Get(`Infer and print the path of the current user's Kerberos ticket, leveraging the krb5 API.
+The command is a no-op if the ticket is not present on disk or the detect_cached_ticket setting is not true.`),
+		Args:              cmdhandler.ZeroOrNArgs(1),
+		ValidArgsFunction: cmdhandler.NoValidArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var username string
+			if len(args) > 0 {
+				username = args[0]
+			}
+			return a.printTicketPath(username)
+		},
+	}
+	debugCmd.AddCommand(ticketPathCmd)
 
 	var updateMachine, updateAll *bool
 	updateCmd := &cobra.Command{
@@ -298,6 +317,58 @@ func (a *App) dumpCertEnrollScript() error {
 	}
 
 	return os.WriteFile("cert-autoenroll", []byte(script), 0600)
+}
+
+// printTicketPath prints the path to the Kerberos ccache of the given (or current) user to stdout.
+// The function is a no-op if the detect_cached_ticket setting is not enabled.
+// No error is raised if the inferred ticket is not present on disk.
+func (a *App) printTicketPath(username string) (err error) {
+	defer decorate.OnError(&err, gotext.Get("error getting ticket path"))
+
+	// Do not print anything if the required setting is not enabled
+	if !a.config.DetectCachedTicket {
+		log.Debugf(a.ctx, "The detect_cached_ticket setting needs to be enabled to use this command")
+		return nil
+	}
+
+	// Default to current user
+	if username == "" {
+		u, err := user.Current()
+		if err != nil {
+			return fmt.Errorf("failed to retrieve current user: %w", err)
+		}
+		username = u.Username
+	}
+
+	user, err := user.Lookup(username)
+	if err != nil {
+		return err
+	}
+	uid, err := strconv.Atoi(user.Uid)
+	if err != nil {
+		return err
+	}
+
+	// This effectively deescalates the current user's privileges with no
+	// possibility of turning back. We're doing this on purpose right before the
+	// code path that requires this, with the program exiting immediately after.
+	if err := unix.Setuid(uid); err != nil {
+		return fmt.Errorf(gotext.Get("failed to set privileges to UID %d: %v", uid, err))
+	}
+
+	krb5ccPath, err := ad.TicketPath()
+	if errors.Is(err, ad.ErrTicketNotPresent) {
+		log.Debugf(a.ctx, "No ticket found for user %s: %s", username, err)
+		return nil
+	}
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(krb5ccPath)
+
+	return nil
 }
 
 func colorizePolicies(policies string) (string, error) {

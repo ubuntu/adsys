@@ -1,5 +1,5 @@
 diff --git a/debian/control b/debian/control
-index d6fb19f2..93764223 100644
+index ccf213e0..2d34a328 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -5,7 +5,7 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
@@ -8,9 +8,9 @@ index d6fb19f2..93764223 100644
                 dh-golang,
 -               golang-go (>= 2:1.21~),
 +               golang-1.21-go,
-                libsmbclient-dev,
+                apparmor,
+                dbus,
                 libdbus-1-dev,
-                libglib2.0-dev,
 diff --git a/debian/rules b/debian/rules
 index 43646c6a..403e7bb9 100755
 --- a/debian/rules
