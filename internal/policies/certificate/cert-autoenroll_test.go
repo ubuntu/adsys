@@ -110,8 +110,6 @@ func TestCertAutoenrollScript(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			stateDir := t.TempDir()
 			sambaCacheDir := filepath.Join(stateDir, "samba")

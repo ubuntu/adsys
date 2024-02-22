@@ -121,7 +121,6 @@ socket: %s`, socket)), 0600)
 		"version":                     {args: []string{"version"}},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			_, err = runClient(t, confFile, tc.args...)
 			require.Error(t, err, "command should fail")
@@ -155,7 +154,6 @@ func TestCommandsTimeouts(t *testing.T) {
 		"0 is no timeout": {timeout: 0},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			// We only implement one command to test the client timeout functionality
 			timeoutServer := timeoutOnVersionServer{callbackHandled: make(chan struct{})}

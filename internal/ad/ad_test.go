@@ -45,7 +45,6 @@ func TestNew(t *testing.T) {
 		"error on backend ServerFQDN random failure": {backendServerFQDNError: errors.New("Some failure on ServerFQDN"), wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			runDir, cacheDir := t.TempDir(), t.TempDir()
@@ -540,7 +539,6 @@ func TestGetPolicies(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
@@ -692,7 +690,6 @@ func TestGetPoliciesOffline(t *testing.T) {
 		},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -833,7 +830,6 @@ func TestGetPoliciesWorkflows(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
@@ -996,7 +992,6 @@ func TestGetPoliciesConcurrently(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel() // libsmbclient overrides SIGCHILD, but we have one global lock
 
@@ -1155,7 +1150,6 @@ func TestListUsers(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -1228,7 +1222,6 @@ func TestGetInfo(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -1284,7 +1277,6 @@ func TestNormalizeTargetName(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

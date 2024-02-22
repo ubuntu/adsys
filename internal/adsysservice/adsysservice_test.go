@@ -47,7 +47,6 @@ func TestNew(t *testing.T) {
 		"Error on ad.New prevents adsysservice creation": {roDir: "parentcache/cache", wantNewErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

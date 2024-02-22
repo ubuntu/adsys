@@ -52,7 +52,6 @@ func TestWinbind(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			// Set up mock libwbclient behavior
 			t.Setenv("ADSYS_WBCLIENT_BEHAVIOR", tc.wbclientBehavior)

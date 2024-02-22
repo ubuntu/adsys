@@ -46,7 +46,6 @@ func Expand(src, dst, root, currentSession string) error {
 	expandedPoliciesStream := make(chan []common.ExpandedPolicy, len(files))
 	var g errgroup.Group
 	for _, f := range files {
-		f := f
 		g.Go(func() error {
 			t := strings.TrimSuffix(strings.ToLower(filepath.Base(f)), ".yaml")
 			if t == "categories" {

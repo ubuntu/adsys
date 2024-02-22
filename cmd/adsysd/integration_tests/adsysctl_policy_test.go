@@ -41,7 +41,6 @@ func TestPolicyAdmx(t *testing.T) {
 		"Error on daemon not responding": {arg: "lts-only", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			dbusAnswer(t, tc.systemAnswer)
 
@@ -120,7 +119,6 @@ func TestPolicyApplied(t *testing.T) {
 		"Error on daemon not responding":                            {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.systemAnswer == "" {
 				tc.systemAnswer = "polkit_yes"
@@ -994,7 +992,6 @@ func TestPolicyUpdate(t *testing.T) {
 		},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.systemAnswer == "" {
 				tc.systemAnswer = "polkit_yes"
@@ -1215,7 +1212,6 @@ func TestPolicyDebugScriptDump(t *testing.T) {
 		"Error on daemon not responding for cert-autoenroll": {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			dbusAnswer(t, tc.systemAnswer)
 
@@ -1271,7 +1267,6 @@ func TestPolicyDebugTicketPath(t *testing.T) {
 		"Error if ticket path is a directory": {pathIsDir: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			// Empty username means current user
 			if tc.username == "" {

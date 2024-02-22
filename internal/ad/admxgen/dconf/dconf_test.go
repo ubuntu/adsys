@@ -78,7 +78,6 @@ func TestGenerate(t *testing.T) {
 	}
 	for name, tc := range tests {
 		def := strings.ToLower(strings.ReplaceAll(name, " ", "_"))
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

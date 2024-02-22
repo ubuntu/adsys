@@ -30,7 +30,6 @@ func TestNew(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -172,7 +171,6 @@ func TestApplyPolicy(t *testing.T) {
 		"Error when applying system policy and the entry is errored":             {entries: []string{"errored entry"}, isComputer: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -231,6 +229,7 @@ func TestApplyPolicy(t *testing.T) {
 				testutils.CreatePath(t, filepath.Join(p, "not_empty"))
 			}
 
+			// #nosec G601: This is fixed with Go 1.22.0 and is a false positive (https://github.com/securego/gosec/pull/1108)
 			m, err := mount.New(runDir, systemUnitDir, &tc.firstMockSystemdCaller, opts...)
 			require.NoError(t, err, "Setup: Failed to create manager for the tests.")
 
@@ -252,6 +251,7 @@ func TestApplyPolicy(t *testing.T) {
 					e.Disabled = tc.isDisabledSecondCall
 					secondEntries = append(secondEntries, e)
 				}
+				// #nosec G601: This is fixed with Go 1.22.0 and is a false positive (https://github.com/securego/gosec/pull/1108)
 				m.SetSystemdCaller(&tc.secondMockSystemdCaller)
 
 				if tc.pathAlreadyExistsSecondCall {

@@ -68,8 +68,6 @@ func TestNew(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -117,8 +115,6 @@ func TestNewFromCache(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -204,8 +200,6 @@ func TestSave(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			src := filepath.Join("testdata", "cache", "policies", tc.cacheSrc)
@@ -386,8 +380,6 @@ func TestSaveAssetsTo(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			src := filepath.Join("testdata", "cache", "policies", tc.cacheSrc)
@@ -466,8 +458,6 @@ func TestCompressAssets(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -883,8 +873,6 @@ func TestGetUniqueRules(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

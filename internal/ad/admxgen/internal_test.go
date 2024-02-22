@@ -85,10 +85,7 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"category definition doesn't exist": {wantErrLoadDefinitions: true},
 	}
 	for name, tc := range tests {
-		name := name
 		categoryDefinition := name
-
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -167,9 +164,6 @@ func TestExpandedCategoriesToADMX(t *testing.T) {
 		"error on destination creation": {destIsFile: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		name := name
-
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			dst := t.TempDir()
@@ -267,9 +261,6 @@ func TestExpandedCategoriesToMD(t *testing.T) {
 		"error on destination creation": {destIsFile: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		name := name
-
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			dst := filepath.Join(t.TempDir(), "subdir")

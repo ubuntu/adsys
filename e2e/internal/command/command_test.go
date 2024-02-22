@@ -53,7 +53,6 @@ func TestInventory(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.fromState == "" {
 				tc.fromState = inventory.Null
@@ -110,7 +109,6 @@ func TestExecute(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.action == nil {
 				tc.action = mockAction

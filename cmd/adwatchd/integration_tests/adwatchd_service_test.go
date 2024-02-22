@@ -48,8 +48,6 @@ func TestServiceStateChange(t *testing.T) {
 		"uninstall and restart":    {sequence: []string{"uninstall", "stop"}, wantErrAt: []int{1}},
 	}
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			var err error
 
@@ -240,8 +238,6 @@ func TestServiceConfigFlagUsage(t *testing.T) {
 		"install": {wantConfig: true},
 	}
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			r, w, err := os.Pipe()
 			require.NoError(t, err, "Setup: pipe shouldn't fail")

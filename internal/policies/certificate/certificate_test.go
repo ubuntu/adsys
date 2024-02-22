@@ -71,7 +71,6 @@ func TestApplyPolicy(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			// Test with a clean PYTHONPATH to avoid differences in the golden file output
 			origPythonPath, existed := os.LookupEnv("PYTHONPATH")
