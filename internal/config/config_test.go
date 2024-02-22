@@ -41,7 +41,6 @@ func TestSetVerboseMode(t *testing.T) {
 		"3 is debug printing callers": {level: 3, wantOut: []string{"debug", "info", "warning", "error"}, wantCaller: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			// capture log output (set to stderr, but captured when loading logrus)
 			r, w, err := os.Pipe()
@@ -191,7 +190,6 @@ func TestInit(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			configDir := t.TempDir()
 			prefix := "adsys_config_test"
@@ -375,7 +373,6 @@ func TestLoadConfig(t *testing.T) {
 		/*"Error on undecodable data to": {},*/
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

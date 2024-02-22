@@ -328,8 +328,6 @@ func TestInteractiveInput(t *testing.T) {
 		},
 	}
 	for name, tc := range tests {
-		tc := tc
-
 		// Need to capture the absolute path of the package before changing directory
 		// in the subtests, otherwise the tree will change.
 		absPkgPath, _ := filepath.Abs(".")
@@ -479,8 +477,6 @@ func TestInteractiveUpdate(t *testing.T) {
 		},
 	}
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			tmpdir := t.TempDir()
 			absPrevDirs := make([]string, len(tc.prevDirs))

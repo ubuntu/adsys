@@ -35,7 +35,6 @@ func TestFormat(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			tc := tc
 			t.Parallel()
 
 			err := grpcerror.Format(tc.err, "DaemonName")

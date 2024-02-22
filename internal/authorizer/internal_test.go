@@ -59,7 +59,6 @@ func TestIsAllowed(t *testing.T) {
 		"Polkit dbus call errors out": {wantPolkitError: true, pid: 10000, uid: 1000, polkitAuthorize: true, wantAuthorized: false},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

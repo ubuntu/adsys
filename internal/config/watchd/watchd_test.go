@@ -30,8 +30,6 @@ func TestConfigFileFromArgs(t *testing.T) {
 		"Error on config argument with no value": {args: "adwatchd.exe -c ", wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -65,8 +63,6 @@ func TestDirsFromConfigFile(t *testing.T) {
 		},
 	}
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -99,8 +95,6 @@ func TestWriteConfig(t *testing.T) {
 		"Error on absent dirs": {dirs: []string{"dir1", "dir2"}, absentDirs: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			goldPath, err := filepath.Abs(testutils.GoldenPath(t))
 			require.NoError(t, err, "failed to get absolute path")

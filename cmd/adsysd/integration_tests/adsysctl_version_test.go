@@ -22,7 +22,6 @@ func TestVersion(t *testing.T) {
 		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			dbusAnswer(t, tc.systemAnswer)
 

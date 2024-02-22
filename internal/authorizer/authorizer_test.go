@@ -50,7 +50,6 @@ func TestIsAllowedFromContext(t *testing.T) {
 		"Unauthorizes when user has invalid uid":         {action: myUserOtherAction, userUIDReturn: "NaN", pid: 10000, uid: 1000, wantAuthorized: false},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

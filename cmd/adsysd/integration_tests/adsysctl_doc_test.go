@@ -41,7 +41,6 @@ func TestDocChapter(t *testing.T) {
 		"Error on nonexistent chapter":   {chapter: "nonexistent-chapter", wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.systemAnswer == "" {
 				tc.systemAnswer = "polkit_yes"
@@ -91,7 +90,6 @@ func TestDocCompletion(t *testing.T) {
 		"Empty completion content on daemon not responding": {daemonNotStarted: true, wantCompletionEmpty: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.systemAnswer == "" {
 				tc.systemAnswer = "polkit_yes"

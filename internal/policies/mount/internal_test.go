@@ -40,7 +40,6 @@ func TestParseEntryValues(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -83,7 +82,6 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 	require.NoError(t, err, "Setup: failed to get current user")
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -142,7 +140,6 @@ func TestCreateUnits(t *testing.T) {
 		"Write krb5 tagged unit": {entry: "entry with kerberos auth tag"},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

@@ -64,7 +64,6 @@ func TestAdsysdMount(t *testing.T) {
 		"Errors out and prints usage message when executed with more than 2 arguments": {addArgs: []string{"more", "than", "two"}, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			if tc.sessionAnswer == "" {
 				tc.sessionAnswer = "polkit_yes"

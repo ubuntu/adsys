@@ -37,7 +37,6 @@ func TestServiceStop(t *testing.T) {
 		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			dbusAnswer(t, tc.daemonAnswer)
 
@@ -167,7 +166,6 @@ func TestServiceCat(t *testing.T) {
 		"Error on daemon not responding - cover client": {daemonNotStarted: true, coverCatClient: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			dbusAnswer(t, tc.systemAnswer)
 
@@ -299,7 +297,6 @@ func TestServiceStatus(t *testing.T) {
 		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			dbusAnswer(t, tc.systemAnswer)
 

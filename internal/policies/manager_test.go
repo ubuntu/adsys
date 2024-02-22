@@ -65,8 +65,6 @@ func TestApplyPolicies(t *testing.T) {
 		"Error when applying certificate policy": {policiesDir: "certificate_failing", wantErr: true},
 	}
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			// We change the dbus returned values to simulate a subscription
 			//t.Parallel()
@@ -285,8 +283,6 @@ func TestDumpPolicies(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -352,8 +348,6 @@ func TestLastUpdateFor(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -408,8 +402,6 @@ func TestGetSubscriptionState(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
-		name := name
 		t.Run(name, func(t *testing.T) {
 			// We change the dbus returned values to simulate a subscription
 			//t.Parallel()

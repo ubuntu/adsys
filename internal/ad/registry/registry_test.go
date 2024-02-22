@@ -374,9 +374,7 @@ func TestDecodePolicy(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
-			name := name
 			t.Parallel()
 
 			f, err := os.Open(policyFilePath(name))

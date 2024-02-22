@@ -43,7 +43,6 @@ func TestTicketPath(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			wantOut := filepath.Join(t.TempDir(), "krb5cc_12345")
 			if strings.Contains(tc.krb5Behavior, "return_ccache") {

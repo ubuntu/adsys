@@ -52,7 +52,6 @@ func TestChildRecvMsgAndHandlerCalled(t *testing.T) {
 		"Error when RecvMsg errors out": {recvMsgError: true, wantHandlerNum: 1, wantRecvMsgError: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

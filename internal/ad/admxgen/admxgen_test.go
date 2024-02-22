@@ -38,9 +38,6 @@ func TestExpand(t *testing.T) {
 		"dconf generation fails":  {root: "unsupported dconf type", wantErr: true},
 	}
 	for name, tc := range tests {
-		name := name
-
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -102,9 +99,6 @@ func TestGenerateAD(t *testing.T) {
 		"admx generation fails":    {destIsFile: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		name := name
-
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
@@ -161,9 +155,6 @@ func TestGenerateDoc(t *testing.T) {
 		"doc generation fails":     {destIsFile: true, wantErr: true},
 	}
 	for name, tc := range tests {
-		name := name
-
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

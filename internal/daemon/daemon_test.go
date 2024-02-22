@@ -119,7 +119,6 @@ func TestSocketActivation(t *testing.T) {
 
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			tc := tc
 			t.Parallel()
 
 			dir := t.TempDir()
@@ -226,7 +225,6 @@ func TestSdNotifier(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

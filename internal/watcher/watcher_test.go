@@ -105,7 +105,6 @@ func TestWatchDirectory(t *testing.T) {
 		"Error on updating malformed GPT.ini": {filesToUpdate: []string{"malformed/new"}, existingDirs: []string{"malformed"}, wantErrBump: true},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 

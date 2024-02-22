@@ -31,7 +31,6 @@ func TestEventLogHook(t *testing.T) {
 		"debug level": {level: logrus.DebugLevel, wantOut: []string{"debug", "info", "warning", "error"}},
 	}
 	for name, tc := range tests {
-		tc := tc
 		t.Run(name, func(t *testing.T) {
 			buf.Reset()
 			log := logrus.New()
