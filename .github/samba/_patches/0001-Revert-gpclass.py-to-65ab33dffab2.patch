@@ -1,17 +1,17 @@
-From bfd2cfaeae5782a7d81c7dfdf0b951fc697a3375 Mon Sep 17 00:00:00 2001
+From c59629376b4a8ff43c81dee4599b6fe98a695b68 Mon Sep 17 00:00:00 2001
 From: Gabriel Nagy <gabriel.nagy@canonical.com>
-Date: Mon, 6 Nov 2023 11:23:39 +0200
+Date: Mon, 26 Feb 2024 11:25:18 +0200
 Subject: [PATCH] Revert gpclass.py to 65ab33dffab2
 
 This is to ensure compatibility with older Samba versions such as the
 one on Jammy. We don't benefit from these changes for our certificate
 applier use case anyway.
 ---
- python/samba/gp/gpclass.py | 556 +++++--------------------------------
- 1 file changed, 75 insertions(+), 481 deletions(-)
+ python/samba/gp/gpclass.py | 578 +++++--------------------------------
+ 1 file changed, 75 insertions(+), 503 deletions(-)
 
 diff --git a/python/samba/gp/gpclass.py b/python/samba/gp/gpclass.py
-index 26c2386847e..605f94f3317 100644
+index 08be472e707..605f94f3317 100644
 --- a/python/samba/gp/gpclass.py
 +++ b/python/samba/gp/gpclass.py
 @@ -21,7 +21,7 @@ import errno
@@ -46,7 +46,7 @@ index 26c2386847e..605f94f3317 100644
 -from samba.auth import AUTH_SESSION_INFO_DEFAULT_GROUPS, AUTH_SESSION_INFO_AUTHENTICATED, AUTH_SESSION_INFO_SIMPLE_PRIVILEGES
 -from samba.dcerpc import security
 -import samba.security
--from samba.dcerpc import netlogon
+-from samba.dcerpc import nbt
 -from datetime import datetime
 -
  
@@ -467,17 +467,10 @@ index 26c2386847e..605f94f3317 100644
  
  
  def get_dc_hostname(creds, lp):
-@@ -611,319 +573,17 @@ def get_dc_hostname(creds, lp):
-                                                           nbt.NBT_SERVER_DS))
+@@ -612,340 +574,16 @@ def get_dc_hostname(creds, lp):
      return cldap_ret.pdc_dns_name
  
--def get_dc_netbios_hostname(creds, lp):
--    net = Net(creds=creds, lp=lp)
--    cldap_ret = net.finddc(domain=lp.get('realm'), flags=(nbt.NBT_SERVER_LDAP |
--                                                          nbt.NBT_SERVER_DS))
--    return cldap_ret.pdc_name
--
--
+ 
 -""" Fetch a list of GUIDs for applicable GPOs """
 -
 -
@@ -592,7 +585,7 @@ index 26c2386847e..605f94f3317 100644
 -        if gp_link.link_opts[i] & GPLINK_OPT_DISABLE:
 -            log.debug('skipping disabled GPO')
 -            continue
- 
+-
 -        if only_add_forced_gpos:
 -            if not is_forced:
 -                log.debug("skipping nonenforced GPO link "
@@ -603,8 +596,7 @@ index 26c2386847e..605f94f3317 100644
 -                log.debug("adding enforced GPO link although "
 -                          "the GPOPTIONS_BLOCK_INHERITANCE "
 -                          "has been set")
-+''' Fetch a list of GUIDs for applicable GPOs '''
- 
+-
 -        try:
 -            new_gpo = get_gpo(samdb, gp_link.link_names[i])
 -        except ldb.LdbError as e:
@@ -648,24 +640,53 @@ index 26c2386847e..605f94f3317 100644
 -    # There are no claims in the system token, so it is safe not to merge the claims
 -    return token_1
 -
+-
 -def site_dn_for_machine(samdb, dc_hostname, lp, creds, hostname):
 -    # [MS-GPOL] 3.2.5.1.4 Site Search
--    config_context = samdb.get_config_basedn()
--    try:
--        c = netlogon.netlogon("ncacn_np:%s[seal]" % dc_hostname, lp, creds)
--        site_name = c.netr_DsRGetSiteName(hostname)
--        return 'CN={},CN=Sites,{}'.format(site_name, config_context)
--    except WERRORError:
--        # Fallback to the old method found in ads_site_dn_for_machine
--        nb_hostname = get_dc_netbios_hostname(creds, lp)
--        res = samdb.search(config_context, ldb.SCOPE_SUBTREE,
--                           "(cn=%s)" % nb_hostname, ['dn'])
--        if res.count != 1:
--            raise ldb.LdbError(ldb.ERR_NO_SUCH_OBJECT,
--                               'site_dn_for_machine: no result')
--        dn = res.msgs[0]['dn']
--        site_dn = dn.parent().parent()
--        return site_dn
+-
+-    # The netr_DsRGetSiteName() needs to run over local rpc, however we do not
+-    # have the call implemented in our rpc_server.
+-    # What netr_DsRGetSiteName() actually does is an ldap query to get
+-    # the sitename, we can do the same.
+-
+-    # NtVer=(NETLOGON_NT_VERSION_IP|NETLOGON_NT_VERSION_WITH_CLOSEST_SITE|
+-    #        NETLOGON_NT_VERSION_5EX) [0x20000014]
+-    expr = "(&(DnsDomain=%s.)(User=%s)(NtVer=\\14\\00\\00\\20))" % (
+-        samdb.domain_dns_name(),
+-        hostname)
+-    res = samdb.search(
+-        base='',
+-        scope=ldb.SCOPE_BASE,
+-        expression=expr,
+-        attrs=["Netlogon"])
+-    if res.count != 1:
+-        raise RuntimeError('site_dn_for_machine: No result')
+-
+-    samlogon_response = ndr_unpack(nbt.netlogon_samlogon_response,
+-                                   bytes(res.msgs[0]['Netlogon'][0]))
+-    if samlogon_response.ntver not in [nbt.NETLOGON_NT_VERSION_5EX,
+-                                       (nbt.NETLOGON_NT_VERSION_1
+-                                        | nbt.NETLOGON_NT_VERSION_5EX)]:
+-        raise RuntimeError('site_dn_for_machine: Invalid NtVer in '
+-                           + 'netlogon_samlogon_response')
+-
+-    # We want NETLOGON_NT_VERSION_5EX out of the union!
+-    samlogon_response.ntver = nbt.NETLOGON_NT_VERSION_5EX
+-    samlogon_response_ex = samlogon_response.data
+-
+-    client_site = "Default-First-Site-Name"
+-    if (samlogon_response_ex.client_site
+-            and len(samlogon_response_ex.client_site) > 1):
+-        client_site = samlogon_response_ex.client_site
+-
+-    site_dn = samdb.get_config_basedn()
+-    site_dn.add_child("CN=Sites")
+-    site_dn.add_child("CN=%s" % (client_site))
+-
+-    return site_dn
+-
++''' Fetch a list of GUIDs for applicable GPOs '''
+ 
  
  def get_gpo_list(dc_hostname, creds, lp, username):
 -    """Get the full list of GROUP_POLICY_OBJECTs for a given username.
@@ -794,7 +815,7 @@ index 26c2386847e..605f94f3317 100644
  
  
  def cache_gpo_dir(conn, cache, sub_dir):
-@@ -1018,7 +678,7 @@ def apply_gp(lp, creds, store, gp_extensions, username, target, force=False):
+@@ -1040,7 +678,7 @@ def apply_gp(lp, creds, store, gp_extensions, username, target, force=False):
              if target == 'Computer':
                  ext.process_group_policy(del_gpos, changed_gpos)
              else:
@@ -803,7 +824,7 @@ index 26c2386847e..605f94f3317 100644
                                  del_gpos, changed_gpos)
          except Exception as e:
              log.error('Failed to apply extension  %s' % str(ext))
-@@ -1183,18 +843,18 @@ def unregister_gp_extension(guid, smb_conf=None):
+@@ -1205,18 +843,18 @@ def unregister_gp_extension(guid, smb_conf=None):
  
  
  def set_privileges(username, uid, gid):
@@ -826,7 +847,7 @@ index 26c2386847e..605f94f3317 100644
      current_uid = os.getuid()
  
      if not current_uid == 0:
-@@ -1222,69 +882,3 @@ def drop_privileges(username, func, *args):
+@@ -1244,69 +882,3 @@ def drop_privileges(username, func, *args):
          raise exc
  
      return out
