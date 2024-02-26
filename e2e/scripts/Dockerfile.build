@@ -9,6 +9,8 @@ RUN echo 'man-db man-db/auto-update boolean false' | debconf-set-selections
 RUN set -ex \
     && apt-get update \
     && apt-get upgrade -y --no-install-recommends \
+    && apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:ubuntu-enterprise-desktop/golang \
     && apt-get install -y --no-install-recommends \
                build-essential \
                cdbs \
