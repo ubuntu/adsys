@@ -101,4 +101,4 @@ jobs:
               exit 0
           fi
 
-          go run ./e2e/cmd/provision_resources/99_deprovision
+          go run ./e2e/cmd/run_tests/99_deprovision

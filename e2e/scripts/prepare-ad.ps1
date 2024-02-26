@@ -13,7 +13,7 @@
 #      └── out-of-tree
 #
 # The script assumes the GPO data is stored in the same directory - this is the
-# case when ran via the ./cmd/provision_resources/02_provision_ad command.
+# case when ran via the ./cmd/run_tests/02_provision_ad command.
 #
 # The script is not idempotent, it will fail if any resources already exist.
 param (
