@@ -113,7 +113,13 @@ func action(ctx context.Context, cmd *command.Command) error {
 
 	// Start timer-triggered service to update policies
 	if _, err := client.Run(ctx, "systemctl restart adsys-gpo-refresh"); err != nil {
-		return err
+		// cifs mount on focal asks for a password via systemd-ask-password,
+		// which we cannot interact with in the context of a script...
+		// Assume everything went fine since we don't care about system mounts
+		// on focal anyway, and other failures will be caught by the assertions below.
+		if cmd.Inventory.Codename != "focal" {
+			return err
+		}
 	}
 
 	// Assert machine policies were applied
