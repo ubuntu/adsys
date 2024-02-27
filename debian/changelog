@@ -1,3 +1,32 @@
+adsys (0.14.0) noble; urgency=medium
+
+  * Infer user KRB5CCNAME path via the libkrb5 API (LP: #2049061)
+    - This functionality is opt-in and activated if the detect_cached_ticket
+      setting is set to true
+    - If the AD backend (e.g. sssd) doesn't export the KRB5CCNAME variable, adsys
+      will now determine the path to the default ticket cache and use it during
+      authentication (when adsys is executed through the PAM module) and runs of
+      adsysctl update for the current user.
+  * Allow sssd backend to work without ad_domain being set (LP: #2054445)
+  * Upgrade to Go 1.22
+  * CI and quality of life changes not impacting package functionality:
+    - Pass token explicitly to Codecov action
+    - Fix require outside of main goroutine
+    - Mark function arguments as unused where applicable
+      Thanks to Edu Gómez Escandell
+    - End to end test VM template creation updates
+    - Bump github actions to latest:
+      - codecov/codecov-action
+      - peter-evans/create-pull-request
+  * Update dependencies to latest:
+    - github.com/charmbracelet/bubbles
+    - github.com/golangci/golangci-lint
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - google.golang.org/grpc
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Tue, 27 Feb 2024 11:58:57 +0200
+
 adsys (0.13.3) noble; urgency=medium
 
   * Fix cert auto-enroll without NDES (LP: #2051363)
