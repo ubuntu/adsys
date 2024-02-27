@@ -56,7 +56,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}()
 
 	// Install krb5-user to be able to interact with kinit
-	if _, err := rootClient.Run(ctx, "apt-get update && apt-get install -y krb5-user"); err != nil {
+	if _, err := rootClient.Run(ctx, "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y krb5-user"); err != nil {
 		return fmt.Errorf("failed to install krb5-user: %w", err)
 	}
 
