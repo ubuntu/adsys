@@ -240,6 +240,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	if args.runDir != "" {
 		adOptions = append(adOptions, ad.WithRunDir(args.runDir))
 	}
+	adOptions = append(adOptions, ad.WithGpoListTimeout(consts.DefaultGpoListTimeout))
 
 	hostname, err := os.Hostname()
 	if err != nil {
