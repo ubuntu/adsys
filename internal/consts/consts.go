@@ -1,7 +1,11 @@
 // Package consts defines the constants used by the project
 package consts
 
-import log "github.com/sirupsen/logrus"
+import (
+	"time"
+
+	log "github.com/sirupsen/logrus"
+)
 
 var (
 	// Version is the version of the executable.
@@ -35,6 +39,9 @@ const (
 
 	// DefaultServiceTimeout is the default time in seconds without any active request before the service exits.
 	DefaultServiceTimeout = 120
+
+	// DefaultGpoListTimeout is the default time to wait for the GPO list subcommand to finish.
+	DefaultGpoListTimeout = 10 * time.Second
 
 	// DistroID is the distro ID which can be overridden at build time.
 	DistroID = "Ubuntu"

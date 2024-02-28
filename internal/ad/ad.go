@@ -79,6 +79,7 @@ type AD struct {
 
 	withoutKerberos bool
 	gpoListCmd      []string
+	gpoListTimeout  time.Duration
 }
 
 type options struct {
@@ -88,6 +89,7 @@ type options struct {
 
 	withoutKerberos bool
 	gpoListCmd      []string
+	gpoListTimeout  time.Duration
 }
 
 // Option reprents an optional function to change AD behavior.
@@ -109,6 +111,14 @@ func WithRunDir(runDir string) Option {
 	}
 }
 
+// WithGpoListTimeout specifies a custom timeout for the adsys-gpolist command.
+func WithGpoListTimeout(timeout time.Duration) Option {
+	return func(o *options) error {
+		o.gpoListTimeout = timeout
+		return nil
+	}
+}
+
 // AdsysGpoListCode is the embedded script which request
 // Samba to get our GPO list for the given object.
 //
@@ -126,10 +136,11 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 
 	// defaults
 	args := options{
-		runDir:     consts.DefaultRunDir,
-		cacheDir:   consts.DefaultCacheDir,
-		gpoListCmd: []string{"python3", "-c", AdsysGpoListCode},
-		versionID:  versionID,
+		runDir:         consts.DefaultRunDir,
+		cacheDir:       consts.DefaultCacheDir,
+		gpoListCmd:     []string{"python3", "-c", AdsysGpoListCode},
+		versionID:      versionID,
+		gpoListTimeout: 30 * time.Second, // this is used in tests and set to consts.DefaultGpoListTimeout in production
 	}
 	// applied options
 	for _, o := range opts {
@@ -167,8 +178,9 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 		policiesCacheDir: policiesCacheDir,
 		krb5CacheDir:     krb5CacheDir,
 
-		downloadables: make(map[string]*downloadable),
-		gpoListCmd:    args.gpoListCmd,
+		downloadables:  make(map[string]*downloadable),
+		gpoListCmd:     args.gpoListCmd,
+		gpoListTimeout: args.gpoListTimeout,
 	}, nil
 }
 
