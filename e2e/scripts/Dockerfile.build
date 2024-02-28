@@ -1,4 +1,4 @@
-ARG CODENAME=mantic
+ARG CODENAME
 FROM ubuntu:$CODENAME
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -8,9 +8,16 @@ RUN echo 'man-db man-db/auto-update boolean false' | debconf-set-selections
 
 RUN set -ex \
     && apt-get update \
-    && apt-get upgrade -y --no-install-recommends \
-    && apt-get install -y software-properties-common \
-    && add-apt-repository -y ppa:ubuntu-enterprise-desktop/golang \
+    && apt-get upgrade -y --no-install-recommends
+
+ARG CODENAME
+RUN if [ "$CODENAME" != "noble" ]; then \
+        set -ex \
+        && apt-get install -y software-properties-common \
+        && add-apt-repository -y ppa:ubuntu-enterprise-desktop/golang; \
+    fi
+
+RUN set -ex \
     && apt-get install -y --no-install-recommends \
                build-essential \
                cdbs \
