@@ -49,6 +49,11 @@ jobs:
                   continue
               fi
 
+              # FIXME: Noble images are currently broken, so avoid testing them for now
+              if [ "${r}" = "noble" ]; then
+                  continue
+              fi
+
               if [ -n "${releases}" ]; then
                   releases="${releases}, "
               fi
