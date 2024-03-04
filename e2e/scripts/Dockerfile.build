@@ -1,4 +1,4 @@
-ARG CODENAME
+ARG CODENAME=latest
 FROM ubuntu:$CODENAME
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -10,7 +10,7 @@ RUN set -ex \
     && apt-get update \
     && apt-get upgrade -y --no-install-recommends
 
-ARG CODENAME
+ARG CODENAME=latest
 RUN if [ "$CODENAME" != "noble" ]; then \
         set -ex \
         && apt-get install -y software-properties-common \
