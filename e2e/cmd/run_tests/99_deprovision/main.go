@@ -24,7 +24,7 @@ func main() {
 func run() int {
 	cmd := command.New(action,
 		command.WithValidateFunc(validate),
-		command.WithStateTransition(inventory.ClientProvisioned, inventory.Deprovisioned),
+		command.WithStateTransition(inventory.ADProvisioned, inventory.Deprovisioned),
 	)
 	cmd.Usage = fmt.Sprintf(`go run ./%s [options]
 

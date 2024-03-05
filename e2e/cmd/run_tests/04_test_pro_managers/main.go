@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -112,7 +113,13 @@ func action(ctx context.Context, cmd *command.Command) error {
 
 	// Start timer-triggered service to update policies
 	if _, err := client.Run(ctx, "systemctl restart adsys-gpo-refresh"); err != nil {
-		return err
+		// cifs mount on focal asks for a password via systemd-ask-password,
+		// which we cannot interact with in the context of a script...
+		// Assume everything went fine since we don't care about system mounts
+		// on focal anyway, and other failures will be caught by the assertions below.
+		if cmd.Inventory.Codename != "focal" {
+			return err
+		}
 	}
 
 	// Assert machine policies were applied
@@ -147,15 +154,20 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	/// Scripts
-	if err := client.RequireNoFileExists(ctx, "/etc/created-by-adsys-machine-startup-script"); err != nil {
-		return err
+	if err := client.RequireFileExists(ctx, "/etc/created-by-adsys-machine-startup-script"); err != nil {
+		return fmt.Errorf("%w: file should have been created by the adsys-gpo-refresh service", err)
 	}
+	// Remove startup script so we can check creation at next reboot
+	if _, err := client.Run(ctx, "rm -f /etc/created-by-adsys-machine-startup-script"); err != nil {
+		log.Errorf("Failed to remove machine startup scripts: %v", err)
+	}
+
 	if err := client.RequireNoFileExists(ctx, "/etc/created-by-adsys-machine-shutdown-script"); err != nil {
 		return err
 	}
 
-	// Assert codename-specific certificate and proxy policies
-	if cmd.Inventory.Codename == "mantic" {
+	// Assert policies only available in newer adsys releases
+	if !slices.Contains([]string{"focal", "jammy"}, cmd.Inventory.Codename) {
 		/// Certificates
 		// Enrollment takes a few seconds, so no better way to do this than an arbitrary sleep :)
 		time.Sleep(5 * time.Second)
