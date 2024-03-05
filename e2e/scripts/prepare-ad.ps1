@@ -2,7 +2,7 @@
 #
 # The script takes a single argument, the hostname of the Linux client to be tested.
 # It creates the following OU structure, together with GPOs and users:
-#  DC=warthogs,DC=biz
+#  OU=e2e,DC=warthogs,DC=biz
 #  └── $hostname
 #      ├── users <──────── linked to $hostname-users-gpo
 #      │   ├── admins <─── linked to $hostname-admins-gpo
@@ -27,7 +27,7 @@ param (
 $ErrorActionPreference = "Stop"
 
 # Create parent OU
-$parentOUPath = "DC=warthogs,DC=biz"
+$parentOUPath = "OU=e2e,DC=warthogs,DC=biz"
 New-ADOrganizationalUnit -Name $hostname -Path $parentOUPath -ProtectedFromAccidentalDeletion $false
 
 $organizationalUnits = @{
@@ -49,7 +49,7 @@ foreach ($gpoPath in $gpoPaths) {
     $targetOU = $gpoPath.split('-')[-1]
     $targetOUPath = $organizationalUnits[$targetOU]
 
-    $gpoName = "$hostname-$targetOU-gpo"
+    $gpoName = "e2e-$hostname-$targetOU-gpo"
     $gpo = New-GPO -Name $gpoName -Comment $hostname
 
     # Copy path to SYSVOL
