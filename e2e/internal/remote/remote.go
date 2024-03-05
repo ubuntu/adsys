@@ -147,14 +147,17 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 		}
 		return nil, fmt.Errorf("command cancelled: %w", ctx.Err())
 	case err := <-waitDone:
+		elapsedTime := time.Since(startTime)
 		wg.Wait() // wait for scanners to finish
-		log.Infof("Command %q finished in %s", cmd, time.Since(startTime).String())
 		mu.Lock()
 		defer mu.Unlock()
+
 		out := []byte(strings.Join(combinedOutput, "\n"))
 		if err != nil {
+			log.Warningf("Command %q failed in %s", cmd, elapsedTime)
 			return out, fmt.Errorf("command failed: %w", err)
 		}
+		log.Infof("Command %q finished in %s", cmd, elapsedTime)
 
 		return out, nil
 	}
