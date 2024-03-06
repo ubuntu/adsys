@@ -13,6 +13,7 @@ import (
 	"github.com/ubuntu/adsys/e2e/internal/command"
 	"github.com/ubuntu/adsys/e2e/internal/inventory"
 	"github.com/ubuntu/adsys/e2e/internal/remote"
+	"github.com/ubuntu/adsys/e2e/scripts"
 )
 
 var adPassword string
@@ -54,10 +55,31 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	defer client.Close()
 
+	scriptsDir, err := scripts.Dir()
+	if err != nil {
+		return err
+	}
+
 	// Leave realm and delete computer object
 	_, err = client.Run(ctx, fmt.Sprintf("realm leave --remove -U localadmin -v --unattended <<<'%s'", adPassword))
 	if err != nil {
 		return fmt.Errorf("failed to leave domain: %w", err)
+	}
+
+	// Connect to the domain controller
+	client, err = remote.NewClient(inventory.DomainControllerIP, "localadmin", sshKey)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	// Upload the PowerShell cleanup script to the domain controller
+	if err := client.Upload(filepath.Join(scriptsDir, "cleanup-ad.ps1"), filepath.Join("C:", "Temp", cmd.Inventory.Hostname)); err != nil {
+		return err
+	}
+	// Run the PowerShell cleanup script
+	if _, err := client.Run(ctx, fmt.Sprintf("powershell.exe -ExecutionPolicy Bypass -File %s -hostname %s", filepath.Join("C:", "Temp", cmd.Inventory.Hostname, "cleanup-ad.ps1"), cmd.Inventory.Hostname)); err != nil {
+		return fmt.Errorf("error running the PowerShell script: %w", err)
 	}
 
 	// Destroy the client VM
