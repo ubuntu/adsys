@@ -13,7 +13,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0
-	github.com/golang/protobuf v1.5.3
+	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
 	github.com/kardianos/service v1.2.2
 	github.com/leonelquinteros/gotext v1.5.3-0.20230829162019-37f474cfb069
