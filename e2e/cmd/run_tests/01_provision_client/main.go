@@ -176,6 +176,12 @@ func action(ctx context.Context, cmd *command.Command) error {
 		}
 	}
 
+	log.Infof("Upgrading packages...")
+	_, err = client.Run(ctx, "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade")
+	if err != nil {
+		return fmt.Errorf("failed to update package list: %w", err)
+	}
+
 	log.Infof("Joining VM to domain...")
 	_, err = client.Run(ctx, fmt.Sprintf("realm join warthogs.biz -U localadmin -v --unattended <<<'%s'", adPassword))
 	if err != nil {
@@ -183,7 +189,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	log.Infof("Installing adsys package...")
-	_, err = client.Run(ctx, "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get install -y /debs/*.deb")
+	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y /debs/*.deb")
 	if err != nil {
 		return fmt.Errorf("failed to install adsys package: %w", err)
 	}
