@@ -176,14 +176,14 @@ func action(ctx context.Context, cmd *command.Command) error {
 		}
 	}
 
-	log.Infof("Joining VM to domain...")
-	_, err = client.Run(ctx, fmt.Sprintf("realm join warthogs.biz -U localadmin -v --unattended <<<'%s'", adPassword))
+	log.Infof("Upgrading packages...")
+	_, err = client.Run(ctx, "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade")
 	if err != nil {
-		return fmt.Errorf("failed to join VM to domain: %w", err)
+		return fmt.Errorf("failed to update package list: %w", err)
 	}
 
 	log.Infof("Installing adsys package...")
-	_, err = client.Run(ctx, "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get install -y /debs/*.deb")
+	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y /debs/*.deb")
 	if err != nil {
 		return fmt.Errorf("failed to install adsys package: %w", err)
 	}
@@ -193,6 +193,12 @@ func action(ctx context.Context, cmd *command.Command) error {
 	log.Infof("Installing universe packages required for some policy managers...")
 	if _, err := client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-proxy-manager python3-cepces"); err != nil {
 		log.Warningf("Some packages failed to install: %v", err)
+	}
+
+	log.Infof("Joining VM to domain...")
+	_, err = client.Run(ctx, fmt.Sprintf("realm join warthogs.biz -U localadmin -v --unattended <<<'%s'", adPassword))
+	if err != nil {
+		return fmt.Errorf("failed to join VM to domain: %w", err)
 	}
 
 	cmd.Inventory.IP = ipAddress

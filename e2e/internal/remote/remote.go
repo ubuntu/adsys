@@ -57,9 +57,22 @@ func NewClient(host string, username string, secret string) (Client, error) {
 		Timeout:         10 * time.Second,
 	}
 
-	client, err := ssh.Dial("tcp", host+":22", config)
+	var client *ssh.Client
+
+	interval := 3 * time.Second
+	retries := 10
+
+	for i := 1; i <= retries; i++ {
+		log.Debugf("Establishing SSH connection to %q (attempt %d/%d)", host, i, retries)
+		client, err = ssh.Dial("tcp", host+":22", config)
+		if err == nil {
+			break
+		}
+		log.Warningf("Failed to connect to %q: %v (attempt %d/%d)", host, err, i, retries)
+		time.Sleep(interval)
+	}
 	if err != nil {
-		return Client{}, fmt.Errorf("failed to establish connection to remote host: %w", err)
+		return Client{}, fmt.Errorf("failed to connect to %q: %w", host, err)
 	}
 
 	return Client{
@@ -218,7 +231,7 @@ func (c Client) Upload(localPath string, remotePath string) error {
 // Reboot reboots the remote host and waits for it to come back online, then
 // reestablishes the SSH connection.
 // It first waits for the host to go offline, then returns an error if the host
-// does not come back online within 1 minute.
+// does not come back online within 3 minutes.
 func (c *Client) Reboot() error {
 	log.Infof("Rebooting host %q", c.client.RemoteAddr().String())
 	_, _ = c.Run(context.Background(), "reboot")
@@ -238,7 +251,7 @@ func (c *Client) Reboot() error {
 		return fmt.Errorf("host did not go offline in time")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
 	// Wait for the host to come back online

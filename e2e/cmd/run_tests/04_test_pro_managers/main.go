@@ -198,6 +198,10 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	if err := client.Reboot(); err != nil {
 		return err
 	}
+
+	// Sleep a few seconds to ensure the machine startup script has time to run
+	time.Sleep(10 * time.Second)
+
 	if err := client.RequireFileExists(ctx, "/etc/created-by-adsys-machine-shutdown-script"); err != nil {
 		return err
 	}

@@ -40,62 +40,75 @@ type Command struct {
 
 	fSet *flag.FlagSet
 
-	fromState inventory.State
-	toState   inventory.State
+	fromStates []inventory.State
+	toState    inventory.State
 }
 
-// WithStateTransition sets the expected state transition for the command.
-func WithStateTransition(from, to inventory.State) func(*options) {
-	return func(a *options) {
-		a.fromState = from
-		a.toState = to
+// WithStateTransition sets the expected state transition for the command,
+// allowing for one or more initial states, and a final state.
+func WithStateTransition(states ...inventory.State) func(*options) error {
+	return func(a *options) error {
+		if len(states) < 2 {
+			return errors.New("expected at least two states")
+		}
+
+		a.fromStates = states[:len(states)-1]
+		a.toState = states[len(states)-1]
+
+		return nil
 	}
 }
 
 // WithRequiredState ensures that the inventory file is in the given state,
 // without a transition being performed.
-func WithRequiredState(state inventory.State) func(*options) {
-	return func(a *options) {
-		a.fromState = state
+func WithRequiredState(state inventory.State) func(*options) error {
+	return func(a *options) error {
+		a.fromStates = []inventory.State{state}
 		a.toState = state
+
+		return nil
 	}
 }
 
 // WithValidateFunc sets the validation function for the command.
-func WithValidateFunc(validate cmdFunc) func(*options) {
-	return func(a *options) {
+func WithValidateFunc(validate cmdFunc) func(*options) error {
+	return func(a *options) error {
 		a.validate = validate
+
+		return nil
 	}
 }
 
 type options struct {
-	validate  cmdFunc
-	fromState inventory.State
-	toState   inventory.State
+	validate   cmdFunc
+	fromStates []inventory.State
+	toState    inventory.State
 }
 
 // Option is a function that configures the command.
-type Option func(*options)
+type Option func(*options) error
 
 // New creates a new command.
 func New(action cmdFunc, args ...Option) *Command {
 	// Apply given options
 	opts := options{
-		fromState: inventory.Null,
-		toState:   inventory.Null,
+		fromStates: []inventory.State{inventory.Null},
+		toState:    inventory.Null,
 	}
 
 	for _, f := range args {
-		f(&opts)
+		if err := f(&opts); err != nil {
+			log.Fatalf("Failed to apply option: %s", err)
+		}
 	}
 
 	return &Command{
 		action:   action,
 		validate: opts.validate,
 
-		fSet:      flag.NewFlagSet("", flag.ContinueOnError),
-		fromState: opts.fromState,
-		toState:   opts.toState,
+		fSet:       flag.NewFlagSet("", flag.ContinueOnError),
+		fromStates: opts.fromStates,
+		toState:    opts.toState,
 	}
 }
 
@@ -195,8 +208,16 @@ func (c *Command) Execute(ctx context.Context) int {
 			return 1
 		}
 
-		if c.Inventory.State != c.fromState {
-			log.Errorf("Inventory file is not in the expected state: %s", c.fromState)
+		// Allow at least one of the expected states
+		found := false
+		for _, s := range c.fromStates {
+			if c.Inventory.State == s {
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Errorf("Inventory file is not in any of the expected initial states: %v", c.fromStates)
 			return 1
 		}
 	}
@@ -227,7 +248,7 @@ func (c *Command) Execute(ctx context.Context) int {
 }
 
 func (c *Command) requireInventory() bool {
-	return c.fromState != inventory.Null
+	return c.fromStates[0] != inventory.Null
 }
 
 func (c *Command) installSignalHandler(cancel context.CancelFunc) func() {

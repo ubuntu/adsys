@@ -36,8 +36,9 @@ func TestAddFlags(t *testing.T) {
 
 func TestInventory(t *testing.T) {
 	tests := map[string]struct {
-		fromState inventory.State
-		toState   inventory.State
+		fromState           inventory.State
+		toState             inventory.State
+		additionalFromState inventory.State
 
 		existingInventory string
 
@@ -47,9 +48,11 @@ func TestInventory(t *testing.T) {
 		"From null state doesn't require existing data": {toState: inventory.BaseVMCreated},
 		"From existing state requires existing data":    {fromState: inventory.BaseVMCreated, toState: inventory.TemplateCreated, existingInventory: "inventory_from_template_created"},
 		"To null state doesn't write data":              {toState: inventory.Null, wantNoFile: true},
+		"Multiple from states requires at least one":    {fromState: inventory.ClientProvisioned, toState: inventory.TemplateCreated, additionalFromState: inventory.BaseVMCreated, existingInventory: "inventory_from_template_created"},
 
-		"Error if inventory file is required and doesn't exist":  {fromState: inventory.TemplateCreated, wantErr: true},
-		"Error if inventory state does not match expected state": {fromState: inventory.TemplateCreated, existingInventory: "inventory_from_template_created", wantErr: true},
+		"Error if inventory file is required and doesn't exist":      {fromState: inventory.TemplateCreated, wantErr: true},
+		"Error if inventory state does not match expected state":     {fromState: inventory.TemplateCreated, existingInventory: "inventory_from_template_created", wantErr: true},
+		"Error if inventory state does not match any expected state": {fromState: inventory.TemplateCreated, additionalFromState: inventory.Null, existingInventory: "inventory_from_template_created", wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -73,7 +76,11 @@ func TestInventory(t *testing.T) {
 			inventoryPath := filepath.Join(tempDir, "inventory", tc.existingInventory)
 			os.Args = append(args, "--inventory-file", inventoryPath)
 
-			cmd := command.New(mockAction, command.WithStateTransition(tc.fromState, tc.toState))
+			states := []inventory.State{tc.fromState}
+			states = append(states, tc.additionalFromState)
+			states = append(states, tc.toState)
+
+			cmd := command.New(mockAction, command.WithStateTransition(states...))
 			ret := cmd.Execute(context.Background())
 
 			if tc.wantErr {

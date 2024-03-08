@@ -25,7 +25,7 @@ func main() {
 func run() int {
 	cmd := command.New(action,
 		command.WithValidateFunc(validate),
-		command.WithStateTransition(inventory.ADProvisioned, inventory.Deprovisioned),
+		command.WithStateTransition(inventory.ClientProvisioned, inventory.ADProvisioned, inventory.Deprovisioned),
 	)
 	cmd.Usage = fmt.Sprintf(`go run ./%s [options]
 
@@ -66,6 +66,23 @@ func action(ctx context.Context, cmd *command.Command) error {
 		return fmt.Errorf("failed to leave domain: %w", err)
 	}
 
+	// Destroy the client VM
+	log.Infof("Destroying client VM %q", cmd.Inventory.VMName)
+	_, _, err = az.RunCommand(ctx, "vm", "delete",
+		"--resource-group", "AD",
+		"--name", cmd.Inventory.VMName,
+		"--force-deletion", "true",
+		"--yes",
+	)
+	if err != nil {
+		return err
+	}
+
+	// Return early if we don't need to deprovision AD resources
+	if cmd.Inventory.State != inventory.ADProvisioned {
+		return nil
+	}
+
 	// Connect to the domain controller
 	client, err = remote.NewClient(inventory.DomainControllerIP, "localadmin", sshKey)
 	if err != nil {
@@ -80,18 +97,6 @@ func action(ctx context.Context, cmd *command.Command) error {
 	// Run the PowerShell cleanup script
 	if _, err := client.Run(ctx, fmt.Sprintf("powershell.exe -ExecutionPolicy Bypass -File %s -hostname %s", filepath.Join("C:", "Temp", cmd.Inventory.Hostname, "cleanup-ad.ps1"), cmd.Inventory.Hostname)); err != nil {
 		return fmt.Errorf("error running the PowerShell script: %w", err)
-	}
-
-	// Destroy the client VM
-	log.Infof("Destroying client VM %q", cmd.Inventory.VMName)
-	_, _, err = az.RunCommand(ctx, "vm", "delete",
-		"--resource-group", "AD",
-		"--name", cmd.Inventory.VMName,
-		"--force-deletion", "true",
-		"--yes",
-	)
-	if err != nil {
-		return err
 	}
 
 	return nil
