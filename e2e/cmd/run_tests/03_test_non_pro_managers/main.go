@@ -65,6 +65,9 @@ func action(ctx context.Context, cmd *command.Command) error {
 		return err
 	}
 
+	//nolint:errcheck // This is a best effort to collect logs
+	defer client.CollectLogs(ctx, cmd.Inventory.Hostname)
+
 	// Assert machine policies were applied
 	if err := client.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/desktop/interface/clock-format", "'12h'"); err != nil {
 		return err

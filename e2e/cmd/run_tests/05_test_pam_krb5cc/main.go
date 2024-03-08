@@ -53,6 +53,9 @@ func action(ctx context.Context, cmd *command.Command) error {
 		if _, err := rootClient.Run(ctx, "rm -f /etc/adsys.yaml"); err != nil {
 			log.Errorf("Teardown: Failed to remove adsys configuration file: %v", err)
 		}
+
+		//nolint:errcheck // This is a best effort to collect logs
+		rootClient.CollectLogs(ctx, cmd.Inventory.Hostname)
 	}()
 
 	// Install krb5-user to be able to interact with kinit

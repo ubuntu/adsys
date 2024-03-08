@@ -101,6 +101,9 @@ func action(ctx context.Context, cmd *command.Command) error {
 		if _, err := client.Run(ctx, "rm -f /home/*/created-by-adsys-admin-logon-script /home/*/created-by-adsys-admin-logoff-script /home/*/created-by-adsys-user-logon-script"); err != nil {
 			log.Errorf("Teardown: Failed to remove user scripts: %v", err)
 		}
+
+		//nolint:errcheck // This is a best effort to collect logs
+		client.CollectLogs(ctx, cmd.Inventory.Hostname)
 	}()
 
 	// Attach client to Ubuntu Pro

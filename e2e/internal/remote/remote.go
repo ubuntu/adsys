@@ -228,6 +228,36 @@ func (c Client) Upload(localPath string, remotePath string) error {
 	return nil
 }
 
+// Download downloads the given remote file to the local path.
+func (c Client) Download(remotePath string, localPath string) error {
+	log.Infof("Downloading %q from host %q to %q", remotePath, c.client.RemoteAddr(), localPath)
+
+	ftp, err := sftp.NewClient(c.client)
+	if err != nil {
+		return err
+	}
+	defer ftp.Close()
+
+	remote, err := ftp.Open(remotePath)
+	if err != nil {
+		return err
+	}
+	defer remote.Close()
+
+	local, err := os.Create(localPath)
+	if err != nil {
+		return err
+	}
+	defer local.Close()
+
+	if _, err := remote.WriteTo(local); err != nil {
+		return err
+	}
+	log.Info("File downloaded successfully")
+
+	return nil
+}
+
 // Reboot reboots the remote host and waits for it to come back online, then
 // reestablishes the SSH connection.
 // It first waits for the host to go offline, then returns an error if the host
@@ -271,4 +301,59 @@ func (c *Client) Reboot() error {
 			time.Sleep(5 * time.Second)
 		}
 	}
+}
+
+// CollectLogs collects logs from the remote host and writes them to disk under
+// a relative logs directory named after the client host.
+func (c *Client) CollectLogs(ctx context.Context, hostname string) (err error) {
+	defer func() {
+		if err != nil {
+			log.Errorf("Failed to collect logs from host %q: %v", hostname, err)
+		}
+	}()
+
+	log.Infof("Collecting logs from host %q", c.client.RemoteAddr().String())
+
+	// Create local directory to store logs
+	logDir := filepath.Join("logs", hostname)
+	if err := os.MkdirAll(logDir, 0700); err != nil {
+		return fmt.Errorf("failed to create log directory: %w", err)
+	}
+
+	// Check if we are still connected to remote server, attempt to reconnect if not
+	if c.client == nil {
+		c.client, err = ssh.Dial("tcp", c.host+":22", c.config)
+		if err != nil {
+			return fmt.Errorf("failed to reconnect to %q: %w", c.host, err)
+		}
+	}
+
+	// Run ubuntu-bug to collect logs
+	_, err = c.Run(ctx, "APPORT_DISABLE_DISTRO_CHECK=1 ubuntu-bug --save=/root/bug adsys")
+	if err != nil {
+		return fmt.Errorf("failed to collect logs: %w", err)
+	}
+	// Save journalctl logs
+	_, err = c.Run(ctx, "journalctl --no-pager --output=short-precise --no-hostname > /root/journal")
+	if err != nil {
+		return fmt.Errorf("failed to read logs: %w", err)
+	}
+
+	// Archive and download /var/log
+	if _, err := c.Run(ctx, "tar --exclude=/var/log/journal -czf /root/varlog.tar.gz /var/log"); err != nil {
+		return fmt.Errorf("failed to archive logs: %w", err)
+	}
+
+	// Download remote logs
+	if err := c.Download("/root/varlog.tar.gz", filepath.Join(logDir, "varlog.tar.gz")); err != nil {
+		return fmt.Errorf("failed to download logs: %w", err)
+	}
+	if err := c.Download("/root/bug", filepath.Join(logDir, "apport.log")); err != nil {
+		return fmt.Errorf("failed to download logs: %w", err)
+	}
+	if err := c.Download("/root/journal", filepath.Join(logDir, "journal.log")); err != nil {
+		return fmt.Errorf("failed to download logs: %w", err)
+	}
+
+	return nil
 }
