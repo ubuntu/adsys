@@ -43,20 +43,20 @@ func validate(_ context.Context, cmd *command.Command) (err error) {
 	return nil
 }
 
-func action(ctx context.Context, cmd *command.Command) error {
+func action(ctx context.Context, cmd *command.Command) (err error) {
 	rootClient, err := remote.NewClient(cmd.Inventory.IP, "root", sshKey)
 	if err != nil {
 		return fmt.Errorf("failed to connect to VM: %w", err)
 	}
+
+	//nolint:errcheck // This is a best effort to collect logs
+	defer rootClient.CollectLogsOnFailure(ctx, &err, cmd.Inventory.Hostname)
 
 	defer func() {
 		if _, err := rootClient.Run(ctx, "rm -f /etc/adsys.yaml"); err != nil {
 			log.Errorf("Teardown: Failed to remove adsys configuration file: %v", err)
 		}
 	}()
-
-	//nolint:errcheck // This is a best effort to collect logs
-	defer rootClient.CollectLogs(ctx, cmd.Inventory.Hostname)
 
 	// Install krb5-user to be able to interact with kinit
 	if _, err := rootClient.Run(ctx, "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y krb5-user"); err != nil {

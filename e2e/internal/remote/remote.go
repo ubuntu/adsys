@@ -357,3 +357,12 @@ func (c *Client) CollectLogs(ctx context.Context, hostname string) (err error) {
 
 	return nil
 }
+
+// CollectLogsOnFailure collects logs from the remote host and writes them to disk if passed a non-nil error.
+func (c *Client) CollectLogsOnFailure(ctx context.Context, err *error, hostname string) error {
+	if *err != nil {
+		return c.CollectLogs(ctx, hostname)
+	}
+
+	return nil
+}

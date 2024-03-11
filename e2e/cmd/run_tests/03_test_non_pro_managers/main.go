@@ -54,19 +54,19 @@ func validate(_ context.Context, cmd *command.Command) (err error) {
 	return nil
 }
 
-func action(ctx context.Context, cmd *command.Command) error {
+func action(ctx context.Context, cmd *command.Command) (err error) {
 	rootClient, err := remote.NewClient(cmd.Inventory.IP, "root", sshKey)
 	if err != nil {
 		return fmt.Errorf("failed to connect to VM: %w", err)
 	}
 
+	//nolint:errcheck // This is a best effort to collect logs
+	defer rootClient.CollectLogsOnFailure(ctx, &err, cmd.Inventory.Hostname)
+
 	// Reboot machine to apply machine policies
 	if err := rootClient.Reboot(); err != nil {
 		return err
 	}
-
-	//nolint:errcheck // This is a best effort to collect logs
-	defer rootClient.CollectLogs(ctx, cmd.Inventory.Hostname)
 
 	// Assert machine policies were applied
 	if err := rootClient.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/desktop/interface/clock-format", "'12h'"); err != nil {

@@ -70,11 +70,14 @@ func validate(_ context.Context, cmd *command.Command) (err error) {
 	return nil
 }
 
-func action(ctx context.Context, cmd *command.Command) error {
+func action(ctx context.Context, cmd *command.Command) (err error) {
 	rootClient, err := remote.NewClient(cmd.Inventory.IP, "root", sshKey)
 	if err != nil {
 		return fmt.Errorf("failed to connect to VM: %w", err)
 	}
+
+	//nolint:errcheck // This is a best effort to collect logs
+	defer rootClient.CollectLogsOnFailure(ctx, &err, cmd.Inventory.Hostname)
 
 	defer func() {
 		if _, err := rootClient.Run(ctx, "adsysctl policy purge --all -v"); err != nil {
@@ -97,9 +100,6 @@ func action(ctx context.Context, cmd *command.Command) error {
 			log.Errorf("Teardown: Failed to remove user scripts: %v", err)
 		}
 	}()
-
-	//nolint:errcheck // This is a best effort to collect logs
-	defer rootClient.CollectLogs(ctx, cmd.Inventory.Hostname)
 
 	// Attach client to Ubuntu Pro
 	if _, err := rootClient.Run(ctx, fmt.Sprintf("pro attach %s --no-auto-enable", proToken)); err != nil {
