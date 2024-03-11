@@ -40,6 +40,7 @@ debian/adsys-windows
 # E2E testing
 inventory.yaml
 e2e/assets/gpo/**/*.pol
+logs/
 
 # GitHub CI temporary files
 node_modules

@@ -54,38 +54,41 @@ func validate(_ context.Context, cmd *command.Command) (err error) {
 	return nil
 }
 
-func action(ctx context.Context, cmd *command.Command) error {
-	client, err := remote.NewClient(cmd.Inventory.IP, "root", sshKey)
+func action(ctx context.Context, cmd *command.Command) (err error) {
+	rootClient, err := remote.NewClient(cmd.Inventory.IP, "root", sshKey)
 	if err != nil {
 		return fmt.Errorf("failed to connect to VM: %w", err)
 	}
 
+	//nolint:errcheck // This is a best effort to collect logs
+	defer rootClient.CollectLogsOnFailure(ctx, &err, cmd.Inventory.Hostname)
+
 	// Reboot machine to apply machine policies
-	if err := client.Reboot(); err != nil {
+	if err := rootClient.Reboot(); err != nil {
 		return err
 	}
 
 	// Assert machine policies were applied
-	if err := client.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/desktop/interface/clock-format", "'12h'"); err != nil {
+	if err := rootClient.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/desktop/interface/clock-format", "'12h'"); err != nil {
 		return err
 	}
-	if err := client.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/desktop/interface/clock-show-weekday", "false"); err != nil {
+	if err := rootClient.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/desktop/interface/clock-show-weekday", "false"); err != nil {
 		return err
 	}
-	if err := client.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/login-screen/banner-message-enable", "true"); err != nil {
+	if err := rootClient.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/login-screen/banner-message-enable", "true"); err != nil {
 		return err
 	}
-	if err := client.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/login-screen/banner-message-text", "'Sample banner text'"); err != nil {
+	if err := rootClient.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/login-screen/banner-message-text", "'Sample banner text'"); err != nil {
 		return err
 	}
 
 	// Pro policies should not be applied yet
-	if err := client.RequireEqual(ctx, "gsettings get org.gnome.system.proxy.ftp host", "''"); err != nil {
+	if err := rootClient.RequireEqual(ctx, "gsettings get org.gnome.system.proxy.ftp host", "''"); err != nil {
 		return err
 	}
 
 	// Assert user GPO policies were applied
-	client, err = remote.NewClient(cmd.Inventory.IP, fmt.Sprintf("%s-usr@warthogs.biz", cmd.Inventory.Hostname), remote.DomainUserPassword)
+	client, err := remote.NewClient(cmd.Inventory.IP, fmt.Sprintf("%s-usr@warthogs.biz", cmd.Inventory.Hostname), remote.DomainUserPassword)
 	if err != nil {
 		return fmt.Errorf("failed to connect to VM: %w", err)
 	}
