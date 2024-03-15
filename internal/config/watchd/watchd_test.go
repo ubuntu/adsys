@@ -2,7 +2,6 @@ package watchd_test
 
 import (
 	"context"
-	"flag"
 	"os"
 	"path/filepath"
 	"strings"
@@ -130,11 +129,4 @@ func TestWriteConfig(t *testing.T) {
 			require.ElementsMatch(t, tc.dirs, got)
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

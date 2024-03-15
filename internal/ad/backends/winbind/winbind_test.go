@@ -125,7 +125,6 @@ func TestExecuteKinitCommand(_ *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
 	debug := flag.Bool("verbose", false, "Print debug log level information within the test")
 	flag.Parse()
 	if *debug {

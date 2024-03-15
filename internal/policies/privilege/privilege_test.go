@@ -2,7 +2,6 @@ package privilege_test
 
 import (
 	"context"
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -131,11 +130,4 @@ func TestApplyPolicy(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, tempEtc, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

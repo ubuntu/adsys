@@ -2,7 +2,6 @@ package mount
 
 import (
 	"context"
-	"flag"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -157,10 +156,4 @@ func TestCreateUnits(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, unitPath, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-	m.Run()
 }

@@ -3,7 +3,6 @@ package scripts_test
 import (
 	"context"
 	"errors"
-	"flag"
 	"io/fs"
 	"os"
 	"os/user"
@@ -293,11 +292,4 @@ func (s mockUnitStarter) StartUnit(_ context.Context, _ string) error {
 		return errors.New("failed to start unit")
 	}
 	return nil
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

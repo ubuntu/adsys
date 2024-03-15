@@ -2,7 +2,6 @@ package gdm_test
 
 import (
 	"context"
-	"flag"
 	"path/filepath"
 	"testing"
 
@@ -50,11 +49,4 @@ func TestApplyPolicy(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, dconfDir, filepath.Join(testutils.GoldenPath(t), "etc", "dconf"), testutils.UpdateEnabled())
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

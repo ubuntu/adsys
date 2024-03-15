@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -65,9 +64,6 @@ func TestMain(m *testing.M) {
 		}
 		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/AD/SYSVOL"))()
 	}
-
-	testutils.InstallUpdateFlag()
-	flag.Parse()
 
 	m.Run()
 

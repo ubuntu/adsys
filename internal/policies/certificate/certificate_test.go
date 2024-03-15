@@ -2,7 +2,6 @@ package certificate_test
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -170,9 +169,6 @@ func TestMockAutoenrollScript(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
 	m.Run()
 	testutils.MergeCoverages()
 }

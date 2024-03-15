@@ -649,7 +649,6 @@ func TestMain(m *testing.M) {
 	// Simulate a color terminal
 	lipgloss.SetColorProfile(termenv.ANSI256)
 
-	testutils.InstallUpdateFlag()
 	flag.BoolVar(&stdout, "stdout", false, "print output to stdout for debugging purposes")
 	flag.Parse()
 

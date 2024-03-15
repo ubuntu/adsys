@@ -3,7 +3,6 @@ package policies_test
 import (
 	"context"
 	"errors"
-	"flag"
 	"fmt"
 	"io/fs"
 	"log"
@@ -905,9 +904,6 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, u
 }
 
 func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
 	// Don’t setup samba or sssd for mock helpers
 	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
 		// Ubuntu Advantage

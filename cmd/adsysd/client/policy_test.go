@@ -1,7 +1,6 @@
 package client
 
 import (
-	"flag"
 	"os"
 	"testing"
 
@@ -51,10 +50,4 @@ Policies from user configuration:
 
 	want := testutils.LoadWithUpdateFromGolden(t, got)
 	require.Equal(t, want, got, "colorizePolicies returned expected formatted output")
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-	m.Run()
 }

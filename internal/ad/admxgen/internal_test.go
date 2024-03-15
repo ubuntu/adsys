@@ -1,7 +1,6 @@
 package admxgen
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -287,11 +286,4 @@ func TestExpandedCategoriesToMD(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, dst, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

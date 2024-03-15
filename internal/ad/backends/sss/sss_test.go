@@ -137,7 +137,6 @@ func (s sssdbus) IsOnline() (bool, *dbus.Error) {
 }
 
 func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
 	// TODO: do we want to alway print debug?
 	debug := flag.Bool("verbose", false, "Print debug log level information within the test")
 	flag.Parse()
