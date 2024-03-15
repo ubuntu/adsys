@@ -2,7 +2,6 @@ package gdm_test
 
 import (
 	"context"
-	"flag"
 	"path/filepath"
 	"testing"
 
@@ -47,14 +46,7 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
 
-			testutils.CompareTreesWithFiltering(t, dconfDir, filepath.Join(testutils.GoldenPath(t), "etc", "dconf"), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, dconfDir, filepath.Join(testutils.GoldenPath(t), "etc", "dconf"), testutils.UpdateEnabled())
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

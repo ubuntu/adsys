@@ -272,7 +272,7 @@ func TestApplyPolicy(t *testing.T) {
 			if !tc.isComputer {
 				makeIndependentOfCurrentUID(t, runDir, u.Uid)
 			}
-			testutils.CompareTreesWithFiltering(t, rootDir, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, rootDir, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }

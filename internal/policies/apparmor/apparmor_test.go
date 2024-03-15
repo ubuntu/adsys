@@ -3,7 +3,6 @@ package apparmor_test
 import (
 	"bufio"
 	"context"
-	"flag"
 	"fmt"
 	"io/fs"
 	"os"
@@ -170,7 +169,7 @@ func TestApplyPolicy(t *testing.T) {
 				})
 				require.NoError(t, err, "Setup: can't restore permissions of dumped files")
 			}
-			testutils.CompareTreesWithFiltering(t, apparmorDir, filepath.Join(testutils.GoldenPath(t), "etc", "apparmor.d", "adsys"), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, apparmorDir, filepath.Join(testutils.GoldenPath(t), "etc", "apparmor.d", "adsys"), testutils.UpdateEnabled())
 
 			// Check that apparmor_parser was called with the expected arguments
 			got, err := os.ReadFile(parserCmdOutputFile)
@@ -312,11 +311,4 @@ func mockLoadedPoliciesFile(t *testing.T, policies []string) string {
 	err := os.WriteFile(path, []byte(strings.Join(policies, " (enforce)\n")+" (enforce)\n"), 0600)
 	require.NoError(t, err, "Setup: Can't write loaded policies file")
 	return path
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

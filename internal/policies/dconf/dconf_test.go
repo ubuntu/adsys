@@ -2,7 +2,6 @@ package dconf_test
 
 import (
 	"context"
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
@@ -219,14 +218,7 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
 
-			testutils.CompareTreesWithFiltering(t, dconfDir, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, dconfDir, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

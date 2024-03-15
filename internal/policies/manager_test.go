@@ -177,7 +177,7 @@ func TestApplyPolicies(t *testing.T) {
 				require.NoError(t, err, "ApplyPolicy should return no error but got one")
 			}
 
-			testutils.CompareTreesWithFiltering(t, fakeRootDir, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, fakeRootDir, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }

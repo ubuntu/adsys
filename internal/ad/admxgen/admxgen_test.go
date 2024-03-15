@@ -175,7 +175,7 @@ func TestGenerateDoc(t *testing.T) {
 			}
 			require.NoError(t, err, "GenerateDoc failed but shouldn't have")
 
-			testutils.CompareTreesWithFiltering(t, dst, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, dst, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }

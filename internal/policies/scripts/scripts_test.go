@@ -3,7 +3,6 @@ package scripts_test
 import (
 	"context"
 	"errors"
-	"flag"
 	"io/fs"
 	"os"
 	"os/user"
@@ -165,7 +164,7 @@ func TestApplyPolicy(t *testing.T) {
 
 			makeIndependentOfCurrentUID(t, runDir, u.Uid)
 
-			testutils.CompareTreesWithFiltering(t, runDir, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, runDir, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }
@@ -277,7 +276,7 @@ func TestRunScripts(t *testing.T) {
 
 			// Get and compare oracle file to check order
 			src := filepath.Join(scriptRootParentDir, "golden")
-			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }
@@ -293,11 +292,4 @@ func (s mockUnitStarter) StartUnit(_ context.Context, _ string) error {
 		return errors.New("failed to start unit")
 	}
 	return nil
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

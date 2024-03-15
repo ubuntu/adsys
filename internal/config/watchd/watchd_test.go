@@ -2,7 +2,6 @@ package watchd_test
 
 import (
 	"context"
-	"flag"
 	"os"
 	"path/filepath"
 	"strings"
@@ -120,7 +119,7 @@ func TestWriteConfig(t *testing.T) {
 			}
 			require.NoError(t, err, "didn't expect writing config to fail")
 
-			if testutils.Update() {
+			if testutils.UpdateEnabled() {
 				err := os.MkdirAll(filepath.Dir(goldPath), 0750)
 				require.NoError(t, err, "Setup: Failed to create path to store the golden files")
 				testutils.Copy(t, configPath, goldPath)
@@ -130,11 +129,4 @@ func TestWriteConfig(t *testing.T) {
 			require.ElementsMatch(t, tc.dirs, got)
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }

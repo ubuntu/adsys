@@ -579,9 +579,6 @@ func TestParseGPOConcurrent(t *testing.T) {
 const SmbPort = 1445
 
 func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
 	// Don’t setup samba or sssd for mock helpers
 	if strings.Contains(strings.Join(os.Args, " "), "TestMock") {
 		m.Run()

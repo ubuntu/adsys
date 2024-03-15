@@ -1170,7 +1170,7 @@ func TestPolicyUpdate(t *testing.T) {
 			require.NoError(t, err, "client should exit with no error")
 
 			goldenPath := testutils.GoldenPath(t)
-			update := testutils.Update()
+			update := testutils.UpdateEnabled()
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "dconf"), filepath.Join(goldenPath, "dconf"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "sudoers.d"), filepath.Join(goldenPath, "sudoers.d"), update)
 			testutils.CompareTreesWithFiltering(t, filepath.Join(adsysDir, "polkit-1"), filepath.Join(goldenPath, "polkit-1"), update)

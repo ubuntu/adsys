@@ -83,7 +83,7 @@ func TestAdsysdRunScripts(t *testing.T) {
 
 			// Get and compare oracle file to check order
 			src := filepath.Join(p, "golden")
-			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }

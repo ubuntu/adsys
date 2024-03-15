@@ -1,7 +1,6 @@
 package dconf_test
 
 import (
-	"flag"
 	"os"
 	"path/filepath"
 	"strings"
@@ -108,11 +107,4 @@ func TestGenerate(t *testing.T) {
 			assert.Equal(t, want, got, "expected and got differs")
 		})
 	}
-}
-
-func TestMain(m *testing.M) {
-	testutils.InstallUpdateFlag()
-	flag.Parse()
-
-	m.Run()
 }
