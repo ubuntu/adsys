@@ -284,7 +284,7 @@ func TestExpandedCategoriesToMD(t *testing.T) {
 			}
 			require.NoError(t, err, "expandedCategoriesToMD failed but shouldn't have")
 
-			testutils.CompareTreesWithFiltering(t, dst, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, dst, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }

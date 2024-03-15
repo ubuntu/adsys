@@ -120,7 +120,7 @@ func TestWriteConfig(t *testing.T) {
 			}
 			require.NoError(t, err, "didn't expect writing config to fail")
 
-			if testutils.Update() {
+			if testutils.UpdateEnabled() {
 				err := os.MkdirAll(filepath.Dir(goldPath), 0750)
 				require.NoError(t, err, "Setup: Failed to create path to store the golden files")
 				testutils.Copy(t, configPath, goldPath)

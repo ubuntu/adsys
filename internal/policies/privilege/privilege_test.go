@@ -128,7 +128,7 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
 
-			testutils.CompareTreesWithFiltering(t, tempEtc, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, tempEtc, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }

@@ -165,7 +165,7 @@ func TestApplyPolicy(t *testing.T) {
 
 			makeIndependentOfCurrentUID(t, runDir, u.Uid)
 
-			testutils.CompareTreesWithFiltering(t, runDir, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, runDir, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }
@@ -277,7 +277,7 @@ func TestRunScripts(t *testing.T) {
 
 			// Get and compare oracle file to check order
 			src := filepath.Join(scriptRootParentDir, "golden")
-			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }

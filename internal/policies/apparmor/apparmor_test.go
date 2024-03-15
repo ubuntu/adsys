@@ -170,7 +170,7 @@ func TestApplyPolicy(t *testing.T) {
 				})
 				require.NoError(t, err, "Setup: can't restore permissions of dumped files")
 			}
-			testutils.CompareTreesWithFiltering(t, apparmorDir, filepath.Join(testutils.GoldenPath(t), "etc", "apparmor.d", "adsys"), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, apparmorDir, filepath.Join(testutils.GoldenPath(t), "etc", "apparmor.d", "adsys"), testutils.UpdateEnabled())
 
 			// Check that apparmor_parser was called with the expected arguments
 			got, err := os.ReadFile(parserCmdOutputFile)

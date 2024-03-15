@@ -79,7 +79,7 @@ func TestNew(t *testing.T) {
 			require.NoError(t, err, "New should return no error but got one")
 			defer got.Close()
 
-			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.Update())
+			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }
@@ -126,7 +126,7 @@ func TestNewFromCache(t *testing.T) {
 			require.NoError(t, err, "NewFromCache should return no error but got one")
 			defer got.Close()
 
-			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.Update())
+			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }
@@ -251,7 +251,7 @@ func TestSave(t *testing.T) {
 			}
 			require.NoError(t, err, "Save should return no error but got one")
 
-			testutils.CompareTreesWithFiltering(t, dest, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, dest, testutils.GoldenPath(t), testutils.UpdateEnabled())
 			// compare that assets compressed db corresponds to source.
 			testutils.CompareTreesWithFiltering(t, filepath.Join(dest, policies.PoliciesAssetsFileName), filepath.Join(src, policies.PoliciesAssetsFileName), false)
 
@@ -415,7 +415,7 @@ func TestSaveAssetsTo(t *testing.T) {
 			}
 			require.NoError(t, err, "SaveAssetsTo should return no error but got one")
 
-			testutils.CompareTreesWithFiltering(t, dest, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, dest, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }
@@ -513,7 +513,7 @@ func TestCompressAssets(t *testing.T) {
 			require.NoError(t, err, "Teardown: NewFromCache should return no error but got one")
 			defer got.Close()
 
-			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.Update())
+			equalPoliciesToGolden(t, got, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }

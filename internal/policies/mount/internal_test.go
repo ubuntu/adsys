@@ -124,7 +124,7 @@ func TestWriteFileWithUIDGID(t *testing.T) {
 				return
 			}
 			require.NoError(t, err, "writeFileWithUIDGID should not have returned an error but did")
-			testutils.CompareTreesWithFiltering(t, path, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, path, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }
@@ -154,7 +154,7 @@ func TestCreateUnits(t *testing.T) {
 				require.NoError(t, err, "Setup: Failed to write unit file for comparison.")
 			}
 
-			testutils.CompareTreesWithFiltering(t, unitPath, testutils.GoldenPath(t), testutils.Update())
+			testutils.CompareTreesWithFiltering(t, unitPath, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
 }
