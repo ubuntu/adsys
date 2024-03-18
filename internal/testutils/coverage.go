@@ -22,15 +22,47 @@ var (
 
 	coveragesToMerge   []string
 	coveragesToMergeMu sync.Mutex
+
+	generateXMLCoverage bool
 )
+
+const (
+	goCoverage  = "go"  // Go coverage format
+	xmlCoverage = "xml" // XML (Cobertura) coverage format
+)
+
+type coverageOptions struct {
+	coverageFormat string
+}
+
+// CoverageOption represents an optional function that can be used to override
+// some of the coverage default values.
+type CoverageOption func(*coverageOptions)
+
+// WithCoverageFormat overrides the default coverage format, impacting the
+// filename of the coverage file.
+func WithCoverageFormat(coverageFormat string) CoverageOption {
+	return func(o *coverageOptions) {
+		if coverageFormat != "" {
+			o.coverageFormat = coverageFormat
+		}
+	}
+}
 
 // TrackTestCoverage starts tracking coverage in a dedicated file based on current test name.
 // This file will be merged to the current coverage main file.
 // It’s up to the test use the returned path to file golang-compatible cover format content.
 // To collect all coverages, then MergeCoverages() should be called after m.Run().
 // If coverage is not enabled, nothing is done.
-func TrackTestCoverage(t *testing.T) (testCoverFile string) {
+func TrackTestCoverage(t *testing.T, opts ...CoverageOption) (testCoverFile string) {
 	t.Helper()
+
+	args := coverageOptions{
+		coverageFormat: goCoverage,
+	}
+	for _, o := range opts {
+		o(&args)
+	}
 
 	goMainCoverProfileOnce.Do(func() {
 		for _, arg := range os.Args {
@@ -48,9 +80,11 @@ func TrackTestCoverage(t *testing.T) (testCoverFile string) {
 	coverAbsPath, err := filepath.Abs(goMainCoverProfile)
 	require.NoError(t, err, "Setup: can't transform go cover profile to absolute path")
 
-	testCoverFile = fmt.Sprintf("%s.%s", coverAbsPath, strings.ReplaceAll(
-		strings.ReplaceAll(t.Name(), "/", "_"),
-		"\\", "_"))
+	testCoverFile = fmt.Sprintf("%s.%s.%s",
+		coverAbsPath,
+		strings.ReplaceAll(strings.ReplaceAll(t.Name(), "/", "_"), "\\", "_"),
+		args.coverageFormat,
+	)
 	coveragesToMergeMu.Lock()
 	defer coveragesToMergeMu.Unlock()
 	if slices.Contains(coveragesToMerge, testCoverFile) {
@@ -67,7 +101,14 @@ func TrackTestCoverage(t *testing.T) (testCoverFile string) {
 func MergeCoverages() {
 	coveragesToMergeMu.Lock()
 	defer coveragesToMergeMu.Unlock()
+
+	// Merge Go coverage files
 	for _, cov := range coveragesToMerge {
+		// Ignore XML coverage files
+		if strings.HasSuffix(cov, "."+xmlCoverage) {
+			continue
+		}
+
 		if err := appendToFile(cov, goMainCoverProfile); err != nil {
 			log.Fatalf("Teardown: can’t inject coverage into the golang one: %v", err)
 		}
