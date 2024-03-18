@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/termie/go-shutil"
 )
 
 var (
@@ -45,6 +47,13 @@ func WithCoverageFormat(coverageFormat string) CoverageOption {
 		if coverageFormat != "" {
 			o.coverageFormat = coverageFormat
 		}
+	}
+}
+
+func init() {
+	// XML coverage generation is a best effort, so we don't fail if the required tools are not found.
+	if commandExists("reportgenerator") && commandExists("gocov") && commandExists("gocov-xml") {
+		generateXMLCoverage = true
 	}
 }
 
@@ -101,10 +110,23 @@ func MergeCoverages() {
 	coveragesToMergeMu.Lock()
 	defer coveragesToMergeMu.Unlock()
 
+	projectRoot, err := projectRoot(".")
+	if err != nil {
+		log.Fatalf("Teardown: can't find project root: %v", err)
+	}
+
+	if err := os.MkdirAll(filepath.Join(projectRoot, "coverage"), 0700); err != nil {
+		log.Fatalf("Teardown: can’t create coverage directory: %v", err)
+	}
+
 	// Merge Go coverage files
 	for _, cov := range coveragesToMerge {
-		// Ignore XML coverage files
+		// For XML coverage files, we just copy them to a persistent directory
+		// for future manipulation.
 		if strings.HasSuffix(cov, "."+xmlCoverage) {
+			if err := shutil.CopyFile(cov, filepath.Join(projectRoot, "coverage", filepath.Base(cov)), false); err != nil {
+				log.Fatalf("Teardown: can’t copy coverage file to project root: %v", err)
+			}
 			continue
 		}
 
@@ -213,4 +235,10 @@ func writeGoCoverageLine(t *testing.T, w io.Writer, file string, lineNum, lineLe
 
 	_, err := w.Write([]byte(fmt.Sprintf("%s:%d.1,%d.%d 1 %s\n", file, lineNum, lineNum, lineLength, covered)))
 	require.NoErrorf(t, err, "Teardown: can't write a write to golang compatible cover file : %v", err)
+}
+
+// commandExists returns true if the command exists in the PATH.
+func commandExists(cmd string) bool {
+	_, err := exec.LookPath(cmd)
+	return err == nil
 }
