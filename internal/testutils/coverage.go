@@ -12,7 +12,6 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -168,32 +167,44 @@ func appendToFile(src, dst string) error {
 func fqdnToPath(t *testing.T, path string) string {
 	t.Helper()
 
-	srcPath, err := filepath.Abs(path)
-	require.NoError(t, err, "Setup: can't calculate absolute path")
+	absPath, err := filepath.Abs(path)
+	require.NoError(t, err, "Setup: can't transform path to absolute path")
 
-	d := srcPath
-	for d != "/" {
-		f, err := os.Open(filepath.Clean(filepath.Join(d, "go.mod")))
-		if err != nil {
-			d = filepath.Dir(d)
-			continue
-		}
-		defer func() { assert.NoError(t, f.Close(), "Setup: can’t close go.mod") }()
+	projectRoot, err := projectRoot(path)
+	require.NoError(t, err, "Setup: can't find project root")
 
-		r := bufio.NewReader(f)
-		l, err := r.ReadString('\n')
-		require.NoError(t, err, "can't read go.mod first line")
-		if !strings.HasPrefix(l, "module ") {
-			t.Fatal(`Setup: failed to find "module" line in go.mod`)
-		}
+	f, err := os.Open(filepath.Join(projectRoot, "go.mod"))
+	require.NoError(t, err, "Setup: can't open go.mod")
 
-		prefix := strings.TrimSpace(strings.TrimPrefix(l, "module "))
-		relpath := strings.TrimPrefix(srcPath, d)
-		return filepath.Join(prefix, relpath)
+	r := bufio.NewReader(f)
+	l, err := r.ReadString('\n')
+	require.NoError(t, err, "can't read go.mod first line")
+	if !strings.HasPrefix(l, "module ") {
+		t.Fatal(`Setup: failed to find "module" line in go.mod`)
 	}
 
-	t.Fatal("failed to find go.mod")
-	return ""
+	prefix := strings.TrimSpace(strings.TrimPrefix(l, "module "))
+	relpath := strings.TrimPrefix(absPath, projectRoot)
+	return filepath.Join(prefix, relpath)
+}
+
+// projectRoot returns the root of the project by looking for a go.mod file.
+func projectRoot(path string) (string, error) {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", fmt.Errorf("can't calculate absolute path: %w", err)
+	}
+
+	for absPath != "/" {
+		_, err := os.Stat(filepath.Clean(filepath.Join(absPath, "go.mod")))
+		if err != nil {
+			absPath = filepath.Dir(absPath)
+			continue
+		}
+
+		return absPath, nil
+	}
+	return "", fmt.Errorf("failed to find go.mod")
 }
 
 // writeGoCoverageLine writes given line in go coverage format to w.
