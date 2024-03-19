@@ -86,6 +86,11 @@ jobs:
           grep -hv -e "adsys-gpolist" -e "cert-autoenroll" "${combined_cov_file}" > "${go_only_cov_file}"
           gocov convert "${go_only_cov_file}" | gocov-xml > "${coverage_dir}/coverage.xml"
           reportgenerator -reports:"${coverage_dir}/*.xml" -targetdir:"${cod_cov_dir}" -reporttypes:Cobertura
+      - name: Upload XML coverage report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage.xml
+          path: ./coverage/codecov/Cobertura.xml
       - name: Run tests (with race detector)
         run: |
           go test -race ./...
