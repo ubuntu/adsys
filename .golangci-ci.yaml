@@ -17,7 +17,6 @@ linters:
     - godot
     - gofmt
     - gosec
-    - ifshort
     - misspell
     - revive
     - thelper
