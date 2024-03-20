@@ -71,8 +71,7 @@ func New(runDir string, unitStarter unitStarter, opts ...Option) (m *Manager, er
 	}
 
 	// Multiple users will be in users/ subdirectory. Create the main one.
-	// #nosec G301 - multiple users will be in users/ subdirectory, we want all of them
-	// to be able to access its own subdirectory.
+	//nolint:gosec // G301 - multiple users will be in users/ subdirectory, we want all of them to be able to access their own subdirectory.
 	if err := os.MkdirAll(filepath.Join(runDir, "users"), 0755); err != nil {
 		return nil, err
 	}

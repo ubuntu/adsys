@@ -77,7 +77,7 @@ func New(runDir string, systemUnitDir string, systemdCaller systemdCaller, opts 
 	}
 
 	// Multiple users will be in users/ subdirectory. Create the main one.
-	// #nosec G301 - multiple users will be in users/ subdirectory, we want all of them to be able to access its own subdirectory.
+	//nolint:gosec // G301 - multiple users will be in users/ subdirectory, we want all of them to be able to access its own subdirectory.
 	if err := os.MkdirAll(filepath.Join(runDir, "users"), 0750); err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func New(runDir string, systemUnitDir string, systemdCaller systemdCaller, opts 
 	// This is mostly used when setting up a custom dir for the units, as the
 	// default value is the systemd directory and it is supposed to always be
 	// there on linux systems.
-	// #nosec G301 - /etc/systemd/system permissions are 0755, so we should keep the same pattern.
+	//nolint:gosec // G301 - /etc/systemd/system permissions are 0755, so we should keep the same pattern.
 	if err := os.MkdirAll(systemUnitDir, 0755); err != nil {
 		return nil, err
 	}
@@ -403,7 +403,7 @@ func writeIfChanged(path string, content string) (done bool, err error) {
 		return false, nil
 	}
 
-	// #nosec G306. This asset needs to be world-readable.
+	//nolint:gosec // G306 - This asset needs to be world-readable.
 	if err := os.WriteFile(path+".new", []byte(content), 0644); err != nil {
 		return false, err
 	}

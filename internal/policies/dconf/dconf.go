@@ -118,8 +118,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	// Create profiles for users only
 	if !isComputer {
-		// Profile must be readable by everyone
-		// #nosec G301
+		//nolint:gosec // G301 - Profile must be readable by everyone
 		if err := os.MkdirAll(profilesPath, 0755); err != nil {
 			return err
 		}
@@ -172,8 +171,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	var needsRefresh bool
 
 	// Commit on disk
-	// Locks must be readable by everyone
-	// #nosec G301
+	//nolint:gosec // G301 - Locks must be readable by everyone
 	if err := os.MkdirAll(filepath.Join(dbPath, "locks"), 0755); err != nil {
 		return err
 	}
@@ -224,7 +222,7 @@ func writeIfChanged(path string, content string) (done bool, err error) {
 		return false, nil
 	}
 
-	// #nosec G306. This asset needs to be world-readable.
+	//nolint:gosec // G306 - This asset needs to be world-readable.
 	if err := os.WriteFile(path+".new", []byte(content), 0644); err != nil {
 		return false, err
 	}
@@ -276,7 +274,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	}
 
 	// Otherwise, update the file.
-	// #nosec G306. This asset needs to be world-readable.
+	//nolint:gosec // G306 - This asset needs to be world-readable.
 	if err := os.WriteFile(profilePath+".adsys.new", newContent, 0644); err != nil {
 		return err
 	}
