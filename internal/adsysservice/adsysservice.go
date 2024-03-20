@@ -206,7 +206,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	if runDir == "" {
 		runDir = consts.DefaultRunDir
 	}
-	// #nosec G301 - we need to ensure users have access directly to their own scripts
+	//nolint:gosec // G301 - we need to ensure users have access directly to their own scripts
 	if err := os.MkdirAll(runDir, 0755); err != nil {
 		return nil, err
 	}
