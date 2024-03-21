@@ -1,3 +1,32 @@
+adsys (0.14.1) noble; urgency=medium
+
+  * Pin Go toolchain to 1.22.1 to fix the following security vulnerabilities:
+    - GO-2024-2598
+    - GO-2024-2599
+  * Update apport hook to include journal errors and package logs
+  * CI and quality of life changes not impacting package functionality:
+    - Enable end-to-end tests in GitHub Actions
+    - Remove stale AD resources on test finish
+    - Add developer documentation for running end-to-end tests
+    - Collect and upload end-to-end test logs on failure
+    - Report test coverage in Cobertura XML format
+    - Silence gosec warnings using nolint and remove deprecated ifshort linter
+    - Use an environment variable to update golden files
+    - Bump github actions to latest:
+      - azure/login
+      - softprops/action-gh-release
+  * Update dependencies to latest:
+    - github.com/charmbracelet/lipgloss
+    - github.com/golangci/golangci-lint
+    - github.com/golang/protobuf
+    - github.com/stretchr/testify
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Thu, 21 Mar 2024 12:27:01 +0200
+
 adsys (0.14.0) noble; urgency=medium
 
   * Infer user KRB5CCNAME path via the libkrb5 API (LP: #2049061)
