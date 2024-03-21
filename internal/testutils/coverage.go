@@ -6,14 +6,15 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/termie/go-shutil"
 )
 
 var (
@@ -22,15 +23,54 @@ var (
 
 	coveragesToMerge   []string
 	coveragesToMergeMu sync.Mutex
+
+	generateXMLCoverage bool
 )
+
+const (
+	goCoverage  = "go"  // Go coverage format
+	xmlCoverage = "xml" // XML (Cobertura) coverage format
+)
+
+type coverageOptions struct {
+	coverageFormat string
+}
+
+// CoverageOption represents an optional function that can be used to override
+// some of the coverage default values.
+type CoverageOption func(*coverageOptions)
+
+// WithCoverageFormat overrides the default coverage format, impacting the
+// filename of the coverage file.
+func WithCoverageFormat(coverageFormat string) CoverageOption {
+	return func(o *coverageOptions) {
+		if coverageFormat != "" {
+			o.coverageFormat = coverageFormat
+		}
+	}
+}
+
+func init() {
+	// XML coverage generation is a best effort, so we don't fail if the required tools are not found.
+	if commandExists("reportgenerator") && commandExists("gocov") && commandExists("gocov-xml") {
+		generateXMLCoverage = true
+	}
+}
 
 // TrackTestCoverage starts tracking coverage in a dedicated file based on current test name.
 // This file will be merged to the current coverage main file.
 // It’s up to the test use the returned path to file golang-compatible cover format content.
 // To collect all coverages, then MergeCoverages() should be called after m.Run().
 // If coverage is not enabled, nothing is done.
-func TrackTestCoverage(t *testing.T) (testCoverFile string) {
+func TrackTestCoverage(t *testing.T, opts ...CoverageOption) (testCoverFile string) {
 	t.Helper()
+
+	args := coverageOptions{
+		coverageFormat: goCoverage,
+	}
+	for _, o := range opts {
+		o(&args)
+	}
 
 	goMainCoverProfileOnce.Do(func() {
 		for _, arg := range os.Args {
@@ -48,9 +88,11 @@ func TrackTestCoverage(t *testing.T) (testCoverFile string) {
 	coverAbsPath, err := filepath.Abs(goMainCoverProfile)
 	require.NoError(t, err, "Setup: can't transform go cover profile to absolute path")
 
-	testCoverFile = fmt.Sprintf("%s.%s", coverAbsPath, strings.ReplaceAll(
-		strings.ReplaceAll(t.Name(), "/", "_"),
-		"\\", "_"))
+	testCoverFile = fmt.Sprintf("%s.%s.%s",
+		coverAbsPath,
+		strings.ReplaceAll(strings.ReplaceAll(t.Name(), "/", "_"), "\\", "_"),
+		args.coverageFormat,
+	)
 	coveragesToMergeMu.Lock()
 	defer coveragesToMergeMu.Unlock()
 	if slices.Contains(coveragesToMerge, testCoverFile) {
@@ -67,7 +109,27 @@ func TrackTestCoverage(t *testing.T) (testCoverFile string) {
 func MergeCoverages() {
 	coveragesToMergeMu.Lock()
 	defer coveragesToMergeMu.Unlock()
+
+	projectRoot, err := projectRoot(".")
+	if err != nil {
+		log.Fatalf("Teardown: can't find project root: %v", err)
+	}
+
+	if err := os.MkdirAll(filepath.Join(projectRoot, "coverage"), 0700); err != nil {
+		log.Fatalf("Teardown: can’t create coverage directory: %v", err)
+	}
+
+	// Merge Go coverage files
 	for _, cov := range coveragesToMerge {
+		// For XML coverage files, we just copy them to a persistent directory
+		// for future manipulation.
+		if strings.HasSuffix(cov, "."+xmlCoverage) {
+			if err := shutil.CopyFile(cov, filepath.Join(projectRoot, "coverage", filepath.Base(cov)), false); err != nil {
+				log.Fatalf("Teardown: can’t copy coverage file to project root: %v", err)
+			}
+			continue
+		}
+
 		if err := appendToFile(cov, goMainCoverProfile); err != nil {
 			log.Fatalf("Teardown: can’t inject coverage into the golang one: %v", err)
 		}
@@ -127,32 +189,44 @@ func appendToFile(src, dst string) error {
 func fqdnToPath(t *testing.T, path string) string {
 	t.Helper()
 
-	srcPath, err := filepath.Abs(path)
-	require.NoError(t, err, "Setup: can't calculate absolute path")
+	absPath, err := filepath.Abs(path)
+	require.NoError(t, err, "Setup: can't transform path to absolute path")
 
-	d := srcPath
-	for d != "/" {
-		f, err := os.Open(filepath.Clean(filepath.Join(d, "go.mod")))
-		if err != nil {
-			d = filepath.Dir(d)
-			continue
-		}
-		defer func() { assert.NoError(t, f.Close(), "Setup: can’t close go.mod") }()
+	projectRoot, err := projectRoot(path)
+	require.NoError(t, err, "Setup: can't find project root")
 
-		r := bufio.NewReader(f)
-		l, err := r.ReadString('\n')
-		require.NoError(t, err, "can't read go.mod first line")
-		if !strings.HasPrefix(l, "module ") {
-			t.Fatal(`Setup: failed to find "module" line in go.mod`)
-		}
+	f, err := os.Open(filepath.Join(projectRoot, "go.mod"))
+	require.NoError(t, err, "Setup: can't open go.mod")
 
-		prefix := strings.TrimSpace(strings.TrimPrefix(l, "module "))
-		relpath := strings.TrimPrefix(srcPath, d)
-		return filepath.Join(prefix, relpath)
+	r := bufio.NewReader(f)
+	l, err := r.ReadString('\n')
+	require.NoError(t, err, "can't read go.mod first line")
+	if !strings.HasPrefix(l, "module ") {
+		t.Fatal(`Setup: failed to find "module" line in go.mod`)
 	}
 
-	t.Fatal("failed to find go.mod")
-	return ""
+	prefix := strings.TrimSpace(strings.TrimPrefix(l, "module "))
+	relpath := strings.TrimPrefix(absPath, projectRoot)
+	return filepath.Join(prefix, relpath)
+}
+
+// projectRoot returns the root of the project by looking for a go.mod file.
+func projectRoot(path string) (string, error) {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", fmt.Errorf("can't calculate absolute path: %w", err)
+	}
+
+	for absPath != "/" {
+		_, err := os.Stat(filepath.Clean(filepath.Join(absPath, "go.mod")))
+		if err != nil {
+			absPath = filepath.Dir(absPath)
+			continue
+		}
+
+		return absPath, nil
+	}
+	return "", fmt.Errorf("failed to find go.mod")
 }
 
 // writeGoCoverageLine writes given line in go coverage format to w.
@@ -161,4 +235,10 @@ func writeGoCoverageLine(t *testing.T, w io.Writer, file string, lineNum, lineLe
 
 	_, err := w.Write([]byte(fmt.Sprintf("%s:%d.1,%d.%d 1 %s\n", file, lineNum, lineNum, lineLength, covered)))
 	require.NoErrorf(t, err, "Teardown: can't write a write to golang compatible cover file : %v", err)
+}
+
+// commandExists returns true if the command exists in the PATH.
+func commandExists(cmd string) bool {
+	_, err := exec.LookPath(cmd)
+	return err == nil
 }

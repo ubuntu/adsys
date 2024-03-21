@@ -50,6 +50,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
+
+          # Coverage dependencies
+          go install github.com/AlekSi/gocov-xml@latest
+          go install github.com/axw/gocov/gocov@latest
+          dotnet tool install -g dotnet-reportgenerator-globaltool
       - name: Set required environment variables
         run: echo "SUDO_PACKAGES=$(cat debian/tests/.sudo-packages)" >> $GITHUB_ENV
       - name: Authenticate to docker local registry and pull image with our token
@@ -69,9 +74,23 @@ jobs:
           sudo -E $(which go) test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=set $SUDO_PACKAGES
 
           # Combine coverage files, and filter out test utilities and generated files
-          cod_cov_dir="$(pwd)/coverage/codecov"
+          coverage_dir="$(pwd)/coverage"
+          cod_cov_dir="${coverage_dir}/codecov"
           mkdir -p "${cod_cov_dir}"
-          grep -hv -e "testutils" -e "pb.go:" -e "/e2e/" /tmp/coverage.out /tmp/coverage.sudo.out > "${cod_cov_dir}/coverage.combined.out"
+          combined_cov_file="${coverage_dir}/coverage.combined.out"
+          go_only_cov_file="${coverage_dir}/coverage.go-only.out"
+          echo "mode: set" > "${combined_cov_file}"
+          grep -hv -e "testutils" -e "pb.go:" -e "/e2e/" -e "mode: set" /tmp/coverage.out /tmp/coverage.sudo.out >> "${combined_cov_file}"
+
+          # Prepare XML coverage report
+          grep -hv -e "adsys-gpolist" -e "cert-autoenroll" "${combined_cov_file}" > "${go_only_cov_file}"
+          gocov convert "${go_only_cov_file}" | gocov-xml > "${coverage_dir}/coverage.xml"
+          reportgenerator -reports:"${coverage_dir}/*.xml" -targetdir:"${cod_cov_dir}" -reporttypes:Cobertura
+      - name: Upload XML coverage report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage.xml
+          path: ./coverage/codecov/Cobertura.xml
       - name: Run tests (with race detector)
         run: |
           go test -race ./...
@@ -80,7 +99,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          directory: ./coverage/codecov
+          file: ./coverage/codecov/Cobertura.xml
           token: ${{ secrets.CODECOV_TOKEN }}
 
   adwatchd-tests:

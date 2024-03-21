@@ -30,6 +30,11 @@ func PythonCoverageToGoFormat(t *testing.T, include string, commandOnStdin bool)
 		return false
 	}
 
+	var testXMLCoverage string
+	if generateXMLCoverage {
+		testXMLCoverage = TrackTestCoverage(t, WithCoverageFormat(xmlCoverage))
+	}
+
 	// Check we have an executable "python3-coverage" in PATH for coverage request
 	_, err := exec.LookPath(coverageCmd)
 	require.NoErrorf(t, err, "Setup: coverage requested and no %s executable found in $PATH for python code", coverageCmd)
@@ -89,6 +94,13 @@ exec python3-coverage run -a %s $@
 		// #nosec G204 - we have a const for coverageCmd
 		out, err := exec.Command(coverageCmd, "annotate", "-d", coverDir, "--include", tracedFile).CombinedOutput()
 		require.NoErrorf(t, err, "Teardown: can’t combine python coverage: %s", out)
+
+		// Generate XML report if supported
+		if testXMLCoverage != "" {
+			// #nosec G204 - we have a const for coverageCmd
+			out, err = exec.Command(coverageCmd, "xml", "-o", testXMLCoverage, "--include", tracedFile).CombinedOutput()
+			require.NoErrorf(t, err, "Teardown: can’t convert python coverage to XML: %s", out)
+		}
 
 		// Convert to golang compatible cover format
 		// The file will be transform with char_hexadecimal_filename_ext,cover if there is any / in the name.
