@@ -4,6 +4,9 @@
 '''
 
 import apport.hookutils
+import re
 
 def add_info(report):
     apport.hookutils.attach_related_packages(report, ["sssd", "python3-samba"])
+    apport.hookutils.attach_journal_errors(report, 600)
+    report['Syslog'] = apport.hookutils.recent_syslog(re.compile("adsys"))
