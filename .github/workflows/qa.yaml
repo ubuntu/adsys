@@ -101,6 +101,11 @@ jobs:
         with:
           file: ./coverage/codecov/Cobertura.xml
           token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Publish coverage as a release artifact
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ./coverage/codecov/Cobertura.xml
 
   adwatchd-tests:
     name: Windows tests for adwatchd
