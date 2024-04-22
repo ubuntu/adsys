@@ -1,17 +1,17 @@
-From c59629376b4a8ff43c81dee4599b6fe98a695b68 Mon Sep 17 00:00:00 2001
+From 8d9786aa3f359ab09eb577394be05045a87e18fc Mon Sep 17 00:00:00 2001
 From: Gabriel Nagy <gabriel.nagy@canonical.com>
-Date: Mon, 26 Feb 2024 11:25:18 +0200
+Date: Mon, 22 Apr 2024 15:04:05 +0300
 Subject: [PATCH] Revert gpclass.py to 65ab33dffab2
 
 This is to ensure compatibility with older Samba versions such as the
 one on Jammy. We don't benefit from these changes for our certificate
 applier use case anyway.
 ---
- python/samba/gp/gpclass.py | 578 +++++--------------------------------
- 1 file changed, 75 insertions(+), 503 deletions(-)
+ python/samba/gp/gpclass.py | 576 +++++--------------------------------
+ 1 file changed, 75 insertions(+), 501 deletions(-)
 
 diff --git a/python/samba/gp/gpclass.py b/python/samba/gp/gpclass.py
-index 08be472e707..605f94f3317 100644
+index d86aacec138..605f94f3317 100644
 --- a/python/samba/gp/gpclass.py
 +++ b/python/samba/gp/gpclass.py
 @@ -21,7 +21,7 @@ import errno
@@ -467,7 +467,7 @@ index 08be472e707..605f94f3317 100644
  
  
  def get_dc_hostname(creds, lp):
-@@ -612,340 +574,16 @@ def get_dc_hostname(creds, lp):
+@@ -612,338 +574,16 @@ def get_dc_hostname(creds, lp):
      return cldap_ret.pdc_dns_name
  
  
@@ -664,9 +664,7 @@ index 08be472e707..605f94f3317 100644
 -
 -    samlogon_response = ndr_unpack(nbt.netlogon_samlogon_response,
 -                                   bytes(res.msgs[0]['Netlogon'][0]))
--    if samlogon_response.ntver not in [nbt.NETLOGON_NT_VERSION_5EX,
--                                       (nbt.NETLOGON_NT_VERSION_1
--                                        | nbt.NETLOGON_NT_VERSION_5EX)]:
+-    if not (samlogon_response.ntver & nbt.NETLOGON_NT_VERSION_5EX):
 -        raise RuntimeError('site_dn_for_machine: Invalid NtVer in '
 -                           + 'netlogon_samlogon_response')
 -
@@ -815,7 +813,7 @@ index 08be472e707..605f94f3317 100644
  
  
  def cache_gpo_dir(conn, cache, sub_dir):
-@@ -1040,7 +678,7 @@ def apply_gp(lp, creds, store, gp_extensions, username, target, force=False):
+@@ -1038,7 +678,7 @@ def apply_gp(lp, creds, store, gp_extensions, username, target, force=False):
              if target == 'Computer':
                  ext.process_group_policy(del_gpos, changed_gpos)
              else:
@@ -824,7 +822,7 @@ index 08be472e707..605f94f3317 100644
                                  del_gpos, changed_gpos)
          except Exception as e:
              log.error('Failed to apply extension  %s' % str(ext))
-@@ -1205,18 +843,18 @@ def unregister_gp_extension(guid, smb_conf=None):
+@@ -1203,18 +843,18 @@ def unregister_gp_extension(guid, smb_conf=None):
  
  
  def set_privileges(username, uid, gid):
@@ -847,7 +845,7 @@ index 08be472e707..605f94f3317 100644
      current_uid = os.getuid()
  
      if not current_uid == 0:
-@@ -1244,69 +882,3 @@ def drop_privileges(username, func, *args):
+@@ -1242,69 +882,3 @@ def drop_privileges(username, func, *args):
          raise exc
  
      return out
@@ -918,5 +916,5 @@ index 08be472e707..605f94f3317 100644
 -            text = text.replace(exp_var_fmt, val)
 -    return text
 -- 
-2.43.0
+2.44.0
 
