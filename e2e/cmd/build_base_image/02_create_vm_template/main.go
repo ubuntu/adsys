@@ -116,7 +116,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 		"--gallery-image-version", nextImageVersion,
 		"--target-regions", "westeurope", "eastus=1=standard_zrs",
 		"--replica-count", "2",
-		"--managed-image", inv.VMID,
+		"--virtual-machine", inv.VMID,
 		"--tags", "project=AD", "subproject=adsys-e2e-tests",
 	)
 	if err != nil {
