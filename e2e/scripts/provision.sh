@@ -29,11 +29,11 @@ echo "Updating DNS resolver to use AD DNS..."
 echo "DNS=10.1.0.4" >> /etc/systemd/resolved.conf
 systemctl restart systemd-resolved
 
-# Work around an issue on Jammy where systemd-networkd times out due to eth0
-# losing connectivity shortly after boot, even though network works fine as
-# reported by Azure.
-if [ "$(lsb_release -cs)" = "jammy" ]; then
-    echo "Disabling systemd-networkd-wait-online.service on jammy..."
+# Work around an issue on Jammy and Noble where systemd-networkd times out due
+# to eth0 losing connectivity shortly after boot, even though network works fine
+# as reported by Azure.
+if [[ "$(lsb_release -cs)" =~ ^(jammy|noble)$ ]]; then
+    echo "Disabling misbehaving systemd-networkd-wait-online.service..."
     systemctl mask systemd-networkd-wait-online.service
 fi
 
