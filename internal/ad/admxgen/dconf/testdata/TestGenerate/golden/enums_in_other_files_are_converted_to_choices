@@ -10,9 +10,9 @@
   default: '''up'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".
   choices:
-  - left
-  - right
-  - up
-  - down
+    - left
+    - right
+    - up
+    - down
   release: "20.04"
   type: dconf
