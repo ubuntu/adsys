@@ -67,6 +67,9 @@ func TestGenerate(t *testing.T) {
 		"Description starting with obsolete is ignored":                           {root: "deprecated_keys"},
 		"Description containing deprecated without starting by it is not ignored": {root: "deprecated_keys"},
 
+		"Malformed XML declaration is successfully parsed": {root: "malformed_xml_declaration"},
+		"Missing XML declaration is successfully parsed":   {root: "missing_xml_declaration"},
+
 		// Error cases
 		"Unsupported key type": {root: "exotic_type", wantErr: true},
 		"Enum does not exist":  {root: "nonexistent_enum", wantErr: true},
