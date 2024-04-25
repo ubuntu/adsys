@@ -10,9 +10,9 @@
   default: '''HIGH'''
   note: default system value is used for "Not Configured" and enforced if "Disabled".
   choices:
-  - LOW
-  - MEDIUM
-  - HIGH
-  - MAXIMUM
+    - LOW
+    - MEDIUM
+    - HIGH
+    - MAXIMUM
   release: "20.04"
   type: dconf

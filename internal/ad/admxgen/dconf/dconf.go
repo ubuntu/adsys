@@ -2,6 +2,7 @@
 package dconf
 
 import (
+	"bytes"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -250,6 +251,16 @@ func loadSchemasFromDisk(path string) (entries map[string]schemaEntry, defaultsF
 		d, err := io.ReadAll(f)
 		if err != nil {
 			return nil, nil, errors.New(gotext.Get("cannot read schema data: %v", err))
+		}
+
+		// Remove XML declaration from the schema, if any. This is to account for badly formatted XML files which don't appear to bother
+		// glib-compile-schemas, so we should aim for similar leniency.
+		if xmlStart := bytes.Index(d, []byte("<?xml")); xmlStart != -1 {
+			if xmlEnd := bytes.Index(d[xmlStart:], []byte("?>")); xmlEnd != -1 {
+				// Adjust xmlEnd to account for the relative position and length of "?>"
+				xmlEnd += xmlStart + 2
+				d = d[xmlEnd:]
+			}
 		}
 
 		var sl schemaList
