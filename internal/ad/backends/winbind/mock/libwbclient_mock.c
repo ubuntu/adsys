@@ -1,3 +1,5 @@
+// TiCS: disabled // This is a samba C library that we are mocking for testing purposes.
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>

@@ -1,3 +1,4 @@
+# TiCS: disabled # samba mock
 
 from samba import dsdb
 

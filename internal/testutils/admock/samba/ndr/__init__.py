@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 from samba.dcerpc import security
 
 def ndr_unpack(dom_sid, object_sid):

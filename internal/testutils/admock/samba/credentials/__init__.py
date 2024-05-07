@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 MUST_USE_KERBEROS = "KRB5"
 
 class Credentials():

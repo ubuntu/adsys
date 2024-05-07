@@ -1,3 +1,5 @@
+// TiCS: disabled // This is a kerberos C library that we are mocking for testing purposes.
+
 #include <krb5.h>
 #include <stdio.h>
 #include <string.h>

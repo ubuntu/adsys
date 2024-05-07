@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 dom_sid = ""
 descriptor = "SECURITY_DESCRIPTOR"
 

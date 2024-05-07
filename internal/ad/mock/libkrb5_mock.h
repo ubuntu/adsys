@@ -1,3 +1,5 @@
+// TiCS: disabled // This is a kerberos C library that we are mocking for testing purposes.
+
 #ifndef LIBKRB5_MOCK_H
 #define LIBKRB5_MOCK_H
 

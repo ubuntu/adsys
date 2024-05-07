@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 GPO_BLOCK_INHERITANCE = 1
 
 GPLINK_OPT_DISABLE = 1<<0

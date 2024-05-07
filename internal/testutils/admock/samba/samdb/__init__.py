@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 import ldb
 from collections import namedtuple
 import os
