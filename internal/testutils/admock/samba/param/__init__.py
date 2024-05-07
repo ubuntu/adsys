@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 class LoadParm(object):
     def __init__(self, smb_conf=None):
         if smb_conf is None:

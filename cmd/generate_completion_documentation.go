@@ -1,3 +1,5 @@
+// TiCS: disabled // This is generating completion and doc, not production code.
+
 //go:build tools
 // +build tools
 

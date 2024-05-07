@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 from dataclasses import dataclass
 from typing import Any
 

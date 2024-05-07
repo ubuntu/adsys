@@ -1,3 +1,5 @@
+// TiCS: disabled // Test helpers.
+
 package testutils
 
 import (

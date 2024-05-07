@@ -1,3 +1,5 @@
+// TiCS: disabled // Test helpers.
+
 // Package testutils contains several helpers and assertions for our unit, package or integration tests.
 //
 // This package is not embed in the finale binary.

@@ -1,3 +1,5 @@
+# TiCS: disabled # session daemons mocks.
+
 import os
 import tempfile
 
