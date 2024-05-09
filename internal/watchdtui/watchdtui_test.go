@@ -566,10 +566,8 @@ func updateModel(t *testing.T, m tea.Model, msg tea.Msg) tea.Model {
 
 	messageCandidates := cmd()
 
-	batchMsgType := reflect.TypeOf(tea.Batch(func() tea.Msg { return tea.Msg(struct{}{}) })())
-
 	// executes all messages on batched messages, which is a slice underlying it.
-	if reflect.TypeOf(messageCandidates) == batchMsgType {
+	if reflect.TypeOf(messageCandidates) == reflect.TypeOf(tea.BatchMsg{}) {
 		if reflect.TypeOf(messageCandidates).Kind() != reflect.Slice {
 			t.Fatalf("expected batched messages to be a slice but it's not: %v", reflect.TypeOf(messageCandidates).Kind())
 		}
