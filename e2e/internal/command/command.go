@@ -140,6 +140,11 @@ func (c *Command) AddBoolFlag(param *bool, name string, value bool, usage string
 	c.fSet.BoolVar(param, name, value, usage)
 }
 
+// AddIntFlag adds an integer flag to the command.
+func (c *Command) AddIntFlag(param *int, name string, value int, usage string) {
+	c.fSet.IntVar(param, name, value, usage)
+}
+
 func (c *Command) setGlobalFlags() {
 	c.fSet.StringVar(&c.GlobalFlags.InventoryFile, "i", inventory.DefaultPath, "Use custom inventory file")
 	c.fSet.StringVar(&c.GlobalFlags.InventoryFile, "inventory-file", inventory.DefaultPath, "Use custom inventory file")
