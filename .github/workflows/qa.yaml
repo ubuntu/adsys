@@ -89,7 +89,7 @@ jobs:
       - name: Upload XML coverage report as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage.xml
+          name: coverage.zip
           path: ./coverage/codecov/Cobertura.xml
       - name: Run tests (with race detector)
         run: |
