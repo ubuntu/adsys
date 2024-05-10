@@ -102,18 +102,6 @@ jobs:
           file: ./coverage/codecov/Cobertura.xml
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # For quality indicator model partner measure.
-      - name: Compress coverage for release asset
-        if: startsWith(github.ref, 'refs/tags/')
-        run: cd ./coverage/codecov/ && zip ../Cobertura.xml.zip ./Cobertura.xml
-      - name: Publish coverage as a release asset
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            ./coverage/codecov/Cobertura.xml
-            ./coverage/Cobertura.xml.zip
-
   adwatchd-tests:
     name: Windows tests for adwatchd
     runs-on: windows-latest
