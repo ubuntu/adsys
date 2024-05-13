@@ -3,6 +3,7 @@ name: Code quality nightly scan
 on:
   schedule:
     - cron: '0 4 * * *'
+  workflow_dispatch:
 
 env:
   apt_dependencies: >-
