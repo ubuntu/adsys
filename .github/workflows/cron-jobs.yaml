@@ -1,0 +1,51 @@
+name: Code quality nightly scan
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+
+env:
+  apt_dependencies: >-
+    ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
+    libkrb5-dev libwbclient-dev pkg-config python3-coverage samba sudo
+    libglib2.0-dev gvfs
+
+jobs:
+  tics:
+    name: TIOBE TiCS Framework
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
+      - name: TiCS scan
+        env:
+          TICSAUTHTOKEN: ${{ secrets.TICSAUTHTOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+
+          # Download and move coverage to the right place so TiCS can parse it
+          RUN_ID=$(gh run list --workflow 'QA & sanity checks' --limit 1 --status completed --json databaseId -b main | jq '.[].databaseId')
+          gh run download $RUN_ID -n coverage.zip
+          mkdir .coverage
+          mv Cobertura.xml .coverage/coverage.xml
+
+          # Install TiCS
+          . <(curl --silent --show-error 'https://canonical.tiobe.com/tiobeweb/TICS/api/public/v1/fapi/installtics/Script?cfg=default&platform=linux&url=https://canonical.tiobe.com/tiobeweb/TICS/')
+
+          # TiCS requires all artifacts to be built
+          go build ./cmd/...
+
+          TICSQServer -project adsys -tmpdir /tmp/tics -branchdir .
+          tar -cvzf tics-logs.tar.gz /tmp/tics
+      - name: Upload TiCS logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: tics-logs.zip
+          path: tics-logs.tar.gz
