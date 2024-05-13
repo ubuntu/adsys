@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 import os
 
 class gp_cert_auto_enroll_ext(object):

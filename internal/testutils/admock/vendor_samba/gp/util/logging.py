@@ -1,3 +1,5 @@
+# TiCS: disabled # samba mock
+
 def logger_init(_name, _level):
     pass
 
