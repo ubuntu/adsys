@@ -49,6 +49,11 @@ jobs:
                   continue
               fi
 
+              # TODO remove this once we have Docker & Azure images for Oracular
+              if [ "${r}" = "oracular" ]; then
+                  continue
+              fi
+
               if [ -n "${releases}" ]; then
                   releases="${releases}, "
               fi
