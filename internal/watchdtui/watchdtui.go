@@ -28,7 +28,7 @@ var (
 	noStyle      = lipgloss.NewStyle()
 	boldStyle    = lipgloss.NewStyle().Bold(true)
 	titleStyle   = lipgloss.NewStyle().Underline(true).Bold(true)
-	focusedStyle = boldStyle.Copy().Foreground(lipgloss.Color("#E95420")) // Ubuntu orange
+	focusedStyle = boldStyle.Foreground(lipgloss.Color("#E95420")) // Ubuntu orange
 )
 
 type model struct {
@@ -524,7 +524,7 @@ func (m model) View() string {
 	// Display button
 	button := fmt.Sprintf("[ %s ]", blurredStyle.Render(m.submitText()))
 	if m.focusIndex == len(m.inputs) {
-		button = focusedStyle.Copy().Render(fmt.Sprintf("[ %s ]", m.submitText()))
+		button = focusedStyle.Render(fmt.Sprintf("[ %s ]", m.submitText()))
 	}
 
 	_, _ = fmt.Fprintf(&b, "\n\n%s\n", button)
