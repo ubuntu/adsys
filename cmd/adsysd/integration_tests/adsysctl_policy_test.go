@@ -12,9 +12,11 @@ import (
 	"testing"
 
 	"github.com/fatih/color"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/consts"
+	"github.com/ubuntu/adsys/internal/policies"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -667,6 +669,16 @@ func TestPolicyUpdate(t *testing.T) {
 			purge:     true,
 			initState: "old-data", // old-data state has cached policies for both user and machine
 		},
+		"Error on purging all policies with a target": {
+			purge:   true,
+			args:    []string{"--all", currentUser},
+			wantErr: true,
+		},
+		"Error on purging machine policies with a user": {
+			purge:   true,
+			args:    []string{"-m", currentUser},
+			wantErr: true,
+		},
 
 		// Error cases
 		"Error on applying user policies before updating the machine": {wantErr: true},
@@ -1310,6 +1322,97 @@ func TestPolicyDebugTicketPath(t *testing.T) {
 			}
 			require.NoError(t, err, "command should exit with no error")
 			require.Equal(t, tc.wantOut, out, "command output should match")
+		})
+	}
+}
+
+func TestPolicyCompletion(t *testing.T) {
+	blockFileCompletionDirective := fmt.Sprintf(":%d", cobra.ShellCompDirectiveNoFileComp)
+
+	tests := map[string]struct {
+		args string
+
+		krb5DirNotAccessible bool
+		noDaemon             bool
+
+		wantOut            string
+		wantFileCompletion bool
+	}{
+		"Dump policy definitions specifies available types":   {args: "admx", wantOut: "lts-only all"},
+		"Dump policy definitions with type already filled in": {args: "admx lts-only"},
+
+		"Applied returns list of available users":            {args: "applied", wantOut: "adsystestuser@example.com otheruser@example.com"},
+		"Applied with user arg doesn't return anything":      {args: "applied someuser"},
+		"Applied with RO ccache dir doesn't return anything": {args: "applied", krb5DirNotAccessible: true},
+		"Applied without daemon doesn't return anything":     {args: "applied", noDaemon: true},
+
+		"Update returns list of available users":                     {args: "update", wantOut: "adsystestuser@example.com otheruser@example.com"},
+		"Update with user allows specifying ticket path":             {args: "update adsystestuser@example.com", wantFileCompletion: true},
+		"Update with user and path doesn't allow further completion": {args: "update adsystestuser@example.com /tmp/krb5_ccache"},
+		"Update with all doesn't allow further completion":           {args: "update --all"},
+		"Update for machines doesn't allow further completion":       {args: "update -m"},
+
+		"Purge returns list of users with cached policies":    {args: "purge", wantOut: "adsystestuser@example.com otheruser@example.com"},
+		"Purge with all doesn't allow further completion":     {args: "purge --all"},
+		"Purge for machines doesn't allow further completion": {args: "purge -m"},
+		"Purge with user doesn't allow further completion":    {args: "purge adsystestuser@example.com"},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			dbusAnswer(t, "polkit_yes")
+
+			// Seed users for autocomplete
+			adsysDir := t.TempDir()
+			policyCacheDir := filepath.Join(adsysDir, "cache", policies.PoliciesCacheBaseName)
+			krb5ccDir := filepath.Join(adsysDir, "run", "krb5cc")
+			err := os.MkdirAll(filepath.Join(krb5ccDir, "tracking"), 0700)
+			require.NoError(t, err, "Setup: could not create krb5 ticket directory")
+			err = os.MkdirAll(policyCacheDir, 0700)
+			require.NoError(t, err, "Setup: could not create policies cache directory")
+
+			for _, user := range []string{"adsystestuser@example.com", "localuser", "otheruser@example.com"} {
+				err = os.WriteFile(filepath.Join(krb5ccDir, "tracking", user), []byte("some ticket content"), 0600)
+				require.NoError(t, err, "Setup: could not write ticket content")
+
+				err = os.WriteFile(filepath.Join(policyCacheDir, user), []byte("some policy content"), 0600)
+				require.NoError(t, err, "Setup: could not write policy content")
+			}
+
+			conf := createConf(t, confWithAdsysDir(adsysDir))
+
+			if !tc.noDaemon {
+				defer runDaemon(t, conf)()
+			}
+
+			if tc.krb5DirNotAccessible {
+				err = os.Chmod(krb5ccDir, 0600)
+				require.NoError(t, err, "Setup: could not make krb5 directory not accessible")
+
+				t.Cleanup(func() {
+					// nolint:gosec // G302 - this is a directory not a file
+					err := os.Chmod(krb5ccDir, 0700)
+					require.NoError(t, err, "Teardown: could not make krb5 directory accessible again")
+				})
+			}
+
+			args := []string{cobra.ShellCompRequestCmd, "policy"}
+			args = append(args, strings.Split(tc.args, " ")...)
+			args = append(args, "")
+			out, err := runClient(t, conf, args...)
+			require.NoError(t, err, "Command should exit with no error")
+
+			lines := strings.Split(out, "\n")
+			got := strings.Join(lines[:len(lines)-2], " ")
+			gotDirective := lines[len(lines)-2]
+
+			require.Equal(t, tc.wantOut, got, "Completion output should match")
+
+			if tc.wantFileCompletion {
+				require.NotEqual(t, blockFileCompletionDirective, gotDirective, "Command should not block further completion")
+				return
+			}
+			require.Equal(t, blockFileCompletionDirective, gotDirective, "Command should block further completion")
 		})
 	}
 }
