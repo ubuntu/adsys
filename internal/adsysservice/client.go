@@ -25,7 +25,7 @@ type AdSysClient struct {
 func NewClient(socket string, timeout time.Duration) (c *AdSysClient, err error) {
 	defer decorate.OnError(&err, gotext.Get("can't create client for service"))
 
-	conn, err := grpc.Dial(fmt.Sprintf("unix:%s", socket), grpc.WithTransportCredentials(insecure.NewCredentials()),
+	conn, err := grpc.NewClient(fmt.Sprintf("unix:%s", socket), grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithStreamInterceptor(interceptorschain.StreamClient(
 			log.StreamClientInterceptor(logrus.StandardLogger()),
 			// This is the last element which will be the first interceptor to execute to get all pings.
