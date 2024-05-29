@@ -234,33 +234,33 @@ func createConf(t *testing.T, opts ...confOption) (conf string) {
 	confData := []byte(fmt.Sprintf(`
 # Service and client configuration
 verbose: 2
-socket: %s/socket
+socket: %[1]s/socket
 
 # Service only configuration
-cache_dir: %s/cache
-state_dir: %s/lib
-run_dir: %s/run
+cache_dir: %[1]s/cache
+state_dir: %[1]s/lib
+run_dir: %[1]s/run
 service_timeout: 30
 
 # Backend selection: sssd (default) or winbind
-ad_backend: %s
+ad_backend: %[2]s
 
 # SSSd configuration
 sssd:
   config: testdata/sssd-configs/sssd.conf-example.com
-  cache_dir: %s/sss_cache
+  cache_dir: %[1]s/sss_cache
 
 # Those are more for tests
-dconf_dir: %s/dconf
-sudoers_dir: %s/sudoers.d
-policykit_dir: %s/polkit-1
-apparmor_dir: %s/apparmor.d/adsys
-apparmorfs_dir: %s/apparmorfs
-systemunit_dir: %s/systemd/system
-global_trust_dir: %s/share/ca-certificates
+dconf_dir: %[1]s/dconf
+sudoers_dir: %[1]s/sudoers.d
+policykit_dir: %[1]s/polkit-1
+apparmor_dir: %[1]s/apparmor.d/adsys
+apparmorfs_dir: %[1]s/apparmorfs
+systemunit_dir: %[1]s/systemd/system
+global_trust_dir: %[1]s/share/ca-certificates
 
-detect_cached_ticket: %t
-`, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.backend, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.adsysDir, args.detectCachedTicket))
+detect_cached_ticket: %[3]t
+`, args.adsysDir, args.backend, args.detectCachedTicket))
 
 	testutils.WriteFile(t, confFile, confData, os.ModePerm)
 	require.NoError(t, os.MkdirAll(filepath.Join(args.adsysDir, "dconf"), 0750), "Setup: should create dconf dir")
