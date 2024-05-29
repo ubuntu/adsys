@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	"os"
+	"os/exec"
 	"syscall"
 	"testing"
 	"time"
@@ -113,4 +115,19 @@ func TestRun(t *testing.T) {
 			require.Equal(t, tc.wantReturnCode, rc, "Return expected code")
 		})
 	}
+}
+
+func TestMainApp(t *testing.T) {
+	if os.Getenv("ADSYS_CALL_MAIN") != "" {
+		main()
+		return
+	}
+
+	// #nosec G204: this is only for tests, under controlled args
+	cmd := exec.Command(os.Args[0], "version", "-test.run=TestMainApp")
+	cmd.Env = append(os.Environ(), "ADSYS_CALL_MAIN=1")
+	out, err := cmd.CombinedOutput()
+
+	require.Contains(t, string(out), "adsysd\tdev", "Main function should print the version")
+	require.NoError(t, err, "Main should not return an error")
 }
