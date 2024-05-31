@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"runtime"
 	"syscall"
 	"testing"
 	"time"
@@ -16,7 +17,6 @@ type myApp struct {
 
 	runError         bool
 	usageErrorReturn bool
-	hupReturn        bool
 }
 
 func (a *myApp) Run() error {
@@ -31,19 +31,15 @@ func (a myApp) UsageError() bool {
 	return a.usageErrorReturn
 }
 
-func (a myApp) Hup() bool {
-	return a.hupReturn
-}
-
-func (a *myApp) Quit() {
+func (a *myApp) Quit(_ syscall.Signal) error {
 	close(a.done)
+	return nil
 }
 
 func TestRun(t *testing.T) {
 	tests := map[string]struct {
 		runError         bool
 		usageErrorReturn bool
-		hupReturn        bool
 		sendSig          syscall.Signal
 
 		wantReturnCode int
@@ -51,23 +47,25 @@ func TestRun(t *testing.T) {
 		"Run and exit successfully":              {},
 		"Run and return error":                   {runError: true, wantReturnCode: 1},
 		"Run and return usage error":             {usageErrorReturn: true, runError: true, wantReturnCode: 2},
-		"Run and usage error only does not fail": {usageErrorReturn: true, runError: false, wantReturnCode: 0},
+		"Run and usage error only does not fail": {usageErrorReturn: true},
 
 		// Signals handling
-		"Send SIGINT exits":           {sendSig: syscall.SIGINT},
-		"Send SIGTERM exits":          {sendSig: syscall.SIGTERM},
-		"Send SIGHUP without exiting": {sendSig: syscall.SIGHUP},
-		"Send SIGHUP with exit":       {sendSig: syscall.SIGHUP, hupReturn: true},
+		"Send SIGINT exits":  {sendSig: syscall.SIGINT},
+		"Send SIGTERM exits": {sendSig: syscall.SIGTERM},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			// Signal handlers tests: can’t be parallel
+			// Signal handler tests cannot run in parallel
+			if tc.sendSig != 0 && runtime.GOOS == "windows" {
+				// Skip signal handling tests on Windows, we already test
+				// quitting the app as part of the integration tests.
+				t.Skip("Signal handling tests are not supported on Windows")
+			}
 
 			a := myApp{
 				done:             make(chan struct{}),
 				runError:         tc.runError,
 				usageErrorReturn: tc.usageErrorReturn,
-				hupReturn:        tc.hupReturn,
 			}
 
 			var rc int
@@ -84,7 +82,9 @@ func TestRun(t *testing.T) {
 			case syscall.SIGINT:
 				fallthrough
 			case syscall.SIGTERM:
-				err := syscall.Kill(syscall.Getpid(), tc.sendSig)
+				process, err := os.FindProcess(syscall.Getpid())
+				require.NoError(t, err, "Teardown: find process should return no error")
+				err = process.Signal(tc.sendSig)
 				require.NoError(t, err, "Teardown: kill should return no error")
 				select {
 				case <-time.After(50 * time.Millisecond):
@@ -93,22 +93,10 @@ func TestRun(t *testing.T) {
 					exited = true
 				}
 				require.Equal(t, true, exited, "Expect to exit on SIGINT and SIGTERM")
-			case syscall.SIGHUP:
-				err := syscall.Kill(syscall.Getpid(), syscall.SIGHUP)
-				require.NoError(t, err, "Teardown: kill should return no error")
-				select {
-				case <-time.After(50 * time.Millisecond):
-					exited = false
-				case <-wait:
-					exited = true
-				}
-				// if SIGHUP returns false: do nothing and still wait.
-				// Otherwise, it means that we wanted to stop
-				require.Equal(t, tc.hupReturn, exited, "Expect to exit only on SIGHUP returning True")
 			}
 
 			if !exited {
-				a.Quit()
+				_ = a.Quit(syscall.SIGINT)
 				<-wait
 			}
 
@@ -128,6 +116,6 @@ func TestMainApp(t *testing.T) {
 	cmd.Env = append(os.Environ(), "ADSYS_CALL_MAIN=1")
 	out, err := cmd.CombinedOutput()
 
-	require.Contains(t, string(out), "adsysd\tdev", "Main function should print the version")
+	require.Contains(t, string(out), "adwatchd\tdev", "Main function should print the version")
 	require.NoError(t, err, "Main should not return an error")
 }

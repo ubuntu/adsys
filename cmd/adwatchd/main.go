@@ -14,7 +14,13 @@ import (
 	"github.com/ubuntu/go-i18n"
 )
 
-func run(a *commands.App) int {
+type app interface {
+	Run() error
+	UsageError() bool
+	Quit(syscall.Signal) error
+}
+
+func run(a app) int {
 	i18n.InitI18nDomain(consts.TEXTDOMAIN, po.Files)
 	defer installSignalHandler(a)()
 	log.SetFormatter(&log.TextFormatter{
@@ -38,7 +44,7 @@ func run(a *commands.App) int {
 	return 0
 }
 
-func installSignalHandler(a *commands.App) func() {
+func installSignalHandler(a app) func() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 
@@ -70,6 +76,5 @@ func installSignalHandler(a *commands.App) func() {
 }
 
 func main() {
-	app := commands.New()
-	os.Exit(run(app))
+	os.Exit(run(commands.New()))
 }

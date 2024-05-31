@@ -24,10 +24,10 @@ import (
 func main() {
 	var a app
 	switch filepath.Base(os.Args[0]) {
-	case daemon.CmdName:
-		a = daemon.New()
-	default:
+	case client.CmdName:
 		a = client.New()
+	default:
+		a = daemon.New()
 	}
 	os.Exit(run(a))
 }
