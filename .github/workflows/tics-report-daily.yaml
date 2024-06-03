@@ -24,6 +24,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
+          go install honnef.co/go/tools/cmd/staticcheck@latest
       - name: TiCS scan
         env:
           TICSAUTHTOKEN: ${{ secrets.TICSAUTHTOKEN }}
