@@ -32,7 +32,7 @@ jobs:
           set -e
 
           # Download and move coverage to the right place so TiCS can parse it
-          RUN_ID=$(gh run list --workflow 'QA & sanity checks' --limit 1 --status completed --json databaseId -b main | jq '.[].databaseId')
+          RUN_ID=$(gh run list --workflow 'QA & sanity checks' --limit 1 --status success --json databaseId -b main | jq '.[].databaseId')
           gh run download $RUN_ID -n coverage.zip
           mkdir .coverage
           mv Cobertura.xml .coverage/coverage.xml
