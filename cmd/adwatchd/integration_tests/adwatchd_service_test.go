@@ -277,3 +277,11 @@ func TestServiceConfigFlagUsage(t *testing.T) {
 		})
 	}
 }
+
+func TestServiceWithNoNameFails(t *testing.T) {
+	app := commands.New(commands.WithServiceName(""))
+	changeAppArgs(t, app, "", "service", "status")
+
+	err := app.Run()
+	require.Error(t, err, "Service with empty name should fail to create")
+}
