@@ -8,7 +8,7 @@ With no external monitors plugged in, closing a laptop's lid will suspend the ma
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 20.04, 22.04, 23.10, 24.04.
+Supported on Ubuntu 20.04, 22.04, 23.10, 24.04, 24.10.
 
 
 

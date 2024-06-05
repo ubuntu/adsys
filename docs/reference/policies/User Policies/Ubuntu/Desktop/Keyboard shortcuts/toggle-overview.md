@@ -8,10 +8,11 @@ Keybinding to open the Activities Overview.
 - Default for 22.04: `["<Super>s"]`
 - Default for 23.10: `[]`
 - Default for 24.04: `[]`
+- Default for 24.10: `[]`
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 20.04, 22.04, 23.10, 24.04.
+Supported on Ubuntu 20.04, 22.04, 23.10, 24.04, 24.10.
 
 
 
