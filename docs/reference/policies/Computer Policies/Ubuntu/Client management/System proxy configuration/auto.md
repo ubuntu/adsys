@@ -14,7 +14,7 @@ Note: -
  * Not configured: A setting declared higher in the GPO hierarchy will be used if available.
 
 
-Supported on Ubuntu 20.04, 22.04, 23.10, 24.04.
+Supported on Ubuntu 20.04, 22.04, 23.10, 24.04, 24.10.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.
 
