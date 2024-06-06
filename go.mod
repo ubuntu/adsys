@@ -16,7 +16,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
 	github.com/kardianos/service v1.2.2
-	github.com/leonelquinteros/gotext v1.6.0
+	github.com/leonelquinteros/gotext v1.6.1
 	github.com/maruel/natural v1.1.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.15.2
