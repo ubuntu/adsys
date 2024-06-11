@@ -7,7 +7,7 @@ toolchain go1.22.4
 require (
 	github.com/golangci/golangci-lint v1.59.1
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.4.0
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
