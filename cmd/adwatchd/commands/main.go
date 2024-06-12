@@ -35,7 +35,8 @@ type App struct {
 
 // options are the configurable functional options of the application.
 type options struct {
-	name string
+	name   string
+	tuiCtx context.Context
 }
 type option func(*options)
 
@@ -48,11 +49,20 @@ func WithServiceName(name string) func(o *options) {
 	}
 }
 
+// WithTUIContext allows passing a context to the TUI. Shouldn't be in general
+// general necessary apart for integration tests.
+func WithTUIContext(ctx context.Context) func(o *options) {
+	return func(o *options) {
+		o.tuiCtx = ctx
+	}
+}
+
 // New registers commands and return a new App.
 func New(opts ...option) *App {
 	// Set default options.
 	args := options{
-		name: watchdconfig.CmdName,
+		name:   watchdconfig.CmdName,
+		tuiCtx: context.Background(),
 	}
 
 	// Apply given options.
@@ -164,7 +174,7 @@ func New(opts ...option) *App {
 			}
 
 			configFileSet := a.rootCmd.Flags().Lookup("config").Changed
-			if err := watchdtui.Start(a.viper.ConfigFileUsed(), prevConfigFile, !configFileSet); err != nil {
+			if err := watchdtui.Start(a.options.tuiCtx, a.viper.ConfigFileUsed(), prevConfigFile, !configFileSet); err != nil {
 				return err
 			}
 

@@ -63,6 +63,14 @@ func TestAppUsageError(t *testing.T) {
 	require.True(t, isUsageError, "Usage error is reported as such")
 }
 
+func TestAppUsageErrorReportsSuggestions(t *testing.T) {
+	a := client.New()
+	a.SetArgs("hel")
+
+	err := a.Run()
+	require.ErrorContains(t, err, "Did you mean this?\n\thelp", "Run should return usage with suggestions")
+}
+
 func TestAppCanQuitWhenExecute(t *testing.T) {
 	t.Parallel()
 

@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -39,6 +40,38 @@ func TestMain(m *testing.M) {
 	}
 
 	m.Run()
+}
+
+func TestNoArgumentsStartsTUI(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	app := commands.New(commands.WithTUIContext(ctx), commands.WithServiceName("adwatchd-test-tui"))
+
+	changeAppArgs(t, app, "")
+
+	// capture stdout
+	r, w, err := os.Pipe()
+	require.NoError(t, err, "Setup: pipe shouldn't fail")
+	orig := os.Stdout
+	os.Stdout = w
+
+	go func() { _ = app.Run() }()
+
+	app.WaitReady()
+	cancel()
+
+	// restore and collect
+	os.Stdout = orig
+	w.Close()
+	var out bytes.Buffer
+	_, errCopy := io.Copy(&out, r)
+	require.NoError(t, errCopy, "Setup: couldn't copy stdout to buffer")
+
+	// Cannot reliably assert on anything if we don't have a TTY...
+	if _, err := os.Open("/dev/tty"); err != nil && runtime.GOOS != "windows" {
+		return
+	}
+
+	require.Contains(t, out.String(), "Ubuntu AD Watch Daemon Installer")
 }
 
 func generateConfig(t *testing.T, verbosity int, dirs ...string) string {

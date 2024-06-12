@@ -533,8 +533,8 @@ func (m model) View() string {
 }
 
 // Start starts the interactive TUI.
-func Start(configFile string, prevConfigFile string, isDefaultConfig bool) error {
-	p := tea.NewProgram(initialModel(configFile, prevConfigFile, isDefaultConfig))
+func Start(ctx context.Context, configFile string, prevConfigFile string, isDefaultConfig bool) error {
+	p := tea.NewProgram(initialModel(configFile, prevConfigFile, isDefaultConfig), tea.WithContext(ctx))
 	if _, err := p.Run(); err != nil {
 		return err
 	}
