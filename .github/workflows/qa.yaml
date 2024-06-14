@@ -11,7 +11,7 @@ env:
   apt_dependencies: >-
     ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
     libkrb5-dev libwbclient-dev pkg-config python3-coverage samba sudo
-    libglib2.0-dev gvfs
+    libglib2.0-dev gvfs libpam0g-dev
 
 jobs:
   sanity:
@@ -31,6 +31,9 @@ jobs:
           golangci-lint-configfile: ".golangci-ci.yaml"
           tools-directory: "tools"
           generate-diff-paths-to-ignore: po/* docs/**/*.md README.md
+          go-build-script: |
+            go build ./...
+            go generate -x -tags=tools ./pam
       - name: C code formatting
         uses: jidicula/clang-format-action@v4.13.0
         with:
