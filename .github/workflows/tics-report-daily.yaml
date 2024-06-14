@@ -45,8 +45,11 @@ jobs:
           go build ./cmd/...
 
           TICSQServer -project adsys -tmpdir /tmp/tics -branchdir .
-          tar -cvzf tics-logs.tar.gz /tmp/tics
+      - name: Archive TiCS logs
+        if: ${{ always() }}
+        run: tar -cvzf tics-logs.tar.gz /tmp/tics
       - name: Upload TiCS logs
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: tics-logs.zip
