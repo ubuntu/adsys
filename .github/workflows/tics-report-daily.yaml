@@ -25,6 +25,7 @@ jobs:
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
           go install honnef.co/go/tools/cmd/staticcheck@latest
+          dotnet tool install -g dotnet-reportgenerator-globaltool
       - name: TiCS scan
         env:
           TICSAUTHTOKEN: ${{ secrets.TICSAUTHTOKEN }}
@@ -32,11 +33,13 @@ jobs:
         run: |
           set -e
 
-          # Download and move coverage to the right place so TiCS can parse it
+          # Download, combine and move coverage to the right place so TiCS can parse it
           RUN_ID=$(gh run list --workflow 'QA & sanity checks' --limit 1 --status success --json databaseId -b main | jq '.[].databaseId')
-          gh run download $RUN_ID -n coverage.zip
-          mkdir .coverage
-          mv Cobertura.xml .coverage/coverage.xml
+          gh run download $RUN_ID -n coverage.zip -D /tmp/coverage
+          E2E_RUN_ID=$(gh run list --workflow 'E2E - Run tests' --limit 1 --status success --json databaseId -b main | jq '.[].databaseId')
+          gh run download $E2E_RUN_ID -n pam-coverage.zip -D /tmp/coverage
+          reportgenerator "-reports:/tmp/coverage/*.xml" "-targetdir:.coverage" -reporttypes:Cobertura
+          mv .coverage/Cobertura.xml .coverage/coverage.xml
 
           # Install TiCS
           . <(curl --silent --show-error 'https://canonical.tiobe.com/tiobeweb/TICS/api/public/v1/fapi/installtics/Script?cfg=default&platform=linux&url=https://canonical.tiobe.com/tiobeweb/TICS/')
