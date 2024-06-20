@@ -108,12 +108,24 @@ jobs:
         run: go run ./e2e/cmd/run_tests/01_provision_client
       - name: Provision AD server
         run: go run ./e2e/cmd/run_tests/02_provision_ad
+      - name: Recompile PAM module with coverage support
+        run: go run ./e2e/cmd/run_tests/03_pam_coverage_support
+        if: ${{ matrix.codename == 'noble' }}
       - name: 'Test: non-Pro managers'
-        run: go run ./e2e/cmd/run_tests/03_test_non_pro_managers
+        run: go run ./e2e/cmd/run_tests/10_test_non_pro_managers
       - name: 'Test: Pro managers'
-        run: go run ./e2e/cmd/run_tests/04_test_pro_managers
+        run: go run ./e2e/cmd/run_tests/11_test_pro_managers
       - name: 'Test: PAM and Kerberos ticket cache'
-        run: go run ./e2e/cmd/run_tests/05_test_pam_krb5cc
+        run: go run ./e2e/cmd/run_tests/12_test_pam_krb5cc
+      - name: Collect PAM module coverage
+        run: go run ./e2e/cmd/run_tests/98_collect_pam_coverage
+        if: ${{ matrix.codename == 'noble' }}
+      - name: Upload PAM coverage as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pam-coverage.zip
+          path: ./output/pam-cobertura.xml
+        if: ${{ matrix.codename == 'noble' }}
       - name: Collect logs on failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4

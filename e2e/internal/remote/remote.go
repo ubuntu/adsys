@@ -21,8 +21,13 @@ import (
 // commandTimeout is the maximum time a command can run before being cancelled.
 const commandTimeout = 90 * time.Minute
 
-// DomainUserPassword is the password to login as domain users.
-const DomainUserPassword = "supersecretpassword"
+const (
+	// DomainUserPassword is the password to login as domain users.
+	DomainUserPassword = "supersecretpassword"
+
+	// PAMModuleDirectory is the default directory for PAM modules on an amd64 system.
+	PAMModuleDirectory = "/usr/lib/x86_64-linux-gnu/security"
+)
 
 // Client represents a remote SSH client.
 type Client struct {
