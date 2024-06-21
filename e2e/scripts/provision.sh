@@ -25,6 +25,9 @@ if [[ ! "$(lsmod)" =~ cifs ]]; then
     echo "cifs" >> /etc/modules
 fi
 
+echo "Disabling unattended-upgrades to avoid unexpected dpkg frontend locks..."
+systemctl disable --now unattended-upgrades
+
 echo "Updating DNS resolver to use AD DNS..."
 echo "DNS=10.1.0.4" >> /etc/systemd/resolved.conf
 systemctl restart systemd-resolved
