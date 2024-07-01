@@ -11,7 +11,7 @@ RUN set -ex \
     && apt-get upgrade -y --no-install-recommends
 
 ARG CODENAME=latest
-RUN if [ "$CODENAME" != "noble" ]; then \
+RUN if echo "focal jammy mantic" | grep -q "$CODENAME"; then \
         set -ex \
         && apt-get install -y software-properties-common \
         && add-apt-repository -y ppa:ubuntu-enterprise-desktop/golang; \
