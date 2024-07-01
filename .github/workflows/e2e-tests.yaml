@@ -36,25 +36,39 @@ jobs:
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repository || github.repository }}
+          ref: ${{ inputs.branch || github.ref }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
       - name: Build matrix
         id: set-supported-releases
         run: |
           set -eu
 
-          all="$(distro-info --supported-esm) $(distro-info --supported)"
-          all="$(echo $all | tr ' ' '\n' | sort -u)"
+          all="$(distro-info --supported-esm --fullname)\n$(distro-info --supported --fullname)\n"
+          all="$(printf "$all" | sort -u)"
 
           releases=""
 
-          for r in ${all}; do
+          while IFS= read -r release; do
+              # Extract the version and codename
+              version=$(echo "$release" | awk '{print $2}')
+              r=$(echo "$release" | sed -E 's/.*"([^"]+)".*/\1/' | awk '{print tolower($1)}')
+
+              # Remove the LTS bit from the version if present
+              version=$(echo "$version" | sed 's/ LTS//')
+
               # Filter out unsupported LTS releases
               if [ "${r}" = "trusty" -o "${r}" = "xenial" -o "${r}" = "bionic" ]; then
                   continue
               fi
 
               # Filter out releases with no corresponding Azure images
-              images="$(az vm image list --publisher Canonical --offer 0001-com-ubuntu-minimal-${r} --all)"
-              if [ "$(jq '(. | length) == 0' <<<${images})" = "true"  ]; then
+              latestImageVersion="$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${r} --version ${version} --force)"
+              if [ -z "${latestImageVersion}" ]; then
                   continue
               fi
 
@@ -62,7 +76,7 @@ jobs:
                   releases="${releases}, "
               fi
               releases="${releases}'${r}'"
-          done
+          done <<< "$all"
 
           echo matrix="${releases}" >> $GITHUB_OUTPUT
 
