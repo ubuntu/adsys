@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/maruel/natural"
@@ -14,6 +15,10 @@ import (
 
 // NullImageVersion is the version returned when no image version is found.
 const NullImageVersion = "0.0.0"
+
+// oldImageVersionCodenames is a list of Ubuntu codenames for which Azure images
+// are built using the previous image versioning format.
+var oldImageVersionCodenames = []string{"focal", "jammy", "mantic"}
 
 // Image contains information about an Azure image.
 type Image struct {
@@ -39,12 +44,34 @@ func ImageDefinitionName(codename string) string {
 }
 
 // ImageList returns a list of Azure images for the given codename.
-func ImageList(ctx context.Context, codename string) (Images, error) {
-	out, _, err := RunCommand(ctx, "vm", "image", "list",
-		"--publisher", "Canonical",
-		"--offer", fmt.Sprintf("0001-com-ubuntu-minimal-%s", codename),
-		"--all",
-	)
+func ImageList(ctx context.Context, codename, version string) (Images, error) {
+	versionParts := strings.Split(version, ".")
+	if len(versionParts) != 2 {
+		return nil, fmt.Errorf("invalid version format: %s", version)
+	}
+
+	// Determine if this is an LTS release
+	year, err := strconv.Atoi(versionParts[0])
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse version year as a number: %w", err)
+	}
+	isLTS := year%2 == 0 && versionParts[1] == "04"
+
+	version = fmt.Sprintf("ubuntu-%s", strings.Join(versionParts, "_"))
+	if isLTS {
+		version += "-lts"
+	}
+
+	var filterArgs []string
+	filterArgs = []string{"--offer", version, "--sku", "minimal"}
+	if slices.Contains(oldImageVersionCodenames, codename) {
+		filterArgs = []string{"--offer", fmt.Sprintf("0001-com-ubuntu-minimal-%s", codename)}
+	}
+
+	args := []string{"vm", "image", "list", "--publisher", "Canonical", "--all"}
+	args = append(args, filterArgs...)
+
+	out, _, err := RunCommand(ctx, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +135,12 @@ func (i Image) isDailyImage() bool {
 }
 
 func (i Image) isGen2Image() bool {
-	return strings.Contains(i.SKU, "gen2")
+	// gen2 images are explicitly defined in the old versioning scheme.
+	if strings.Contains(i.Offer, "0001-com-ubuntu") {
+		return strings.Contains(i.SKU, "gen2")
+	}
+
+	return !strings.Contains(i.SKU, "gen1")
 }
 
 // LatestImageVersion returns the latest image version for the given image definition.
