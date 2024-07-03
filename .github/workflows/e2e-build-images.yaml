@@ -31,35 +31,30 @@ jobs:
         run: |
           set -eu
 
-          all="$(distro-info --supported-esm --fullname)\n$(distro-info --supported --fullname)\n"
-          all="$(printf "$all" | sort -u)"
+          codenames="$(distro-info --supported-esm)\n$(distro-info --supported)\n"
+          versions="$(distro-info --supported-esm --release)\n$(distro-info --supported --release)\n"
+
+          # Paste the codenames and versions together, sort them, and remove duplicates
+          codenames_with_versions="$(paste <(printf "$versions" | cut -d' ' -f1) <(printf "$codenames") | sort -u)"
 
           releases=""
           versions=""
-
-          while IFS= read -r release; do
-              # Extract the version and codename
-              version=$(echo "$release" | awk '{print $2}')
-              r=$(echo "$release" | sed -E 's/.*"([^"]+)".*/\1/' | awk '{print tolower($1)}')
-
-              # Remove the LTS bit from the version if present
-              version=$(echo "$version" | sed 's/ LTS//')
-
+          while IFS=$'\t' read -r version codename; do
               # Filter out unsupported LTS releases
-              if [ "${r}" = "trusty" -o "${r}" = "xenial" -o "${r}" = "bionic" ]; then
+              if [[ "${codename}" =~ trusty|xenial|bionic ]]; then
                   continue
               fi
 
               if [ -n "${releases}" ]; then
                   releases="${releases}, "
               fi
-              releases="${releases}'${r}'"
+              releases="${releases}'${codename}'"
 
               if [ -n "${versions}" ]; then
                   versions="${versions}, "
               fi
-              versions="${versions}\"${r}\": \"${version}\""
-          done <<< "$all"
+              versions="${versions}\"${codename}\": \"${version}\""
+          done <<< "$codenames_with_versions"
 
           echo versions="{${versions}}" >> $GITHUB_OUTPUT
           echo matrix="${releases}" >> $GITHUB_OUTPUT
