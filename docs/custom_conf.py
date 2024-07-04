@@ -19,7 +19,7 @@ import datetime
 ############################################################
 
 # Product name
-project = 'Active Directory GPO support'
+project = 'Active Directory GPO client'
 author = 'Canonical Group Ltd'
 
 # The title you want to display for the documentation in the sidebar.
@@ -27,7 +27,14 @@ author = 'Canonical Group Ltd'
 # To not display any title, set this option to an empty string.
 html_title = project + ' documentation'
 
-# The default value uses the current year as the copyright year.
+# The default value uses CC-BY-SA as the license and the current year
+# as the copyright year.
+#
+# If your documentation needs a different copyright license, use that
+# instead of 'CC-BY-SA'. Also, if your documentation is included as
+# part of the code repository of your project, it'll inherit the license
+# of the code. So you'll need to specify that license here (instead of
+# 'CC-BY-SA').
 #
 # For static works, it is common to provide the year of first publication.
 # Another option is to give the first year and the current year
@@ -41,13 +48,15 @@ html_title = project + ' documentation'
 #   -H 'Accept: application/vnd.github.v3.raw' \
 #   https://api.github.com/repos/canonical/<REPO> | jq '.created_at'
 
-copyright = '%s, %s' % (datetime.date.today().year, author)
+copyright = '%s CC-BY-SA, %s' % (datetime.date.today().year, author)
 
 ## Open Graph configuration - defines what is displayed as a link preview
 ## when linking to the documentation from another website (see https://ogp.me/)
 # The URL where the documentation will be hosted (leave empty if you
 # don't know yet)
-ogp_site_url = 'https://canonical-starter-pack.readthedocs-hosted.com/'
+# NOTE: If no ogp_* variable is defined (e.g. if you remove this section) the
+# sphinxext.opengraph extension will be disabled.
+ogp_site_url = 'https://canonical-adsys.readthedocs-hosted.com/'
 # The documentation website name (usually the same as the product name)
 ogp_site_name = project
 # The URL of an image or logo that is used in the preview
@@ -65,7 +74,7 @@ html_context = {
     # For example: "ubuntu.com/lxd" or "microcloud.is"
     # If there is no product website, edit the header template to remove the
     # link (see the readme for instructions).
-    'product_page': 'documentation.ubuntu.com',
+    'product_page': 'github.com/ubuntu/adsys',
 
     # Add your product tag (the orange part of your logo, will be used in the
     # header) to ".sphinx/_static" and change the path here (start with "_static")
@@ -75,9 +84,18 @@ html_context = {
     # Change to the discourse instance you want to be able to link to
     # using the :discourse: metadata at the top of a file
     # (use an empty value if you don't want to link)
-    'discourse': 'https://discourse.ubuntu.com',
+    # 'discourse': 'https://discourse.ubuntu.com',
 
-    # Change to the GitHub info for your project
+    # Change to the Mattermost channel you want to link to
+    # (use an empty value if you don't want to link)
+    # 'mattermost': 'https://chat.canonical.com/canonical/channels/documentation',
+
+    # Change to the Matrix channel you want to link to
+    # (use an empty value if you don't want to link)
+    # 'matrix': 'https://matrix.to/#/#documentation:ubuntu.com',
+
+    # Change to the GitHub URL for your project
+    # This is used, for example, to link to the source files and allow creating GitHub issues directly from the documentation.
     'github_url': 'https://github.com/ubuntu/adsys',
 
     # Change to the branch for this version of the documentation
@@ -93,7 +111,13 @@ html_context = {
 
     # Controls the existence of Previous / Next buttons at the bottom of pages
     # Valid options: none, prev, next, both
-    'sequential_nav': "none"
+    'sequential_nav': "none",
+
+    # Controls if to display the contributors of a file or not
+    "display_contributors": True,
+
+    # Controls time frame for showing the contributors
+    "display_contributors_since": ""
 }
 
 # If your project is on documentation.ubuntu.com, specify the project
@@ -106,7 +130,10 @@ slug = ""
 
 # Set up redirects (https://documatt.gitlab.io/sphinx-reredirects/usage.html)
 # For example: 'explanation/old-name.html': '../how-to/prettify.html',
-
+# You can also configure redirects in the Read the Docs project dashboard
+# (see https://docs.readthedocs.io/en/stable/guides/redirects.html).
+# NOTE: If this variable is not defined, set to None, or the dictionary is empty,
+# the sphinx_reredirects extension will be disabled.
 redirects = {}
 
 ############################################################
@@ -114,16 +141,13 @@ redirects = {}
 ############################################################
 
 # Links to ignore when checking links
-
 linkcheck_ignore = [
     'http://127.0.0.1:8000'
     ]
 
 # Pages on which to ignore anchors
 # (This list will be appended to linkcheck_anchors_ignore_for_url)
-
-custom_linkcheck_anchors_ignore_for_url = [
-    ]
+custom_linkcheck_anchors_ignore_for_url = []
 
 ############################################################
 ### Additions to default configuration
@@ -132,14 +156,36 @@ custom_linkcheck_anchors_ignore_for_url = [
 ## The following settings are appended to the default configuration.
 ## Use them to extend the default functionality.
 
-# Add extensions
-custom_extensions = []
-
-# Add MyST extensions
+# Remove this variable to disable the MyST parser extensions.
 custom_myst_extensions = []
 
+# Add custom Sphinx extensions as needed.
+# This array contains recommended extensions that should be used.
+# NOTE: The following extensions are handled automatically and do
+# not need to be added here: myst_parser, sphinx_copybutton, sphinx_design,
+# sphinx_reredirects, sphinxcontrib.jquery, sphinxext.opengraph
+custom_extensions = [
+    'sphinx_tabs.tabs',
+    'canonical.youtube-links',
+    'canonical.related-links',
+    'canonical.custom-rst-roles',
+    'canonical.terminal-output',
+    'notfound.extension'
+    ]
+
+# Add custom required Python modules that must be added to the
+# .sphinx/requirements.txt file.
+# NOTE: The following modules are handled automatically and do not need to be
+# added here: canonical-sphinx-extensions, furo, linkify-it-py, myst-parser,
+# pyspelling, sphinx, sphinx-autobuild, sphinx-copybutton, sphinx-design,
+# sphinx-notfound-page, sphinx-reredirects, sphinx-tabs, sphinxcontrib-jquery,
+# sphinxext-opengraph
+custom_required_modules = []
+
 # Add files or directories that should be excluded from processing.
-custom_excludes = []
+custom_excludes = [
+    'doc-cheat-sheet*',
+    ]
 
 # Add CSS files (located in .sphinx/_static/)
 custom_html_css_files = []
@@ -162,15 +208,25 @@ disable_feedback_button = False
 # (https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#tags)
 custom_tags = []
 
+# If you are using the :manpage: role, set this variable to the URL for the version
+# that you want to link to:
+# manpages_url = "https://manpages.ubuntu.com/manpages/noble/en/man{section}/{page}.{section}.html"
+
 ############################################################
 ### Additional configuration
 ############################################################
 
 ## Add any configuration that is not covered by the common conf.py file.
-
 def run_before_build(app):
     import subprocess
     subprocess.run(['./make_toctree.sh', 'reference/policies/Computer Policies', 'reference/policies/User Policies'])
 
 def setup(app):
     app.connect('builder-inited', run_before_build)
+
+
+# Define a :center: role that can be used to center the content of table cells.
+rst_prolog = '''
+.. role:: center
+   :class: align-center
+'''
