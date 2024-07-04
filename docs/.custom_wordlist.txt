@@ -65,6 +65,7 @@ kerberos
 Kerberos
 krb
 LDAP
+libkrb
 lifecycle
 linux
 localhost
