@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append('./docs/')
+sys.path.append('./')
 from custom_conf import *
 
 # The file contains helper functions and the mechanism to build the
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     requirements = list(dict.fromkeys(requirements))
     requirements.sort()
 
-    with open("docs/.sphinx/requirements.txt", 'w') as requirements_file:
+    with open(".sphinx/requirements.txt", 'w') as requirements_file:
         requirements_file.write(
             "# DO NOT MODIFY THIS FILE DIRECTLY!\n"
             "#\n"
