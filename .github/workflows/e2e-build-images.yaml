@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-supported-releases.outputs.matrix }}
+      versions: ${{ steps.set-supported-releases.outputs.versions }}
     steps:
       - name: Install needed binaries
         run: |
@@ -30,23 +31,32 @@ jobs:
         run: |
           set -eu
 
-          all="$(distro-info --supported-esm) $(distro-info --supported)"
-          all="$(echo $all | tr ' ' '\n' | sort -u)"
+          codenames="$(distro-info --supported-esm)\n$(distro-info --supported)\n"
+          versions="$(distro-info --supported-esm --release)\n$(distro-info --supported --release)\n"
+
+          # Paste the codenames and versions together, sort them, and remove duplicates
+          codenames_with_versions="$(paste <(printf "$versions" | cut -d' ' -f1) <(printf "$codenames") | sort -u)"
 
           releases=""
-
-          for r in ${all}; do
+          versions=""
+          while IFS=$'\t' read -r version codename; do
               # Filter out unsupported LTS releases
-              if [ "${r}" = "trusty" -o "${r}" = "xenial" -o "${r}" = "bionic" ]; then
+              if [[ "${codename}" =~ trusty|xenial|bionic ]]; then
                   continue
               fi
 
               if [ -n "${releases}" ]; then
                   releases="${releases}, "
               fi
-              releases="${releases}'${r}'"
-          done
+              releases="${releases}'${codename}'"
 
+              if [ -n "${versions}" ]; then
+                  versions="${versions}, "
+              fi
+              versions="${versions}\"${codename}\": \"${version}\""
+          done <<< "$codenames_with_versions"
+
+          echo versions="{${versions}}" >> $GITHUB_OUTPUT
           echo matrix="${releases}" >> $GITHUB_OUTPUT
 
   build-template:
@@ -75,6 +85,8 @@ jobs:
           chmod 600 ~/.ssh/adsys-e2e.pem
       - name: Check if template needs to be created
         id: check-vm-template
+        env:
+          versions: ${{ needs.supported-releases.outputs.versions }}
         run: |
           set -eu
 
@@ -83,7 +95,9 @@ jobs:
               force="--force"
           fi
 
-          IMAGE_VERSION=$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${{ matrix.codename }} ${force})
+          version="$(echo $versions | jq -r .${{ matrix.codename }})"
+          codename="${{ matrix.codename }}"
+          IMAGE_VERSION=$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${codename} --version ${version} ${force})
           if [ ! -z "${IMAGE_VERSION}" ]; then
               echo image-version=$IMAGE_VERSION >> $GITHUB_OUTPUT
           fi

@@ -16,7 +16,7 @@ import (
 	"github.com/ubuntu/adsys/e2e/internal/command"
 )
 
-var codename string
+var codename, version string
 var force bool
 
 func main() {
@@ -40,11 +40,13 @@ If the --force flag is set, the script will return the latest image URN
 regardless of custom image availability.
 
 Options:
- --codename              Required: codename of the Ubuntu release (e.g. focal)
+ --codename              Required: codename of the Ubuntu release (e.g. noble)
+ --version               Required: version of the Ubuntu release (e.g. 24.04)
  -f, --force             Force the script to return the latest image URN
                          regardless of whether we have a custom image or not
 `, filepath.Base(os.Args[0]))
 	cmd.AddStringFlag(&codename, "codename", "", "")
+	cmd.AddStringFlag(&version, "version", "", "")
 	cmd.AddBoolFlag(&force, "force", false, "")
 	cmd.AddBoolFlag(&force, "f", false, "")
 
@@ -52,8 +54,8 @@ Options:
 }
 
 func validate(_ context.Context, _ *command.Command) error {
-	if codename == "" {
-		return errors.New("codename must be specified")
+	if codename == "" || version == "" {
+		return errors.New("codename and version must be specified")
 	}
 
 	return nil
@@ -62,7 +64,7 @@ func validate(_ context.Context, _ *command.Command) error {
 func action(ctx context.Context, _ *command.Command) error {
 	var noStable, noDaily bool
 
-	availableImages, err := az.ImageList(ctx, codename)
+	availableImages, err := az.ImageList(ctx, codename, version)
 	if err != nil {
 		return err
 	}

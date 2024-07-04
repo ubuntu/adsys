@@ -4,7 +4,7 @@ set -eu
 
 # This script runs on the first boot of the VM.
 echo "Setting hostname..."
-hostname="$(lsb_release -cs)-$(openssl rand -hex 4)"
+hostname="$(lsb_release -cs)-$(openssl rand -hex 2)"
 hostnamectl set-hostname "$hostname"
 
 echo "Adding hostname to hosts file..."
