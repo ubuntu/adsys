@@ -1,6 +1,10 @@
 import sys
+import os
 
-sys.path.append('./')
+import pathlib
+scriptdir=pathlib.Path(__file__).parent.resolve()
+sys.path.append(scriptdir)
+
 from custom_conf import *
 
 # The file contains helper functions and the mechanism to build the
@@ -113,7 +117,7 @@ if __name__ == "__main__":
     requirements = list(dict.fromkeys(requirements))
     requirements.sort()
 
-    with open(".sphinx/requirements.txt", 'w') as requirements_file:
+    with open(os.path.join(scriptdir, "requirements.txt"), 'w') as requirements_file:
         requirements_file.write(
             "# DO NOT MODIFY THIS FILE DIRECTLY!\n"
             "#\n"
