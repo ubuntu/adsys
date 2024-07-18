@@ -6,7 +6,7 @@ Scripts from this GPO will be appended to the list of scripts referenced higher 
 
 
 - Type: scripts
-- Key: /logoff
+- Key: `/logoff`
 
 Note: -
  * Enabled: The scripts in the text entry are executed at user logoff time.
@@ -24,7 +24,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Session management -> User Scripts -> Logoff scripts    |
-| Registry Key | Software\Policies\Ubuntu\scripts\logoff         |
+| Location     | `User Policies -> Ubuntu -> Session management -> User Scripts -> Logoff scripts`    |
+| Registry Key | `Software\Policies\Ubuntu\scripts\logoff`         |
 | Element type | multiText |
 | Class:       | User       |

@@ -3,7 +3,7 @@
 URI to use for the background image. Note that the backend only supports local (file://) URIs. It overrides the value defined in the default style sheet.
 
 - Type: dconf
-- Key: /com/ubuntu/login-screen/background-picture-uri
+- Key: `/com/ubuntu/login-screen/background-picture-uri`
 - Default: ''
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
@@ -16,7 +16,7 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Interface -> Sets the background image for the login screen.    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-picture-uri         |
+| Location     | `Computer Policies -> Ubuntu -> Login Screen -> Interface -> Sets the background image for the login screen.`    |
+| Registry Key | `Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-picture-uri`         |
 | Element type | text |
 | Class:       | Machine       |

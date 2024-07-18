@@ -6,7 +6,7 @@ Scripts from this GPO will be appended to the list of scripts referenced higher 
 
 
 - Type: scripts
-- Key: /logon
+- Key: `/logon`
 
 Note: -
  * Enabled: The scripts in the text entry are executed at user logon time.
@@ -24,7 +24,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Session management -> User Scripts -> Logon scripts    |
-| Registry Key | Software\Policies\Ubuntu\scripts\logon         |
+| Location     | `User Policies -> Ubuntu -> Session management -> User Scripts -> Logon scripts`    |
+| Registry Key | `Software\Policies\Ubuntu\scripts\logon`         |
 | Element type | multiText |
 | Class:       | User       |

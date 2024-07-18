@@ -3,7 +3,7 @@
 Text banner message to show in the login window.
 
 - Type: dconf
-- Key: /org/gnome/login-screen/banner-message-text
+- Key: `/org/gnome/login-screen/banner-message-text`
 - Default: ''
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
@@ -16,7 +16,7 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Interface -> Banner message text    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text         |
+| Location     | `Computer Policies -> Ubuntu -> Login Screen -> Interface -> Banner message text`    |
+| Registry Key | `Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text`         |
 | Element type | text |
 | Class:       | Machine       |

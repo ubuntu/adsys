@@ -3,10 +3,10 @@
 This is the laptop panel screen brightness used when the session is idle.
 
 - Type: dconf
-- Key: /org/gnome/settings-daemon/plugins/power/idle-brightness
+- Key: `/org/gnome/settings-daemon/plugins/power/idle-brightness`
 - Default: 30
 
-Note: default system value is used for "Not Configured" and enforced if "Disabled".
+Note: default system value is used for `Not Configured` and enforced if `Disabled`.
 
 Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
@@ -16,7 +16,7 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Power Management -> The brightness of the screen when idle    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\idle-brightness         |
+| Location     | `Computer Policies -> Ubuntu -> Client management -> Power Management -> The brightness of the screen when idle`    |
+| Registry Key | `Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\idle-brightness`         |
 | Element type | decimal |
 | Class:       | Machine       |

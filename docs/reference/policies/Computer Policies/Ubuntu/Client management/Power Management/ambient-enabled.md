@@ -3,10 +3,10 @@
 If the ambient light sensor functionality is enabled.
 
 - Type: dconf
-- Key: /org/gnome/settings-daemon/plugins/power/ambient-enabled
+- Key: `/org/gnome/settings-daemon/plugins/power/ambient-enabled`
 - Default: true
 
-Note: default system value is used for "Not Configured" and enforced if "Disabled".
+Note: default system value is used for `Not Configured`  and enforced if `Disabled`.
 
 Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
@@ -16,7 +16,7 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Power Management -> Enable the ALS sensor    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\ambient-enabled         |
+| Location     | `Computer Policies -> Ubuntu -> Client management -> Power Management -> Enable the ALS sensor`    |
+| Registry Key | `Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\ambient-enabled`         |
 | Element type | boolean |
 | Class:       | Machine       |

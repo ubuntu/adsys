@@ -1,11 +1,11 @@
 # Client administrators
 
 Define users and groups from AD allowed to administer client machines.
-It must be of the form user@domain or %group@domain. One per line.
+It must be of the form `user@domain` or `%group@domain`. One per line.
 
 
 - Type: privilege
-- Key: /client-admins
+- Key: `/client-admins`
 
 Note: -
  * Enabled: This allows defining Active Directory groups and users with administrative privileges in the box entry.
@@ -20,7 +20,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Privilege Authorization -> Client administrators    |
-| Registry Key | Software\Policies\Ubuntu\privilege\client-admins         |
+| Location     | `Computer Policies -> Ubuntu -> Client management -> Privilege Authorization -> Client administrators`    |
+| Registry Key | `Software\Policies\Ubuntu\privilege\client-admins`         |
 | Element type | multiText |
 | Class:       | Machine       |
