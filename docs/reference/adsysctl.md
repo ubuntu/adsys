@@ -2,7 +2,7 @@
 
 `adsysctl` is a command line utility to request actions from the daemon and query its current status. You can get more verbose output with the `-v` accumulative flags, which will stream all logs from the service corresponding to your specific request.
 
-As a general rule, favor shell completion and the help command for discovering various parts of the adsysctl user interface. It will help you by completing subcommands, flags, users and even chapters of the offline documentation!
+As a general rule, favour shell completion and the help command for discovering various parts of the adsysctl user interface. It will help you by completing subcommands, flags, users and even chapters of the offline documentation!
 
 ## Which policies are applied
 

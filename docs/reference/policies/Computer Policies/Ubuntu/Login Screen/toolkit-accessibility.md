@@ -3,7 +3,7 @@
 Whether toolkits should load accessibility related modules.
 
 - Type: dconf
-- Key: /org/gnome/desktop/interface/toolkit-accessibility
+- Key: `/org/gnome/desktop/interface/toolkit-accessibility`
 - Default: false
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
@@ -16,7 +16,7 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Enable Toolkit Accessibility    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\toolkit-accessibility         |
+| Location     | `Computer Policies -> Ubuntu -> Login Screen -> Enable Toolkit Accessibility`    |
+| Registry Key | `Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\toolkit-accessibility`         |
 | Element type | boolean |
 | Class:       | Machine       |

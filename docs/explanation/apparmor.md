@@ -146,7 +146,7 @@ It is also recommended to define a `DEFAULT` subprofile as part of the system-wi
 }
 ```
 
-## Profile parsing behaviors
+## Profile parsing behaviours
 
 ### Troubleshooting misbehaving user profiles
 

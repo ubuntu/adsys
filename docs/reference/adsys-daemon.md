@@ -89,7 +89,7 @@ The ADSys daemon is started on demand by systemd’s socket activation and only 
 
 ## Configuration
 
-`ADSys` doesn’t ship a configuration file by default. However, such a file can be created to modify the behavior of the daemon and the client.
+`ADSys` doesn’t ship a configuration file by default. However, such a file can be created to modify the behaviour of the daemon and the client.
 
 The configuration file can be system-wide in `/etc/adsys.yaml`. This will thus apply to both daemon and client. You can have per-user configuration by creating `$HOME/adsys.yaml`. It will then affect only the client for this user.
 
@@ -190,9 +190,9 @@ Only privileged users have access to this information. As with any other command
 
 More information is available in the [next chapter](adsysctl.md) covering adsysctl cat command.
 
-## Authorizations
+## Authorisations
 
-**ADSys** uses a privilege mechanism based on polkit to manage authorizations. Many commands require elevated privileges to be executed. If the adsys client is executed with insufficient privileges to execute a command, the user will be prompted to enter its password. If allowed then the command will be executed and denied otherwise.
+**ADSys** uses a privilege mechanism based on polkit to manage authorisations. Many commands require elevated privileges to be executed. If the adsys client is executed with insufficient privileges to execute a command, the user will be prompted to enter its password. If allowed then the command will be executed and denied otherwise.
 
 ![Polkit authentication dialog](../images/reference/adsys-daemon/daemon-polkit.png)
 

@@ -4,7 +4,7 @@ This allows or prevents client machine to have local users gaining administrator
 
 
 - Type: privilege
-- Key: /allow-local-admins
+- Key: `/allow-local-admins`
 
 Note: -
  * Enabled: This leaves the default rules for the “sudo” and “admin” rule intact.
@@ -19,7 +19,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Privilege Authorization -> Allow local administrators    |
-| Registry Key | Software\Policies\Ubuntu\privilege\allow-local-admins         |
+| Location     | `Computer Policies -> Ubuntu -> Client management -> Privilege Authorization -> Allow local administrators`    |
+| Registry Key | `Software\Policies\Ubuntu\privilege\allow-local-admins`         |
 | Element type |  |
 | Class:       | Machine       |

@@ -6,7 +6,7 @@ ADSys enables system administrators to manage Ubuntu Desktop clients centrally v
 
 It simplifies the task of configuring Ubuntu systems in a Microsoft Active Directory environment. However, it doesn't handle user authentication or initial security policy, which are managed by SSSD/Winbind and PAM.
 
-ADSys is valuable for system administrators who wish to manage Ubuntu Desktop clients in a centralized manner through Microsoft Active Directory.
+ADSys is valuable for system administrators who wish to manage Ubuntu Desktop clients in a centralised manner through Microsoft Active Directory.
 
 ```{toctree}
 :hidden:

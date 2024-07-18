@@ -4,11 +4,11 @@ This section contains step-by-step tutorials to help you get started with ADSys.
 
 ```{toctree}
 :hidden:
-certificates-autoenrollment
+certificates-autoenrolment
 ```
 
-## Certificates Auto-Enrollment
+## Certificates Auto-Enrolment
 
-Explore the essentials of Ubuntu's Certificate Auto-Enrollment Feature, a crucial tool for seamless certificate management with Active Directory Certificate Services.
+Explore the essentials of Ubuntu's Certificate Auto-Enrolment Feature, a crucial tool for seamless certificate management with Active Directory Certificate Services.
 
-* [Certificates auto-enrollment demo](certificates-autoenrollment.md)
+* [Certificates auto-enrolment demo](certificates-autoenrolment.md)
