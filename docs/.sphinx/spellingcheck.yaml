@@ -2,7 +2,7 @@ matrix:
 - name: rST files
   aspell:
     lang: en
-    d: en_US
+    d: en_GB
   dictionary:
     wordlists:
     - .wordlist.txt
