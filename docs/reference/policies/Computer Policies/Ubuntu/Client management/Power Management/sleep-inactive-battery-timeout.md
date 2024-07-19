@@ -3,7 +3,7 @@
 The amount of time in seconds the computer on battery power needs to be inactive before it goes to sleep. A value of 0 means never.
 
 - Type: dconf
-- Key: `/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-timeout`
+- Key: /org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-timeout
 - Default for 20.04: 1200
 - Default for 22.04: 1200
 - Default for 24.04: 900
@@ -19,7 +19,7 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | `Computer Policies -> Ubuntu -> Client management -> Power Management -> Sleep timeout computer when on battery`    |
-| Registry Key | `Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-battery-timeout`         |
+| Location     | Computer Policies -> Ubuntu -> Client management -> Power Management -> Sleep timeout computer when on battery    |
+| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-battery-timeout         |
 | Element type | decimal |
 | Class:       | Machine       |

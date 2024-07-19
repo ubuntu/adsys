@@ -3,7 +3,7 @@
 Keybinding to open the Activities Overview.
 
 - Type: dconf
-- Key: `/org/gnome/shell/keybindings/toggle-overview`
+- Key: /org/gnome/shell/keybindings/toggle-overview
 - Default for 20.04: `["<Super>s"]`
 - Default for 22.04: `["<Super>s"]`
 - Default for 24.04: `[]`
@@ -19,7 +19,7 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | `User Policies -> Ubuntu -> Desktop -> Keyboard shortcuts -> Keybinding to open the overview`    |
-| Registry Key | `Software\Policies\Ubuntu\dconf\org\gnome\shell\keybindings\toggle-overview`         |
+| Location     | User Policies -> Ubuntu -> Desktop -> Keyboard shortcuts -> Keybinding to open the overview    |
+| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\shell\keybindings\toggle-overview         |
 | Element type | multiText |
 | Class:       | User       |

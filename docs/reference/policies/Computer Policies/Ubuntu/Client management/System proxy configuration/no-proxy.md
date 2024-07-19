@@ -2,13 +2,13 @@
 
 An array of hosts allowed to bypass the proxy settings. The host exclusion setting must be in the form of:
 
-`localhost,127.0.0.1,::1`
+localhost,127.0.0.1,::1
 
 Hosts can be individually wrapped in single (') or double quotes ("), or separated by spaces. An empty value will remove previously set settings of the same type.
 
 
 - Type: proxy
-- Key: `/proxy/no-proxy`
+- Key: /proxy/no-proxy
 
 Note: -
  * Enabled: The setting in the text entry is applied on the client machine.
@@ -26,7 +26,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | `Computer Policies -> Ubuntu -> Client management -> System proxy configuration -> Ignored hosts`    |
-| Registry Key | `Software\Policies\Ubuntu\proxy\proxy\no-proxy`         |
+| Location     | Computer Policies -> Ubuntu -> Client management -> System proxy configuration -> Ignored hosts    |
+| Registry Key | Software\Policies\Ubuntu\proxy\proxy\no-proxy         |
 | Element type | text |
 | Class:       | Machine       |

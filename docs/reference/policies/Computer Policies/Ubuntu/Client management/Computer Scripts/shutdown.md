@@ -1,12 +1,12 @@
 # Shutdown scripts
 
 Define scripts that are executed on machine power off.
-Those scripts are ordered, one by line, and relative to `SYSVOL/ubuntu/scripts/` directory.
+Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
 
 
 - Type: scripts
-- Key: `/shutdown`
+- Key: /shutdown
 
 Note: -
  * Enabled: The scripts in the text entry are executed at shutdown time.
@@ -24,7 +24,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | `Computer Policies -> Ubuntu -> Client management -> Computer Scripts -> Shutdown scripts`    |
-| Registry Key | `Software\Policies\Ubuntu\scripts\shutdown`         |
+| Location     | Computer Policies -> Ubuntu -> Client management -> Computer Scripts -> Shutdown scripts    |
+| Registry Key | Software\Policies\Ubuntu\scripts\shutdown         |
 | Element type | multiText |
 | Class:       | Machine       |
