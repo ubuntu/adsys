@@ -25,7 +25,7 @@ The configured profile will override any profile referenced higher in the GPO hi
 
 
 - Type: apparmor
-- Key: `/apparmor-users`
+- Key: /apparmor-users
 
 Note: -
  * Enabled: The profile in the text entry is applied on the client machine.
@@ -43,7 +43,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | `User Policies -> Ubuntu -> Session management -> User application confinement -> AppArmor`    |
-| Registry Key | `Software\Policies\Ubuntu\apparmor\apparmor-users`         |
+| Location     | User Policies -> Ubuntu -> Session management -> User application confinement -> AppArmor    |
+| Registry Key | Software\Policies\Ubuntu\apparmor\apparmor-users         |
 | Element type | text |
 | Class:       | User       |

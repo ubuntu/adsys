@@ -2,11 +2,11 @@
 
 Declare system-wide proxy auto-configuration URL.
 
-Auto-configuration URLs are always prioritised over manual proxy settings, meaning that if all proxy options are set, the GPO client will enable automatic proxy configuration for supported backends. An empty value will remove previously set settings of the same type.
+Auto-configuration URLs are always prioritized over manual proxy settings, meaning that if all proxy options are set, the GPO client will enable automatic proxy configuration for supported backends. An empty value will remove previously set settings of the same type.
 
 
 - Type: proxy
-- Key: `/proxy/auto`
+- Key: /proxy/auto
 
 Note: -
  * Enabled: The setting in the text entry is applied on the client machine.
@@ -24,7 +24,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | `Computer Policies -> Ubuntu -> Client management -> System proxy configuration -> Auto-configuration URL`    |
-| Registry Key | `Software\Policies\Ubuntu\proxy\proxy\auto`         |
+| Location     | Computer Policies -> Ubuntu -> Client management -> System proxy configuration -> Auto-configuration URL    |
+| Registry Key | Software\Policies\Ubuntu\proxy\proxy\auto         |
 | Element type | text |
 | Class:       | Machine       |

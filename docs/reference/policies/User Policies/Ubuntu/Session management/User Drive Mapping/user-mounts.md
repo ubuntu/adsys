@@ -23,7 +23,7 @@ It's up to the user to ensure that the requested protocols are valid and support
 
 
 - Type: mount
-- Key: `/user-mounts`
+- Key: /user-mounts
 
 Note: 
  * Enabled: The value(s) referenced in the entry are applied on the client machine.
@@ -40,7 +40,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | `User Policies -> Ubuntu -> Session management -> User Drive Mapping -> User mounts`    |
-| Registry Key | `Software\Policies\Ubuntu\mount\user-mounts`         |
+| Location     | User Policies -> Ubuntu -> Session management -> User Drive Mapping -> User mounts    |
+| Registry Key | Software\Policies\Ubuntu\mount\user-mounts         |
 | Element type | multiText |
 | Class:       | User       |

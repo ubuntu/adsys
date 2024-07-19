@@ -23,7 +23,7 @@ It's up to the user to ensure that the requested protocols are valid and support
 
 
 - Type: mount
-- Key: `/system-mounts`
+- Key: /system-mounts
 
 Note: 
  * Enabled: The value(s) referenced in the entry are applied on the client machine.
@@ -40,7 +40,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 | Element      | Value            |
 | ---          | ---              |
-| Location     | `Computer Policies -> Ubuntu -> Client management -> System Drive Mapping -> System mounts`    |
-| Registry Key | `Software\Policies\Ubuntu\mount\system-mounts`         |
+| Location     | Computer Policies -> Ubuntu -> Client management -> System Drive Mapping -> System mounts    |
+| Registry Key | Software\Policies\Ubuntu\mount\system-mounts         |
 | Element type | multiText |
 | Class:       | Machine       |
