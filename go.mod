@@ -32,7 +32,7 @@ require (
 	golang.org/x/crypto v0.25.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/net v0.27.0
-	golang.org/x/sync v0.7.0
+	golang.org/x/sync v0.8.0
 	golang.org/x/sys v0.23.0
 	golang.org/x/text v0.16.0
 	google.golang.org/grpc v1.65.0
