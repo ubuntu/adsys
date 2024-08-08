@@ -15,6 +15,9 @@ char *get_ticket_path() {
     errno = ret;
     return NULL;
   }
+  // We need to reset the errno to 0, because krb5_init_context()
+  // can alter it,  even if it succeeds.
+  errno = 0;
 
   const char* cc_name = krb5_cc_default_name(context);
   if (cc_name == NULL) {
