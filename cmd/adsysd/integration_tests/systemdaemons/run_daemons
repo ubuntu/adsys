@@ -14,7 +14,7 @@ from gi.repository import GLib
 from session_daemons import start_session_bus, run_session_mocks
 from system_daemons import start_system_bus, run_system_mocks
 
-POLKIT_PATH = "/usr/libexec/polkitd"
+POLKIT_PATH = "/usr/lib/polkit-1/polkitd"
 ADSYS_POLICY_PATH_SRC = "/usr/share/polkit-1/actions.orig/com.ubuntu.adsys.policy"
 ADSYS_POLICY_PATH_DST = "/usr/share/polkit-1/actions/com.ubuntu.adsys.policy"
 

@@ -412,7 +412,10 @@ func runDaemons() (teardown func()) {
 		go func() {
 			defer wg.Done()
 
-			if err := os.MkdirAll(socketDir, 0750); err != nil {
+			// 24.04 introduced some polkit changes that make the daemon drop root privileges before executing. In order
+			// to be able to connect to the bus and run polkitd, we need more permissions in the socket directory.
+			//nolint:gosec
+			if err := os.MkdirAll(socketDir, 0755); err != nil {
 				log.Fatalf("Setup: can’t create %s socket directory: %v", answer, err)
 			}
 

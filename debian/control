@@ -47,6 +47,7 @@ Recommends: ${misc:Recommends},
 Suggests: curlftpfs,
           ubuntu-proxy-manager,
           python3-cepces,
+          polkitd-pkla,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
 
