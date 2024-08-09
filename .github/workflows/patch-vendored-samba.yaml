@@ -14,7 +14,7 @@ env:
 jobs:
   check-for-changes:
     name: Check for changes in vendored code
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER }}
     outputs:
       changed: ${{ steps.compute-diff.outputs.changed }}
       samba-ref: ${{ steps.compute-diff.outputs.samba-ref }}
@@ -48,7 +48,7 @@ jobs:
 
   patch-vendored-code:
     name: Patch vendored code
-    runs-on: ubuntu-latest
+    runs-on: ${{ vars.RUNNER }}
     needs: check-for-changes
     if: ${{ needs.check-for-changes.outputs.changed == 'true' }}
     steps:
