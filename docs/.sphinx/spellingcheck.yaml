@@ -9,7 +9,13 @@ matrix:
     - .custom_wordlist.txt
     output: .sphinx/.wordlist.dic
   sources:
-  - _build/**/*.html
+      # check all files except dconf type in the technical reference
+  - _build/tutorial/**/*.html
+  - _build/explanation/**/*.html
+  - _build/how-to/**/*.html
+  - _build/reference/policies/Computer Policies/Ubuntu/Client management/Computer Scripts/**/*.html|!_build/reference/policies/Computer Policies/Ubuntu/Client management/Power Management/**/*.html
+  - _build/reference/policies/User Policies/Ubuntu/Session management/**/*.html
+  - _build/reference/policies/User Policies/Ubuntu/Peripherals/**/*.html
   pipeline:
   - pyspelling.filters.html:
       comments: false
@@ -28,3 +34,4 @@ matrix:
       - img
       - a.p-navigation__link
       - a.contributor
+      - a.reference.internal # don't spellcheck refs hidden in html source
