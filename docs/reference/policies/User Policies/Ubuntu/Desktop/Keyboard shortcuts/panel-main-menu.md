@@ -12,9 +12,9 @@ Supported on Ubuntu 20.04.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Desktop -> Keyboard shortcuts -> Show the activities overview    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\wm\keybindings\panel-main-menu         |
-| Element type | multiText |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Desktop -> Keyboard shortcuts -> Show the activities overview</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\desktop\wm\keybindings\panel-main-menu</code>          |
+| Element type | multiText               |
+| Class:       | User                     |

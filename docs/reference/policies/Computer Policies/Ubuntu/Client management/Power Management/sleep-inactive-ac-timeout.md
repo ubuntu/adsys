@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Power Management -> Sleep timeout computer when on AC    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-ac-timeout         |
-| Element type | decimal |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Client management -> Power Management -> Sleep timeout computer when on AC</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\sleep-inactive-ac-timeout</code>          |
+| Element type | decimal               |
+| Class:       | Machine                     |

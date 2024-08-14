@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Interface -> Sets the background image for the login screen.    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-picture-uri         |
-| Element type | text |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Login Screen -> Interface -> Sets the background image for the login screen.</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\gdm\dconf\com\ubuntu\login-screen\background-picture-uri</code>          |
+| Element type | text               |
+| Class:       | Machine                     |

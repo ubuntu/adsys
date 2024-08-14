@@ -24,9 +24,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> System proxy configuration -> HTTP Proxy    |
-| Registry Key | Software\Policies\Ubuntu\proxy\proxy\http         |
-| Element type | text |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Client management -> System proxy configuration -> HTTP Proxy</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\proxy\proxy\http</code>          |
+| Element type | text               |
+| Class:       | Machine                     |

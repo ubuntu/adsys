@@ -22,9 +22,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Computer Scripts -> Shutdown scripts    |
-| Registry Key | Software\Policies\Ubuntu\scripts\shutdown         |
-| Element type | multiText |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Client management -> Computer Scripts -> Shutdown scripts</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\scripts\shutdown</code>          |
+| Element type | multiText               |
+| Class:       | Machine                     |

@@ -17,9 +17,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Privilege Authorization -> Allow local administrators    |
-| Registry Key | Software\Policies\Ubuntu\privilege\allow-local-admins         |
-| Element type |  |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Client management -> Privilege Authorization -> Allow local administrators</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\privilege\allow-local-admins</code>          |
+| Element type |                |
+| Class:       | Machine                     |

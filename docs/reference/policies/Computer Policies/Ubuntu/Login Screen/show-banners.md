@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Show notification banners    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\notifications\show-banners         |
-| Element type | boolean |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Login Screen -> Show notification banners</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\notifications\show-banners</code>          |
+| Element type | boolean               |
+| Class:       | Machine                     |

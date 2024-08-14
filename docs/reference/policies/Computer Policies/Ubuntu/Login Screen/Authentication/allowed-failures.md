@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Authentication -> Number of allowed authentication failures    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\allowed-failures         |
-| Element type | decimal |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Login Screen -> Authentication -> Number of allowed authentication failures</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\allowed-failures</code>          |
+| Element type | decimal               |
+| Class:       | Machine                     |
