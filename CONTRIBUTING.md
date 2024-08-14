@@ -63,12 +63,24 @@ Once merged to the main branch, `po` files, `README.md` with the command line re
 
 You can also contribute to the documentation. It uses [GitHub Markdown Format](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github).
 
-You can propose modifications in 2 ways:
+To contribute to the documentation edit the files in the `/docs/` directory after forking and cloning the repo.
+Each page on the documentation [website](https://canonical-adsys.readthedocs-hosted.com/en/stable/) also includes
+an edit button for making small changes, such as fixing typos.
 
-* Directly on the repo, in the `doc/` directory. Once merged, this will update the repository wiki automatically.
-* Via the [edit wiki link](https://docs.github.com/en/communities/documenting-your-project-with-wikis/adding-or-editing-wiki-pages#editing-wiki-pages) of this repository. Once merged, this will update the main repository automatically.
+> [!WARNING]
+> Much of the reference documentation in `/docs/reference/` is auto-generated.
+> Editing the content of these files requires modifying `.go` and `.yaml` files found elsewhere in the repo.
+> Some references are generated using `dconf` keys from upstream packages and cannot be edited.
+> Changes made directly to reference files will be overwritten in the automation process.
+> If you want to propose a change to a reference page please make your edits in the relevant source files 
+> or contact someone on the ADSys team if you are uncertain how to do so.
 
-Each page is a different chapter, ordered with numbers, which is available with the command `adsysctl doc`.
+Documentation for the AD integration client `adsysctl` can be generated in the terminal with:
+
+```
+adsysctl doc [CHAPTER] [flags]
+```
+Each page is a different chapter ordered with numbers.
 
 ## Contributing to the code
 
