@@ -48,7 +48,7 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 		c.CacheDir = consts.DefaultSSSCacheDir
 	}
 
-	cfg, err := ini.Load(c.Conf)
+	cfg, err := ini.InsensitiveLoad(c.Conf)
 	if err != nil {
 		return SSS{}, err
 	}

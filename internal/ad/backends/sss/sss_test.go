@@ -47,6 +47,7 @@ func TestSSSD(t *testing.T) {
 		"SSSd domain can not match ad domain":      {sssdConf: "domain-no-match-addomain"},
 		"Default domain suffix is read":            {sssdConf: "example.com-with-default-domain-suffix"},
 		"Use domain from section if no ad_domain":  {sssdConf: "example.com-without-ad_domain"},
+		"Ignore upper cases in domain name":        {sssdConf: "EXAMPLE.COM"},
 
 		// Special cases for config parameters
 		"Regular config, with cache dir": {sssdConf: "example.com", sssdCacheDir: "/some/specific/cachedir"},
