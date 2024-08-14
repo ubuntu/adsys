@@ -95,25 +95,10 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	dbsPath := filepath.Join(dconfDir, "db")
 	dbPath := filepath.Join(dbsPath, objectName+".d")
 
-	if !isComputer && len(entries) > 0 {
+	if !isComputer {
 		if _, err := os.Stat(filepath.Join(dbsPath, "machine.d", "locks", "adsys")); err != nil {
 			return errors.New(gotext.Get("machine dconf database is required before generating a policy for an user. This one returns: %v", err))
 		}
-	}
-
-	// Only clean up user databases/profiles if there are no entries to apply.
-	// We don't clean up the machine database because we don't know if there's any user GPO depending on it.
-	if !isComputer && len(entries) == 0 {
-		if err := os.RemoveAll(dbPath); err != nil {
-			return errors.New(gotext.Get("can't remove user dconf database directory: %v", err))
-		}
-		if er := os.RemoveAll(filepath.Join(dbsPath, objectName)); er != nil {
-			return errors.New(gotext.Get("can't remove user dconf binary database: %v", err))
-		}
-		if err := os.RemoveAll(filepath.Join(profilesPath, objectName)); err != nil {
-			return errors.New(gotext.Get("can't remove user dconf profile: %v", err))
-		}
-		return nil
 	}
 
 	// Create profiles for users only
@@ -234,8 +219,8 @@ func writeIfChanged(path string, content string) (done bool, err error) {
 }
 
 // writeProfile creates or updates a dconf profile file.
-// The adsys system-db should always be the first system-db in the file to enforce their values
-// (upper system-db in the profile wins).
+// The adsys systemd-db should always be the first systemd-db in the file to enforce their values
+// (upper systemd-db in the profile wins).
 func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	defer decorate.OnError(&err, gotext.Get("can't update user profile %s", profilesPath))
 

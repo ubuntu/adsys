@@ -38,8 +38,6 @@ func TestApplyPolicy(t *testing.T) {
 		"Update user disabled key with value": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			existingDconfDir: "user-with-disabled-value"},
-		"User empty state, with existing machine policy": {entries: []entry.Entry{}, existingDconfDir: "existing-user"},
-		"User empty state": {entries: []entry.Entry{}, existingDconfDir: "-"},
 
 		// Machine cases
 		"First boot": {entries: []entry.Entry{
@@ -57,7 +55,10 @@ func TestApplyPolicy(t *testing.T) {
 		"Update machine disabled key with value": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}},
 			isComputer: true, existingDconfDir: "machine-with-disabled-value"},
-		"Machine empty state": {entries: []entry.Entry{}, isComputer: true, existingDconfDir: "-"},
+
+		// We still need to create an empty database even if there is no policy, otherwise DCONF will block any writes
+		// due to missing database profile stack file.
+		"No policy still generates a valid db": {entries: nil},
 
 		"Multiple keys same category": {entries: []entry.Entry{
 			{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"},
@@ -143,19 +144,19 @@ func TestApplyPolicy(t *testing.T) {
 		}},
 
 		// Profiles tests
-		"Update existing correct profile stays unchanged": {
+		"Update existing correct profile stays unchanged": {entries: nil,
 			existingDconfDir: "existing-user"},
-		"Update existing correct profile with trailing spaces are removed": {
+		"Update existing correct profile with trailing spaces are removed": {entries: nil,
 			existingDconfDir: "existing-user-with-trailing-spaces"},
-		"Update existing profile without needed db append them": {
+		"Update existing profile without needed db append them": {entries: nil,
 			existingDconfDir: "existing-user-no-adsysdb"},
-		"Update existing profile without needed db, trailine lines are removed": {
+		"Update existing profile without needed db, trailine lines are removed": {entries: nil,
 			existingDconfDir: "existing-user-no-adsysdb-trailing-newlines"},
-		"Update existing profile with partial db append them without repetition": {
+		"Update existing profile with partial db append them without repetition": {entries: nil,
 			existingDconfDir: "existing-user-one-adsysdb-partial"},
-		"Update existing profile with wrong order appends them in correct order": {
+		"Update existing profile with wrong order appends them in correct order": {entries: nil,
 			existingDconfDir: "existing-user-one-adsysdb-reversed-end"},
-		"Update existing profile eliminates adsys DB repetitions": {
+		"Update existing profile eliminates adsys DB repetitions": {entries: nil,
 			existingDconfDir: "existing-user-adsysdb-repetitions"},
 
 		// non adsys content
@@ -193,10 +194,6 @@ func TestApplyPolicy(t *testing.T) {
 			t.Parallel()
 
 			dconfDir := t.TempDir()
-
-			if tc.entries == nil {
-				tc.entries = []entry.Entry{{Key: "com/ubuntu/category/key-s", Value: "'onekey-s-othervalue'", Meta: "s"}}
-			}
 
 			if tc.existingDconfDir == "" {
 				tc.existingDconfDir = "machine-base"
