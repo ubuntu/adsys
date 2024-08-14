@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Authentication -> Whether or not to allow smartcard readers for login    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\enable-smartcard-authentication         |
-| Element type | boolean |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Login Screen -> Authentication -> Whether or not to allow smartcard readers for login</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\enable-smartcard-authentication</code>          |
+| Element type | boolean               |
+| Class:       | Machine                     |

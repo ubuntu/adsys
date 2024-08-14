@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Desktop -> Screensaver -> Show notifications in the lock screen    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\notifications\show-in-lock-screen         |
-| Element type | boolean |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Desktop -> Screensaver -> Show notifications in the lock screen</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\desktop\notifications\show-in-lock-screen</code>          |
+| Element type | boolean               |
+| Class:       | User                     |

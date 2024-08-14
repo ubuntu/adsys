@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Interface -> Path to small image at top of user list    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\logo         |
-| Element type | text |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Login Screen -> Interface -> Path to small image at top of user list</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\logo</code>          |
+| Element type | text               |
+| Class:       | Machine                     |

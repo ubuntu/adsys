@@ -17,9 +17,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Desktop -> Keyboard shortcuts -> Keybinding to open the overview    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\shell\keybindings\toggle-overview         |
-| Element type | multiText |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Desktop -> Keyboard shortcuts -> Keybinding to open the overview</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\shell\keybindings\toggle-overview</code>          |
+| Element type | multiText               |
+| Class:       | User                     |

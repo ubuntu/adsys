@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Desktop -> Background -> Picture URI    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri         |
-| Element type | text |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Desktop -> Background -> Picture URI</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</code>          |
+| Element type | text               |
+| Class:       | User                     |

@@ -23,9 +23,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Desktop -> Background -> Picture Options    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options         |
-| Element type | dropdownList |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Desktop -> Background -> Picture Options</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-options</code>          |
+| Element type | dropdownList               |
+| Class:       | User                     |

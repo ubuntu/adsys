@@ -16,9 +16,9 @@ Supported on Ubuntu 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Desktop -> Background -> Picture URI (dark)    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark         |
-| Element type | text |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Desktop -> Background -> Picture URI (dark)</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</code>          |
+| Element type | text               |
+| Class:       | User                     |

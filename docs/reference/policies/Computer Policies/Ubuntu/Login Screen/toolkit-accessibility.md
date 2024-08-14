@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Login Screen -> Enable Toolkit Accessibility    |
-| Registry Key | Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\toolkit-accessibility         |
-| Element type | boolean |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Login Screen -> Enable Toolkit Accessibility</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\toolkit-accessibility</code>          |
+| Element type | boolean               |
+| Class:       | Machine                     |

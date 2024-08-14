@@ -38,9 +38,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Session management -> User Drive Mapping -> User mounts    |
-| Registry Key | Software\Policies\Ubuntu\mount\user-mounts         |
-| Element type | multiText |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Session management -> User Drive Mapping -> User mounts</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\mount\user-mounts</code>          |
+| Element type | multiText               |
+| Class:       | User                     |

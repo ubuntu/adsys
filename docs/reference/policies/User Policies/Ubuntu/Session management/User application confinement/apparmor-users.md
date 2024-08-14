@@ -41,9 +41,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Session management -> User application confinement -> AppArmor    |
-| Registry Key | Software\Policies\Ubuntu\apparmor\apparmor-users         |
-| Element type | text |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Session management -> User application confinement -> AppArmor</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\apparmor\apparmor-users</code>          |
+| Element type | text               |
+| Class:       | User                     |

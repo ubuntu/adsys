@@ -22,9 +22,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Session management -> User Scripts -> Logon scripts    |
-| Registry Key | Software\Policies\Ubuntu\scripts\logon         |
-| Element type | multiText |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Session management -> User Scripts -> Logon scripts</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\scripts\logon</code>          |
+| Element type | multiText               |
+| Class:       | User                     |

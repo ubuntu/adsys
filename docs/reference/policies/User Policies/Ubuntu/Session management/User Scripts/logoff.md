@@ -22,9 +22,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | User Policies -> Ubuntu -> Session management -> User Scripts -> Logoff scripts    |
-| Registry Key | Software\Policies\Ubuntu\scripts\logoff         |
-| Element type | multiText |
-| Class:       | User       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>User Policies -> Ubuntu -> Session management -> User Scripts -> Logoff scripts</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\scripts\logoff</code>          |
+| Element type | multiText               |
+| Class:       | User                     |

@@ -24,9 +24,9 @@ An Ubuntu Pro subscription on the client is required to apply this policy.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> System proxy configuration -> SOCKS Proxy    |
-| Registry Key | Software\Policies\Ubuntu\proxy\proxy\socks         |
-| Element type | text |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Client management -> System proxy configuration -> SOCKS Proxy</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\proxy\proxy\socks</code>          |
+| Element type | text               |
+| Class:       | Machine                     |

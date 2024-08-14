@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Power Management -> Laptop lid, when closed, will suspend even if there is an external monitor plugged in    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\lid-close-suspend-with-external-monitor         |
-| Element type | boolean |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Client management -> Power Management -> Laptop lid, when closed, will suspend even if there is an external monitor plugged in</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\lid-close-suspend-with-external-monitor</code>          |
+| Element type | boolean               |
+| Class:       | Machine                     |

@@ -14,9 +14,9 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | Computer Policies -> Ubuntu -> Client management -> Power Management -> The brightness of the screen when idle    |
-| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\idle-brightness         |
-| Element type | decimal |
-| Class:       | Machine       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>Computer Policies -> Ubuntu -> Client management -> Power Management -> The brightness of the screen when idle</code>     |
+| Registry Key | <code>Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\power\idle-brightness</code>          |
+| Element type | decimal               |
+| Class:       | Machine                     |

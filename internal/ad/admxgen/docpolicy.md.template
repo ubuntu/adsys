@@ -22,9 +22,9 @@
 
 <span style="font-size: larger;">**Metadata**</span>
 
-| Element      | Value            |
-| ---          | ---              |
-| Location     | {{.Location}}    |
-| Registry Key | {{.Key}}         |
-| Element type | {{.ElementType}} |
-| Class:       | {{.Class}}       |
+| Element      | Value                          |
+| ---          | ---                            |
+| Location     | <code>{{.Location}}</code>     |
+| Registry Key | <code>{{.Key}}</code>          |
+| Element type | {{.ElementType}}               |
+| Class:       | {{.Class}}                     |
