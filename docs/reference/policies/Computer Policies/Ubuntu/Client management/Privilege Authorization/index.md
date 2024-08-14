@@ -1,4 +1,4 @@
-# Privilege Authorisation
+# Privilege Authorization
 
 ```{toctree}
 :maxdepth: 99
