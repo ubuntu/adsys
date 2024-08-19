@@ -9,7 +9,8 @@ matrix:
     - .custom_wordlist.txt
     output: .sphinx/.wordlist.dic
   sources:
-  - _build/**/*.html
+      # check all docs except technical reference
+    - _build/**/*.html|!_build/reference/policies/**/*.html
   pipeline:
   - pyspelling.filters.html:
       comments: false
@@ -28,3 +29,4 @@ matrix:
       - img
       - a.p-navigation__link
       - a.contributor
+      - a.reference.internal # don't spellcheck refs hidden in html source
