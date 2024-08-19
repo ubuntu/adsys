@@ -1,7 +1,6 @@
 module github.com/ubuntu/adsys/tools
 
-go 1.22.0
-toolchain go1.22.5
+go 1.23.0
 
 require (
 	github.com/golangci/golangci-lint v1.60.1
