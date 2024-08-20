@@ -178,8 +178,8 @@ It should be possible to `ssh` into a machine on the network:
 ssh -i ~/.ssh/adsys-integration.pem root@<IPv4-address-of-resource>
 ```
 
-For example, an instance of Ubuntu Mantic Minotaur (development branch) will give an output that shows it is running on Azure based on the kernel version:
+For example, an instance of Ubuntu 24.04 LTS will give an output that shows it is running on Azure based on the kernel version:
 
 ```text
-Welcome to Ubuntu Mantic Minotaur (development branch) (GNU/Linux 6.5.0-1004-azure x86_64))
+Welcome to Ubuntu 24.04 LTS (GNU/Linux 6.5.0-1004-azure x86_64))
 ```
