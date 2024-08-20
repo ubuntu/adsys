@@ -23,7 +23,7 @@ explanation/index
 ```{grid-item}
 ### [Tutorials](tutorial/index)
 
-**Start here**: a hands-on introduction to ADSys for new users
+**Learn about ADSys features** with hands-on tutorials
 ```
 
 ```{grid-item}
