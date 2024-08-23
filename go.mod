@@ -6,7 +6,7 @@ toolchain go1.22.4
 
 require (
 	github.com/charmbracelet/bubbles v0.19.0
-	github.com/charmbracelet/bubbletea v0.27.0
+	github.com/charmbracelet/bubbletea v0.27.1
 	github.com/charmbracelet/glamour v0.8.0
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/coreos/go-systemd/v22 v22.5.0
