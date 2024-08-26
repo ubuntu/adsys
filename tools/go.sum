@@ -540,6 +540,8 @@ github.com/tomarrell/wrapcheck/v2 v2.9.0 h1:801U2YCAjLhdN8zhZ/7tdjB3EnAoRlJHt/s+
 github.com/tomarrell/wrapcheck/v2 v2.9.0/go.mod h1:g9vNIyhb5/9TQgumxQyOEqDHsmGYcGsVMOx/xGkqdMo=
 github.com/tommy-muehle/go-mnd/v2 v2.5.1 h1:NowYhSdyE/1zwK9QCLeRb6USWdoif80Ie+v+yU8u1Zw=
 github.com/tommy-muehle/go-mnd/v2 v2.5.1/go.mod h1:WsUAkMJMYww6l/ufffCD3m+P7LEvr8TnZn9lwVDlgzw=
+github.com/ubuntu/decorate v0.0.0-20240820145549-b76bb81d1209 h1:paNkjGGwB/Ypory/EPTwVR5uX94TDgrH4PGSaCNAvhE=
+github.com/ubuntu/decorate v0.0.0-20240820145549-b76bb81d1209/go.mod h1:PUpwIgUuCQyuCz/gwiq6WYbo7IvtXXd8JqL01ez+jZE=
 github.com/ultraware/funlen v0.1.0 h1:BuqclbkY6pO+cvxoq7OsktIXZpgBSkYTQtmwhAK81vI=
 github.com/ultraware/funlen v0.1.0/go.mod h1:XJqmOQja6DpxarLj6Jj1U7JuoS8PvL4nEqDaQhy22p4=
 github.com/ultraware/whitespace v0.1.1 h1:bTPOGejYFulW3PkcrqkeQwOd6NKOOXvmGD9bo/Gk8VQ=
