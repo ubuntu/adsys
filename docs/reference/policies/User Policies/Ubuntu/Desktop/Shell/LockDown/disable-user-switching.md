@@ -1,6 +1,6 @@
 # Disable user switching
 
-Prevent the user from switching to another account while his session is active.
+Prevent the user from switching to another account while their session is active.
 
 - Type: dconf
 - Key: /org/gnome/desktop/lockdown/disable-user-switching
