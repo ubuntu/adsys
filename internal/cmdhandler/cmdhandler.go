@@ -46,14 +46,16 @@ func RegisterAlias(cmd, parent *cobra.Command) {
 // InstallVerboseFlag adds the -v and -vv options and returns the reference to it.
 func InstallVerboseFlag(cmd *cobra.Command, viper *viper.Viper) *int {
 	r := cmd.PersistentFlags().CountP("verbose", "v", gotext.Get("issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"))
-	decorate.LogOnError(viper.BindPFlag("verbose", cmd.PersistentFlags().Lookup("verbose")))
+	err := viper.BindPFlag("verbose", cmd.PersistentFlags().Lookup("verbose"))
+	decorate.LogOnError(&err)
 	return r
 }
 
 // InstallSocketFlag adds the -s and --sockets options and returns the reference to it.
 func InstallSocketFlag(cmd *cobra.Command, viper *viper.Viper, defaultPath string) *string {
 	s := cmd.PersistentFlags().StringP("socket", "s", defaultPath, gotext.Get("socket path to use between daemon and client. Can be overridden by systemd socket activation."))
-	decorate.LogOnError(viper.BindPFlag("socket", cmd.PersistentFlags().Lookup("socket")))
+	err := viper.BindPFlag("socket", cmd.PersistentFlags().Lookup("socket"))
+	decorate.LogOnError(&err)
 	return s
 }
 

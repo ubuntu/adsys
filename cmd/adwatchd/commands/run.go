@@ -53,7 +53,8 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 		[]string{},
 		gotext.Get("a `directory` to check for changes (can be specified multiple times)"),
 	)
-	decorate.LogOnError(a.viper.BindPFlag("dirs", cmd.Flags().Lookup("dirs")))
+	err := a.viper.BindPFlag("dirs", cmd.Flags().Lookup("dirs"))
+	decorate.LogOnError(&err)
 
 	cmd.Flags().BoolP(
 		"force",
@@ -61,7 +62,8 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 		false,
 		gotext.Get("force the program to run even if another instance is already running"),
 	)
-	decorate.LogOnError(a.viper.BindPFlag("force", cmd.Flags().Lookup("force")))
+	err = a.viper.BindPFlag("force", cmd.Flags().Lookup("force"))
+	decorate.LogOnError(&err)
 	cmdhandler.InstallConfigFlag(cmd, false)
 
 	a.rootCmd.AddCommand(cmd)
