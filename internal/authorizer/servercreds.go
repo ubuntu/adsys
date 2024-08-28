@@ -29,7 +29,7 @@ func (serverPeerCreds) ServerHandshake(conn net.Conn) (n net.Conn, c credentials
 	// net.Conn is an interface. Expect only *net.UnixConn types
 	uc, ok := conn.(*net.UnixConn)
 	if !ok {
-		return conn, nil, fmt.Errorf(gotext.Get("unexpected socket type"))
+		return conn, nil, errors.New(gotext.Get("unexpected socket type"))
 	}
 
 	// Fetches raw network connection from UnixConn
