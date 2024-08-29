@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -373,7 +374,13 @@ func initSystemTime(bus *dbus.Conn) *time.Time {
 		log.Warningf(context.Background(), "invalid next system startup time: %v", val.Value())
 		return nil
 	}
+	start = start / 1000000
+	if start > math.MaxInt64 {
+		log.Warningf(context.Background(), "next system startup time should be int64: %d", start)
+		return nil
+	}
 
-	initSystemTime := time.Unix(int64(start)/1000000, 0)
+	//nolint: gosec // We handle the overflow check above.
+	initSystemTime := time.Unix(int64(start), 0)
 	return &initSystemTime
 }

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -132,10 +133,15 @@ func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (er
 		if err != nil {
 			return errors.New(gotext.Get("couldn't retrieve user for %q: %v", userName, err))
 		}
-		uid, err := strconv.Atoi(user.Uid)
+		uid, err := strconv.ParseUint(user.Uid, 10, 0)
 		if err != nil {
 			return errors.New(gotext.Get("couldn't convert %q to a valid uid for %q", user.Uid, userName))
 		}
+		if uid > math.MaxUint32 {
+			return errors.New(gotext.Get("uid value %d is too large to convert to an uint32", uid))
+		}
+
+		//nolint:gosec // we did the overflow conversion check above.
 		actionUID = uint32(uid)
 	}
 

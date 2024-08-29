@@ -3,6 +3,7 @@ package adsysservice
 import (
 	"errors"
 	"fmt"
+	"math"
 	"slices"
 	"strings"
 	"time"
@@ -225,7 +226,12 @@ func (s Service) nextRefreshTime() (next *time.Time, err error) {
 	if !ok {
 		return nil, errors.New(gotext.Get("invalid next GPO refresh value for %v: %v", val.Value(), err))
 	}
+	nextRaw = nextRaw * 1000 // time.Microsecond / time.Nanosecond
+	if nextRaw > math.MaxInt64 {
+		return nil, errors.New(gotext.Get("next refresh time should be int64: %d", nextRaw))
+	}
 
-	nextRefresh := s.initSystemTime.Add(time.Duration(nextRaw) * time.Microsecond / time.Nanosecond)
+	//nolint: gosec // We handle the overflow check above.
+	nextRefresh := s.initSystemTime.Add(time.Duration(int64(nextRaw)))
 	return &nextRefresh, nil
 }

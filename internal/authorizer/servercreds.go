@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"net"
 
 	"github.com/leonelquinteros/gotext"
@@ -43,6 +44,11 @@ func (serverPeerCreds) ServerHandshake(conn net.Conn) (n net.Conn, c credentials
 	// 'err' within the closure. 'err2' is then the error returned
 	// by Control() itself.
 	err2 := raw.Control(func(fd uintptr) {
+		if fd > math.MaxInt {
+			err = errors.New(gotext.Get("file descriptor value %d is too large to convert to int", fd))
+			return
+		}
+		//nolint:gosec // we did the overflow conversion check above.
 		cred, err = unix.GetsockoptUcred(int(fd),
 			unix.SOL_SOCKET,
 			unix.SO_PEERCRED)

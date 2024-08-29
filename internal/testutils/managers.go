@@ -41,7 +41,7 @@ func (m MockAssetsDumper) SaveAssetsTo(_ context.Context, relSrc, dest string, _
 		// Make all child files and directories read-only, leaving execute permissions for directories
 		err = filepath.WalkDir(dest, func(path string, d fs.DirEntry, err error) error {
 			require.NoError(m.T, err, "SaveAssetsTo: unexpected error when walking directory")
-			perm := 0400
+			perm := uint32(0400)
 			if d.IsDir() {
 				perm = 0500
 			}
