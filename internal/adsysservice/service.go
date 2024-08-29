@@ -231,7 +231,7 @@ func (s Service) nextRefreshTime() (next *time.Time, err error) {
 		return nil, errors.New(gotext.Get("next refresh time should be int64: %d", nextRaw))
 	}
 
-	//nolint: gosec // We handle the overflow check above.
+	//nolint:gosec // We handle the overflow check above.
 	nextRefresh := s.initSystemTime.Add(time.Duration(int64(nextRaw)))
 	return &nextRefresh, nil
 }

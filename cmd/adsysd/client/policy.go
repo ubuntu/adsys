@@ -379,7 +379,7 @@ func colorizePolicies(policies string) (string, error) {
 	bold := color.New(color.Bold)
 	var currentPoliciesType string
 	for _, l := range strings.Split(strings.TrimSpace(policies), "\n") {
-		//nolint: whitespace
+		//nolint:whitespace
 		// We prefer to have one blank line as separator.
 		if e := strings.TrimPrefix(l, "***"); e != l {
 			// Policy entry

@@ -380,7 +380,7 @@ func initSystemTime(bus *dbus.Conn) *time.Time {
 		return nil
 	}
 
-	//nolint: gosec // We handle the overflow check above.
+	//nolint:gosec // We handle the overflow check above.
 	initSystemTime := time.Unix(int64(start), 0)
 	return &initSystemTime
 }
