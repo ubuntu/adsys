@@ -264,7 +264,7 @@ static char *slash_to_at_username(const char *username) {
         char *ret = malloc((strlen(username) + 1) * sizeof(char));
         strcpy(ret, backslash + 1);
         strcat(ret, "@");
-        strncpy(ret + strlen(ret), username, backslash - username);
+        strncat(ret, username, backslash - username);
         return ret;
     }
     return strdup(username);
