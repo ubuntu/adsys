@@ -1,3 +1,39 @@
+adsys (0.15) oracular; urgency=medium
+
+  * Fix DCONF policy manager removing user DB on empty policy (LP: #2078245)
+  * Ignore casing in domain/ section of sssd.conf (LP: #2078246)
+  * Fix parsing of slash usernames (i.e. domain\user) (LP: #2078247)
+  * Fix errno in get_ticket_path()
+  * Remove XML declaration from glib schemas
+  * Bump Go version to 1.23
+  * CI and quality of life changes not impacting package functionality:
+    - Integrate repo with TiCS quality assessment
+    - Switch documentation spellchecking to en-GB
+    - Add text version of certificates tutorial
+    - Additional code coverage through more testing
+    - Improvements to the e2e test environment
+  * Bump dependencies to latest:
+    - jidicula/clang-format-action
+    - github.com/charmbracelet/bubbles
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/glamour
+    - github.com/charmbracelet/lipgloss
+    - github.com/fatih/color
+    - github.com/leonelquinteros/gotext
+    - github.com/spf13/cobra
+    - github.com/spf13/viper
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc/cmd/protoc-gen-go-grpc
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+    - github.com/golangci/golangci-lint
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Thu, 29 Aug 2024 07:47:16 -0400
+
 adsys (0.14.1) noble; urgency=medium
 
   * Pin Go toolchain to 1.22.1 to fix the following security vulnerabilities:
