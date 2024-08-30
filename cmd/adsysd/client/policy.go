@@ -353,6 +353,7 @@ func (a *App) printTicketPath(username string) (err error) {
 	// possibility of turning back. We're doing this on purpose right before the
 	// code path that requires this, with the program exiting immediately after.
 	if err := unix.Setuid(uid); err != nil {
+		//nolint:govet,staticcheck // printf,SA1006: this is an i18n formatted const string
 		return fmt.Errorf(gotext.Get("failed to set privileges to UID %d: %v", uid, err))
 	}
 
@@ -378,7 +379,7 @@ func colorizePolicies(policies string) (string, error) {
 	bold := color.New(color.Bold)
 	var currentPoliciesType string
 	for _, l := range strings.Split(strings.TrimSpace(policies), "\n") {
-		//nolint: whitespace
+		//nolint:whitespace
 		// We prefer to have one blank line as separator.
 		if e := strings.TrimPrefix(l, "***"); e != l {
 			// Policy entry

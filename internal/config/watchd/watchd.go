@@ -86,7 +86,7 @@ func WriteConfig(confFile string, dirs []string) (err error) {
 // only covers the cases used by the service installer, which should be good
 // enough for us.
 func ConfigFileFromArgs(args string) (string, error) {
-	err := fmt.Errorf(gotext.Get("missing config file in CLI arguments"))
+	err := errors.New(gotext.Get("missing config file in CLI arguments"))
 
 	_, configFile, found := strings.Cut(args, "-c")
 	if !found {

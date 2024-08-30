@@ -299,6 +299,7 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 
 func mkdirAllWithUIDGid(p string, uid, gid int) error {
 	if err := os.MkdirAll(p, 0750); err != nil {
+		//nolint:govet,staticcheck // printf,SA1006: this is an i18n formatted const string
 		return fmt.Errorf(gotext.Get("can't create scripts directory %q: %v", p, err))
 	}
 

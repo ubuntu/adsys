@@ -297,7 +297,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			updateVersions(ctx, modifiedRootDirs)
 
 		case <-ctx.Done():
-			log.Infof(ctx, gotext.Get("Watcher stopped"))
+			log.Info(ctx, gotext.Get("Watcher stopped"))
 			// Check if there was a timer in progress to not miss an update before exiting.
 			if refreshTimer.Stop() {
 				updateVersions(ctx, modifiedRootDirs)

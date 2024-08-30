@@ -90,6 +90,7 @@ func RunMountForCurrentUser(ctx context.Context, filepath string) error {
 			logMsg = fmt.Sprintf("Failed to mount %q: %v", m.path, m.err)
 			err = errors.Join(err, fmt.Errorf("failed to mount %q: %w", m.path, m.err))
 		}
+		//nolint:govet // printf: we are building from only formatted const strings
 		log.Debugf(ctx, logMsg)
 	}
 

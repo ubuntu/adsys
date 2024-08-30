@@ -14,7 +14,9 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-var logContextKey = struct{}{}
+type logContextKeyType struct{}
+
+var logContextKey = logContextKeyType{}
 
 type logContext struct {
 	idRequest           string

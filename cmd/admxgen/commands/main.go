@@ -42,7 +42,8 @@ func New() *App {
 	}
 
 	a.rootCmd.PersistentFlags().CountP("verbose", "v", gotext.Get("issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output"))
-	decorate.LogOnError(a.viper.BindPFlag("verbose", a.rootCmd.PersistentFlags().Lookup("verbose")))
+	err := a.viper.BindPFlag("verbose", a.rootCmd.PersistentFlags().Lookup("verbose"))
+	decorate.LogOnError(&err)
 
 	// Install subcommands
 	a.installExpand()
@@ -74,10 +75,12 @@ The generated definition file will be of the form expanded_policies.RELEASE.yaml
 		},
 	}
 	cmd.Flags().StringP("root", "r", "/", gotext.Get("root filesystem path to use. Default to /."))
-	decorate.LogOnError(viper.BindPFlag("root", cmd.Flags().Lookup("root")))
+	err := viper.BindPFlag("root", cmd.Flags().Lookup("root"))
+	decorate.LogOnError(&err)
 
 	cmd.Flags().StringP("current-session", "s", "", gotext.Get(`current session to consider for dconf per-session overrides. Default to "".`))
-	decorate.LogOnError(viper.BindPFlag("current-session", cmd.Flags().Lookup("current-session")))
+	err = viper.BindPFlag("current-session", cmd.Flags().Lookup("current-session"))
+	decorate.LogOnError(&err)
 
 	a.rootCmd.AddCommand(cmd)
 }
@@ -94,10 +97,12 @@ func (a *App) installAdmx() {
 		},
 	}
 	autoDetectReleases = cmd.Flags().BoolP("auto-detect-releases", "a", false, gotext.Get("override supported releases in categories definition file and will takes all yaml files in SOURCE directory and use the basename as their versions."))
-	decorate.LogOnError(a.viper.BindPFlag("auto-detect-releases", cmd.Flags().Lookup("auto-detect-releases")))
+	err := a.viper.BindPFlag("auto-detect-releases", cmd.Flags().Lookup("auto-detect-releases"))
+	decorate.LogOnError(&err)
 
 	allowMissingKeys = cmd.Flags().BoolP("allow-missing-keys", "k", false, gotext.Get(`avoid fail but display a warning if some keys are not available in a release. This is the case when news keys are added to non-lts releases.`))
-	decorate.LogOnError(a.viper.BindPFlag("allow-missing-keys", cmd.Flags().Lookup("allow-missing-keys")))
+	err = a.viper.BindPFlag("allow-missing-keys", cmd.Flags().Lookup("allow-missing-keys"))
+	decorate.LogOnError(&err)
 
 	a.rootCmd.AddCommand(cmd)
 }

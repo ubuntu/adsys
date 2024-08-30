@@ -153,19 +153,25 @@ func New() *App {
 	cmdhandler.InstallSocketFlag(&a.rootCmd, a.viper, consts.DefaultSocket)
 
 	a.rootCmd.PersistentFlags().StringP("cache-dir", "", consts.DefaultCacheDir, gotext.Get("directory where ADSys caches GPOs downloads and policies."))
-	decorate.LogOnError(a.viper.BindPFlag("cache_dir", a.rootCmd.PersistentFlags().Lookup("cache-dir")))
+	err := a.viper.BindPFlag("cache_dir", a.rootCmd.PersistentFlags().Lookup("cache-dir"))
+	decorate.LogOnError(&err)
 	a.rootCmd.PersistentFlags().StringP("run-dir", "", consts.DefaultRunDir, gotext.Get("directory where ADSys stores transient information erased on reboot."))
-	decorate.LogOnError(a.viper.BindPFlag("run_dir", a.rootCmd.PersistentFlags().Lookup("run-dir")))
+	err = a.viper.BindPFlag("run_dir", a.rootCmd.PersistentFlags().Lookup("run-dir"))
+	decorate.LogOnError(&err)
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, gotext.Get("time in seconds without activity before the service exists. 0 for no timeout."))
-	decorate.LogOnError(a.viper.BindPFlag("service_timeout", a.rootCmd.PersistentFlags().Lookup("timeout")))
+	err = a.viper.BindPFlag("service_timeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
+	decorate.LogOnError(&err)
 
 	a.rootCmd.PersistentFlags().StringP("ad-backend", "", "sssd", gotext.Get("Active Directory authentication backend"))
-	decorate.LogOnError(a.viper.BindPFlag("ad_backend", a.rootCmd.PersistentFlags().Lookup("ad-backend")))
+	err = a.viper.BindPFlag("ad_backend", a.rootCmd.PersistentFlags().Lookup("ad-backend"))
+	decorate.LogOnError(&err)
 	a.rootCmd.PersistentFlags().StringP("sssd.config", "", consts.DefaultSSSConf, gotext.Get("SSSd config file path"))
-	decorate.LogOnError(a.viper.BindPFlag("sssd.config", a.rootCmd.PersistentFlags().Lookup("sssd.config")))
+	err = a.viper.BindPFlag("sssd.config", a.rootCmd.PersistentFlags().Lookup("sssd.config"))
+	decorate.LogOnError(&err)
 	a.rootCmd.PersistentFlags().StringP("sssd.cache-dir", "", consts.DefaultSSSCacheDir, gotext.Get("SSSd cache directory"))
-	decorate.LogOnError(a.viper.BindPFlag("sssd.cache_dir", a.rootCmd.PersistentFlags().Lookup("sssd.cache-dir")))
+	err = a.viper.BindPFlag("sssd.cache_dir", a.rootCmd.PersistentFlags().Lookup("sssd.cache-dir"))
+	decorate.LogOnError(&err)
 
 	// subcommands
 	a.installVersion()
