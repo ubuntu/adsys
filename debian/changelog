@@ -3,7 +3,7 @@ adsys (0.15) oracular; urgency=medium
   * Fix DCONF policy manager removing user DB on empty policy (LP: #2078245)
   * Ignore casing in domain/ section of sssd.conf (LP: #2078246)
   * Fix parsing of slash usernames (i.e. domain\user) (LP: #2078247)
-  * Fix errno in get_ticket_path()
+  * Fix errno in get_ticket_path(LP: #2078473)
   * Remove XML declaration from glib schemas
   * Bump Go version to 1.23
   * CI and quality of life changes not impacting package functionality:
