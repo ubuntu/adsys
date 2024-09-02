@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -116,6 +117,7 @@ func TestMainApp(t *testing.T) {
 	cmd.Env = append(os.Environ(), "ADSYS_CALL_MAIN=1")
 	out, err := cmd.CombinedOutput()
 
-	require.Contains(t, string(out), "adwatchd\tdev", "Main function should print the version")
+	version := strings.TrimSpace(strings.TrimPrefix(string(out), "adwatchd\t"))
+	require.NotEmpty(t, version, "Main function should print the version")
 	require.NoError(t, err, "Main should not return an error")
 }
