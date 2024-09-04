@@ -78,7 +78,7 @@ jobs:
         run: cp -a samba-patched/python/samba/* internal/policies/certificate/python/vendor_samba
       - name: Create Pull Request
         if: ${{ always() }}
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: Auto update vendored Samba code
           title: 'deps(vendor): auto update vendored Samba code'
