@@ -71,6 +71,7 @@ type options struct {
 	systemUnitDir  string
 	globalTrustDir string
 	adBackend      string
+	gpoListTimeout time.Duration
 	sssConfig      sss.Config
 	winbindConfig  winbind.Config
 	authorizer     authorizerer
@@ -187,6 +188,14 @@ func WithWinbindConfig(c winbind.Config) func(o *options) error {
 	}
 }
 
+// WithGpoListTimeout specifies the timeout for the gpo list
+func WithGpoListTimeout(t time.Duration) func(o *options) error {
+	return func(o *options) error {
+		o.gpoListTimeout = t
+		return nil
+	}
+}
+
 // New returns a new instance of an AD service.
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
@@ -241,7 +250,8 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	if args.runDir != "" {
 		adOptions = append(adOptions, ad.WithRunDir(args.runDir))
 	}
-	adOptions = append(adOptions, ad.WithGpoListTimeout(consts.DefaultGpoListTimeout))
+
+	adOptions = append(adOptions, ad.WithGpoListTimeout(args.gpoListTimeout))
 
 	hostname, err := os.Hostname()
 	if err != nil {

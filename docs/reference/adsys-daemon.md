@@ -177,6 +177,12 @@ A custom domain can be used to override the C API call that ADSys executes to de
 
 A custom domain controller can be used to override the C API call that ADSys executes to determine the AD controller FQDN -- which is returned by `wbinfo --dsgetdcname domain.com` (e.g. `adc.example.com`).
 
+### GPO configuration:
+
+* **gpo_list_timeout**
+
+Maximum time in seconds for the GPO list to finish otherwise the GPO list is aborted. This can be overridden by the `--gpo-list-timeout` option. Defaults to 10 seconds. 
+
 ### Client only configuration:**
 
 * **client_timeout**

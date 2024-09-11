@@ -51,9 +51,10 @@ type daemonConfig struct {
 	SystemUnitDir  string `mapstructure:"systemunit_dir"`
 	GlobalTrustDir string `mapstructure:"global_trust_dir"`
 
-	AdBackend     string         `mapstructure:"ad_backend"`
-	SSSdConfig    sss.Config     `mapstructure:"sssd"`
-	WinbindConfig winbind.Config `mapstructure:"winbind"`
+	AdBackend      string         `mapstructure:"ad_backend"`
+	SSSdConfig     sss.Config     `mapstructure:"sssd"`
+	WinbindConfig  winbind.Config `mapstructure:"winbind"`
+	GpoListTimeout int            `mapstructure:"gpo_list_timeout"`
 
 	ServiceTimeout int `mapstructure:"service_timeout"`
 }
@@ -125,6 +126,7 @@ func New() *App {
 				adsysservice.WithADBackend(a.config.AdBackend),
 				adsysservice.WithSSSConfig(a.config.SSSdConfig),
 				adsysservice.WithWinbindConfig(a.config.WinbindConfig),
+				adsysservice.WithGpoListTimeout(time.Second*time.Duration(a.config.GpoListTimeout)),
 			)
 			if err != nil {
 				close(a.ready)
@@ -161,6 +163,10 @@ func New() *App {
 
 	a.rootCmd.PersistentFlags().IntP("timeout", "t", consts.DefaultServiceTimeout, gotext.Get("time in seconds without activity before the service exists. 0 for no timeout."))
 	err = a.viper.BindPFlag("service_timeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
+	decorate.LogOnError(&err)
+
+	a.rootCmd.PersistentFlags().IntP("gpo-list-timeout", "", consts.DefaultGpoListTimeout, gotext.Get("time in seconds for the gpo list. 0 for no timeout."))
+	err = a.viper.BindPFlag("gpo_list_timeout", a.rootCmd.PersistentFlags().Lookup("gpo-list-timeout"))
 	decorate.LogOnError(&err)
 
 	a.rootCmd.PersistentFlags().StringP("ad-backend", "", "sssd", gotext.Get("Active Directory authentication backend"))
