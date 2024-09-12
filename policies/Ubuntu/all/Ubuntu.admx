@@ -32,6 +32,9 @@
     <category name="UbuntuLockDown" displayName="$(string.UbuntuDisplayLockDown)">
       <parentCategory ref="UbuntuShell" />
     </category>
+    <category name="UbuntuPrivacy" displayName="$(string.UbuntuDisplayPrivacy)">
+      <parentCategory ref="UbuntuShell" />
+    </category>
     <category name="UbuntuKeyboardShortcuts" displayName="$(string.UbuntuDisplayKeyboardShortcuts)">
       <parentCategory ref="UbuntuDesktop" />
     </category>
@@ -1121,6 +1124,50 @@
         </boolean>
       </elements>
     </policy>
+    <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\mount-removable-storage-devices-as-read-only" valueName="metaValues">
+      <parentCategory ref="UbuntuLockDown" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"24.04":{"empty":"false","meta":"b"},"24.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"24.04":{"meta":"b"},"24.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <elements>
+        <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2410DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="Override24.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2410DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="24.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2404DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="Override24.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2404DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="24.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2204DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2004DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2004DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
     <policy name="UbuntuUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\user-administration-disabled" valueName="metaValues">
       <parentCategory ref="UbuntuLockDown" />
       <supportedOn ref="Ubuntu" />
@@ -1163,6 +1210,134 @@
           <trueValue><string>true</string></trueValue>
           <falseValue><string>false</string></falseValue>
         </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuUserDconfOrgGnomeDesktopPrivacyUsbProtection" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopPrivacyUsbProtection)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopPrivacyUsbProtection)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopPrivacyUsbProtection)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\privacy\usb-protection" valueName="metaValues">
+      <parentCategory ref="UbuntuPrivacy" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"false","meta":"b"},"22.04":{"empty":"false","meta":"b"},"24.04":{"empty":"false","meta":"b"},"24.10":{"empty":"false","meta":"b"},"all":{"empty":"false","meta":"b"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"b"},"22.04":{"meta":"b"},"24.04":{"meta":"b"},"24.10":{"meta":"b"},"all":{"meta":"b"}}</string></disabledValue>
+      <elements>
+        <boolean id="UbuntuElemUserAllDconfOrgGnomeDesktopPrivacyUsbProtection" valueName="all">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2410DconfOrgGnomeDesktopPrivacyUsbProtection" valueName="Override24.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2410DconfOrgGnomeDesktopPrivacyUsbProtection" valueName="24.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2404DconfOrgGnomeDesktopPrivacyUsbProtection" valueName="Override24.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2404DconfOrgGnomeDesktopPrivacyUsbProtection" valueName="24.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopPrivacyUsbProtection" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2204DconfOrgGnomeDesktopPrivacyUsbProtection" valueName="22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuOverrideElemUser2004DconfOrgGnomeDesktopPrivacyUsbProtection" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemUser2004DconfOrgGnomeDesktopPrivacyUsbProtection" valueName="20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+    <policy name="UbuntuUserDconfOrgGnomeDesktopPrivacyUsbProtectionLevel" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeDesktopPrivacyUsbProtectionLevel)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeDesktopPrivacyUsbProtectionLevel)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeDesktopPrivacyUsbProtectionLevel)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\privacy\usb-protection-level" valueName="metaValues">
+      <parentCategory ref="UbuntuPrivacy" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"22.04":{"empty":"''","meta":"s"},"24.04":{"empty":"''","meta":"s"},"24.10":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"22.04":{"meta":"s"},"24.04":{"meta":"s"},"24.10":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <enum id="UbuntuElemUserAllDconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="all">
+          <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopPrivacyUsbProtectionLevel0)">
+            <value>
+              <string>lockscreen</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUserAllDconfOrgGnomeDesktopPrivacyUsbProtectionLevel1)">
+            <value>
+              <string>always</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemUser2410DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="Override24.10">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemUser2410DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="24.10">
+          <item displayName="$(string.UbuntuItemUser2410DconfOrgGnomeDesktopPrivacyUsbProtectionLevel0)">
+            <value>
+              <string>lockscreen</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2410DconfOrgGnomeDesktopPrivacyUsbProtectionLevel1)">
+            <value>
+              <string>always</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="Override24.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="24.04">
+          <item displayName="$(string.UbuntuItemUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel0)">
+            <value>
+              <string>lockscreen</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel1)">
+            <value>
+              <string>always</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="Override22.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="22.04">
+          <item displayName="$(string.UbuntuItemUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel0)">
+            <value>
+              <string>lockscreen</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel1)">
+            <value>
+              <string>always</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" valueName="20.04">
+          <item displayName="$(string.UbuntuItemUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel0)">
+            <value>
+              <string>lockscreen</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel1)">
+            <value>
+              <string>always</string>
+            </value>
+          </item>
+        </enum>
       </elements>
     </policy>
     <policy name="UbuntuUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter" class="User" displayName="$(string.UbuntuDisplayUserAllDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" explainText="$(string.UbuntuExplainTextUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" presentation="$(presentation.UbuntuPresentationUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter)" key="Software\Policies\Ubuntu\dconf\org\gnome\settings-daemon\plugins\media-keys\control-center" valueName="metaValues">

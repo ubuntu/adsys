@@ -14,6 +14,7 @@
       <string id="UbuntuDisplayClock">Clock</string>
       <string id="UbuntuDisplayNotifications">Notifications</string>
       <string id="UbuntuDisplayLockDown">LockDown</string>
+      <string id="UbuntuDisplayPrivacy">Privacy</string>
       <string id="UbuntuDisplayKeyboardShortcuts">Keyboard shortcuts</string>
       <string id="UbuntuDisplayScreensaver">Screensaver</string>
       <string id="UbuntuDisplayPeripherals">Peripherals</string>
@@ -329,6 +330,19 @@ Supported on Ubuntu 20.04, 22.04, 24.04.</string>
       <string id="UbuntuDisplayUser2404DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownDisableSaveToDisk">Disable saving files to disk</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly">Prevent users from writing or modifying files on removable storage devices (i.e. flash disks, mobile phones, cameras).
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/mount-removable-storage-devices-as-read-only
+- Default: false
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 22.04, 24.04.</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly">Mount removable storage devices as read-only</string>
+      <string id="UbuntuDisplayUser2404DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly">Mount removable storage devices as read-only</string>
+      <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly">Mount removable storage devices as read-only</string>
+      <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly">Mount removable storage devices as read-only</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Stop the user from modifying user accounts. By default, we allow adding and removing users, as well as changing other users settings.
 
 - Type: dconf
@@ -342,6 +356,42 @@ Supported on Ubuntu 20.04, 22.04, 24.04.</string>
       <string id="UbuntuDisplayUser2404DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
       <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopLockdownUserAdministrationDisabled">Disable user administration</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopPrivacyUsbProtection">If the USBGuard service is present and this setting is enabled, USB devices will be protected as configured in the usb-protection-level setting.
+
+- Type: dconf
+- Key: /org/gnome/desktop/privacy/usb-protection
+- Default for 20.04: false
+- Default for 22.04: true
+- Default for 24.04: true
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 22.04, 24.04.</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopPrivacyUsbProtection">Whether to protect USB devices</string>
+      <string id="UbuntuDisplayUser2404DconfOrgGnomeDesktopPrivacyUsbProtection">Whether to protect USB devices</string>
+      <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopPrivacyUsbProtection">Whether to protect USB devices</string>
+      <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopPrivacyUsbProtection">Whether to protect USB devices</string>
+      <string id="UbuntuExplainTextUserDconfOrgGnomeDesktopPrivacyUsbProtectionLevel">If set to “lockscreen”, only when the lock screen is present new USB devices will be rejected; if set to “always”, all new USB devices will always be rejected.
+
+- Type: dconf
+- Key: /org/gnome/desktop/privacy/usb-protection-level
+- Default: &#39;lockscreen&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 22.04, 24.04.</string>
+      <string id="UbuntuDisplayUserAllDconfOrgGnomeDesktopPrivacyUsbProtectionLevel">When USB devices should be rejected</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopPrivacyUsbProtectionLevel0">lockscreen</string>
+      <string id="UbuntuItemUserAllDconfOrgGnomeDesktopPrivacyUsbProtectionLevel1">always</string>
+      <string id="UbuntuDisplayUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel">When USB devices should be rejected</string>
+      <string id="UbuntuItemUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel0">lockscreen</string>
+      <string id="UbuntuItemUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel1">always</string>
+      <string id="UbuntuDisplayUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel">When USB devices should be rejected</string>
+      <string id="UbuntuItemUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel0">lockscreen</string>
+      <string id="UbuntuItemUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel1">always</string>
+      <string id="UbuntuDisplayUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel">When USB devices should be rejected</string>
+      <string id="UbuntuItemUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel0">lockscreen</string>
+      <string id="UbuntuItemUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel1">always</string>
       <string id="UbuntuExplainTextUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">Binding to launch GNOME Settings.
 
 - Type: dconf
@@ -1745,6 +1795,18 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <checkBox refId="UbuntuOverrideElemUser2004DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Override value for 20.04:</checkBox>
         <checkBox refId="UbuntuElemUser2004DconfOrgGnomeDesktopLockdownDisableSaveToDisk" defaultChecked="false">Disable saving files to disk</checkBox>
       </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" defaultChecked="false">Mount removable storage devices as read-only</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2404DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" defaultChecked="false">Override value for 24.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2404DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" defaultChecked="false">Mount removable storage devices as read-only</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" defaultChecked="false">Override value for 22.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2204DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" defaultChecked="false">Mount removable storage devices as read-only</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2004DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" defaultChecked="false">Override value for 20.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2004DconfOrgGnomeDesktopLockdownMountRemovableStorageDevicesAsReadOnly" defaultChecked="false">Mount removable storage devices as read-only</checkBox>
+      </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopLockdownUserAdministrationDisabled">
         <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
         <text/>
@@ -1756,6 +1818,30 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
         <text/>
         <checkBox refId="UbuntuOverrideElemUser2004DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Override value for 20.04:</checkBox>
         <checkBox refId="UbuntuElemUser2004DconfOrgGnomeDesktopLockdownUserAdministrationDisabled" defaultChecked="false">Disable user administration</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopPrivacyUsbProtection">
+        <checkBox refId="UbuntuElemUserAllDconfOrgGnomeDesktopPrivacyUsbProtection" defaultChecked="false">Whether to protect USB devices</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2404DconfOrgGnomeDesktopPrivacyUsbProtection" defaultChecked="false">Override value for 24.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2404DconfOrgGnomeDesktopPrivacyUsbProtection" defaultChecked="true">Whether to protect USB devices</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopPrivacyUsbProtection" defaultChecked="false">Override value for 22.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2204DconfOrgGnomeDesktopPrivacyUsbProtection" defaultChecked="true">Whether to protect USB devices</checkBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2004DconfOrgGnomeDesktopPrivacyUsbProtection" defaultChecked="false">Override value for 20.04:</checkBox>
+        <checkBox refId="UbuntuElemUser2004DconfOrgGnomeDesktopPrivacyUsbProtection" defaultChecked="false">Whether to protect USB devices</checkBox>
+      </presentation>
+      <presentation id="UbuntuPresentationUserDconfOrgGnomeDesktopPrivacyUsbProtectionLevel">
+        <dropdownList refId="UbuntuElemUserAllDconfOrgGnomeDesktopPrivacyUsbProtectionLevel" noSort="true" defaultItem="">When USB devices should be rejected</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" defaultChecked="false">Override value for 24.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2404DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" defaultChecked="false">Override value for 22.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2204DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" defaultChecked="false">Override value for 20.04:</checkBox>
+        <dropdownList refId="UbuntuElemUser2004DconfOrgGnomeDesktopPrivacyUsbProtectionLevel" noSort="true" defaultItem="0"></dropdownList>
       </presentation>
       <presentation id="UbuntuPresentationUserDconfOrgGnomeSettingsDaemonPluginsMediaKeysControlCenter">
         <text>Launch settings</text>
