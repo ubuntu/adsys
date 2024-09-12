@@ -491,116 +491,155 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 			Rules: make(map[string][]entry.Entry),
 		}
 		r = append(r, gpoWithRules)
-		if err := func() error {
-			ad.downloadables[name].mu.RLock()
-			defer ad.downloadables[name].mu.RUnlock()
-			_ = ad.downloadables[name].testConcurrent
-
-			log.Debugf(ctx, "Parsing GPO %q", name)
-
-			// We need to consider the uppercase version of the name as well,
-			// which could occur in some of the default GPOs such as Default
-			// Domain Policy.
-			classes := []string{"User", "USER"}
-			if objectClass == ComputerObject {
-				classes = []string{"Machine", "MACHINE"}
-			}
-
-			var err error
-			var f *os.File
-			for _, class := range classes {
-				var e error
-				f, e = os.Open(filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(url), class, "Registry.pol"))
-
-				// We only care about the first error which is caused by opening
-				// the capitalized version of the class, instead of the
-				// uppercase version which is less common and more of an edge case.
-				if e != nil && err == nil {
-					err = e
-				} else if e == nil {
-					err = nil
-					break
-				}
-			}
-
-			if errors.Is(err, fs.ErrNotExist) {
-				log.Debugf(ctx, "Policy %q doesn't have any policy for class %q %s", name, objectClass, err)
-				return nil
-			} else if err != nil {
-				return err
-			}
-			defer decorate.LogFuncOnErrorContext(ctx, f.Close)
-
-			// Decode and apply policies in gpo order. First win
-			pols, err := registry.DecodePolicy(f)
-			if err != nil {
-				return errors.New(gotext.Get("%s: %v", f.Name(), err))
-			}
-
-			// filter keys to be overridden
-			var currentKey string
-			var overrideEnabled bool
-			for _, pol := range pols {
-				// Rewrite the certificate autoenrollment key so we can easily
-				// use it in the policy manager
-				if pol.Key == certAutoEnrollKey {
-					pol.Key = fmt.Sprintf("%scertificate/autoenroll/all", keyFilterPrefix)
-				}
-
-				if strings.HasPrefix(pol.Key, policyServersPrefix) {
-					pol.Key = fmt.Sprintf("%scertificate/%s/all", keyFilterPrefix, pol.Key)
-				}
-
-				// Only consider supported policies for this distro
-				if !strings.HasPrefix(pol.Key, keyFilterPrefix) {
-					continue
-				}
-				if pol.Err != nil {
-					return errors.New(gotext.Get("%s: %v", f.Name(), pol.Err))
-				}
-				pol.Key = strings.TrimPrefix(pol.Key, keyFilterPrefix)
-
-				// Some keys can be overridden
-				releaseID := filepath.Base(pol.Key)
-				keyType := strings.Split(pol.Key, "/")[0]
-				pol.Key = filepath.Dir(strings.TrimPrefix(pol.Key, keyType+"/"))
-
-				if releaseID == "all" {
-					currentKey = pol.Key
-					overrideEnabled = false
-					gpoWithRules.Rules[keyType] = append(gpoWithRules.Rules[keyType], pol)
-					continue
-				}
-
-				// This is not an "all" key and the key name don’t match
-				// This shouldn’t happen with our admx, but just to stay safe…
-				if currentKey != pol.Key {
-					continue
-				}
-
-				if strings.HasPrefix(releaseID, "Override"+ad.versionID) && pol.Value == "true" {
-					overrideEnabled = true
-					continue
-				}
-				// Check we have a matching override
-				if !overrideEnabled || releaseID != ad.versionID {
-					continue
-				}
-
-				// Matching enabled override
-				// Replace value with the override content
-				iLast := len(gpoWithRules.Rules[keyType]) - 1
-				p := gpoWithRules.Rules[keyType][iLast]
-				p.Value = pol.Value
-				gpoWithRules.Rules[keyType][iLast] = p
-			}
-			return nil
-		}(); err != nil {
+		if err = ad.parseGPO(ctx, name, url, keyFilterPrefix, objectClass, gpoWithRules); err != nil {
 			return r, err
 		}
 	}
 
 	return r, nil
+}
+
+func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, objectClass ObjectClass, gpoWithRules policies.GPO) error {
+	ad.downloadables[name].mu.RLock()
+	defer ad.downloadables[name].mu.RUnlock()
+	_ = ad.downloadables[name].testConcurrent
+
+	log.Debugf(ctx, "Parsing GPO %q of class %q", name, objectClass)
+
+	// We need to consider the uppercase version of the name as well,
+	// which could occur in some of the default GPOs such as Default
+	// Domain Policy.
+	classes := []string{"User", "USER"}
+	if objectClass == ComputerObject {
+		classes = []string{"Machine", "MACHINE"}
+	}
+
+	var err error
+	var f *os.File
+	for _, class := range classes {
+		var e error
+		var files []os.DirEntry
+
+		policyDir := filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(url), class)
+		files, e = os.ReadDir(policyDir)
+
+		if e != nil {
+			if errors.Is(e, fs.ErrNotExist) {
+				log.Debugf(ctx, "Not found policy directory %q", policyDir)
+			} else {
+				log.Warningf(ctx, "Failed to read policy directory %q: %s", policyDir, e)
+			}
+		} else {
+			log.Debugf(ctx, "Success reading policy directory %q: found %d files", policyDir, len(files))
+		}
+
+		foundPolicy := false
+
+		//The filesystem might be case-sensitive, and if the registry policy is created as registry.pol
+		//it will not be found.
+		for _, file := range files {
+			if strings.EqualFold(file.Name(), "Registry.pol") {
+				policyPath := filepath.Join(policyDir, file.Name())
+				log.Debugf(ctx, "Found registry policy file %q", policyPath)
+
+				f, e = os.Open(policyPath)
+
+				if e != nil {
+					log.Warningf(ctx, "Failed to open registry policy file %q", policyPath)
+				} else {
+					log.Debugf(ctx, "Success opening registry policy file %q", policyPath)
+					foundPolicy = true
+				}
+
+				break
+			}
+		}
+
+		if !foundPolicy && e == nil {
+			e = fs.ErrNotExist
+		}
+
+		if e != nil && err == nil {
+			err = e
+		} else if e == nil {
+			err = nil
+			break
+		}
+	}
+
+	if errors.Is(err, fs.ErrNotExist) || f == nil {
+		log.Debugf(ctx, "Policy %q doesn't have any policy for class %q %s", name, objectClass, err)
+		return nil
+	} else if err != nil {
+		return err
+	}
+	defer decorate.LogFuncOnErrorContext(ctx, f.Close)
+
+	// Decode and apply policies in gpo order. First win
+	pols, err := registry.DecodePolicy(f)
+	if err != nil {
+		return errors.New(gotext.Get("%s: %v", f.Name(), err))
+	}
+
+	// filter keys to be overridden
+	var currentKey string
+	var overrideEnabled bool
+	for _, pol := range pols {
+		// Rewrite the certificate autoenrollment key so we can easily
+		// use it in the policy manager
+		if pol.Key == certAutoEnrollKey {
+			pol.Key = fmt.Sprintf("%scertificate/autoenroll/all", keyFilterPrefix)
+		}
+
+		if strings.HasPrefix(pol.Key, policyServersPrefix) {
+			pol.Key = fmt.Sprintf("%scertificate/%s/all", keyFilterPrefix, pol.Key)
+		}
+
+		// Only consider supported policies for this distro
+		if !strings.HasPrefix(pol.Key, keyFilterPrefix) {
+			continue
+		}
+		if pol.Err != nil {
+			return errors.New(gotext.Get("%s: %v", f.Name(), pol.Err))
+		}
+		pol.Key = strings.TrimPrefix(pol.Key, keyFilterPrefix)
+
+		// Some keys can be overridden
+		releaseID := filepath.Base(pol.Key)
+		keyType := strings.Split(pol.Key, "/")[0]
+		pol.Key = filepath.Dir(strings.TrimPrefix(pol.Key, keyType+"/"))
+
+		if releaseID == "all" {
+			currentKey = pol.Key
+			overrideEnabled = false
+			gpoWithRules.Rules[keyType] = append(gpoWithRules.Rules[keyType], pol)
+			continue
+		}
+
+		// This is not an "all" key and the key name don’t match
+		// This shouldn’t happen with our admx, but just to stay safe…
+		if currentKey != pol.Key {
+			continue
+		}
+
+		if strings.HasPrefix(releaseID, "Override"+ad.versionID) && pol.Value == "true" {
+			overrideEnabled = true
+			continue
+		}
+		// Check we have a matching override
+		if !overrideEnabled || releaseID != ad.versionID {
+			continue
+		}
+
+		// Matching enabled override
+		// Replace value with the override content
+		iLast := len(gpoWithRules.Rules[keyType]) - 1
+		p := gpoWithRules.Rules[keyType][iLast]
+		p.Value = pol.Value
+		gpoWithRules.Rules[keyType][iLast] = p
+	}
+
+	return nil
 }
 
 // GetInfo returns all information from the selected backend: static and dynamic part.
