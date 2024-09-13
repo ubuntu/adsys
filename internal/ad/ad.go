@@ -530,10 +530,7 @@ func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, o
 			return e
 		}
 
-		foundPolicy := false
-
 		// Registry.pol can have different cases, ensure we can find it whatever its case is
-		//it will not be found.
 		for _, file := range files {
 			if strings.EqualFold(file.Name(), "Registry.pol") {
 				policyPath := filepath.Join(policyDir, file.Name())
