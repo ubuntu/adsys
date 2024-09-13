@@ -165,7 +165,7 @@ func New() *App {
 	err = a.viper.BindPFlag("service_timeout", a.rootCmd.PersistentFlags().Lookup("timeout"))
 	decorate.LogOnError(&err)
 
-	a.rootCmd.PersistentFlags().IntP("gpo-list-timeout", "", consts.DefaultGpoListTimeout, gotext.Get("time in seconds for the gpo list. 0 for no timeout."))
+	a.rootCmd.PersistentFlags().IntP("gpo-list-timeout", "", consts.DefaultGpoListTimeout, gotext.Get("time in seconds for the GPO list. 0 for no timeout."))
 	err = a.viper.BindPFlag("gpo_list_timeout", a.rootCmd.PersistentFlags().Lookup("gpo-list-timeout"))
 	decorate.LogOnError(&err)
 
