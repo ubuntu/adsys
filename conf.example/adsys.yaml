@@ -38,4 +38,4 @@ detect_cached_ticket: false
 client_timeout: 60
 
 # GPO List timeout
-gpo_list_timeout: 30
+gpo_list_timeout: 10
