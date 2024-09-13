@@ -523,14 +523,11 @@ func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, o
 		policyDir := filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(url), class)
 		files, e = os.ReadDir(policyDir)
 
-		if e != nil {
-			if errors.Is(e, fs.ErrNotExist) {
-				log.Debugf(ctx, "Not found policy directory %q", policyDir)
-			} else {
-				log.Warningf(ctx, "Failed to read policy directory %q: %s", policyDir, e)
-			}
-		} else {
-			log.Debugf(ctx, "Success reading policy directory %q: found %d files", policyDir, len(files))
+		if errors.Is(e, fs.ErrNotExist) {
+			log.Debugf(ctx, "Policy directory %q not found", policyDir)
+			continue
+		} else if e != nil {
+			return e
 		}
 
 		foundPolicy := false
