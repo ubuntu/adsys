@@ -42,6 +42,7 @@ FQDN
 GDM
 gdm
 GPL
+gpo
 GPO
 gpolist
 GPOs

@@ -2,8 +2,6 @@
 package consts
 
 import (
-	"time"
-
 	log "github.com/sirupsen/logrus"
 )
 
@@ -41,7 +39,7 @@ const (
 	DefaultServiceTimeout = 120
 
 	// DefaultGpoListTimeout is the default time to wait for the GPO list subcommand to finish.
-	DefaultGpoListTimeout = 10 * time.Second
+	DefaultGpoListTimeout = 10
 
 	// DistroID is the distro ID which can be overridden at build time.
 	DistroID = "Ubuntu"

@@ -254,7 +254,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
 	scriptArgs := []string{"--objectclass", string(objectClass), adServerFQDN, objectName}
 	cmdArgs := append(args, scriptArgs...)
-	cmdCtx, cancel := context.WithTimeout(ctx, time.Second*10)
+	cmdCtx, cancel := context.WithTimeout(ctx, ad.gpoListTimeout)
 	defer cancel()
 	log.Debugf(ctx, "Getting gpo list with arguments: %q", strings.Join(scriptArgs, " "))
 	// #nosec G204 - cmdArgs is under our control (python embedded script or mock for tests)
