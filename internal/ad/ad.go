@@ -514,20 +514,20 @@ func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, o
 		classes = []string{"Machine", "MACHINE"}
 	}
 
-	var err error
 	var f *os.File
+loop:
 	for _, class := range classes {
-		var e error
+		var err error
 		var files []os.DirEntry
 
 		policyDir := filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(url), class)
-		files, e = os.ReadDir(policyDir)
+		files, err = os.ReadDir(policyDir)
 
-		if errors.Is(e, fs.ErrNotExist) {
+		if errors.Is(err, fs.ErrNotExist) {
 			log.Debugf(ctx, "Policy directory %q not found", policyDir)
 			continue
-		} else if e != nil {
-			return e
+		} else if err != nil {
+			return err
 		}
 
 		// Registry.pol can have different cases, ensure we can find it whatever its case is
@@ -539,36 +539,21 @@ func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, o
 			policyPath := filepath.Join(policyDir, file.Name())
 			log.Debugf(ctx, "Found registry policy file %q", policyPath)
 
-			f, e = os.Open(policyPath)
+			f, err = os.Open(policyPath)
 
-			if e != nil {
-				log.Warningf(ctx, "Failed to open registry policy file %q", policyPath)
-			} else {
-				log.Debugf(ctx, "Success opening registry policy file %q", policyPath)
-				foundPolicy = true
+			if err != nil {
+				return err
 			}
 
-			break
-		}
-
-		if !foundPolicy && e == nil {
-			e = fs.ErrNotExist
-		}
-
-		if e != nil && err == nil {
-			err = e
-		} else if e == nil {
-			err = nil
-			break
+			break loop
 		}
 	}
 
-	if errors.Is(err, fs.ErrNotExist) || f == nil {
-		log.Debugf(ctx, "Policy %q doesn't have any policy for class %q %s", name, objectClass, err)
+	if f == nil {
+		log.Debugf(ctx, "Policy %q doesn't have any policy for class %q", name, objectClass)
 		return nil
-	} else if err != nil {
-		return err
 	}
+
 	defer decorate.LogFuncOnErrorContext(ctx, f.Close)
 
 	// Decode and apply policies in gpo order. First win
