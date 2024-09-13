@@ -532,21 +532,23 @@ func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, o
 
 		// Registry.pol can have different cases, ensure we can find it whatever its case is
 		for _, file := range files {
-			if strings.EqualFold(file.Name(), "Registry.pol") {
-				policyPath := filepath.Join(policyDir, file.Name())
-				log.Debugf(ctx, "Found registry policy file %q", policyPath)
-
-				f, e = os.Open(policyPath)
-
-				if e != nil {
-					log.Warningf(ctx, "Failed to open registry policy file %q", policyPath)
-				} else {
-					log.Debugf(ctx, "Success opening registry policy file %q", policyPath)
-					foundPolicy = true
-				}
-
-				break
+			if !strings.EqualFold(file.Name(), "Registry.pol") {
+				continue
 			}
+
+			policyPath := filepath.Join(policyDir, file.Name())
+			log.Debugf(ctx, "Found registry policy file %q", policyPath)
+
+			f, e = os.Open(policyPath)
+
+			if e != nil {
+				log.Warningf(ctx, "Failed to open registry policy file %q", policyPath)
+			} else {
+				log.Debugf(ctx, "Success opening registry policy file %q", policyPath)
+				foundPolicy = true
+			}
+
+			break
 		}
 
 		if !foundPolicy && e == nil {
