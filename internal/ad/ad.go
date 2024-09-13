@@ -535,7 +535,7 @@ func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, o
 
 		foundPolicy := false
 
-		//The filesystem might be case-sensitive, and if the registry policy is created as registry.pol
+		// Registry.pol can have different cases, ensure we can find it whatever its case is
 		//it will not be found.
 		for _, file := range files {
 			if strings.EqualFold(file.Name(), "Registry.pol") {
