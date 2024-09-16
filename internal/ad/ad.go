@@ -515,14 +515,13 @@ func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, o
 	}
 
 	var f *os.File
-loop:
+classLoop:
 	for _, class := range classes {
 		var err error
 		var files []os.DirEntry
 
 		policyDir := filepath.Join(ad.sysvolCacheDir, "Policies", filepath.Base(url), class)
 		files, err = os.ReadDir(policyDir)
-
 		if errors.Is(err, fs.ErrNotExist) {
 			log.Debugf(ctx, "Policy directory %q not found", policyDir)
 			continue
@@ -540,12 +539,11 @@ loop:
 			log.Debugf(ctx, "Found registry policy file %q", policyPath)
 
 			f, err = os.Open(policyPath)
-
 			if err != nil {
 				return err
 			}
 
-			break loop
+			break classLoop
 		}
 	}
 
