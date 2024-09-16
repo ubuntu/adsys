@@ -424,7 +424,7 @@ func TestGetPolicies(t *testing.T) {
 			}},
 		},
 
-		// Policy class directory spelling cases
+		// Policy class directory and Registry.pol spelling cases
 		"Policy user directory is uppercase": {
 			gpoListArgs: []string{"gpoonly.com", "bob:uppercase-class"},
 			want:        policies.Policies{GPOs: []policies.GPO{standardUserGPO("uppercase-class")}},
@@ -449,6 +449,26 @@ func TestGetPolicies(t *testing.T) {
 			want: policies.Policies{GPOs: []policies.GPO{
 				{ID: "lowercase-class", Name: "lowercase-class-name", Rules: map[string][]entry.Entry{}}},
 			},
+		},
+		"User policy Registry.pol is lower case": {
+			gpoListArgs: []string{"gpoonly.com", "bob:lowercase-registry"},
+			want:        policies.Policies{GPOs: []policies.GPO{standardUserGPO("lowercase-registry")}},
+		},
+		"Computer policy Registry.pol is lower case": {
+			objectName:  hostname,
+			objectClass: ad.ComputerObject,
+			gpoListArgs: []string{"gpoonly.com", hostname + ":lowercase-registry"},
+			want:        policies.Policies{GPOs: []policies.GPO{standardComputerGPO("lowercase-registry")}},
+		},
+		"User policy Registry.pol is mixed case": {
+			gpoListArgs: []string{"gpoonly.com", "bob:mixedcase-registry"},
+			want:        policies.Policies{GPOs: []policies.GPO{standardUserGPO("mixedcase-registry")}},
+		},
+		"Computer policy Registry.pol is mixed case": {
+			objectName:  hostname,
+			objectClass: ad.ComputerObject,
+			gpoListArgs: []string{"gpoonly.com", hostname + ":mixedcase-registry"},
+			want:        policies.Policies{GPOs: []policies.GPO{standardComputerGPO("mixedcase-registry")}},
 		},
 
 		// Error cases
