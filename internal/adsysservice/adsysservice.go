@@ -188,7 +188,7 @@ func WithWinbindConfig(c winbind.Config) func(o *options) error {
 	}
 }
 
-// WithGpoListTimeout specifies the timeout for the gpo list
+// WithGpoListTimeout specifies the timeout for the gpo list.
 func WithGpoListTimeout(t time.Duration) func(o *options) error {
 	return func(o *options) error {
 		o.gpoListTimeout = t
