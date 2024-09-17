@@ -16,7 +16,10 @@ env:
 jobs:
   sanity:
     name: Code sanity
-    runs-on: ${{ vars.RUNNER }}
+    # Put the runner here instead of GH project config as it’s not available to the forked repositories
+    # otherwise when submitting PRs: https://github.com/orgs/community/discussions/44322.
+    # workflow environements don’t work either.
+    runs-on: ubuntu-24.04
     steps:
       - name: Install dependencies
         run: |
@@ -43,7 +46,7 @@ jobs:
 
   tests:
     name: Tests
-    runs-on: ${{ vars.RUNNER }}
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
