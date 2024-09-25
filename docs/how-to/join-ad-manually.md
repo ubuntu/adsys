@@ -11,11 +11,11 @@ The aim of this documentation is to describe how to operate ADSys. So we won’t
 
 Authentication of Ubuntu against the Active Directory server requires to configure SSSD and Kerberos. SSSD will then retrieve the credentials and the initial security policy of the `Default Domain Policy`.
 
-All these operations are described in details in the [Ubuntu Server Guide “Service - SSSD”](https://ubuntu.com/server/docs/service-sssd) and the White Paper [How to integrate Ubuntu Desktop with Active Directory](https://ubuntu.com/engage/microsoft-active-directory).
+All these operations are described in detail in the [Introduction to network user authentication with SSSD](https://documentation.ubuntu.com/server/explanation/intro-to/sssd/) and the White Paper [How to integrate Ubuntu Desktop with Active Directory](https://ubuntu.com/engage/microsoft-active-directory).
 
 ## Join manually using Winbind
 
-In addition to SSSD, ADSys supports Winbind as a backend. The easiest way to join a domain using Winbind is to use the `realmd` utility, as described in the [Samba - Active Directory](https://ubuntu.com/server/docs/samba-active-directory) guide.
+In addition to SSSD, ADSys supports Winbind as a backend. The easiest way to join a domain using Winbind is to use the `realmd` utility, as described in the [Samba - Member server in an Active Directory domain](https://documentation.ubuntu.com/server/how-to/samba/member-server-in-an-ad-domain/) guide.
 
 ADSys uses SSSD as a default backend, so Winbind has to be opted into explicitly via the following configuration option in `adsys.yaml`:
 
