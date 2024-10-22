@@ -126,11 +126,11 @@ func TestMultipleSmbLocksOnlyReleaseOnLast(t *testing.T) {
 func shouldHaveWaited(t *testing.T, startpoint time.Time) {
 	t.Helper()
 
-	require.Less(t, uint64(waitTime-time.Millisecond), uint64(time.Since(startpoint)), "Should have waited")
+	require.Less(t, int64(waitTime-time.Millisecond), int64(time.Since(startpoint)), "Should have waited")
 }
 
 func shouldNotHaveWaited(t *testing.T, startpoint time.Time) {
 	t.Helper()
 
-	require.Less(t, uint64(time.Since(startpoint)), uint64(waitTime+time.Millisecond), "Shouldn’t have waited")
+	require.WithinDuration(t, time.Now(), startpoint, waitTime, "Shouldn’t have waited")
 }
