@@ -176,10 +176,16 @@ func (a Authorizer) isAllowed(ctx context.Context, action Action, pid int32, uid
 		return err
 	}
 
+	// polkit requests an uint32 on dbus
+	var upid uint32
+	if pid > 0 {
+		upid = uint32(pid)
+	}
+
 	subject := authSubject{
 		Kind: "unix-process",
 		Details: map[string]dbus.Variant{
-			"pid":        dbus.MakeVariant(uint32(pid)), // polkit requests an uint32 on dbus
+			"pid":        dbus.MakeVariant(upid),
 			"start-time": dbus.MakeVariant(startTime),
 			"uid":        dbus.MakeVariant(uid),
 		},
