@@ -103,7 +103,7 @@ jobs:
           # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
           sudo -E $(which go) test -race ${{ env.sudo_packages }}
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           file: ./coverage/codecov/Cobertura.xml
           token: ${{ secrets.CODECOV_TOKEN }}
