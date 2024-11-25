@@ -105,7 +105,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          file: ./coverage/codecov/Cobertura.xml
+          files: ./coverage/codecov/Cobertura.xml
           token: ${{ secrets.CODECOV_TOKEN }}
 
   adwatchd-tests:
