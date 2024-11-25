@@ -8,7 +8,7 @@ Set to true to disable showing the restart buttons in the login window.
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
+Supported on Ubuntu 20.04, 22.04, 24.04, 24.10, 25.04.
 
 
 

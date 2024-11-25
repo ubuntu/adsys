@@ -8,7 +8,7 @@ The background-repeat property sets if/how a background image will be repeated. 
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
+Supported on Ubuntu 20.04, 22.04, 24.04, 24.10, 25.04.
 
 <span style="font-size: larger;">**Valid values**</span>
 
