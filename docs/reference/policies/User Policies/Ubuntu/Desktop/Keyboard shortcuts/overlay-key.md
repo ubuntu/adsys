@@ -8,7 +8,7 @@ This key will initiate the “overlay”, which is a combination window overview
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 20.04, 22.04, 24.04, 24.10.
+Supported on Ubuntu 20.04, 22.04, 24.04, 24.10, 25.04.
 
 
 
