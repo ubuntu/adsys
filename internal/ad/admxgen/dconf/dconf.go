@@ -156,19 +156,19 @@ func inflateToExpandedPolicies(policies []Policy, release, currentSessions strin
 		}
 
 		if m.widgetType == common.WidgetTypeLongDecimal {
-			min := ep.RangeValues.Min
-			if min == "" {
-				min = "0"
+			minValue := ep.RangeValues.Min
+			if minValue == "" {
+				minValue = "0"
 			}
-			if min == "NaN" || min == "Inf" {
-				return nil, errors.New(gotext.Get("min value for long decimal is not a valid float: %s", min))
+			if minValue == "NaN" || minValue == "Inf" {
+				return nil, errors.New(gotext.Get("min value for long decimal is not a valid float: %s", minValue))
 			}
-			s, err := strconv.ParseFloat(min, 64)
+			s, err := strconv.ParseFloat(minValue, 64)
 			if err != nil {
 				return nil, errors.New(gotext.Get("min value for long decimal is not a valid float: %v", err))
 			}
-			min = fmt.Sprintf("%f", math.Max(0, s))
-			ep.RangeValues.Min = min
+			minValue = fmt.Sprintf("%f", math.Max(0, s))
+			ep.RangeValues.Min = minValue
 		}
 		if m.widgetType == common.WidgetTypeLongDecimal || m.widgetType == common.WidgetTypeDecimal {
 			ep.RangeValues.Min = strings.Split(ep.RangeValues.Min, ".")[0]
@@ -300,16 +300,16 @@ func loadSchemasFromDisk(path string) (entries map[string]schemaEntry, defaultsF
 					Min *float32 "xml:\"min,attr\""
 					Max *float32 "xml:\"max,attr\""
 				}{} {
-					var min, max string
+					var minValue, maxValue string
 					if k.Range.Min != nil {
-						min = fmt.Sprintf("%f", *k.Range.Min)
+						minValue = fmt.Sprintf("%f", *k.Range.Min)
 					}
 					if k.Range.Max != nil {
-						max = fmt.Sprintf("%f", *k.Range.Max)
+						maxValue = fmt.Sprintf("%f", *k.Range.Max)
 					}
 					e.RangeValues = common.DecimalRange{
-						Min: min,
-						Max: max,
+						Min: minValue,
+						Max: maxValue,
 					}
 				}
 

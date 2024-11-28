@@ -1417,7 +1417,7 @@ func TestPolicyCompletion(t *testing.T) {
 	}
 }
 
-func modifyAndAddUsers(t *testing.T, new string, users ...string) (passwd string) {
+func modifyAndAddUsers(t *testing.T, newUsername string, users ...string) (passwd string) {
 	t.Helper()
 	dest := filepath.Join(t.TempDir(), "passwd")
 
@@ -1439,7 +1439,7 @@ func modifyAndAddUsers(t *testing.T, new string, users ...string) (passwd string
 	for scanner.Scan() {
 		l := scanner.Text()
 		if strings.HasPrefix(l, fmt.Sprintf("%s:", u.Username)) {
-			l = fmt.Sprintf("%s%s", new, strings.TrimPrefix(l, u.Username))
+			l = fmt.Sprintf("%s%s", newUsername, strings.TrimPrefix(l, u.Username))
 		}
 		_, err = d.Write([]byte(l + "\n"))
 		require.NoError(t, err, "Setup: can’t write to passwd temp file")
