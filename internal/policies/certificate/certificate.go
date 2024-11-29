@@ -226,7 +226,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return errors.New(gotext.Get("failed to marshal policy server registry entries: %v", err))
 	}
 
-	if err := m.runScript(ctx, action, objectName, "--policy_servers_json", string(jsonGPOData)); err != nil {
+	if err := m.runScript(ctx, action, objectName, "--policy_servers_json", string(jsonGPOData), "--debug"); err != nil {
 		return err
 	}
 
@@ -251,10 +251,11 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 	defer smbsafe.DoneExec()
 
 	output, err := cmd.CombinedOutput()
+	defer log.Debugf(ctx, "Certificate autoenrollment script output:\n%s", string(output))
 	if err != nil {
 		return errors.New(gotext.Get("failed to run certificate autoenrollment script (exited with %d): %v\n%s", cmd.ProcessState.ExitCode(), err, string(output)))
 	}
-	log.Info(ctx, gotext.Get("Certificate autoenrollment script ran successfully\n%s", string(output)))
+	log.Info(ctx, gotext.Get("Certificate autoenrollment script ran successfully\n"))
 	return nil
 }
 
