@@ -22,6 +22,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -43,24 +45,57 @@ import (
 
 	We are modifying 2 files:
 	- one for sudo, named 99-adsys-privilege-enforcement in sudoers.d
-	- one under 99-adsys-privilege-enforcement.conf for policykit
+	- one under 00-adsys-privilege-enforcement.rules for policykit
 
 	Both are installed under respective /etc directories.
 */
 
-const adsysBaseConfName = "99-adsys-privilege-enforcement"
+const (
+	adsysBaseSudoersName = "99-adsys-privilege-enforcement"
+
+	adsysOldPolkitName  = "99-adsys-privilege-enforcement"
+	adsysBasePolkitName = "00-adsys-privilege-enforcement"
+
+	polkitSystemReservedPath = "/usr/share/polkit-1"
+)
+
+// Templates to generate the polkit configuration files.
+const (
+	policyKitConfTemplate  = "%s[Configuration]\nAdminIdentities=%s"
+	policyKitRulesTemplate = `%spolkit.addAdminRule(function(action, subject){
+	return [%s];
+});`
+)
+
+type option struct {
+	policyKitSystemDir string
+}
+
+// Option is a functional option for the manager.
+type Option func(*option)
 
 // Manager prevents running multiple privilege update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
 	sudoersDir   string
 	policyKitDir string
+
+	// This is for testing purposes only
+	policyKitSystemDir string
 }
 
 // NewWithDirs creates a manager with a specific root directory.
-func NewWithDirs(sudoersDir, policyKitDir string) *Manager {
+func NewWithDirs(sudoersDir, policyKitDir string, opts ...Option) *Manager {
+	o := &option{
+		policyKitSystemDir: polkitSystemReservedPath,
+	}
+	for _, opt := range opts {
+		opt(o)
+	}
+
 	return &Manager{
-		sudoersDir:   sudoersDir,
-		policyKitDir: policyKitDir,
+		sudoersDir:         sudoersDir,
+		policyKitDir:       policyKitDir,
+		policyKitSystemDir: o.policyKitSystemDir,
 	}
 }
 
@@ -77,12 +112,19 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	if sudoersDir == "" {
 		sudoersDir = consts.DefaultSudoersDir
 	}
+	sudoersConf := filepath.Join(sudoersDir, adsysBaseSudoersName)
+
 	policyKitDir := m.policyKitDir
 	if policyKitDir == "" {
 		policyKitDir = consts.DefaultPolicyKitDir
 	}
-	sudoersConf := filepath.Join(sudoersDir, adsysBaseConfName)
-	policyKitConf := filepath.Join(policyKitDir, "localauthority.conf.d", adsysBaseConfName+".conf")
+	policyKitConf := filepath.Join(policyKitDir, "rules.d", adsysBasePolkitName+".rules")
+
+	// Polkit versions before 124 use a different directory for admin configuration and a different file extension and syntax
+	var oldPolkit bool
+	if oldPolkit = isOldPolkit(policyKitDir, m.policyKitSystemDir); oldPolkit {
+		policyKitConf = filepath.Join(policyKitDir, "localauthority.conf.d", adsysOldPolkitName+".conf")
+	}
 
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
 
@@ -119,7 +161,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 	defer policyKitConfF.Close()
 
-	systemPolkitAdmins, err := getSystemPolkitAdminIdentities(ctx, policyKitDir)
+	systemPolkitAdmins, err := m.getSystemPolkitAdminIdentities(ctx, policyKitDir, oldPolkit)
 	if err != nil {
 		return err
 	}
@@ -178,17 +220,31 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 	// PolicyKitConf files depends on multiple keys, so we need to write it at the end
 	if !allowLocalAdmins || polkitAdditionalUsersGroups != nil {
-		users := strings.Join(polkitAdditionalUsersGroups, ";")
+		polkitTemplate := policyKitRulesTemplate
+		sep := ","
+		if oldPolkit {
+			polkitTemplate = policyKitConfTemplate
+			sep = ";"
+		}
+
+		// We need to write username between "" in the new format (Polkit version >= 124)
+		if !oldPolkit {
+			for i, user := range polkitAdditionalUsersGroups {
+				polkitAdditionalUsersGroups[i] = fmt.Sprintf("\"%s\"", user)
+			}
+		}
+		users := strings.Join(polkitAdditionalUsersGroups, sep)
+
 		// We need to set system local admin here as we override the key from the previous file
 		// otherwise, they will be disabled.
 		if allowLocalAdmins {
 			if systemPolkitAdmins != "" {
-				systemPolkitAdmins += ";"
+				systemPolkitAdmins += sep
 			}
 			users = systemPolkitAdmins + users
 		}
 
-		if _, err := policyKitConfF.WriteString(fmt.Sprintf("%s[Configuration]\nAdminIdentities=%s", header, users) + "\n"); err != nil {
+		if _, err := policyKitConfF.WriteString(fmt.Sprintf(polkitTemplate, header, users) + "\n"); err != nil {
 			return err
 		}
 	}
@@ -199,6 +255,14 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 	if err := os.Rename(policyKitConf+".new", policyKitConf); err != nil {
 		return err
+	}
+
+	// If we applied the policy in the new format (Polkit version >= 124), we need to remove the old one
+	if !oldPolkit {
+		err := os.Remove(filepath.Join(policyKitDir, "localauthority.conf.d", adsysOldPolkitName+".conf"))
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			log.Debug(ctx, gotext.Get("Failed to remove old polkit configuration file: %v", err))
+		}
 	}
 
 	return nil
@@ -243,10 +307,113 @@ func splitAndNormalizeUsersAndGroups(ctx context.Context, v string) []string {
 	return elems
 }
 
-// getSystemPolkitAdminIdentities returns the list of configured system polkit admins as a string.
+// getSystemPolkitAdminIdentities parses the system polkit configuration (based on its version) to get the
+// list of admin identities.
+func (m *Manager) getSystemPolkitAdminIdentities(ctx context.Context, policyKitDir string, oldPolkit bool) (adminIdentities string, err error) {
+	if oldPolkit {
+		return polkitAdminIdentitiesFromConf(ctx, policyKitDir)
+	}
+	return polkitAdminIdentitiesFromRules(ctx, []string{
+		policyKitDir,
+		m.policyKitSystemDir,
+	})
+}
+
+// polkitAdminIdentitiesFromRules parses the polkit rules files to get the list of admin identities.
+//
+// Since polkit >= 124 now only cares about the first valid return, this function will sort the files from all the
+// specified directories (priority: lesser ascii value, higher priority), parse them and identify the first valid return.
+func polkitAdminIdentitiesFromRules(ctx context.Context, rulesDirPaths []string) (adminIdentities string, err error) {
+	// Compile the regex needed to parse the polkit admin rules.
+	// Matches: polkit.addAdminRule(function(action, subject){(.*)});
+	adminRulesRegex, err := regexp.Compile(`polkit\.addAdminRule\s*\(\s*function\s*\(\s*action\s*\,\s*subject\s*\)\s*{\s*[^\}]*}\s*\)\s*\;`)
+	if err != nil {
+		return "", err
+	}
+	// Matches for: { return [(.*)] }
+	returnRegex, err := regexp.Compile(`\{\s*return\s*\[(\s*([^\]]*))*\s*\]\s*;\s*\}`)
+	if err != nil {
+		return "", err
+	}
+	// Matches for: "someuser" or 'someuser'
+	userRegex, err := regexp.Compile(`(["']+([^,]*)["']+)`)
+	if err != nil {
+		return "", err
+	}
+
+	var ruleFiles []string
+	for _, path := range rulesDirPaths {
+		files, err := filepath.Glob(filepath.Join(path, "rules.d", "*.rules"))
+		if err != nil {
+			return "", err
+		}
+		ruleFiles = append(ruleFiles, files...)
+	}
+
+	// Sort the files respecting the priority that Polkit assigns to them.
+	slices.SortFunc(ruleFiles, func(i, j string) int {
+		// If the files have different name, we return the one with the lowest ascii value.
+		if order := strings.Compare(filepath.Base(i), filepath.Base(j)); order != 0 {
+			return order
+		}
+
+		// If the files have the same name, we respect the directory priority in rulesDirPaths (lesser index, higher prio).
+		var idxI, idxJ int
+		for idx, dir := range rulesDirPaths {
+			if strings.Contains(i, dir) {
+				idxI = idx
+			}
+			if strings.Contains(j, dir) {
+				idxJ = idx
+			}
+		}
+		return idxI - idxJ
+	})
+
+	for _, path := range ruleFiles {
+		if filepath.Base(path) == adsysBasePolkitName+".rules" {
+			continue
+		}
+
+		b, err := os.ReadFile(path)
+		if err != nil {
+			pathErr := &os.PathError{}
+			if errors.As(err, &pathErr) && pathErr.Op == "open" {
+				// This means that we couldn't open the file for reading, likely due to permission errors.
+				// If so, we can not ensure that we will match the expected admin identities from the system
+				// and we should return an error.
+				return "", err
+			}
+			// If we get an error when reading the file, it's likely due to it being a directory.
+			// This case we can ignore and continue to the next file.
+			log.Debug(ctx, gotext.Get("Ignoring %s: %v", path, err))
+			continue
+		}
+		rules := string(b)
+
+		// Check if the file contains the rule we are looking for
+		if !strings.Contains(rules, "polkit.addAdminRule") {
+			continue
+		}
+
+		for _, adminRule := range adminRulesRegex.FindAllString(rules, -1) {
+			returnStmt := returnRegex.FindString(adminRule)
+			if returnStmt == "" {
+				continue
+			}
+
+			log.Debug(ctx, gotext.Get("Using polkit admin identities from %q", path))
+			return strings.Join(userRegex.FindAllString(returnStmt, -1), ","), nil
+		}
+	}
+
+	return adminIdentities, nil
+}
+
+// polkitAdminIdentitiesFromConf returns the list of configured system polkit admins as a string.
 // It lists /etc/polkit-1/localauthority.conf.d and take the highest file in ascii order to match
 // from the [configuration] section AdminIdentities value.
-func getSystemPolkitAdminIdentities(ctx context.Context, policyKitDir string) (adminIdentities string, err error) {
+func polkitAdminIdentitiesFromConf(ctx context.Context, policyKitDir string) (adminIdentities string, err error) {
 	defer decorate.OnError(&err, gotext.Get("can't get existing system polkit administrators in %s", policyKitDir))
 
 	polkitConfFiles, err := filepath.Glob(filepath.Join(policyKitDir, "localauthority.conf.d", "*.conf"))
@@ -265,7 +432,7 @@ func getSystemPolkitAdminIdentities(ctx context.Context, policyKitDir string) (a
 		}
 
 		// Ignore ourself
-		if filepath.Base(p) == adsysBaseConfName+".conf" {
+		if filepath.Base(p) == adsysOldPolkitName+".conf" {
 			continue
 		}
 
@@ -278,4 +445,35 @@ func getSystemPolkitAdminIdentities(ctx context.Context, policyKitDir string) (a
 	}
 
 	return adminIdentities, nil
+}
+
+// isOldPolkit checks current polkit-1 configuration to determine if the current version < 124.
+//
+// To determine the version, we follow the steps:
+//  1. If the old configuration directory does not exist or is empty -> version < 124.
+//  2. If the old configuration directory only contains the adsys generated file -> version < 124.
+//
+// If the previous checks are valid, we still need to check if the new configuration file exists as the user
+// could have installed the compatibility package (polkitd-pkla), which adds old configuration files even if
+// the polkit version is >= 124.
+func isOldPolkit(policyKitDir, policyKitReservedDir string) bool {
+	dirEntries, err := os.ReadDir(filepath.Join(policyKitDir, "localauthority.conf.d"))
+	nEntries := len(dirEntries)
+	if err != nil || nEntries == 0 {
+		return false
+	}
+
+	// If the directory only contains the adsys generated file, we can assume that the version is >= 124
+	if nEntries == 1 && dirEntries[0].Name() == adsysOldPolkitName+".conf" {
+		return false
+	}
+
+	// If the old directory isn't empty and there's no new configuration file, we can assume that the version is < 124.
+	if _, err := os.Stat(filepath.Join(policyKitReservedDir, "rules.d/49-ubuntu-admin.rules")); err != nil {
+		return true
+	}
+
+	// If the new configuration file exists but the old directory is not empty, it likely means that the user
+	// installed the compatibility package (polkitd-pkla), but polkit version is still >= 124.
+	return false
 }
