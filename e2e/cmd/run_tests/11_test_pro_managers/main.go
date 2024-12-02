@@ -139,8 +139,15 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 "adminuser@warthogs.biz"	ALL=(ALL:ALL) ALL`); err != nil {
 		return err
 	}
+
+	// Due to differences in polkit versions between Ubuntu versions, the file path is different
+	polkitFilePath := "/etc/polkit-1/rules.d/00-adsys-privilege-enforcement.rules"
+	if cmd.Inventory.Codename == "focal" || cmd.Inventory.Codename == "jammy" {
+		polkitFilePath = "/etc/polkit-1/localauthority.conf.d/99-adsys-privilege-enforcement.conf"
+	}
+
 	// Only partly assert the polkit file contents as there are differences in polkit configurations between Ubuntu versions
-	if err := rootClient.RequireContains(ctx, "cat /etc/polkit-1/localauthority.conf.d/99-adsys-privilege-enforcement.conf", "unix-user:adminuser@warthogs.biz"); err != nil {
+	if err := rootClient.RequireContains(ctx, fmt.Sprintf("cat %s", polkitFilePath), "unix-user:adminuser@warthogs.biz"); err != nil {
 		return err
 	}
 
