@@ -11,7 +11,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/fatih/color v1.18.0
-	github.com/fsnotify/fsnotify v1.7.0
+	github.com/fsnotify/fsnotify v1.8.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
