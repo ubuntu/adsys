@@ -1,3 +1,14 @@
+adsys (0.15.2) oracular; urgency=medium
+
+  [ Davi Henrique ]
+  * Ignore casing when fetching Registry.pol (LP: #2080390)
+  * Add configurable timeout for listing GPOs (LP: #2081966)
+
+  [ Felipe Alencastro ]
+  * Add support for DCONF usb settings (LP: #2081968)
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Wed, 25 Sep 2024 08:06:40 -0400
+
 adsys (0.15.1) oracular; urgency=medium
 
   * Fix version based tests on released version
