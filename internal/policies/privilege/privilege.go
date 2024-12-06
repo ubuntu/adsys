@@ -55,8 +55,6 @@ const (
 
 	adsysOldPolkitName  = "99-adsys-privilege-enforcement"
 	adsysBasePolkitName = "00-adsys-privilege-enforcement"
-
-	polkitSystemReservedPath = "/usr/share/polkit-1"
 )
 
 // Templates to generate the polkit configuration files.
@@ -74,6 +72,13 @@ type option struct {
 // Option is a functional option for the manager.
 type Option func(*option)
 
+// WithPolicyKitSystemDir sets the directory where the default policykit files are stored.
+func WithPolicyKitSystemDir(dir string) func(*option) {
+	return func(o *option) {
+		o.policyKitSystemDir = dir
+	}
+}
+
 // Manager prevents running multiple privilege update process in parallel while parsing policy in ApplyPolicy.
 type Manager struct {
 	sudoersDir   string
@@ -84,18 +89,11 @@ type Manager struct {
 }
 
 // NewWithDirs creates a manager with a specific root directory.
-func NewWithDirs(sudoersDir, policyKitDir string, opts ...Option) *Manager {
-	o := &option{
-		policyKitSystemDir: polkitSystemReservedPath,
-	}
-	for _, opt := range opts {
-		opt(o)
-	}
-
+func NewWithDirs(sudoersDir, policyKitDir, policyKitSystemDir string) *Manager {
 	return &Manager{
 		sudoersDir:         sudoersDir,
 		policyKitDir:       policyKitDir,
-		policyKitSystemDir: o.policyKitSystemDir,
+		policyKitSystemDir: policyKitSystemDir,
 	}
 }
 

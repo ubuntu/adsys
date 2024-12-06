@@ -78,6 +78,7 @@ func TestApplyPolicies(t *testing.T) {
 			runDir := filepath.Join(fakeRootDir, "run", "adsys")
 			dconfDir := filepath.Join(fakeRootDir, "etc", "dconf")
 			policyKitDir := filepath.Join(fakeRootDir, "etc", "polkit-1")
+			policyKitReservedDir := filepath.Join(fakeRootDir, "usr", "share", "polkit-1")
 			sudoersDir := filepath.Join(fakeRootDir, "etc", "sudoers.d")
 			apparmorDir := filepath.Join(fakeRootDir, "etc", "apparmor.d", "adsys")
 			systemUnitDir := filepath.Join(fakeRootDir, "etc", "systemd", "system")
@@ -108,6 +109,7 @@ func TestApplyPolicies(t *testing.T) {
 				policies.WithShareDir(shareDir),
 				policies.WithDconfDir(dconfDir),
 				policies.WithPolicyKitDir(policyKitDir),
+				policies.WithPolicyKitSystemDir(policyKitReservedDir),
 				policies.WithSudoersDir(sudoersDir),
 				policies.WithApparmorDir(apparmorDir),
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),

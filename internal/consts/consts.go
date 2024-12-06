@@ -59,6 +59,8 @@ const (
 	DefaultSudoersDir = "/etc/sudoers.d"
 	// DefaultPolicyKitDir is the default directory for policykit configuration and rules.
 	DefaultPolicyKitDir = "/etc/polkit-1"
+	// DefaultPolicyKitSystemDir is the default directory for policykit reserved configuration.
+	DefaultPolicyKitSystemDir = "/usr/share/polkit-1"
 	// DefaultApparmorDir is the default directory for apparmor configuration.
 	DefaultApparmorDir = "/etc/apparmor.d/adsys"
 	// DefaultSystemUnitDir is the default directory for systemd unit files.

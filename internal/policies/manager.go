@@ -93,20 +93,21 @@ type systemdCaller interface {
 }
 
 type options struct {
-	cacheDir       string
-	stateDir       string
-	dconfDir       string
-	sudoersDir     string
-	policyKitDir   string
-	runDir         string
-	shareDir       string
-	apparmorDir    string
-	apparmorFsDir  string
-	systemUnitDir  string
-	globalTrustDir string
-	proxyApplier   proxy.Caller
-	systemdCaller  systemdCaller
-	gdm            *gdm.Manager
+	cacheDir           string
+	stateDir           string
+	dconfDir           string
+	sudoersDir         string
+	policyKitDir       string
+	policyKitSystemDir string
+	runDir             string
+	shareDir           string
+	apparmorDir        string
+	apparmorFsDir      string
+	systemUnitDir      string
+	globalTrustDir     string
+	proxyApplier       proxy.Caller
+	systemdCaller      systemdCaller
+	gdm                *gdm.Manager
 
 	apparmorParserCmd []string
 	certAutoenrollCmd []string
@@ -151,6 +152,14 @@ func WithSudoersDir(p string) Option {
 func WithPolicyKitDir(p string) Option {
 	return func(o *options) error {
 		o.policyKitDir = p
+		return nil
+	}
+}
+
+// WithPolicyKitSystemDir specifies a personalized policykit system reserved directory.
+func WithPolicyKitSystemDir(p string) Option {
+	return func(o *options) error {
+		o.policyKitSystemDir = p
 		return nil
 	}
 }
@@ -248,15 +257,16 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 
 	// defaults
 	args := options{
-		cacheDir:       consts.DefaultCacheDir,
-		stateDir:       consts.DefaultStateDir,
-		runDir:         consts.DefaultRunDir,
-		shareDir:       consts.DefaultShareDir,
-		apparmorDir:    consts.DefaultApparmorDir,
-		systemUnitDir:  consts.DefaultSystemUnitDir,
-		globalTrustDir: consts.DefaultGlobalTrustDir,
-		systemdCaller:  defaultSystemdCaller,
-		gdm:            nil,
+		cacheDir:           consts.DefaultCacheDir,
+		stateDir:           consts.DefaultStateDir,
+		runDir:             consts.DefaultRunDir,
+		shareDir:           consts.DefaultShareDir,
+		apparmorDir:        consts.DefaultApparmorDir,
+		systemUnitDir:      consts.DefaultSystemUnitDir,
+		globalTrustDir:     consts.DefaultGlobalTrustDir,
+		policyKitSystemDir: consts.DefaultPolicyKitSystemDir,
+		systemdCaller:      defaultSystemdCaller,
+		gdm:                nil,
 	}
 	// applied options (including dconf manager used by gdm)
 	for _, o := range opts {
@@ -271,7 +281,7 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 	}
 
 	// privilege manager
-	privilegeManager := privilege.NewWithDirs(args.sudoersDir, args.policyKitDir)
+	privilegeManager := privilege.NewWithDirs(args.sudoersDir, args.policyKitDir, args.policyKitSystemDir)
 
 	// scripts manager
 	scriptsManager, err := scripts.New(args.runDir, args.systemdCaller)

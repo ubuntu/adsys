@@ -123,7 +123,7 @@ func TestApplyPolicy(t *testing.T) {
 				require.NoError(t, os.MkdirAll(filepath.Join(tmpRootDir, tc.destIsDir), 0750), "Setup: can't create fake unwritable file")
 			}
 
-			m := privilege.NewWithDirs(sudoersDir, policyKitDir, privilege.WithPolicyKitSystemDir(tc.polkitSystemReservedPath))
+			m := privilege.NewWithDirs(sudoersDir, policyKitDir, tc.polkitSystemReservedPath)
 			err = m.ApplyPolicy(context.Background(), "ubuntu", !tc.notComputer, tc.entries)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")
