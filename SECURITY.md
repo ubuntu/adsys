@@ -17,7 +17,7 @@ If you are unsure of your version, please run the following command in a
 terminal:
 
 ```
-adsysd version
+adsysctl version
 ```
 
 ## Reporting a Vulnerability
