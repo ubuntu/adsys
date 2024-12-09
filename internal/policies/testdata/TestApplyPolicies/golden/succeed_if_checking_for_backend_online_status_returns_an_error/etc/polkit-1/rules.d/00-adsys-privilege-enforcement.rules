@@ -3,5 +3,5 @@
 # Any changes will be overwritten.
 
 polkit.addAdminRule(function(action, subject){
-	return ["unix-group:sudo","unix-group:admin","unix-user:alice@domain","unix-user:bob@domain2","unix-group:mygroup@domain","unix-user:cosmic carole@domain"];
+	return ["unix-user:alice@domain","unix-user:bob@domain2","unix-group:mygroup@domain","unix-user:cosmic carole@domain"];
 });
