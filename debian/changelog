@@ -1,3 +1,46 @@
+adsys (0.16.0) plucky; urgency=medium
+
+  * Bump minimum Go version to 1.22
+  * Run certificates auto enroll script with debug enabled based on daemon
+    verbosity
+  * Add support for Polkit >= 124
+  * Refresh policy definition files to support latest Ubuntu releases
+  * CI and quality of life changes not impacting package functionality:
+    - Enable CI to run on pull requests from adsys forks
+    - Update links to new server documentation
+  * Bump dependencies to latest:
+    - github.com/charmbracelet/bubbles
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/lipgloss
+    - github.com/fatih/color
+    - github.com/leonelquinteros/gotext
+    - github.com/pkg/sftp
+    - github.com/stretchr/testify
+    - golang.org/x/net
+    - golang.org/x/sys
+    - golang.org/x/text
+    - golang.org/x/crypto
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+    - github.com/golang/protobuf
+    - github.com/golangci/golangci-lint
+    - codecov/codecov-action
+    - jidicula/clang-format-action
+    - peter-evans/create-pull-request
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Fri, 06 Dec 2024 08:18:44 -0400
+
+adsys (0.15.2) oracular; urgency=medium
+
+  [ Davi Henrique ]
+  * Ignore casing when fetching Registry.pol (LP: #2080390)
+  * Add configurable timeout for listing GPOs (LP: #2081966)
+
+  [ Felipe Alencastro ]
+  * Add support for DCONF usb settings (LP: #2081968)
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Wed, 25 Sep 2024 08:06:40 -0400
+
 adsys (0.15.1) oracular; urgency=medium
 
   * Fix version based tests on released version
