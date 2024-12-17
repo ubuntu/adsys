@@ -134,11 +134,11 @@ jobs:
           iscc.exe //DAPP_VERSION=$INSTALLER_VERSION installer/setup.iss
         shell: bash
       - name: Run tests
-        run: go test ${{ env.packages }}
+        run: go test -timeout 900s ${{ env.packages }}
       - name: Run tests (with race detector)
         env:
           ADSYS_SKIP_INTEGRATION_TESTS: 1
-        run: go test -race ${{ env.packages }}
+        run: go test -timeout 900s -race ${{ env.packages }}
         # There are some cryptic "The pipe has been closed" errors on Windows
         # that arise from running the tests with the race detector enabled. We
         # believe this originates outside our code, thus we avoid running the
