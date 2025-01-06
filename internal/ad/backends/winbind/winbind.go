@@ -78,7 +78,7 @@ type Winbind struct {
 	config Config
 }
 
-// Config for winbind backend
+// Config for winbind backend.
 type Config struct {
 	ADServer string `mapstructure:"ad_server"` // bypass winbind and use this server
 	ADDomain string `mapstructure:"ad_domain"` // bypass domain name detection and use this domain
