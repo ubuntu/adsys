@@ -55,7 +55,7 @@ type msg struct {
 // GIOChannel complexity.
 // The callbacks in gio allow for additional data to passed as gpointers, but we can't use it to
 // pass a channel pointer due to the CGo rules. It emitted the following error:
-// "panic: runtime error: cgo argument has Go pointer to Go pointer"
+// "panic: runtime error: cgo argument has Go pointer to Go pointer".
 var mountsChan chan msg
 
 // RunMountForCurrentUser reads the specified file and tries to mount the parsed entries for the

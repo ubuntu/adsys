@@ -40,7 +40,7 @@ import (
 	"github.com/leonelquinteros/gotext"
 )
 
-// ErrTicketNotPresent is returned when the ticket cache is not present or not accessible
+// ErrTicketNotPresent is returned when the ticket cache is not present or not accessible.
 var ErrTicketNotPresent = errors.New(gotext.Get("ticket not found or not accessible"))
 
 // TicketPath returns the path of the default kerberos ticket cache for the
