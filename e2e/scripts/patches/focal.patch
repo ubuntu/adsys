@@ -1,3 +1,7 @@
+# Even though we need Go >= 1.23, the Go toolchain is able to auto-update itself and download the correct version
+# we need to build the source code.
+# This works great on CI and local builds that have internet access. However, this build process won't work on
+# Launchpad builds, as the runners there do not have internet access.
 diff --git a/debian/control b/debian/control
 index ccf213e0..40a2aa9f 100644
 --- a/debian/control
@@ -10,7 +14,7 @@ index ccf213e0..40a2aa9f 100644
 +Build-Depends: debhelper-compat (= 12),
                 dh-apport,
                 dh-golang,
--               golang-go (>= 2:1.22~),
+-               golang-go (>= 2:1.23~),
 +               golang-1.22-go,
                 apparmor,
                 dbus,
