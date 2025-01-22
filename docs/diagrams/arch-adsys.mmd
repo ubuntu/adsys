@@ -1,0 +1,17 @@
+%%{init: {"theme": "base", "themeVariables": {
+      'background': '#DDC9D4',
+      'primaryColor': '#FFF',
+      'primaryTextColor': '#E95420',
+      'primaryBorderColor': '#7C0000',
+      'lineColor': '#E95420',
+      'secondaryColor': '#CECAC5'
+}}}%%
+flowchart TB
+    adcli(Ubuntu machine)
+    adsys(ADSys)
+    adcon(Active Directory controller)
+
+    adcli --"authenticate user"--> adsys
+    adsys --"fetch GPOs"--> adcon
+    adcon --"relevant GPOs resolved"--> adsys
+    adsys --"parse GPOs and apply"--> adcli
