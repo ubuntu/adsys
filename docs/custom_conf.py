@@ -173,6 +173,7 @@ custom_extensions = [
     'canonical.terminal-output',
     'notfound.extension'
     ]
+    "sphinxcontrib.mermaid",
 
 # Add custom required Python modules that must be added to the
 # .sphinx/requirements.txt file.
@@ -181,7 +182,7 @@ custom_extensions = [
 # pyspelling, sphinx, sphinx-autobuild, sphinx-copybutton, sphinx-design,
 # sphinx-notfound-page, sphinx-reredirects, sphinx-tabs, sphinxcontrib-jquery,
 # sphinxext-opengraph
-custom_required_modules = []
+custom_required_modules = ["sphinxcontrib-mermaid"]
 
 # Add files or directories that should be excluded from processing.
 custom_excludes = [
