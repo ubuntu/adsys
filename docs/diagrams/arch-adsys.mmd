@@ -13,5 +13,5 @@ flowchart TB
 
     adcli --"authenticate user"--> adsys
     adsys --"fetch GPOs"--> adcon
-    adcon --"relevant policies resolved"--> adsys
-    adsys --"parse policies and apply"--> adcli
+    adcon --"relevant GPOs resolved"--> adsys
+    adsys --"parse GPOs and apply"--> adcli
