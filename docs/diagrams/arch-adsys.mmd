@@ -1,0 +1,17 @@
+%%{init: {"theme": "base", "themeVariables": {
+      'background': '#DDC9D4',
+      'primaryColor': '#FFF',
+      'primaryTextColor': '#E95420',
+      'primaryBorderColor': '#7C0000',
+      'lineColor': '#E95420',
+      'secondaryColor': '#CECAC5'
+}}}%%
+flowchart TB
+    adcli(Active Directory client)
+    adsys(ADSys)
+    adcon(Active Directory controller)
+
+    adcli --"authenticate user"--> adsys
+    adsys --"fetch GPOs"--> adcon
+    adcon --"relevant policies resolved"--> adsys
+    adsys --"parse policies and apply"--> adcli

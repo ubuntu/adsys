@@ -1,0 +1,18 @@
+%%{init: {"theme": "base", "themeVariables": {
+      'background': '#DDC9D4',
+      'primaryColor': '#FFF',
+      'primaryTextColor': '#E95420',
+      'primaryBorderColor': '#7C0000',
+      'lineColor': '#E95420',
+      'secondaryColor': '#CECAC5'
+}}}%%
+flowchart TB
+    adcli(Active Directory client)
+    sssd(SSSD)
+    adcon(Active Directory controller)
+
+    adcli --"log in with user"--> sssd
+    sssd --"send user credentials"--> adcon
+    sssd --"allow authentication"--> adcli
+    adcon --"return user information"--> sssd
+

@@ -1,0 +1,44 @@
+%%{init: {"theme": "base", "themeVariables": {
+      'background': '#DDC9D4',
+      'primaryColor': '#FFF',
+      'primaryTextColor': '#E95420',
+      'primaryBorderColor': '#7C0000',
+      'lineColor': '#E95420',
+      'secondaryColor': '#CECAC5'
+}}}%%
+stateDiagram-v2
+    um: Ubuntu machine
+    client: client.domain.com enrolled
+    user: user authenticated
+    fetch: fetch GPOs
+    parse: parse GPOs
+    update: update cached GPOs
+    GPOs: check GPOs are up-to-date
+    GPOs_applied_check: check GPOs are applied
+    GPOs_enforced_check: check GPOs are enforced
+    GPOs_apply: authenticate user and apply GPOs
+    auth_deny: don't authenticate user
+
+    state SSSD {
+        
+        um --> client: enroll to domain.com
+        client --> um: unenroll from domain.com
+        client --> user: authenticate user
+    }
+
+    SSSD --> ADSys: if ADSys installed
+    SSSD --> End : if ADSys not installed
+
+    state ADSys{
+        start --> GPOs
+        GPOs --> fetch: if no
+        GPOs --> parse : if yes
+        fetch --> update
+        update --> GPOs
+        parse --> GPOs_applied_check
+        GPOs_applied_check --> GPOs_enforced_check: if no
+        GPOs_applied_check --> GPOs_apply: if yes
+        GPOs_enforced_check --> GPOs_apply: if no
+        GPOs_enforced_check --> auth_deny: if yes
+
+    }
