@@ -185,9 +185,7 @@ custom_extensions = [
 custom_required_modules = ["sphinxcontrib-mermaid"]
 
 # Add files or directories that should be excluded from processing.
-custom_excludes = [
-    'doc-cheat-sheet*',
-    ]
+custom_excludes = ["doc-cheat-sheet*", "diagrams/readme.md"]
 
 # Add CSS files (located in .sphinx/_static/)
 custom_html_css_files = []
