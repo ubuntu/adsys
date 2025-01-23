@@ -18,8 +18,8 @@ valid, they are returned to SSSD. This allows the user to successfully
 authenticate.
 
 ```{tip}
-The diagrams on this page can be zoom with a scroll-wheel
-and panned by clicking and dragging the left mouse button.
+The diagrams on this page can be zoomed with a scroll-wheel
+or panned by clicking and dragging the left mouse button.
 ```
 
 ```{mermaid} ../diagrams/arch-sssd.mmd
@@ -50,7 +50,7 @@ SSSD manages the enrolment and authentication of clients with AD. If ADSys is
 not installed, the control and management of AD clients stops at that point.
 
 If ADSys is installed, it checks whether GPOs on the client are up-to-date. If
-not they are fetched from the domain controller. Once the latest GPOs are
+not, they are fetched from the domain controller. Once the latest GPOs are
 available, they are parsed and applied. The user then authenticates
 successfully and the GPOs are applied. If the GPOs are not applied and they are
 enforced, then ADSys will not permit the session to continue.
