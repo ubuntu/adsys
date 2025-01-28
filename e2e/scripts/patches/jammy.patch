@@ -12,21 +12,23 @@ index ccf213e0..2d34a328 100644
                 dbus,
                 libdbus-1-dev,
 diff --git a/debian/rules b/debian/rules
-index 43646c6a..403e7bb9 100755
+index f9705a3d..3bf891b4 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -25,9 +25,14 @@ export DH_GOLANG_INSTALL_ALL := 1
- # Tests needing sudo will be skipped automatically
- export ADSYS_SKIP_INTEGRATION_TESTS=1
+@@ -29,6 +29,9 @@ export ADSYS_SKIP_INTEGRATION_TESTS=1
+ # as long as it matches the go.mod go stenza which is the language requirement.
+ export GOTOOLCHAIN := local
 
 +# Run with Go 1.23
 +export PATH := /usr/lib/go-1.23/bin/:$(PATH)
 +
  %:
-	dh $@ --buildsystem=golang --with=golang,apport
+        dh $@ --buildsystem=golang --with=golang,apport
 
-+override_dh_dwz:
+@@ -87,3 +90,5 @@ endif
+        ln -s adsysd debian/tmp/sbin/adsysctl
+        # Run go generate to install assets, but don’t regenerate them
+        GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/tmp go generate -x $(GOFLAGS),tools ./...
 +
- override_dh_auto_clean:
- 	dh_auto_clean
- 	# Create the vendor directory when building the source package
++override_dh_dwz:
+
