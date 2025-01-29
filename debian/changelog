@@ -1,3 +1,18 @@
+adsys (0.16.1) plucky; urgency=medium
+
+  * Bump Go version to 1.23
+  * Add architecture diagrams to documentation
+  * Bump dependencies to latest:
+    - golang.org/x/crypto (0.31.0)
+    - golang.org/x/net (0.34.0)
+      + Fixes CVE-2024-45338
+    - golang.org/x/sys (0.29.0)
+    - google.golang.org/grpc (1.70.0)
+    - google.golang.org/protobuf (1.36.4)
+    - github.com/golangci/golangci-lint (1.63.4)
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Wed, 29 Jan 2025 06:36:01 -0400
+
 adsys (0.16.0) plucky; urgency=medium
 
   * Bump minimum Go version to 1.22
