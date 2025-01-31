@@ -151,10 +151,11 @@ def fetch_certification_authorities(ldb):
     [MS-CAESO] 4.4.5.3.1.2
     """
     result = []
-    basedn = ldb.get_default_basedn()
+    configdn = ldb.get_config_basedn()
     # Autoenrollment MUST do an LDAP search for the CA information
     # (pKIEnrollmentService) objects under the following container:
-    dn = 'CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,%s' % basedn
+    dn = 'CN=Enrollment Services,CN=Public Key Services,CN=Services,%s' % configdn
+
     attrs = ['cACertificate', 'cn', 'dNSHostName']
     expr = '(objectClass=pKIEnrollmentService)'
     res = ldb.search(dn, SCOPE_SUBTREE, expr, attrs)
@@ -171,8 +172,8 @@ def fetch_certification_authorities(ldb):
 def fetch_template_attrs(ldb, name, attrs=None):
     if attrs is None:
         attrs = ['msPKI-Minimal-Key-Size']
-    basedn = ldb.get_default_basedn()
-    dn = 'CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,%s' % basedn
+    configdn = ldb.get_config_basedn()
+    dn = 'CN=Certificate Templates,CN=Public Key Services,CN=Services,%s' % configdn
     expr = '(cn=%s)' % name
     res = ldb.search(dn, SCOPE_SUBTREE, expr, attrs)
     if len(res) == 1 and 'msPKI-Minimal-Key-Size' in res[0]:
@@ -497,15 +498,17 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
             # If the current group contains a
             # CertificateEnrollmentPolicyEndPoint instance with EndPoint.URI
             # equal to "LDAP":
-            if any([e['URL'] == 'LDAP:' for e in end_point_group]):
+            for e in end_point_group:
+                if e['URL'] != 'LDAP:':
+                    continue
                 # Perform an LDAP search to read the value of the objectGuid
                 # attribute of the root object of the forest root domain NC. If
                 # any errors are encountered, continue with the next group.
                 res = ldb.search('', SCOPE_BASE, '(objectClass=*)',
-                                 ['rootDomainNamingContext'])
+                                 ['defaultNamingContext'])
                 if len(res) != 1:
                     continue
-                res2 = ldb.search(res[0]['rootDomainNamingContext'][0],
+                res2 = ldb.search(res[0]['defaultNamingContext'][0],
                                   SCOPE_BASE, '(objectClass=*)',
                                   ['objectGUID'])
                 if len(res2) != 1:
