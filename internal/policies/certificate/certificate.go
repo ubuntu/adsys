@@ -251,7 +251,7 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 	defer smbsafe.DoneExec()
 
 	output, err := cmd.CombinedOutput()
-	defer log.Debugf(ctx, "Certificate autoenrollment script output:\n%s", string(output))
+	defer log.Debugf(ctx, "Certificate autoenrollment script output:\n%s", strings.ReplaceAll(string(output), "\\n", "\n"))
 	if err != nil {
 		return errors.New(gotext.Get("failed to run certificate autoenrollment script (exited with %d): %v\n%s", cmd.ProcessState.ExitCode(), err, string(output)))
 	}
