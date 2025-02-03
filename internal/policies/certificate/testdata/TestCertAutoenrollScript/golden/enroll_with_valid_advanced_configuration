@@ -45,3 +45,4 @@ valuename: Flags
 type: 4
 data: 0
 
+Enrolled to the following certificate authorities: ['example-CA']

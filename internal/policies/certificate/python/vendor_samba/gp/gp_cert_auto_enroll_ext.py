@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import configparser
 import os
 import operator
 import requests
@@ -26,7 +27,7 @@ from samba.auth import system_session
 from vendor_samba.gp.gpclass import get_dc_hostname
 import base64
 from shutil import which
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 import re
 import json
 from vendor_samba.gp.util.logging import log
@@ -53,6 +54,8 @@ endpoint_re = '(https|HTTPS)://(?P<server>[a-zA-Z0-9.-]+)/ADPolicyProvider' + \
 global_trust_dirs = ['/etc/pki/trust/anchors',           # SUSE
                      '/etc/pki/ca-trust/source/anchors', # RHEL/Fedora
                      '/usr/local/share/ca-certificates'] # Debian/Ubuntu
+
+CEPCES_CONFIG_PATH = '/etc/cepces/cepces.conf'
 
 def octet_string_to_objectGUID(data):
     """Convert an octet string to an objectGUID."""
@@ -148,10 +151,11 @@ def fetch_certification_authorities(ldb):
     [MS-CAESO] 4.4.5.3.1.2
     """
     result = []
-    basedn = ldb.get_default_basedn()
+    configdn = ldb.get_config_basedn()
     # Autoenrollment MUST do an LDAP search for the CA information
     # (pKIEnrollmentService) objects under the following container:
-    dn = 'CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,%s' % basedn
+    dn = 'CN=Enrollment Services,CN=Public Key Services,CN=Services,%s' % configdn
+
     attrs = ['cACertificate', 'cn', 'dNSHostName']
     expr = '(objectClass=pKIEnrollmentService)'
     res = ldb.search(dn, SCOPE_SUBTREE, expr, attrs)
@@ -168,8 +172,8 @@ def fetch_certification_authorities(ldb):
 def fetch_template_attrs(ldb, name, attrs=None):
     if attrs is None:
         attrs = ['msPKI-Minimal-Key-Size']
-    basedn = ldb.get_default_basedn()
-    dn = 'CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,%s' % basedn
+    configdn = ldb.get_config_basedn()
+    dn = 'CN=Certificate Templates,CN=Public Key Services,CN=Services,%s' % configdn
     expr = '(cn=%s)' % name
     res = ldb.search(dn, SCOPE_SUBTREE, expr, attrs)
     if len(res) == 1 and 'msPKI-Minimal-Key-Size' in res[0]:
@@ -191,14 +195,33 @@ def get_supported_templates(server):
         log.error('Failed to find cepces-submit')
         return []
 
+    cepces_config = configparser.ConfigParser()
+    cepces_config.read(CEPCES_CONFIG_PATH)
+    # If the config file was overriden, then we let cepces-submit use the values defined there.
+    cepces_args = [cepces_submit, '--server=%s' % server, '--auth=Kerberos']
+    if cepces_config['global'] and cepces_config['global']['server'] != 'ca':
+        log.debug(f'Changes detected in "{CEPCES_CONFIG_PATH}". Using the values defined there.')
+        cepces_args = [cepces_submit]
+
     env = os.environ
     env['CERTMONGER_OPERATION'] = 'GET-SUPPORTED-TEMPLATES'
-    p = Popen([cepces_submit, '--server=%s' % server, '--auth=Kerberos'],
-              env=env, stdout=PIPE, stderr=PIPE)
-    out, err = p.communicate()
+    p = Popen(cepces_args, env=env, stdout=PIPE, stderr=PIPE)
+    out, err = bytes(), bytes()
+    try:
+        # Server calls could hang if the provider is slow or too busy.
+        # A timeout is set to avoid this.
+        out, err = p.communicate(timeout=3)
+    except TimeoutExpired as te:
+        log.warn(f'GET-SUPPORTED-TEMPLATES expired. {server} is probably not a CEPCES server: {te}')
+        p.kill()
+    except Exception as e:
+        log.error(f'Failed to fetch supported templates with command "{cepces_args}": {e}')
+        p.kill()
+
     if p.returncode != 0:
         data = {'Error': err.decode()}
         log.error('Failed to fetch the list of supported templates.', data)
+        raise Exception(f'Failed to fetch the list of supported templates: {data}')
     return out.strip().split()
 
 
@@ -325,6 +348,7 @@ def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
                 log.error('Failed to add Certificate Authority', data)
 
         supported_templates = get_supported_templates(ca['hostname'])
+        log.debug(f"Supported templates for CA \"{ca['name']}\": {supported_templates}")
         for template in supported_templates:
             attrs = fetch_template_attrs(ldb, template)
             nickname = '%s.%s' % (ca['name'], template.decode())
@@ -378,8 +402,19 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
         # If the policy has changed, unapply, then apply new policy
         old_val = self.cache_get_attribute_value(guid, attribute)
         old_data = json.loads(old_val) if old_val is not None else {}
-        templates = ['%s.%s' % (ca['name'], t.decode()) for t in get_supported_templates(ca['hostname'])] \
-            if old_val is not None else []
+
+        templates = []
+        if old_val is not None:
+            supported_templates = []
+            try:
+                supported_templates = get_supported_templates(ca['hostname'])
+            except Exception as e:
+                raise e
+            log.debug(f"Supported templates for CA \"{ca['name']}\": {supported_templates}")
+            for template in supported_templates:
+                formatted = '%s.%s' % (ca['name'], template.decode())
+                templates.append(formatted)
+
         new_data = { 'templates': templates, **ca }
         if changed(new_data, old_data) or self.cache_get_apply_state() == GPOSTATE.ENFORCE:
             self.unapply(guid, attribute, old_val)
@@ -463,15 +498,17 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
             # If the current group contains a
             # CertificateEnrollmentPolicyEndPoint instance with EndPoint.URI
             # equal to "LDAP":
-            if any([e['URL'] == 'LDAP:' for e in end_point_group]):
+            for e in end_point_group:
+                if e['URL'] != 'LDAP:':
+                    continue
                 # Perform an LDAP search to read the value of the objectGuid
                 # attribute of the root object of the forest root domain NC. If
                 # any errors are encountered, continue with the next group.
                 res = ldb.search('', SCOPE_BASE, '(objectClass=*)',
-                                 ['rootDomainNamingContext'])
+                                 ['defaultNamingContext'])
                 if len(res) != 1:
                     continue
-                res2 = ldb.search(res[0]['rootDomainNamingContext'][0],
+                res2 = ldb.search(res[0]['defaultNamingContext'][0],
                                   SCOPE_BASE, '(objectClass=*)',
                                   ['objectGUID'])
                 if len(res2) != 1:
@@ -494,9 +531,13 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
                 if ca['URL'] == 'LDAP:':
                     # This is a basic configuration.
                     cas = fetch_certification_authorities(ldb)
+                    log.debug(f'Fetched the following CAs: {cas}')
                     for _ca in cas:
-                        self.apply(guid, _ca, cert_enroll, _ca, ldb, trust_dir,
-                                   private_dir)
+                        try:
+                            self.apply(guid, _ca, cert_enroll, _ca, ldb, trust_dir, private_dir)
+                        except Exception as e:
+                            log.warn(f"Could not enroll to CA {_ca['name']}: {e}")
+                            continue
                         ca_names.append(_ca['name'])
                 # If EndPoint.URI starts with "HTTPS//":
                 elif ca['URL'].lower().startswith('https://'):
@@ -516,15 +557,19 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
         ca_names = []
         end_point_information = obtain_end_point_information(entries)
         if len(end_point_information) > 0:
-            ca_names.extend(self.__read_cep_data(guid, ldb,
-                                                 end_point_information,
-                                                 trust_dir, private_dir))
+            cep_data = self.__read_cep_data(guid, ldb, end_point_information, trust_dir, private_dir)
+            if cep_data:
+                ca_names.extend(cep_data)
         else:
             cas = fetch_certification_authorities(ldb)
             for ca in cas:
-                self.apply(guid, ca, cert_enroll, ca, ldb, trust_dir,
-                           private_dir)
+                try:
+                    self.apply(guid, ca, cert_enroll, ca, ldb, trust_dir, private_dir)
+                except Exception as e:
+                    log.warn(f"Could not enroll to CA {ca['name']}: {e}")
+                    continue
                 ca_names.append(ca['name'])
+        log.debug(f'Enrolled to the following CAs: {ca_names}')
         return ca_names
 
     def rsop(self, gpo):

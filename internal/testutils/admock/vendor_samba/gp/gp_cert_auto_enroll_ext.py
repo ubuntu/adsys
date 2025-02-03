@@ -20,7 +20,7 @@ class gp_cert_auto_enroll_ext(object):
         print(f'private_dir: {private_dir}; mode: {oct(os.stat(private_dir).st_mode)}')
 
         if entries == []:
-            return
+            return ['example-CA']
 
         print('\nentries:')
         for entry in entries:
@@ -29,6 +29,7 @@ valuename: {entry.valuename}
 type: {entry.type}
 data: {entry.data}
 ''')
+        return ['example-CA']
 
     def clean(self, guid, remove=None):
         if os.getenv('ADSYS_WANT_AUTOENROLL_ERROR'):
