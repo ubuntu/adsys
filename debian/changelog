@@ -1,3 +1,13 @@
+adsys (0.16.2) plucky; urgency=medium
+
+  * Fixes and improvements to certificate autoenrollment
+    - Improve log messages to help understand issues and failures
+    - Fix LDAP queries on multiple domains environments
+    - Allow default behavior to get supported certificate templates
+      to be overriden through cepces configuration
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Mon, 03 Feb 2025 10:08:09 -0400
+
 adsys (0.16.1) plucky; urgency=medium
 
   * Bump Go version to 1.23
