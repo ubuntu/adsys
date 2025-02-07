@@ -12,7 +12,7 @@ The mount process for these mounts is triggered at the moment a client logs in. 
 
 All protocols supported by the [mount command](https://manpages.ubuntu.com/manpages/jammy/en/man8/mount.8.html) should work out of the box. However, the only tested ones are `smb`, `ftp` and `nfs`.
 
-The backends for the protocols `smb` and `nfs` are automatically enabled when installing the adsys package. In order to enable the backend for `ftp` mounts, the user must install the recommended `curlftpfs` package. This behaviour is tested on Ubuntu and might differ on other Linux distributions.
+The backends for the protocols `smb` and `nfs` are automatically enabled when installing the adsys package. In order to enable the backend for `ftp` mounts, the user must install the recommended `curlftpfs` package. This behavior is tested on Ubuntu and might differ on other Linux distributions.
 
 Access control and file permissions should be configured on the shared location.
 
@@ -24,7 +24,7 @@ User mount policies are located under `Computer Configuration > Policies > Admin
 
 The form is a list of shared drives that should be mounted for the client machine. They must follow the structure `{protocol}://{host name or ip address}/{shared location}`.
 
-The default mount behaviour is to mount the listed shares anonymously. In order to require kerberos authentication for the mount process, the tag `[krb5]` can be added as a prefix to the listed share, i.e. `[krb5]{protocol}://{host name or ip address}/{shared location}`.
+The default mount behavior is to mount the listed shares anonymously. In order to require kerberos authentication for the mount process, the tag `[krb5]` can be added as a prefix to the listed share, i.e. `[krb5]{protocol}://{host name or ip address}/{shared location}`.
 
 Additional mount options are not supported yet.
 

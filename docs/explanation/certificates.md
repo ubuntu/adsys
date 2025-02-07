@@ -1,8 +1,8 @@
-# Certificate auto-enrolment
+# Certificate auto-enrollment
 
-The certificate policy manager allows clients to enrol for certificates from **Active Directory Certificate Services**. Certificates are then continuously monitored and refreshed by the [`certmonger`](https://www.freeipa.org/page/Certmonger) daemon. Currently, only machine certificates are supported.
+The certificate policy manager allows clients to enroll for certificates from **Active Directory Certificate Services**. Certificates are then continuously monitored and refreshed by the [`certmonger`](https://www.freeipa.org/page/Certmonger) daemon. Currently, only machine certificates are supported.
 
-Unlike the other ADSys policy managers which are configured in the special Ubuntu section provided by the ADMX files (Administrative Templates), settings for certificate auto-enrolment are configured in the Microsoft GPO tree:
+Unlike the other ADSys policy managers which are configured in the special Ubuntu section provided by the ADMX files (Administrative Templates), settings for certificate auto-enrollment are configured in the Microsoft GPO tree:
 
 * `Computer Configuration > Policies > Windows Settings > Security Settings > Public Key Policies > Certificate Services Client - Auto-Enrollment`
 
@@ -12,7 +12,7 @@ Unlike the other ADSys policy managers which are configured in the special Ubunt
 
 This feature is available only for subscribers of **Ubuntu Pro** and has been tested and known to work on all Ubuntu versions starting with 22.04 (Jammy).
 
-Additionally, the following packages must be installed on the client in order for auto-enrolment to work:
+Additionally, the following packages must be installed on the client in order for auto-enrollment to work:
 
 * [`certmonger`](https://www.freeipa.org/page/Certmonger) - daemon that monitors and updates certificates
 * [`cepces`](https://github.com/openSUSE/cepces) - `certmonger` extension that can communicate with **Active Directory Certificate Services**
@@ -31,11 +31,11 @@ On the Windows side, the following roles must be installed and configured:
 
 ## Rules precedence
 
-Auto-enrolment configuration will override any settings referenced higher in the GPO hierarchy.
+Auto-enrollment configuration will override any settings referenced higher in the GPO hierarchy.
 
 ## Policy configuration
 
-Certificate auto-enrolment is configured by setting the **Configuration Model** to **Enabled** and ticking the following checkbox: **Update certificates that use certificate templates**.
+Certificate auto-enrollment is configured by setting the **Configuration Model** to **Enabled** and ticking the following checkbox: **Update certificates that use certificate templates**.
 
 ![Certificate GPO properties](../images/explanation/certificates/certificate-gpo.png)
 
@@ -54,7 +54,7 @@ For more advanced configuration, a list of policy servers can be specified in th
 
 ## Applying the policy
 
-On the client system, a successful auto-enrolment will place certificate data in the following paths:
+On the client system, a successful auto-enrollment will place certificate data in the following paths:
 
 * `/var/lib/adsys/certs` - certificate data
 * `/var/lib/adsys/private/certs` - private key data
@@ -97,7 +97,7 @@ CA 'galacticcafe-CA':
 
 ## Policy implementation
 
-With the exception of policy parsing, ADSys leverages the Samba implementation of certificate auto-enrolment. As this feature is only available in newer versions of Samba, we have taken the liberty of vendoring the required Samba files to allow this policy to work on Ubuntu versions that ship an older Samba version. These files are shipped in `/usr/share/adsys/python/vendor_samba`.
+With the exception of policy parsing, ADSys leverages the Samba implementation of certificate auto-enrollment. As this feature is only available in newer versions of Samba, we have taken the liberty of vendoring the required Samba files to allow this policy to work on Ubuntu versions that ship an older Samba version. These files are shipped in `/usr/share/adsys/python/vendor_samba`.
 
 To ensure idempotency when applying the policy, we set up a Samba [TDB cache file](https://wiki.samba.org/index.php/TDB) at `/var/lib/adsys/samba/cert_gpo_state_$(hostname).tdb` which contains various information pertaining to the enrolled certificate(s).
 
@@ -136,7 +136,7 @@ Note that tampering with certificate data outside of ADSys (e.g. manually unmoni
 
 ### Debugging `auto-enroll` script
 
-While certificate parsing happens in ADSys itself, enrolment is done via an embedded Python helper script. For debugging purposes, it can be dumped to the current directory and made executable by executing the following commands:
+While certificate parsing happens in ADSys itself, enrollment is done via an embedded Python helper script. For debugging purposes, it can be dumped to the current directory and made executable by executing the following commands:
 
 ```output
 > adsysctl policy debug cert-autoenroll-script
@@ -172,4 +172,4 @@ While configuring Active Directory Certificate Services is outside the scope of 
 
 ## Acknowledgements
 
-We would like to thank the Samba team for making great strides in the research and implementation of certificate auto-enrolment via Active Directory Certificate Services.
+We would like to thank the Samba team for making great strides in the research and implementation of certificate auto-enrollment via Active Directory Certificate Services.

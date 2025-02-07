@@ -6,7 +6,7 @@ At its core, the program can be simplified to the following steps:
 
 - watch a list of user-configured directories for changes -- subdirectories are also watched, but only the root directory will have a `GPT.ini` file
 - when a change is detected, attempt to locate a `GPT.ini` file at the root of the watched directory, or create one if absent
-- if a `GPT.ini` file is found, increment the version stanza of the file by 1, thus signalling clients that a new version of the assets (including scripts) are available to download during the next client refresh
+- if a `GPT.ini` file is found, increment the version stanza of the file by 1, thus signaling clients that a new version of the assets (including scripts) are available to download during the next client refresh
 
 ## Installation
 
@@ -43,7 +43,7 @@ For a better understanding on what directories should be configured for watching
 
 Note that the interactive configuration tool can only be run if the `adwatchd` service is not already installed on the machine. Please refer to the [CLI usage](#CLI usage) section for instructions on how to finely manage the service.
 
-We recommend making use of the interactive configuration tool to install the application, as it provides a level of error handling, taking care of path normalisation and the creation of the configuration file.
+We recommend making use of the interactive configuration tool to install the application, as it provides a level of error handling, taking care of path normalization and the creation of the configuration file.
 
 The configuration file is stored as a YAML file, and can be freely edited after the application has been installed. The following keys are configurable:
 

@@ -6,7 +6,7 @@ Some settings are globally enforced on the machine while other are per-user spec
 
 ## Example of settings
 
-- Change the login screen layout and background colour.
+- Change the login screen layout and background color.
 - Set and lock the default applications in the launcher.
 - Set and lock the user wallpaper.
 - Set the date and time format of the clock.

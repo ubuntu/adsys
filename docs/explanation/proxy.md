@@ -35,7 +35,7 @@ The `System proxy configuration` category provides a list of configurable proxy 
 
 ![HTTP proxy setting in GPO editor](../images/explanation/proxy/system-proxy-settings-focus.png)
 
-Configured settings will then be forwarded to `ubuntu-proxy-manager` which will apply them on all supported backends (e.g. environment variables, APT, GSettings). For an up-to-date list of supported backends, proxy formats and behaviours, refer to the ubuntu-proxy-manager [documentation](https://github.com/ubuntu/ubuntu-proxy-manager/blob/main/README.md).
+Configured settings will then be forwarded to `ubuntu-proxy-manager` which will apply them on all supported backends (e.g. environment variables, APT, GSettings). For an up-to-date list of supported backends, proxy formats and behaviors, refer to the ubuntu-proxy-manager [documentation](https://github.com/ubuntu/ubuntu-proxy-manager/blob/main/README.md).
 
 ### Disabling proxy settings
 

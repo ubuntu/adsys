@@ -37,7 +37,7 @@ The change is now visible on the greeter.
 ### Modifying an user setting
 
 1. Let's create another GPO in `warthogs.biz > IT Dept > RnD`.
-1. Select the list of favourite desktop applications setting in `User Configuration > Policies > Administrative Templates > Ubuntu  > Desktop > Shell > List of desktop file IDs for favorite applications`.
+1. Select the list of favorite desktop applications setting in `User Configuration > Policies > Administrative Templates > Ubuntu  > Desktop > Shell > List of desktop file IDs for favorite applications`.
 1. Enter a list of valid .desktop file IDs, one per line, like the following:
 
 ```
@@ -103,7 +103,7 @@ The **right pane** of the GPO Management editor contains the general information
 
 #### Text entry
 
-The type `Text` represents a single line of text. If you don’t enclose a string with single quotes `'` and the value is not a decimal, it will be done automatically and the entry will be sanitised  (e.g. space, `'`…). If you want to force a decimal to be treated as a string, enclose the value with single quotes.
+The type `Text` represents a single line of text. If you don’t enclose a string with single quotes `'` and the value is not a decimal, it will be done automatically and the entry will be sanitized  (e.g. space, `'`…). If you want to force a decimal to be treated as a string, enclose the value with single quotes.
 
 The default value will be already set.
 
