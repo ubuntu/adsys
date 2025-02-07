@@ -39,11 +39,11 @@ Options such as the home directory path template, shell and others can be tweake
 
 ADSys relies on the configured AD backend (e.g. SSSD) to export the `KRB5CCNAME` environment variable pointing to a valid Kerberos ticket cache when a domain user performs authentication.
 
-If for any reason the backend doesn't export the variable but _does_ initialise a ticket cache in the [default path](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html#default-ccache-name), ADSys can be configured to infer the path to the ticket cache (via the libkrb5 API) and export it as the `KRB5CCNAME` variable during both authentication and runs of `adsysctl update` for the current domain user.
+If for any reason the backend doesn't export the variable but _does_ initialize a ticket cache in the [default path](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html#default-ccache-name), ADSys can be configured to infer the path to the ticket cache (via the libkrb5 API) and export it as the `KRB5CCNAME` variable during both authentication and runs of `adsysctl update` for the current domain user.
 
 To opt into this functionality, the following must be added to `/etc/adsys.yaml`:
 ```yaml
 detect_cached_ticket: true
 ```
 
-With this setting active, ADSys attempts to determine and export the path to the ticket cache. To avoid unexpected behaviours like rejecting authentication for non-domain users, no action is taken if the path returned by the libkrb5 API does not exist on disk.
+With this setting active, ADSys attempts to determine and export the path to the ticket cache. To avoid unexpected behaviors like rejecting authentication for non-domain users, no action is taken if the path returned by the libkrb5 API does not exist on disk.

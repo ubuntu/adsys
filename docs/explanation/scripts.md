@@ -55,7 +55,7 @@ The form is a list of scripts path, relative to the `scripts/` subdirectory of y
 
 This GPO won’t refer any scripts for execution.
 
-## Scripts behaviours
+## Scripts behaviors
 
 ### Scripts erroring out
 

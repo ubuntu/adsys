@@ -34,7 +34,6 @@ dialogs
 dir
 Dropdown
 dropdownList
-enrolment
 erroring
 executables
 fpath
@@ -72,6 +71,7 @@ linux
 localhost
 lockdown
 LockDown
+lockscreen
 LTS
 MacOS
 macOS
@@ -129,6 +129,8 @@ unescaped
 uri
 URI
 URIs
+usb
+USBGuard
 usr
 unticking
 vendoring

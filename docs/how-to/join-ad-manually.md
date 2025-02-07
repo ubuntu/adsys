@@ -2,7 +2,7 @@
 
 ADSys supports two Active Directory backends:
 
-1. [SSSD](https://sssd.io/), or System Security Services Daemon, provides access to centralised identity management systems like Microsoft Active Directory, OpenLDAP, and various other directory servers. This client component retrieves and caches data from remote directory servers, delivering identity, authentication, and authorisation services to the host machine.
+1. [SSSD](https://sssd.io/), or System Security Services Daemon, provides access to centralized identity management systems like Microsoft Active Directory, OpenLDAP, and various other directory servers. This client component retrieves and caches data from remote directory servers, delivering identity, authentication, and authorization services to the host machine.
 2. [Winbind](https://wiki.samba.org/index.php/Configuring_Winbindd_on_a_Samba_AD_DC) is a component of the Samba suite that provides seamless integration and authentication services between UNIX or Linux systems and Windows-based networks, allowing the former to appear as members in a Windows Active Directory domain.
 
 ## Join manually using SSSD

@@ -8,7 +8,7 @@ managing authentication and policies.
 ADSys is a GPO client. In an AD-managed infrastructure, it can help with the
 management and control of Ubuntu clients through the AD controller. It
 compliments and depends on SSSD, which is a daemon that handles authentication
-and provides authorisation to access remote directories, including AD. ADSys
+and provides authorization to access remote directories, including AD. ADSys
 can also be used in combination with Winbind, but here we will focus on SSSD.
 
 SSSD runs on the client Ubuntu machine and enables basic authentication with AD.
@@ -46,7 +46,7 @@ and SSSD is shown below:
 :align: center
 ```
 
-SSSD manages the enrolment and authentication of clients with AD. If ADSys is
+SSSD manages the enrollment and authentication of clients with AD. If ADSys is
 not installed, the control and management of AD clients stops at that point.
 
 If ADSys is installed, it checks whether GPOs on the client are up-to-date. If

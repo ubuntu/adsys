@@ -2,15 +2,15 @@ matrix:
 - name: rST files
   aspell:
     lang: en
-    d: en_GB
+    d: en_US
   dictionary:
     wordlists:
     - .wordlist.txt
     - .custom_wordlist.txt
     output: .sphinx/.wordlist.dic
   sources:
-      # check all docs except technical reference
-    - _build/**/*.html|!_build/reference/policies/**/*.html
+      # check all built docs
+    - _build/**/*.html
   pipeline:
   - pyspelling.filters.html:
       comments: false

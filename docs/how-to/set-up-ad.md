@@ -10,7 +10,7 @@ As a rule of thumb, we generally separate the Ubuntu configuration from the Wind
 
 ## Ubuntu administrative template generations
 
-**ADSys** ships with pre-built Active Directory administrative templates that you can install on your Active Directory server. You will find two flavours of them:
+**ADSys** ships with pre-built Active Directory administrative templates that you can install on your Active Directory server. You will find two flavors of them:
 
 * One listing only Long Term Supported (LTS) Ubuntu versions.
 * One listing all currently supported Ubuntu versions, including non LTS.
