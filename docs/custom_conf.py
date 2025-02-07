@@ -122,7 +122,9 @@ slug = ""
 # (see https://docs.readthedocs.io/en/stable/guides/redirects.html).
 # NOTE: If this variable is not defined, set to None, or the dictionary is empty,
 # the sphinx_reredirects extension will be disabled.
-redirects = {}
+redirects = {
+    "tutorial/certificates-auto-enrolment": "../../tutorial/certificates-auto-enrollment",
+}
 
 ############################################################
 ### Link checker exceptions
