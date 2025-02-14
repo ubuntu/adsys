@@ -1,35 +1,30 @@
-# This is for the IDE. We need to duplicate it because the --fast flag doesn’t filter manually enabled linters:
-# https://github.com/golangci/golangci-lint/issues/1909.
-# The idea was then to duplicate it, rename to -ide.yaml and reference this file in settings.json. That way, default
-# manualy golangci-lint run would run all linters as CI. IDE will only run our fast list.
-# However, we can’t use variables like ${workspaceRoot} in settings.json. https://github.com/microsoft/vscode/issues/2809.
-
-# Please keep the list in sync.
-
 linters:
-  fast: true
   # linters to run in addition to default ones
   enable:
     - dupl
-    #- durationcheck
-    #- errname
-    #- errorlint
-    #- exportloopref
+    - durationcheck
+    - errname
+    - errorlint
+    - copyloopvar
     - forbidigo
     - forcetypeassert
     - gci
     - godot
     - gofmt
-    #- gosec
+    - gosec
     - misspell
     - revive
-    #- thelper
-    #- tparallel
-    #- unconvert
-    #- unparam
-    #- wastedassign
-    #- whitespace
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - wastedassign
+    - whitespace
     ##- wrapcheck # To think properly about it
+
+run:
+  # Most of the time, it’s taking less than 20s, but some builders are slower, so takes 2m
+  timeout: 2m
 
 # Get all linter issues, even if duplicated
 issues:
@@ -43,23 +38,21 @@ issues:
     - (G104|G307)
     # EXC0010 gosec: False positive is triggered by 'src, err := ioutil.ReadFile(filename)'
     - Potential file inclusion via variable
-    # revive: unexported-return for functions exported only in tests
+    # revive: unexported-return for functions exported only in tests, aliasing doesn't work here as the linter always goes for the underlying model which is unexported
     - 'unexported-return: exported func InitialModel(ForTests|WithPrevConfig)? returns unexported type watchdtui.model, which can be annoying to use'
     # Sometimes it is more readable to do a `if err := a(); err != nil` than simply `return a()`
     - if-return
-  fix: true # we want this in IDE.
-
-nolintlint:
-  require-explanation: true
-  require-specific: true
+  #fix: true # we don’t want this in CI
 
 linters-settings:
-   # Forbid the usage of deprecated ioutil and debug prints
+  # Forbid the usage of deprecated ioutil and debug prints
   forbidigo:
     forbid:
       - ioutil\.
       - ^print.*$
-  staticcheck:
-    # Should be better for it to be autodetected
-    # https://github.com/golangci/golangci-lint/issues/2234
-    go: "1.18"
+
+  # Ensure that we always explain why we are ignoring a linter and which one is being ignored.
+  nolintlint:
+    require-explanation: true
+    require-specific: true
+

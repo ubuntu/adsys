@@ -405,8 +405,6 @@ func runDaemons() (teardown func()) {
 	var errsDocker error
 	var wg sync.WaitGroup
 	for answer, socketDir := range answers {
-		answer := answer
-		socketDir := socketDir
 		wg.Add(1)
 
 		go func() {
@@ -460,7 +458,6 @@ func runDaemons() (teardown func()) {
 		}()
 
 		for answer := range answers {
-			answer := answer
 			go func() {
 				// #nosec G204: we control the args in tests
 				out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
