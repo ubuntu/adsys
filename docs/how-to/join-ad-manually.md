@@ -1,4 +1,4 @@
-# How to join an Active Directory domain manually
+# How to manually join Ubuntu clients to an Active Directory domain
 
 ADSys supports two Active Directory backends:
 
