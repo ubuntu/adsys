@@ -1,4 +1,4 @@
-# How to set up the Active Directory Server
+# How to set up the Active Directory server for Ubuntu clients
 
 Active Directory needs policy files (**.admx** and **.adml**) to know which settings can be changed on given clients and actions to be performed on users of the domain.
 
