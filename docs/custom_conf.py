@@ -48,6 +48,13 @@ html_title = project + " documentation"
 #   -H 'Accept: application/vnd.github.v3.raw' \
 #   https://api.github.com/repos/canonical/<REPO> | jq '.created_at'
 
+# This adds an edit button to the top of each page
+html_theme_options = {
+    "source_repository": "https://github.com/ubuntu/adsys/",
+    "source_branch": "main",
+    "source_directory": "docs/",
+}
+
 copyright = "%s CC-BY-SA, %s" % (datetime.date.today().year, author)
 
 ## Open Graph configuration - defines what is displayed as a link preview
