@@ -1,4 +1,4 @@
-# How to join an Active Directory domain during installation
+# How to join Ubuntu Desktop to an Active Directory domain during installation
 
 In order to use Group Policies on an Ubuntu client, the first thing to do is, of course, to join the computer to an Active Directory domain.
 
