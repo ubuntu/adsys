@@ -19,7 +19,7 @@ import datetime
 ############################################################
 
 # Product name
-project = "Active Directory GPO client"
+project = "ADSys"
 author = "Canonical Group Ltd"
 
 # The title you want to display for the documentation in the sidebar.
