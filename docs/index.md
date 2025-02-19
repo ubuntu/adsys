@@ -18,15 +18,16 @@ explanation/index
 
 ## In this documentation
 
+
 ````{grid} 1 1 2 2
 
-```{grid-item}
+```{grid-item-card}
 ### [Tutorials](tutorial/index)
 
 **Learn about ADSys features** with hands-on tutorials
 ```
 
-```{grid-item}
+```{grid-item-card}
 ### [How-to guides](how-to/index)
 
 **Step-by-step guides** covering key operations and common tasks
@@ -36,13 +37,13 @@ explanation/index
 
 ````{grid} 1 1 2 2
 
-```{grid-item}
+```{grid-item-card}
 ### [Explanation](explanation/index)
 
 **Discussion and clarification** of key topics
 ```
 
-```{grid-item}
+```{grid-item-card}
 ### [Reference](reference/index)
 
 **Technical information** - specifications, APIs, architecture
