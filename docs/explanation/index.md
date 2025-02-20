@@ -26,6 +26,6 @@ scripts
 AppArmor Profiles <apparmor>
 network-shares
 proxy
-Certificates Auto-Enrolment <certificates>
+Certificates Auto-Enrollment <certificates>
 Security Policy <security-policy>
 ```

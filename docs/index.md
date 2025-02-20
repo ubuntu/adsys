@@ -2,11 +2,11 @@
 
 ADSys is the Active Directory Group Policy client for Ubuntu.
 
-ADSys enables system administrators to manage Ubuntu Desktop clients centrally via Microsoft Active Directory. It includes ADMX and ADML templates and allows policies to be applied at boot and login, then refreshed periodically.
+ADSys enables management of Ubuntu Desktop and Server clients using Microsoft Active Directory. It integrates with services like SSSD or Winbind, which handle user access and authentication, providing extended functionality for managing and controlling Ubuntu clients.
 
-It simplifies the task of configuring Ubuntu systems in a Microsoft Active Directory environment. However, it doesn't handle user authentication or initial security policy, which are managed by SSSD/Winbind and PAM.
+With ADSys, policies can be applied to Ubuntu clients at boot and login, privileges can be granted and revoked, and remote script execution can be automated. Administrative templates (ADMX and ADML) are provided for all supported versions of Ubuntu.
 
-ADSys is valuable for system administrators who wish to manage Ubuntu Desktop clients in a centralized manner through Microsoft Active Directory.
+System administrators can use ADSys to apply their skills and tools for managing Windows machines using Microsoft Active Directory to the management of Ubuntu machines.
 
 ```{toctree}
 :hidden:
@@ -18,34 +18,48 @@ explanation/index
 
 ## In this documentation
 
+
 ````{grid} 1 1 2 2
 
-```{grid-item}
+```{grid-item-card}
 ### [Tutorials](tutorial/index)
 
-**Learn about ADSys features** with hands-on tutorials
+**Learn** to use an ADSys feature:
+
+* [Certificate auto-enrollment with ADSys](/tutorial/certificates-auto-enrollment)
+
 ```
 
-```{grid-item}
+```{grid-item-card}
 ### [How-to guides](how-to/index)
 
-**Step-by-step guides** covering key operations and common tasks
+**Follow guides** for specific tasks, like:
+
+* [Joining to AD on Ubuntu Desktop install](/how-to/join-ad-manually)
+* [Setting up ADSys on Ubuntu Desktop](./how-to/set-up-adsys.md)
 ```
 
 ````
 
 ````{grid} 1 1 2 2
 
-```{grid-item}
+```{grid-item-card}
 ### [Explanation](explanation/index)
 
-**Discussion and clarification** of key topics
+**Understand** topics including:
+
+* [The architecture of ADSys](/explanation/adsys-ref-arch)
+* [Client configuration using Dconf](./explanation/dconf)
 ```
 
-```{grid-item}
+```{grid-item-card}
 ### [Reference](reference/index)
 
-**Technical information** - specifications, APIs, architecture
+**Find specific information**, such as:
+
+* [Policies supported by ADSys](/reference/policies/index)
+* [The ADSys daemon](/reference/adsysd-cli)
+
 ```
 
 ````

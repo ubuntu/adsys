@@ -1,4 +1,4 @@
-# How to set-up ADSys
+# How to set up ADSys
 
 **ADSys** is not currently installed by default on Ubuntu desktop. This must be done manually by the local administrator of the machine.
 
