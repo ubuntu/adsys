@@ -40,8 +40,3 @@ A comprehensive reference of policies supported by ADSys.
 policies/index
 ```
 
-## Supported releases
-
-**ADSys** is supported on Ubuntu starting from **20.04.2 LTS**, and tested with Windows Server 2019.
-
-Only Active Directory on-premise is supported.
