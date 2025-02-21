@@ -1,4 +1,4 @@
-# Active Directory Watch Daemon
+# How to set up the Active Directory Watch Daemon
 
 The **Active Directory Watch Daemon** (or `adwatchd`) is a Windows application geared towards automating the manual process of incrementing the version stanza of a `GPT.ini` file.
 
