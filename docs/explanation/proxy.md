@@ -1,4 +1,4 @@
-# Network Proxy
+# Network proxy
 
 The proxy manager allows AD administrators to apply proxy settings on the clients. Currently, only system-wide proxy settings are supported.
 

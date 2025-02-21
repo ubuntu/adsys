@@ -1,27 +1,26 @@
-# Technical Reference
+# Reference
 
-This section consolidates technical details on ADSys, including specifications, APIs, and architecture.
+Reference information is here provided for:
 
-On the Linux side, ADSys is composed of a daemon and a command line interface:
+* The daemon -- `adsysd` -- which implements the Group Policy protocol.
+* The command line interface -- `adsysctl` -- which controls the daemon and reports its status.
+* The Windows daemon -- `adwatchd` -- can be installed on the domain controller to
+automatically refresh assets without system administrator interventions.
 
-* The daemon - `adsysd` - implements the Group Policy protocol. It relies on Kerberos, Samba and LDAP for authentication and policy retrieval.
-* The command line interface - `adsysctl` - controls the daemon and reports its status.
+## Overview
 
-A Windows daemon, `adwatchd` can be installed on the domain controller to automatically refresh assets without system administrator interventions.
-
-````{grid} 1 1 2 2
-```{grid-item}
-## Reference
+Technical overview of the daemons and command line interface.
 
 ```{toctree}
 :titlesonly:
-ADSys Control (adsysctl)<adsysctl>
 ADSys Daemon (adsysd)<adsys-daemon>
+ADSys Control (adsysctl)<adsysctl>
 ADSys Watch Daemon (adwatchd)<adwatchd>
 ```
 
-```{grid-item}
-## Command line
+## Command line interface
+
+Description of commands for achieving specific actions in the terminal.
 
 ```{toctree}
 :titlesonly:
@@ -30,8 +29,9 @@ adsysd<adsysd-cli>
 adwatchd<adwatchd-cli>
 ```
 
-```{grid-item}
 ## Supported policies
+
+A comprehensive reference of policies supported by ADSys.
 
 ```{toctree}
 :titlesonly:
@@ -40,15 +40,3 @@ adwatchd<adwatchd-cli>
 policies/index
 ```
 
-````
-
-## Supported releases
-
-**ADSys** is supported on Ubuntu starting from **20.04.2 LTS**, and tested with Windows Server 2019.
-
-Only Active Directory on-premise is supported.
-
-## Recommended readings
-
-* `adsysd help` or `man adsysd`.
-* `adsysctl help` or `man adsysctl`.

@@ -1,18 +1,20 @@
 # How to use GPO with Ubuntu
 
-As explained in previous chapter, there are 2 sets of Ubuntu specific settings in the **Group Policy Management Editor**:
+As explained in previous chapter, there are two sets of Ubuntu specific settings in the **Group Policy Management Editor**:
 
 * `[Policy Name] > Computer Configuration > Policies > Administrative Templates > Ubuntu` for the machine policies.
 * `[Policy Name] > User Configuration > Policies > Administrative Templates > Ubuntu` for the user policies.
 
 ## Your first Ubuntu GPO rule
 
-For this example we will use a test domain called `warthogs.biz` with 2 separate OUs.
+For this example we will use a test domain called `warthogs.biz` with two separate OUs.
 
 * The machine is called `adclient04` and belongs to `warthogs.biz > MainOffice`
+
 ![Main Office OU in Active Directory](../images/how-to/use-gpo/gpo_ou_computer.png)
 
 * The user is called `bob` and belongs to `warthogs.biz > IT Dept > RnD`
+
 ![IT Deps/RnD OU in Active Directory](../images/how-to/use-gpo/gpo_ou_user.png)
 
 In this example, we will demonstrate how to change dconf settings. We will first modify the greeter background image to illustrate how to enforce a computer setting and the list of preferred applications in the launcher for the user settings.
@@ -77,7 +79,7 @@ Next section will detail how to configure this and what happens when the Active 
 
 ### State of GPO settings
 
-Most GPO rules can have 3 states: `enabled`, `disabled`, `not configured`. These states may have different meanings depending on the manager.
+Most GPO rules can have three states: `enabled`, `disabled`, `not configured`. These states may have different meanings depending on the manager.
 
 ![States](../images/how-to/use-gpo/gpo_setting_states.png)
 

@@ -9,6 +9,6 @@ certificates-auto-enrollment
 
 ## Certificates auto-enrollment
 
-Explore the essentials of Ubuntu's certificate auto-enrollment Feature, a crucial tool for seamless certificate management with Active Directory Certificate Services.
+Learn to use Ubuntu's certificate auto-enrollment feature for certificate management with Active Directory Certificate Services.
 
 * [Certificates auto-enrollment](certificates-auto-enrollment.md)

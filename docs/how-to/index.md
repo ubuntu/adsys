@@ -1,34 +1,36 @@
 # How-to guides
 
-These guides accompany you through the complete ADSys operations lifecycle.
+These guides help you complete specific tasks across the ADSys operations
+lifecycle.
 
-## Installation
+## Windows domain controller
 
-### Windows Domain Controller
-
-This is the configuration needed on Windows Domain Controller.
+Installation and configuration guides for the Windows domain controller.
 
 ```{toctree}
 :titlesonly:
-Set up AD <set-up-ad>
-Set up adwatchd <set-up-adwatchd>
+Setting up Active Directory <set-up-ad>
+Setting up adwatchd <set-up-adwatchd>
 ```
 
-### Linux client machine
+## Ubuntu client machine
 
-This section outlines how to join your client machine to the domain, install ADSys, and verify that the setup is correct.
+Installation and configuration guides for the Ubuntu client machine.
 
 ```{toctree}
 :titlesonly:
-Join machine to AD during installation<join-ad-installation>
-Join machine to AD manually<join-ad-manually>
-Set up ADSys <set-up-adsys>
+Joining machine to Active Directory during installation<join-ad-installation>
+Joining machine to Active Directory manually<join-ad-manually>
+Setting up ADSys <set-up-adsys>
 ```
 
 ## Operations
 
+Create GPO rules in the domain controller and apply them to Ubuntu client
+machines.
+
 ```{toctree}
 :titlesonly:
 
-Use GPO with Ubuntu <use-gpo>
+Using GPO with Ubuntu <use-gpo>
 ```

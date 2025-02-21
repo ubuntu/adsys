@@ -1,5 +1,15 @@
 # How to set up ADSys
 
+## Requirements
+
+ADSys is supported on Ubuntu starting from Ubuntu 20.04.2 LTS.
+
+It is tested with Windows Server 2019.
+
+Only Active Directory on-premise is supported.
+
+## Installation
+
 **ADSys** is not currently installed by default on Ubuntu desktop. This must be done manually by the local administrator of the machine.
 
 To do so, log in on first boot, update the repositories and install **ADSys**. On Ubuntu-based systems this can be accomplished with the following commands:
