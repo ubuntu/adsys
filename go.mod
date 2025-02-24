@@ -19,7 +19,7 @@ require (
 	github.com/leonelquinteros/gotext v1.7.0
 	github.com/maruel/natural v1.1.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/muesli/termenv v0.15.3-0.20240618155329-98d742f6907a
+	github.com/muesli/termenv v0.16.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
 	github.com/pkg/sftp v1.13.7
 	github.com/sirupsen/logrus v1.9.3
