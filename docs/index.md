@@ -1,5 +1,7 @@
 # ADSys Documentation
 
+testing auto preview...
+
 ADSys is the Active Directory Group Policy client for Ubuntu.
 
 ADSys enables management of Ubuntu Desktop and Server clients using Microsoft Active Directory. It integrates with services like SSSD or Winbind, which handle user access and authentication, providing extended functionality for managing and controlling Ubuntu clients.
