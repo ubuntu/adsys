@@ -368,8 +368,11 @@ def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
                     data = {'Error': err.decode(), 'Certificate': nickname}
                     log.error('Failed to request certificate', data)
 
-            data['files'].extend([keyfile, certfile])
-            data['templates'].append(nickname)
+            if data.get('files') is not None:
+                data['files'].extend([keyfile, certfile])
+
+            if data.get('templates') is not None:
+                data['templates'].append(nickname)
         if update is not None:
             ret = Popen([update]).wait()
             if ret != 0:
