@@ -22,8 +22,8 @@ func TestDocChapter(t *testing.T) {
 		wantInDoc string
 		wantErr   bool
 	}{
-		"Get documentation chapter":                     {chapter: "how-to-guides/set-up-ad", wantInDoc: "# How to set up the Active Directory Server"},
-		"Get documentation chapter with incorrect case": {chapter: "HoW-to-guIdes/set-Up-AD", wantInDoc: "# How to set up the Active Directory Server"},
+		"Get documentation chapter":                     {chapter: "how-to-guides/set-up-ad", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
+		"Get documentation chapter with incorrect case": {chapter: "HoW-to-guIdes/set-Up-AD", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
 
 		// Section cases
 		"Section using alias":                  {chapter: "how-to-guides", wantInDoc: "# How-to guides"},
@@ -34,7 +34,7 @@ func TestDocChapter(t *testing.T) {
 		"Get main index with no parameter":         {wantInDoc: "# ADSys Documentation"},
 		"Get main index with index title doc name": {chapter: "adsys-documentation", wantInDoc: "# ADSys Documentation"},
 
-		"Get documentation is always authorized": {systemAnswer: "polkit_no", chapter: "how-to-guides/set-up-ad", wantInDoc: "# How to set up the Active Directory Server"},
+		"Get documentation is always authorized": {systemAnswer: "polkit_no", chapter: "how-to-guides/set-up-ad", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
 
 		// Error cases
 		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
