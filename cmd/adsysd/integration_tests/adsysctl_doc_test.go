@@ -22,8 +22,8 @@ func TestDocChapter(t *testing.T) {
 		wantInDoc string
 		wantErr   bool
 	}{
-		"Get documentation chapter":                     {chapter: "how-to-guides/set-up-ad", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
-		"Get documentation chapter with incorrect case": {chapter: "HoW-to-guIdes/set-Up-AD", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
+		"Get documentation chapter":                     {chapter: "how-to-guides/setting-up-active-directory", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
+		"Get documentation chapter with incorrect case": {chapter: "HoW-to-guIdes/setting-Up-Active-directory", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
 
 		// Section cases
 		"Section using alias":                  {chapter: "how-to-guides", wantInDoc: "# How-to guides"},
@@ -34,7 +34,7 @@ func TestDocChapter(t *testing.T) {
 		"Get main index with no parameter":         {wantInDoc: "# ADSys Documentation"},
 		"Get main index with index title doc name": {chapter: "adsys-documentation", wantInDoc: "# ADSys Documentation"},
 
-		"Get documentation is always authorized": {systemAnswer: "polkit_no", chapter: "how-to-guides/set-up-ad", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
+		"Get documentation is always authorized": {systemAnswer: "polkit_no", chapter: "how-to-guides/setting-up-active-directory", wantInDoc: "# How to set up the Active Directory server for Ubuntu clients"},
 
 		// Error cases
 		"Error on daemon not responding": {daemonNotStarted: true, wantErr: true},
@@ -137,7 +137,7 @@ func TestDocCompletion(t *testing.T) {
 			assert.Len(t, completions, wantNumDocs+2, "Should list all available documentation md files from docs/")
 
 			assert.Contains(t, completions, "how-to-guides", "contain a section index")
-			assert.Contains(t, completions, "how-to-guides/set-up-ad", "contain a section sub chapter with alias")
+			assert.Contains(t, completions, "how-to-guides/setting-up-active-directory", "contain a section sub chapter with alias")
 		})
 	}
 }
