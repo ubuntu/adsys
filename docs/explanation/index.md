@@ -1,6 +1,6 @@
 # Explanation
 
-**Discussion and clarification** of key topics.
+Discussions of key topics to aid your understanding of ADSys.
 
 ## Architecture
 
@@ -14,18 +14,16 @@ Architecture <adsys-ref-arch>
 ## Managers
 
 ADSys supports a wide variety of managers to configure and control various
-aspects of the client systems.
-
-Managers available with ADSys are:
+aspects of the client systems:
 
 ```{toctree}
 :titlesonly:
 GSettings <dconf>
-Privileges Management <privileges>
+Privileges management <privileges>
 scripts
-AppArmor Profiles <apparmor>
+AppArmor profiles <apparmor>
 network-shares
 proxy
-Certificates Auto-Enrollment <certificates>
-Security Policy <security-policy>
+certificates
+Security policy <security-policy>
 ```
