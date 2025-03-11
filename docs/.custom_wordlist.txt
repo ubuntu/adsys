@@ -1,4 +1,5 @@
 Acknowledgements
+adcli
 adml
 ADML
 admx
@@ -22,8 +23,10 @@ backends
 boolean
 CAs
 CEP
+certmonger
 CES
 changelog
+CIFS
 compinit
 config
 constructiveCAs
@@ -32,14 +35,18 @@ dac
 dconf
 dialogs
 dir
+DNS
 Dropdown
 dropdownList
 erroring
+ESM
 executables
+filesystem
 fpath
 FQDN
 GDM
 gdm
+getcert
 GPL
 gpo
 GPO
@@ -59,6 +66,7 @@ incrementation
 incrementing
 infos
 ini
+interprocess
 ip
 Jira
 kerberos
@@ -83,6 +91,7 @@ nfs
 OpenLDAP
 OU
 OUs
+pluggable
 plymouth
 png
 polkit
@@ -91,6 +100,7 @@ PowerShell
 Px
 rb
 readthedocs
+realmd
 runscripts
 setgid
 setuid
@@ -107,6 +117,7 @@ subdirectory
 subprofile
 subprofiles
 sudo
+sudoers
 syntaxes
 systemd
 systemd's
@@ -134,6 +145,7 @@ USBGuard
 usr
 unticking
 vendoring
+visudo
 VPN
 VPNs
 Winbind

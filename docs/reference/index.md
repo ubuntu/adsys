@@ -40,3 +40,15 @@ A comprehensive reference of policies supported by ADSys.
 policies/index
 ```
 
+## Glossary
+
+A glossary of technical terms used in the ADSys documentation.
+This may be especially useful for Windows sysadmins who are not familiar with
+Linux tools and terminology.
+
+```{toctree}
+:titlesonly:
+
+glossary
+```
+

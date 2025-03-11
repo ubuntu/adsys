@@ -8,6 +8,7 @@ As a rule of thumb, we generally separate the Ubuntu configuration from the Wind
 * forward vs backward slashes
 * let the administrator know exactly what settings are supported on which client version.
 
+(template-generations)=
 ## Ubuntu administrative template generations
 
 **ADSys** ships with pre-built Active Directory administrative templates that you can install on your Active Directory server. You will find two flavors of them:
