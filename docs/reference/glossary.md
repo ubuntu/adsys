@@ -17,7 +17,7 @@ active directory
 [administrative templates](template-generations)
   A set of policy settings that allow administrators to configure user and computer settings in a Windows-based Active Directory environment, often managed via Group Policy Objects (GPOs).
 
-[adcli](https://manpages.ubuntu.com/manpages/xenial/man8/adcli.8.html)
+[adcli](https://manpages.ubuntu.com/manpages/man8/adcli.8.html)
   A command-line tool for managing Active Directory domain membership on Linux.
 
 ADSys
@@ -35,7 +35,7 @@ apt
 [AppArmor](https://documentation.ubuntu.com/server/how-to/security/apparmor/)
   A Linux security module that enforces mandatory access control policies on programs to limit their capabilities.
 
-[certmonger](https://manpages.ubuntu.com/manpages/focal/man8/certmonger.8.html)
+[certmonger](https://manpages.ubuntu.com/manpages/man8/certmonger.8.html)
   A service that monitors and renews certificates, commonly used in enterprise environments.
 
 client
@@ -77,7 +77,7 @@ LDAP
 PAM
    Pluggable Authentication Modules. A framework for integrating various authentication methods into Linux systems.
 
-[Polkit](https://manpages.ubuntu.com/manpages/focal/man8/polkit.8.html)
+[Polkit](https://manpages.ubuntu.com/manpages/man8/polkit.8.html)
   A toolkit for defining and handling system-wide privileges in Linux.
 
 realmd
