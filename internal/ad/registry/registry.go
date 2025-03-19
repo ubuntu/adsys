@@ -200,40 +200,54 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		return nil, fmt.Errorf("file header: %x%x", header.Signature, header.Version)
 	}
 
+	s := bufio.NewScanner(r)
+	s.Split(scanPolicyEntries)
+
+	entries, err = scanForPolicies(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return entries, nil
+}
+
+// scanPolicyEntries is a split function for a Scanner that returns each policy entry.
+//
+// It splits the data in the format: [key;value;type;size;data].
+func scanPolicyEntries(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	sectionStart := []byte{'[', 0}                 // [ in UTF-16 (little endian)
 	sectionEnd := []byte{0, 0, ']', 0}             // \0] in UTF-16 (little endian)
 	sectionEndNoNullChar := []byte{';', 0, ']', 0} // ;] in UTF-16 (little endian) - last field can be empty
 	dataOffset := len(sectionStart)
 	sectionEndWidth := len(sectionEnd)
 
-	// [key;value;type;size;data]
-	scanEntries := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		// Skip leading sectionStart.
-		start := 0
-		for ; start+dataOffset-1 < len(data); start++ {
-			if bytes.Equal(data[start:start+dataOffset], sectionStart) {
-				break
-			}
+	// Skip leading sectionStart.
+	start := 0
+	for ; start+dataOffset-1 < len(data); start++ {
+		if bytes.Equal(data[start:start+dataOffset], sectionStart) {
+			break
 		}
-
-		// Scan until sectionEnd, marking end of word.
-		for i := start + dataOffset; i+sectionEndWidth-1 < len(data); i++ {
-			if bytes.Equal(data[i:i+sectionEndWidth], sectionEnd) ||
-				bytes.Equal(data[i:i+sectionEndWidth], sectionEndNoNullChar) {
-				return i + sectionEndWidth, data[start+dataOffset : i+2], nil
-			}
-		}
-
-		// If we're at EOF, we have a final, non-empty, non-terminated word. Return an error.
-		if atEOF && len(data) > start {
-			return 0, nil, fmt.Errorf("item does not end with ']'")
-		}
-		// Request more data.
-		return start, nil, nil
 	}
 
-	s := bufio.NewScanner(r)
-	s.Split(scanEntries)
+	// Scan until sectionEnd, marking end of word.
+	for i := start + dataOffset; i+sectionEndWidth-1 < len(data); i++ {
+		if bytes.Equal(data[i:i+sectionEndWidth], sectionEnd) ||
+			bytes.Equal(data[i:i+sectionEndWidth], sectionEndNoNullChar) {
+			return i + sectionEndWidth, data[start+dataOffset : i+2], nil
+		}
+	}
+
+	// If we're at EOF, we have a final, non-empty, non-terminated word. Return an error.
+	if atEOF && len(data) > start {
+		return 0, nil, fmt.Errorf("item does not end with ']'")
+	}
+	// Request more data.
+	return start, nil, nil
+}
+
+func scanForPolicies(s *bufio.Scanner) (entries []policyRawEntry, err error) {
+	defer decorate.OnError(&err, gotext.Get("can't read policy entries"))
+
 	delimiter := []byte{0, 0, ';', 0} // \0; in little endian (UTF-16)
 	for s.Scan() {
 		var e error
