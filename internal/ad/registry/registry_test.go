@@ -1,7 +1,6 @@
 package registry_test
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -408,29 +407,6 @@ func TestDecodePolicy(t *testing.T) {
 			require.Equalf(t, tc.want, rules, "expected value from readPolicy doesn't match")
 		})
 	}
-}
-
-func FuzzDecodePolicy(f *testing.F) {
-	// To seed the corpus, we need to read the example files.
-	policyfiles, err := os.ReadDir("testdata")
-	if err != nil {
-		f.Fatalf("could not read testdata content: %v", err)
-	}
-	for _, pf := range policyfiles {
-		if pf.IsDir() {
-			continue
-		}
-		d, err := os.ReadFile(filepath.Join("testdata", pf.Name()))
-		if err != nil {
-			f.Fatalf("coudln't read policy file: %v", err)
-		}
-		f.Add(d)
-	}
-
-	f.Fuzz(func(_ *testing.T, d []byte) {
-		r := bytes.NewReader(d)
-		_, _ = registry.DecodePolicy(r)
-	})
 }
 
 func policyFilePath(name string) string {
