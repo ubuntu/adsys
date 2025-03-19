@@ -296,11 +296,11 @@ def changed(new_data, old_data):
 def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
     """Install the root certificate chain."""
     data = dict({'files': [], 'templates': []}, **ca)
-    url = 'http://%s/CertSrv/mscep/mscep.dll/pkiclient.exe?' % ca['hostname']
 
     log.info("Try to get root or server certificates")
-
+    url = 'https://%s/CertSrv/mscep/mscep.dll/pkiclient.exe?' % ca['hostname']
     root_certs = getca(ca, url, trust_dir)
+
     data['files'].extend(root_certs)
     global_trust_dir = find_global_trust_dir()
     for src in root_certs:
@@ -368,8 +368,11 @@ def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
                     data = {'Error': err.decode(), 'Certificate': nickname}
                     log.error('Failed to request certificate', data)
 
-            data['files'].extend([keyfile, certfile])
-            data['templates'].append(nickname)
+            if data.get('files') is not None:
+                data['files'].extend([keyfile, certfile])
+
+            if data.get('templates') is not None:
+                data['templates'].append(nickname)
         if update is not None:
             ret = Popen([update]).wait()
             if ret != 0:
