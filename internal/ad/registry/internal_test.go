@@ -1,6 +1,7 @@
 package registry
 
 import (
+	_ "embed"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,6 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/text/encoding/unicode"
 )
+
+//go:embed testdata/very_large_gpo_content.txt
+var massiveGPOContent string
 
 func TestReadPolicy(t *testing.T) {
 	t.Parallel()
@@ -185,6 +189,17 @@ func TestReadPolicy(t *testing.T) {
 				},
 			}},
 		"header only": {},
+
+		"very large gpo": {
+			want: []policyRawEntry{
+				{
+					path:  `Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps`,
+					key:   "all",
+					dType: dataType(7),
+					data:  toUtf16(t, strings.ReplaceAll(massiveGPOContent, "\n", "\x00")),
+				},
+			},
+		},
 
 		// Soft error cases
 		"empty value": {

@@ -45,6 +45,11 @@ const (
 	policyWithNoChildrenName = "basic"
 )
 
+const (
+	baseScanTokenSize = bufio.MaxScanTokenSize
+	maxScanTokenSize  = int(^uint(0)>>1) / 2
+)
+
 type meta struct {
 	Empty    string
 	Meta     string
@@ -201,14 +206,28 @@ func readPolicy(f *os.File) (entries []policyRawEntry, err error) {
 		return nil, fmt.Errorf("file header: %x%x", header.Signature, header.Version)
 	}
 
-	s := bufio.NewScanner(f)
-	s.Split(scanPolicyEntries)
+	// Sometimes, the token size for the scanner might be too small, so let's try increasing it up until a certain limit.
+	tokenSize := baseScanTokenSize
+	for tokenSize <= maxScanTokenSize {
+		s := bufio.NewScanner(f)
+		s.Buffer(make([]byte, tokenSize), tokenSize)
+		s.Split(scanPolicyEntries)
 
-	entries, err = scanForPolicies(s)
-	if err != nil {
-		return nil, err
+		entries, err = scanForPolicies(s)
+		if err == nil {
+			break
+		}
+		if !errors.Is(err, bufio.ErrTooLong) {
+			return nil, err
+		}
+
+		tokenSize *= 2
+
+		// Reset the cursor to retry scanning the entries with a bigger token size.
+		if _, err := f.Seek(0, 0); err != nil {
+			return nil, fmt.Errorf("could not reset file to retry scanning: %w", err)
+		}
 	}
-
 	return entries, nil
 }
 
@@ -240,6 +259,10 @@ func scanPolicyEntries(data []byte, atEOF bool) (advance int, token []byte, err 
 
 	// If we're at EOF, we have a final, non-empty, non-terminated word. Return an error.
 	if atEOF && len(data) > start {
+		// This means that we either increased or need to increase the token size in order to read the entry.
+		if len(data) >= baseScanTokenSize {
+			return 0, nil, bufio.ErrTooLong
+		}
 		return 0, nil, fmt.Errorf("item does not end with ']'")
 	}
 	// Request more data.
