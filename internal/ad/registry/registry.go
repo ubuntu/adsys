@@ -51,10 +51,10 @@ type meta struct {
 }
 
 // DecodePolicy parses a policy stream in registry file format and returns a slice of entries.
-func DecodePolicy(r io.Reader) (entries []entry.Entry, err error) {
+func DecodePolicy(rs io.ReadSeeker) (entries []entry.Entry, err error) {
 	defer decorate.OnError(&err, gotext.Get("can't parse policy"))
 
-	ent, err := readPolicy(r)
+	ent, err := readPolicy(rs)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ type policyFileHeader struct {
 	Version   int32
 }
 
-func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
+func readPolicy(rs io.ReadSeeker) (entries []policyRawEntry, err error) {
 	defer decorate.OnError(&err, gotext.Get("invalid policy"))
 
 	validPolicyFileHeader := policyFileHeader{
@@ -188,7 +188,7 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 	}
 
 	header := policyFileHeader{}
-	err = binary.Read(r, binary.LittleEndian, &header)
+	err = binary.Read(rs, binary.LittleEndian, &header)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
 			return nil, errors.New("empty file")
@@ -200,7 +200,7 @@ func readPolicy(r io.Reader) (entries []policyRawEntry, err error) {
 		return nil, fmt.Errorf("file header: %x%x", header.Signature, header.Version)
 	}
 
-	s := bufio.NewScanner(r)
+	s := bufio.NewScanner(rs)
 	s.Split(scanPolicyEntries)
 
 	entries, err = scanForPolicies(s)
