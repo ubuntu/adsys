@@ -38,7 +38,7 @@ jobs:
             go build ./...
             go generate -x -tags=tools ./pam
       - name: C code formatting
-        uses: jidicula/clang-format-action@v4.14.0
+        uses: jidicula/clang-format-action@v4.15.0
         with:
           include-regex: '^.*\.(c|h)$' # Makes sure to run only on C (source and header) files
           exclude-regex: 'vendor' # Excludes the vendor directory
