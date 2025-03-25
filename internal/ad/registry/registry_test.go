@@ -1,12 +1,12 @@
 package registry_test
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/dsnet/golib/memfile"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/ad/registry"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -427,9 +427,25 @@ func FuzzDecodePolicy(f *testing.F) {
 		f.Add(d)
 	}
 
-	f.Fuzz(func(_ *testing.T, d []byte) {
-		r := bytes.NewReader(d)
-		_, _ = registry.DecodePolicy(r)
+	// Sets up an in-memory file to write the fuzzed data to
+	fuzzFile := memfile.New(nil)
+
+	f.Fuzz(func(t *testing.T, d []byte) {
+		_, err := fuzzFile.Write(d)
+		require.NoError(t, err, "could not write to in-memory file")
+
+		// Seek to the beginning of the file to read it
+		_, err = fuzzFile.Seek(0, 0)
+		require.NoError(t, err, "could not seek to the beginning of the in-memory file")
+
+		_, _ = registry.DecodePolicy(fuzzFile)
+
+		err = fuzzFile.Truncate(0)
+		require.NoError(t, err, "could not truncate in-memory file")
+
+		// Truncate does not reset the io offset, so we need to seek back to the beginning of the file.
+		_, err = fuzzFile.Seek(0, 0)
+		require.NoError(t, err, "could not seek to the beginning of the in-memory file")
 	})
 }
 
