@@ -1,3 +1,31 @@
+adsys (0.16.3) plucky; urgency=medium
+
+  * New upstream release
+  * Bump Go toolchain version to 1.23.6
+  * Fix URL for certificate enrollment and some bad references in the
+    enrollment code
+  * Resize buffer to parse very large GPOs
+  * Add corpus to fuzz tests to increase their precision
+  * Improvements to docs
+    - Add ref glossary
+    - Change spelling to US
+    - Home and landing pages refresh
+  * Bump dependencies to latest:
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/glamour
+    - github.com/charmbracelet/lipgloss
+    - github.com/pkg/sftp
+    - github.com/spf13/cobra
+    - golang.org/x/net
+    - golang.org/x/text
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+    - github.com/golangci/golangci-lint
+    - canonical/has-signed-canonical-cla
+    - jidicula/clang-format-action
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Thu, 27 Mar 2025 07:00:42 -0400
+
 adsys (0.16.2) plucky; urgency=medium
 
   * Fixes and improvements to certificate autoenrollment
