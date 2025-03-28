@@ -2,7 +2,7 @@ module github.com/ubuntu/adsys
 
 go 1.23.0
 
-toolchain go1.23.6
+toolchain go1.24.1
 
 require (
 	github.com/charmbracelet/bubbles v0.20.0
@@ -32,7 +32,7 @@ require (
 	github.com/ubuntu/go-i18n v0.0.0-20231113092927-594c1754ca47
 	golang.org/x/crypto v0.36.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.38.0
 	golang.org/x/sync v0.12.0
 	golang.org/x/sys v0.31.0
 	golang.org/x/text v0.23.0
