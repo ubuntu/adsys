@@ -171,9 +171,14 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 		defer mu.Unlock()
 
 		out := []byte(strings.Join(combinedOutput, "\n"))
-		if err != nil {
+		if err != nil && !errors.Is(err, &ssh.ExitMissingError{}) {
 			log.Warningf("Command %q failed in %s", cmd, elapsedTime)
 			return out, fmt.Errorf("command failed: %w", err)
+		}
+		// Some e2e commands may not return an exit status, so let's not fail on that and
+		// wait for the next commands to fail if the ones without exit status failed.
+		if errors.Is(err, &ssh.ExitMissingError{}) {
+			log.Warningf("Command %q exited without exit status", cmd)
 		}
 		log.Infof("Command %q finished in %s", cmd, elapsedTime)
 
