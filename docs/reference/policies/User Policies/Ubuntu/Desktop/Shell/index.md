@@ -4,9 +4,10 @@
 :maxdepth: 99
 
 Clock/index
-favorite-apps
 LockDown/index
 Notifications/index
+Privacy/index
+favorite-apps
 show-desktop-icons
 show-show-apps-button
 ```

@@ -5,9 +5,10 @@
 
 disable-command-line
 disable-log-out
-disable-printing
 disable-print-setup
+disable-printing
 disable-save-to-disk
 disable-user-switching
+mount-removable-storage-devices-as-read-only
 user-administration-disabled
 ```
