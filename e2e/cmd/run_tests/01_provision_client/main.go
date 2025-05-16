@@ -182,7 +182,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 		return fmt.Errorf("failed to update package list: %w", err)
 	}
 
-	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\"")
+	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get upgrade -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\"")
 	if err != nil {
 		return fmt.Errorf("failed to upgrade packages: %w", err)
 	}
