@@ -126,6 +126,7 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	// Create scanners to read stdout and stderr line by line
 	stdoutScanner := bufio.NewScanner(stdout)
 	stderrScanner := bufio.NewScanner(stderr)
+	stdoutScanner.Split(bufio.ScanBytes)
 	var combinedOutput []string
 	var mu sync.Mutex
 	var wg sync.WaitGroup
