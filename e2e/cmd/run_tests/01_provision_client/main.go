@@ -182,7 +182,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 		return fmt.Errorf("failed to update package list: %w", err)
 	}
 
-	_, err = client.Run(ctx, "apt-get upgrade -y")
+	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y")
 	if err != nil {
 		return fmt.Errorf("failed to upgrade packages: %w", err)
 	}
