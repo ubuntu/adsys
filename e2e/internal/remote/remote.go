@@ -130,6 +130,8 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
+	log.SetLevel(log.DebugLevel)
+
 	// Use goroutines to read and print both stdout and stderr concurrently
 	wg.Add(2)
 	go func() {
