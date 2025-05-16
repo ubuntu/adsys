@@ -126,9 +126,12 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	// Create scanners to read stdout and stderr line by line
 	stdoutScanner := bufio.NewScanner(stdout)
 	stderrScanner := bufio.NewScanner(stderr)
+	//stdoutScanner.Split(bufio.ScanWords)
 	var combinedOutput []string
 	var mu sync.Mutex
 	var wg sync.WaitGroup
+
+	log.SetLevel(log.DebugLevel)
 
 	// Use goroutines to read and print both stdout and stderr concurrently
 	wg.Add(2)
