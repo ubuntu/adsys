@@ -171,6 +171,11 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 		defer mu.Unlock()
 
 		out := []byte(strings.Join(combinedOutput, "\n"))
+		if err != nil && errors.Is(err, &ssh.ExitMissingError{}) {
+			log.Warningf("Command %q returned without exit status:\nOUTPUT: %s", cmd, combinedOutput)
+			return out, nil
+		}
+
 		if err != nil {
 			log.Warningf("Command %q failed in %s", cmd, elapsedTime)
 			return out, fmt.Errorf("command failed: %w", err)
