@@ -3,12 +3,14 @@
 package remote
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/sftp"
@@ -103,25 +105,88 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	}
 	defer session.Close()
 
-	log.Infof("Running command %q on remote host %q", cmd, c.client.RemoteAddr().String())
-
 	err = session.RequestPty("xterm", 80, 40, ssh.TerminalModes{})
 	if err != nil {
 		log.Fatalf("Request for pseudo terminal failed: %v", err)
 	}
 
-	stdout, _ := session.StdoutPipe()
-	stderr, _ := session.StderrPipe()
-
-	go io.Copy(os.Stdout, stdout)
-	go io.Copy(os.Stderr, stderr)
-
-	err = session.Run(cmd)
+	// Create pipes for stdout and stderr
+	stdout, err := session.StdoutPipe()
 	if err != nil {
-		log.Fatalf("Command failed: %v", err)
+		return nil, fmt.Errorf("failed to create stdout pipe: %w", err)
+	}
+	stderr, err := session.StderrPipe()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create stderr pipe: %w", err)
 	}
 
-	return nil, nil
+	log.Infof("Running command %q on remote host %q", cmd, c.client.RemoteAddr().String())
+
+	// Start the remote command
+	startTime := time.Now()
+	if err := session.Start(cmd); err != nil {
+		return nil, fmt.Errorf("failed to start command: %w", err)
+	}
+
+	// Create scanners to read stdout and stderr line by line
+	stdoutScanner := bufio.NewScanner(stdout)
+	stderrScanner := bufio.NewScanner(stderr)
+	//stdoutScanner.Split(bufio.ScanWords)
+	var combinedOutput []string
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	log.SetLevel(log.DebugLevel)
+
+	// Use goroutines to read and print both stdout and stderr concurrently
+	wg.Add(2)
+	go func() {
+		for stdoutScanner.Scan() {
+			line := stdoutScanner.Text()
+			log.Debug("\t", line)
+			mu.Lock()
+			combinedOutput = append(combinedOutput, line)
+			mu.Unlock()
+		}
+		wg.Done()
+	}()
+	go func() {
+		for stderrScanner.Scan() {
+			line := stderrScanner.Text()
+			log.Warning("\t", line)
+			mu.Lock()
+			combinedOutput = append(combinedOutput, line)
+			mu.Unlock()
+		}
+		wg.Done()
+	}()
+
+	waitDone := make(chan error, 1)
+	go func() {
+		waitDone <- session.Wait()
+	}()
+
+	select {
+	case <-ctx.Done():
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			return nil, fmt.Errorf("command timed out after %s", commandTimeout)
+		}
+		return nil, fmt.Errorf("command cancelled: %w", ctx.Err())
+	case err := <-waitDone:
+		elapsedTime := time.Since(startTime)
+		wg.Wait() // wait for scanners to finish
+		mu.Lock()
+		defer mu.Unlock()
+
+		out := []byte(strings.Join(combinedOutput, "\n"))
+		if err != nil {
+			log.Warningf("Command %q failed in %s", cmd, elapsedTime)
+			return out, fmt.Errorf("command failed: %w", err)
+		}
+		log.Infof("Command %q finished in %s", cmd, elapsedTime)
+
+		return out, nil
+	}
 }
 
 // Upload uploads the given local file to the remote host.
