@@ -105,6 +105,11 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	}
 	defer session.Close()
 
+	err = session.RequestPty("xterm", 80, 40, ssh.TerminalModes{})
+	if err != nil {
+		log.Fatalf("Request for pseudo terminal failed: %v", err)
+	}
+
 	// Create pipes for stdout and stderr
 	stdout, err := session.StdoutPipe()
 	if err != nil {
