@@ -177,18 +177,18 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	log.Infof("Updating and upgrading packages...")
-	_, err = client.Run(ctx, "apt-get update")
+	_, err = client.Run(ctx, "apt-get update -oDebug::pkgAcquire::Worker=1")
 	if err != nil {
 		return fmt.Errorf("failed to update package list: %w", err)
 	}
 
-	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get upgrade -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" -o Dpkg::Progress-Fancy=\"1\"")
+	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get upgrade -y -o Dpkg::Options::=\"--force-confdef\" -o Dpkg::Options::=\"--force-confold\" -o Dpkg::Progress-Fancy=\"1\" -oDebug::pkgAcquire::Worker=1")
 	if err != nil {
 		return fmt.Errorf("failed to upgrade packages: %w", err)
 	}
 
 	log.Infof("Installing adsys package...")
-	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get install /debs/*.deb -y -o Dpkg::Progress-Fancy=\"1\"")
+	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get install /debs/*.deb -y -o Dpkg::Progress-Fancy=\"1\" -oDebug::pkgAcquire::Worker=1")
 	if err != nil {
 		return fmt.Errorf("failed to install adsys package: %w", err)
 	}
@@ -196,7 +196,7 @@ func action(ctx context.Context, cmd *command.Command) error {
 	// TODO: remove this once the packages installed below are MIRed and installed by default with adsys
 	// Allow errors here on account on packages not being available on the tested Ubuntu version
 	log.Infof("Installing universe packages required for some policy managers...")
-	if _, err := client.Run(ctx, "DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get install ubuntu-proxy-manager python3-cepces -y -o Dpkg::Progress-Fancy=\"1\""); err != nil {
+	if _, err := client.Run(ctx, "DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true apt-get install ubuntu-proxy-manager python3-cepces -y -o Dpkg::Progress-Fancy=\"1\" -oDebug::pkgAcquire::Worker=1"); err != nil {
 		log.Warningf("Some packages failed to install: %v", err)
 	}
 
