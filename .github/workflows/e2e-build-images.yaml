@@ -114,11 +114,11 @@ jobs:
       - name: Build base VM
         if: steps.check-vm-template.outputs.image-version != ''
         run: |
-          go run ./e2e/cmd/build_base_image/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }}
+          go run ./e2e/cmd/build_base_image/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }} --keep
       - name: Create template version
         if: steps.check-vm-template.outputs.image-version != ''
         run: |
-          go run ./e2e/cmd/build_base_image/02_create_vm_template
+          go run ./e2e/cmd/build_base_image/02_create_vm_template --keep
       - name: Purge old template versions
         run: |
           go run ./e2e/cmd/build_base_image/99_destroy_previous_versions --codename ${{ matrix.codename }}
