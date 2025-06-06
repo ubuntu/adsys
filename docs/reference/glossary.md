@@ -74,6 +74,9 @@ Kerberos
 LDAP
   The Lightweight Directory Access Protocol. A protocol for accessing and managing directory information, commonly used for authentication.
 
+[LTS](https://ubuntu.com/about/release-cycle)
+  A Long Term Support (LTS) release of Ubuntu is an enterprise grade release that receive extended support.
+
 PAM
    Pluggable Authentication Modules. A framework for integrating various authentication methods into Linux systems.
 

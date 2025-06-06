@@ -2,7 +2,7 @@
 
 The mount managers allow AD administrators to specify network shares that must be mounted in the file system when a client logs in.
 
-## Feature Availability
+## Feature availability
 
 This feature is available only for subscribers of **Ubuntu Pro**.
 
@@ -58,7 +58,7 @@ User mount policies are located under `User Configuration > Policies > Administr
 
 ### Setting up the policy
 
-The format is a list of shared drives that should be mounted for the user. They must follow the structure {protocol}://{host name or ip address}/{shared location}. If the drive is to be mounted anonymously, the tag [anonymous] should be added as a prefix to the listed entry, i.e. [anonymous]{protocol}://{host name or ip address}/{shared location}.
+The format is a list of shared drives that should be mounted for the user. They must follow the structure `{protocol}://{host name or ip address}/{shared location}`. If the drive is to be mounted anonymously, the tag `[anonymous]` should be added as a prefix to the listed entry, i.e. `[anonymous]{protocol}://{host name or ip address}/{shared location}`.
 
 All entries must be separated by a line break.
 

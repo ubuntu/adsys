@@ -2,14 +2,15 @@
 
 `adsysctl` is a command line utility to request actions from the daemon and query its current status. You can get more verbose output with the `-v` accumulative flags, which will stream all logs from the service corresponding to your specific request.
 
-As a general rule, favor shell completion and the help command for discovering various parts of the adsysctl user interface. It will help you by completing subcommands, flags, users and even chapters of the offline documentation!
+As a general rule, favor shell completion and the help command for discovering various parts of the adsysctl user interface. It will help you by completing subcommands, flags, users and pages of the offline documentation.
 
-## Which policies are applied
+## Checking which policies are applied
 
-* You can check with policies are currently applied to your current AD user with the `adsysctl policy applied` command:
+To check which policies are currently applied to the current AD user, run `adsysctl policy applied`:
 
-```sh
-$ adsysctl policy applied
+```{terminal}
+   :input: adsysctl policy applied
+   :dir: 
 Policies from machine configuration:
 - MainOffice Policy 2 ({B8D10A86-0B78-4899-91AF-6F0124ECEB48})
 - MainOffice Policy ({C4F393CA-AD9A-4595-AEBC-3FA6EE484285})
@@ -23,12 +24,15 @@ Policies from user configuration:
 - Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})
 ```
 
-The order of policies are top-down, higher GPOs have priorities over lower ones on the stack (respecting OU order, GPO enforcement, GPO block instructions on your AD setup…).
+```{note}
+The order of policies is top-down, with higher GPOs having priority over lower ones on the stack (e.g., respecting OU order, GPO enforcement, GPO block instructions on your AD setup).
+```
 
-* If you have the right permission, you can request other users as well:
+A `username` can be passed to request other users, if you have the right permissions:
 
-```sh
-$ adsysctl policy applied tina
+```{terminal}
+   :input: adsysctl policy applied tina
+   :dir: 
 Policies from machine configuration:
 - MainOffice Policy ({A2F393CA-AD9A-4595-AEBC-3FA6EE484285})
 - Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})
@@ -39,12 +43,15 @@ Policies from user configuration:
 - Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})
 ```
 
-> Pro tip! Use shell completion to get the list of active users you can request which policies are applied on.
+```{tip}
+Use shell completion to get the list of active users that you can request which policies are applied on.
+```
 
-* To get which policy are set to a given value or disabled by which key, use the `--details` flags:
+The `--details` flag can be used to check which policies are set to a given value or disabled by which key:
 
-```sh
-$ adsysctl policy applied --details
+```{terminal}
+   :input: adsysctl policy applied --details
+   :dir: 
 Policies from machine configuration:
 - MainOffice Policy 2 ({B8D10A86-0B78-4899-91AF-6F0124ECEB48})
     - gdm:
@@ -72,10 +79,11 @@ Policies from user configuration:
 - Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})
 ```
 
-* The `--all` flag will list every key set by a given GPO, including the ones that are redefined by another GPO with a higher priority. This is traditionally helpful for debugging your GPO stack and discover where a given value is defined:
+The `--all` flag lists every key set by a given GPO, including the ones that are redefined by another GPO with a higher priority. This is can be helpful for debugging your GPO stack and discovering where a given value is defined:
 
-```sh
-$ adsysctl policy applied --all 
+```{terminal}
+   :input: adsysctl policy applied --all
+   :dir: 
 Policies from machine configuration:
 - MainOffice Policy 2 ({B8D10A86-0B78-4899-91AF-6F0124ECEB48})
     - gdm:
@@ -110,8 +118,9 @@ The command `adsysctl policy update` is used to refresh the policies. By default
 
 For example, refreshing the policy for all the objects:
 
-```sh
-$ adsysctl policy update --all -v
+```{terminal}
+   :input: adsysctl policy update --all -v
+   :dir: 
 INFO No configuration file: Config File "adsys" Not Found in "[/home/warthogs.biz/b/bob /etc]".
 We will only use the defaults, env variables or flags. 
 INFO Apply policy for adclient04 (machine: true)  
@@ -122,8 +131,9 @@ You can provide the name of a user and the path to its Kerberos ticket to refres
 
 For example for user `bob@warthogs.biz`
 
-```sh
-$ adsysctl update bob@warthogs.biz /tmp/krb5cc_1899001102_wBlbck -vv
+```{terminal}
+   :input: adsysctl update bob@warthogs.biz /tmp/krb5cc_1899001102_wBlbck -vv
+   :dir: 
 INFO No configuration file: Config File "adsys" Not Found in "[/home/warthogs.biz/b/bob /etc]".
 We will only use the defaults, env variables or flags. 
 DEBUG Connecting as [[26812:519495]]               
@@ -156,12 +166,13 @@ yelp.desktop
  Disabled:false Meta:as} 
 ```
 
-## Getting the status
+## Getting the status of the service
 
-The status of the service is provided by the command `adsysctl service status`
+The command `adsysctl service status` can be used to get the status:
 
-```sh
-$ adsysctl service status
+```{terminal}
+   :input: adsysctl service status
+   :dir: 
 Machine, updated on Tue May 18 12:15
 Connected users:
   bob@warthogs.biz, updated on Tue May 18 12:15
@@ -182,16 +193,19 @@ Daemon:
   Dconf path: /etc/dconf
 ```
 
-You can get the list of connected users, when they were last refreshed, when the next refresh is scheduled and various service configuration options (static or dynamically configured).
+The information includes connected users, when users last refreshed, when the next refresh is scheduled and various service configuration options (static or dynamically configured).
 
 ## Debugging
 
-The `cat` command has already been described in [the previous chapter](adsys-daemon.md). You can display logs with debugging levels independent of daemon and clients debugging levels. Local printing will also be forwarded.
+The `cat` command has already been described in [the adsys-daemon reference](adsys-daemon.md).
+
+You can display logs with debugging levels independent of daemon and clients debugging levels. Local printing will also be forwarded.
 
 For example, running `cat` while the command `version` and `applied` are executed:
 
-```sh
-# adsysctl service cat -vv
+```{terminal}
+   :input: adsysctl service cat -vv
+   :dir: 
 INFO No configuration file: Config File "adsys" Not Found in "[/root /etc]".
 We will only use the defaults, env variables or flags. 
 DEBUG Connecting as [[29220:823925]]               
@@ -220,8 +234,9 @@ DEBUG Request /service/DumpPolicies done
 
 You can get the current service and client versions with the `version` command to check you are running with latest version on both sides:
 
-```sh
-$ adsysctl version 
+```{terminal}
+   :input: adsysctl version
+   :dir: 
 adsysctl        0.5
 adsysd          0.5
 ```
@@ -232,8 +247,9 @@ An offline version of this documentation is available in the daemon. It will ren
 
 You can get a list of all chapters with their titles:
 
-```sh
-$ adysctl doc
+```{terminal}
+   :input: adsysctl doc
+   :dir: 
 
    Table of content                                                           
 
@@ -244,23 +260,31 @@ $ adysctl doc
 
 And render a given chapter by requesting it:
 
-```sh
-$ adsysctl doc Welcome                                                                                   
+```{terminal}
+   :input: adsysctl doc Welcome
+   :dir: 
                                                                                                                                       
    ADSys: Active Directory Group Policy integration                                                                                   
                                                                                                                                       
   ADSys is the Active Directory Group Policy client for Ubuntu. It allows
 […]
+
 ```
 
-Finally, there are different rendering modes to dump documentation in html for instance with the `--format` flag.
+Finally, there are different rendering modes for the documentation.
+
+You can dump documentation in html --- for example --- with the `--format` flag.
 
 ### Admx generation
 
-The `policy admx` commands dumps pre-built Active Directory administrative templates that can be deployed on the Active Directory server. For more information, check the [AD setup documentation](../how-to/set-up-ad.md)
+The `policy admx` command dumps pre-built Active Directory administrative templates that can be deployed on the Active Directory server.
+
+For more information, check the [AD setup documentation](../how-to/set-up-ad.md)
 
 ### Stopping the service
 
-If you do not wish to wait for the idling timeout to stop the server, you can request graceful shutdown with `adsysctl service stop`. This will first wait for all active connections to ends before shutting down.
+If you do not wish to wait for the idling timeout to stop the server, you can request graceful shutdown with `adsysctl service stop`.
 
-The `-force` flag will end the service immediately.
+This will first wait for all active connections to ends before shutting down.
+
+The `-force` flag ends the service immediately.

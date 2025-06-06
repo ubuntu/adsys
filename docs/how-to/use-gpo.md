@@ -1,23 +1,26 @@
 # How to use GPO with Ubuntu
 
-As explained in previous chapter, there are two sets of Ubuntu specific settings in the **Group Policy Management Editor**:
+There are two sets of Ubuntu specific settings in the Group Policy Management Editor:
 
-* `[Policy Name] > Computer Configuration > Policies > Administrative Templates > Ubuntu` for the machine policies.
-* `[Policy Name] > User Configuration > Policies > Administrative Templates > Ubuntu` for the user policies.
+* Machine policies: `[Policy Name] > Computer Configuration > Policies > Administrative Templates > Ubuntu`
+* User policies: `[Policy Name] > User Configuration > Policies > Administrative Templates > Ubuntu`
 
-## Your first Ubuntu GPO rule
+This guide will demonstrate how to create GPO rules for changing dconf settings on the client:
 
-For this example we will use a test domain called `warthogs.biz` with two separate OUs.
+* Computer setting: modify the background image shown in the greeter during login
+* User setting: modify the preferred applications shown in the desktop application launcher
 
-* The machine is called `adclient04` and belongs to `warthogs.biz > MainOffice`
+## Creating GPO rules
+
+For this example, we will use a test domain called `warthogs.biz` with two separate Organizational Units (OUs).
+
+The machine is called `adclient04` and belongs to `warthogs.biz > MainOffice`.
 
 ![Main Office OU in Active Directory](../images/how-to/use-gpo/gpo_ou_computer.png)
 
-* The user is called `bob` and belongs to `warthogs.biz > IT Dept > RnD`
+The user is called `bob` and belongs to `warthogs.biz > IT Dept > RnD`.
 
 ![IT Deps/RnD OU in Active Directory](../images/how-to/use-gpo/gpo_ou_user.png)
-
-In this example, we will demonstrate how to change dconf settings. We will first modify the greeter background image to illustrate how to enforce a computer setting and the list of preferred applications in the launcher for the user settings.
 
 ### Modifying a computer setting
 
@@ -26,21 +29,23 @@ Launch the GPO Management editor and create a GPO in `warthogs.biz > MainOffice`
 1. Select GDM background picture setting in `Computer Configuration > Policies > Administrative Templates > Ubuntu > Login Screen > Interface > Picture URI`.
 1. Select `Enabled` to enable the modification of the `Picture URI` field.
 1. Enter a valid absolute path to a `.png` image on the client machine, e.g. `/usr/share/backgrounds/ubuntu-default-greyscale-wallpaper.png`.
-1. Refresh the GPO rule on the client by rebooting the machine or running `adsysctl update -m` (You may be prompted to enter your password to check if have enough privileges to run the command)
+1. Refresh the GPO rule on the client by rebooting the machine or running `adsysctl update -m` (You may be prompted to enter your password to check if have enough privileges to run the command).
 
 ![GDM Picture URI setting](../images/how-to/use-gpo/gpo_setting_enabled.png)
 
-The change is now visible on the greeter.
+Confirm that the change is now visible in the greeter.
 
 ![Greeter with custom background](../images/how-to/use-gpo/gpo_gdm_background.png)
 
-> Files are not copied by the Active Directory client and must already exist on the target system at this given path.
+```{note}
+Files, such as images, are not copied by the Active Directory client and must already exist on the target system at the specified path.
+```
 
-### Modifying an user setting
+### Modifying a user setting
 
-1. Let's create another GPO in `warthogs.biz > IT Dept > RnD`.
+1. Create another GPO in `warthogs.biz > IT Dept > RnD`.
 1. Select the list of favorite desktop applications setting in `User Configuration > Policies > Administrative Templates > Ubuntu  > Desktop > Shell > List of desktop file IDs for favorite applications`.
-1. Enter a list of valid .desktop file IDs, one per line, like the following:
+1. Enter a list of valid `.desktop` file IDs on separate lines:
 
 ```
 libreoffice-writer.desktop
@@ -50,15 +55,17 @@ yelp.desktop
 
 ![Favourite applications settings](../images/how-to/use-gpo/gpo_setting_enabled_list_of_apps.png)
 
-4. Refresh the GPO rule applied to the user by logging in or running `adsysctl update` as your current user or `adsysctl update --all` to refresh the computer and all active users.
+4. Refresh the GPO rule for the computer by running `adsysctl update` to refresh for your current user or `adsysctl update --all` for all active users.
 
-The list of applications showing up on the left side for your current Active Directory user should be updated.
+```{tip}
+Logging out and logging back in also triggers a GPO refresh for the current user.
+```
+
+The list of applications shown on the left side for your current Active Directory user should be updated:
 
 ![Customized list of applications](../images/how-to/use-gpo/gpo_setting_enabled_list_of_apps_applied.png)
 
-> There are other ways of defining a list in ADSys / Active Directory integration. Check the **“Different types of widgets”** section below.
-
-## General principles
+## Explanation of GPOs for Ubuntu
 
 There are multiple **policy managers** for different types of settings. As of now, only a **dconf** manager is available.
 
