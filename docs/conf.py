@@ -169,6 +169,24 @@ html_theme_options = {
 
 slug = "adsys"
 
+#######################
+# Sitemap configuration: https://sphinx-sitemap.readthedocs.io/
+#######################
+
+# Base URL of RTD hosted project
+
+html_baseurl = "https://documentation.ubuntu.com/adsys/"
+
+# URL scheme. Add language and version scheme elements manually e.g. '{0}/{1}/{{link}}'.format(os.environ['READTHEDOCS_LANGUAGE'], os.environ['READTHEDOCS_VERSION'])
+
+# When configured with RTD variables, check for RTD environment so manual runs succeed:
+
+if "READTHEDOCS_VERSION" in os.environ:
+    version = os.environ["READTHEDOCS_VERSION"]
+    sitemap_url_scheme = "{version}{link}"
+else:
+    sitemap_url_scheme = "stable/{link}"
+
 
 # Template and asset locations
 
@@ -206,6 +224,8 @@ linkcheck_ignore = [
     "http://127.0.0.1:8000",
     "https://leonelson.com/2011/08/15/how-to-increase-your-csr-key-size-on-microsoft-iis-without-removing-the-production-certificate/",
     "https://manpages.ubuntu.com/manpages/man8/*",
+    "https://www.samba.org/*",  # giving erroneous link failures as of June 16th 2025
+    "https://wiki.samba.org/*",  # giving erroneous link failures as of June 16th 2025
 ]
 
 # A regex list of URLs where anchors are ignored by 'make linkcheck'
@@ -253,6 +273,7 @@ extensions = [
     "sphinx_last_updated_by_git",
     "sphinx.ext.intersphinx",
     "sphinxcontrib.mermaid",
+    "sphinx_sitemap",
 ]
 
 # Excludes files or directories from processing
