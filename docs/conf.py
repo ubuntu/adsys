@@ -224,6 +224,8 @@ linkcheck_ignore = [
     "http://127.0.0.1:8000",
     "https://leonelson.com/2011/08/15/how-to-increase-your-csr-key-size-on-microsoft-iis-without-removing-the-production-certificate/",
     "https://manpages.ubuntu.com/manpages/man8/*",
+    "https://www.samba.org/*",  # giving erroneous link failures as of June 16th 2025
+    "https://wiki.samba.org/*",  # giving erroneous link failures as of June 16th 2025
 ]
 
 # A regex list of URLs where anchors are ignored by 'make linkcheck'
