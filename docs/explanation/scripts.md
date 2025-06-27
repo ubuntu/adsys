@@ -19,6 +19,7 @@ This feature is available only for subscribers of **Ubuntu Pro**.
 
 Any settings will be additive to the same settings in less specific GPO. It means that scripts in the less specific GPO will be executed first.
 
+(explanation::installing-scripts-on-sysvol)=
 ## Installing scripts on sysvol
 
 Scripts must be available in the assets sharing directory on your Active Directory `sysvol/` samba share.

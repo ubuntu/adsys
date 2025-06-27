@@ -83,8 +83,9 @@ The module must then be configured manually for any desired executables. To enab
 session optional pam_apparmor.so order=user,default
 ```
 
-> **Warning**
-> Even though GPOs can be applied to AD groups, the AppArmor policy manager currently only supports confining AD users, so we've omitted `group` from the PAM order.
+```{warning}
+Even though GPOs can be applied to AD groups, the AppArmor policy manager currently only supports confining AD users, so we've omitted `group` from the PAM order.
+```
 
 ### User profile declaration syntax
 

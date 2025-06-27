@@ -30,3 +30,4 @@ matrix:
       - a.p-navigation__link
       - a.contributor
       - a.reference.internal # don't spellcheck refs hidden in html source
+      - div.code-block-caption # don't check captions/paths in code blocks

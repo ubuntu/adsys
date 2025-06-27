@@ -71,7 +71,7 @@ copyright = "%s CC-BY-SA, %s" % (datetime.date.today().year, author)
 # NOTE: The Open Graph Protocol (OGP) enhances page display in a social graph
 #       and is used by social media platforms; see https://ogp.me/
 
-ogp_site_url = "https://documentation.ubuntu.com/adsys/en/stable/"
+ogp_site_url = "https://documentation.ubuntu.com/adsys/stable/"
 
 
 # Preview name of the documentation website

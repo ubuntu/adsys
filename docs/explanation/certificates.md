@@ -14,8 +14,8 @@ This feature is available only for subscribers of **Ubuntu Pro** and has been te
 
 Additionally, the following packages must be installed on the client in order for auto-enrollment to work:
 
-* [`certmonger`](https://www.freeipa.org/page/Certmonger) - daemon that monitors and updates certificates
-* [`cepces`](https://github.com/openSUSE/cepces) - `certmonger` extension that can communicate with **Active Directory Certificate Services**
+* [`certmonger`](https://www.freeipa.org/page/Certmonger) — daemon that monitors and updates certificates
+* [`cepces`](https://github.com/openSUSE/cepces) — `certmonger` extension that can communicate with **Active Directory Certificate Services**
 
 On Ubuntu systems, run the following to install them:
 

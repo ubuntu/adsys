@@ -71,9 +71,11 @@ sudo getcert list
 The `getcert list` command is provided by the `certmonger` utility, which is being used to manage the lifecycle of the certificates, ensuring — for example — that they are automatically renewed.
 ```
 
-The output of the above command should look something like this:
+The output of the command should look something like this:
 
-```text
+```{terminal}
+   :input: getcert list
+   :dir: 
 Number of certificates and requests being tracked: 2
 Request ID 'galacticcafe-CA.Machine':
     status: MONITORING
@@ -93,9 +95,11 @@ Request ID 'galacticcafe-CA.Workstation':
     issuer: CN=galacticcafe-CA,DC=galacticcafe,DC=com
 ...
 ...
+...
+
 ```
 
-From this truncated output we can see that there are two certificates being monitored:
+From this truncated output, we can see that there are two certificates being monitored:
 
 - `galactic-CA.Machine`
 - `galactic-CA.Workstation`
@@ -116,7 +120,9 @@ cat /etc/ppp/peers/azure-vpn
 Output:
 
 
-```text
+```{terminal}
+   :input: cat /etc/ppp/peers/azure-vpn
+   :dir: 
 remotename: azure-vpn
 linkname: azure-vpn
 ipparamname: azure-vpn
@@ -131,6 +137,7 @@ cert: /var/lib/adsys/certs/galacticcafe-CA.Machine.crt
 key: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.crt
 ...
 ...
+
 ```
 
 An SSTP VPN is being used for this tutorial, connecting to a gateway in the Azure cloud.
@@ -153,7 +160,10 @@ ip a
 
 This should output a point-to-point connection:
 
-```text
+
+```{terminal}
+   :input: ip a
+   :dir: 
 ...
 ...
 8: ppp0: <POINTTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1500 pfifo_fast state unknown group default qlen 3
