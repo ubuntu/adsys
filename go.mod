@@ -1,6 +1,6 @@
 module github.com/ubuntu/adsys
 
-go 1.23.5
+go 1.23.0
 
 toolchain go1.23.10
 
@@ -17,7 +17,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
 	github.com/kardianos/service v1.2.2
-	github.com/leonelquinteros/gotext v1.7.2
+	github.com/leonelquinteros/gotext v1.7.0
 	github.com/maruel/natural v1.1.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.16.0
