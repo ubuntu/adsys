@@ -3,13 +3,14 @@
 package remote
 
 import (
-	"bufio"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"net"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -62,29 +63,51 @@ func NewClient(host string, username string, secret string) (Client, error) {
 		Timeout:         10 * time.Second,
 	}
 
-	var client *ssh.Client
-
 	interval := 3 * time.Second
 	retries := 10
 
+	var connErr error
+	var sshClient Client
 	for i := 1; i <= retries; i++ {
-		log.Debugf("Establishing SSH connection to %q (attempt %d/%d)", host, i, retries)
-		client, err = ssh.Dial("tcp", host+":22", config)
-		if err == nil {
-			break
+		dialer := net.Dialer{
+			KeepAlive: 30 * time.Second,
+			KeepAliveConfig: net.KeepAliveConfig{
+				Enable:   true,
+				Idle:     30 * time.Second,
+				Interval: 30 * time.Second,
+				Count:    60,
+			},
 		}
-		log.Warningf("Failed to connect to %q: %v (attempt %d/%d)", host, err, i, retries)
-		time.Sleep(interval)
+
+		conn, err := dialer.Dial("tcp", host+":22")
+		if err != nil {
+			connErr = err
+			log.Warningf("Failed to connect to %q: %v (attempt %d/%d)", host, err, i, retries)
+			time.Sleep(interval)
+			continue
+		}
+
+		log.Debugf("Establishing SSH connection to %q (attempt %d/%d)", host, i, retries)
+		sshCon, newChan, reqChan, err := ssh.NewClientConn(conn, host+":22", config)
+		if err != nil {
+			connErr = err
+			log.Warningf("Failed to connect to %q: %v (attempt %d/%d)", host, err, i, retries)
+			time.Sleep(interval)
+			continue
+		}
+
+		sshClient = Client{
+			client: ssh.NewClient(sshCon, newChan, reqChan),
+			config: config,
+			host:   host,
+		}
+		break
 	}
-	if err != nil {
+	if connErr != nil {
 		return Client{}, fmt.Errorf("failed to connect to %q: %w", host, err)
 	}
 
-	return Client{
-		client: client,
-		config: config,
-		host:   host,
-	}, nil
+	return sshClient, nil
 }
 
 // Close closes the SSH connection.
@@ -114,44 +137,58 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stderr pipe: %w", err)
 	}
+	session.Stdin = nil
 
 	log.Infof("Running command %q on remote host %q", cmd, c.client.RemoteAddr().String())
+	// Create scanners to read stdout and stderr line by line
+	var stdoutBuff, stderrBuff bytes.Buffer
+	var wg sync.WaitGroup
+
+	// Use goroutines to read and print both stdout and stderr concurrently
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		log.Debug("Starting to read stdout")
+		written, err := io.Copy(&stdoutBuff, stdout)
+		if err != nil {
+			log.Warningf("Error when copying stdout: %v", err)
+		}
+		log.Debugf("Written %d bytes to stdout", written)
+	}()
+	go func() {
+		defer wg.Done()
+		log.Debug("Starting to read stderr")
+		written, err := io.Copy(&stderrBuff, stderr)
+		if err != nil {
+			log.Warningf("Error when copying stderr: %v", err)
+		}
+		log.Debugf("Written %d bytes to stderr", written)
+	}()
+
+	// Start keepalive goroutine
+	keepaliveDone := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				_, _, err := c.client.SendRequest("keepalive@openssh.com", true, nil)
+				if err != nil {
+					log.Warnf("Keepalive failed: %v", err)
+					return
+				}
+			case <-keepaliveDone:
+				return
+			}
+		}
+	}()
 
 	// Start the remote command
 	startTime := time.Now()
 	if err := session.Start(cmd); err != nil {
 		return nil, fmt.Errorf("failed to start command: %w", err)
 	}
-
-	// Create scanners to read stdout and stderr line by line
-	stdoutScanner := bufio.NewScanner(stdout)
-	stderrScanner := bufio.NewScanner(stderr)
-	var combinedOutput []string
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-
-	// Use goroutines to read and print both stdout and stderr concurrently
-	wg.Add(2)
-	go func() {
-		for stdoutScanner.Scan() {
-			line := stdoutScanner.Text()
-			log.Debug("\t", line)
-			mu.Lock()
-			combinedOutput = append(combinedOutput, line)
-			mu.Unlock()
-		}
-		wg.Done()
-	}()
-	go func() {
-		for stderrScanner.Scan() {
-			line := stderrScanner.Text()
-			log.Warning("\t", line)
-			mu.Lock()
-			combinedOutput = append(combinedOutput, line)
-			mu.Unlock()
-		}
-		wg.Done()
-	}()
 
 	waitDone := make(chan error, 1)
 	go func() {
@@ -160,6 +197,11 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 
 	select {
 	case <-ctx.Done():
+		close(keepaliveDone)
+		if err := session.Signal(ssh.SIGKILL); err != nil {
+			log.Warningf("Failed to stop the running session: %v", err)
+		}
+
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return nil, fmt.Errorf("command timed out after %s", commandTimeout)
 		}
@@ -167,16 +209,19 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	case err := <-waitDone:
 		elapsedTime := time.Since(startTime)
 		wg.Wait() // wait for scanners to finish
-		mu.Lock()
-		defer mu.Unlock()
+		close(keepaliveDone)
 
-		out := []byte(strings.Join(combinedOutput, "\n"))
+		out := []byte("STDOUT: " + stdoutBuff.String() + "\nSTDERR: " + stderrBuff.String())
+		if err != nil && errors.Is(err, &ssh.ExitMissingError{}) {
+			log.Warningf("Command %q did not return any exit status: %v", cmd, err)
+			log.Warningf("Output: %s", out)
+			return nil, err
+		}
 		if err != nil {
 			log.Warningf("Command %q failed in %s", cmd, elapsedTime)
 			return out, fmt.Errorf("command failed: %w", err)
 		}
 		log.Infof("Command %q finished in %s", cmd, elapsedTime)
-
 		return out, nil
 	}
 }
