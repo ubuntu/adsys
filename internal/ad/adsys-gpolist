@@ -86,9 +86,20 @@ def connectLDAP(url):
 def get_entity(samdb, accountname, objectClass):
     ''' Returns the entity for a given accountname and objectclass '''
 
-    msg = samdb.search(expression='(&(|(samAccountName=%s)(samAccountName=%s$))(objectClass=%s))' %
-                       (ldb.binary_encode(accountname), ldb.binary_encode(accountname), ldb.binary_encode(objectClass)),
-                       attrs=['objectClass', 'objectSid'])
+    if objectClass == ObjectClass.user:
+         samaccountname = accountname.split('@')[0]
+         msg = samdb.search(expression='(&(|(samAccountName=%s)(samAccountName=%s$))(objectClass=%s))' %
+                               (ldb.binary_encode(samaccountname), ldb.binary_encode(samaccountname), ldb.binary_encode(objectClass)),
+                               attrs=['objectClass', 'objectSid'])
+         if len(msg) == 0:
+            msg = samdb.search(expression='(&(|(userPrincipalName=%s)(userPrincipalName=%s$))(objectClass=%s))' %
+                               (ldb.binary_encode(accountname), ldb.binary_encode(accountname), ldb.binary_encode(objectClass)),
+                               attrs=['objectClass', 'objectSid'])
+    else:
+        msg = samdb.search(expression='(&(|(samAccountName=%s)(samAccountName=%s$))(objectClass=%s))' %
+                           (ldb.binary_encode(accountname), ldb.binary_encode(accountname), ldb.binary_encode(objectClass)),
+                           attrs=['objectClass', 'objectSid'])
+
     if len(msg) == 0:
         raise Exception("Failed to find account %s" % accountname)
     current = msg[0]
@@ -232,10 +243,6 @@ def main():
 
     accountname = args.accountname
     fqdn = args.fqdn
-
-    # Users don’t need @, as we already have the specific-domain ticket
-    if args.objectclass == ObjectClass.user:
-        accountname = accountname.split('@')[0]
 
     try:
         samdb = connectLDAP("ldap://" + fqdn)
