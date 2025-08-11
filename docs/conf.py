@@ -190,7 +190,7 @@ else:
 
 # Template and asset locations
 
-# html_static_path = ["_static"]
+html_static_path = [".sphinx/_static"]
 # templates_path = ["_templates"]
 
 
@@ -282,8 +282,7 @@ exclude_patterns = ["diagrams/readme.md"]
 
 # Adds custom CSS files, located under 'html_static_path'
 
-# html_css_files = []
-
+html_css_files = ["pro_block.css"]
 
 # Adds custom JavaScript files, located under 'html_static_path'
 

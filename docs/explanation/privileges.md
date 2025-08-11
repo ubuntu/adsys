@@ -1,14 +1,16 @@
+(exp::privileges)=
 # Admin privileges management
+
+```{include} ../pro_content_notice.txt
+    :start-after: <!-- Include start pro -->
+    :end-before: <!-- Include end pro -->
+```
 
 The Admin privilege manager allows to grant or revoke superuser privileges for the default local user, and Active Directory users and groups.
 
 All those settings are globally enforced on the machine and are available at `Computer Configuration > Policies > Administrative Templates > Ubuntu > Client management > Privilege Authorization`.
 
 ![Privileges screen in AD](../images/explanation/privileges/privileges-options.png)
-
-## Feature availability
-
-This feature is available only for subscribers of **Ubuntu Pro**.
 
 ## Rules precedence
 

@@ -1,4 +1,10 @@
+(exp::network-proxy)=
 # Network proxy
+
+```{include} ../pro_content_notice.txt
+    :start-after: <!-- Include start pro -->
+    :end-before: <!-- Include end pro -->
+```
 
 The proxy manager allows AD administrators to apply proxy settings on the clients. Currently, only system-wide proxy settings are supported.
 
@@ -8,11 +14,9 @@ Proxy settings are configurable under the following GPO path:
 
 ![System proxy settings in GPO editor](../images/explanation/proxy/system-proxy-settings-list.png)
 
-## Feature availability
+## Required packages
 
-This feature is available only for subscribers of **Ubuntu Pro**.
-
-Additionally, the [`ubuntu-proxy-manager`](https://github.com/ubuntu/ubuntu-proxy-manager) package must be installed in order for proxy settings to be applied on the client system. On Ubuntu systems, run the following to install the package:
+The [`ubuntu-proxy-manager`](https://github.com/ubuntu/ubuntu-proxy-manager) package must be installed in order for proxy settings to be applied on the client system. On Ubuntu systems, run the following to install the package:
 
 ```bash
 sudo apt install ubuntu-proxy-manager

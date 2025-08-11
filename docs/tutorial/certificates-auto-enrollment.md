@@ -1,4 +1,10 @@
+(tut::certificates)=
 # Certificates auto-enrollment
+
+```{include} ../pro_content_notice.txt
+    :start-after: <!-- Include start pro -->
+    :end-before: <!-- Include end pro -->
+```
 
 Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support. 
 This feature enables clients to seamlessly enroll for certificates from Active Directory Certificate Services.

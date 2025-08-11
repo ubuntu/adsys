@@ -1,3 +1,4 @@
+(howto::join-manually)=
 # How to manually join Ubuntu clients to an Active Directory domain
 
 ADSys supports manual joining of Ubuntu clients to Active Directory (AD) using different backends.

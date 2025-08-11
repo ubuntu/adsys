@@ -57,8 +57,8 @@ explanation/index
 
 **Find specific information**, such as:
 
+* [Standard and Pro features for ADSys](/reference/features)
 * [Policies supported by ADSys](/reference/policies/index)
-* [The ADSys daemon](/reference/adsysd-cli)
 
 ```
 

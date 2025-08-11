@@ -1,3 +1,4 @@
+(howto::use-gpo)=
 # How to use GPO with Ubuntu
 
 There are two sets of Ubuntu specific settings in the Group Policy Management Editor:
