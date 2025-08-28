@@ -1,5 +1,10 @@
 # Scripts execution
 
+```{include} ../pro_content_notice.txt
+    :start-after: <!-- Include start pro -->
+    :end-before: <!-- Include end pro -->
+```
+
 The scripts managers allows AD administrators to target scripts to be executed on behalf of the client, or by users.
 
 Those scripts, can be triggered on:
@@ -10,10 +15,6 @@ Those scripts, can be triggered on:
 Scripts can be shell scripts, or any binary that can be executed on Linux.
 
 ![Scripts options in AD](../images/explanation/scripts/gpo-scripts.png)
-
-## Feature availability
-
-This feature is available only for subscribers of **Ubuntu Pro**.
 
 ## Rules precedence
 

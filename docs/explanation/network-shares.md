@@ -1,10 +1,12 @@
+(exp::network-shares)=
 # Network shares
 
+```{include} ../pro_content_notice.txt
+    :start-after: <!-- Include start pro -->
+    :end-before: <!-- Include end pro -->
+```
+
 The mount managers allow AD administrators to specify network shares that must be mounted in the file system when a client logs in.
-
-## Feature availability
-
-This feature is available only for subscribers of **Ubuntu Pro**.
 
 ## System mounts
 

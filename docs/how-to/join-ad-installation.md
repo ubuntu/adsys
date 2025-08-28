@@ -1,3 +1,4 @@
+(howto::join-installer)=
 # How to join Ubuntu Desktop to an Active Directory domain during installation
 
 To use Group Policies on an Ubuntu client, the client machine first needs to be joined to an Active Directory (AD) domain.

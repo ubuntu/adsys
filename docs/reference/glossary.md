@@ -115,6 +115,8 @@ visudo
 
 [Ubuntu Pro](https://ubuntu.com/pro)
   A subscription service from Canonical that provides extended security updates (ESM), compliance tools, and enterprise support for Ubuntu systems.
+  A Pro subscription is required for some features of ADSys, such as scripts execution.
+  The subscription is free for up to five machines: [get your subscription here](https://ubuntu.com/pro/subscribe).
 
 Winbind
   A component of Samba that allows Linux systems to authenticate users against a Windows domain. It can be used as an alternative to SSSD.

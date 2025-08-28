@@ -20,7 +20,7 @@ ADSys Watch Daemon (adwatchd)<adwatchd>
 
 ## Command line interface
 
-Detailed reference for CLI tooling:
+Detailed reference for CLI tooling.
 
 ```{toctree}
 :titlesonly:
@@ -50,3 +50,12 @@ Linux tools and terminology.
 glossary
 ```
 
+## Features
+
+Overview of standard features and features enabled with a Pro subscription.
+
+```{toctree}
+:titlesonly:
+
+features
+```
