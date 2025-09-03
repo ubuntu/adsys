@@ -15,7 +15,7 @@ jobs:
     name: Build admxgen static binary
     runs-on: ${{ vars.RUNNER }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
@@ -210,7 +210,7 @@ jobs:
       - generate-ad
       - generate-doc
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Download adm template files for "all"
         uses: actions/download-artifact@v4
         with:
@@ -250,7 +250,7 @@ jobs:
     needs: integrate
     if: ${{ failure() }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Create issue if build failed
         uses: JasonEtco/create-an-issue@v2
         env:
