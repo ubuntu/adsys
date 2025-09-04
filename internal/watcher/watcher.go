@@ -252,7 +252,7 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 
 			// Check there is something to update
 			// Rename is always followed by a Create.
-			if !(event.Has(fsnotify.Write) || event.Has(fsnotify.Create) || event.Has(fsnotify.Remove)) {
+			if !event.Has(fsnotify.Write) && !event.Has(fsnotify.Create) && !event.Has(fsnotify.Remove) {
 				continue
 			}
 
