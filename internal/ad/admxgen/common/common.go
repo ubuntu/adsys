@@ -1,4 +1,6 @@
 // Package common defines the data structures used to generate ADMX templates from policy definition files
+//
+//nolint:revive // We don't want to change the package name at this point.
 package common
 
 import (
