@@ -302,9 +302,10 @@ func normalizeValue(keyType, value string) string {
 // We will escape each non leading character in s.
 func quoteValue(s string) string {
 	// quote automatically single quote
-	if s == "'" {
+	switch s {
+	case "'":
 		s = `'''`
-	} else if s == `\'` {
+	case `\'`:
 		s = `'\''`
 	}
 
