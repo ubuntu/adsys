@@ -116,7 +116,7 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 
 	d.grpcserver = d.registerGRPCServer(d)
 
-	go d.idler.keepAlive(d)
+	go d.keepAlive(d)
 
 	return d, nil
 }
@@ -201,10 +201,10 @@ func (d *Daemon) Quit(force bool) {
 		close(d.lis)
 
 		if force {
-			d.idler.sendOrTimeout(quitNow)
+			d.sendOrTimeout(quitNow)
 			return
 		}
-		d.idler.sendOrTimeout(quitGracefully)
+		d.sendOrTimeout(quitGracefully)
 	})
 }
 
