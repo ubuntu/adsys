@@ -45,7 +45,7 @@ func CreateDirectory(dir string, perm uint32) error {
 	// #nosec:G204 - we control the mode and directory we run mkdir on
 	cmd := exec.Command("mkdir", "-m", fmt.Sprintf("%o", perm), "-p", dir)
 	if output, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("Couldn't create dest directory: %v", string(output))
+		return fmt.Errorf("couldn't create dest directory: %v", string(output))
 	}
 	return nil
 }
