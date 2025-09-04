@@ -84,9 +84,10 @@ func TestGenerate(t *testing.T) {
 			t.Parallel()
 
 			tc.root = filepath.Join(testutils.TestFamilyPath(t), "system", tc.root)
-			if tc.currentSessions == "" {
+			switch tc.currentSessions {
+			case "":
 				tc.currentSessions = "ubuntu:GNOME"
-			} else if tc.currentSessions == "-" {
+			case "-":
 				tc.currentSessions = ""
 			}
 
