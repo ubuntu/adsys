@@ -21,6 +21,7 @@ jobs:
     # workflow environements don’t work either.
     runs-on: ubuntu-24.04
     steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -52,6 +53,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install dependencies
         run: |
           sudo apt-get update

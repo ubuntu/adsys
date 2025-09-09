@@ -38,6 +38,7 @@ jobs:
       matrix: ${{ steps.set-supported-releases.outputs.matrix }}
     needs: build-admxgen
     steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install needed binaries
         run: |
           sudo apt-get update
@@ -125,6 +126,7 @@ jobs:
       matrix:
         releases: ['LTS', 'ALL']
     steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install needed binaries
         run: |
           sudo apt-get update
@@ -168,6 +170,7 @@ jobs:
     runs-on: ${{ vars.RUNNER }}
     needs: collect-releases
     steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install needed binaries
         run: |
           sudo apt-get update

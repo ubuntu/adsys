@@ -22,6 +22,7 @@ jobs:
       matrix: ${{ steps.set-supported-releases.outputs.matrix }}
       versions: ${{ steps.set-supported-releases.outputs.versions }}
     steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install needed binaries
         run: |
           sudo apt-get update
