@@ -1,12 +1,10 @@
 module github.com/ubuntu/adsys
 
-go 1.23.0
-
-toolchain go1.23.10
+go 1.24.0
 
 require (
 	github.com/charmbracelet/bubbles v0.20.0
-	github.com/charmbracelet/bubbletea v1.3.5
+	github.com/charmbracelet/bubbletea v1.3.9
 	github.com/charmbracelet/glamour v0.10.0
 	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834
 	github.com/coreos/go-systemd/v22 v22.5.0
@@ -34,7 +32,7 @@ require (
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/net v0.42.0
 	golang.org/x/sync v0.16.0
-	golang.org/x/sys v0.35.0
+	golang.org/x/sys v0.36.0
 	golang.org/x/text v0.28.0
 	google.golang.org/grpc v1.72.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.5.1
@@ -49,7 +47,7 @@ require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
-	github.com/charmbracelet/x/ansi v0.8.0 // indirect
+	github.com/charmbracelet/x/ansi v0.10.1 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
 	github.com/charmbracelet/x/exp/slice v0.0.0-20250327172914-2fdc97757edf // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
