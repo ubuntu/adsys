@@ -22,6 +22,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
     - name: Install required packages from PPA
       shell: bash
       run: |

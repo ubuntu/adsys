@@ -29,6 +29,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-supported-releases.outputs.matrix }}
     steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install needed binaries
         run: |
           sudo apt-get update
@@ -88,6 +89,7 @@ jobs:
       AD_PASSWORD: ${{ secrets.AD_PASSWORD }}
       ADSYS_PRO_TOKEN: ${{ secrets.ADSYS_PRO_TOKEN }}
     steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install required dependencies
         run: |
           sudo apt-get update
