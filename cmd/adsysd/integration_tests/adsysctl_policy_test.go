@@ -1447,7 +1447,7 @@ func modifyAndAddUsers(t *testing.T, newUsername string, users ...string) (passw
 	require.NoError(t, scanner.Err(), "Setup: can't write temporary passwd file")
 
 	for i, u := range users {
-		_, err = d.Write([]byte(fmt.Sprintf("%s:x:%d:%s::/nonexistent:/usr/bin/false", u, i+23450, group)))
+		_, err = fmt.Fprintf(d, "%s:x:%d:%s::/nonexistent:/usr/bin/false", u, i+23450, group)
 		require.NoError(t, err, "Setup: can’t write to passwd temp file")
 	}
 

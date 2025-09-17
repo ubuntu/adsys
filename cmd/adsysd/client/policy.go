@@ -457,7 +457,7 @@ func (s *stringsBuilderWithError) Println(l string) {
 		return
 	}
 	l += "\n"
-	_, s.err = s.Builder.WriteString(l)
+	_, s.err = s.WriteString(l)
 }
 
 func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {

@@ -1,16 +1,18 @@
+# This is for linting. To run it, please use:
+# golangci-lint run ${MODULE}/... [--fix]
+
+version: "2"
 linters:
   # linters to run in addition to default ones
   enable:
+    - copyloopvar
     - dupl
     - durationcheck
     - errname
     - errorlint
-    - copyloopvar
     - forbidigo
     - forcetypeassert
-    - gci
     - godot
-    - gofmt
     - gosec
     - misspell
     - revive
@@ -20,39 +22,48 @@ linters:
     - unparam
     - wastedassign
     - whitespace
-    ##- wrapcheck # To think properly about it
-
-run:
-  # Most of the time, it’s taking less than 20s, but some builders are slower, so takes 2m
-  timeout: 2m
-
-# Get all linter issues, even if duplicated
+  settings:
+    # Forbid the usage of deprecated ioutil and debug prints
+    forbidigo:
+      forbid:
+        - pattern: ioutil\.
+        - pattern: ^print.*$
+    # Ensure that we always explain why we are ignoring a linter and which one is being ignored.
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    generated: lax
+    rules:
+      # EXC0001 errcheck: most errors are in defer calls, which are safe to ignore and idiomatic Go (would be good to only ignore defer ones though)
+      - path: (.+)\.go$
+        text: Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print(f|ln)?|os\.(Un)?Setenv|w\.Stop). is not checked
+      # EXC0008 gosec: duplicated of errcheck
+      - path: (.+)\.go$
+        text: (G104|G307)
+      # EXC0010 gosec: False positive is triggered by 'src, err := ioutil.ReadFile(filename)'
+      - path: (.+)\.go$
+        text: Potential file inclusion via variable
+      # revive: unexported-return for functions exported only in tests, aliasing doesn't work here as the linter always goes for the underlying model which is unexported
+      - path: (.+)\.go$
+        text: 'unexported-return: exported func InitialModel(ForTests|WithPrevConfig)? returns unexported type watchdtui.model, which can be annoying to use'
+      # Sometimes it is more readable to do a `if err := a(); err != nil` than simply `return a()`
+      - path: (.+)\.go$
+        text: if-return
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude:
-    # EXC0001 errcheck: most errors are in defer calls, which are safe to ignore and idiomatic Go (would be good to only ignore defer ones though)
-    - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print(f|ln)?|os\.(Un)?Setenv|w\.Stop). is not checked'
-    # EXC0008 gosec: duplicated of errcheck
-    - (G104|G307)
-    # EXC0010 gosec: False positive is triggered by 'src, err := ioutil.ReadFile(filename)'
-    - Potential file inclusion via variable
-    # revive: unexported-return for functions exported only in tests, aliasing doesn't work here as the linter always goes for the underlying model which is unexported
-    - 'unexported-return: exported func InitialModel(ForTests|WithPrevConfig)? returns unexported type watchdtui.model, which can be annoying to use'
-    # Sometimes it is more readable to do a `if err := a(); err != nil` than simply `return a()`
-    - if-return
-  #fix: true # we don’t want this in CI
-
-linters-settings:
-  # Forbid the usage of deprecated ioutil and debug prints
-  forbidigo:
-    forbid:
-      - ioutil\.
-      - ^print.*$
-
-  # Ensure that we always explain why we are ignoring a linter and which one is being ignored.
-  nolintlint:
-    require-explanation: true
-    require-specific: true
-
+formatters:
+  enable:
+    - gci
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

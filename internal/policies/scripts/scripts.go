@@ -242,8 +242,8 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 
 	// Delete users or machine script directory once all user logoff or machine shutdown scripts are executed
 	defer func() {
-		if !((strings.Contains(order, "/users/") && strings.HasSuffix(order, "/logoff")) ||
-			(strings.Contains(order, "/machine/") && strings.HasSuffix(order, "/shutdown"))) {
+		if (!strings.Contains(order, "/users/") || !strings.HasSuffix(order, "/logoff")) &&
+			(!strings.Contains(order, "/machine/") || !strings.HasSuffix(order, "/shutdown")) {
 			return
 		}
 		log.Debug(ctx, "Logoff or shutdown called, deleting in session flag")

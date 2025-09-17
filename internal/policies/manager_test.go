@@ -91,10 +91,7 @@ func TestApplyPolicies(t *testing.T) {
 			err = os.WriteFile(loadedPoliciesFile, []byte("someprofile (enforce)\n"), 0600)
 			require.NoError(t, err, "Setup: can not create loadedPoliciesFile")
 
-			status := true
-			if tc.isNotSubscribed {
-				status = false
-			}
+			status := !tc.isNotSubscribed
 			require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Attached", status), "Setup: can not set subscription status to %q", status)
 			defer func() {
 				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Attached", false), "Teardown: can not restore subscription status")
