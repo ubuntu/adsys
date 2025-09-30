@@ -108,6 +108,8 @@ rb
 readthedocs
 realmd
 runscripts
+schema
+schemas
 setgid
 setuid
 smartcard
@@ -150,6 +152,7 @@ usb
 USBGuard
 usr
 unticking
+vendored
 vendoring
 visudo
 VPN

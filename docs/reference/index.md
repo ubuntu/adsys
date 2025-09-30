@@ -52,10 +52,12 @@ glossary
 
 ## Features
 
-Overview of standard features and features enabled with a Pro subscription.
+Overview of ADSys' standard features and features enabled with a Pro
+subscription, in addition to release notes for ADSys.
 
 ```{toctree}
 :titlesonly:
 
 features
+release-notes
 ```
