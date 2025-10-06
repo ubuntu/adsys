@@ -1,3 +1,4 @@
+(ref::adsysctl)=
 # The adsysctl command
 
 `adsysctl` is a command line utility to request actions from the daemon and query its current status. You can get more verbose output with the `-v` accumulative flags, which will stream all logs from the service corresponding to your specific request.
