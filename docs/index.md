@@ -24,9 +24,9 @@ explanation/index
 ```{grid-item-card}
 ### [Tutorials](tutorial/index)
 
-**Learn** to use an ADSys feature:
+**Learn** to use ADSys for managing Ubuntu Desktop with Active Directory:
 
-* [Certificate auto-enrollment with ADSys](/tutorial/certificates-auto-enrollment)
+* [Getting started with ADSys](tutorial::getting-started)
 
 ```
 
