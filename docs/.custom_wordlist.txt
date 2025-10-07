@@ -13,6 +13,7 @@ ALS
 apparmor
 AppArmor
 AppArmor's
+authd
 autocompletion
 autoenroll
 autoenrollment
@@ -38,6 +39,7 @@ dir
 DNS
 Dropdown
 dropdownList
+DSRM
 erroring
 ESM
 executables
@@ -45,8 +47,10 @@ filesystem
 fpath
 FQDN
 gapped
+GC
 GDM
 gdm
+GeneralUbuntuDesktopPolicy
 getcert
 GPL
 gpo
@@ -89,6 +93,7 @@ multiline
 multiText
 nameservice
 nfs
+NTP
 OpenLDAP
 OU
 OUs

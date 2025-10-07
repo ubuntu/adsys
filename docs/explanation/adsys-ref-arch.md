@@ -1,3 +1,4 @@
+(ref::adsys-arch)=
 # ADSys architecture
 
 Here, we explain ADSys and SSSD, and how they are used in combination for

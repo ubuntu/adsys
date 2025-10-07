@@ -38,14 +38,17 @@ apt
 [certmonger](https://manpages.ubuntu.com/manpages/man8/certmonger.8.html)
   A service that monitors and renews certificates, commonly used in enterprise environments.
 
-client
-  In the context of ADSys, the "client" refers to an Ubuntu Desktop or Server that is managed using Microsoft Active Directory.
+clients
+  In the context of ADSys, the "client" refers to an Ubuntu Desktop or Ubuntu Server that is managed using Microsoft Active Directory.
 
 D-Bus call
   A command or API request used to communicate with system services via D-Bus, a message bus system for interprocess communication.
 
 [dconf](../explanation/dconf/)
   A low-level configuration system used by GNOME-based environments to store application and system settings, providing a centralized way to manage configurations.
+
+DNS server
+  Translates domain names into numerical IP addresses.
 
 domain controller
   A server in an Active Directory network that authenticates users, enforces security policies, and manages domain-wide resources.
@@ -59,7 +62,7 @@ getcert
 GNOME
   A popular open-source desktop environment for Linux systems, designed for ease of use and accessibility, providing a modern graphical user interface.
 
-group policies
+Group policies
   A feature in Active Directory that allows administrators to define security settings, software installations, and user preferences across multiple computers in a domain.
 
 GSettings
@@ -77,11 +80,28 @@ LDAP
 [LTS](https://ubuntu.com/about/release-cycle)
   A Long Term Support (LTS) release of Ubuntu is an enterprise grade release that receive extended support.
 
+Netplan
+  A utility to configure networking on Ubuntu machines using YAML files.
+  Ubuntu Desktop also has support for graphical configuration of networking.
+
+NTP
+  Network Time Protocol is a networking protocol for clock synchronization
+
+On-premises
+  ADSys is designed to bridge Ubuntu clients with Active Directory running on the local infrastructure of an organization.
+  For cloud-based infrastructure, [authd](https://documentation.ubuntu.com/authd/stable-docs/) can be used for authentication.
+
 PAM
-   Pluggable Authentication Modules. A framework for integrating various authentication methods into Linux systems.
+  Pluggable Authentication Modules. A framework for integrating various authentication methods into Linux systems.
+
+Policy templates
+  Active Directory administrative templates define the settings available in when editing group policies.
 
 [Polkit](https://manpages.ubuntu.com/manpages/man8/polkit.8.html)
   A toolkit for defining and handling system-wide privileges in Linux.
+
+PowerShell
+  A shell program that is pre-installed on Windows, which has its own language for scripting and automation.
 
 realmd
   A service that allows automatic discovery and enrollment of Linux machines into Active Directory or other identity domains.
@@ -92,11 +112,18 @@ Samba
 Security Identifier
   The Security Identifier, or SID, is a unique identifier assigned to users, groups, and other objects in Windows-based systems.
 
-server
+Server
   In the context of ADSys, the "server" refers to a Windows Server running Active Directory , which manages and enforces policies for Ubuntu clients.
 
+Server manager
+  Tool for managing servers that is pre-installed on Windows Server and opens automatically on launch.
+
 SSSD
-   The System Security Services Daemon. A service that manages authentication and authorization with identity providers like Active Directory or LDAP. [SSSD is used with ADSys](../explanation/adsys-ref-arch/) for managing authentication and policies.
+  The System Security Services Daemon. A service that manages authentication and authorization with identity providers like Active Directory or LDAP. [SSSD is used with ADSys](../explanation/adsys-ref-arch/) for managing authentication and policies.
+
+Static IP
+  A static IP address is an IP address that remains constant after being assigned to a device.
+  Static IP addresses can be configured in the network manager of your OS.
 
 sudo
   A command that allows users to run programs with elevated (superuser) privileges on Linux systems.
@@ -110,13 +137,16 @@ systemd journal
 Ubiquity installer
   The default graphical installer for Ubuntu, designed to simplify OS installation.
 
-visudo
-  A command used to safely edit the sudoers file, a file which controls user permissions for executing commands with elevated privileges.
-
 [Ubuntu Pro](https://ubuntu.com/pro)
   A subscription service from Canonical that provides extended security updates (ESM), compliance tools, and enterprise support for Ubuntu systems.
   A Pro subscription is required for some features of ADSys, such as scripts execution.
   The subscription is free for up to five machines: [get your subscription here](https://ubuntu.com/pro/subscribe).
+
+visudo
+  A command used to safely edit the sudoers file, a file which controls user permissions for executing commands with elevated privileges.
+
+Windows Server
+  A server-oriented edition of the Windows operating system. Includes Active Directory as a set of processes and services.
 
 Winbind
   A component of Samba that allows Linux systems to authenticate users against a Windows domain. It can be used as an alternative to SSSD.
