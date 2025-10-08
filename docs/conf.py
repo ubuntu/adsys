@@ -208,7 +208,11 @@ templates_path = [".sphinx/_templates"]
 #       the sphinx_reredirects extension will be disabled.
 
 redirects = {
-    "tutorial/certificates-auto-enrolment": "../../tutorial/certificates-auto-enrollment",
+    "tutorial/certificates-auto-enrolment": "../../how-to/certificates-auto-enrollment",
+    "tutorial/certificates-auto-enrollment": "../../how-to/certificates-auto-enrollment",
+    "tutorials/certificates-auto-enrolment": "../../how-to/certificates-auto-enrollment",
+    "tutorials/certificates-auto-enrollment": "../../how-to/certificates-auto-enrollment",
+    "how-to/certificates-auto-enrolment": "../../how-to/certificates-auto-enrollment",
 }
 
 

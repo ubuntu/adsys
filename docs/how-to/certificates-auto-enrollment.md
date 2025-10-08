@@ -1,4 +1,4 @@
-(tut::certificates)=
+(howto::certificates)=
 # Certificates auto-enrollment
 
 ```{include} ../pro_content_notice.txt
@@ -10,10 +10,6 @@ Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GP
 This feature enables clients to seamlessly enroll for certificates from Active Directory Certificate Services.
 
 This tutorial is designed to help you develop an understanding of how to efficiently implement and manage certificate auto-enrollment, ensuring your systems remain secure and compliant with organizational policies.
-
-A video version of the tutorial is also available:
-
-[![Demo video](https://img.youtube.com/vi/RwVU7v0sEVY/hqdefault.jpg)](https://www.youtube.com/embed/RwVU7v0sEVY)
 
 ## What you need
 

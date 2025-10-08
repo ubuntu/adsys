@@ -17,7 +17,7 @@ free for up to five machines.
 | AppArmor profiles                  | {bdg-danger}`No`   | {bdg-success}`Yes` | {ref}`exp::apparmor`				    |
 | Network shares                     | {bdg-danger}`No`   | {bdg-success}`Yes` | {ref}`exp::network-shares`   			    |
 | Network proxy                      | {bdg-danger}`No`   | {bdg-success}`Yes` | {ref}`exp::network-proxy`    			    |
-| Certificate auto-enrollment        | {bdg-danger}`No`   | {bdg-success}`Yes` | {ref}`tut::certificates`     			    |
+| Certificate auto-enrollment        | {bdg-danger}`No`   | {bdg-success}`Yes` | {ref}`howto::certificates`     			    |
 
 
 ```{tip}

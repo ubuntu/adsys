@@ -22,7 +22,7 @@ explanation/index
 ````{grid} 1 1 2 2
 
 ```{grid-item-card}
-### [Tutorials](tutorial/index)
+### [Tutorial](tutorial/index)
 
 **Learn** to use ADSys for managing Ubuntu Desktop with Active Directory:
 
