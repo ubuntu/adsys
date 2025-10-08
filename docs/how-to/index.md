@@ -33,4 +33,5 @@ machines.
 :titlesonly:
 
 Using GPO with Ubuntu <use-gpo>
+Using certificates auto-enrollment <certificates-auto-enrollment>
 ```
