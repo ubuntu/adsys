@@ -242,6 +242,10 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 			users = systemPolkitAdmins + users
 		}
 
+		if !oldPolkit {
+			header = strings.ReplaceAll(header, "#", "//")
+		}
+
 		if _, err := policyKitConfF.WriteString(fmt.Sprintf(polkitTemplate, header, users) + "\n"); err != nil {
 			return err
 		}
