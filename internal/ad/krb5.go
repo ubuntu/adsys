@@ -32,7 +32,6 @@ import "C"
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 	"unsafe"
@@ -50,8 +49,7 @@ func TicketPath() (string, error) {
 	cKrb5cc, err := C.get_ticket_path()
 	defer C.free(unsafe.Pointer(cKrb5cc))
 	if err != nil {
-		//nolint:govet,staticcheck // printf,SA1006: this is an i18n formatted const string
-		return "", fmt.Errorf(gotext.Get("error initializing krb5 context, krb5_error_code: %d", err))
+		return "", errors.New(gotext.Get("error initializing krb5 context, krb5_error_code: %s", err))
 	}
 	krb5cc := C.GoString(cKrb5cc)
 	if krb5cc == "" {
@@ -64,8 +62,7 @@ func TicketPath() (string, error) {
 		return "", errors.Join(ErrTicketNotPresent, err)
 	}
 	if !fileInfo.Mode().IsRegular() {
-		//nolint:govet,staticcheck // printf,SA1006: this is an i18n formatted const string
-		return "", fmt.Errorf(gotext.Get("%q is not a regular file", krb5ccPath))
+		return "", errors.New(gotext.Get("%q is not a regular file", krb5ccPath))
 	}
 
 	return krb5ccPath, nil

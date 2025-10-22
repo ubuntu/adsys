@@ -353,8 +353,7 @@ func (a *App) printTicketPath(username string) (err error) {
 	// possibility of turning back. We're doing this on purpose right before the
 	// code path that requires this, with the program exiting immediately after.
 	if err := unix.Setuid(uid); err != nil {
-		//nolint:govet,staticcheck // printf,SA1006: this is an i18n formatted const string
-		return fmt.Errorf(gotext.Get("failed to set privileges to UID %d: %v", uid, err))
+		return errors.New(gotext.Get("failed to set privileges to UID %d: %v", uid, err))
 	}
 
 	krb5ccPath, err := ad.TicketPath()

@@ -438,8 +438,7 @@ func writeFileWithUIDGID(path string, uid, gid int, content string) (err error) 
 // mkdirAllWithUIDGID create a directory and sets its ownership to the specified uid and gid.
 func mkdirAllWithUIDGID(p string, uid, gid int) error {
 	if err := os.MkdirAll(p, 0750); err != nil {
-		//nolint:govet,staticcheck // printf,SA1006: this is an i18n formatted const string
-		return fmt.Errorf(gotext.Get("can't create directory %q: %v", p, err))
+		return errors.New(gotext.Get("can't create directory %q: %v", p, err))
 	}
 
 	return chown(p, nil, uid, gid)
@@ -468,8 +467,7 @@ func (m *Manager) cleanup(ctx context.Context, objectName string, isComputer boo
 	//nolint:govet // printf: this is an i18n formatted const string
 	defer decorate.OnError(&err, gotext.Get("failed to clean up mount policy files for %q", objectName))
 
-	//nolint:govet // printf: this is an i18n formatted const string
-	log.Debugf(ctx, gotext.Get("Cleaning up mount policy files for %q", objectName))
+	log.Debug(ctx, gotext.Get("Cleaning up mount policy files for %q", objectName))
 
 	if !isComputer {
 		var u *user.User

@@ -33,12 +33,10 @@ If a GPT.ini file does not exist for a directory, a warning will be issued and t
 			if service.Interactive() {
 				if status, _ := a.service.Status(context.Background()); strings.Contains(status, "running") {
 					msg := gotext.Get("another instance of the %s service is already running", watchdconfig.CmdName)
-
 					if !a.config.Force {
 						return errors.New(gotext.Get("%s, use --force to override", msg))
 					}
-					//nolint:govet // printf: this is an i18n formatted const string
-					log.Warning(context.Background(), gotext.Get(msg))
+					log.Warning(context.Background(), msg)
 				}
 			}
 
