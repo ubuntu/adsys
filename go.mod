@@ -1,8 +1,8 @@
 module github.com/ubuntu/adsys
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.23.10
+toolchain go1.24.6
 
 require (
 	github.com/charmbracelet/bubbles v0.20.0
