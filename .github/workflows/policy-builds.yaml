@@ -91,7 +91,7 @@ jobs:
       image: ${{ matrix.releases }}
     steps:
       - name: Download admxgen and definition files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: admxgen
       - name: Install desktop with all default package in container
@@ -132,7 +132,7 @@ jobs:
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
       - name: Download all available artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts
       - name: Display structure of downloaded files
@@ -176,7 +176,7 @@ jobs:
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
       - name: Download all available artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts
       - name: Display structure of downloaded files
@@ -212,17 +212,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Download adm template files for "all"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: adm-ALL
           path: policies/Ubuntu/all
       - name: Download adm template files for lts only
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: adm-LTS
           path: policies/Ubuntu/lts-only
       - name: Download generated documentation
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: generated-docs
           path: docs/reference/policies/
