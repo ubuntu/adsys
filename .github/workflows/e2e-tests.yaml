@@ -136,14 +136,14 @@ jobs:
         run: go run ./e2e/cmd/run_tests/98_collect_pam_coverage
         if: ${{ matrix.codename == 'noble' }}
       - name: Upload PAM coverage as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pam-coverage.zip
           path: ./output/pam-cobertura.xml
         if: ${{ matrix.codename == 'noble' }}
       - name: Collect logs on failure
         if: ${{ failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: e2e-logs-${{ matrix.codename }}
           path: logs/
