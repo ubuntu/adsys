@@ -49,10 +49,18 @@ jobs:
           set -eu
 
           function releaseDockerExists() {
+              if [ ! -f "docker_tags.list" ]; then
+                TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/ubuntu:pull" |\
+                  jq -r .token)
+                curl -H "Authorization: Bearer $TOKEN" \
+                  https://registry-1.docker.io/v2/library/ubuntu/tags/list 2>/dev/null |\
+                  jq -r '.tags[]' > docker_tags.list
+              fi
+
               local codename="${1}"
               exists=1
-              curl "https://registry.hub.docker.com/api/content/v1/repositories/public/library/ubuntu/tags?page_size=3000" 2>/dev/null | \
-                  jq -r '.results[].name' | grep -q "${codename}" && exists=0
+
+              grep -q "${codename}" docker_tags.list && exists=0
               echo "${exists}"
           }
 
