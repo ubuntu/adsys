@@ -33,7 +33,7 @@ Note: -
  * Not configured: A profile declared higher in the GPO hierarchy will be used if available.
 
 
-Supported on Ubuntu 20.04, 22.04, 24.04, 24.10, 25.04.
+Supported on Ubuntu 22.04, 24.04, 25.04, 25.10.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.
 
