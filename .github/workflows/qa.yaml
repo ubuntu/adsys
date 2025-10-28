@@ -95,7 +95,7 @@ jobs:
           gocov convert "${go_only_cov_file}" | gocov-xml > "${coverage_dir}/coverage.xml"
           reportgenerator -reports:"${coverage_dir}/*.xml" -targetdir:"${cod_cov_dir}" -reporttypes:Cobertura
       - name: Upload XML coverage report as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage.zip
           path: ./coverage/codecov/Cobertura.xml
@@ -150,7 +150,7 @@ jobs:
         # detection enabled and the code is mostly platform independent, this
         # should be a safe action to take.
       - name: Attach installer artifact to workflow run
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: adwatchd_setup
           path: installer/Output/adwatchd_setup.exe
