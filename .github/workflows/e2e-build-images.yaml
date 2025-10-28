@@ -42,7 +42,7 @@ jobs:
           versions=""
           while IFS=$'\t' read -r version codename; do
               # Filter out unsupported LTS releases
-              if [[ "${codename}" =~ trusty|xenial|bionic ]]; then
+              if [[ "${codename}" =~ xenial|bionic|focal ]]; then
                   continue
               fi
 
