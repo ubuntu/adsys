@@ -63,7 +63,6 @@ categories:
           - "/org/gnome/settings-daemon/plugins/media-keys/terminal"
           - "/org/gnome/shell/keybindings/toggle-overview"
           - "/org/gnome/shell/keybindings/toggle-application-view"
-          - "/org/gnome/desktop/wm/keybindings/panel-main-menu"
           - "/org/gnome/mutter/overlay-key"
       - displayname: "Screensaver"
         defaultpolicyclass: "User"

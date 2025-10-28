@@ -36,7 +36,6 @@
 - objectpath: "/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-type"
 - objectpath: "/org/gnome/shell/keybindings/toggle-overview"
 - objectpath: "/org/gnome/shell/keybindings/toggle-application-view"
-- objectpath: "/org/gnome/desktop/wm/keybindings/panel-main-menu"
 - objectpath: "/org/gnome/mutter/overlay-key"
 - objectpath: "/org/gnome/desktop/screensaver/picture-uri"
 - objectpath: "/org/gnome/desktop/screensaver/picture-options"
