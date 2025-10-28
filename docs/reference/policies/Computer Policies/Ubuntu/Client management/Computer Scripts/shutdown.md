@@ -14,7 +14,7 @@ Note: -
  The set of scripts are per boot, and refreshed only on new boot of the machine.
 
 
-Supported on Ubuntu 20.04, 22.04, 24.04, 24.10, 25.04.
+Supported on Ubuntu 22.04, 24.04, 25.04, 25.10.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.
 

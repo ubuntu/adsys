@@ -4,11 +4,14 @@ This key will initiate the “overlay”, which is a combination window overview
 
 - Type: dconf
 - Key: /org/gnome/mutter/overlay-key
-- Default: 'Super_L'
+- Default for 22.04: 'Super_L'
+- Default for 24.04: 'Super_L'
+- Default for 25.04: 'Super'
+- Default for 25.10: 'Super'
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 20.04, 22.04, 24.04, 24.10, 25.04.
+Supported on Ubuntu 22.04, 24.04, 25.04, 25.10.
 
 
 
