@@ -4,15 +4,11 @@ If the USBGuard service is present and this setting is enabled, USB devices will
 
 - Type: dconf
 - Key: /org/gnome/desktop/privacy/usb-protection
-- Default for 20.04: false
-- Default for 22.04: true
-- Default for 24.04: true
-- Default for 24.10: true
-- Default for 25.04: true
+- Default: true
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 20.04, 22.04, 24.04, 24.10, 25.04.
+Supported on Ubuntu 22.04, 24.04, 25.04, 25.10.
 
 
 

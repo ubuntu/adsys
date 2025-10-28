@@ -8,7 +8,7 @@ Text banner message to show in the login window.
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 20.04, 22.04, 24.04, 24.10, 25.04.
+Supported on Ubuntu 22.04, 24.04, 25.04, 25.10.
 
 
 

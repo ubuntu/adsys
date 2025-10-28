@@ -6,12 +6,12 @@ URI to use for the background image. Note that the backend only supports local (
 - Key: /org/gnome/desktop/background/picture-uri-dark
 - Default for 22.04: 'file:///usr/share/backgrounds/warty-final-ubuntu.png'
 - Default for 24.04: 'file:///usr/share/backgrounds/ubuntu-wallpaper-d.png'
-- Default for 24.10: 'file:///usr/share/backgrounds/ubuntu-wallpaper-d.png'
 - Default for 25.04: 'file:///usr/share/backgrounds/ubuntu-wallpaper-d.png'
+- Default for 25.10: 'file:///usr/share/backgrounds/ubuntu-wallpaper-d.png'
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 22.04, 24.04, 24.10, 25.04.
+Supported on Ubuntu 22.04, 24.04, 25.04, 25.10.
 
 
 
