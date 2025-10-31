@@ -24,7 +24,7 @@ require (
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
 	github.com/pkg/sftp v1.13.10
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
