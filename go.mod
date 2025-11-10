@@ -18,7 +18,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/kardianos/service v1.2.4
 	github.com/leonelquinteros/gotext v1.7.2
-	github.com/maruel/natural v1.1.1
+	github.com/maruel/natural v1.2.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.16.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
