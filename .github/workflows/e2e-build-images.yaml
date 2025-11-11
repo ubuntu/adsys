@@ -14,6 +14,10 @@ on:
   schedule:
     - cron: '42 0 * * 0' # 00:42 UTC every Sunday
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   supported-releases:
     name: Build matrix for supported ADSys and Ubuntu releases
