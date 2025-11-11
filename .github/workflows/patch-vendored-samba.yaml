@@ -5,6 +5,10 @@ on:
     - cron: '0 9 * * 1' # run on a weekly cadence
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   checkout_files: |
     python/samba/gp/gp_cert_auto_enroll_ext.py
