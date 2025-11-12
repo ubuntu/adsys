@@ -51,27 +51,27 @@
 /*
  * Refresh the group policies of current user
  */
-static int update_policy(pam_handle_t *pamh, const char *username, const char *krb5ccname, int debug) {
+static int update_policy(pam_handle_t* pamh, const char* username, const char* krb5ccname, int debug) {
     int retval;
     retval = pam_info(pamh, "Applying user settings");
     if (retval != PAM_SUCCESS) {
         return retval;
     }
 
-    if (memcmp(krb5ccname, (const char *)"FILE:", 5) == 0) {
+    if (memcmp(krb5ccname, (const char*)"FILE:", 5) == 0) {
         krb5ccname += 5;
     }
 
-    char **arggv;
-    arggv = calloc(6, sizeof(char *));
+    char** arggv;
+    arggv = calloc(6, sizeof(char*));
     if (arggv == NULL) {
         return PAM_BUF_ERR;
     }
 
     arggv[0] = "/sbin/adsysctl";
     arggv[1] = "update";
-    arggv[2] = (char *)(username);
-    arggv[3] = (char *)(krb5ccname);
+    arggv[2] = (char*)(username);
+    arggv[3] = (char*)(krb5ccname);
     arggv[4] = NULL;
     if (debug) {
         arggv[4] = "-vv";
@@ -130,15 +130,15 @@ static int update_policy(pam_handle_t *pamh, const char *username, const char *k
 /*
  * Refresh the group policies of machine
  */
-static int update_machine_policy(pam_handle_t *pamh, int debug) {
+static int update_machine_policy(pam_handle_t* pamh, int debug) {
     int retval;
     retval = pam_info(pamh, "Applying machine settings");
     if (retval != PAM_SUCCESS) {
         return retval;
     }
 
-    char **arggv;
-    arggv = calloc(5, sizeof(char *));
+    char** arggv;
+    arggv = calloc(5, sizeof(char*));
     if (arggv == NULL) {
         return PAM_BUF_ERR;
     }
@@ -202,18 +202,18 @@ static int update_machine_policy(pam_handle_t *pamh, int debug) {
 /*
  * Get default domain suffix from SSSD_CONF_PATH
  */
-static char *get_default_sss_domain(pam_handle_t *pamh) {
-    FILE *f = fopen(SSSD_CONF_PATH, "r");
+static char* get_default_sss_domain(pam_handle_t* pamh) {
+    FILE* f = fopen(SSSD_CONF_PATH, "r");
     if (f == NULL) {
         pam_syslog(pamh, LOG_ERR, "Failed to open sssd.conf");
         return NULL;
     }
 
     size_t buffsize = 256;
-    char *buf = malloc(sizeof(char) * buffsize);
-    char *domain = NULL;
+    char* buf = malloc(sizeof(char) * buffsize);
+    char* domain = NULL;
     while (getline(&buf, &buffsize, f) != -1) {
-        char *line = buf;
+        char* line = buf;
         // ignores whitespaces listed before the config key
         while (strlen(line) > 0 && (*line == ' ' || *line == '\t')) {
             line++;
@@ -236,7 +236,7 @@ static char *get_default_sss_domain(pam_handle_t *pamh) {
                 break;
             }
 
-            char *newline = strchr(domain, '\n');
+            char* newline = strchr(domain, '\n');
             if (newline != NULL) {
                 *newline = '\0';
             }
@@ -250,7 +250,7 @@ static char *get_default_sss_domain(pam_handle_t *pamh) {
         return NULL;
     }
 
-    char *ret = strdup(domain);
+    char* ret = strdup(domain);
     free(buf);
     return ret;
 }
@@ -258,10 +258,10 @@ static char *get_default_sss_domain(pam_handle_t *pamh) {
 /*
  * Converts domain\user to user@domain format
  */
-static char *slash_to_at_username(const char *username) {
-    char *backslash = strchr(username, '\\');
+static char* slash_to_at_username(const char* username) {
+    char* backslash = strchr(username, '\\');
     if (backslash != NULL) {
-        char *ret = malloc((strlen(username) + 1) * sizeof(char));
+        char* ret = malloc((strlen(username) + 1) * sizeof(char));
         strcpy(ret, backslash + 1);
         strcat(ret, "@");
         strncat(ret, username, backslash - username);
@@ -273,17 +273,17 @@ static char *slash_to_at_username(const char *username) {
 /*
  * Set DCONF_PROFILE for current user
  */
-static int set_dconf_profile(pam_handle_t *pamh, const char *username, int debug) {
+static int set_dconf_profile(pam_handle_t* pamh, const char* username, int debug) {
     int retval = PAM_SUCCESS;
 
-    char *profile_name = slash_to_at_username(username);
+    char* profile_name = slash_to_at_username(username);
 
     // We need to check if the profile name does not already contain the domain.
     if (strchr(profile_name, '@') == NULL) {
-        char *domain = get_default_sss_domain(pamh);
+        char* domain = get_default_sss_domain(pamh);
         if (domain != NULL) {
             free(profile_name);
-            profile_name = (char *)malloc((strlen(username) + strlen(domain) + 2) * sizeof(char));
+            profile_name = (char*)malloc((strlen(username) + strlen(domain) + 2) * sizeof(char));
             strcpy(profile_name, username);
             strcat(profile_name, "@");
             strcat(profile_name, domain);
@@ -292,11 +292,11 @@ static int set_dconf_profile(pam_handle_t *pamh, const char *username, int debug
     }
     // We need to lowercase the profile_name, as it can have uppercased letters and we
     // always normalize it in adsys.
-    for (char *s = profile_name; *s; s++) {
+    for (char* s = profile_name; *s; s++) {
         *s = tolower(*s);
     }
 
-    char *envvar;
+    char* envvar;
     if (asprintf(&envvar, "DCONF_PROFILE=%s", profile_name) < 0) {
         pam_syslog(pamh, LOG_CRIT, "out of memory");
         free(profile_name);
@@ -312,9 +312,9 @@ static int set_dconf_profile(pam_handle_t *pamh, const char *username, int debug
 /*
  * Get the ticket path for the user by calling adsysctl policy debug ticket-path
  */
-static int get_krb5cc_ticket_path(pam_handle_t *pamh, const char *username, char **path) {
-    char **arggv;
-    arggv = calloc(6, sizeof(char *));
+static int get_krb5cc_ticket_path(pam_handle_t* pamh, const char* username, char** path) {
+    char** arggv;
+    arggv = calloc(6, sizeof(char*));
     if (arggv == NULL) {
         return 1;
     }
@@ -323,7 +323,7 @@ static int get_krb5cc_ticket_path(pam_handle_t *pamh, const char *username, char
     arggv[1] = "policy";
     arggv[2] = "debug";
     arggv[3] = "ticket-path";
-    arggv[4] = (char *)(username);
+    arggv[4] = (char*)(username);
     arggv[5] = NULL;
 
     int pipefd[2];
@@ -374,7 +374,7 @@ static int get_krb5cc_ticket_path(pam_handle_t *pamh, const char *username, char
                 return 1;
             }
             ticket_path[n] = '\0';
-            char *newline = strchr(ticket_path, '\n');
+            char* newline = strchr(ticket_path, '\n');
             if (newline != NULL) {
                 *newline = '\0';
             }
@@ -396,11 +396,11 @@ static int get_krb5cc_ticket_path(pam_handle_t *pamh, const char *username, char
     return 0; /* command had no output and exited with 0 */
 }
 
-PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) { return PAM_IGNORE; }
+PAM_EXTERN int pam_sm_authenticate(pam_handle_t* pamh, int flags, int argc, const char** argv) { return PAM_IGNORE; }
 
-PAM_EXTERN int pam_sm_setcred(pam_handle_t *pamh, int flags, int argc, const char **argv) { return PAM_IGNORE; }
+PAM_EXTERN int pam_sm_setcred(pam_handle_t* pamh, int flags, int argc, const char** argv) { return PAM_IGNORE; }
 
-PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, const char **argv) {
+PAM_EXTERN int pam_sm_open_session(pam_handle_t* pamh, int flags, int argc, const char** argv) {
     int retval = PAM_SUCCESS;
 
     int debug = 0;
@@ -414,8 +414,8 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
         }
     }
 
-    const char *username;
-    if (pam_get_item(pamh, PAM_USER, (void *)&username) != PAM_SUCCESS) {
+    const char* username;
+    if (pam_get_item(pamh, PAM_USER, (void*)&username) != PAM_SUCCESS) {
         D(("pam_get_item failed for PAM_USER"));
         return PAM_SYSTEM_ERR; /* let pam_get_item() log the error */
     }
@@ -425,9 +425,9 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
      * We do an exception for GDM which is handled by the machine's GPO
      * and we must set the DCONF_PROFILE environment variable.
      */
-    const char *krb5ccname = pam_getenv(pamh, "KRB5CCNAME");
+    const char* krb5ccname = pam_getenv(pamh, "KRB5CCNAME");
     if (krb5ccname == NULL && strcmp(username, "gdm") != 0) {
-        char *ticket_path = NULL;
+        char* ticket_path = NULL;
 
         // An error here means the detect_cached_ticket setting is enabled
         if (get_krb5cc_ticket_path(pamh, username, &ticket_path) != 0) {
@@ -442,7 +442,7 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
         }
 
         // We have a ticket, proceed with setting the environment variable
-        char *envvar;
+        char* envvar;
         if (asprintf(&envvar, "KRB5CCNAME=FILE:%s", ticket_path) < 0) {
             pam_syslog(pamh, LOG_CRIT, "out of memory");
             free(ticket_path);
@@ -497,6 +497,6 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc, cons
     return update_policy(pamh, username, krb5ccname, debug);
 }
 
-PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc, const char **argv) { return PAM_SUCCESS; }
+PAM_EXTERN int pam_sm_close_session(pam_handle_t* pamh, int flags, int argc, const char** argv) { return PAM_SUCCESS; }
 
 /* end of module definition */
