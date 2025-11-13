@@ -1,15 +1,16 @@
 // TiCS: disabled // This is a kerberos C library that we are mocking for testing purposes.
 
-#include "libkrb5_mock.h"
-
 #include <krb5.h>
 #include <stdio.h>
 #include <string.h>
 
-char *get_krb5_mock_behavior() { return getenv("ADSYS_KRB5_BEHAVIOR"); }
+// clang-format off // This needs to be include as a file rather than a system library
+#include "libkrb5_mock.h"
 
-const char *KRB5_CALLCONV krb5_cc_default_name(krb5_context context) {
-    char *behavior = get_krb5_mock_behavior();
+char* get_krb5_mock_behavior() { return getenv("ADSYS_KRB5_BEHAVIOR"); }
+
+const char* KRB5_CALLCONV krb5_cc_default_name(krb5_context context) {
+    char* behavior = get_krb5_mock_behavior();
     if (behavior == NULL) {
         printf("ADSYS_KRB5_BEHAVIOR not set, returning dummy value...");
         return "FILE:/tmp/krb5cc_0";
@@ -23,7 +24,7 @@ const char *KRB5_CALLCONV krb5_cc_default_name(krb5_context context) {
     }
     if (strstr(behavior, "return_ccache") != NULL) {
         // split the string by the first colon
-        char *ccname = strtok(behavior, ":");
+        char* ccname = strtok(behavior, ":");
         ccname = strtok(NULL, "");
         return ccname;
     }
