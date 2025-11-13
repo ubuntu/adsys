@@ -124,7 +124,7 @@ jobs:
           cert: ${{ secrets.VPN_CERT }}
           key: ${{ secrets.VPN_KEY }}
       - name: Provision client VM
-        run: go run ./e2e/cmd/run_tests/01_provision_client
+        run: go run ./e2e/cmd/run_tests/01_provision_client --debug -k
       - name: Provision AD server
         run: go run ./e2e/cmd/run_tests/02_provision_ad
       - name: Recompile PAM module with coverage support
