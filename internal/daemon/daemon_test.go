@@ -1,6 +1,7 @@
 package daemon_test
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"net"
@@ -12,7 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/daemon"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
