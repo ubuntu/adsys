@@ -38,6 +38,7 @@ func TestApplyPolicy(t *testing.T) {
 		"Set client multiple users admins":             {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com,domain\\bob,carole cosmic@otherdomain.com"}}},
 		"Set client group admins":                      {entries: []entry.Entry{{Key: "client-admins", Value: "%group@domain.com"}}},
 		"Set client mixed with users and group admins": {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com,%group@domain.com"}}},
+		"Set client admins with HOSTNAME substitution": {entries: []entry.Entry{{Key: "client-admins", Value: "secLocalAdmin-$HOSTNAME@domain.com"}}},
 		"Empty client AD admins":                       {entries: []entry.Entry{{Key: "client-admins", Value: ""}}},
 		"No client AD admins":                          {entries: []entry.Entry{{Key: "client-admins", Disabled: true}}},
 

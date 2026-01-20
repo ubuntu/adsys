@@ -126,7 +126,13 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
 
-	// We don’t create empty files if there is no entries. Still remove any previous version.
+	// Get hostname for variable substitution
+	hostname, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("can't get hostname: %w", err)
+	}
+
+	// We don't create empty files if there is no entries. Still remove any previous version.
 	if len(entries) == 0 {
 		if err := os.Remove(sudoersConf); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
@@ -195,8 +201,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 				continue
 			}
 
+			// Substitute $HOSTNAME with actual hostname
+			value := strings.ReplaceAll(entry.Value, "$HOSTNAME", hostname)
+
 			var polkitElem []string
-			for _, e := range splitAndNormalizeUsersAndGroups(ctx, entry.Value) {
+			for _, e := range splitAndNormalizeUsersAndGroups(ctx, value) {
 				contentSudo += fmt.Sprintf("\"%s\"	ALL=(ALL:ALL) ALL\n", e)
 				polkitID := fmt.Sprintf("unix-user:%s", e)
 				if strings.HasPrefix(e, "%") {
