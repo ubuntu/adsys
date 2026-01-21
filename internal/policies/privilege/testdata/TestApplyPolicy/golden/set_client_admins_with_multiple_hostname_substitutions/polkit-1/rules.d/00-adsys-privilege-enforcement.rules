@@ -3,5 +3,5 @@
 // Any changes will be overwritten.
 
 polkit.addAdminRule(function(action, subject){
-	return ["unix-user:secLocalAdmin-testhost@domain.com"];
+	return ["unix-user:x-testhost-y-testhost@domain.com"];
 });

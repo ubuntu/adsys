@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -39,6 +40,8 @@ func TestApplyPolicy(t *testing.T) {
 		"Set client group admins":                      {entries: []entry.Entry{{Key: "client-admins", Value: "%group@domain.com"}}},
 		"Set client mixed with users and group admins": {entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com,%group@domain.com"}}},
 		"Set client admins with HOSTNAME substitution": {entries: []entry.Entry{{Key: "client-admins", Value: "secLocalAdmin-$HOSTNAME@domain.com"}}},
+		"Set client admins with multiple HOSTNAME substitutions": {entries: []entry.Entry{{Key: "client-admins", Value: "x-$HOSTNAME-y-$HOSTNAME@domain.com"}}},
+		"Set client group admins with HOSTNAME substitution": {entries: []entry.Entry{{Key: "client-admins", Value: "%admins-$HOSTNAME@domain.com"}}},
 		"Empty client AD admins":                       {entries: []entry.Entry{{Key: "client-admins", Value: ""}}},
 		"No client AD admins":                          {entries: []entry.Entry{{Key: "client-admins", Disabled: true}}},
 
@@ -125,6 +128,10 @@ func TestApplyPolicy(t *testing.T) {
 			}
 
 			m := privilege.NewWithDirs(sudoersDir, policyKitDir, tc.polkitSystemReservedPath)
+			// Use a fixed test hostname for HOSTNAME substitution tests to ensure golden files are machine-independent
+			if strings.Contains(name, "HOSTNAME") {
+				m.TestHostname = "testhost"
+			}
 			err = m.ApplyPolicy(context.Background(), "ubuntu", !tc.notComputer, tc.entries)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")

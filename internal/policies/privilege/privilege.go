@@ -86,6 +86,7 @@ type Manager struct {
 
 	// This is for testing purposes only
 	policyKitSystemDir string
+	TestHostname       string
 }
 
 // NewWithDirs creates a manager with a specific root directory.
@@ -127,9 +128,16 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
 
 	// Get hostname for variable substitution
-	hostname, err := os.Hostname()
-	if err != nil {
-		return fmt.Errorf("can't get hostname: %w", err)
+	var hostname string
+	if m.TestHostname != "" {
+		// Use test hostname if provided (for testing)
+		hostname = m.TestHostname
+	} else {
+		var hostnameErr error
+		hostname, hostnameErr = os.Hostname()
+		if hostnameErr != nil {
+			return fmt.Errorf("can't get hostname: %w", hostnameErr)
+		}
 	}
 
 	// We don't create empty files if there is no entries. Still remove any previous version.
