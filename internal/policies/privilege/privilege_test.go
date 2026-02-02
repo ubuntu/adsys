@@ -128,10 +128,6 @@ func TestApplyPolicy(t *testing.T) {
 			}
 
 			m := privilege.NewWithDirs(sudoersDir, policyKitDir, tc.polkitSystemReservedPath)
-			// Use a fixed test hostname for HOSTNAME substitution tests to ensure golden files are machine-independent
-			if strings.Contains(name, "HOSTNAME") {
-				m.TestHostname = "testhost"
-			}
 			err = m.ApplyPolicy(context.Background(), "ubuntu", !tc.notComputer, tc.entries)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")
@@ -139,7 +135,75 @@ func TestApplyPolicy(t *testing.T) {
 			}
 			require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
 
+			// Replace hostname in generated files for tests using $HOSTNAME substitution
+			// This ensures golden files are machine-independent
+			needsReplacement := false
+			for _, entry := range tc.entries {
+				if entry.Key == "client-admins" && strings.Contains(entry.Value, "$HOSTNAME") {
+					needsReplacement = true
+					break
+				}
+			}
+			if needsReplacement {
+				replaceHostnameInGeneratedFiles(t, tmpRootDir, "testhost")
+			}
+
 			testutils.CompareTreesWithFiltering(t, filepath.Join(tmpRootDir, "etc"), testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
+	}
+}
+
+// replaceHostnameInGeneratedFiles replaces the actual hostname with a generic one in generated files
+// to ensure golden files are machine-independent.
+func replaceHostnameInGeneratedFiles(t *testing.T, rootDir, replacement string) {
+	t.Helper()
+
+	// Get the actual hostname
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: Failed to get hostname")
+	if hostname == replacement {
+		// Already using the replacement, no need to replace
+		return
+	}
+
+	// Files that might contain the hostname
+	files := []string{
+		filepath.Join(rootDir, "etc", "sudoers.d", "99-adsys-privilege-enforcement"),
+		filepath.Join(rootDir, "etc", "polkit-1", "rules.d", "00-adsys-privilege-enforcement.rules"),
+		filepath.Join(rootDir, "etc", "polkit-1", "localauthority.conf.d", "99-adsys-privilege-enforcement.conf"),
+	}
+
+	for _, file := range files {
+		// Check if file exists
+		if _, err := os.Stat(file); os.IsNotExist(err) {
+			continue
+		}
+
+		// Read file content
+		content, err := os.ReadFile(file)
+		require.NoError(t, err, "Setup: Failed to read file %s", file)
+
+		// Replace hostname with generic one
+		newContent := strings.ReplaceAll(string(content), hostname, replacement)
+
+		// Write back if changed
+		if string(content) != newContent {
+			// Get original file permissions
+			info, err := os.Stat(file)
+			require.NoError(t, err, "Setup: Failed to stat file %s", file)
+			originalMode := info.Mode()
+
+			// Make file writable temporarily
+			err = os.Chmod(file, 0644)
+			require.NoError(t, err, "Setup: Failed to make file writable %s", file)
+
+			// Write the modified content
+			err = os.WriteFile(file, []byte(newContent), originalMode)
+			require.NoError(t, err, "Setup: Failed to write file %s", file)
+
+			// Restore original permissions
+			err = os.Chmod(file, originalMode)
+			require.NoError(t, err, "Setup: Failed to restore file permissions %s", file)
+		}
 	}
 }

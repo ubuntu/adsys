@@ -86,7 +86,6 @@ type Manager struct {
 
 	// This is for testing purposes only
 	policyKitSystemDir string
-	TestHostname       string
 }
 
 // NewWithDirs creates a manager with a specific root directory.
@@ -126,19 +125,6 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	}
 
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
-
-	// Get hostname for variable substitution
-	var hostname string
-	if m.TestHostname != "" {
-		// Use test hostname if provided (for testing)
-		hostname = m.TestHostname
-	} else {
-		var hostnameErr error
-		hostname, hostnameErr = os.Hostname()
-		if hostnameErr != nil {
-			return fmt.Errorf("can't get hostname: %w", hostnameErr)
-		}
-	}
 
 	// We don't create empty files if there is no entries. Still remove any previous version.
 	if len(entries) == 0 {
@@ -188,6 +174,25 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	allowLocalAdmins := true
 	var polkitAdditionalUsersGroups []string
+
+	// Check if any entry needs hostname substitution
+	needsHostname := false
+	for _, entry := range entries {
+		if entry.Key == "client-admins" && strings.Contains(entry.Value, "$HOSTNAME") {
+			needsHostname = true
+			break
+		}
+	}
+
+	// Get hostname for variable substitution (only if needed)
+	var hostname string
+	if needsHostname {
+		var hostnameErr error
+		hostname, hostnameErr = os.Hostname()
+		if hostnameErr != nil {
+			return fmt.Errorf("can't get hostname: %w", hostnameErr)
+		}
+	}
 
 	for _, entry := range entries {
 		var contentSudo string
