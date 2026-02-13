@@ -16,7 +16,7 @@ Note: -
  * Disabled: The profiles are removed from the target machine, and any related rules are unloaded.
 
 
-Supported on Ubuntu 22.04, 24.04, 25.10.
+Supported on Ubuntu 22.04, 24.04, 25.10, 26.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.
 
