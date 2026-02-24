@@ -24,6 +24,7 @@ backends
 boolean
 CAs
 CEP
+cepces
 certmonger
 CES
 changelog
@@ -88,6 +89,7 @@ lockscreen
 LTS
 MacOS
 macOS
+manpage
 manpages
 multiline
 multiText

@@ -231,11 +231,12 @@ templates_path = [".sphinx/_templates"]
 #       the sphinx_reredirects extension will be disabled.
 
 redirects = {
-    "tutorial/certificates-auto-enrolment": "../../how-to/certificates-auto-enrollment",
-    "tutorial/certificates-auto-enrollment": "../../how-to/certificates-auto-enrollment",
-    "tutorials/certificates-auto-enrolment": "../../how-to/certificates-auto-enrollment",
-    "tutorials/certificates-auto-enrollment": "../../how-to/certificates-auto-enrollment",
-    "how-to/certificates-auto-enrolment": "../../how-to/certificates-auto-enrollment",
+    "tutorial/certificates-auto-enrolment": "../../how-to/certificates",
+    "tutorial/certificates-auto-enrollment": "../../how-to/certificates",
+    "tutorials/certificates-auto-enrolment": "../../how-to/certificates",
+    "tutorials/certificates-auto-enrollment": "../../how-to/certificates",
+    "how-to/certificates-auto-enrolment": "../../how-to/certificates",
+    "how-to/certificates-auto-enrollment": "../../how-to/certificates",
 }
 
 
@@ -250,7 +251,7 @@ redirects = {
 linkcheck_ignore = [
     "http://127.0.0.1:8000",
     "https://leonelson.com/2011/08/15/how-to-increase-your-csr-key-size-on-microsoft-iis-without-removing-the-production-certificate/",
-    "https://manpages.ubuntu.com/manpages/man8/*",
+    "https://manpages.ubuntu.com/manpages/*",
     "https://www.samba.org/*",  # giving erroneous link failures as of June 16th 2025
     "https://wiki.samba.org/*",  # giving erroneous link failures as of June 16th 2025
 ]

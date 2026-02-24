@@ -1,21 +1,18 @@
 ---
 myst:
   html_meta:
-    description: "Learn how to configure certificate auto-enrollment for Ubuntu clients using Active Directory Certificate Services and GPO policies."
+    description: "Use certificate auto-enrollment to access a VPN and virtual network resources."
 ---
 
-(howto::certificates)=
-# Certificates auto-enrollment
+(howto::certificates-vpn)=
+# Using a VPN with certificate auto-enrollment
 
-```{include} ../pro_content_notice.txt
+```{include} ../../pro_content_notice.txt
     :start-after: <!-- Include start pro -->
     :end-before: <!-- Include end pro -->
 ```
 
-Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support. 
-This feature enables clients to seamlessly enroll for certificates from Active Directory Certificate Services.
-
-This tutorial is designed to help you develop an understanding of how to efficiently implement and manage certificate auto-enrollment, ensuring your systems remain secure and compliant with organizational policies.
+This guide is designed to help you develop an understanding of how to efficiently implement and manage certificate auto-enrollment, ensuring your systems remain secure and compliant with organizational policies.
 
 ## What you need
 
@@ -34,13 +31,13 @@ This tutorial is designed to help you develop an understanding of how to efficie
 You will need an installation of ADSys on your client Ubuntu Machine and the client should be joined to an {term}`Active Directory` (AD) domain.
 Please refer to our how-to guides on setting up the Ubuntu client machine:
 
-- [Join machine to AD during installation](../how-to/join-ad-installation.md)
-- [Join machine to AD manually](../how-to/join-ad-manually.md)
-- [Install ADSys](../how-to/set-up-adsys.md)
+- [Join machine to AD during installation](../../how-to/join-ad-installation.md)
+- [Join machine to AD manually](../../how-to/join-ad-manually.md)
+- [Install ADSys](../../how-to/set-up-adsys.md)
 
 For the Windows {term}`domain controller`, refer to:
 
-- [Set up AD](../how-to/set-up-ad.md)
+- [Set up AD](../../how-to/set-up-ad.md)
 
 ## Configure the auto-enrollment policy
 
