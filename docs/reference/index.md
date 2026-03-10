@@ -44,16 +44,20 @@ A comprehensive reference of policies supported by ADSys.
 policies/index
 ```
 
-## Glossary
+## Glossary and resources
 
 A glossary of technical terms used in the ADSys documentation.
 This may be especially useful for Windows sysadmins who are not familiar with
 Linux tools and terminology.
 
+Links to external resources are also provided, to support troubleshooting of
+external tools, including certmonger and SSSD.
+
 ```{toctree}
 :titlesonly:
 
 glossary
+External resources <external-links>
 ```
 
 ## Features

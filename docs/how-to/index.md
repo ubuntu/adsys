@@ -33,5 +33,14 @@ machines.
 :titlesonly:
 
 Using GPO with Ubuntu <use-gpo>
-Using certificates auto-enrollment <certificates-auto-enrollment>
+```
+
+## Certificate auto-enrollment
+
+Set up, configure and troubleshoot certificate auto-enrollment.
+
+```{toctree}
+:titlesonly:
+
+Certificate auto-enrollment <certificates/index>
 ```
