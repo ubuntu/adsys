@@ -14,7 +14,7 @@ Note: -
  The set of scripts are per session, and refreshed only on new session creation.
 
 
-Supported on Ubuntu 22.04, 24.04, 25.10.
+Supported on Ubuntu 22.04, 24.04, 25.10, 26.04.
 
 An Ubuntu Pro subscription on the client is required to apply this policy.
 

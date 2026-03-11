@@ -4,11 +4,14 @@ The login screen can optionally show a small image to provide site administrator
 
 - Type: dconf
 - Key: /org/gnome/login-screen/logo
-- Default: '/usr/share/plymouth/ubuntu-logo.png'
+- Default for 22.04: '/usr/share/plymouth/ubuntu-logo.png'
+- Default for 24.04: '/usr/share/plymouth/ubuntu-logo.png'
+- Default for 25.10: '/usr/share/plymouth/ubuntu-logo.png'
+- Default for 26.04: '/usr/share/pixmaps/ubuntu-logo-text-dark.svg'
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 22.04, 24.04, 25.10.
+Supported on Ubuntu 22.04, 24.04, 25.10, 26.04.
 
 
 
