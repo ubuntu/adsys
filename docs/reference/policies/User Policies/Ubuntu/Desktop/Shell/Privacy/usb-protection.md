@@ -8,7 +8,7 @@ If the USBGuard service is present and this setting is enabled, USB devices will
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 22.04, 24.04, 25.10.
+Supported on Ubuntu 22.04, 24.04, 25.10, 26.04.
 
 
 
