@@ -181,6 +181,8 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 		downloadables:  make(map[string]*downloadable),
 		gpoListCmd:     args.gpoListCmd,
 		gpoListTimeout: args.gpoListTimeout,
+
+		withoutKerberos: args.withoutKerberos,
 	}, nil
 }
 
