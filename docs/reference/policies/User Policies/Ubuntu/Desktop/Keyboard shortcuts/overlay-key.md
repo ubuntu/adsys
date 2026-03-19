@@ -7,10 +7,11 @@ This key will initiate the “overlay”, which is a combination window overview
 - Default for 22.04: 'Super_L'
 - Default for 24.04: 'Super_L'
 - Default for 25.10: 'Super'
+- Default for 26.04: 'Super'
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 22.04, 24.04, 25.10.
+Supported on Ubuntu 22.04, 24.04, 25.10, 26.04.
 
 
 
