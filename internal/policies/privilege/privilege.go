@@ -126,7 +126,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 	log.Debugf(ctx, "Applying privilege policy to %s", objectName)
 
-	// We don’t create empty files if there is no entries. Still remove any previous version.
+	// We don't create empty files if there is no entries. Still remove any previous version.
 	if len(entries) == 0 {
 		if err := os.Remove(sudoersConf); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
@@ -175,6 +175,25 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	allowLocalAdmins := true
 	var polkitAdditionalUsersGroups []string
 
+	// Check if any entry needs hostname substitution
+	needsHostname := false
+	for _, entry := range entries {
+		if entry.Key == "client-admins" && strings.Contains(entry.Value, "$HOSTNAME") {
+			needsHostname = true
+			break
+		}
+	}
+
+	// Get hostname for variable substitution (only if needed)
+	var hostname string
+	if needsHostname {
+		var hostnameErr error
+		hostname, hostnameErr = os.Hostname()
+		if hostnameErr != nil {
+			return fmt.Errorf("can't get hostname: %w", hostnameErr)
+		}
+	}
+
 	for _, entry := range entries {
 		var contentSudo string
 
@@ -195,8 +214,11 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 				continue
 			}
 
+			// Substitute $HOSTNAME with actual hostname
+			value := strings.ReplaceAll(entry.Value, "$HOSTNAME", hostname)
+
 			var polkitElem []string
-			for _, e := range splitAndNormalizeUsersAndGroups(ctx, entry.Value) {
+			for _, e := range splitAndNormalizeUsersAndGroups(ctx, value) {
 				contentSudo += fmt.Sprintf("\"%s\"	ALL=(ALL:ALL) ALL\n", e)
 				polkitID := fmt.Sprintf("unix-user:%s", e)
 				if strings.HasPrefix(e, "%") {
