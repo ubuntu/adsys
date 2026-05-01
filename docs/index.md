@@ -31,7 +31,7 @@ explanation/index
 * **Certificates**: [Setting up auto-enrollment](/how-to/certificates/setup) • [Configuring auto-enrollment](/how-to/certificates/configure) • [Using a VPN with certificate auto-enrollment](/how-to/certificates/vpn) • [Troubleshooting certificate auto-enrollment](/how-to/certificates/troubleshoot) • [Explanation of certificate auto-enrollment](/explanation/certificates)
 * **Command-line tools**: [adsysctl CLI](/reference/adsysctl-cli) • [adsysd CLI](/reference/adsysd-cli) • [adwatchd CLI](/reference/adwatchd-cli)
 * **ADSys security**: [Security overview](/explanation/security-overview)
-* **ADSys reference**: [Standard and Pro features](/reference/features) • [Release notes](/reference/release-notes) • [Glossary](/reference/glossary)
+* **ADSys reference**: [Standard and Pro features](/reference/features) • [Glossary](/reference/glossary)
 * **External resources**: [All](ref::external) • [Active Directory](ref::ad-links) • [certmonger](ref::certmonger-links) • [cepces](ref::cepces-links) • [Kerberos](ref::kerberos-links) • [LDAP](ref::ldap-links) • [Samba](ref::samba-links) • [SSSD](ref::sssd-links) 
 
 ## How the documentation is organised

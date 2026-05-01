@@ -237,6 +237,7 @@ redirects = {
     "tutorials/certificates-auto-enrollment": "../../how-to/certificates",
     "how-to/certificates-auto-enrolment": "../../how-to/certificates",
     "how-to/certificates-auto-enrollment": "../../how-to/certificates",
+    "reference/release-notes": "https://documentation.ubuntu.com/release-notes/",
 }
 
 
