@@ -1,6 +1,6 @@
 module github.com/ubuntu/adsys/tools
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/golang/protobuf v1.5.4
