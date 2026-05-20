@@ -58,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Replace with updated Samba source
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           path: .github
       - name: Prepare patch working directory
