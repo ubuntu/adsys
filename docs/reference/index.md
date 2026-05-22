@@ -63,11 +63,10 @@ External resources <external-links>
 ## Features
 
 Overview of ADSys' standard features and features enabled with a Pro
-subscription, in addition to release notes for ADSys.
+subscription.
 
 ```{toctree}
 :titlesonly:
 
 features
-release-notes
 ```
