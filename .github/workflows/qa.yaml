@@ -65,7 +65,7 @@ jobs:
 
           # Coverage dependencies
           go install github.com/AlekSi/gocov-xml@latest
-          go install github.com/axw/gocov/gocov@latest
+          go install github.com/adombeck/gocov/gocov@latest
           dotnet tool install -g dotnet-reportgenerator-globaltool
       - name: Set required environment variables
         run: echo "SUDO_PACKAGES=$(cat debian/tests/.sudo-packages)" >> $GITHUB_ENV
