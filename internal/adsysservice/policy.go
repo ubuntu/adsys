@@ -11,7 +11,6 @@ import (
 	"github.com/ubuntu/adsys/internal/authorizer"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/policies"
-	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/sync/errgroup"
 )
@@ -165,9 +164,9 @@ func (s *Service) CertAutoEnrollScript(_ *adsys.Empty, stream adsys.Service_Cert
 	}
 
 	if err := stream.Send(&adsys.StringResponse{
-		Msg: certificate.CertEnrollCode,
+		Msg: "Certificate autoenrollment is now handled natively by adsys without an external script.",
 	}); err != nil {
-		log.Warningf(stream.Context(), "couldn't send certificate autoenrollment script to client: %v", err)
+		log.Warningf(stream.Context(), "couldn't send certificate autoenrollment info to client: %v", err)
 	}
 
 	return nil
