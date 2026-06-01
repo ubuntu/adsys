@@ -70,8 +70,9 @@ type options struct {
 	apparmorFsDir  string
 	systemUnitDir  string
 	globalTrustDir string
-	adBackend      string
-	gpoListTimeout time.Duration
+	adBackend             string
+	certificateEnrollment string
+	gpoListTimeout        time.Duration
 	sssConfig      sss.Config
 	winbindConfig  winbind.Config
 	authorizer     authorizerer
@@ -168,6 +169,14 @@ func WithGlobalTrustDir(p string) func(o *options) error {
 func WithADBackend(backend string) func(o *options) error {
 	return func(o *options) error {
 		o.adBackend = backend
+		return nil
+	}
+}
+
+// WithCertificateEnrollment specifies the certificate enrollment method (ldap or cepces).
+func WithCertificateEnrollment(method string) func(o *options) error {
+	return func(o *options) error {
+		o.certificateEnrollment = method
 		return nil
 	}
 }
@@ -320,6 +329,9 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	}
 	if args.globalTrustDir != "" {
 		policyOptions = append(policyOptions, policies.WithGlobalTrustDir(args.globalTrustDir))
+	}
+	if args.certificateEnrollment != "" {
+		policyOptions = append(policyOptions, policies.WithCertificateEnrollment(args.certificateEnrollment))
 	}
 	m, err := policies.NewManager(bus, hostname, adBackend, policyOptions...)
 	if err != nil {
