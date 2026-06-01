@@ -1,3 +1,9 @@
+adsys (0.16.5~test12) resolute; urgency=medium
+
+  * Testing certificates changes
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Tue, 12 May 2026 14:14:54 +0200
+
 adsys (0.16.4) resolute; urgency=medium
 
   * Bump Go version to 1.24

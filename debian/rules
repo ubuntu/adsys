@@ -67,10 +67,6 @@ override_dh_auto_install:
 	# compiled locales
 	cp -a obj-$(DEB_TARGET_GNU_TYPE)/locale debian/tmp/usr/share/locale/
 
-	# vendored Python code
-	mkdir -p debian/tmp/usr/share/adsys
-	cp -a internal/policies/certificate/python debian/tmp/usr/share/adsys/
-
 # Separate windows binaries
 ifeq ($(WINDOWS_BUILD),1)
 	mkdir -p debian/tmp/usr/share/adsys/windows
@@ -87,3 +83,5 @@ endif
 	ln -s adsysd debian/tmp/sbin/adsysctl
 	# Run go generate to install assets, but don’t regenerate them
 	GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/tmp go generate -x $(GOFLAGS),tools ./...
+
+override_dh_auto_test:

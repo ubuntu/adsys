@@ -16,7 +16,6 @@ Build-Depends: debhelper-compat (= 13),
                libwbclient-dev,
                python3,
                python3-samba,
-               samba,
                samba-dsdb-modules,
 Standards-Version: 4.5.1
 XS-Go-Import-Path: github.com/ubuntu/adsys
@@ -32,8 +31,6 @@ Architecture: any
 Built-Using: ${misc:Built-Using},
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         python3,
-         python3-samba,
          samba-dsdb-modules,
          sssd | winbind,
          sssd | krb5-user,
@@ -44,9 +41,11 @@ Depends: ${shlibs:Depends},
          gvfs,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
+            python3,
+            python3-samba,
+            python3-cepces,
 Suggests: curlftpfs,
           ubuntu-proxy-manager,
-          python3-cepces,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
 
