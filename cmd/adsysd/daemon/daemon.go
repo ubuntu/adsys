@@ -51,10 +51,11 @@ type daemonConfig struct {
 	SystemUnitDir  string `mapstructure:"systemunit_dir"`
 	GlobalTrustDir string `mapstructure:"global_trust_dir"`
 
-	AdBackend      string         `mapstructure:"ad_backend"`
-	SSSdConfig     sss.Config     `mapstructure:"sssd"`
-	WinbindConfig  winbind.Config `mapstructure:"winbind"`
-	GpoListTimeout int            `mapstructure:"gpo_list_timeout"`
+	AdBackend               string         `mapstructure:"ad_backend"`
+	CertificateEnrollment   string         `mapstructure:"certificate_enrollment"`
+	SSSdConfig              sss.Config     `mapstructure:"sssd"`
+	WinbindConfig           winbind.Config `mapstructure:"winbind"`
+	GpoListTimeout          int            `mapstructure:"gpo_list_timeout"`
 
 	ServiceTimeout int `mapstructure:"service_timeout"`
 }
@@ -124,6 +125,7 @@ func New() *App {
 				adsysservice.WithSystemUnitDir(a.config.SystemUnitDir),
 				adsysservice.WithGlobalTrustDir(a.config.GlobalTrustDir),
 				adsysservice.WithADBackend(a.config.AdBackend),
+				adsysservice.WithCertificateEnrollment(a.config.CertificateEnrollment),
 				adsysservice.WithSSSConfig(a.config.SSSdConfig),
 				adsysservice.WithWinbindConfig(a.config.WinbindConfig),
 				adsysservice.WithGpoListTimeout(time.Second*time.Duration(a.config.GpoListTimeout)),
@@ -171,6 +173,9 @@ func New() *App {
 
 	a.rootCmd.PersistentFlags().StringP("ad-backend", "", "sssd", gotext.Get("Active Directory authentication backend"))
 	err = a.viper.BindPFlag("ad_backend", a.rootCmd.PersistentFlags().Lookup("ad-backend"))
+	decorate.LogOnError(&err)
+	a.rootCmd.PersistentFlags().StringP("certificate-enrollment", "", consts.DefaultCertificateEnrollment, gotext.Get("Certificate enrollment method (ldap or cepces)"))
+	err = a.viper.BindPFlag("certificate_enrollment", a.rootCmd.PersistentFlags().Lookup("certificate-enrollment"))
 	decorate.LogOnError(&err)
 	a.rootCmd.PersistentFlags().StringP("sssd.config", "", consts.DefaultSSSConf, gotext.Get("SSSd config file path"))
 	err = a.viper.BindPFlag("sssd.config", a.rootCmd.PersistentFlags().Lookup("sssd.config"))
