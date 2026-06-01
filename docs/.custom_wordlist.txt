@@ -24,6 +24,7 @@ backends
 boolean
 CAs
 CEP
+CEPCES
 cepces
 certmonger
 CES
@@ -38,6 +39,7 @@ dconf
 dialogs
 dir
 DNS
+DCOM
 Dropdown
 dropdownList
 DSRM
@@ -51,6 +53,7 @@ gapped
 GC
 GDM
 gdm
+galacticcafe
 GeneralUbuntuDesktopPolicy
 getcert
 GPL
@@ -67,7 +70,9 @@ html
 http
 https
 idempotency
+idempotent
 IIS
+ICPR
 incrementation
 incrementing
 infos
@@ -77,6 +82,7 @@ ip
 Jira
 kerberos
 Kerberos
+keypress
 krb
 LDAP
 libkrb
@@ -108,6 +114,7 @@ PowerShell
 Px
 rb
 readthedocs
+RPC
 realmd
 runscripts
 schema
@@ -122,6 +129,7 @@ sss
 sssd
 SSSD
 SSTP
+StartTLS
 subcommands
 subdirectory
 subprofile
