@@ -3,15 +3,23 @@ package policies_test
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
+	"math/big"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/go-ldap/ldap/v3"
 	"github.com/godbus/dbus/v5"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +27,7 @@ import (
 	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -85,6 +94,7 @@ func TestApplyPolicies(t *testing.T) {
 			stateDir := filepath.Join(fakeRootDir, "var", "lib", "adsys")
 			shareDir := filepath.Join(fakeRootDir, "usr", "share", "adsys")
 			loadedPoliciesFile := filepath.Join(fakeRootDir, "sys", "kernel", "security", "apparmor", "profiles")
+			certRootDir := t.TempDir()
 
 			err = os.MkdirAll(filepath.Dir(loadedPoliciesFile), 0700)
 			require.NoError(t, err, "Setup: can not create loadedPoliciesFile dir")
@@ -111,8 +121,20 @@ func TestApplyPolicies(t *testing.T) {
 				policies.WithApparmorDir(apparmorDir),
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
-				policies.WithCertAutoenrollCmd([]string{"/bin/true"}),
 				policies.WithSystemUnitDir(systemUnitDir),
+				policies.WithCertificateManager(certificate.New("example.com",
+					certificate.WithStateDir(filepath.Join(certRootDir, "state")),
+					certificate.WithRunDir(filepath.Join(certRootDir, "run")),
+					certificate.WithShareDir(filepath.Join(certRootDir, "share")),
+					certificate.WithGlobalTrustDir(filepath.Join(certRootDir, "trust")),
+					certificate.WithEnrollmentMethod("ldap"),
+					certificate.WithLDAPConnector(func(string) (certificate.LDAPClient, error) {
+						return &policiesTestLDAPConn{}, nil
+					}),
+					certificate.WithCSRSubmitter(func(context.Context, string, string, string, string) (string, error) {
+						return dummyIssuedCertificate(t), nil
+					}),
+				)),
 				policies.WithProxyApplier(&mockProxyApplier{wantApplyError: tc.noUbuntuProxyManager}),
 				policies.WithSystemdCaller(&testutils.MockSystemdCaller{}),
 			)
@@ -179,6 +201,63 @@ func TestApplyPolicies(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, fakeRootDir, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
+}
+
+type policiesTestLDAPConn struct{}
+
+func (p *policiesTestLDAPConn) Search(req *ldap.SearchRequest) (*ldap.SearchResult, error) {
+	switch req.BaseDN {
+	case "":
+		return &ldap.SearchResult{Entries: []*ldap.Entry{
+			ldap.NewEntry("", map[string][]string{
+				"configurationNamingContext": {"CN=Configuration,DC=example,DC=com"},
+			}),
+		}}, nil
+	case "CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com":
+		return &ldap.SearchResult{Entries: []*ldap.Entry{
+			ldap.NewEntry("CN=TestCA,CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com", map[string][]string{
+				"cn":                   {"TestCA"},
+				"dNSHostName":          {"ca.example.com"},
+				"certificateTemplates": {"Machine"},
+			}),
+		}}, nil
+	case "CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com":
+		return &ldap.SearchResult{Entries: []*ldap.Entry{
+			ldap.NewEntry("CN=Machine,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com", map[string][]string{
+				"cn":                     {"Machine"},
+				"msPKI-Minimal-Key-Size": {"2048"},
+			}),
+		}}, nil
+	default:
+		return &ldap.SearchResult{}, nil
+	}
+}
+
+func (p *policiesTestLDAPConn) Close() error { return nil }
+
+func dummyIssuedCertificate(t *testing.T) string {
+	t.Helper()
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+
+	template := x509.Certificate{
+		SerialNumber: big.NewInt(2),
+		Subject:      pkix.Name{CommonName: "issued"},
+	}
+
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
+	require.NoError(t, err)
+
+	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER}))
+}
+
+func TestNewManagerRejectsInvalidCertificateEnrollment(t *testing.T) {
+	t.Parallel()
+
+	bus := testutils.NewDbusConn(t)
+	_, err := policies.NewManager(bus, "hostname", mockBackend{}, policies.WithCertificateEnrollment("typo"))
+	require.Error(t, err)
+	require.ErrorContains(t, err, "unsupported certificate enrollment method")
 }
 
 func TestDumpPolicies(t *testing.T) {
