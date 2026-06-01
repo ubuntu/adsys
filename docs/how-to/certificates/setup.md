@@ -12,7 +12,7 @@ myst:
     :end-before: <!-- Include end pro -->
 ```
 
-Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support. 
+Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support.
 This feature enables clients to seamlessly enroll for certificates from Active Directory Certificate Services.
 
 The certificate policy manager allows clients to enroll for certificates from **Active Directory Certificate Services**. Certificates are then continuously monitored and refreshed by the [`certmonger`](https://www.freeipa.org/page/Certmonger) daemon. Currently, only machine certificates are supported.
@@ -40,15 +40,30 @@ For the Windows {term}`domain controller`, refer to:
 
 ### Required packages
 
-The following packages must be installed on the client in order for auto-enrollment to work:
+The required packages depend on the certificate enrollment method configured in `/etc/adsys.yaml`.
+
+#### LDAP enrollment (default for new installations)
+
+The `adsys-certsubmit` helper binary is shipped with ADSys. The only additional dependency is:
 
 * [`certmonger`](https://www.freeipa.org/page/Certmonger) — daemon that monitors and updates certificates
-* [`cepces`](https://github.com/openSUSE/cepces) — `certmonger` extension that can communicate with **Active Directory Certificate Services**
-
-On Ubuntu systems, run the following to install them:
 
 ```bash
-sudo apt install certmonger python3-cepces
+sudo apt install certmonger
+```
+
+On the Windows side, only the `Certification Authority` role is required.
+
+#### CEPCES enrollment (default for existing installations)
+
+The following packages must be installed on the client:
+
+* [`certmonger`](https://www.freeipa.org/page/Certmonger) — daemon that monitors and updates certificates
+* `python3-samba` — Samba Python bindings
+* `python3-cepces` — CEPCES helper for certmonger
+
+```bash
+sudo apt install certmonger python3-samba python3-cepces
 ```
 
 On the Windows side, the following roles must be installed and configured:
