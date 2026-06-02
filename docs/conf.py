@@ -28,6 +28,8 @@ import yaml
 project = "ADSys"
 author = "Canonical Ltd."
 
+version = f"{os.environ.get('READTHEDOCS_VERSION', 'local')}"
+
 
 # Sidebar documentation title; best kept reasonably short
 #
@@ -71,7 +73,7 @@ copyright = "%s CC-BY-SA, %s" % (datetime.date.today().year, author)
 # NOTE: The Open Graph Protocol (OGP) enhances page display in a social graph
 #       and is used by social media platforms; see https://ogp.me/
 
-ogp_site_url = "https://documentation.ubuntu.com/adsys/stable/"
+ogp_site_url = f"https://ubuntu.com/docs/adsys/{version}/"
 
 
 # Preview name of the documentation website
@@ -175,7 +177,7 @@ if os.getenv("OPENAPI", ""):
 # TODO: If your documentation is hosted on https://docs.ubuntu.com/,
 #       uncomment and update as needed.
 
-slug = "adsys"
+slug = "docs/adsys"
 
 #######################
 # Sitemap configuration: https://sphinx-sitemap.readthedocs.io/
@@ -183,7 +185,7 @@ slug = "adsys"
 
 # Use RTD canonical URL to ensure duplicate pages have a specific canonical URL
 
-html_baseurl = os.environ.get("READTHEDOCS_CANONICAL_URL", "/")
+html_baseurl = f"https://ubuntu.com/docs/adsys/{version}/"
 
 # URL scheme. Add language and version scheme elements.
 # When configured with RTD variables, check for RTD environment so manual runs succeed:
@@ -316,7 +318,7 @@ html_css_files = ["pro_block.css", "cookie-banner.css"]
 
 # Adds custom JavaScript files, located under 'html_static_path'
 
-html_js_files = ["js/bundle.js"]
+html_js_files = ["js/bundle.js", "js/overwrite_links.js"]
 
 
 # Specifies a reST snippet to be appended to each .rst file
