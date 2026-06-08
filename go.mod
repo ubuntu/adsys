@@ -36,7 +36,7 @@ require (
 	golang.org/x/sys v0.45.0
 	golang.org/x/text v0.37.0
 	google.golang.org/grpc v1.81.1
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.0
+	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.2
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/ini.v1 v1.67.2
 	gopkg.in/yaml.v3 v3.0.1
