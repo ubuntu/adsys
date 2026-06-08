@@ -149,6 +149,14 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 		}
 	}
 
+	// Allow integration tests running the real daemon binary to disable
+	// kerberos authentication, as they have no real KDC to authenticate
+	// against. This must never be set in production.
+	if os.Getenv("ADSYS_TESTS_WITHOUT_KERBEROS") == "1" {
+		log.Warning(ctx, "Kerberos authentication disabled by ADSYS_TESTS_WITHOUT_KERBEROS=1")
+		args.withoutKerberos = true
+	}
+
 	krb5CacheDir := filepath.Join(args.runDir, "krb5cc")
 	if err := os.MkdirAll(filepath.Join(krb5CacheDir, "tracking"), 0700); err != nil {
 		return nil, err
