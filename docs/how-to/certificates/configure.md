@@ -12,8 +12,22 @@ myst:
     :end-before: <!-- Include end pro -->
 ```
 
-Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support. 
+Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support.
 This feature enables clients to seamlessly enroll for certificates from Active Directory Certificate Services.
+
+## Enrollment method
+
+ADSys supports two certificate enrollment methods. Set the method in `/etc/adsys.yaml`:
+
+```yaml
+# Native Go implementation (LDAP/RPC) — default for new installations
+certificate_enrollment: ldap
+
+# Legacy Python/CEPCES implementation — default for existing installations
+# certificate_enrollment: cepces
+```
+
+See {ref}`howto::certificates-setup` for the package requirements of each method.
 
 ## Rules precedence
 
@@ -78,5 +92,5 @@ Request ID 'galacticcafe-CA.Machine':
 CA 'galacticcafe-CA':
  is-default: no
  ca-type: EXTERNAL
- helper-location: /usr/libexec/certmonger/cepces-submit --server=win-mk85nrq26nu.galacticcafe.com --auth=Kerberos
+ helper-location: /usr/lib/adsys/adsys-certsubmit --server=win-mk85nrq26nu.galacticcafe.com
 ```

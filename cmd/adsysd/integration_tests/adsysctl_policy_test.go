@@ -634,7 +634,7 @@ func TestPolicyUpdate(t *testing.T) {
 			initState:    "localhost-uptodate",
 			systemAnswer: "no_proxy_object",
 		},
-		"Does not error when certmonger or cepces is not available": {
+		"Does not error when certmonger is not available": {
 			args:       []string{"-m"},
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
@@ -1044,10 +1044,10 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 			t.Setenv("ADSYS_WBCLIENT_BEHAVIOR", tc.winbindMockBehavior)
 
-			// Create fake certmonger and cepces binaries for the certificate manager
+			// Create fake certmonger binary for the certificate manager
 			if !tc.missingCertmonger {
 				binDir := t.TempDir()
-				for _, executable := range []string{"getcert", "cepces-submit"} {
+				for _, executable := range []string{"getcert"} {
 					// #nosec G306. We want this asset to be executable.
 					err := os.WriteFile(filepath.Join(binDir, executable), []byte("#!/bin/sh\necho $@\n"), 0755)
 					require.NoError(t, err, "Setup: could not create %q binary", executable)
@@ -1215,13 +1215,10 @@ func TestPolicyDebugScriptDump(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Get adsys-gpolist script":             {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_yes"},
-		"Get cert-autoenroll script":           {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", systemAnswer: "polkit_yes"},
-		"adsys-gpolist is always authorized":   {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_no"},
-		"cert-autoenroll is always authorized": {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", systemAnswer: "polkit_no"},
+		"Get adsys-gpolist script":           {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_yes"},
+		"adsys-gpolist is always authorized": {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_no"},
 
-		"Error on daemon not responding for adsys-gpolist":   {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", daemonNotStarted: true, wantErr: true},
-		"Error on daemon not responding for cert-autoenroll": {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", daemonNotStarted: true, wantErr: true},
+		"Error on daemon not responding for adsys-gpolist": {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
