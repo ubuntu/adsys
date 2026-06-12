@@ -23,6 +23,7 @@ var vmImage, codename, sshKey string
 var keep bool
 
 func main() {
+	log.SetLevel(log.DebugLevel)
 	os.Exit(run())
 }
 
@@ -138,20 +139,30 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	defer client.Close()
 
+	// Edit SSH config for keepalive and reload it.
+	if _, err := client.Run(ctx, `echo 'ClientAliveInterval 30' | sudo tee -a /etc/ssh/sshd_config`); err != nil {
+		return fmt.Errorf("failed to update sshd_config")
+	}
+	if _, err := client.Run(ctx, `echo 'ClientAliveCountMax 30' | sudo tee -a /etc/ssh/sshd_config`); err != nil {
+		return fmt.Errorf("failed to update sshd_config")
+	}
+	if _, err := client.Run(ctx, `sudo sshd -t && sudo systemctl reload ssh`); err != nil {
+		return fmt.Errorf("failed to reload sshd")
+	}
+
 	// Install required dependencies
-	log.Infof("Installing eatmydata to speed up package installation...")
-	if _, err := client.Run(ctx, `echo force-unsafe-io | sudo tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io && \
-sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y eatmydata`); err != nil {
-		return fmt.Errorf("failed to set up eatmydata: %w", err)
+	if _, err := client.Run(ctx, `sudo apt-get update`); err != nil {
+		return fmt.Errorf("failed to update packages: %w", err)
 	}
 
 	log.Infof("Installing required packages on VM...")
-	if _, err := client.Run(ctx, `echo force-unsafe-io | sudo tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io && \
-sudo eatmydata apt-get update && sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get upgrade -y && \
-sudo DEBIAN_FRONTEND=noninteractive eatmydata apt-get install -y ubuntu-desktop realmd nfs-common cifs-utils && \
-sudo sync && \
-sudo rm -f /etc/dpkg/dpkg.cfg.d/force-unsafe-io
-`); err != nil {
+	_, err = client.Run(ctx, `sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y`)
+	if err != nil {
+		return fmt.Errorf("failed to update packages: %w", err)
+	}
+
+	_, err = client.Run(ctx, `sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-desktop-minimal realmd nfs-common cifs-utils`)
+	if err != nil {
 		return fmt.Errorf("failed to install required packages: %w", err)
 	}
 
