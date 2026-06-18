@@ -189,11 +189,7 @@ html_baseurl = f"https://ubuntu.com/docs/adsys/{version}/"
 # URL scheme. Add language and version scheme elements.
 # When configured with RTD variables, check for RTD environment so manual runs succeed:
 
-if "READTHEDOCS_VERSION" in os.environ:
-    version = os.environ["READTHEDOCS_VERSION"]
-    sitemap_url_scheme = "{version}{link}"
-else:
-    sitemap_url_scheme = "stable/{link}"
+sitemap_url_scheme = "{link}"
 
 # Include `lastmod` dates in the sitemap:
 
