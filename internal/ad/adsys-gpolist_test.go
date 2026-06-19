@@ -100,6 +100,26 @@ func TestAdsysGPOList(t *testing.T) {
 			accountName: "RnDUserDep8@GPOONLY.COM",
 		},
 
+		// A universal group defined in the parent domain of the forest is only
+		// visible through the Global Catalog tokenGroups expansion. This is the
+		// multi-domain case that used to crash the script (issue #1358).
+		"Cross-domain universal group membership applies its GPO": {
+			accountName: "ChildUserWithParentGroup@GPOONLY.COM",
+		},
+
+		// Read and apply are scoped to World, granted only by the default
+		// well-known SIDs injected into the token. Regresses if build_token
+		// stops adding them (access check would deny every GPO read).
+		"Default token SIDs grant access to Everyone-scoped GPO": {
+			accountName: "UserEveryone@GPOONLY.COM",
+		},
+
+		// Wide read access must not imply application: World may read the GPO
+		// but is denied the apply right, so it must be filtered out.
+		"Everyone read access does not imply GPO application": {
+			accountName: "UserEveryoneDenied@GPOONLY.COM",
+		},
+
 		"No gPOptions fallbacks to 0": {
 			accountName: "UserNogPOptions@GPOONLY.COM",
 		},
