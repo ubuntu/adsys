@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -121,6 +122,7 @@ func TestGetPolicies(t *testing.T) {
 		want             policies.Policies
 		wantAssetsEquals string
 		wantErr          bool
+		wantErrContains  string
 	}{
 		"Standard policy, user object": {
 			gpoListArgs: []string{"gpoonly.com", "bob:standard"},
@@ -552,6 +554,23 @@ func TestGetPolicies(t *testing.T) {
 			gpoListArgs: []string{"gpoonly.com", "bob:bad-entry-type"},
 			wantErr:     true,
 		},
+
+		// The gpolist script exit codes are mapped to distinct, actionable errors.
+		"Error on account not found is reported distinctly": {
+			gpoListArgs:     []string{"-Exit1-"},
+			wantErr:         true,
+			wantErrContains: "was not found in Active Directory",
+		},
+		"Error on connection failure is reported distinctly": {
+			gpoListArgs:     []string{"-Exit2-"},
+			wantErr:         true,
+			wantErrContains: "could not connect to the Active Directory server",
+		},
+		"Error on GPO computation failure is reported distinctly": {
+			gpoListArgs:     []string{"-Exit3-"},
+			wantErr:         true,
+			wantErrContains: "could not compute the GPO list",
+		},
 		"Empty value for unfiltered entry": {
 			gpoListArgs: []string{"gpoonly.com", "bob:empty-value"},
 			wantErr:     true,
@@ -620,6 +639,9 @@ func TestGetPolicies(t *testing.T) {
 			entries, err := adc.GetPolicies(context.Background(), tc.objectName, tc.objectClass, krb5CCName)
 			if tc.wantErr {
 				require.Error(t, err, "GetPolicies should have errored out")
+				if tc.wantErrContains != "" {
+					require.ErrorContains(t, err, tc.wantErrContains, "GetPolicies returned an unexpected error")
+				}
 				return
 			}
 			require.NoError(t, err, "GetPolicies should return no error")
@@ -1346,10 +1368,16 @@ func TestMockGPOList(_ *testing.T) {
 		break
 	}
 
-	// simulating offline mode with Exit 2
-	if args[0] == "-Exit2-" {
-		fmt.Fprint(os.Stderr, "Error during gpo list requested with exit 2")
-		os.Exit(2)
+	// simulating script failures with a requested exit code, e.g. "-Exit2-"
+	// (also used to simulate offline mode).
+	if strings.HasPrefix(args[0], "-Exit") && strings.HasSuffix(args[0], "-") {
+		code, err := strconv.Atoi(strings.TrimSuffix(strings.TrimPrefix(args[0], "-Exit"), "-"))
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid requested exit code %q", args[0])
+			os.Exit(1)
+		}
+		fmt.Fprintf(os.Stderr, "Error during gpo list requested with exit %d", code)
+		os.Exit(code)
 	}
 
 	// Get Domain
