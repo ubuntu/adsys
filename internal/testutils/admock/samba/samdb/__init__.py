@@ -60,6 +60,10 @@ class SamDB:
         elif "objectClass=group" in expression:
             return [{"objectSid": ["SidGroup1"]},{"objectSid": ["SidGroup2"]}]
 
+        # Token groups search, as resolved against the Global Catalog
+        elif "tokenGroups" in attrs:
+            return [{"tokenGroups": ldb.token_groups_for(base)}]
+
         # OU search
         elif "gPLink" in attrs:
             ou = ldb.OUs[base.strdn]

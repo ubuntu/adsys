@@ -15,6 +15,16 @@ OUs = {}
 GPOs = {}
 accounts = {}
 
+# Group SIDs returned by the Global Catalog tokenGroups query, keyed by the
+# lowercased account name. Accounts not listed here fall back to a default,
+# decorative set that doesn't match any GPO security descriptor.
+token_groups = {}
+DEFAULT_TOKEN_GROUPS = ["SidGroup1", "SidGroup2"]
+
+
+def token_groups_for(name):
+    return token_groups.get(str(name).lower(), DEFAULT_TOKEN_GROUPS)
+
 ##############################
 # OU=RnD,OU=IT Dept,DC=domain,DC=com
 
@@ -119,8 +129,10 @@ class OU:
             gPLink += "[LDAP://%s;%d]" % (gpo.name, state)
         self.gPLink = [gPLink]
 
-    def addAccount(self, accountName):
+    def addAccount(self, accountName, token_groups_sids=None):
         Account(accountName, self)
+        if token_groups_sids is not None:
+            token_groups[accountName.lower()] = token_groups_sids
 
 
 class GPO:
@@ -153,6 +165,12 @@ class GPO:
             self.nTSecurityDescriptor = [self.nTSecurityDescriptor[0].replace("OA", "OD")]
         if name == "RnDDep8 allow for one user only GPO":
             self.nTSecurityDescriptor = [self.nTSecurityDescriptor[0].replace("S-1-5-21-16178157-162784614-155579044-1103", "OtherUserSid")]
+        if name == "CrossDomainGroup GPO":
+            # The "Apply Group Policy" right is granted to a universal group that
+            # lives in the parent domain of the forest. The user only gains it
+            # through the transitive membership the Global Catalog reports via
+            # tokenGroups, never through a direct, single-domain group search.
+            self.nTSecurityDescriptor = [self.nTSecurityDescriptor[0].replace("S-1-5-21-16178157-162784614-155579044-1103", "S-1-5-21-1111111111-2222222222-3333333333-512")]
 
         smb_port = getenv("ADSYS_TESTS_SMB_PORT")
         if smb_port:
@@ -266,6 +284,12 @@ o.addAccount("UserNogPOptions")
 
 o = OU("/example/InvalidGPOLink")
 o.addAccount("UserInvalidLink")
+
+# Cross-domain membership: the GPO applies only because the Global Catalog
+# reports, through tokenGroups, a universal group from the forest parent domain.
+o = OU("/example/CrossDomainGroup")
+o.addGPO(GPO("CrossDomainGroup GPO"))
+o.addAccount("ChildUserWithParentGroup", token_groups_sids=["S-1-5-21-1111111111-2222222222-3333333333-512"])
 
 # Integration tests OU and GPO
 OU("/example/IntegrationTests")
