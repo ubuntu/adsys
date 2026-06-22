@@ -122,7 +122,7 @@ func setupSubprocessForMountTest(t *testing.T, mode string, krbTicket bool) bool
 
 	subArgs = append(subArgs, fmt.Sprintf("-test.run=%s", t.Name()))
 
-	// #nosec G204: this is only for tests, under controlled args
+	// #nosec G204,G702: this is only for tests, under controlled args
 	cmd := exec.Command(subArgs[0], subArgs[1:]...)
 
 	// Setup correct child environment

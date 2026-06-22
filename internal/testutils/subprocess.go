@@ -49,7 +49,7 @@ func PreloadLibInSubprocess(t *testing.T, mockLibPath string) bool {
 	}
 
 	t.Log("Running subprocess with", subArgs)
-	// #nosec G204: this is only for tests, under controlled args
+	// #nosec G204,G702: this is only for tests, under controlled args
 	cmd := exec.Command(subArgs[0], subArgs[1:]...)
 
 	// Setup correct child environment, including LD_PRELOAD for the mock library

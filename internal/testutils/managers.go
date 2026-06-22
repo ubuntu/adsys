@@ -45,6 +45,7 @@ func (m MockAssetsDumper) SaveAssetsTo(_ context.Context, relSrc, dest string, _
 			if d.IsDir() {
 				perm = 0500
 			}
+			// #nosec G122 -- This is a test helper function
 			err = os.Chmod(path, os.FileMode(perm))
 			require.NoError(m.T, err, "SaveAssetsTo: unexpected error when changing permissions")
 

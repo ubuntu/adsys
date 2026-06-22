@@ -322,6 +322,7 @@ func (m *Manager) applyUserPolicy(ctx context.Context, e entry.Entry, apparmorPa
 		if len(oldContent) == 0 {
 			restoreErr = os.Remove(filepath.Join(apparmorPath, username))
 		} else {
+			// #nosec G703 -- We are writing a file with controlled content and permissions
 			restoreErr = os.WriteFile(filepath.Join(apparmorPath, username), oldContent, 0600)
 		}
 		if restoreErr != nil {
@@ -567,6 +568,7 @@ func removeUnusedAssets(apparmorPath string, filesToKeep []string) (e error) {
 			return nil
 		}
 
+		// #nosec G122 -- This is a path controlled by us
 		// Remove files that are not in the policy entry
 		if err := os.Remove(path); err != nil {
 			return err
@@ -582,6 +584,7 @@ func removeUnusedAssets(apparmorPath string, filesToKeep []string) (e error) {
 			return nil
 		}
 
+		// #nosec G122 -- This is a path controlled by us
 		return os.Remove(parentDir)
 	})
 }
@@ -647,6 +650,7 @@ func writeIfChanged(path string, content string) (oldContent []byte, changed boo
 		return oldContent, false, nil
 	}
 
+	// #nosec G703 -- We are in control of the content and permissions
 	if err := os.WriteFile(path+".new", []byte(content), 0600); err != nil {
 		return nil, true, err
 	}

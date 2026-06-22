@@ -117,6 +117,7 @@ func TestExecuteKinitCommand(_ *testing.T) {
 		os.Exit(1)
 	}
 
+	// #nosec: G703 -- This is a test, under controlled args
 	err := os.WriteFile(goldPath, []byte(fmt.Sprintf("%q", args)+"\n"), 0600)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Setup: failed to write kinit command output: %v", err)

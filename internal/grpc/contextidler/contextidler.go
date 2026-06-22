@@ -35,7 +35,7 @@ func StreamClientInterceptor(timeout time.Duration) grpc.StreamClientInterceptor
 		go func() {
 			select {
 			case <-timer.C:
-				log.Debug(context.Background(), "hasn't received response from the server timely. Cancelling Request")
+				log.Debug(ctx, "hasn't received response from the server timely. Cancelling Request")
 				cancel()
 			// Something else cancelled the context, like Ctrl+C on client
 			case <-ctx.Done():

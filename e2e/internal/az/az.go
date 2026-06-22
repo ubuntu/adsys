@@ -20,6 +20,7 @@ type VMInfo struct {
 func RunCommand(ctx context.Context, args ...string) ([]byte, []byte, error) {
 	log.Debugf("Running az with args %s", args)
 
+	// #nosec G204,G702: this is only for the e2e tests, under controlled args
 	c := exec.CommandContext(ctx, "az", args...)
 	var outb, errb bytes.Buffer
 	c.Stdout = &outb

@@ -477,6 +477,7 @@ func TestCompressAssets(t *testing.T) {
 				// on zip modification time stored for content.
 				fixedTime := time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC)
 				err := filepath.WalkDir(p, func(path string, _ os.DirEntry, _ error) error {
+					// #nosec G122 -- This is a test controlled path
 					return os.Chtimes(path, fixedTime, fixedTime)
 				})
 				require.NoError(t, err, "Setup: can’t set fixed time for assets")

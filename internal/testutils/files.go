@@ -125,6 +125,7 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 			// copy file
 			data, err := os.ReadFile(p)
 			require.NoError(t, err, "Cannot read new generated file file %s", p)
+			// #nosec G703 -- This is a test helper function
 			require.NoError(t, os.WriteFile(goldPath, data, info.Mode()), "Cannot write golden file")
 		} else {
 			// Filter dconf generated DB files that are machine dependent
@@ -259,6 +260,7 @@ func treeContentAndAttrs(t *testing.T, dir string, ignoreHeaders []byte) (map[st
 		info, err := os.Stat(path)
 		require.NoError(t, err, "Cannot stat %s", path)
 		if !de.IsDir() {
+			// #nosec G122 -- This is a test helper function
 			d, err := os.ReadFile(path)
 			if err != nil {
 				return err

@@ -164,6 +164,7 @@ func TestMockAutoenrollScript(t *testing.T) {
 	tmpdir := filepath.Dir(outputFile)
 	dataToWrite = strings.ReplaceAll(dataToWrite, tmpdir, "#TMPDIR#")
 
+	//#nosec G703 -- This a test controlled environment
 	err := os.WriteFile(outputFile, []byte(dataToWrite), 0600)
 	require.NoError(t, err, "Setup: Can't write script args to output file")
 }
