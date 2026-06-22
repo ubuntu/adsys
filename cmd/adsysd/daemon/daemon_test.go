@@ -111,6 +111,7 @@ func TestAppRunFailsOnDaemonCreationAndQuit(t *testing.T) {
 	// directory
 	prepareEnv(t)
 	socket := os.Getenv("ADSYS_SOCKET")
+	// #nosec G703 -- This is a test, we want to create a directory where the socket should be
 	err := os.MkdirAll(socket, 0750)
 	require.NoError(t, err, "Setup: can't create socket directory to make service fails")
 
@@ -125,6 +126,7 @@ func TestAppRunFailsOnServiceCreationAndQuit(t *testing.T) {
 	// existing file
 	prepareEnv(t)
 	cachedir := os.Getenv("ADSYS_CACHE_DIR")
+	// #nosec G703 -- This is a test, we want to create a file where the cache directory should be
 	err := os.WriteFile(cachedir, []byte(""), 0600)
 	require.NoError(t, err, "Can't create cachedir file to make service fails")
 

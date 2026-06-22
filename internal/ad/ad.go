@@ -315,7 +315,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	})
 
 	// Compress assets
-	var assetsDbPath string
+	var assetsDBPath string
 	assetsSrc := filepath.Join(ad.sysvolCacheDir, "assets")
 	errg.Go(func() (err error) {
 		// Only compress assets if we have fetched them, otherwise attach optionally
@@ -327,7 +327,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 			} else if err != nil {
 				return err
 			}
-			assetsDbPath = db
+			assetsDBPath = db
 			return nil
 		}
 		// check assetsSrc exists
@@ -346,7 +346,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 			return err
 		}
 
-		assetsDbPath = filepath.Join(assetsSrc + ".db")
+		assetsDBPath = filepath.Join(assetsSrc + ".db")
 
 		return nil
 	})
@@ -355,7 +355,7 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return pols, fmt.Errorf("one or more error while parsing downloaded elements: %w", err)
 	}
 
-	return policies.New(ctx, gposRules, assetsDbPath)
+	return policies.New(ctx, gposRules, assetsDBPath)
 }
 
 // ListUsers returns the list of users on the system based on their cached policy information.
@@ -475,6 +475,7 @@ func safeCopyFile(src, dst string, mode os.FileMode) error {
 	if err != nil {
 		return errors.New(gotext.Get("failed to read source file: %v", err))
 	}
+	// #nosec G703 -- This is necessary in order to safely update the file
 	if err := os.WriteFile(dst+".new", content, mode); err != nil {
 		return err
 	}

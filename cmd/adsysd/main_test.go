@@ -124,7 +124,7 @@ func TestMainApp(t *testing.T) {
 		return
 	}
 
-	// #nosec G204: this is only for tests, under controlled args
+	// #nosec G204,G702: this is only for tests, under controlled args
 	cmd := exec.Command(os.Args[0], "version", "-test.run=TestMainApp")
 	cmd.Env = append(os.Environ(), "ADSYS_CALL_MAIN=1")
 	out, err := cmd.CombinedOutput()

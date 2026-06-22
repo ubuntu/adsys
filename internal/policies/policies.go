@@ -346,6 +346,7 @@ func CompressAssets(ctx context.Context, p string) (err error) {
 			return nil
 		}
 
+		// #nosec G122 -- This is a path controlled by us
 		// Copy file content
 		srcF, err := os.Open(path)
 		if err != nil {

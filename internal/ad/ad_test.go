@@ -1325,10 +1325,12 @@ func TestMockGPOList(_ *testing.T) {
 	defer os.Exit(0)
 
 	krb5File := os.Getenv("KRB5CCNAME")
+	// #nosec G703 -- This is a test, under controlled args
 	if _, err := os.Lstat(krb5File); errors.Is(err, fs.ErrNotExist) {
 		fmt.Fprintf(os.Stderr, "Expecting symlink %s to exists", krb5File)
 		os.Exit(1)
 	}
+	// #nosec G703 -- This is a test, under controlled args
 	if _, err := os.Stat(krb5File); errors.Is(err, fs.ErrNotExist) {
 		fmt.Fprintf(os.Stderr, "Expecting file pointed by %s to exists", krb5File)
 		os.Exit(1)

@@ -162,6 +162,7 @@ func TestApplyPolicy(t *testing.T) {
 						// nolint:gosec //false positive, this is a directory
 						err = os.Chmod(path, 0700)
 					} else {
+						// #nosec G122 -- This is a path controlled by us
 						err = os.Chmod(path, 0600)
 					}
 					require.NoError(t, err, "Setup: can't chmod path")
@@ -193,6 +194,7 @@ func TestApplyPolicy(t *testing.T) {
 func appendToFile(t *testing.T, path string, data []byte) {
 	t.Helper()
 
+	// #nosec G703 -- This is test controlled environment
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	require.NoError(t, err, "Setup: Can't open file for appending")
 	defer f.Close()
@@ -272,7 +274,7 @@ func TestMockApparmorParser(t *testing.T) {
 
 	// Call the real apparmor_parser command if taking an unprivileged action
 	if callParser {
-		// #nosec G204 - We are in control of the arguments in tests
+		// #nosec G204,G702 - We are in control of the arguments in tests
 		cmd := exec.Command("apparmor_parser", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr

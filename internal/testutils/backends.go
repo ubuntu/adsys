@@ -21,31 +21,37 @@ func FormatBackendCalls(t *testing.T, backend backends.Backend) string {
 	t.Helper()
 
 	var got bytes.Buffer
-	got.WriteString(fmt.Sprintf("* Domain(): %s\n", backend.Domain()))
+	_, err := fmt.Fprintf(&got, "* Domain(): %s\n", backend.Domain())
+	require.NoError(t, err, "FormatBackendCalls: unexpected error when formatting Domain()")
 
 	serverFQDN, err := backend.ServerFQDN(context.Background())
 	serverLine := fmt.Sprintf("* ServerFQDN(): %s\n", serverFQDN)
 	if err != nil {
 		serverLine = fmt.Sprintf("* ServerFQDN ERROR(): %s\n", err)
 	}
-	got.WriteString(serverLine)
+	_, err = fmt.Fprint(&got, serverLine)
+	require.NoError(t, err, "FormatBackendCalls: unexpected error when formatting ServerFQDN()")
 
 	isOnline, err := backend.IsOnline()
 	isOnlineLine := fmt.Sprintf("* IsOnline(): %t\n", isOnline)
 	if err != nil {
 		isOnlineLine = fmt.Sprintf("* IsOnline ERROR(): %s\n", err)
 	}
-	got.WriteString(isOnlineLine)
+	_, err = fmt.Fprint(&got, isOnlineLine)
+	require.NoError(t, err, "FormatBackendCalls: unexpected error when formatting IsOnline()")
 
 	hostKrb5CCName, err := backend.HostKrb5CCName()
 	hostKrb5CCNameLine := fmt.Sprintf("* HostKrb5CCName(): %s\n", hostKrb5CCName)
 	if err != nil {
 		hostKrb5CCNameLine = fmt.Sprintf("* HostKrb5CCName ERROR(): %s\n", err)
 	}
-	got.WriteString(hostKrb5CCNameLine)
+	_, err = fmt.Fprint(&got, hostKrb5CCNameLine)
+	require.NoError(t, err, "FormatBackendCalls: unexpected error when formatting HostKrb5CCName()")
 
-	got.WriteString(fmt.Sprintf("* DefaultDomainSuffix(): %s\n", backend.DefaultDomainSuffix()))
-	got.WriteString(fmt.Sprintf("* Config():\n%s\n", backend.Config()))
+	_, err = fmt.Fprintf(&got, "* DefaultDomainSuffix(): %s\n", backend.DefaultDomainSuffix())
+	require.NoError(t, err, "FormatBackendCalls: unexpected error when formatting DefaultDomainSuffix()")
+	_, err = fmt.Fprintf(&got, "* Config():\n%s\n", backend.Config())
+	require.NoError(t, err, "FormatBackendCalls: unexpected error when formatting Config()")
 
 	return got.String()
 }

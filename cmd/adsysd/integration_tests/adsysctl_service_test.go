@@ -308,6 +308,7 @@ func TestServiceStatus(t *testing.T) {
 				require.NoError(t, err, "Setup: can’t read configuration file")
 				content = bytes.Replace(content, []byte("testdata/sssd-configs/sssd.conf-example.com"),
 					[]byte(fmt.Sprintf("testdata/sssd-configs/%s", tc.sssdConf)), 1)
+				// #nosec G703 -- This is a test, under controlled args
 				err = os.WriteFile(conf, content, 0600)
 				require.NoError(t, err, "Setup: can’t rewrite configuration file")
 			}
