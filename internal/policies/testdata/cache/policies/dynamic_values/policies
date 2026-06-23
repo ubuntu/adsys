@@ -1,0 +1,13 @@
+gpos:
+- id: '{GPOId}'
+  name: GPOName
+  rules:
+    dconf:
+    - key: path/to/key
+      value: "'value for ${DOMAIN}'"
+      meta: s
+    mount:
+    - key: system-mounts
+      value: |
+          nfs://${DOMAIN}/nfs_share
+          smb://server/${DOMAIN}/data

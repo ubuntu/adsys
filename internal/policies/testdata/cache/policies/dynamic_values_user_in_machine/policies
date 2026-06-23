@@ -1,0 +1,8 @@
+gpos:
+- id: '{GPOId}'
+  name: GPOName
+  rules:
+    dconf:
+    - key: path/to/key
+      value: "'value for ${USER}'"
+      meta: s
