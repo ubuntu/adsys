@@ -55,6 +55,9 @@ func TestApplyPolicies(t *testing.T) {
 		"Second call with no subscription should remove everything but dconf content":   {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: true},
 		"Second call with no subscription don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: false},
 
+		// dynamic values
+		"Dynamic values are expanded before applying": {policiesDir: "dynamic_values"},
+
 		// Error cases
 		"Error when applying dconf policy":       {policiesDir: "dconf_failing", wantErr: true},
 		"Error when applying privilege policy":   {makeDirReadOnly: "etc/sudoers.d", policiesDir: "all_entry_types", wantErr: true},
@@ -63,6 +66,10 @@ func TestApplyPolicies(t *testing.T) {
 		"Error when applying mount policy":       {makeDirReadOnly: "etc/systemd/system", policiesDir: "all_entry_types", wantErr: true},
 		"Error when applying proxy policy":       {noUbuntuProxyManager: true, policiesDir: "all_entry_types", wantErr: true},
 		"Error when applying certificate policy": {policiesDir: "certificate_failing", wantErr: true},
+
+		// dynamic values error cases
+		"Error on unknown dynamic value":                {policiesDir: "dynamic_values_unknown", wantErr: true},
+		"Error on user dynamic value in machine policy": {policiesDir: "dynamic_values_user_in_machine", wantErr: true},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -154,7 +161,7 @@ func TestApplyPolicies(t *testing.T) {
 
 			// Fake starting scripts session when we ran scripts
 			runningFlag := filepath.Join(runDir, "machine", "scripts", ".running")
-			if !tc.isNotSubscribed && tc.policiesDir != "dconf_failing" {
+			if _, err := os.Stat(filepath.Dir(runningFlag)); err == nil && !tc.isNotSubscribed && tc.policiesDir != "dconf_failing" {
 				require.NoError(t, os.WriteFile(runningFlag, nil, 0600), "Setup: can't mimick session in progress")
 			}
 
