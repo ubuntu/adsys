@@ -34,5 +34,6 @@ AppArmor profiles <apparmor>
 network-shares
 proxy
 certificates
+Dynamic values <dynamic-values>
 Security policy <security-policy>
 ```
