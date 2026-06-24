@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	systemdDbus "github.com/coreos/go-systemd/v22/dbus"
 	"github.com/godbus/dbus/v5"
 	"github.com/ubuntu/adsys/internal/consts"
 )
@@ -42,7 +43,7 @@ func (s *systemdBus) StopUnit(name string, _ string) (dbus.ObjectPath, *dbus.Err
 	return s.emitJobSignals(name), nil
 }
 
-func (s *systemdBus) EnableUnitFiles(names []string, _ bool, _ bool) (bool, [][]string, *dbus.Error) {
+func (s *systemdBus) EnableUnitFiles(names []string, _ bool, _ bool) (bool, []systemdDbus.EnableUnitFileChange, *dbus.Error) {
 	if len(names) != 1 {
 		panic("method is only expected to be called with a single name")
 	}
@@ -51,10 +52,10 @@ func (s *systemdBus) EnableUnitFiles(names []string, _ bool, _ bool) (bool, [][]
 		return false, nil, errNoSuchUnit
 	}
 
-	return true, [][]string{{"symlink", "/from/path", "/to/path"}}, nil
+	return true, []systemdDbus.EnableUnitFileChange{{Type: "symlink", Filename: "/from/path", Destination: "/to/path"}}, nil
 }
 
-func (s *systemdBus) DisableUnitFiles(names []string, _ bool) ([][]string, *dbus.Error) {
+func (s *systemdBus) DisableUnitFiles(names []string, _ bool) ([]systemdDbus.DisableUnitFileChange, *dbus.Error) {
 	if len(names) != 1 {
 		panic("method is only expected to be called with a single name")
 	}
@@ -63,7 +64,7 @@ func (s *systemdBus) DisableUnitFiles(names []string, _ bool) ([][]string, *dbus
 		return nil, errNoSuchUnit
 	}
 
-	return [][]string{{"symlink", "/from/path", "/to/path"}}, nil
+	return []systemdDbus.DisableUnitFileChange{{Type: "symlink", Filename: "/from/path", Destination: "/to/path"}}, nil
 }
 
 func (s *systemdBus) Reload() *dbus.Error {
