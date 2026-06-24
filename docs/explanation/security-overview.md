@@ -28,7 +28,7 @@ templates,  which therefore do not need to be fetched online.
 For more information on generating documentation and templates, read about
 ADSys’ command line utility:
 
-* [The adsysctl command](https://documentation.ubuntu.com/adsys/en/stable/reference/adsysctl/)
+* [The adsysctl command](https://ubuntu.com/docs/adsys/stable/reference/adsysctl/)
 
 ## Secure transfer of templates
 
@@ -93,12 +93,12 @@ SSSD or Winbind with Kerberos.
 There is an explanation of how ADSys and SSSD work together to manage
 authentication and policies in the ADSys documentation:
 
-* [ADSys architecture](https://documentation.ubuntu.com/adsys/en/stable/explanation/adsys-ref-arch/) 
+* [ADSys architecture](https://ubuntu.com/docs/adsys/stable/explanation/adsys-ref-arch/) 
 
 Policies relating to security settings are managed by SSSD, and are described
 in the documentation:
 
-* [Security settings that are supported through SSSD](https://documentation.ubuntu.com/adsys/en/stable/explanation/security-policy/) 
+* [Security settings that are supported through SSSD](https://ubuntu.com/docs/adsys/stable/explanation/security-policy/) 
 
 For detailed information on logging for use in debugging, review the following guides:
 
@@ -123,9 +123,9 @@ ensure that they function as expected.
 The ADSys documentation includes detailed explanations of these and other
 Pro-specific features:
 
-* [Administrator privilege management](https://documentation.ubuntu.com/adsys/en/stable/explanation/privileges/)  
-* [Scripts execution](https://documentation.ubuntu.com/adsys/en/stable/explanation/scripts/)  
-* [Managing AppArmor profiles](https://documentation.ubuntu.com/adsys/en/stable/explanation/apparmor/)
+* [Administrator privilege management](https://ubuntu.com/docs/adsys/stable/explanation/privileges/)  
+* [Scripts execution](https://ubuntu.com/docs/adsys/stable/explanation/scripts/)  
+* [Managing AppArmor profiles](https://ubuntu.com/docs/adsys/stable/explanation/apparmor/)
 
 ### Reporting a vulnerability
 
