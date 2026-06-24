@@ -4,6 +4,8 @@ Define scripts that are executed when the user exits from last session.
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
 
+Dynamic values: this field supports the placeholders ${USER}, ${FQDN_USER}, ${HOSTNAME}, ${FQDN_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FQDN_USER} are only valid in user policies. Using an unknown placeholder makes the policy fail to apply. For example: ${USER}/logoff.sh
+
 
 - Type: scripts
 - Key: /logoff

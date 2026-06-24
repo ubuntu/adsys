@@ -3,7 +3,7 @@
 Define network shares that will be mounted for the system.
 If more shares are defined higher in the GPO hierarchy, the entries listed here will be appended to the list and duplicates will be removed.
 
-Values should be in the format: 
+Values should be in the format:
     <protocol>://<hostname-or-ip>/<shared-dir>
 e.g.
     nfs://example_nfs.com/nfs_shared_dir
@@ -20,6 +20,8 @@ If the tag is added, the mount will require Kerberos authentication in order to 
 The supported protocols / file systems are the same as the ones supported by the mount command.
 They are listed on the mount man page on https://man7.org/linux/man-pages/man8/mount.8.html
 It's up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
+
+Dynamic values: this field supports the placeholders ${USER}, ${FQDN_USER}, ${HOSTNAME}, ${FQDN_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FQDN_USER} are only valid in user policies. Using a user placeholder in a machine policy, or using an unknown placeholder, makes the policy fail to apply. For example: smb://server/${HOSTNAME}/data
 
 
 - Type: mount
