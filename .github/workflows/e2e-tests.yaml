@@ -92,6 +92,7 @@ jobs:
     env:
       AD_PASSWORD: ${{ secrets.AD_PASSWORD }}
       ADSYS_PRO_TOKEN: ${{ secrets.ADSYS_PRO_TOKEN }}
+      GODEBUG: "ssh=2"
     steps:
       - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
       - name: Install required dependencies
