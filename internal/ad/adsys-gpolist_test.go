@@ -100,6 +100,13 @@ func TestAdsysGPOList(t *testing.T) {
 			accountName: "RnDUserDep8@GPOONLY.COM",
 		},
 
+		// A universal group defined in the parent domain of the forest is only
+		// visible through the Global Catalog tokenGroups expansion. This is the
+		// multi-domain case that used to crash the script (issue #1358).
+		"Cross-domain universal group membership applies its GPO": {
+			accountName: "ChildUserWithParentGroup@GPOONLY.COM",
+		},
+
 		"No gPOptions fallbacks to 0": {
 			accountName: "UserNogPOptions@GPOONLY.COM",
 		},

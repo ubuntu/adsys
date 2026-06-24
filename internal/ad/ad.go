@@ -48,6 +48,17 @@ const (
 	// policyServerPrefix is the GPO prefix containing keys that configure
 	// policy servers for certificate enrollment.
 	policyServersPrefix string = "Software/Policies/Microsoft/Cryptography/PolicyServers/"
+
+	// The following constants mirror the ReturnCode values returned by the
+	// adsys-gpolist script, so that distinct failures can be reported with
+	// actionable errors instead of an opaque non-zero exit code.
+
+	// gpoListNotFound is returned when the requested account can't be found in AD.
+	gpoListNotFound int = 1
+	// gpoListConnectionFailed is returned when the connection to the AD server failed.
+	gpoListConnectionFailed int = 2
+	// gpoListGPOFailed is returned when the GPO list couldn't be computed for the account.
+	gpoListGPOFailed int = 3
 )
 
 type gpo downloadable
@@ -270,7 +281,19 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	err = cmd.Run()
 	smbsafe.DoneExec()
 	if err != nil {
-		return pols, errors.New(gotext.Get("failed to retrieve the list of GPO (exited with %d): %v\n%s", cmd.ProcessState.ExitCode(), err, stderr.String()))
+		exitCode := cmd.ProcessState.ExitCode()
+		var reason string
+		switch exitCode {
+		case gpoListNotFound:
+			reason = gotext.Get("account %q was not found in Active Directory", objectName)
+		case gpoListConnectionFailed:
+			reason = gotext.Get("could not connect to the Active Directory server %q", adServerFQDN)
+		case gpoListGPOFailed:
+			reason = gotext.Get("could not compute the GPO list for %q", objectName)
+		default:
+			reason = gotext.Get("unexpected error while retrieving the GPO list")
+		}
+		return pols, errors.New(gotext.Get("failed to retrieve the list of GPO: %s (exited with %d): %v\n%s", reason, exitCode, err, stderr.String()))
 	}
 
 	downloadables := make(map[string]string)
