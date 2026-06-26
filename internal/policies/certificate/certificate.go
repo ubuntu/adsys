@@ -437,7 +437,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	trustDir := filepath.Join(m.stateDir, "certs")
 	privateDir := filepath.Join(m.stateDir, "private", "certs")
 	for _, dir := range []string{trustDir, m.globalTrustDir} {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0750); err != nil {
 			return fmt.Errorf("failed to create directory %s: %w", dir, err)
 		}
 	}
@@ -533,6 +533,13 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		return fmt.Errorf("could not enroll to any certificate authorities out of %d discovered", len(cas))
 	}
 
+	// Clean up certificates and symlinks from the previous state that are
+	// no longer present in the newly discovered CAs/templates. This prevents
+	// orphaned cert/key files and trust store symlinks from accumulating.
+	if existingState != nil {
+		cleanupOrphanedCerts(ctx, existingState, enrolledCAs)
+	}
+
 	// Save state
 	log.Debugf(ctx, "Saving enrollment state for %s with %d enrolled CAs", objectName, len(enrolledCAs))
 	state := &enrollmentState{
@@ -593,6 +600,62 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 
 	log.Info(ctx, "Certificate unenrollment completed")
 	return nil
+}
+
+// cleanupOrphanedCerts removes certificates, keys, and trust store symlinks
+// that exist in the old state but are not present in the new set of enrolled
+// CAs. This prevents orphaned files from accumulating when CAs or templates
+// are removed from AD.
+func cleanupOrphanedCerts(ctx context.Context, oldState *enrollmentState, newCAs []enrolledCA) {
+	// Build a set of all cert/key/symlink paths in the new state
+	newPaths := make(map[string]bool)
+	for _, ca := range newCAs {
+		for _, cert := range ca.RootCerts {
+			newPaths[cert] = true
+		}
+		for _, link := range ca.Symlinks {
+			newPaths[link] = true
+		}
+		for _, tmpl := range ca.Templates {
+			newPaths[tmpl.KeyFile] = true
+			newPaths[tmpl.CertFile] = true
+		}
+	}
+
+	// Remove any old paths not in the new set
+	var removedSymlinks, removedCerts []string
+	for _, ca := range oldState.CAs {
+		for _, link := range ca.Symlinks {
+			if !newPaths[link] {
+				if err := os.Remove(link); err == nil {
+					removedSymlinks = append(removedSymlinks, link)
+				}
+			}
+		}
+		for _, cert := range ca.RootCerts {
+			if !newPaths[cert] {
+				if err := os.Remove(cert); err == nil {
+					removedCerts = append(removedCerts, cert)
+				}
+			}
+		}
+		for _, tmpl := range ca.Templates {
+			if !newPaths[tmpl.CertFile] {
+				if err := os.Remove(tmpl.CertFile); err == nil {
+					log.Debugf(ctx, "Removed orphaned certificate: %s", tmpl.CertFile)
+				}
+			}
+			if !newPaths[tmpl.KeyFile] {
+				if err := os.Remove(tmpl.KeyFile); err == nil {
+					log.Debugf(ctx, "Removed orphaned private key: %s", tmpl.KeyFile)
+				}
+			}
+		}
+	}
+
+	if len(removedSymlinks) > 0 || len(removedCerts) > 0 {
+		log.Debugf(ctx, "Cleaned up %d orphaned symlinks and %d orphaned CA cert files", len(removedSymlinks), len(removedCerts))
+	}
 }
 
 func existingTemplate(state *enrollmentState, caName, template string) (enrolledTemplate, bool) {
@@ -666,7 +729,7 @@ func ldapPolicyAllowsEnrollment(entries []entry.Entry) (bool, error) {
 		}
 	}
 
-	return false, errors.New(gotext.Get("certificate enrollment policy does not contain an enabled LDAP endpoint"))
+	return false, nil
 }
 
 // gpoData returns the data for a GPO entry.
