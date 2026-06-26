@@ -127,7 +127,7 @@ func TestNegotiateSaslAuth(t *testing.T) {
 			wantErr: true,
 		},
 
-		"Error when server does not support auth-only layer": {
+		"Error when server does not support any security layer": {
 			token: func(t *testing.T) []byte {
 				t.Helper()
 				// Only integrity (0x02) and confidentiality (0x04) — no auth-only (0x01)

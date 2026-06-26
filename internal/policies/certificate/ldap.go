@@ -3,6 +3,7 @@ package certificate
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"fmt"
 	"net"
@@ -15,7 +16,7 @@ import (
 	krbclient "github.com/oiweiwei/gokrb5.fork/v9/client"
 	krbconfig "github.com/oiweiwei/gokrb5.fork/v9/config"
 	"github.com/oiweiwei/gokrb5.fork/v9/credentials"
-
+	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 )
 
@@ -47,8 +48,10 @@ type LDAPConnector func(server string) (LDAPClient, error)
 // using the machine's Kerberos credential cache from krb5CacheDir.
 //
 // The ccache is located by scanning krb5CacheDir for the machine credential
-// cache file (the same location the AD backend copies it to).
-func newKerberosLDAPConnector(krb5CacheDir string) LDAPConnector {
+// cache file (the same location the AD backend copies it to). globalTrustDir
+// is the adsys-managed trust directory whose CA certificates are accepted (in
+// addition to the system trust store) when verifying the DC's StartTLS cert.
+func newKerberosLDAPConnector(krb5CacheDir, globalTrustDir string) LDAPConnector {
 	return func(server string) (LDAPClient, error) {
 		// Resolve the actual DC hostname so that the LDAP connection
 		// and the Kerberos SPN target the same host.
@@ -63,7 +66,7 @@ func newKerberosLDAPConnector(krb5CacheDir string) LDAPConnector {
 			return nil, fmt.Errorf("failed to connect to LDAP server %s: %w", dcHost, err)
 		}
 
-		if err := conn.StartTLS(ldapTLSConfig(dcHost)); err != nil {
+		if err := conn.StartTLS(ldapTLSConfig(dcHost, globalTrustDir)); err != nil {
 			conn.Close()
 			return nil, fmt.Errorf("failed to start TLS on LDAP connection to %s: %w", dcHost, err)
 		}
@@ -78,10 +81,100 @@ func newKerberosLDAPConnector(krb5CacheDir string) LDAPConnector {
 	}
 }
 
-func ldapTLSConfig(server string) *tls.Config {
+func ldapTLSConfig(server, globalTrustDir string) *tls.Config {
+	//nolint:gosec // G123: ClientSessionCache is a zero-capacity cache, so no
+	// client-side session resumption occurs and VerifyPeerCertificate runs on
+	// every handshake; InsecureSkipVerify is paired with manual verification.
 	return &tls.Config{
-		MinVersion: tls.VersionTLS12,
-		ServerName: tlsServerName(server),
+		MinVersion:            tls.VersionTLS12,
+		ServerName:            tlsServerName(server),
+		InsecureSkipVerify:    true,
+		VerifyPeerCertificate: verifyPeerCertificate(server, globalTrustDir),
+		// Disable session resumption to ensure certificate verification
+		// is performed on every connection (gosec G123).
+		ClientSessionCache: tls.NewLRUClientSessionCache(0),
+	}
+}
+
+// verifyPeerCertificate returns a callback that validates the server's
+// certificate chain against the system trust store and any adsys-managed
+// CA certificates. This is necessary because the AD root CA may not yet be
+// in the system trust store on first enrollment, and we want to accept
+// certificates that chain to CAs already installed by adsys in addition
+// to the system trust store.
+func verifyPeerCertificate(server, globalTrustDir string) func([][]byte, [][]*x509.Certificate) error {
+	return func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
+		if len(rawCerts) == 0 {
+			return fmt.Errorf("no server certificate presented")
+		}
+
+		certs := make([]*x509.Certificate, 0, len(rawCerts))
+		for _, rawCert := range rawCerts {
+			cert, err := x509.ParseCertificate(rawCert)
+			if err != nil {
+				return fmt.Errorf("failed to parse server certificate: %w", err)
+			}
+			certs = append(certs, cert)
+		}
+
+		// Build the verification pool from the system roots plus any
+		// adsys-managed CA certificates in the trust directory.
+		pool, err := x509.SystemCertPool()
+		if err != nil || pool == nil {
+			pool = x509.NewCertPool()
+		}
+
+		// Add any CA certificates already installed by adsys
+		addAdsysCAsToPool(pool, globalTrustDir)
+
+		opts := x509.VerifyOptions{
+			DNSName:       tlsServerName(server),
+			Roots:         pool,
+			Intermediates: x509.NewCertPool(),
+		}
+		for i, cert := range certs {
+			if i == 0 {
+				continue // leaf
+			}
+			opts.Intermediates.AddCert(cert)
+		}
+
+		if _, err := certs[0].Verify(opts); err != nil {
+			return fmt.Errorf("server certificate verification failed: %w", err)
+		}
+		return nil
+	}
+}
+
+// addAdsysCAsToPool adds CA certificates from the adsys-managed trust
+// directories to the given cert pool, so AD root CAs already installed by
+// adsys (but not necessarily rebuilt into the system bundle yet) are trusted.
+// The default global trust directory is always included; any additional dirs
+// (e.g. a non-default configured directory) are merged in and de-duplicated.
+func addAdsysCAsToPool(pool *x509.CertPool, dirs ...string) {
+	seen := make(map[string]bool, len(dirs)+1)
+	for _, dir := range append([]string{consts.DefaultGlobalTrustDir}, dirs...) {
+		if dir == "" || seen[dir] {
+			continue
+		}
+		seen[dir] = true
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			if !strings.HasSuffix(entry.Name(), ".crt") && !strings.HasSuffix(entry.Name(), ".pem") {
+				continue
+			}
+			data, err := os.ReadFile(filepath.Join(dir, entry.Name()))
+			if err != nil {
+				continue
+			}
+			pool.AppendCertsFromPEM(data)
+		}
 	}
 }
 
@@ -140,7 +233,7 @@ func findKrb5CCachePath(krb5CacheDir string) (string, error) {
 	// 1. Check KRB5CCNAME environment variable
 	if envPath := os.Getenv("KRB5CCNAME"); envPath != "" {
 		envPath = strings.TrimPrefix(envPath, "FILE:")
-		if _, err := os.Stat(envPath); err == nil {
+		if _, err := os.Stat(envPath); err == nil { //nolint:gosec // G703: envPath is from KRB5CCNAME, a system-controlled env var
 			log.Debugf(context.Background(), "Using Kerberos ccache from KRB5CCNAME: %s", envPath)
 			return envPath, nil
 		}
