@@ -23,6 +23,10 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/certificate"
 )
 
+// maxCSRBytes bounds the size of a CSR accepted by the helper, to avoid
+// unbounded memory use from an oversized file or environment variable.
+const maxCSRBytes = 64 * 1024
+
 func main() {
 	server := flag.String("server", "", "AD CS server hostname")
 	ca := flag.String("ca", "", "CA common name (Authority)")
@@ -57,12 +61,24 @@ func main() {
 				fmt.Fprintln(os.Stderr, "error: CERTMONGER_CSR environment variable is not set")
 				os.Exit(2)
 			}
+			if fi, err := os.Stat(*csrFile); err == nil && fi.Size() > maxCSRBytes {
+				fmt.Fprintln(os.Stderr, "error: CSR file too large (max 64KB)")
+				os.Exit(2)
+			}
 			data, err := os.ReadFile(*csrFile)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "error: reading CSR file: %v\n", err)
 				os.Exit(2)
 			}
+			if len(data) > maxCSRBytes {
+				fmt.Fprintln(os.Stderr, "error: CSR file too large (max 64KB)")
+				os.Exit(2)
+			}
 			csr = string(data)
+		}
+		if len(csr) > maxCSRBytes {
+			fmt.Fprintln(os.Stderr, "error: CERTMONGER_CSR too large (max 64KB)")
+			os.Exit(2)
 		}
 
 		template := os.Getenv("CERTMONGER_CA_PROFILE")

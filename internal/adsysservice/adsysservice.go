@@ -60,22 +60,22 @@ type state struct {
 }
 
 type options struct {
-	cacheDir       string
-	stateDir       string
-	runDir         string
-	dconfDir       string
-	sudoersDir     string
-	policyKitDir   string
-	apparmorDir    string
-	apparmorFsDir  string
-	systemUnitDir  string
-	globalTrustDir string
+	cacheDir              string
+	stateDir              string
+	runDir                string
+	dconfDir              string
+	sudoersDir            string
+	policyKitDir          string
+	apparmorDir           string
+	apparmorFsDir         string
+	systemUnitDir         string
+	globalTrustDir        string
 	adBackend             string
 	certificateEnrollment string
 	gpoListTimeout        time.Duration
-	sssConfig      sss.Config
-	winbindConfig  winbind.Config
-	authorizer     authorizerer
+	sssConfig             sss.Config
+	winbindConfig         winbind.Config
+	authorizer            authorizerer
 }
 type option func(*options) error
 
@@ -174,9 +174,15 @@ func WithADBackend(backend string) func(o *options) error {
 }
 
 // WithCertificateEnrollment specifies the certificate enrollment method (ldap or cepces).
+// An empty value keeps the default; unknown values are rejected with an error.
 func WithCertificateEnrollment(method string) func(o *options) error {
 	return func(o *options) error {
-		o.certificateEnrollment = method
+		switch strings.ToLower(strings.TrimSpace(method)) {
+		case "", consts.CertEnrollmentLDAP, consts.CertEnrollmentCEPCES:
+			o.certificateEnrollment = strings.ToLower(strings.TrimSpace(method))
+		default:
+			return fmt.Errorf("unsupported certificate enrollment method %q", method)
+		}
 		return nil
 	}
 }
