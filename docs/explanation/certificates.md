@@ -24,7 +24,7 @@ The **`ldap`** method is a native Go implementation that:
 * Submits signing requests directly to AD CS in-process using the MS-ICPR protocol (DCOM/RPC) and writes the issued certificate and private key to disk
 
 This method does not require CEPCES or Python dependencies on the client, and does not require Certificate Enrollment Web Service (CES) or Certificate Enrollment Policy Web Service (CEP) roles on the Windows server. It does require domain controllers to accept LDAP StartTLS with certificates trusted by the Ubuntu client, because ADSys discovers CA and template data before installing CA certificates into the system trust store.
-Certificates enrolled with this method are not registered with `certmonger`; ADSys persists its own state and refreshes certificates when the policy is applied again.
+Certificates enrolled with this method are not registered with `certmonger`. Instead, ADSys persists its own enrollment state and, on each policy refresh, re-enrolls a certificate when its file is missing or within 30 days of expiry, so machine certificates are renewed before they lapse.
 
 ### CEPCES enrollment (default for existing installations)
 

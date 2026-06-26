@@ -292,6 +292,15 @@ func TestApplyPolicy(t *testing.T) {
 
 func testIssuedCertificateFromCSR(t *testing.T, csrPEM string) string {
 	t.Helper()
+	return issueCertFromCSR(t, csrPEM, time.Now().Add(24*time.Hour))
+}
+
+// issueCertFromCSR signs the public key carried in csrPEM with a throwaway test
+// CA, producing a leaf certificate valid until notAfter. Only the leaf's public
+// key (matched against the enrolled private key) and validity window are
+// meaningful to the code under test.
+func issueCertFromCSR(t *testing.T, csrPEM string, notAfter time.Time) string {
+	t.Helper()
 
 	block, _ := pem.Decode([]byte(csrPEM))
 	require.NotNil(t, block, "failed to decode CSR PEM")
@@ -299,24 +308,6 @@ func testIssuedCertificateFromCSR(t *testing.T, csrPEM string) string {
 	csr, err := x509.ParseCertificateRequest(block.Bytes)
 	require.NoError(t, err, "failed to parse CSR")
 
-	// Create a self-signed cert using the CSR's public key.
-	// In tests, the "CA" and the issued cert share the same key for simplicity.
-	// The verifyIssuedCertificate function only checks that the cert's public
-	// key matches the private key, which this satisfies.
-	serialNumber, err := rand.Int(rand.Reader, big.NewInt(1<<62))
-	require.NoError(t, err)
-
-	template := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject:      pkix.Name{CommonName: "issued"},
-		NotBefore:    time.Now().Add(-time.Hour),
-		NotAfter:     time.Now().Add(24 * time.Hour),
-	}
-
-	// We need the private key to sign the cert. Since we can't get it from
-	// the CSR, we extract the public key and use it with a random key for
-	// signing — but that won't produce a valid signature. Instead, use the
-	// public key from the CSR and self-sign with a separate test key.
 	caKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err)
 
@@ -329,16 +320,138 @@ func testIssuedCertificateFromCSR(t *testing.T, csrPEM string) string {
 		NotBefore:             time.Now().Add(-time.Hour),
 		NotAfter:              time.Now().Add(24 * time.Hour),
 	}
-
 	caCertDER, err := x509.CreateCertificate(rand.Reader, &caTemplate, &caTemplate, &caKey.PublicKey, caKey)
 	require.NoError(t, err)
 	caCert, err := x509.ParseCertificate(caCertDER)
 	require.NoError(t, err)
 
+	serialNumber, err := rand.Int(rand.Reader, big.NewInt(1<<62))
+	require.NoError(t, err)
+
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
+		Subject:      pkix.Name{CommonName: "issued"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     notAfter,
+	}
 	certDER, err := x509.CreateCertificate(rand.Reader, &template, caCert, csr.PublicKey, caKey)
 	require.NoError(t, err)
 
 	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER}))
+}
+
+// TestLDAPEnrollmentRenewal verifies that a still-valid certificate is reused
+// across policy refreshes, while a certificate within the renewal window (or
+// past expiry) is re-enrolled.
+func TestLDAPEnrollmentRenewal(t *testing.T) {
+	tmpdir := t.TempDir()
+	stateDir := filepath.Join(tmpdir, "statedir")
+	globalTrustDir := filepath.Join(tmpdir, "trustdir")
+
+	var submitCount int
+	leafValidity := 365 * 24 * time.Hour
+	var submitter certificate.CSRSubmitter = func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+		submitCount++
+		return issueCertFromCSR(t, csrPEM, time.Now().Add(leafValidity)), nil
+	}
+
+	apply := func() error {
+		m := certificate.New(
+			"example.com",
+			certificate.WithStateDir(stateDir),
+			certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
+			certificate.WithShareDir(filepath.Join(tmpdir, "sharedir")),
+			certificate.WithGlobalTrustDir(globalTrustDir),
+			certificate.WithEnrollmentMethod("ldap"),
+			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}))),
+			certificate.WithCSRSubmitter(submitter),
+		)
+		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
+	}
+
+	certFile := filepath.Join(stateDir, "certs", "TestCA.Machine.crt")
+
+	// Initial enrollment issues a long-lived certificate.
+	require.NoError(t, apply())
+	require.Equal(t, 1, submitCount, "first apply should enroll once")
+	require.FileExists(t, certFile)
+
+	// A still-valid certificate is reused without contacting the CA again.
+	require.NoError(t, apply())
+	require.Equal(t, 1, submitCount, "valid certificate should be reused, not re-enrolled")
+
+	// Once the stored certificate falls inside the renewal window it is
+	// re-enrolled on the next policy refresh.
+	require.NoError(t, os.WriteFile(certFile, selfSignedCertPEM(t, 10*24*time.Hour), 0600))
+	require.NoError(t, apply())
+	require.Equal(t, 2, submitCount, "near-expiry certificate should be re-enrolled")
+}
+
+// TestRenewalFailureKeepsValidCert ensures that when a near-expiry certificate
+// fails to renew but is still valid, it is retained rather than being deleted
+// by orphan cleanup (which would otherwise happen once another template on the
+// CA enrolls successfully).
+func TestRenewalFailureKeepsValidCert(t *testing.T) {
+	tmpdir := t.TempDir()
+	stateDir := filepath.Join(tmpdir, "statedir")
+	globalTrustDir := filepath.Join(tmpdir, "trustdir")
+
+	var fail bool
+	var submitter certificate.CSRSubmitter = func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+		if fail {
+			return "", fmt.Errorf("mock transient submit failure")
+		}
+		return issueCertFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour)), nil
+	}
+
+	apply := func() error {
+		m := certificate.New(
+			"example.com",
+			certificate.WithStateDir(stateDir),
+			certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
+			certificate.WithShareDir(filepath.Join(tmpdir, "sharedir")),
+			certificate.WithGlobalTrustDir(globalTrustDir),
+			certificate.WithEnrollmentMethod("ldap"),
+			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine", "WebServer"}))),
+			certificate.WithCSRSubmitter(submitter),
+		)
+		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
+	}
+
+	machineCert := filepath.Join(stateDir, "certs", "TestCA.Machine.crt")
+	machineKey := filepath.Join(stateDir, "private", "certs", "TestCA.Machine.key")
+
+	// Initial enrollment issues long-lived certs for both templates.
+	require.NoError(t, apply())
+	require.FileExists(t, machineCert)
+	require.FileExists(t, machineKey)
+
+	// Push the Machine cert into the renewal window, then make enrollment fail.
+	// WebServer remains long-lived and is reused, so enrollment overall succeeds.
+	require.NoError(t, os.WriteFile(machineCert, selfSignedCertPEM(t, 10*24*time.Hour), 0600))
+	fail = true
+	require.NoError(t, apply())
+
+	// The still-valid Machine cert and key must survive the failed renewal.
+	require.FileExists(t, machineCert, "valid cert must be retained after a failed renewal")
+	require.FileExists(t, machineKey, "private key must be retained after a failed renewal")
+}
+
+// selfSignedCertPEM returns a PEM self-signed certificate valid for validFor,
+// used to simulate a stored certificate close to expiry.
+func selfSignedCertPEM(t *testing.T, validFor time.Duration) []byte {
+	t.Helper()
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+	template := x509.Certificate{
+		SerialNumber: big.NewInt(2),
+		Subject:      pkix.Name{CommonName: "issued"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(validFor),
+	}
+	der, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
+	require.NoError(t, err)
+	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 }
 
 func TestMain(m *testing.M) {
