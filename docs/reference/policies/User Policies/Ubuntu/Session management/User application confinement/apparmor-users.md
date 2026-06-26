@@ -23,6 +23,8 @@ The GPO client will wrap this into an apparmor block declaration containing the 
 
 The configured profile will override any profile referenced higher in the GPO hierarchy.
 
+Dynamic values: this field supports the placeholders ${USER}, ${FQDN_USER}, ${HOSTNAME}, ${FQDN_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FQDN_USER} are only valid in user policies. Using an unknown placeholder makes the policy fail to apply.
+
 
 - Type: apparmor
 - Key: /apparmor-users
