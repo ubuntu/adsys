@@ -2,6 +2,7 @@ package certificate
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -12,9 +13,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 	"unicode/utf16"
 
-	krbcredentials "github.com/oiweiwei/gokrb5.fork/v9/credentials"
 	"github.com/oiweiwei/go-msrpc/dcerpc"
 	"github.com/oiweiwei/go-msrpc/msrpc/dcom/wcce"
 	epmpkg "github.com/oiweiwei/go-msrpc/msrpc/epm/epm/v3"
@@ -22,7 +23,7 @@ import (
 	"github.com/oiweiwei/go-msrpc/ssp"
 	sspcredential "github.com/oiweiwei/go-msrpc/ssp/credential"
 	krb5pkg "github.com/oiweiwei/go-msrpc/ssp/krb5"
-
+	krbcredentials "github.com/oiweiwei/gokrb5.fork/v9/credentials"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 )
 
@@ -37,6 +38,10 @@ const (
 	crDispIssued          = 3
 	crDispUnderSubmission = 5
 )
+
+// maxIssuedCertBytes bounds the size of the DER certificate accepted from AD CS
+// over RPC, to avoid unbounded memory use from a malicious or buggy CA.
+const maxIssuedCertBytes = 1 << 20 // 1 MiB
 
 // CSRSubmitter submits a CSR to AD CS and returns the issued PEM certificate.
 type CSRSubmitter func(ctx context.Context, server, caName, template, csrPEM string) (string, error)
@@ -157,6 +162,9 @@ func submitCSRImpl(ctx context.Context, server, caName, template, csrPEM, krb5Ca
 	if resp.EncodedCert == nil || len(resp.EncodedCert.Buffer) == 0 {
 		return "", fmt.Errorf("server returned empty certificate")
 	}
+	if len(resp.EncodedCert.Buffer) > maxIssuedCertBytes {
+		return "", fmt.Errorf("server returned oversized certificate (%d bytes, max %d)", len(resp.EncodedCert.Buffer), maxIssuedCertBytes)
+	}
 
 	certPEM := pem.EncodeToMemory(&pem.Block{
 		Type:  "CERTIFICATE",
@@ -218,17 +226,25 @@ func EnrollCertificate(ctx context.Context, submitCSR CSRSubmitter, request Enro
 		return err
 	}
 
+	// Verify the returned certificate's public key matches the generated
+	// private key. This prevents a compromised or malicious CA from returning
+	// a certificate for a different subject or key.
+	if err := verifyIssuedCertificate(certPEM, key); err != nil {
+		return fmt.Errorf("issued certificate verification failed: %w", err)
+	}
+
 	if err := os.MkdirAll(filepath.Dir(request.KeyFile), 0700); err != nil {
 		return fmt.Errorf("failed to create key directory: %w", err)
 	}
-	if err := os.MkdirAll(filepath.Dir(request.CertFile), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(request.CertFile), 0750); err != nil {
 		return fmt.Errorf("failed to create cert directory: %w", err)
 	}
 
-	if err := os.WriteFile(request.KeyFile, key, 0600); err != nil {
+	// Write key and certificate atomically to avoid partial files on crash.
+	if err := safeWriteFile(request.KeyFile, key, 0600); err != nil {
 		return fmt.Errorf("failed to write private key: %w", err)
 	}
-	if err := os.WriteFile(request.CertFile, []byte(certPEM), 0644); err != nil {
+	if err := safeWriteFile(request.CertFile, []byte(certPEM), 0644); err != nil {
 		return fmt.Errorf("failed to write certificate: %w", err)
 	}
 
@@ -236,10 +252,99 @@ func EnrollCertificate(ctx context.Context, submitCSR CSRSubmitter, request Enro
 	return nil
 }
 
+// verifyIssuedCertificate checks that the PEM-encoded certificate's public
+// key matches the PEM-encoded private key. This ensures the CA returned a
+// certificate for the key we generated, not a different key.
+func verifyIssuedCertificate(certPEM string, keyPEM []byte) error {
+	certBlock, _ := pem.Decode([]byte(certPEM))
+	if certBlock == nil {
+		return fmt.Errorf("failed to decode issued certificate PEM")
+	}
+	cert, err := x509.ParseCertificate(certBlock.Bytes)
+	if err != nil {
+		return fmt.Errorf("failed to parse issued certificate: %w", err)
+	}
+
+	// Reject a certificate that is already expired or not yet valid (allowing
+	// for modest clock skew). Subject, SAN, EKU and chain are intentionally
+	// not enforced here: AD CS templates legitimately control the subject and
+	// key usages, and the issuing CA may be a subordinate of the discovered
+	// root (multi-tier PKI), so a strict chain check would reject valid certs.
+	const skew = 5 * time.Minute
+	now := time.Now()
+	if now.Add(skew).Before(cert.NotBefore) {
+		return fmt.Errorf("issued certificate is not yet valid (NotBefore: %s)", cert.NotBefore)
+	}
+	if now.Add(-skew).After(cert.NotAfter) {
+		return fmt.Errorf("issued certificate has already expired (NotAfter: %s)", cert.NotAfter)
+	}
+
+	keyBlock, _ := pem.Decode(keyPEM)
+	if keyBlock == nil {
+		return fmt.Errorf("failed to decode private key PEM")
+	}
+	key, err := x509.ParsePKCS8PrivateKey(keyBlock.Bytes)
+	if err != nil {
+		return fmt.Errorf("failed to parse private key: %w", err)
+	}
+
+	// Compare public keys based on key type
+	switch privKey := key.(type) {
+	case *rsa.PrivateKey:
+		certPubKey, ok := cert.PublicKey.(*rsa.PublicKey)
+		if !ok {
+			return fmt.Errorf("certificate contains %T public key, expected *rsa.PublicKey", cert.PublicKey)
+		}
+		if certPubKey.N.Cmp(privKey.N) != 0 || certPubKey.E != privKey.E {
+			return fmt.Errorf("certificate public key does not match generated private key")
+		}
+	case *ecdsa.PrivateKey:
+		certPubKey, ok := cert.PublicKey.(*ecdsa.PublicKey)
+		if !ok {
+			return fmt.Errorf("certificate contains %T public key, expected *ecdsa.PublicKey", cert.PublicKey)
+		}
+		if certPubKey.X.Cmp(privKey.X) != 0 || certPubKey.Y.Cmp(privKey.Y) != 0 {
+			return fmt.Errorf("certificate public key does not match generated private key")
+		}
+	default:
+		return fmt.Errorf("unsupported private key type: %T", key)
+	}
+
+	return nil
+}
+
+// safeWriteFile writes data to dst atomically by first writing to a uniquely
+// named temporary file in the same directory and then renaming. Using
+// os.CreateTemp (O_CREATE|O_EXCL with a random suffix) avoids a predictable
+// temp path and refuses to follow a pre-existing symlink, and the temp file is
+// cleaned up if anything before the rename fails.
+func safeWriteFile(dst string, data []byte, mode os.FileMode) error {
+	f, err := os.CreateTemp(filepath.Dir(dst), "."+filepath.Base(dst)+".tmp.*")
+	if err != nil {
+		return err
+	}
+	tmp := f.Name()
+	// Best-effort cleanup; the Remove is a no-op once the rename succeeds.
+	defer func() { _ = os.Remove(tmp) }()
+
+	if _, err := f.Write(data); err != nil {
+		_ = f.Close()
+		return err
+	}
+	if err := f.Chmod(mode); err != nil {
+		_ = f.Close()
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	return os.Rename(tmp, dst)
+}
+
 // GetSupportedTemplates discovers templates for the CA server via LDAP.
 // It uses the KRB5CCNAME environment variable for Kerberos authentication.
 func GetSupportedTemplates(server string) ([]string, error) {
-	connector := newKerberosLDAPConnector("")
+	connector := newKerberosLDAPConnector("", "")
 	return GetSupportedTemplatesWithConnector(connector, server)
 }
 
