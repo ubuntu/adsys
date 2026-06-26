@@ -11,7 +11,6 @@ import (
 	"github.com/ubuntu/adsys/internal/authorizer"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 	"github.com/ubuntu/adsys/internal/policies"
-	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/decorate"
 	"golang.org/x/sync/errgroup"
 )
@@ -156,7 +155,8 @@ func (s *Service) GPOListScript(_ *adsys.Empty, stream adsys.Service_GPOListScri
 	return nil
 }
 
-// CertAutoEnrollScript returns the embedded certificate autoenrollment python script.
+// CertAutoEnrollScript reports that the embedded certificate autoenrollment
+// script is deprecated in favour of the native LDAP enrollment method.
 func (s *Service) CertAutoEnrollScript(_ *adsys.Empty, stream adsys.Service_CertAutoEnrollScriptServer) (err error) {
 	defer decorate.OnError(&err, gotext.Get("error while getting certificate autoenrollment script"))
 
@@ -165,9 +165,9 @@ func (s *Service) CertAutoEnrollScript(_ *adsys.Empty, stream adsys.Service_Cert
 	}
 
 	if err := stream.Send(&adsys.StringResponse{
-		Msg: certificate.CertEnrollCode,
+		Msg: "Certificate autoenrollment script is deprecated. Use the native LDAP enrollment method instead.",
 	}); err != nil {
-		log.Warningf(stream.Context(), "couldn't send certificate autoenrollment script to client: %v", err)
+		log.Warningf(stream.Context(), "couldn't send certificate autoenrollment info to client: %v", err)
 	}
 
 	return nil

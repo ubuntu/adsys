@@ -13,6 +13,7 @@ require (
 	github.com/dsnet/golib/memfile v1.0.0
 	github.com/fatih/color v1.19.0
 	github.com/fsnotify/fsnotify v1.10.1
+	github.com/go-ldap/ldap/v3 v3.4.13
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
@@ -22,6 +23,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/muesli/termenv v0.16.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
+	github.com/oiweiwei/go-msrpc v1.4.3
+	github.com/oiweiwei/gokrb5.fork/v9 v9.0.6
 	github.com/pkg/sftp v1.13.10
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
@@ -43,6 +46,7 @@ require (
 )
 
 require (
+	github.com/Azure/go-ntlmssp v0.1.0 // indirect
 	github.com/alecthomas/chroma/v2 v2.20.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
@@ -59,9 +63,19 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
+	github.com/geoffgarside/ber v1.1.0 // indirect
+	github.com/go-asn1-ber/asn1-ber v1.5.8-0.20250403174932-29230038a667 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
+	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/indece-official/go-ebcdic v1.2.0 // indirect
+	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
+	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
+	github.com/jcmturner/gofork v1.7.6 // indirect
+	github.com/jcmturner/goidentity/v6 v6.0.1 // indirect
+	github.com/jcmturner/gokrb5/v8 v8.4.4 // indirect
+	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -72,9 +86,13 @@ require (
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
+	github.com/oiweiwei/go-math v1.0.0 // indirect
+	github.com/oiweiwei/go-oem v1.0.0 // indirect
+	github.com/oiweiwei/go-smb2.fork v1.0.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/rs/zerolog v1.35.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect

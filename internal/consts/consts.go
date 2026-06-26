@@ -67,6 +67,14 @@ const (
 	DefaultSystemUnitDir = "/etc/systemd/system"
 	// DefaultGlobalTrustDir is the default directory for the global trust store.
 	DefaultGlobalTrustDir = "/usr/local/share/ca-certificates"
+
+	// CertEnrollmentLDAP selects the native Go LDAP/RPC certificate enrollment.
+	CertEnrollmentLDAP = "ldap"
+	// CertEnrollmentCEPCES selects the legacy CEPCES/Python certificate enrollment.
+	CertEnrollmentCEPCES = "cepces"
+	// DefaultCertificateEnrollment is the code-level default enrollment method.
+	// Defaults to CEPCES for backward compatibility with existing installations.
+	DefaultCertificateEnrollment = CertEnrollmentCEPCES
 )
 
 // SSSD related properties.

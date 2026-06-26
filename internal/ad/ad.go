@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"testing"
 	"time"
 
 	"github.com/leonelquinteros/gotext"
@@ -147,6 +148,15 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 		if err := o(&args); err != nil {
 			return nil, err
 		}
+	}
+
+	// Allow integration tests running the real daemon binary to disable
+	// kerberos authentication, as they have no real KDC to authenticate
+	// against. This is gated on testing.Testing() so it can only be
+	// triggered when running under `go test`, never in production.
+	if testing.Testing() && os.Getenv("ADSYS_TESTS_WITHOUT_KERBEROS") == "1" {
+		log.Warning(ctx, "Kerberos authentication disabled by ADSYS_TESTS_WITHOUT_KERBEROS=1 (test mode)")
+		args.withoutKerberos = true
 	}
 
 	krb5CacheDir := filepath.Join(args.runDir, "krb5cc")
