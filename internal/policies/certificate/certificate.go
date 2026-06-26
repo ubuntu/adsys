@@ -21,8 +21,10 @@ package certificate
 
 import (
 	"context"
+	"crypto/x509"
 	_ "embed" // embed cert enroll python script
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"os"
@@ -460,16 +462,28 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	for _, ca := range cas {
 		log.Debugf(ctx, "Processing CA: %s (%s) with %d templates", ca.Name, ca.Hostname, len(ca.Templates))
 
-		// Install root CA certificate
+		// Install root CA certificate. If this fails (e.g. the CA cert is
+		// malformed, expired, or unverifiable) skip the CA entirely, since
+		// certificates issued by it would not validate without its root in
+		// the trust store.
 		certFiles, symlinkFiles, err := installRootCACerts(ca, trustDir, m.globalTrustDir)
 		if err != nil {
-			log.Warningf(ctx, "Failed to install root CA cert for %s: %v", ca.Name, err)
+			log.Warningf(ctx, "Skipping CA %s: could not install its root certificate: %v", ca.Name, err)
+			// Preserve previously-enrolled state for this CA so a transient
+			// failure doesn't orphan still-valid certificates; otherwise drop
+			// any partial files this attempt may have created.
+			if prev, ok := existingCA(existingState, ca.Name); ok {
+				enrolledCAs = append(enrolledCAs, prev)
+			} else {
+				removeRootCACerts(certFiles, symlinkFiles)
+			}
+			continue
 		}
 
 		var enrolledTemplates []enrolledTemplate
 		for _, tmplName := range ca.Templates {
-			if tmpl, ok := existingTemplate(existingState, ca.Name, tmplName); ok && filesExist(tmpl.KeyFile, tmpl.CertFile) {
-				log.Debugf(ctx, "Template %s for CA %s already enrolled, reusing existing cert files", tmplName, ca.Name)
+			if tmpl, ok := existingTemplate(existingState, ca.Name, tmplName); ok && filesExist(tmpl.KeyFile, tmpl.CertFile) && !certNeedsRenewal(ctx, tmpl.CertFile) {
+				log.Debugf(ctx, "Template %s for CA %s already enrolled and current, reusing existing cert files", tmplName, ca.Name)
 				enrolledTemplates = append(enrolledTemplates, tmpl)
 				continue
 			}
@@ -497,6 +511,14 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 				KeySize:    attrs.MinKeySize,
 			}); err != nil {
 				log.Warningf(ctx, "Failed to request certificate for template %s: %v", tmplName, err)
+				// If a previously-issued certificate is still on disk and not
+				// yet expired, keep using it rather than dropping it: dropping
+				// would let cleanupOrphanedCerts delete still-valid key material
+				// just because a renewal attempt failed transiently.
+				if tmpl, ok := existingTemplate(existingState, ca.Name, tmplName); ok && filesExist(tmpl.KeyFile) && certUsable(tmpl.CertFile) {
+					log.Infof(ctx, "Retaining still-valid certificate for template %s after failed renewal", tmplName)
+					enrolledTemplates = append(enrolledTemplates, tmpl)
+				}
 				continue
 			}
 
@@ -524,11 +546,6 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		})
 	}
 
-	// Update CA trust store
-	if err := updateCATrustStore(); err != nil {
-		log.Warningf(ctx, "Failed to update CA trust store: %v", err)
-	}
-
 	if len(enrolledCAs) == 0 {
 		return fmt.Errorf("could not enroll to any certificate authorities out of %d discovered", len(cas))
 	}
@@ -538,6 +555,13 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	// orphaned cert/key files and trust store symlinks from accumulating.
 	if existingState != nil {
 		cleanupOrphanedCerts(ctx, existingState, enrolledCAs)
+	}
+
+	// Rebuild the system trust store after BOTH installing new roots and
+	// removing orphaned ones, so the consolidated bundle reflects additions
+	// and removals in a single pass.
+	if err := updateCATrustStore(); err != nil {
+		log.Warningf(ctx, "Failed to update CA trust store: %v", err)
 	}
 
 	// Save state
@@ -622,39 +646,37 @@ func cleanupOrphanedCerts(ctx context.Context, oldState *enrollmentState, newCAs
 		}
 	}
 
-	// Remove any old paths not in the new set
-	var removedSymlinks, removedCerts []string
+	// Remove any old paths not in the new set, logging both successes and
+	// failures so a stuck orphan is visible in the daemon logs.
+	var removed int
+	remove := func(path, kind string) {
+		if path == "" || newPaths[path] {
+			return
+		}
+		if err := os.Remove(path); err != nil {
+			if !os.IsNotExist(err) {
+				log.Warningf(ctx, "Failed to remove orphaned %s %s: %v", kind, path, err)
+			}
+			return
+		}
+		log.Debugf(ctx, "Removed orphaned %s: %s", kind, path)
+		removed++
+	}
 	for _, ca := range oldState.CAs {
 		for _, link := range ca.Symlinks {
-			if !newPaths[link] {
-				if err := os.Remove(link); err == nil {
-					removedSymlinks = append(removedSymlinks, link)
-				}
-			}
+			remove(link, "trust store symlink")
 		}
 		for _, cert := range ca.RootCerts {
-			if !newPaths[cert] {
-				if err := os.Remove(cert); err == nil {
-					removedCerts = append(removedCerts, cert)
-				}
-			}
+			remove(cert, "CA certificate")
 		}
 		for _, tmpl := range ca.Templates {
-			if !newPaths[tmpl.CertFile] {
-				if err := os.Remove(tmpl.CertFile); err == nil {
-					log.Debugf(ctx, "Removed orphaned certificate: %s", tmpl.CertFile)
-				}
-			}
-			if !newPaths[tmpl.KeyFile] {
-				if err := os.Remove(tmpl.KeyFile); err == nil {
-					log.Debugf(ctx, "Removed orphaned private key: %s", tmpl.KeyFile)
-				}
-			}
+			remove(tmpl.CertFile, "certificate")
+			remove(tmpl.KeyFile, "private key")
 		}
 	}
 
-	if len(removedSymlinks) > 0 || len(removedCerts) > 0 {
-		log.Debugf(ctx, "Cleaned up %d orphaned symlinks and %d orphaned CA cert files", len(removedSymlinks), len(removedCerts))
+	if removed > 0 {
+		log.Debugf(ctx, "Cleaned up %d orphaned trust store entries", removed)
 	}
 }
 
@@ -675,6 +697,19 @@ func existingTemplate(state *enrollmentState, caName, template string) (enrolled
 	return enrolledTemplate{}, false
 }
 
+// existingCA returns the previously-enrolled state for the named CA, if any.
+func existingCA(state *enrollmentState, caName string) (enrolledCA, bool) {
+	if state == nil {
+		return enrolledCA{}, false
+	}
+	for _, ca := range state.CAs {
+		if ca.Name == caName {
+			return ca, true
+		}
+	}
+	return enrolledCA{}, false
+}
+
 func filesExist(paths ...string) bool {
 	for _, path := range paths {
 		if _, err := os.Stat(path); err != nil {
@@ -682,6 +717,55 @@ func filesExist(paths ...string) bool {
 		}
 	}
 	return true
+}
+
+// certRenewalWindow is how long before expiry an enrolled certificate is
+// re-enrolled on the next policy refresh instead of being reused.
+const certRenewalWindow = 30 * 24 * time.Hour
+
+// parseCertFile reads and parses the PEM certificate at path, returning nil if
+// it is missing, unreadable, or malformed.
+func parseCertFile(path string) *x509.Certificate {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	block, _ := pem.Decode(data)
+	if block == nil {
+		return nil
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil
+	}
+	return cert
+}
+
+// certNeedsRenewal reports whether the certificate at certFile should be
+// re-enrolled rather than reused: it returns true if the file is missing,
+// unreadable, unparseable, or within certRenewalWindow of (or past) its
+// expiry. Because adsys does not register issued certificates with certmonger,
+// this expiry-driven re-enrollment on each policy refresh is what keeps
+// machine certificates current.
+func certNeedsRenewal(ctx context.Context, certFile string) bool {
+	cert := parseCertFile(certFile)
+	if cert == nil {
+		log.Warningf(ctx, "Could not load existing certificate %s, re-enrolling", certFile)
+		return true
+	}
+	if time.Now().Add(certRenewalWindow).After(cert.NotAfter) {
+		log.Infof(ctx, "Certificate %s expires at %s (within renewal window), re-enrolling", certFile, cert.NotAfter)
+		return true
+	}
+	return false
+}
+
+// certUsable reports whether the certificate at certFile is present, parseable
+// and not yet expired. Unlike certNeedsRenewal it ignores the renewal window,
+// so a still-valid (if soon-to-expire) certificate is considered usable.
+func certUsable(certFile string) bool {
+	cert := parseCertFile(certFile)
+	return cert != nil && time.Now().Before(cert.NotAfter)
 }
 
 func ldapPolicyAllowsEnrollment(entries []entry.Entry) (bool, error) {
