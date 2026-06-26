@@ -200,7 +200,7 @@ func New(domain string, opts ...Option) *Manager {
 		// performs GSSAPI bind using the machine's Kerberos credential cache.
 		ldapConnect := args.ldapConnect
 		if ldapConnect == nil {
-			ldapConnect = newKerberosLDAPConnector(krb5CacheDir)
+			ldapConnect = newKerberosLDAPConnector(krb5CacheDir, args.globalTrustDir)
 		}
 
 		// Use the provided CSR submitter, or create the default one that

@@ -134,6 +134,12 @@ func (g *gssapiClient) processAPREP(token []byte) ([]byte, bool, error) {
 //     describing supported security layers and max buffer size.
 //  2. Build a response selecting "no security layer" (auth only).
 //  3. Wrap the response as an integrity-only GSSAPI wrap token.
+//
+// Auth-only (no SASL security layer) is selected because go-ldap does not
+// support wrapping/unwrapping individual LDAP messages after the SASL bind.
+// Message-level protection is provided by StartTLS, which is negotiated
+// before the GSSAPI bind and verified against the system trust store plus
+// any adsys-managed CA certificates.
 func (g *gssapiClient) NegotiateSaslAuth(token []byte, authzid string) ([]byte, error) {
 	payload, err := g.unwrapServerToken(token)
 	if err != nil {
@@ -145,11 +151,16 @@ func (g *gssapiClient) NegotiateSaslAuth(token []byte, authzid string) ([]byte, 
 	}
 
 	// Byte 0: supported security layers bitmask
-	//   bit 0 (0x01) = no security layer
+	//   bit 0 (0x01) = no security layer (auth only)
 	//   bit 1 (0x02) = integrity only
 	//   bit 2 (0x04) = confidentiality
+	//
+	// We require auth-only (0x01) because go-ldap cannot wrap/unwrap
+	// individual LDAP messages after the SASL bind. Message-level
+	// protection is provided by StartTLS.
 	if payload[0]&0x01 == 0 {
-		return nil, fmt.Errorf("server does not support auth-only security layer (bitmask: %02x)", payload[0])
+		return nil, fmt.Errorf("server does not support auth-only security layer (bitmask: %02x); "+
+			"integrity/confidentiality SASL layers are not supported by go-ldap", payload[0])
 	}
 
 	return g.wrapSASLResponse(authzid)
