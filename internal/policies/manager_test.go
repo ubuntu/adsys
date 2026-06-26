@@ -131,8 +131,8 @@ func TestApplyPolicies(t *testing.T) {
 					certificate.WithLDAPConnector(func(string) (certificate.LDAPClient, error) {
 						return &policiesTestLDAPConn{}, nil
 					}),
-					certificate.WithCSRSubmitter(func(context.Context, string, string, string, string) (string, error) {
-						return dummyIssuedCertificate(t), nil
+					certificate.WithCSRSubmitter(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+						return dummyIssuedCertificateFromCSR(t, csrPEM), nil
 					}),
 				)),
 				policies.WithProxyApplier(&mockProxyApplier{wantApplyError: tc.noUbuntuProxyManager}),
@@ -235,17 +235,44 @@ func (p *policiesTestLDAPConn) Search(req *ldap.SearchRequest) (*ldap.SearchResu
 
 func (p *policiesTestLDAPConn) Close() error { return nil }
 
-func dummyIssuedCertificate(t *testing.T) string {
+func dummyIssuedCertificateFromCSR(t *testing.T, csrPEM string) string {
 	t.Helper()
-	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+
+	block, _ := pem.Decode([]byte(csrPEM))
+	require.NotNil(t, block, "failed to decode CSR PEM")
+
+	csr, err := x509.ParseCertificateRequest(block.Bytes)
+	require.NoError(t, err, "failed to parse CSR")
+
+	caKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+
+	caTemplate := x509.Certificate{
+		SerialNumber:          big.NewInt(1),
+		Subject:               pkix.Name{CommonName: "Test CA"},
+		IsCA:                  true,
+		BasicConstraintsValid: true,
+		KeyUsage:              x509.KeyUsageCertSign,
+		NotBefore:             time.Now().Add(-time.Hour),
+		NotAfter:              time.Now().Add(24 * time.Hour),
+	}
+
+	caCertDER, err := x509.CreateCertificate(rand.Reader, &caTemplate, &caTemplate, &caKey.PublicKey, caKey)
+	require.NoError(t, err)
+	caCert, err := x509.ParseCertificate(caCertDER)
+	require.NoError(t, err)
+
+	serialNumber, err := rand.Int(rand.Reader, big.NewInt(1<<62))
 	require.NoError(t, err)
 
 	template := x509.Certificate{
-		SerialNumber: big.NewInt(2),
+		SerialNumber: serialNumber,
 		Subject:      pkix.Name{CommonName: "issued"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(24 * time.Hour),
 	}
 
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, caCert, csr.PublicKey, caKey)
 	require.NoError(t, err)
 
 	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER}))

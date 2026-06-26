@@ -31,7 +31,7 @@ type enrolledCA struct {
 
 // enrolledTemplate tracks a single certificate template enrollment.
 type enrolledTemplate struct {
-	Nickname string `json:"nickname"`  // stable certificate nickname (e.g. "CA-Name.Machine")
+	Nickname string `json:"nickname"`  // sanitized on-disk identifier (e.g. "CA-Name.Machine")
 	Template string `json:"template"`  // template name
 	KeyFile  string `json:"key_file"`  // path to private key
 	CertFile string `json:"cert_file"` // path to certificate
@@ -72,7 +72,7 @@ func saveState(stateDir string, state *enrollmentState) error {
 	state.UpdatedAt = time.Now()
 
 	dir := filepath.Dir(stateFilePath(stateDir, state.ObjectName))
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0750); err != nil {
 		return fmt.Errorf("failed to create state directory: %w", err)
 	}
 
