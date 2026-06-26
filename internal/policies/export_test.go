@@ -9,6 +9,11 @@ const (
 	PoliciesFileName       = policiesFileName
 )
 
+// SanitizeAssetContent exposes sanitizeAssetContent for testing.
+func SanitizeAssetContent(content []byte) []byte {
+	return sanitizeAssetContent(content)
+}
+
 // WithGDM specifies a personalized gdm manager.
 func WithGDM(m *gdm.Manager) Option {
 	return func(o *options) error {

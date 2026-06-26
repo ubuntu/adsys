@@ -6,6 +6,7 @@ package policies
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -347,13 +348,37 @@ func CompressAssets(ctx context.Context, p string) (err error) {
 		}
 
 		// #nosec G122 -- This is a path controlled by us
-		// Copy file content
+		// Assets are authored on and downloaded from the Windows AD server, so
+		// text files routinely carry CRLF line endings or a leading UTF-8 BOM
+		// that would otherwise break script execution and policy parsing on
+		// Linux. Sanitize text assets, but binary assets (which can be large)
+		// are stream-copied unchanged to avoid buffering them entirely.
 		srcF, err := os.Open(path)
 		if err != nil {
 			return err
 		}
 		defer srcF.Close()
-		if _, err = io.Copy(fZip, srcF); err != nil {
+
+		binary, err := isBinary(srcF)
+		if err != nil {
+			return err
+		}
+		if _, err := srcF.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+
+		if binary {
+			if _, err := io.Copy(fZip, srcF); err != nil {
+				return err
+			}
+			return nil
+		}
+
+		content, err := io.ReadAll(srcF)
+		if err != nil {
+			return err
+		}
+		if _, err = fZip.Write(sanitizeAssetContent(content)); err != nil {
 			return err
 		}
 
@@ -361,6 +386,59 @@ func CompressAssets(ctx context.Context, p string) (err error) {
 	})
 
 	return err
+}
+
+// utf8BOM is the UTF-8 byte order mark that Windows editors (e.g. Notepad,
+// PowerShell ISE) frequently prepend to files. When present at the start of a
+// script it sits before the shebang and prevents the kernel from recognizing
+// the interpreter.
+var utf8BOM = []byte{0xEF, 0xBB, 0xBF}
+
+// isBinary streams through r and reports whether it contains a NUL byte, the
+// conventional signal that content is binary and must be preserved
+// byte-for-byte. It reads in chunks so large binary assets are not buffered in
+// memory entirely.
+func isBinary(r io.Reader) (bool, error) {
+	buf := make([]byte, 32*1024)
+	for {
+		n, err := r.Read(buf)
+		if bytes.IndexByte(buf[:n], 0) != -1 {
+			return true, nil
+		}
+		if err == io.EOF {
+			return false, nil
+		}
+		if err != nil {
+			return false, err
+		}
+	}
+}
+
+// sanitizeAssetContent normalizes Windows-specific byte sequences in a
+// downloaded asset so it works out of the box on Linux:
+//   - a leading UTF-8 BOM is removed;
+//   - CRLF (\r\n) line endings are converted to LF (\n).
+//
+// Assets are authored on and downloaded from the Windows AD server, where these
+// sequences are routinely introduced by editors. They break script execution
+// (a CRLF shebang resolves to an interpreter path with a trailing \r) and
+// policy parsing, forcing administrators to remember to save assets in Unix
+// format.
+//
+// Files that look binary (i.e. contain a NUL byte) are returned unchanged to
+// avoid corrupting non-text assets an administrator may have placed alongside
+// scripts and profiles.
+func sanitizeAssetContent(content []byte) []byte {
+	// A NUL byte is the conventional signal that content is binary and must be
+	// preserved byte-for-byte.
+	if bytes.IndexByte(content, 0) != -1 {
+		return content
+	}
+
+	content = bytes.TrimPrefix(content, utf8BOM)
+	content = bytes.ReplaceAll(content, []byte("\r\n"), []byte("\n"))
+
+	return content
 }
 
 // GetUniqueRules return order rules, with one entry per key for a given type.

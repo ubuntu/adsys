@@ -518,6 +518,140 @@ func TestCompressAssets(t *testing.T) {
 	}
 }
 
+func TestSanitizeAssetContent(t *testing.T) {
+	t.Parallel()
+
+	bom := []byte{0xEF, 0xBB, 0xBF}
+	withBOM := func(b []byte) []byte {
+		return append(append([]byte{}, bom...), b...)
+	}
+
+	tests := map[string]struct {
+		content []byte
+
+		want []byte
+	}{
+		// Normalized cases
+		"Plain LF content is left untouched": {
+			content: []byte("#!/bin/sh\necho hello\n"),
+			want:    []byte("#!/bin/sh\necho hello\n"),
+		},
+		"CRLF is converted to LF": {
+			content: []byte("#!/bin/sh\r\necho hello\r\n"),
+			want:    []byte("#!/bin/sh\necho hello\n"),
+		},
+		"Multiple CRLF are all converted": {
+			content: []byte("a\r\nb\r\nc\r\n"),
+			want:    []byte("a\nb\nc\n"),
+		},
+		"Leading BOM is stripped": {
+			content: withBOM([]byte("#!/bin/sh\n")),
+			want:    []byte("#!/bin/sh\n"),
+		},
+		"Leading BOM and CRLF are both normalized": {
+			content: withBOM([]byte("#!/bin/sh\r\necho hi\r\n")),
+			want:    []byte("#!/bin/sh\necho hi\n"),
+		},
+		"Content consisting only of a BOM is emptied": {
+			content: withBOM(nil),
+			want:    nil,
+		},
+		"Empty content is left untouched": {
+			content: []byte{},
+			want:    nil,
+		},
+
+		// Preservation cases
+		"Lone CR is preserved": {
+			content: []byte("progress\rdone\r\n"),
+			want:    []byte("progress\rdone\n"),
+		},
+		"BOM not at the start is preserved": {
+			content: append([]byte("prefix"), withBOM([]byte("\n"))...),
+			want:    append([]byte("prefix"), withBOM([]byte("\n"))...),
+		},
+
+		// Binary cases: a NUL byte means the file must be preserved verbatim.
+		"Binary content with CRLF is preserved": {
+			content: []byte("\x00\x01\x02\r\n"),
+			want:    []byte("\x00\x01\x02\r\n"),
+		},
+		"Binary content with a leading BOM is preserved": {
+			content: withBOM([]byte("\x00binary\r\n")),
+			want:    withBOM([]byte("\x00binary\r\n")),
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got := policies.SanitizeAssetContent(tc.content)
+
+			// Compare as strings to gracefully handle nil vs empty slices.
+			require.Equal(t, string(tc.want), string(got), "SanitizeAssetContent returned unexpected content")
+		})
+	}
+}
+
+func TestCompressAssetsSanitizesContent(t *testing.T) {
+	t.Parallel()
+
+	bom := []byte{0xEF, 0xBB, 0xBF}
+	withBOM := func(b []byte) []byte {
+		return append(append([]byte{}, bom...), b...)
+	}
+
+	crlfScript := []byte("#!/bin/sh\r\necho crlf\r\n")
+	wantCrlfScript := []byte("#!/bin/sh\necho crlf\n")
+	bomScript := withBOM([]byte("#!/bin/sh\r\necho bom\r\n"))
+	wantBomScript := []byte("#!/bin/sh\necho bom\n")
+	lfScript := []byte("#!/bin/sh\necho lf\n")
+	// A binary asset carrying both a BOM and CRLF must survive untouched.
+	binaryAsset := withBOM([]byte("\x00\x01\r\n\x02"))
+
+	// content authored on Windows, mapped to the expected sanitized result.
+	assets := map[string]struct {
+		content []byte
+		want    []byte
+	}{
+		filepath.Join("scripts", "crlf.sh"):  {content: crlfScript, want: wantCrlfScript},
+		filepath.Join("scripts", "bom.sh"):   {content: bomScript, want: wantBomScript},
+		filepath.Join("scripts", "lf.sh"):    {content: lfScript, want: lfScript},
+		filepath.Join("scripts", "binary"):   {content: binaryAsset, want: binaryAsset},
+		filepath.Join("apparmor", "usr.bin"): {content: bomScript, want: wantBomScript},
+	}
+
+	// Lay out the assets directory the same way it exists after a download.
+	parentDir := t.TempDir()
+	assetsDir := filepath.Join(parentDir, "assets")
+	for relPath, asset := range assets {
+		dest := filepath.Join(assetsDir, relPath)
+		require.NoError(t, os.MkdirAll(filepath.Dir(dest), 0700), "Setup: can’t create asset subdirectory")
+		require.NoError(t, os.WriteFile(dest, asset.content, 0600), "Setup: can’t write asset file")
+	}
+
+	require.NoError(t, policies.CompressAssets(context.Background(), assetsDir), "CompressAssets should return no error but got one")
+
+	// Drop the uncompressed assets so the policies are loaded purely from the db,
+	// then extract them again to inspect what was actually stored.
+	require.NoError(t, os.RemoveAll(assetsDir), "Teardown: can’t remove uncompressed assets directory")
+	require.NoError(t, os.WriteFile(filepath.Join(parentDir, policies.PoliciesFileName), nil, 0600), "Setup: can’t create empty policy cache file")
+
+	pols, err := policies.NewFromCache(context.Background(), parentDir)
+	require.NoError(t, err, "NewFromCache should return no error but got one")
+	defer pols.Close()
+
+	extractDir := filepath.Join(t.TempDir(), "extracted")
+	require.NoError(t, pols.SaveAssetsTo(context.Background(), ".", extractDir, -1, -1), "SaveAssetsTo should return no error but got one")
+
+	for relPath, asset := range assets {
+		got, err := os.ReadFile(filepath.Join(extractDir, relPath))
+		require.NoError(t, err, "should be able to read extracted asset %q", relPath)
+		require.Equal(t, string(asset.want), string(got), "unexpected stored content for asset %q", relPath)
+	}
+}
+
 func TestGetUniqueRules(t *testing.T) {
 	t.Parallel()
 
