@@ -348,16 +348,31 @@ func CompressAssets(ctx context.Context, p string) (err error) {
 		}
 
 		// #nosec G122 -- This is a path controlled by us
-		// Read the whole file so its content can be sanitized before being
-		// stored. Assets are authored on and downloaded from the Windows AD
-		// server, so they routinely carry CRLF line endings or a leading UTF-8
-		// BOM that would otherwise break script execution and policy parsing on
-		// Linux. Assets are small text files, so reading them fully is fine.
+		// Assets are authored on and downloaded from the Windows AD server, so
+		// text files routinely carry CRLF line endings or a leading UTF-8 BOM
+		// that would otherwise break script execution and policy parsing on
+		// Linux. Sanitize text assets, but binary assets (which can be large)
+		// are stream-copied unchanged to avoid buffering them entirely.
 		srcF, err := os.Open(path)
 		if err != nil {
 			return err
 		}
 		defer srcF.Close()
+
+		binary, err := isBinary(srcF)
+		if err != nil {
+			return err
+		}
+		if _, err := srcF.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+
+		if binary {
+			if _, err := io.Copy(fZip, srcF); err != nil {
+				return err
+			}
+			return nil
+		}
 
 		content, err := io.ReadAll(srcF)
 		if err != nil {
@@ -378,6 +393,26 @@ func CompressAssets(ctx context.Context, p string) (err error) {
 // script it sits before the shebang and prevents the kernel from recognizing
 // the interpreter.
 var utf8BOM = []byte{0xEF, 0xBB, 0xBF}
+
+// isBinary streams through r and reports whether it contains a NUL byte, the
+// conventional signal that content is binary and must be preserved
+// byte-for-byte. It reads in chunks so large binary assets are not buffered in
+// memory entirely.
+func isBinary(r io.Reader) (bool, error) {
+	buf := make([]byte, 32*1024)
+	for {
+		n, err := r.Read(buf)
+		if bytes.IndexByte(buf[:n], 0) != -1 {
+			return true, nil
+		}
+		if err == io.EOF {
+			return false, nil
+		}
+		if err != nil {
+			return false, err
+		}
+	}
+}
 
 // sanitizeAssetContent normalizes Windows-specific byte sequences in a
 // downloaded asset so it works out of the box on Linux:
