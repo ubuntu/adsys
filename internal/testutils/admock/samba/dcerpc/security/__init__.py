@@ -1,7 +1,21 @@
 # TiCS: disabled # samba mock
 
-dom_sid = ""
 descriptor = "SECURITY_DESCRIPTOR"
+
+
+class dom_sid:
+    ''' Minimal stand-in for samba.dcerpc.security.dom_sid. '''
+    def __init__(self, sid=""):
+        self.sid = sid
+
+    def __str__(self):
+        return str(self.sid)
+
+
+class token:
+    ''' Minimal stand-in for samba.dcerpc.security.token. '''
+    def __init__(self):
+        self.sids = []
 
 SECINFO_OWNER = 1<<0
 SECINFO_GROUP = 1<<1
