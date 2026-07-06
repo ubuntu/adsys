@@ -3,7 +3,7 @@ set -e
 
 case "$1" in
     configure)
-        pam-auth-update --package adsys
+        DEBIAN_FRONTEND=noninteractive pam-auth-update --package adsys
 
         # For new installations (no previous version), set the LDAP-only
         # certificate enrollment as default. Existing installations keep
