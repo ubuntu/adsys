@@ -9,6 +9,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -54,7 +55,14 @@ type LDAPConnector func(server string) (LDAPClient, error)
 // cache file (the same location the AD backend copies it to). globalTrustDir
 // is the adsys-managed trust directory whose CA certificates are accepted (in
 // addition to the system trust store) when verifying the DC's StartTLS cert.
-func newKerberosLDAPConnector(krb5CacheDir, globalTrustDir string) LDAPConnector {
+//
+// allowBootstrap permits the StartTLS handshake to proceed when the DC
+// certificate cannot yet be chained to a trusted root (see
+// verifyPeerCertificate). This is required for the first enrollment, where the
+// enterprise CA is only discovered and installed later in the same run; the DC
+// is still authenticated by the Kerberos GSSAPI bind (with TLS channel binding)
+// performed immediately after StartTLS.
+func newKerberosLDAPConnector(krb5CacheDir, globalTrustDir string, allowBootstrap bool) LDAPConnector {
 	return func(server string) (LDAPClient, error) {
 		// Resolve the actual DC hostname so that the LDAP connection
 		// and the Kerberos SPN target the same host.
@@ -69,7 +77,7 @@ func newKerberosLDAPConnector(krb5CacheDir, globalTrustDir string) LDAPConnector
 			return nil, fmt.Errorf("failed to connect to LDAP server %s: %w", dcHost, err)
 		}
 
-		if err := conn.StartTLS(ldapTLSConfig(dcHost, globalTrustDir)); err != nil {
+		if err := conn.StartTLS(ldapTLSConfig(dcHost, globalTrustDir, allowBootstrap)); err != nil {
 			conn.Close()
 			return nil, fmt.Errorf("failed to start TLS on LDAP connection to %s: %w", dcHost, err)
 		}
@@ -84,7 +92,18 @@ func newKerberosLDAPConnector(krb5CacheDir, globalTrustDir string) LDAPConnector
 	}
 }
 
-func ldapTLSConfig(server, globalTrustDir string) *tls.Config {
+// NewKerberosLDAPConnector returns an LDAPConnector that performs a GSSAPI bind
+// to a domain controller using the machine's Kerberos credential cache located
+// in krb5CacheDir (typically filepath.Join(runDir, "krb5cc")), with StartTLS and
+// channel binding. It is exported so other AD-facing managers — such as DFS
+// namespace resolution for user mounts — can reuse the same authenticated LDAP
+// path. It does not allow the StartTLS bootstrap exception used during first
+// certificate enrollment; the DC certificate must already be trusted.
+func NewKerberosLDAPConnector(krb5CacheDir, globalTrustDir string) LDAPConnector {
+	return newKerberosLDAPConnector(krb5CacheDir, globalTrustDir, false)
+}
+
+func ldapTLSConfig(server, globalTrustDir string, allowBootstrap bool) *tls.Config {
 	//nolint:gosec // G123: ClientSessionCache is a zero-capacity cache, so no
 	// client-side session resumption occurs and VerifyPeerCertificate runs on
 	// every handshake; InsecureSkipVerify is paired with manual verification.
@@ -92,7 +111,7 @@ func ldapTLSConfig(server, globalTrustDir string) *tls.Config {
 		MinVersion:            tls.VersionTLS12,
 		ServerName:            tlsServerName(server),
 		InsecureSkipVerify:    true,
-		VerifyPeerCertificate: verifyPeerCertificate(server, globalTrustDir),
+		VerifyPeerCertificate: verifyPeerCertificate(server, globalTrustDir, allowBootstrap),
 		// Disable session resumption to ensure certificate verification
 		// is performed on every connection (gosec G123).
 		ClientSessionCache: tls.NewLRUClientSessionCache(0),
@@ -105,7 +124,24 @@ func ldapTLSConfig(server, globalTrustDir string) *tls.Config {
 // in the system trust store on first enrollment, and we want to accept
 // certificates that chain to CAs already installed by adsys in addition
 // to the system trust store.
-func verifyPeerCertificate(server, globalTrustDir string) func([][]byte, [][]*x509.Certificate) error {
+//
+// Hostname verification is performed separately from chain verification so that
+// it can fall back to the certificate's Common Name: AD domain controller
+// certificates issued from legacy templates frequently carry only a CN and no
+// Subject Alternative Name, which crypto/x509 refuses to match (since Go 1.15)
+// when DNSName is set on Verify.
+//
+// When allowBootstrap is true, a chain that cannot be built because the issuing
+// CA is unknown (x509.UnknownAuthorityError, which also covers a missing
+// intermediate in a multi-tier PKI) is tolerated: on the first enrollment the
+// enterprise CA is only discovered and installed later in the same run, so the
+// DC certificate provably cannot chain to a trusted root yet. In that case the
+// DC is authenticated by the Kerberos GSSAPI bind (with tls-server-end-point
+// channel binding) performed immediately after StartTLS — the same trust anchor
+// Windows autoenrollment relies on. Hostname matching is still enforced, and any
+// other verification failure (expired, not-yet-valid, bad constraints) remains
+// fatal. Once adsys installs the CA, subsequent handshakes verify strictly.
+func verifyPeerCertificate(server, globalTrustDir string, allowBootstrap bool) func([][]byte, [][]*x509.Certificate) error {
 	return func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
 		if len(rawCerts) == 0 {
 			return fmt.Errorf("no server certificate presented")
@@ -130,8 +166,10 @@ func verifyPeerCertificate(server, globalTrustDir string) func([][]byte, [][]*x5
 		// Add any CA certificates already installed by adsys
 		addAdsysCAsToPool(pool, globalTrustDir)
 
+		// Verify the chain to a trusted root. DNSName is intentionally left
+		// empty so crypto/x509 does not perform hostname matching here; we do
+		// it below with a Common Name fallback.
 		opts := x509.VerifyOptions{
-			DNSName:       tlsServerName(server),
 			Roots:         pool,
 			Intermediates: x509.NewCertPool(),
 		}
@@ -143,10 +181,84 @@ func verifyPeerCertificate(server, globalTrustDir string) func([][]byte, [][]*x5
 		}
 
 		if _, err := certs[0].Verify(opts); err != nil {
+			// On the first enrollment the enterprise CA is not in any trust
+			// store yet (adsys installs it later in this same run), so the DC
+			// certificate cannot chain to a trusted root. When bootstrapping is
+			// allowed, tolerate only this "unknown authority" case and lean on
+			// the Kerberos GSSAPI mutual authentication (with TLS channel
+			// binding) that runs right after StartTLS to authenticate the DC.
+			// Any other failure (expired, not-yet-valid, bad constraints) is
+			// still fatal.
+			var unknownAuthority x509.UnknownAuthorityError
+			if !allowBootstrap || !errors.As(err, &unknownAuthority) {
+				return fmt.Errorf("server certificate verification failed: %w", err)
+			}
+			if hostErr := verifyHostnameWithCNFallback(certs[0], tlsServerName(server)); hostErr != nil {
+				return fmt.Errorf("server certificate verification failed: %w", hostErr)
+			}
+			log.Warningf(context.Background(),
+				"Server certificate for %q is not signed by an installed CA yet; trusting it through the authenticated Kerberos channel for bootstrap enrollment (expected on first run): %v",
+				tlsServerName(server), err)
+			return nil
+		}
+
+		if err := verifyHostnameWithCNFallback(certs[0], tlsServerName(server)); err != nil {
 			return fmt.Errorf("server certificate verification failed: %w", err)
 		}
 		return nil
 	}
+}
+
+// verifyHostnameWithCNFallback checks that host matches the certificate's
+// Subject Alternative Names, falling back to the Subject Common Name when the
+// certificate carries no SAN entries. The chain itself must already have been
+// verified against a trusted root by the caller.
+//
+// Modern certificates carry SANs and are matched strictly. The CN fallback
+// exists solely for AD domain controller certificates issued from legacy
+// templates, which often present only a CN; this mirrors what Windows and Samba
+// accept when connecting to such DCs.
+func verifyHostnameWithCNFallback(cert *x509.Certificate, host string) error {
+	if len(cert.DNSNames) > 0 || len(cert.IPAddresses) > 0 {
+		return cert.VerifyHostname(host)
+	}
+
+	cn := cert.Subject.CommonName
+	if cn == "" {
+		return fmt.Errorf("certificate has no subject alternative names and no common name to match against %q", host)
+	}
+	if !matchHostname(cn, host) {
+		return fmt.Errorf("certificate common name %q does not match server host %q", cn, host)
+	}
+	log.Debugf(context.Background(), "Server certificate for %q has no SAN; accepted legacy Common Name %q", host, cn)
+	return nil
+}
+
+// matchHostname reports whether host matches the certificate name pattern. The
+// comparison is case-insensitive, ignores a trailing dot, and supports a single
+// leading "*" wildcard label, mirroring how crypto/x509 historically matched
+// the Common Name.
+func matchHostname(pattern, host string) bool {
+	pattern = strings.TrimSuffix(strings.ToLower(pattern), ".")
+	host = strings.TrimSuffix(strings.ToLower(host), ".")
+	if pattern == "" || host == "" {
+		return false
+	}
+
+	patternParts := strings.Split(pattern, ".")
+	hostParts := strings.Split(host, ".")
+	if len(patternParts) != len(hostParts) {
+		return false
+	}
+	for i, p := range patternParts {
+		if i == 0 && p == "*" {
+			continue
+		}
+		if p != hostParts[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // addAdsysCAsToPool adds CA certificates from the adsys-managed trust

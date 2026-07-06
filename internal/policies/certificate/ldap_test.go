@@ -9,8 +9,11 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/binary"
+	"encoding/pem"
 	"fmt"
 	"math/big"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -499,4 +502,240 @@ func referenceChannelBindingHash(appData []byte) []byte {
 	buf = append(buf, appData...)
 	sum := md5.Sum(buf) //nolint:gosec // G401: matches the protocol-defined transform under test.
 	return sum[:]
+}
+
+// generateTestCertWithNames creates a self-signed SHA256 certificate with the
+// given Common Name and DNS SANs for hostname-verification tests.
+func generateTestCertWithNames(t *testing.T, cn string, dnsNames []string) *x509.Certificate {
+	t.Helper()
+	return generateTestCertFull(t, cn, dnsNames, x509.SHA256WithRSA)
+}
+
+// generateTestCAAndLeaf creates a self-signed CA and a leaf certificate signed
+// by it. It returns the CA as PEM (to drop into a trust directory) and the leaf
+// as DER (as presented on the wire). notBefore/notAfter bound the leaf validity
+// so callers can exercise expiry handling.
+func generateTestCAAndLeaf(t *testing.T, cn string, dnsNames []string, notBefore, notAfter time.Time) (caPEM []byte, leafDER []byte) {
+	t.Helper()
+
+	caKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	caTmpl := &x509.Certificate{
+		SerialNumber:          big.NewInt(1),
+		Subject:               pkix.Name{CommonName: "Test Root CA"},
+		NotBefore:             time.Now().Add(-time.Hour),
+		NotAfter:              time.Now().Add(24 * time.Hour),
+		IsCA:                  true,
+		BasicConstraintsValid: true,
+		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
+	}
+	caDER, err := x509.CreateCertificate(rand.Reader, caTmpl, caTmpl, &caKey.PublicKey, caKey)
+	require.NoError(t, err)
+	caCert, err := x509.ParseCertificate(caDER)
+	require.NoError(t, err)
+
+	leafKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	leafTmpl := &x509.Certificate{
+		SerialNumber: big.NewInt(2),
+		Subject:      pkix.Name{CommonName: cn},
+		NotBefore:    notBefore,
+		NotAfter:     notAfter,
+		DNSNames:     dnsNames,
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+	}
+	leafDER, err = x509.CreateCertificate(rand.Reader, leafTmpl, caCert, &leafKey.PublicKey, caKey)
+	require.NoError(t, err)
+
+	caPEM = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: caDER})
+	return caPEM, leafDER
+}
+
+func TestVerifyPeerCertificate(t *testing.T) {
+	t.Parallel()
+
+	const host = "dc.example.com"
+	now := time.Now()
+
+	tests := map[string]struct {
+		// setup returns the DER chain the DC "presents" (leaf first), the
+		// adsys-managed trust directory, and the host to verify against.
+		setup          func(t *testing.T) (rawCerts [][]byte, trustDir, host string)
+		allowBootstrap bool
+
+		wantErr bool
+	}{
+		"strict rejects a certificate from an unknown authority": {
+			setup: func(t *testing.T) ([][]byte, string, string) {
+				t.Helper()
+				return [][]byte{generateTestCertWithNames(t, host, nil).Raw}, t.TempDir(), host
+			},
+			allowBootstrap: false,
+			wantErr:        true,
+		},
+		"bootstrap accepts an unknown authority when the hostname matches": {
+			setup: func(t *testing.T) ([][]byte, string, string) {
+				t.Helper()
+				return [][]byte{generateTestCertWithNames(t, host, nil).Raw}, t.TempDir(), host
+			},
+			allowBootstrap: true,
+			wantErr:        false,
+		},
+		"bootstrap still rejects a mismatched hostname": {
+			setup: func(t *testing.T) ([][]byte, string, string) {
+				t.Helper()
+				return [][]byte{generateTestCertWithNames(t, "other.example.com", nil).Raw}, t.TempDir(), host
+			},
+			allowBootstrap: true,
+			wantErr:        true,
+		},
+		"bootstrap still rejects an expired certificate": {
+			setup: func(t *testing.T) ([][]byte, string, string) {
+				t.Helper()
+				trustDir := t.TempDir()
+				caPEM, leafDER := generateTestCAAndLeaf(t, host, []string{host}, now.Add(-48*time.Hour), now.Add(-24*time.Hour))
+				require.NoError(t, os.WriteFile(filepath.Join(trustDir, "root.crt"), caPEM, 0600))
+				return [][]byte{leafDER}, trustDir, host
+			},
+			allowBootstrap: true,
+			wantErr:        true,
+		},
+		"strict accepts a certificate signed by an installed CA": {
+			setup: func(t *testing.T) ([][]byte, string, string) {
+				t.Helper()
+				trustDir := t.TempDir()
+				caPEM, leafDER := generateTestCAAndLeaf(t, host, []string{host}, now.Add(-time.Hour), now.Add(time.Hour))
+				require.NoError(t, os.WriteFile(filepath.Join(trustDir, "root.crt"), caPEM, 0600))
+				return [][]byte{leafDER}, trustDir, host
+			},
+			allowBootstrap: false,
+			wantErr:        false,
+		},
+		"no certificate presented is rejected": {
+			setup: func(t *testing.T) ([][]byte, string, string) {
+				t.Helper()
+				return nil, t.TempDir(), host
+			},
+			allowBootstrap: true,
+			wantErr:        true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			rawCerts, trustDir, h := tc.setup(t)
+			err := verifyPeerCertificate(h, trustDir, tc.allowBootstrap)(rawCerts, nil)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestVerifyHostnameWithCNFallback(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		cert func(t *testing.T) *x509.Certificate
+		host string
+
+		wantErr bool
+	}{
+		"CN fallback matches when certificate has no SAN": {
+			cert: func(t *testing.T) *x509.Certificate {
+				t.Helper()
+				return generateTestCertWithNames(t, "dc.example.com", nil)
+			},
+			host: "dc.example.com",
+		},
+		"CN fallback is case-insensitive": {
+			cert: func(t *testing.T) *x509.Certificate {
+				t.Helper()
+				return generateTestCertWithNames(t, "DC.Example.COM", nil)
+			},
+			host: "dc.example.com",
+		},
+		"CN fallback wildcard matches": {
+			cert: func(t *testing.T) *x509.Certificate {
+				t.Helper()
+				return generateTestCertWithNames(t, "*.example.com", nil)
+			},
+			host: "dc.example.com",
+		},
+		"CN mismatch fails": {
+			cert: func(t *testing.T) *x509.Certificate {
+				t.Helper()
+				return generateTestCertWithNames(t, "other.example.com", nil)
+			},
+			host:    "dc.example.com",
+			wantErr: true,
+		},
+		"SAN present and matches": {
+			cert: func(t *testing.T) *x509.Certificate {
+				t.Helper()
+				return generateTestCertWithNames(t, "ignored.example.com", []string{"dc.example.com"})
+			},
+			host: "dc.example.com",
+		},
+		"SAN present but does not match fails (no CN fallback)": {
+			cert: func(t *testing.T) *x509.Certificate {
+				t.Helper()
+				return generateTestCertWithNames(t, "dc.example.com", []string{"other.example.com"})
+			},
+			host:    "dc.example.com",
+			wantErr: true,
+		},
+		"No SAN and no CN fails": {
+			cert: func(t *testing.T) *x509.Certificate {
+				t.Helper()
+				return &x509.Certificate{}
+			},
+			host:    "dc.example.com",
+			wantErr: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := verifyHostnameWithCNFallback(tc.cert(t), tc.host)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestMatchHostname(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		pattern string
+		host    string
+
+		want bool
+	}{
+		"Exact match":                             {pattern: "dc.example.com", host: "dc.example.com", want: true},
+		"Case-insensitive match":                  {pattern: "DC.Example.COM", host: "dc.example.com", want: true},
+		"Trailing dot is ignored":                 {pattern: "dc.example.com.", host: "dc.example.com", want: true},
+		"Wildcard matches a single label":         {pattern: "*.example.com", host: "dc.example.com", want: true},
+		"Wildcard does not match multiple labels": {pattern: "*.example.com", host: "a.b.example.com", want: false},
+		"Different host fails":                    {pattern: "dc.example.com", host: "other.example.com", want: false},
+		"Label count mismatch fails":              {pattern: "example.com", host: "dc.example.com", want: false},
+		"Empty pattern fails":                     {pattern: "", host: "dc.example.com", want: false},
+		"Empty host fails":                        {pattern: "dc.example.com", host: "", want: false},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, tc.want, matchHostname(tc.pattern, tc.host))
+		})
+	}
 }
