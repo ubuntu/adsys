@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/leonelquinteros/gotext"
+	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/internal/ad/backends"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	"github.com/ubuntu/adsys/internal/ad/registry"
@@ -266,6 +267,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// Otherwise, try fetching the GPO list from LDAP
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
 	scriptArgs := []string{"--objectclass", string(objectClass), adServerFQDN, objectName}
+	if logrus.GetLevel() >= logrus.DebugLevel {
+		scriptArgs = append(scriptArgs, "--debug")
+	}
 	cmdArgs := append(args, scriptArgs...)
 	cmdCtx, cancel := context.WithTimeout(ctx, ad.gpoListTimeout)
 	defer cancel()

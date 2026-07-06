@@ -234,7 +234,7 @@ def get_primary_group_sid(samdb, dn, object_sid):
     return security.dom_sid("%s-%d" % (domain_sid, primary_group_id))
 
 
-def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname):
+def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname, debug=False):
     ''' Assemble the security token from tokenGroups when user_session() fails.
 
     Resolves group membership from two complementary sources and unions them:
@@ -250,6 +250,8 @@ def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname):
         dc_group_sids = get_group_sids(samdb, dn)
         for sid in dc_group_sids:
             group_sids[str(sid)] = sid
+        if debug:
+            print("DEBUG: domain controller tokenGroups (%d): %s" % (len(dc_group_sids), ", ".join(str(s) for s in dc_group_sids)), file=sys.stderr)
     except Exception as exc:
         dc_failure = exc
 
@@ -258,6 +260,8 @@ def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname):
         gc_group_sids = get_group_sids(gc, dn)
         for sid in gc_group_sids:
             group_sids[str(sid)] = sid
+        if debug:
+            print("DEBUG: Global Catalog tokenGroups (%d): %s" % (len(gc_group_sids), ", ".join(str(s) for s in gc_group_sids)), file=sys.stderr)
     except Exception as exc:
         # The Global Catalog is optional: the selected DC may not be a GC, or
         # port 3268 may be blocked. We can still proceed with the domain
@@ -278,8 +282,11 @@ def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname):
     try:
         primary_sid = get_primary_group_sid(samdb, dn, object_sid)
         group_sids[str(primary_sid)] = primary_sid
-    except Exception:
-        pass
+        if debug:
+            print("DEBUG: primary group SID: %s" % primary_sid, file=sys.stderr)
+    except Exception as exc:
+        if debug:
+            print("DEBUG: could not resolve the primary group: %s" % exc, file=sys.stderr)
 
     group_sids = list(group_sids.values())
     try:
@@ -291,7 +298,7 @@ def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname):
     return token, [str(sid) for sid in group_sids]
 
 
-def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
+def get_gpos_for_dn(samdb, dn, token, sids, is_computer, debug=False):
     ''' List gpos for given dn, considering inheritance and enforced GPOs '''
     gpos = []
     inherit = True
@@ -322,6 +329,12 @@ def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
                     print(file=sys.stderr) # Empty line (no escaped EOL as we need to echo -E the script when using integration tests coverage)
                     # GPOs that are unreadable are just skipped by AD
                     continue
+
+                if debug:
+                    try:
+                        print("DEBUG: security descriptor for %s: %s" % (g['dn'], secdesc.as_sddl()), file=sys.stderr)
+                    except Exception as sddl_exc:
+                        print("DEBUG: security descriptor for %s unavailable: %s" % (g['dn'], sddl_exc), file=sys.stderr)
 
                 try:
                     samba.security.access_check(secdesc, token,
@@ -375,6 +388,8 @@ def main():
     parser.add_argument('--objectclass', type=str,
                         choices=(ObjectClass.user, ObjectClass.computer), default=ObjectClass.user,
                         help='Class of the object to search for.')
+    parser.add_argument('--debug', action='store_true',
+                        help='Print the resolved security token and each GPO security descriptor to stderr to troubleshoot access checks.')
 
     args = parser.parse_args()
 
@@ -432,15 +447,24 @@ def main():
         sids = [str(sid) for sid in token.sids]
     except Exception as session_exc:
         print("WARNING: user_session() could not build the token (%s); falling back to tokenGroups resolved from the domain controller and the Global Catalog" % session_exc, file=sys.stderr)
-        token, sids = build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname)
+        token, sids = build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname, args.debug)
         if token is None:
             return ReturnCode.GPO_FAILED
 
     sids.append(object_sid)
     sids.extend(('WD', 'NW', 'AU'))
 
+    if args.debug:
+        try:
+            token_sids = ", ".join(str(s) for s in token.sids)
+        except Exception as exc:
+            token_sids = "<unavailable: %s>" % exc
+        print("DEBUG: object SID: %s" % object_sid, file=sys.stderr)
+        print("DEBUG: access-check token SIDs: %s" % token_sids, file=sys.stderr)
+        print("DEBUG: apply-check SIDs: %s" % ", ".join(str(s) for s in sids), file=sys.stderr)
+
     try:
-        gpos = get_gpos_for_dn(samdb, dn, token, sids, args.objectclass == ObjectClass.computer)
+        gpos = get_gpos_for_dn(samdb, dn, token, sids, args.objectclass == ObjectClass.computer, debug=args.debug)
     except Exception as exc:
         print("Couldn't get GPOs: %s" % exc, file=sys.stderr)
         return ReturnCode.GPO_FAILED
