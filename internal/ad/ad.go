@@ -86,6 +86,9 @@ type AD struct {
 	krb5CacheDir     string
 
 	downloadables map[string]*downloadable
+	// downloadablesMu guards the downloadables map so that parsing, which only
+	// reads it, can run without holding the main AD lock.
+	downloadablesMu sync.RWMutex
 	sync.RWMutex
 	fetchMu sync.Mutex
 
@@ -326,25 +329,38 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return pols, err
 	}
 
+	// Fetching mutates the shared on-disk caches and the krb5cc tickets and,
+	// through libsmbclient, is serialized process-wide anyway, so run it under
+	// the AD lock. Release the lock right afterwards so the CPU-bound parsing
+	// below can overlap with other objects being refreshed (e.g. during
+	// `update --all`).
 	ad.Lock()
-	defer ad.Unlock()
 	assetsWereRefresh, err := ad.fetch(ctx, krb5CCPath, downloadables)
+	ad.Unlock()
 	if err != nil {
 		return pols, err
 	}
 
 	var errg errgroup.Group
-	// Parse policies
+	// Parse policies. This only reads the per-GPO caches (each guarded by its own
+	// downloadable mutex) and the downloadables map (guarded by downloadablesMu),
+	// so it runs without the AD lock and can proceed concurrently for several
+	// objects at once.
 	var gposRules []policies.GPO
 	errg.Go(func() (err error) {
 		gposRules, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
 		return err
 	})
 
-	// Compress assets
+	// Compress assets. The assets directory and its db are shared by every
+	// object, so serialize this behind the AD lock to exclude concurrent fetches
+	// and compressions.
 	var assetsDBPath string
 	assetsSrc := filepath.Join(ad.sysvolCacheDir, "assets")
 	errg.Go(func() (err error) {
+		ad.Lock()
+		defer ad.Unlock()
+
 		// Only compress assets if we have fetched them, otherwise attach optionally
 		// existing db.
 		if !assetsWereRefresh {
@@ -530,9 +546,13 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 }
 
 func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, objectClass ObjectClass, gpoWithRules policies.GPO) error {
-	ad.downloadables[name].mu.RLock()
-	defer ad.downloadables[name].mu.RUnlock()
-	_ = ad.downloadables[name].testConcurrent
+	ad.downloadablesMu.RLock()
+	d := ad.downloadables[name]
+	ad.downloadablesMu.RUnlock()
+
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	_ = d.testConcurrent
 
 	log.Debugf(ctx, "Parsing GPO %q of class %q", name, objectClass)
 

@@ -90,19 +90,20 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, downloadables map[st
 
 	var errg errgroup.Group
 	for name, url := range downloadables {
+		// Guard the shared downloadables map: parsing reads it concurrently
+		// without holding the AD lock.
+		ad.downloadablesMu.Lock()
 		g, ok := ad.downloadables[name]
 		if !ok {
-			ad.downloadables[name] = &downloadable{
+			g = &downloadable{
 				name:     name,
 				url:      url,
 				mu:       &sync.RWMutex{},
-				isAssets: false,
+				isAssets: name == "assets",
 			}
-			if name == "assets" {
-				ad.downloadables[name].isAssets = true
-			}
-			g = ad.downloadables[name]
+			ad.downloadables[name] = g
 		}
+		ad.downloadablesMu.Unlock()
 		errg.Go(func() (err error) {
 			defer decorate.OnError(&err, gotext.Get("can't download %q", g.name))
 
