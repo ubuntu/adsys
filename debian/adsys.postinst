@@ -4,8 +4,19 @@ set -e
 case "$1" in
     configure)
         pam-auth-update --package adsys
+
+        # For new installations (no previous version), set the LDAP-only
+        # certificate enrollment as default. Existing installations keep
+        # the code default (cepces) for backward compatibility.
+        if [ -z "$2" ]; then
+            if [ ! -f /etc/adsys.yaml ]; then
+                cat > /etc/adsys.yaml << 'EOF'
+# Certificate enrollment method: ldap (native Go, LDAP/RPC) or cepces (legacy Python/CEPCES).
+certificate_enrollment: ldap
+EOF
+            fi
+        fi
     ;;
 esac
 
 #DEBHELPER#
-
