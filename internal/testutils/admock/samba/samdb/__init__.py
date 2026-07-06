@@ -24,6 +24,12 @@ class GPOSearch(dict):
 class SamDB:
     def __init__(self, url=None, session_info=None, credentials=None, lp=None):
         self.lp = lp
+        # The Global Catalog is reached on port 3268, the domain controller on
+        # the default LDAP port. We remember which one this connection targets so
+        # tokenGroups can return the Global Catalog view (forest-wide universal
+        # groups) or the domain controller view (domain-local groups), exactly
+        # as the two differ in real AD.
+        self.is_global_catalog = bool(url) and url.endswith(":3268")
         if url.startswith("ldap://NT_STATUS_"):
             raise Exception(1, "ldap/ldb error: %s" % url[7:])
 
@@ -59,6 +65,17 @@ class SamDB:
         # Group search
         elif "objectClass=group" in expression:
             return [{"objectSid": ["SidGroup1"]},{"objectSid": ["SidGroup2"]}]
+
+        # Token groups search. The Global Catalog and the domain controller
+        # return different memberships (forest-wide universal vs domain-local),
+        # so the result depends on which directory this connection targets.
+        elif "tokenGroups" in attrs:
+            return [{"tokenGroups": ldb.token_groups_for(base, self.is_global_catalog)}]
+
+        # Primary group lookup, used by the tokenGroups fallback to add the
+        # primary group (Domain Computers, RID 515) that tokenGroups omits.
+        elif "primaryGroupID" in attrs:
+            return [{"primaryGroupID": [b"515"]}]
 
         # OU search
         elif "gPLink" in attrs:

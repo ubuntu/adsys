@@ -45,6 +45,23 @@ class ReturnCode:
     GPO_FAILED = 3
 
 
+# Port of the Active Directory Global Catalog LDAP service. The Global Catalog
+# holds a partial replica of every object in the forest, which lets it expand a
+# user's complete group membership (universal and foreign-domain groups
+# included) without emitting LDAP referrals that Samba is unable to follow.
+GLOBAL_CATALOG_PORT = 3268
+
+# Well-known SIDs that the LSA injects when it builds a token (the default and
+# authenticated groups that user_session() used to add) but that are absent from
+# the tokenGroups attribute. We add them explicitly to the token we assemble
+# ourselves so the GPO access checks match what AD would compute: World covers
+# GPOs whose ACL grants read to "Everyone", Network marks the session as remote,
+# and Authenticated Users covers the most common GPO read ACE.
+SID_WORLD = "S-1-1-0"
+SID_NETWORK = "S-1-5-2"
+SID_AUTHENTICATED_USERS = "S-1-5-11"
+
+
 def parse_gplink(gplink):
     ''' Parse a gPLink into an array of dn and options '''
     ret = []
@@ -113,15 +130,23 @@ def get_entity(samdb, accountname, objectClass):
     return current.dn, str(ndr_unpack(security.dom_sid, current["objectSid"][0]))
 
 
-def get_all_groups(samdb, dn):
-    msg = samdb.search(expression='(&(objectClass=group)(member=%s))"' % ldb.binary_encode(str(dn)), attrs=['objectSid'])
+def get_group_sids(conn, dn):
+    ''' Returns the object's transitive set of group SIDs as seen by conn.
 
+    The tokenGroups constructed attribute is resolved against the given
+    connection. Against the Global Catalog it expands universal and
+    foreign-domain group membership across the whole forest but omits
+    domain-local groups; against a domain controller it additionally returns the
+    object's domain-local groups for its own domain. The caller unions both so
+    the token matches what AD would compute. A plain tokenGroups search never
+    emits the cross-domain LDAP referral that makes user_session() crash in a
+    multi-domain forest. '''
     sids = []
-
-    for m in msg:
-        sids.append(str(ndr_unpack(security.dom_sid, m["objectSid"][0])))
-    sids.append('AU')
-
+    for msg in conn.search(base=str(dn), scope=ldb.SCOPE_BASE, attrs=['tokenGroups']):
+        if 'tokenGroups' not in msg:
+            continue
+        for sid in msg['tokenGroups']:
+            sids.append(ndr_unpack(security.dom_sid, sid))
     return sids
 
 
@@ -151,14 +176,119 @@ def check_apply_gpo_right(secdesc, sids):
     return applied
 
 
+def build_token(user_sid, group_sids):
+    ''' Builds a security token from the user and group SIDs.
+
+    This is the fallback for samba.auth.user_session(), whose internal group
+    expansion fails in a multi-domain forest when the user belongs to a
+    universal or foreign-domain group: the domain controller answers with an
+    LDAP referral to the Global Catalog that Samba does not follow. Assembling
+    the token directly from the SIDs already resolved through the Global Catalog
+    avoids that code path entirely. It cannot reproduce everything user_session()
+    injects (primary group, owner/READ_CONTROL semantics), so it is only used
+    when user_session() actually raises. '''
+    token = security.token()
+    sids = ([security.dom_sid(user_sid)]
+            + list(group_sids)
+            + [security.dom_sid(s) for s in (SID_WORLD, SID_NETWORK, SID_AUTHENTICATED_USERS)])
+    token.sids = sids
+    # Real samba does NOT derive num_sids from the assigned list: the underlying
+    # security_token keeps its own count and samba.security.access_check() only
+    # iterates the first num_sids entries. Without setting it the token is seen
+    # as empty and every GPO read is denied -- which silently skips every GPO
+    # for any object that hits this fallback (e.g. multi-domain forest users
+    # whose user_session() raised). It must be set explicitly.
+    token.num_sids = len(sids)
+    return token
+
+
 def get_token(samdb, dn):
-    ''' Returns the security token for given samba and dn'''
+    ''' Returns the security token AD itself would build for the given DN.
+
+    samba.auth.user_session() assembles the same token the LSA computes at
+    logon: the primary group, the full transitive group membership, the default
+    well-known SIDs with their correct attributes, and the owner/READ_CONTROL
+    semantics a hand-built token cannot reproduce. It is the authoritative
+    source and matches what the domain controller grants, so we prefer it and
+    only fall back when it raises in a multi-domain forest. '''
     session_info_flags = (AUTH_SESSION_INFO_DEFAULT_GROUPS
                           | AUTH_SESSION_INFO_AUTHENTICATED
                           | AUTH_SESSION_INFO_SIMPLE_PRIVILEGES)
     session = user_session(samdb, lp_ctx=samdb.lp, dn=dn,
                            session_info_flags=session_info_flags)
     return session.security_token
+
+
+def get_primary_group_sid(samdb, dn, object_sid):
+    ''' Returns the object's primary group SID (Domain Computers / Domain Users).
+
+    tokenGroups omits the primary group, yet GPO security descriptors very
+    commonly grant read to it (a machine reads computer GPOs through Domain
+    Computers), so the tokenGroups fallback must add it back. The SID is the
+    object's domain SID -- its own SID with the last RID stripped -- combined
+    with the primaryGroupID RID. '''
+    msg = samdb.search(base=str(dn), scope=ldb.SCOPE_BASE, attrs=['primaryGroupID'])
+    raw = msg[0]['primaryGroupID'][0]
+    primary_group_id = int(raw.decode() if isinstance(raw, bytes) else raw)
+    domain_sid = str(object_sid).rsplit('-', 1)[0]
+    return security.dom_sid("%s-%d" % (domain_sid, primary_group_id))
+
+
+def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname):
+    ''' Assemble the security token from tokenGroups when user_session() fails.
+
+    Resolves group membership from two complementary sources and unions them:
+    the domain controller (which includes the object's domain-local groups) and
+    the Global Catalog (which expands universal and foreign-domain membership
+    forest-wide but omits domain-local groups). Returns (token, sids), or
+    (None, None) if neither source could be queried. '''
+    group_sids = {}
+    dc_failure = None
+    gc_failure = None
+
+    try:
+        dc_group_sids = get_group_sids(samdb, dn)
+        for sid in dc_group_sids:
+            group_sids[str(sid)] = sid
+    except Exception as exc:
+        dc_failure = exc
+
+    try:
+        gc = connectLDAP("ldap://%s:%d" % (fqdn, GLOBAL_CATALOG_PORT))
+        gc_group_sids = get_group_sids(gc, dn)
+        for sid in gc_group_sids:
+            group_sids[str(sid)] = sid
+    except Exception as exc:
+        # The Global Catalog is optional: the selected DC may not be a GC, or
+        # port 3268 may be blocked. We can still proceed with the domain
+        # controller's groups -- we just cannot expand cross-domain membership.
+        gc_failure = exc
+        print("WARNING: Global Catalog unreachable (%s); resolving group membership against the domain controller only. Cross-domain group membership is NOT expanded, so GPOs scoped to universal or foreign-domain groups may be skipped" % exc, file=sys.stderr)
+
+    # Only a total failure -- neither source could be queried -- is fatal. An
+    # object that legitimately belongs to no extra group yields an empty set,
+    # which is not an error.
+    if dc_failure is not None and gc_failure is not None:
+        print("Couldn't resolve the group membership for %s: the domain controller lookup failed (%s) and the Global Catalog lookup failed (%s)" % (accountname, dc_failure, gc_failure), file=sys.stderr)
+        return None, None
+
+    # tokenGroups omits the primary group (Domain Computers for a machine,
+    # Domain Users for a user), which GPO ACLs frequently grant read to. Add it
+    # explicitly so the fallback token matches what user_session() would build.
+    try:
+        primary_sid = get_primary_group_sid(samdb, dn, object_sid)
+        group_sids[str(primary_sid)] = primary_sid
+    except Exception:
+        pass
+
+    group_sids = list(group_sids.values())
+    try:
+        token = build_token(object_sid, group_sids)
+    except Exception as exc:
+        print("Couldn't build the security token for %s: %s" % (accountname, exc), file=sys.stderr)
+        return None, None
+
+    return token, [str(sid) for sid in group_sids]
 
 
 def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
@@ -198,8 +328,15 @@ def get_gpos_for_dn(samdb, dn, token, sids, is_computer):
                                                 security.SEC_STD_READ_CONTROL
                                                 | security.SEC_ADS_LIST
                                                 | security.SEC_ADS_READ_PROP)
-                except RuntimeError:
-                    raise Exception("Failed access check on %s" % g['dn'])
+                except Exception:
+                    # The object's token is not granted read on this GPO. AD
+                    # silently skips GPOs it cannot read -- exactly like the
+                    # unreadable-descriptor case above -- so this must never
+                    # abort the whole refresh: otherwise a single hardened or
+                    # security-filtered GPO denies the machine every policy.
+                    print("Skipping GPO %s: the object has no read access to it" % g['dn'], file=sys.stderr)
+                    print(file=sys.stderr) # Empty line (no escaped EOL as we need to echo -E the script when using integration tests coverage)
+                    continue
 
                 if not check_apply_gpo_right(secdesc, sids):
                     continue
@@ -278,10 +415,29 @@ def main():
                 continue
             return ReturnCode.NOT_FOUND
 
-    sids = get_all_groups(samdb, dn)
-    sids.append(object_sid)
+    # Build the security token the same way AD itself does. user_session() is
+    # authoritative: it reproduces the primary group, the default well-known
+    # SIDs and the owner/READ_CONTROL semantics that a hand-assembled token
+    # cannot, so the GPO access checks match exactly what the domain controller
+    # grants. We use it whenever it succeeds.
+    #
+    # In a multi-domain forest it can fail: when the object belongs to a
+    # universal or foreign-domain group defined in another domain, the DC
+    # answers with an LDAP referral to the Global Catalog that Samba does not
+    # follow and user_session() raises (#1358, #1256). Only then do we fall back
+    # to assembling the token ourselves from the tokenGroups the domain
+    # controller and the Global Catalog report -- which never chase a referral.
+    try:
+        token = get_token(samdb, dn)
+        sids = [str(sid) for sid in token.sids]
+    except Exception as session_exc:
+        print("WARNING: user_session() could not build the token (%s); falling back to tokenGroups resolved from the domain controller and the Global Catalog" % session_exc, file=sys.stderr)
+        token, sids = build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname)
+        if token is None:
+            return ReturnCode.GPO_FAILED
 
-    token = get_token(samdb, dn)
+    sids.append(object_sid)
+    sids.extend(('WD', 'NW', 'AU'))
 
     try:
         gpos = get_gpos_for_dn(samdb, dn, token, sids, args.objectclass == ObjectClass.computer)

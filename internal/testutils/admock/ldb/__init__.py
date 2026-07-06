@@ -15,6 +15,30 @@ OUs = {}
 GPOs = {}
 accounts = {}
 
+# Group SIDs reported for an account by a tokenGroups query, split by the
+# directory service that answers it, because the two differ in real AD:
+#  * token_groups    -- the Global Catalog view: universal and global groups
+#    from across the forest, but never domain-local groups.
+#  * dc_token_groups -- the domain controller view for the account's own domain,
+#    which adds the domain-local groups the Global Catalog omits.
+# The script unions both, so a GPO scoped to a domain-local group still applies.
+# Accounts not listed fall back to a default, decorative Global Catalog set that
+# doesn't match any GPO security descriptor, and to no extra domain-local group.
+token_groups = {}
+dc_token_groups = {}
+DEFAULT_TOKEN_GROUPS = ["SidGroup1", "SidGroup2"]
+
+# Accounts (lowercased) for which the mocked user_session() raises, reproducing
+# the multi-domain referral crash so the script exercises its tokenGroups
+# fallback path.
+user_session_failures = set()
+
+
+def token_groups_for(name, is_global_catalog=True):
+    if is_global_catalog:
+        return token_groups.get(str(name).lower(), DEFAULT_TOKEN_GROUPS)
+    return dc_token_groups.get(str(name).lower(), [])
+
 ##############################
 # OU=RnD,OU=IT Dept,DC=domain,DC=com
 
@@ -119,8 +143,14 @@ class OU:
             gPLink += "[LDAP://%s;%d]" % (gpo.name, state)
         self.gPLink = [gPLink]
 
-    def addAccount(self, accountName):
+    def addAccount(self, accountName, token_groups_sids=None, dc_token_groups_sids=None, crash_user_session=False):
         Account(accountName, self)
+        if token_groups_sids is not None:
+            token_groups[accountName.lower()] = token_groups_sids
+        if dc_token_groups_sids is not None:
+            dc_token_groups[accountName.lower()] = dc_token_groups_sids
+        if crash_user_session:
+            user_session_failures.add(accountName.lower())
 
 
 class GPO:
@@ -153,6 +183,44 @@ class GPO:
             self.nTSecurityDescriptor = [self.nTSecurityDescriptor[0].replace("OA", "OD")]
         if name == "RnDDep8 allow for one user only GPO":
             self.nTSecurityDescriptor = [self.nTSecurityDescriptor[0].replace("S-1-5-21-16178157-162784614-155579044-1103", "OtherUserSid")]
+        if name == "CrossDomainGroup GPO":
+            # The "Apply Group Policy" right is granted to a universal group that
+            # lives in the parent domain of the forest. The user only gains it
+            # through the transitive membership the Global Catalog reports via
+            # tokenGroups, never through a direct, single-domain group search.
+            self.nTSecurityDescriptor = [self.nTSecurityDescriptor[0].replace("S-1-5-21-16178157-162784614-155579044-1103", "S-1-5-21-1111111111-2222222222-3333333333-512")]
+        if name == "Everyone GPO":
+            # Read and apply are granted only to World (Everyone). The user has
+            # it solely through the default well-known SIDs injected into the
+            # token, so this fails unless those SIDs are present.
+            self.nTSecurityDescriptor = ['O:S-1-5-21-16178157-162784614-155579044-512G:S-1-5-21-16178157-162784614-155579044-512D:PAI(OA;;CR;edacfd8f-ffb3-11d1-b41d-00a0c968f939;;WD)(A;CI;RPLCLORC;;;WD)']
+        if name == "Everyone read denied apply GPO":
+            # World is allowed read but explicitly denied the apply right. The
+            # broad token grants read, yet the deny ACE must keep the GPO from
+            # applying: wide read access must never imply application.
+            self.nTSecurityDescriptor = ['O:S-1-5-21-16178157-162784614-155579044-512G:S-1-5-21-16178157-162784614-155579044-512D:PAI(OD;;CR;edacfd8f-ffb3-11d1-b41d-00a0c968f939;;WD)(A;CI;RPLCLORC;;;WD)']
+        if name == "DomainLocalGroup GPO":
+            # Read and apply are granted only to a domain-local group of the
+            # object's own domain. The Global Catalog never reports domain-local
+            # membership through tokenGroups, so this GPO applies only because the
+            # domain controller's tokenGroups are unioned into the token.
+            self.nTSecurityDescriptor = ['O:S-1-5-21-16178157-162784614-155579044-512G:S-1-5-21-16178157-162784614-155579044-512D:PAI(OA;;CR;edacfd8f-ffb3-11d1-b41d-00a0c968f939;;S-1-5-21-16178157-162784614-155579044-1107)(A;CI;RPLCLORC;;;S-1-5-21-16178157-162784614-155579044-1107)']
+        if name == "ReadDenied GPO":
+            # Read and apply are granted only to a group the object is not a
+            # member of, so the read access check is denied. AD skips such GPOs,
+            # and so must the script instead of aborting the whole refresh.
+            self.nTSecurityDescriptor = ['O:S-1-5-21-16178157-162784614-155579044-512G:S-1-5-21-16178157-162784614-155579044-512D:PAI(OA;;CR;edacfd8f-ffb3-11d1-b41d-00a0c968f939;;S-1-5-21-16178157-162784614-155579044-1108)(A;CI;RPLCLORC;;;S-1-5-21-16178157-162784614-155579044-1108)']
+        if name == "SessionFallback GPO":
+            # Read and apply are granted to a group the object only gains through
+            # the Global Catalog tokenGroups expansion. user_session() raises for
+            # this account, so the GPO applies only via the tokenGroups fallback.
+            self.nTSecurityDescriptor = [self.nTSecurityDescriptor[0].replace("S-1-5-21-16178157-162784614-155579044-1103", "S-1-5-21-1111111111-2222222222-3333333333-512")]
+        if name == "PrimaryGroupFallback GPO":
+            # Read and apply are granted only to the primary group (Domain
+            # Computers, RID 515), which tokenGroups omits. user_session() raises
+            # for this account, so the GPO applies only if the fallback adds the
+            # primary group back to the token.
+            self.nTSecurityDescriptor = ['O:S-1-5-21-16178157-162784614-155579044-512G:S-1-5-21-16178157-162784614-155579044-512D:PAI(OA;;CR;edacfd8f-ffb3-11d1-b41d-00a0c968f939;;S-1-5-21-16178157-162784614-155579044-515)(A;CI;RPLCLORC;;;S-1-5-21-16178157-162784614-155579044-515)']
 
         smb_port = getenv("ADSYS_TESTS_SMB_PORT")
         if smb_port:
@@ -266,6 +334,55 @@ o.addAccount("UserNogPOptions")
 
 o = OU("/example/InvalidGPOLink")
 o.addAccount("UserInvalidLink")
+
+# Cross-domain membership: the GPO applies only because the Global Catalog
+# reports, through tokenGroups, a universal group from the forest parent domain.
+o = OU("/example/CrossDomainGroup")
+o.addGPO(GPO("CrossDomainGroup GPO"))
+o.addAccount("ChildUserWithParentGroup", token_groups_sids=["S-1-5-21-1111111111-2222222222-3333333333-512"])
+
+# Everyone-scoped GPO: read and apply are granted only to World, which the user
+# obtains exclusively from the default well-known SIDs added to the token. It
+# regresses if build_token stops injecting them (#1421 access-check failure).
+o = OU("/example/Everyone")
+o.addGPO(GPO("Everyone GPO"))
+o.addAccount("UserEveryone", token_groups_sids=[])
+
+# Everyone is allowed read but denied the apply right: a broad token must read
+# the GPO yet never apply it, guarding against read access implying application.
+o = OU("/example/EveryoneDenied")
+o.addGPO(GPO("Everyone read denied apply GPO"))
+o.addAccount("UserEveryoneDenied", token_groups_sids=[])
+
+# Domain-local group membership: the GPO is scoped to a domain-local group that
+# only the domain controller's tokenGroups report. The Global Catalog omits it,
+# so the GPO applies only because the DC tokenGroups are unioned into the token.
+o = OU("/example/DomainLocalGroup")
+o.addGPO(GPO("DomainLocalGroup GPO"))
+o.addAccount("UserWithDomainLocalGroup", token_groups_sids=[], dc_token_groups_sids=["S-1-5-21-16178157-162784614-155579044-1107"])
+
+# Read access denied: the object's token grants no read on the GPO, so the read
+# access check fails. AD silently skips such GPOs, so the script must skip it
+# too instead of treating it as a fatal error for the whole refresh.
+o = OU("/example/ReadDenied")
+o.addGPO(GPO("ReadDenied GPO"))
+o.addAccount("UserReadDenied", token_groups_sids=[], dc_token_groups_sids=[])
+
+# user_session() crash fallback: user_session() raises for this account (the
+# multi-domain referral case), so the token is assembled from tokenGroups
+# instead. The GPO is scoped to a group reported only by the Global Catalog, so
+# it applies only if the fallback resolves group membership correctly.
+o = OU("/example/SessionFallback")
+o.addGPO(GPO("SessionFallback GPO"))
+o.addAccount("UserSessionReferralFallback", token_groups_sids=["S-1-5-21-1111111111-2222222222-3333333333-512"], crash_user_session=True)
+
+# Primary group in the fallback: user_session() raises for this account and its
+# tokenGroups are empty, so the GPO -- scoped to the primary group (Domain
+# Computers) that tokenGroups omits -- applies only if the fallback adds the
+# primary group back to the token.
+o = OU("/example/PrimaryGroupFallback")
+o.addGPO(GPO("PrimaryGroupFallback GPO"))
+o.addAccount("UserPrimaryGroupFallback", token_groups_sids=[], dc_token_groups_sids=[], crash_user_session=True)
 
 # Integration tests OU and GPO
 OU("/example/IntegrationTests")
