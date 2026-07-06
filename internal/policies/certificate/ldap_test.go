@@ -1,8 +1,18 @@
 package certificate
 
 import (
+	"crypto/md5" //nolint:gosec // G501: MD5 mirrors the protocol-defined channel bindings transform under test.
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/sha512"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/binary"
 	"fmt"
+	"math/big"
 	"testing"
+	"time"
 
 	"github.com/go-ldap/ldap/v3"
 	"github.com/stretchr/testify/assert"
@@ -380,4 +390,113 @@ func newCAEntry(baseDN, cn, hostname string, templates []string, caCert []byte) 
 		})
 	}
 	return e
+}
+
+func TestCertHashForChannelBinding(t *testing.T) {
+	t.Parallel()
+
+	sha256Hash := func(b []byte) []byte { s := sha256.Sum256(b); return s[:] }
+
+	tests := map[string]struct {
+		sigAlg x509.SignatureAlgorithm
+		hash   func([]byte) []byte
+	}{
+		"SHA256 signature hashes with SHA256": {
+			sigAlg: x509.SHA256WithRSA,
+			hash:   sha256Hash,
+		},
+		"SHA384 signature hashes with SHA384": {
+			sigAlg: x509.SHA384WithRSA,
+			hash:   func(b []byte) []byte { s := sha512.Sum384(b); return s[:] },
+		},
+		"SHA512 signature hashes with SHA512": {
+			sigAlg: x509.SHA512WithRSA,
+			hash:   func(b []byte) []byte { s := sha512.Sum512(b); return s[:] },
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			cert := generateTestCert(t, tc.sigAlg)
+			assert.Equal(t, tc.hash(cert.Raw), certHashForChannelBinding(cert))
+		})
+	}
+}
+
+func TestTLSServerEndPointChannelBinding(t *testing.T) {
+	t.Parallel()
+
+	cert := generateTestCert(t, x509.SHA256WithRSA)
+
+	certHash := sha256.Sum256(cert.Raw)
+	appData := append([]byte("tls-server-end-point:"), certHash[:]...)
+
+	got := tlsServerEndPointChannelBinding(cert)
+	require.Len(t, got, 16)
+	assert.Equal(t, referenceChannelBindingHash(appData), got)
+}
+
+func TestGSSChannelBindingsHash(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		appData []byte
+	}{
+		"Typical tls-server-end-point app data": {appData: []byte("tls-server-end-point:abcdef")},
+		"Empty app data":                        {appData: []byte{}},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			assert.Equal(t, referenceChannelBindingHash(tc.appData), gssChannelBindingsHash(tc.appData))
+		})
+	}
+}
+
+// generateTestCert creates a self-signed certificate with the given signature
+// algorithm for channel-binding tests.
+func generateTestCert(t *testing.T, sigAlg x509.SignatureAlgorithm) *x509.Certificate {
+	t.Helper()
+	return generateTestCertFull(t, "dc.example.com", nil, sigAlg)
+}
+
+// generateTestCertFull creates a self-signed certificate with the given Common
+// Name, DNS SANs and signature algorithm.
+func generateTestCertFull(t *testing.T, cn string, dnsNames []string, sigAlg x509.SignatureAlgorithm) *x509.Certificate {
+	t.Helper()
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	tmpl := &x509.Certificate{
+		SerialNumber:       big.NewInt(1),
+		Subject:            pkix.Name{CommonName: cn},
+		NotBefore:          time.Now().Add(-time.Hour),
+		NotAfter:           time.Now().Add(time.Hour),
+		DNSNames:           dnsNames,
+		SignatureAlgorithm: sigAlg,
+	}
+
+	der, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, &key.PublicKey, key)
+	require.NoError(t, err)
+
+	cert, err := x509.ParseCertificate(der)
+	require.NoError(t, err)
+	return cert
+}
+
+// referenceChannelBindingHash independently serializes a
+// gss_channel_bindings_struct with empty initiator/acceptor addresses and
+// MD5-hashes it, mirroring RFC 4121 §4.1.1.2, to cross-check the production
+// implementation.
+func referenceChannelBindingHash(appData []byte) []byte {
+	buf := make([]byte, 16) // four zero 32-bit fields: initiator/acceptor addrtype + length
+	l := make([]byte, 4)
+	binary.LittleEndian.PutUint32(l, uint32(len(appData))) //nolint:gosec // G115: appData is a fixed short prefix plus a hash digest, well within uint32.
+	buf = append(buf, l...)
+	buf = append(buf, appData...)
+	sum := md5.Sum(buf) //nolint:gosec // G401: matches the protocol-defined transform under test.
+	return sum[:]
 }

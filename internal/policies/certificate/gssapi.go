@@ -6,10 +6,14 @@ import (
 	"fmt"
 
 	"github.com/go-ldap/ldap/v3"
+	asn1 "github.com/jcmturner/gofork/encoding/asn1"
+	"github.com/oiweiwei/gokrb5.fork/v9/asn1tools"
 	krbclient "github.com/oiweiwei/gokrb5.fork/v9/client"
 	"github.com/oiweiwei/gokrb5.fork/v9/crypto"
 	"github.com/oiweiwei/gokrb5.fork/v9/gssapi"
+	"github.com/oiweiwei/gokrb5.fork/v9/iana/chksumtype"
 	"github.com/oiweiwei/gokrb5.fork/v9/iana/keyusage"
+	"github.com/oiweiwei/gokrb5.fork/v9/messages"
 	"github.com/oiweiwei/gokrb5.fork/v9/spnego"
 	"github.com/oiweiwei/gokrb5.fork/v9/types"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -24,15 +28,22 @@ import (
 //  2. InitSecContext(target, apRep) → verify AP-REP, extract subkey (server → client)
 //  3. NegotiateSaslAuth(saslChallenge) → unwrap challenge, wrap response (RFC 4752)
 type gssapiClient struct {
-	client      *krbclient.Client
-	sessionKey  types.EncryptionKey
-	ticketKey   types.EncryptionKey // original key from the service ticket (before subkey extraction)
-	established bool
+	client         *krbclient.Client
+	sessionKey     types.EncryptionKey
+	ticketKey      types.EncryptionKey // original key from the service ticket (before subkey extraction)
+	channelBinding []byte              // tls-server-end-point channel binding token (16-byte MD5), nil when none
+	established    bool
 }
 
 // newGSSAPIClient creates a GSSAPIClient adapter from a gokrb5 client.
-func newGSSAPIClient(cl *krbclient.Client) ldap.GSSAPIClient {
-	return &gssapiClient{client: cl}
+//
+// channelBinding is the 16-byte tls-server-end-point channel binding token
+// (RFC 5929) derived from the LDAP server's TLS certificate. It is embedded in
+// the AP-REQ authenticator checksum so the bind succeeds against Domain
+// Controllers that enforce LDAP channel binding (CBT/EPA). Pass nil to bind
+// without channel binding.
+func newGSSAPIClient(cl *krbclient.Client, channelBinding []byte) ldap.GSSAPIClient {
+	return &gssapiClient{client: cl, channelBinding: channelBinding}
 }
 
 // InitSecContext implements ldap.GSSAPIClient.
@@ -78,17 +89,79 @@ func (g *gssapiClient) initContextAPREQ(target string, options []int) ([]byte, b
 	copy(apOptions, options)
 	apOptions[len(options)] = 2
 
-	krb5Token, err := spnego.NewKRB5TokenAPREQ(g.client, tkt, key, gssFlags, apOptions)
+	tokenBytes, err := buildKRB5APREQToken(g.client, tkt, key, gssFlags, apOptions, g.channelBinding)
 	if err != nil {
-		return nil, false, fmt.Errorf("creating AP-REQ token: %w", err)
-	}
-
-	tokenBytes, err := krb5Token.Marshal()
-	if err != nil {
-		return nil, false, fmt.Errorf("marshalling AP-REQ token: %w", err)
+		return nil, false, err
 	}
 
 	return tokenBytes, true, nil
+}
+
+// buildKRB5APREQToken builds a Kerberos GSS-API AP-REQ MechToken.
+//
+// It mirrors spnego.NewKRB5TokenAPREQ followed by KRB5Token.Marshal, but writes
+// the supplied channel-binding token into the authenticator checksum's Bnd
+// field (RFC 4121 §4.1.1, bytes 4..19). The upstream helper hardcodes that
+// field to zeros, which makes the bind fail against Domain Controllers that
+// enforce LDAP channel binding (LDAP result code 49 with data 80090346 /
+// SEC_E_BAD_BINDINGS).
+func buildKRB5APREQToken(cl *krbclient.Client, tkt messages.Ticket, key types.EncryptionKey, gssFlags, apOptions []int, channelBinding []byte) ([]byte, error) {
+	auth, err := types.NewAuthenticator(cl.Credentials.Domain(), cl.Credentials.CName())
+	if err != nil {
+		return nil, fmt.Errorf("creating Kerberos authenticator: %w", err)
+	}
+	auth.Cksum = types.Checksum{
+		CksumType: chksumtype.GSSAPI,
+		Checksum:  gssAPIBindingChecksum(gssFlags, channelBinding),
+	}
+
+	apReq, err := messages.NewAPReq(tkt, key, auth)
+	if err != nil {
+		return nil, fmt.Errorf("creating AP-REQ: %w", err)
+	}
+	for _, o := range apOptions {
+		types.SetFlag(&apReq.APOptions, o)
+	}
+
+	// Marshal as a KRB5 GSS MechToken: KRB5 OID | TOK_ID(AP-REQ=0x0100) |
+	// AP-REQ, wrapped in a GSS application tag (mirrors KRB5Token.Marshal).
+	oid, err := asn1.Marshal(gssapi.OIDKRB5.OID())
+	if err != nil {
+		return nil, fmt.Errorf("marshalling KRB5 OID: %w", err)
+	}
+	apReqBytes, err := apReq.Marshal()
+	if err != nil {
+		return nil, fmt.Errorf("marshalling AP-REQ: %w", err)
+	}
+
+	token := append(oid, 0x01, 0x00) // TOK_ID_KRB_AP_REQ
+	token = append(token, apReqBytes...)
+	return asn1tools.AddASNAppTag(token, 0), nil
+}
+
+// gssAPIBindingChecksum builds the RFC 4121 §4.1.1 GSS-API authenticator
+// checksum carried in the AP-REQ:
+//
+//	Lgth(4) | Bnd(16) | Flags(4) [ | DlgOpt(2) | Dlgth(2) | Deleg(n) ]
+//
+// All integer fields are little-endian. The 16-byte Bnd field carries the
+// channel-binding MD5 hash; it is left as zeros when channelBinding is not
+// exactly 16 bytes (i.e. no channel binding is in effect).
+func gssAPIBindingChecksum(flags []int, channelBinding []byte) []byte {
+	a := make([]byte, 24)
+	binary.LittleEndian.PutUint32(a[:4], 16)
+	if len(channelBinding) == 16 {
+		copy(a[4:20], channelBinding)
+	}
+	for _, i := range flags {
+		if i == gssapi.ContextFlagDeleg {
+			a = append(a, make([]byte, 28-len(a))...)
+		}
+		f := binary.LittleEndian.Uint32(a[20:24])
+		f |= uint32(i) //nolint:gosec // G115: GSS-API context flag values are small constants.
+		binary.LittleEndian.PutUint32(a[20:24], f)
+	}
+	return a
 }
 
 // processAPREP handles the second InitSecContext call: it verifies the server's
