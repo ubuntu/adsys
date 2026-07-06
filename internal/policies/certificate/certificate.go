@@ -202,7 +202,11 @@ func New(domain string, opts ...Option) *Manager {
 		// performs GSSAPI bind using the machine's Kerberos credential cache.
 		ldapConnect := args.ldapConnect
 		if ldapConnect == nil {
-			ldapConnect = newKerberosLDAPConnector(krb5CacheDir, args.globalTrustDir)
+			// allowBootstrap: on the first enrollment the enterprise CA is not
+			// installed yet; adsys discovers and installs it during this run, so
+			// the DC's StartTLS certificate is trusted via the Kerberos bind
+			// until then (see verifyPeerCertificate).
+			ldapConnect = newKerberosLDAPConnector(krb5CacheDir, args.globalTrustDir, true)
 		}
 
 		// Use the provided CSR submitter, or create the default one that

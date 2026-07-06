@@ -352,7 +352,9 @@ func safeWriteFile(dst string, data []byte, mode os.FileMode) error {
 // GetSupportedTemplates discovers templates for the CA server via LDAP.
 // It uses the KRB5CCNAME environment variable for Kerberos authentication.
 func GetSupportedTemplates(server string) ([]string, error) {
-	connector := newKerberosLDAPConnector("", "")
+	// allowBootstrap: the DC certificate may not chain to an installed CA on a
+	// freshly joined machine; the LDAP channel is authenticated by Kerberos.
+	connector := newKerberosLDAPConnector("", "", true)
 	return GetSupportedTemplatesWithConnector(connector, server)
 }
 

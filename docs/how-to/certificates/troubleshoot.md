@@ -18,7 +18,7 @@ This feature enables clients to seamlessly enroll for certificates from Active D
 ## Some dependencies are not available in the client Ubuntu installation
 
 The native LDAP method does not require additional client packages beyond ADSys.
-It does require domain controllers to accept LDAP StartTLS with certificates trusted by the Ubuntu client.
+It does require domain controllers to accept LDAP StartTLS. The domain controller's certificate does not need to be pre-installed in the Ubuntu client's trust store: on the first enrollment ADSys trusts the authenticated Kerberos channel to bootstrap trust, installs the discovered CA, and verifies the full certificate chain on subsequent refreshes.
 
 The legacy CEPCES method requires `certmonger`, `python3-samba`, and `python3-cepces`.
 

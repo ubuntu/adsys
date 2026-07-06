@@ -46,7 +46,7 @@ The required packages depend on the certificate enrollment method configured in 
 
 No additional client package is required beyond ADSys.
 
-On the Windows side, the `Certification Authority` role is required, and domain controllers must accept LDAP StartTLS with certificates trusted by the Ubuntu client.
+On the Windows side, the `Certification Authority` role is required, and domain controllers must accept LDAP StartTLS. The domain controller's StartTLS certificate does not need to be trusted by the Ubuntu client in advance: on the first enrollment ADSys bootstraps trust through the mutually authenticated Kerberos channel and then installs the discovered CA, so subsequent refreshes verify the certificate chain normally.
 
 #### CEPCES enrollment
 

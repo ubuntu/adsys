@@ -63,6 +63,7 @@ gpolist
 GPOs
 GPT
 GSettings
+GSSAPI
 GVfs
 gvfs
 HOMEDIRS
