@@ -4,10 +4,16 @@ import (
 	"encoding/binary"
 	"testing"
 
+	krbclient "github.com/oiweiwei/gokrb5.fork/v9/client"
+	"github.com/oiweiwei/gokrb5.fork/v9/credentials"
 	"github.com/oiweiwei/gokrb5.fork/v9/crypto"
 	"github.com/oiweiwei/gokrb5.fork/v9/gssapi"
+	"github.com/oiweiwei/gokrb5.fork/v9/iana/chksumtype"
 	"github.com/oiweiwei/gokrb5.fork/v9/iana/etypeID"
 	"github.com/oiweiwei/gokrb5.fork/v9/iana/keyusage"
+	"github.com/oiweiwei/gokrb5.fork/v9/iana/nametype"
+	"github.com/oiweiwei/gokrb5.fork/v9/messages"
+	"github.com/oiweiwei/gokrb5.fork/v9/spnego"
 	"github.com/oiweiwei/gokrb5.fork/v9/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -373,4 +379,135 @@ func TestDeleteSecContext(t *testing.T) {
 	t.Parallel()
 	g := &gssapiClient{}
 	assert.NoError(t, g.DeleteSecContext())
+}
+
+func TestGSSAPIBindingChecksum(t *testing.T) {
+	t.Parallel()
+
+	flags := []int{gssapi.ContextFlagInteg, gssapi.ContextFlagConf, gssapi.ContextFlagMutual}
+
+	repeat := func(b byte) []byte {
+		x := make([]byte, 16)
+		for i := range x {
+			x[i] = b
+		}
+		return x
+	}
+
+	tests := map[string]struct {
+		flags          []int
+		channelBinding []byte
+
+		wantBnd []byte // expected bytes 4..19
+	}{
+		"No channel binding (nil)": {
+			flags:   flags,
+			wantBnd: make([]byte, 16),
+		},
+		"16-byte channel binding is embedded": {
+			flags:          flags,
+			channelBinding: repeat(0xAB),
+			wantBnd:        repeat(0xAB),
+		},
+		"Wrong-length channel binding is ignored": {
+			flags:          flags,
+			channelBinding: []byte{0x01, 0x02, 0x03},
+			wantBnd:        make([]byte, 16),
+		},
+		"No flags": {
+			flags:   nil,
+			wantBnd: make([]byte, 16),
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			cksum := gssAPIBindingChecksum(tc.flags, tc.channelBinding)
+			require.Len(t, cksum, 24)
+
+			// Lgth field is always 16 (length of the Bnd field).
+			assert.Equal(t, uint32(16), binary.LittleEndian.Uint32(cksum[:4]))
+
+			// Bnd field carries the channel binding (or zeros).
+			assert.Equal(t, tc.wantBnd, cksum[4:20])
+
+			// Flags field is the OR of all requested flags.
+			var wantFlags uint32
+			for _, f := range tc.flags {
+				wantFlags |= uint32(f) //nolint:gosec // G115: GSS-API context flag values are small constants.
+			}
+			assert.Equal(t, wantFlags, binary.LittleEndian.Uint32(cksum[20:24]))
+		})
+	}
+}
+
+func TestBuildKRB5APREQToken(t *testing.T) {
+	t.Parallel()
+
+	key := testKey()
+	cl := &krbclient.Client{Credentials: credentials.New("host$", "EXAMPLE.COM")}
+
+	tkt := messages.Ticket{
+		TktVNO: 5,
+		Realm:  "EXAMPLE.COM",
+		SName: types.PrincipalName{
+			NameType:   nametype.KRB_NT_SRV_INST,
+			NameString: []string{"ldap", "dc.example.com"},
+		},
+		EncPart: types.EncryptedData{EType: key.KeyType, KVNO: 1},
+	}
+
+	gssFlags := []int{gssapi.ContextFlagInteg, gssapi.ContextFlagConf, gssapi.ContextFlagMutual}
+	apOptions := []int{2}
+
+	channelBinding := make([]byte, 16)
+	for i := range channelBinding {
+		channelBinding[i] = byte(i + 1)
+	}
+
+	tests := map[string]struct {
+		channelBinding []byte
+
+		wantBnd []byte
+	}{
+		"With channel binding": {
+			channelBinding: channelBinding,
+			wantBnd:        channelBinding,
+		},
+		"Without channel binding": {
+			channelBinding: nil,
+			wantBnd:        make([]byte, 16),
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			tokenBytes, err := buildKRB5APREQToken(cl, tkt, key, gssFlags, apOptions, tc.channelBinding)
+			require.NoError(t, err)
+			require.NotEmpty(t, tokenBytes)
+
+			// The produced token must be a parseable KRB5 AP-REQ MechToken.
+			var tok spnego.KRB5Token
+			require.NoError(t, tok.Unmarshal(tokenBytes))
+			require.True(t, tok.IsAPReq())
+
+			// Decrypt the authenticator and inspect its GSS-API checksum.
+			apReq := tok.APReq
+			require.NoError(t, apReq.DecryptAuthenticator(key))
+
+			cksum := apReq.Authenticator.Cksum
+			assert.Equal(t, chksumtype.GSSAPI, cksum.CksumType)
+			require.GreaterOrEqual(t, len(cksum.Checksum), 24)
+
+			// The Bnd field reflects the supplied channel binding.
+			assert.Equal(t, tc.wantBnd, cksum.Checksum[4:20])
+
+			// Mutual authentication is requested in the AP options.
+			assert.True(t, types.IsFlagSet(&apReq.APOptions, 2))
+		})
+	}
 }

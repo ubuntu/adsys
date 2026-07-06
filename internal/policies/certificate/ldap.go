@@ -2,9 +2,13 @@ package certificate
 
 import (
 	"context"
+	"crypto/md5" //nolint:gosec // G501: MD5 is mandated by RFC 4121 §4.1.1.2 for the GSS-API channel bindings field; it is a protocol-defined transform, not a security primitive.
+	"crypto/sha256"
+	"crypto/sha512"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"os"
@@ -211,9 +215,16 @@ func gssapiBind(conn *ldap.Conn, server, krb5CacheDir string) error {
 		return fmt.Errorf("creating Kerberos client from ccache: %w", err)
 	}
 
+	// Compute the TLS channel binding token (RFC 5929 tls-server-end-point) from
+	// the StartTLS server certificate so the bind succeeds against DCs that
+	// enforce LDAP channel binding (CBT/EPA). Without it such DCs reject the bind
+	// with LDAP result code 49, data 80090346 (SEC_E_BAD_BINDINGS). The token is
+	// ignored by DCs that do not enforce channel binding, so this is always safe.
+	channelBinding := tlsChannelBindingToken(conn)
+
 	spn := fmt.Sprintf("ldap/%s", server)
 	log.Debugf(context.Background(), "Performing GSSAPI bind using SPN: %s", spn)
-	gssClient := newGSSAPIClient(cl)
+	gssClient := newGSSAPIClient(cl, channelBinding)
 
 	if err := conn.GSSAPIBind(gssClient, spn, ""); err != nil {
 		return fmt.Errorf("GSSAPI bind failed for SPN %s: %w", spn, err)
@@ -221,6 +232,72 @@ func gssapiBind(conn *ldap.Conn, server, krb5CacheDir string) error {
 
 	log.Debugf(context.Background(), "GSSAPI bind successful for SPN: %s", spn)
 	return nil
+}
+
+// tlsChannelBindingToken returns the RFC 5929 tls-server-end-point channel
+// binding token for the connection's TLS server certificate, or nil when the
+// connection exposes no peer certificate (e.g. StartTLS was not performed). The
+// returned value is the 16-byte MD5 hash embedded in the GSS-API authenticator
+// checksum.
+func tlsChannelBindingToken(conn *ldap.Conn) []byte {
+	state, ok := conn.TLSConnectionState()
+	if !ok || len(state.PeerCertificates) == 0 {
+		log.Debug(context.Background(), "No TLS peer certificate available; binding without channel binding")
+		return nil
+	}
+	token := tlsServerEndPointChannelBinding(state.PeerCertificates[0])
+	log.Debugf(context.Background(), "Computed tls-server-end-point channel binding token (%d bytes)", len(token))
+	return token
+}
+
+// tlsServerEndPointChannelBinding computes the GSS-API channel bindings hash for
+// the "tls-server-end-point" channel binding type (RFC 5929 §4) from the given
+// server certificate.
+//
+// The application data is "tls-server-end-point:" followed by the certificate
+// hash; the GSS channel bindings structure (with empty addresses) is then
+// MD5-hashed per RFC 4121 §4.1.1.2 to produce the 16-byte Bnd value.
+func tlsServerEndPointChannelBinding(cert *x509.Certificate) []byte {
+	appData := append([]byte("tls-server-end-point:"), certHashForChannelBinding(cert)...)
+	return gssChannelBindingsHash(appData)
+}
+
+// certHashForChannelBinding hashes the certificate's DER encoding using the
+// hash algorithm mandated by RFC 5929 §4.1: the certificate's own signature
+// hash, but with MD5 and SHA-1 (and unknown/hashless algorithms such as
+// Ed25519) upgraded to SHA-256.
+func certHashForChannelBinding(cert *x509.Certificate) []byte {
+	switch cert.SignatureAlgorithm {
+	case x509.SHA384WithRSA, x509.ECDSAWithSHA384, x509.SHA384WithRSAPSS:
+		sum := sha512.Sum384(cert.Raw)
+		return sum[:]
+	case x509.SHA512WithRSA, x509.ECDSAWithSHA512, x509.SHA512WithRSAPSS:
+		sum := sha512.Sum512(cert.Raw)
+		return sum[:]
+	default:
+		sum := sha256.Sum256(cert.Raw)
+		return sum[:]
+	}
+}
+
+// gssChannelBindingsHash serializes a gss_channel_bindings_struct with empty
+// initiator/acceptor addresses and the given application data, then returns its
+// MD5 hash (RFC 4121 §4.1.1.2 / RFC 1964 §1.1.1). All integer fields are
+// little-endian.
+func gssChannelBindingsHash(appData []byte) []byte {
+	buf := make([]byte, 0, 20+len(appData))
+	var zero [4]byte
+	buf = append(buf, zero[:]...) // initiator_addrtype = 0
+	buf = append(buf, zero[:]...) // initiator_address length = 0
+	buf = append(buf, zero[:]...) // acceptor_addrtype = 0
+	buf = append(buf, zero[:]...) // acceptor_address length = 0
+	var l [4]byte
+	binary.LittleEndian.PutUint32(l[:], uint32(len(appData))) //nolint:gosec // G115: appData is a fixed short prefix plus a hash digest, well within uint32.
+	buf = append(buf, l[:]...)                                // application_data length
+	buf = append(buf, appData...)
+
+	sum := md5.Sum(buf) //nolint:gosec // G401: MD5 required by RFC 4121 §4.1.1.2 for the channel bindings field.
+	return sum[:]
 }
 
 // findKrb5CCachePath locates the machine's Kerberos credential cache file.
