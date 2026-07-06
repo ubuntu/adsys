@@ -22,7 +22,6 @@ import (
 	icertpassage "github.com/oiweiwei/go-msrpc/msrpc/icpr/icertpassage/v0"
 	"github.com/oiweiwei/go-msrpc/ssp"
 	sspcredential "github.com/oiweiwei/go-msrpc/ssp/credential"
-	krb5pkg "github.com/oiweiwei/go-msrpc/ssp/krb5"
 	krbcredentials "github.com/oiweiwei/gokrb5.fork/v9/credentials"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
 )
@@ -102,8 +101,10 @@ func submitCSRImpl(ctx context.Context, server, caName, template, csrPEM, krb5Ca
 	// MS-ICPR runs over authenticated RPC, so the credential cache has to be
 	// wired into the DCE/RPC security options used by both the endpoint mapper
 	// and the final ICertPassage bind.
-	krb5Conf := krb5pkg.NewConfig()
-	krb5Conf.CCachePath = ccachePath
+	krb5Conf, err := newRPCKrb5Config(ccachePath, server, rpcCredential.DomainName())
+	if err != nil {
+		return "", fmt.Errorf("configuring Kerberos for CSR submission to %s: %w", server, err)
+	}
 	securityOpts := []dcerpc.Option{
 		dcerpc.WithMechanism(ssp.KRB5, krb5Conf),
 		dcerpc.WithCredentials(rpcCredential),
@@ -123,7 +124,7 @@ func submitCSRImpl(ctx context.Context, server, caName, template, csrPEM, krb5Ca
 
 	cli, err := icertpassage.NewCertPassageClient(ctx, conn)
 	if err != nil {
-		return "", fmt.Errorf("creating ICertPassage client on %s: %w", server, err)
+		return "", rpcClientError(server, targetName, err)
 	}
 
 	attribs := buildAttributes(template)
@@ -172,6 +173,13 @@ func submitCSRImpl(ctx context.Context, server, caName, template, csrPEM, krb5Ca
 	})
 
 	return string(certPEM), nil
+}
+
+func rpcClientError(server, targetName string, err error) error {
+	if strings.Contains(err.Error(), "bind: invalid checksum") {
+		return fmt.Errorf("creating ICertPassage client on %s: Kerberos RPC bind for SPN %s was rejected with invalid checksum; verify that %s is registered on the CA server account, is not duplicated on another AD object, and that Kerberos realm mapping for %s points to the CA server's realm: %w", server, targetName, targetName, tlsServerName(server), err)
+	}
+	return fmt.Errorf("creating ICertPassage client on %s: %w", server, err)
 }
 
 func rpcCredentialFromCCachePath(ccachePath string) (sspcredential.CCache, error) {

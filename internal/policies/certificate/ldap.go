@@ -14,7 +14,6 @@ import (
 
 	"github.com/go-ldap/ldap/v3"
 	krbclient "github.com/oiweiwei/gokrb5.fork/v9/client"
-	krbconfig "github.com/oiweiwei/gokrb5.fork/v9/config"
 	"github.com/oiweiwei/gokrb5.fork/v9/credentials"
 	"github.com/ubuntu/adsys/internal/consts"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -202,14 +201,10 @@ func gssapiBind(conn *ldap.Conn, server, krb5CacheDir string) error {
 		return fmt.Errorf("loading Kerberos credential cache %s: %w", ccachePath, err)
 	}
 
-	krb5Conf, err := krbconfig.Load("/etc/krb5.conf")
+	krb5Conf, err := newKerberosClientConfig(server, ccache.DefaultPrincipal.Realm)
 	if err != nil {
-		// Use a minimal config if the file doesn't exist
-		krb5Conf = krbconfig.New()
+		return fmt.Errorf("configuring Kerberos client for LDAP server %s: %w", server, err)
 	}
-	// Ensure DNS-based KDC discovery is enabled, as domain-joined machines
-	// typically don't list KDCs explicitly in krb5.conf (sssd uses DNS SRV).
-	krb5Conf.LibDefaults.DNSLookupKDC = true
 
 	cl, err := krbclient.NewFromCCache(ccache, krb5Conf)
 	if err != nil {
