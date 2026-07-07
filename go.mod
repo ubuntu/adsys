@@ -16,7 +16,7 @@ require (
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/golang/protobuf v1.5.4
 	github.com/google/uuid v1.6.0
-	github.com/kardianos/service v1.2.4
+	github.com/kardianos/service v1.3.0
 	github.com/leonelquinteros/gotext v1.7.2
 	github.com/maruel/natural v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
