@@ -2,7 +2,7 @@ name: Code quality nightly scan
 
 on:
   schedule:
-    - cron: '0 4 * * *'
+    - cron: "0 0 * * 1" # Runs every Monday at midnight
   workflow_dispatch:
 
 concurrency:
