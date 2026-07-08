@@ -12,7 +12,7 @@ concurrency:
 env:
   apt_dependencies: >-
     ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
-    libkrb5-dev libwbclient-dev pkg-config python3-coverage samba sudo
+    libkrb5-dev libwbclient-dev pkg-config python3-coverage pylint samba sudo
     libglib2.0-dev gvfs libpam0g-dev
 
 jobs:
@@ -31,10 +31,10 @@ jobs:
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
           go install honnef.co/go/tools/cmd/staticcheck@latest
           dotnet tool install -g dotnet-reportgenerator-globaltool
-      - name: TiCS scan
+
+      - name: Merge coverage reports
         env:
-          TICSAUTHTOKEN: ${{ secrets.TICSAUTHTOKEN }}
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
 
@@ -59,10 +59,18 @@ jobs:
           reportgenerator "-reports:/tmp/coverage/*.xml" "-targetdir:.coverage" -reporttypes:Cobertura
           mv .coverage/Cobertura.xml .coverage/coverage.xml
 
-          # Install TiCS
-          . <(curl --silent --show-error 'https://canonical.tiobe.com/tiobeweb/TICS/api/public/v1/fapi/installtics/Script?cfg=default&platform=linux&url=https://canonical.tiobe.com/tiobeweb/TICS/')
+      - name: Set up temporary directory for TiCS
+        run: |
+          mkdir -p /tmp/tics-${{ github.run_id }}-${{ github.run_attempt }}
 
-          # TiCS requires all artifacts to be built
-          go build ./cmd/...
-
-          TICSQServer -project adsys -tmpdir /tmp/tics -branchdir .
+      - name: TICS Analysis
+        env:
+          TMPDIR: /tmp/tics-${{ github.run_id }}-${{ github.run_attempt }}
+        uses: tiobe/tics-github-action@v3
+        with:
+          mode: qserver
+          project: adsys
+          branchdir: .
+          viewerUrl: https://canonical.tiobe.com/tiobeweb/TICS/api/cfg?name=GoProjects
+          ticsAuthToken: ${{ secrets.TICSAUTHTOKEN }}
+          installTics: true
