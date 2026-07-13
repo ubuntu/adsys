@@ -58,7 +58,7 @@ The unmounting process is handled by systemd on shutdown.
 
 The mount process for these mounts is triggered at the moment a user logs in. User mounts are accessible in the file manager and the user has the ability to unmount them manually.
 
-Credentials authentication for mounts are disabled on ADSys. Instead, authentication is done with the Kerberos ticket present on the machine. If the mount is set to anonymous, then the administrator must ensure that the shared drive supports anonymous access and that the permissions for the directory are set accordingly.
+By default, mounting is done anonymously. The administrator must ensure that the shared drive supports anonymous access and that permissions are set accordingly. If the share requires authentication, Kerberos can be used by adding the `[krb5]` tag to the value.
 
 User mount policies are located under `User Configuration > Policies > Administrative Templates > Ubuntu > Session management > User Drive Mapping`, as shown in the following picture.
 
@@ -66,7 +66,7 @@ User mount policies are located under `User Configuration > Policies > Administr
 
 ### Setting up the policy
 
-The format is a list of shared drives that should be mounted for the user. They must follow the structure `{protocol}://{host name or ip address}/{shared location}`. If the drive is to be mounted anonymously, the tag `[anonymous]` should be added as a prefix to the listed entry, i.e. `[anonymous]{protocol}://{host name or ip address}/{shared location}`.
+The format is a list of shared drives that should be mounted for the user. They must follow the structure `{protocol}://{host name or ip address}/{shared location}`.
 
 All entries must be separated by a line break.
 
