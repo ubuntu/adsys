@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"testing"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adwatchd/commands"
 	log "github.com/ubuntu/adsys/internal/grpc/logstreamer"
@@ -44,7 +45,14 @@ func TestMain(m *testing.M) {
 
 func TestNoArgumentsStartsTUI(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	app := commands.New(commands.WithTUIContext(ctx), commands.WithServiceName("adwatchd-test-tui"))
+	// Since stdout is redirected to a plain pipe below (not a real terminal),
+	// Bubble Tea can't auto-detect a window size to render into and would
+	// otherwise silently skip drawing any content. Force one explicitly.
+	app := commands.New(
+		commands.WithTUIContext(ctx),
+		commands.WithServiceName("adwatchd-test-tui"),
+		commands.WithTUIProgramOptions(tea.WithWindowSize(80, 24)),
+	)
 
 	changeAppArgs(t, app, "")
 

@@ -11,10 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
-	"github.com/muesli/termenv"
+	"charm.land/bubbles/v2/spinner"
+	tea "charm.land/bubbletea/v2"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/cmd/adwatchd/commands"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
@@ -28,6 +26,19 @@ import (
 var (
 	stdout bool
 )
+
+func keyPress(code rune, mods ...tea.KeyMod) tea.KeyPressMsg {
+	var mod tea.KeyMod
+	for _, m := range mods {
+		mod |= m
+	}
+
+	return tea.KeyPressMsg{Code: code, Mod: mod}
+}
+
+func textInput(s string) tea.KeyPressMsg {
+	return tea.KeyPressMsg{Text: s, Code: tea.KeyExtended}
+}
 
 func TestInteractiveInput(t *testing.T) {
 	binPath, err := os.Executable()
@@ -54,28 +65,28 @@ func TestInteractiveInput(t *testing.T) {
 		// Config file input behaviors
 		"Config file exists": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/baz"},
 		},
 		"Config file is absent and input is absolute": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
 			},
 			absPathInput: true,
 		},
 		"Config file is absent and input is relative": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
 			},
 		},
 		"Config file is absent and input is a dir": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/bar/"},
 		},
@@ -84,9 +95,9 @@ func TestInteractiveInput(t *testing.T) {
 		},
 		"Existing config file is passed in and contains directories which exist on the system": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyDown}, // focus on submit button
+				keyPress(tea.KeyDown),
+				keyPress(tea.KeyDown),
+				keyPress(tea.KeyDown), // focus on submit button
 			},
 			configOverride: true,
 			existingPaths:  []string{"foo/bar/", "foo/baz/"},
@@ -94,8 +105,8 @@ func TestInteractiveInput(t *testing.T) {
 		},
 		"Existing config file is passed in and contains directories, not all which exist on the system": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyDown}, // focus on bad input for the error message
+				keyPress(tea.KeyDown),
+				keyPress(tea.KeyDown), // focus on bad input for the error message
 			},
 			configOverride: true,
 			existingPaths:  []string{"foo/bar/"},
@@ -120,188 +131,188 @@ func TestInteractiveInput(t *testing.T) {
 		// Directory input behaviors
 		"Directory exists": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter}, // creates new line
-				tea.KeyMsg{Type: tea.KeyEnter}, // removes new line and focuses on Submit
+				keyPress(tea.KeyDown),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter), // creates new line
+				keyPress(tea.KeyEnter), // removes new line and focuses on Submit
 			},
 			existingPaths: []string{"foo/bar/"},
 		},
 		"Directory does not exist, block input": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyUp},
-				tea.KeyMsg{Type: tea.KeyUp},
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyTab},
-				tea.KeyMsg{Type: tea.KeyTab},
-				tea.KeyMsg{Type: tea.KeyShiftTab},
-				tea.KeyMsg{Type: tea.KeyShiftTab},
+				keyPress(tea.KeyDown),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyUp),
+				keyPress(tea.KeyUp),
+				keyPress(tea.KeyDown),
+				keyPress(tea.KeyDown),
+				keyPress(tea.KeyTab),
+				keyPress(tea.KeyTab),
+				keyPress(tea.KeyTab, tea.ModShift),
+				keyPress(tea.KeyTab, tea.ModShift),
 			},
 		},
 		"Dot and double dot directory inputs are normalized": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar/./qux/../../baz")},
+				keyPress(tea.KeyDown),
+				textInput("foo/bar/./qux/../../baz"),
 			},
 		},
 		"Directory is a file, block input": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyUp},
-				tea.KeyMsg{Type: tea.KeyUp},
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyTab},
-				tea.KeyMsg{Type: tea.KeyTab},
-				tea.KeyMsg{Type: tea.KeyShiftTab},
-				tea.KeyMsg{Type: tea.KeyShiftTab},
+				keyPress(tea.KeyDown),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyUp),
+				keyPress(tea.KeyUp),
+				keyPress(tea.KeyDown),
+				keyPress(tea.KeyDown),
+				keyPress(tea.KeyTab),
+				keyPress(tea.KeyTab),
+				keyPress(tea.KeyTab, tea.ModShift),
+				keyPress(tea.KeyTab, tea.ModShift),
 			},
 			existingPaths: []string{"foo/bar"},
 		},
 		"Multiple existing directories, can cycle between the inputs": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/qux")},
-				tea.KeyMsg{Type: tea.KeyUp},        // focus on first entry
-				tea.KeyMsg{Type: tea.KeyBackspace}, // delete last char to make it invalid
-				tea.KeyMsg{Type: tea.KeyDown},      // attempt to move
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("z")}, // fix entry
-				tea.KeyMsg{Type: tea.KeyTab},
-				tea.KeyMsg{Type: tea.KeyTab},  // back to the last entry
-				tea.KeyMsg{Type: tea.KeyDown}, // focus on Submit
+				keyPress(tea.KeyDown),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/qux"),
+				keyPress(tea.KeyUp),        // focus on first entry
+				keyPress(tea.KeyBackspace), // delete last char to make it invalid
+				keyPress(tea.KeyDown),      // attempt to move
+				keyPress(tea.KeyEnter),
+				textInput("z"), // fix entry
+				keyPress(tea.KeyTab),
+				keyPress(tea.KeyTab),  // back to the last entry
+				keyPress(tea.KeyDown), // focus on Submit
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/", "foo/qux/"},
 		},
 		"Multiple existing directories, can delete them": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyBackspace}, // delete current input, back to foo
-				tea.KeyMsg{Type: tea.KeyBackspace},
-				tea.KeyMsg{Type: tea.KeyBackspace},
-				tea.KeyMsg{Type: tea.KeyBackspace},
-				tea.KeyMsg{Type: tea.KeyEnter}, // delete current empty input
+				keyPress(tea.KeyEnter),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
+				textInput("foo"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyBackspace), // delete current input, back to foo
+				keyPress(tea.KeyBackspace),
+				keyPress(tea.KeyBackspace),
+				keyPress(tea.KeyBackspace),
+				keyPress(tea.KeyEnter), // delete current empty input
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 		},
 		"No directories, focus on dir input": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter}, // cannot move further with no directories
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter), // cannot move further with no directories
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
 			},
 		},
 
 		// Submit behaviors
 		"Submit with default config": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				keyPress(tea.KeyEnter),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
 		"Submit with fresh config in current directory": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("my_config.yaml")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				textInput("my_config.yaml"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: "my_config.yaml",
 		},
 		"Submit with fresh config in nested directory": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("aaa/bbb/ccc/my_config.yaml")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				textInput("aaa/bbb/ccc/my_config.yaml"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: "aaa/bbb/ccc/my_config.yaml",
 		},
 		"Submit with duplicate directories": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar/../")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz/abc/../")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				keyPress(tea.KeyEnter),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/bar/../"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz/abc/../"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
 		"Submit with directory as config input": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/bar/", "foo/baz/"},
 			cfgToValidate: "foo/bar/adwatchd.yaml",
 		},
 		"Submit with dot directories is normalized": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("./foo/./bar/./")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(".")}, // #ABSPATH#
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				keyPress(tea.KeyEnter),
+				textInput("./foo/./bar/./"),
+				keyPress(tea.KeyEnter),
+				textInput("."), // #ABSPATH#
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/bar/"},
 			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
 		},
 		"Submit with double dot directories is normalized": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/baz/qux/asd/../..")}, // baz
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},
+				keyPress(tea.KeyEnter),
+				textInput("foo/baz/qux/asd/../.."), // baz
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),
 			},
 			existingPaths: []string{"foo/baz/"},
 			cfgToValidate: filepath.Join(binDir, "adwatchd.yaml"),
@@ -310,19 +321,19 @@ func TestInteractiveInput(t *testing.T) {
 		// Other navigation behaviors
 		"Other navigation tests": {
 			events: []tea.Msg{
-				tea.KeyMsg{Type: tea.KeyUp},        // no up or shift+tab on config
-				tea.KeyMsg{Type: tea.KeyShiftTab},  // no up or shift+tab on config
-				tea.KeyMsg{Type: tea.KeyBackspace}, // no custom backspace on config
-				tea.KeyMsg{Type: tea.KeyDown},
-				tea.KeyMsg{Type: tea.KeyBackspace}, // backspace on first input cycles back to config
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("foo/bar")},
-				tea.KeyMsg{Type: tea.KeyEnter},
-				tea.KeyMsg{Type: tea.KeyEnter},     // focus on Submit
-				tea.KeyMsg{Type: tea.KeyBackspace}, // backspace on Submit
-				tea.KeyMsg{Type: tea.KeyEnter},     // back on Submit
-				tea.KeyMsg{Type: tea.KeyDown},      // no down or tab on Submit
-				tea.KeyMsg{Type: tea.KeyTab},
+				keyPress(tea.KeyUp),                // no up or shift+tab on config
+				keyPress(tea.KeyTab, tea.ModShift), // no up or shift+tab on config
+				keyPress(tea.KeyBackspace),         // no custom backspace on config
+				keyPress(tea.KeyDown),
+				keyPress(tea.KeyBackspace), // backspace on first input cycles back to config
+				keyPress(tea.KeyEnter),
+				textInput("foo/bar"),
+				keyPress(tea.KeyEnter),
+				keyPress(tea.KeyEnter),     // focus on Submit
+				keyPress(tea.KeyBackspace), // backspace on Submit
+				keyPress(tea.KeyEnter),     // back on Submit
+				keyPress(tea.KeyDown),      // no down or tab on Submit
+				keyPress(tea.KeyTab),
 			},
 			existingPaths: []string{"foo/bar/"},
 		},
@@ -364,21 +375,18 @@ func TestInteractiveInput(t *testing.T) {
 			m, _ := watchdtui.InitialModelForTests(filepath.Join(binDir, "adwatchd.yaml"), prevConfig, !tc.configOverride).Update(nil)
 
 			for _, e := range tc.events {
-				keyMsg, ok := e.(tea.KeyMsg)
-				require.True(t, ok, "expected event to be a KeyMsg")
+				keyMsg, ok := e.(tea.KeyPressMsg)
+				require.True(t, ok, "expected event to be a KeyPressMsg")
 
 				// Did we request an absolute path? If so, we need to merge the
 				// runes with the current working directory.
-				if tc.absPathInput && keyMsg.Type == tea.KeyRunes {
-					e = tea.KeyMsg{
-						Type:  tea.KeyRunes,
-						Runes: []rune(filepath.Join(tmpdir, string(keyMsg.Runes))),
-					}
+				if tc.absPathInput && keyMsg.Text != "" {
+					e = textInput(filepath.Join(tmpdir, keyMsg.Text))
 				}
 
 				m = updateModel(t, m, e)
 			}
-			out := m.View()
+			out := m.View().Content
 			if stdout {
 				fmt.Println(out)
 			}
@@ -431,19 +439,19 @@ func TestInteractiveInstall(t *testing.T) {
 
 	m, _ := watchdtui.InitialModel().Update(nil)
 
-	m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // use default config
+	m = updateModel(t, m, keyPress(tea.KeyEnter)) // use default config
 
 	// add directories
 	for _, dir := range []string{"foo/bar", "foo/baz"} {
-		m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(dir)})
-		m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+		m = updateModel(t, m, textInput(dir))
+		m = updateModel(t, m, keyPress(tea.KeyEnter))
 	}
 
 	// submit
-	m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
-	m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	m = updateModel(t, m, keyPress(tea.KeyEnter))
+	m = updateModel(t, m, keyPress(tea.KeyEnter))
 
-	out := m.View()
+	out := m.View().Content
 	successMessage := "Service adwatchd was successfully installed and is now running.\n"
 	require.Equal(t, successMessage, out, "Didn't get expected output")
 
@@ -519,19 +527,19 @@ func TestInteractiveUpdate(t *testing.T) {
 			m, _ := watchdtui.InitialModelWithPrevConfig(configPath, prevConfigPath, true).Update(nil)
 			if tc.changeConfigPath {
 				// Change to the new config file
-				m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(configPath)})
+				m = updateModel(t, m, textInput(configPath))
 			}
 
 			// Move to the end of the directory list
-			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
-			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
-			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
-			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+			m = updateModel(t, m, keyPress(tea.KeyEnter))
+			m = updateModel(t, m, keyPress(tea.KeyEnter))
+			m = updateModel(t, m, keyPress(tea.KeyEnter))
+			m = updateModel(t, m, keyPress(tea.KeyEnter))
 
 			// Add directories
 			for _, dir := range absDirsToAdd {
-				m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(dir)})
-				m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+				m = updateModel(t, m, textInput(dir))
+				m = updateModel(t, m, keyPress(tea.KeyEnter))
 			}
 
 			// Sleep to ensure the service is properly installed before we hit
@@ -539,13 +547,13 @@ func TestInteractiveUpdate(t *testing.T) {
 			time.Sleep(time.Second)
 
 			// Submit
-			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
-			m = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+			m = updateModel(t, m, keyPress(tea.KeyEnter))
+			m = updateModel(t, m, keyPress(tea.KeyEnter))
 
 			// Check service status
 			status, err := svc.Status(context.Background())
 			require.NoError(t, err, "Cannot get status")
-			require.Contains(t, status, configPath, fmt.Sprintf("Expected config file to be correct. TUI view: %q", m.View()))
+			require.Contains(t, status, configPath, fmt.Sprintf("Expected config file to be correct. TUI view: %q", m.View().Content))
 
 			for _, dir := range append(absPrevDirs, absDirsToAdd...) {
 				require.Contains(t, status, dir, "Expected directory to be watched")
@@ -643,9 +651,6 @@ func TestMain(m *testing.M) {
 		}
 		os.Exit(0)
 	}
-
-	// Simulate a color terminal
-	lipgloss.SetColorProfile(termenv.ANSI256)
 
 	flag.BoolVar(&stdout, "stdout", false, "print output to stdout for debugging purposes")
 	flag.Parse()

@@ -1,10 +1,10 @@
-[1;4;4mU[0m[1;4;4mb[0m[1;4;4mu[0m[1;4;4mn[0m[1;4;4mt[0m[1;4;4mu[0m[4m [0m[1;4;4mA[0m[1;4;4mD[0m[4m [0m[1;4;4mW[0m[1;4;4ma[0m[1;4;4mt[0m[1;4;4mc[0m[1;4;4mh[0m[4m [0m[1;4;4mD[0m[1;4;4ma[0m[1;4;4me[0m[1;4;4mm[0m[1;4;4mo[0m[1;4;4mn[0m[4m [0m[1;4;4mI[0m[1;4;4mn[0m[1;4;4ms[0m[1;4;4mt[0m[1;4;4ma[0m[1;4;4ml[0m[1;4;4ml[0m[1;4;4me[0m[1;4;4mr[0m
+[1;4;4mU[m[1;4;4mb[m[1;4;4mu[m[1;4;4mn[m[1;4;4mt[m[1;4;4mu[m[4m [m[1;4;4mA[m[1;4;4mD[m[4m [m[1;4;4mW[m[1;4;4ma[m[1;4;4mt[m[1;4;4mc[m[1;4;4mh[m[4m [m[1;4;4mD[m[1;4;4ma[m[1;4;4me[m[1;4;4mm[m[1;4;4mo[m[1;4;4mn[m[4m [m[1;4;4mI[m[1;4;4mn[m[1;4;4ms[m[1;4;4mt[m[1;4;4ma[m[1;4;4ml[m[1;4;4ml[m[1;4;4me[m[1;4;4mr[m
 
-[1;38;5;166mConfig file: [0m#BINDIR#/adwatchd.yaml[7m [0m
-
-
-[1mDirectories:[0m
-[1m> [0m[38;5;240mD[0m[38;5;240mirectory to watch (one per line)[0m
+[1;38;2;233;84;32mConfig file: [m#BINDIR#/adwatchd.yaml[7;37m [m
 
 
-[ [38;5;240mInstall[0m ]
+[1mDirectories:[m
+[1m> [m[38;5;240mD[m[38;5;240mirectory to watch (one per line)[m[38;5;240m[m
+
+
+[ [38;5;240mInstall[m ]

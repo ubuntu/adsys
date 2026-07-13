@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -35,8 +36,9 @@ type App struct {
 
 // options are the configurable functional options of the application.
 type options struct {
-	name   string
-	tuiCtx context.Context
+	name    string
+	tuiCtx  context.Context
+	tuiOpts []tea.ProgramOption
 }
 type option func(*options)
 
@@ -54,6 +56,16 @@ func WithServiceName(name string) func(o *options) {
 func WithTUIContext(ctx context.Context) func(o *options) {
 	return func(o *options) {
 		o.tuiCtx = ctx
+	}
+}
+
+// WithTUIProgramOptions allows passing additional Bubble Tea program options to
+// the TUI. Shouldn't be in general necessary apart for integration tests,
+// where it's used to force a window size since the program's output isn't a
+// real terminal there.
+func WithTUIProgramOptions(opts ...tea.ProgramOption) func(o *options) {
+	return func(o *options) {
+		o.tuiOpts = opts
 	}
 }
 
@@ -174,7 +186,7 @@ func New(opts ...option) *App {
 			}
 
 			configFileSet := a.rootCmd.Flags().Lookup("config").Changed
-			if err := watchdtui.Start(a.options.tuiCtx, a.viper.ConfigFileUsed(), prevConfigFile, !configFileSet); err != nil {
+			if err := watchdtui.Start(a.options.tuiCtx, a.viper.ConfigFileUsed(), prevConfigFile, !configFileSet, a.options.tuiOpts...); err != nil {
 				return err
 			}
 

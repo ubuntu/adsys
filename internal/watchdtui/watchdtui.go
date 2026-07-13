@@ -11,11 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/cursor"
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/bubbles/v2/spinner"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/leonelquinteros/gotext"
 	watchdconfig "github.com/ubuntu/adsys/internal/config/watchd"
 	"github.com/ubuntu/adsys/internal/watchdservice"
@@ -166,7 +165,6 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 		case 0:
 			t.Placeholder = gotext.Get("Config file location (leave blank for default: %s)", m.defaultConfig)
 			t.Prompt = gotext.Get("Config file: ")
-			t.PromptStyle = boldStyle
 			t.Focus()
 
 			// Only prefill the config path if we received it via argument, even
@@ -194,7 +192,17 @@ func initialModel(configFile string, prevConfigFile string, isDefaultConfig bool
 func newStyledTextInput() textinput.Model {
 	t := textinput.New()
 	t.CharLimit = 1024
-	t.Cursor.SetMode(cursor.CursorStatic)
+	styles := textinput.DefaultDarkStyles()
+	styles.Focused.Placeholder = blurredStyle
+	styles.Blurred.Placeholder = blurredStyle
+	styles.Focused.Suggestion = blurredStyle
+	styles.Blurred.Suggestion = blurredStyle
+	styles.Focused.Prompt = boldStyle
+	styles.Blurred.Prompt = boldStyle
+	styles.Focused.Text = noStyle
+	styles.Blurred.Text = noStyle
+	styles.Cursor.Blink = false
+	t.SetStyles(styles)
 	return t
 }
 
@@ -215,12 +223,12 @@ func (m model) Update(teaMsg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, nil
 
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyEsc:
+	case tea.KeyPressMsg:
+		switch msg.String() {
+		case "ctrl+c", "esc":
 			return m, tea.Quit
 
-		case tea.KeyUp, tea.KeyShiftTab:
+		case "up", "shift+tab":
 			// Block if the directory input is invalid
 			if m.focusIndex > 0 && m.focusIndex < len(m.inputs) && m.inputs[m.focusIndex].Err != nil {
 				break
@@ -232,7 +240,7 @@ func (m model) Update(teaMsg tea.Msg) (tea.Model, tea.Cmd) {
 				m.focusIndex = 0
 			}
 
-		case tea.KeyDown, tea.KeyTab:
+		case "down", "tab":
 			// Block if the directory input is invalid
 			if m.focusIndex > 0 && m.focusIndex < len(m.inputs) && m.inputs[m.focusIndex].Err != nil {
 				break
@@ -244,7 +252,7 @@ func (m model) Update(teaMsg tea.Msg) (tea.Model, tea.Cmd) {
 				m.focusIndex = len(m.inputs)
 			}
 
-		case tea.KeyBackspace:
+		case "backspace":
 			// backspace: set focus to previous input if needed
 
 			// No backspace on config
@@ -277,7 +285,7 @@ func (m model) Update(teaMsg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.focusIndex--
 
-		case tea.KeyEnter:
+		case "enter":
 			// Did the user press enter while the submit button was focused?
 			if m.focusIndex == len(m.inputs) {
 				var confFile string
@@ -360,17 +368,21 @@ func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
 	var cmds []tea.Cmd
 
 	for i := range m.inputs {
+		styles := m.inputs[i].Styles()
+
 		// Style the input depending on focus
 		if i != m.focusIndex {
 			// Ensure focused state is removed
 			m.inputs[i].Blur()
-			m.inputs[i].PromptStyle = boldStyle
-			m.inputs[i].TextStyle = noStyle
+			styles.Blurred.Prompt = boldStyle
+			styles.Blurred.Text = noStyle
+			m.inputs[i].SetStyles(styles)
 			continue
 		}
 
 		// Set focused state
-		m.inputs[i].PromptStyle = focusedStyle
+		styles.Focused.Prompt = focusedStyle
+		m.inputs[i].SetStyles(styles)
 
 		// Record change of focus if current element was not already focused
 		if !m.inputs[i].Focused() {
@@ -436,13 +448,17 @@ func updateConfigInputError(input *textinput.Model) {
 
 // updateDirInputErrorAndStyle updates the error message and style of the given directory input.
 func (m *model) updateDirInputErrorAndStyle(i int) {
+	styles := m.inputs[i].Styles()
+
 	// We consider an empty string to be valid, so users are allowed to press
 	// enter on it.
 	if m.inputs[i].Value() == "" {
 		m.inputs[i].Err = nil
+		styles.Focused.Text = noStyle
 		if len(m.inputs) == 2 {
 			m.inputs[i].Err = errors.New(gotext.Get("please enter at least one directory"))
 		}
+		m.inputs[i].SetStyles(styles)
 		return
 	}
 
@@ -450,15 +466,16 @@ func (m *model) updateDirInputErrorAndStyle(i int) {
 	absPath, _ := filepath.Abs(m.inputs[i].Value())
 
 	m.inputs[i].Err = nil
-	m.inputs[i].TextStyle = successStyle
+	styles.Focused.Text = successStyle
 
 	if stat, err := os.Stat(absPath); err != nil {
 		m.inputs[i].Err = errors.New(gotext.Get("%s: directory does not exist, please enter a valid path", absPath))
-		m.inputs[i].TextStyle = noStyle
+		styles.Focused.Text = noStyle
 	} else if !stat.IsDir() {
 		m.inputs[i].Err = errors.New(gotext.Get("%s: is not a directory", absPath))
-		m.inputs[i].TextStyle = noStyle
+		styles.Focused.Text = noStyle
 	}
+	m.inputs[i].SetStyles(styles)
 }
 
 func (m model) submitText() string {
@@ -469,18 +486,27 @@ func (m model) submitText() string {
 	return text
 }
 
+func setInputViewWidth(input *textinput.Model) {
+	if input.Value() == "" && input.Placeholder != "" {
+		input.SetWidth(max(lipgloss.Width(input.Placeholder)-1, 0))
+		return
+	}
+
+	input.SetWidth(0)
+}
+
 // View renders the UI based on the data in the model.
-func (m model) View() string {
+func (m model) View() tea.View {
 	if m.loading {
-		return gotext.Get("%s installing service... please wait.", m.spinner.View())
+		return tea.NewView(gotext.Get("%s installing service... please wait.", m.spinner.View()))
 	}
 
 	if err := m.err; err != nil {
-		return gotext.Get("Could not install service: %v\n", err)
+		return tea.NewView(gotext.Get("Could not install service: %v\n", err))
 	}
 
 	if !m.typing {
-		return fmt.Sprintln(gotext.Get("Service adwatchd was successfully installed and is now running."))
+		return tea.NewView(fmt.Sprintln(gotext.Get("Service adwatchd was successfully installed and is now running.")))
 	}
 
 	var b strings.Builder
@@ -489,6 +515,7 @@ func (m model) View() string {
 	b.WriteString("\n\n")
 
 	// Display config input and hint
+	setInputViewWidth(&m.inputs[0])
 	b.WriteString(m.inputs[0].View())
 	b.WriteRune('\n')
 	if m.inputs[0].Err != nil {
@@ -510,6 +537,7 @@ func (m model) View() string {
 
 	// Display directory inputs
 	for i, v := range m.inputs[1:] {
+		setInputViewWidth(&v)
 		_, _ = b.WriteString(v.View())
 		if i < len(m.inputs)-1 {
 			_, _ = b.WriteRune('\n')
@@ -529,12 +557,17 @@ func (m model) View() string {
 
 	_, _ = fmt.Fprintf(&b, "\n\n%s\n", button)
 
-	return b.String()
+	return tea.NewView(b.String())
 }
 
-// Start starts the interactive TUI.
-func Start(ctx context.Context, configFile string, prevConfigFile string, isDefaultConfig bool) error {
-	p := tea.NewProgram(initialModel(configFile, prevConfigFile, isDefaultConfig), tea.WithContext(ctx))
+// Start starts the interactive TUI. Additional Bubble Tea program options can
+// be passed in. This is mainly useful for tests, where the program's output
+// isn't a real terminal and thus needs an explicit window size to render its
+// content (otherwise Bubble Tea can't auto-detect one and silently skips
+// drawing anything but the initial/final terminal setup sequences).
+func Start(ctx context.Context, configFile string, prevConfigFile string, isDefaultConfig bool, opts ...tea.ProgramOption) error {
+	opts = append([]tea.ProgramOption{tea.WithContext(ctx)}, opts...)
+	p := tea.NewProgram(initialModel(configFile, prevConfigFile, isDefaultConfig), opts...)
 	if _, err := p.Run(); err != nil {
 		return err
 	}
