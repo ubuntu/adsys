@@ -74,3 +74,7 @@ jobs:
           viewerUrl: https://canonical.tiobe.com/tiobeweb/TICS/api/cfg?name=GoProjects
           ticsAuthToken: ${{ secrets.TICSAUTHTOKEN }}
           installTics: true
+          # Persist TiCS debug information (including the run log) to a known
+          # location. Setting this input makes the action upload that directory
+          # as an artifact, so failing analyses can be inspected.
+          tmpdir: /tmp/tics-${{ github.run_id }}-${{ github.run_attempt }}
