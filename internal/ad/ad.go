@@ -18,9 +18,11 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"testing"
 	"time"
 
 	"github.com/leonelquinteros/gotext"
+	"github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/internal/ad/backends"
 	adcommon "github.com/ubuntu/adsys/internal/ad/common"
 	"github.com/ubuntu/adsys/internal/ad/registry"
@@ -48,6 +50,17 @@ const (
 	// policyServerPrefix is the GPO prefix containing keys that configure
 	// policy servers for certificate enrollment.
 	policyServersPrefix string = "Software/Policies/Microsoft/Cryptography/PolicyServers/"
+
+	// The following constants mirror the ReturnCode values returned by the
+	// adsys-gpolist script, so that distinct failures can be reported with
+	// actionable errors instead of an opaque non-zero exit code.
+
+	// gpoListNotFound is returned when the requested account can't be found in AD.
+	gpoListNotFound int = 1
+	// gpoListConnectionFailed is returned when the connection to the AD server failed.
+	gpoListConnectionFailed int = 2
+	// gpoListGPOFailed is returned when the GPO list couldn't be computed for the account.
+	gpoListGPOFailed int = 3
 )
 
 type gpo downloadable
@@ -74,6 +87,9 @@ type AD struct {
 	krb5CacheDir     string
 
 	downloadables map[string]*downloadable
+	// downloadablesMu guards the downloadables map so that parsing, which only
+	// reads it, can run without holding the main AD lock.
+	downloadablesMu sync.RWMutex
 	sync.RWMutex
 	fetchMu sync.Mutex
 
@@ -147,6 +163,15 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 		if err := o(&args); err != nil {
 			return nil, err
 		}
+	}
+
+	// Allow integration tests running the real daemon binary to disable
+	// kerberos authentication, as they have no real KDC to authenticate
+	// against. This is gated on testing.Testing() so it can only be
+	// triggered when running under `go test`, never in production.
+	if testing.Testing() && os.Getenv("ADSYS_TESTS_WITHOUT_KERBEROS") == "1" {
+		log.Warning(ctx, "Kerberos authentication disabled by ADSYS_TESTS_WITHOUT_KERBEROS=1 (test mode)")
+		args.withoutKerberos = true
 	}
 
 	krb5CacheDir := filepath.Join(args.runDir, "krb5cc")
@@ -255,6 +280,9 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	// Otherwise, try fetching the GPO list from LDAP
 	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
 	scriptArgs := []string{"--objectclass", string(objectClass), adServerFQDN, objectName}
+	if logrus.GetLevel() >= logrus.DebugLevel {
+		scriptArgs = append(scriptArgs, "--debug")
+	}
 	cmdArgs := append(args, scriptArgs...)
 	cmdCtx, cancel := context.WithTimeout(ctx, ad.gpoListTimeout)
 	defer cancel()
@@ -270,7 +298,19 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	err = cmd.Run()
 	smbsafe.DoneExec()
 	if err != nil {
-		return pols, errors.New(gotext.Get("failed to retrieve the list of GPO (exited with %d): %v\n%s", cmd.ProcessState.ExitCode(), err, stderr.String()))
+		exitCode := cmd.ProcessState.ExitCode()
+		var reason string
+		switch exitCode {
+		case gpoListNotFound:
+			reason = gotext.Get("account %q was not found in Active Directory", objectName)
+		case gpoListConnectionFailed:
+			reason = gotext.Get("could not connect to the Active Directory server %q", adServerFQDN)
+		case gpoListGPOFailed:
+			reason = gotext.Get("could not compute the GPO list for %q", objectName)
+		default:
+			reason = gotext.Get("unexpected error while retrieving the GPO list")
+		}
+		return pols, errors.New(gotext.Get("failed to retrieve the list of GPO: %s (exited with %d): %v\n%s", reason, exitCode, err, stderr.String()))
 	}
 
 	downloadables := make(map[string]string)
@@ -299,25 +339,38 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		return pols, err
 	}
 
+	// Fetching mutates the shared on-disk caches and the krb5cc tickets and,
+	// through libsmbclient, is serialized process-wide anyway, so run it under
+	// the AD lock. Release the lock right afterwards so the CPU-bound parsing
+	// below can overlap with other objects being refreshed (e.g. during
+	// `update --all`).
 	ad.Lock()
-	defer ad.Unlock()
 	assetsWereRefresh, err := ad.fetch(ctx, krb5CCPath, downloadables)
+	ad.Unlock()
 	if err != nil {
 		return pols, err
 	}
 
 	var errg errgroup.Group
-	// Parse policies
+	// Parse policies. This only reads the per-GPO caches (each guarded by its own
+	// downloadable mutex) and the downloadables map (guarded by downloadablesMu),
+	// so it runs without the AD lock and can proceed concurrently for several
+	// objects at once.
 	var gposRules []policies.GPO
 	errg.Go(func() (err error) {
 		gposRules, err = ad.parseGPOs(ctx, orderedGPOs, objectClass)
 		return err
 	})
 
-	// Compress assets
+	// Compress assets. The assets directory and its db are shared by every
+	// object, so serialize this behind the AD lock to exclude concurrent fetches
+	// and compressions.
 	var assetsDBPath string
 	assetsSrc := filepath.Join(ad.sysvolCacheDir, "assets")
 	errg.Go(func() (err error) {
+		ad.Lock()
+		defer ad.Unlock()
+
 		// Only compress assets if we have fetched them, otherwise attach optionally
 		// existing db.
 		if !assetsWereRefresh {
@@ -503,9 +556,13 @@ func (ad *AD) parseGPOs(ctx context.Context, gpos []gpo, objectClass ObjectClass
 }
 
 func (ad *AD) parseGPO(ctx context.Context, name, url, keyFilterPrefix string, objectClass ObjectClass, gpoWithRules policies.GPO) error {
-	ad.downloadables[name].mu.RLock()
-	defer ad.downloadables[name].mu.RUnlock()
-	_ = ad.downloadables[name].testConcurrent
+	ad.downloadablesMu.RLock()
+	d := ad.downloadables[name]
+	ad.downloadablesMu.RUnlock()
+
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	_ = d.testConcurrent
 
 	log.Debugf(ctx, "Parsing GPO %q of class %q", name, objectClass)
 

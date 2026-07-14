@@ -88,16 +88,64 @@ func TestAdsysGPOList(t *testing.T) {
 		"Security descriptor missing ignores GPO": { // AD is doing that for windows client
 			accountName: "RnDUserDep4@GPOONLY.COM",
 		},
-		"Fail on security descriptor access failure": {
-			accountName:    "RnDUserDep5@GPOONLY.COM",
-			wantReturnCode: 3,
-			wantErr:        true,
+		// An access check that errors out (rather than cleanly denying) still means
+		// the GPO is inaccessible, so AD skips it -- it must not abort the refresh.
+		"Security descriptor access failure ignores GPO": {
+			accountName: "RnDUserDep5@GPOONLY.COM",
 		},
 		"Security descriptor access denied ignores GPO": {
 			accountName: "RnDUserDep6@GPOONLY.COM",
 		},
 		"Security descriptor accepted is for another user": {
 			accountName: "RnDUserDep8@GPOONLY.COM",
+		},
+
+		// A universal group defined in the parent domain of the forest is only
+		// visible through the Global Catalog tokenGroups expansion. This is the
+		// multi-domain case that used to crash the script (issue #1358).
+		"Cross-domain universal group membership applies its GPO": {
+			accountName: "ChildUserWithParentGroup@GPOONLY.COM",
+		},
+
+		// A GPO scoped to a domain-local group applies only because the domain
+		// controller tokenGroups (which include domain-local membership) are
+		// unioned with the Global Catalog's. The Global Catalog alone omits
+		// domain-local groups, which used to deny the GPO and abort the refresh.
+		"Domain-local group membership applies its GPO": {
+			accountName: "UserWithDomainLocalGroup@GPOONLY.COM",
+		},
+
+		// The object's token grants no read on the GPO: AD skips it, so the
+		// script must skip it too instead of failing the whole refresh.
+		"Read access denied skips GPO": {
+			accountName: "UserReadDenied@GPOONLY.COM",
+		},
+
+		// user_session() raises in a multi-domain forest (the LDAP referral
+		// crash). The script must fall back to assembling the token from
+		// tokenGroups and still resolve the GPO, instead of aborting.
+		"Falls back to tokenGroups when user_session crashes": {
+			accountName: "UserSessionReferralFallback@GPOONLY.COM",
+		},
+
+		// The fallback must add the primary group (Domain Computers) that
+		// tokenGroups omits, otherwise a GPO scoped to it -- as computer GPOs
+		// commonly are -- would be wrongly skipped for child-domain objects.
+		"Fallback adds the primary group to the token": {
+			accountName: "UserPrimaryGroupFallback@GPOONLY.COM",
+		},
+
+		// Read and apply are scoped to World, granted only by the default
+		// well-known SIDs injected into the token. Regresses if build_token
+		// stops adding them (access check would deny every GPO read).
+		"Default token SIDs grant access to Everyone-scoped GPO": {
+			accountName: "UserEveryone@GPOONLY.COM",
+		},
+
+		// Wide read access must not imply application: World may read the GPO
+		// but is denied the apply right, so it must be filtered out.
+		"Everyone read access does not imply GPO application": {
+			accountName: "UserEveryoneDenied@GPOONLY.COM",
 		},
 
 		"No gPOptions fallbacks to 0": {

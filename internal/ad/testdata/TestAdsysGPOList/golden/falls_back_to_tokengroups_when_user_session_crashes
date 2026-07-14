@@ -1,0 +1,3 @@
+WARNING: user_session() could not build the token (user_session() failed: NT_STATUS_NOT_SUPPORTED (simulated multi-domain referral)); falling back to tokenGroups resolved from the domain controller and the Global Catalog
+SessionFallback GPO	smb://adcontroller.example.com/SYSVOL/gpoonly.com/Policies/SessionFallback_GPO
+Default Domain Policy	smb://adcontroller.example.com/SYSVOL/gpoonly.com/Policies/{31B2F340-016D-11D2-945F-00C04FB984F9}

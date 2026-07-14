@@ -90,19 +90,20 @@ func (ad *AD) fetch(ctx context.Context, krb5Ticket string, downloadables map[st
 
 	var errg errgroup.Group
 	for name, url := range downloadables {
+		// Guard the shared downloadables map: parsing reads it concurrently
+		// without holding the AD lock.
+		ad.downloadablesMu.Lock()
 		g, ok := ad.downloadables[name]
 		if !ok {
-			ad.downloadables[name] = &downloadable{
+			g = &downloadable{
 				name:     name,
 				url:      url,
 				mu:       &sync.RWMutex{},
-				isAssets: false,
+				isAssets: name == "assets",
 			}
-			if name == "assets" {
-				ad.downloadables[name].isAssets = true
-			}
-			g = ad.downloadables[name]
+			ad.downloadables[name] = g
 		}
+		ad.downloadablesMu.Unlock()
 		errg.Go(func() (err error) {
 			defer decorate.OnError(&err, gotext.Get("can't download %q", g.name))
 
@@ -306,19 +307,7 @@ func downloadRecursive(ctx context.Context, client *libsmbclient.Client, url, de
 		switch dirent.Type {
 		case libsmbclient.SmbcFile:
 			log.Debug(ctx, gotext.Get("Downloading %s", entityURL))
-			f, err := client.Open(entityURL, 0, 0)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-			// Read() is on *libsmbclient.File, not libsmbclient.File
-			pf := &f
-			data, err := io.ReadAll(pf)
-			if err != nil {
-				return err
-			}
-
-			if err := os.WriteFile(entityDest, data, 0600); err != nil {
+			if err := downloadFile(client, entityURL, entityDest); err != nil {
 				return err
 			}
 		case libsmbclient.SmbcDir:
@@ -328,6 +317,59 @@ func downloadRecursive(ctx context.Context, client *libsmbclient.Client, url, de
 			}
 		default:
 			return fmt.Errorf("unsupported type %q for entry %s", dirent.Type, dirent.Name)
+		}
+	}
+	return nil
+}
+
+// smbReadBufferSize is the buffer size used when streaming a file from SMB to
+// disk. libsmbclient serializes every operation on a process-global mutex and
+// each read maps to a network round-trip, so a large buffer keeps the number of
+// (globally serialized) reads to a minimum and lets libsmbclient fetch up to its
+// negotiated maximum read size per call. This is much faster than io.ReadAll,
+// whose small, growing buffer would issue many tiny reads per file.
+const smbReadBufferSize = 1024 * 1024
+
+// downloadFile streams a single SMB file to dest, using a large fixed buffer to
+// minimize the number of SMB read round-trips and to avoid holding the whole
+// file in memory.
+func downloadFile(client *libsmbclient.Client, url, dest string) (err error) {
+	defer decorate.OnError(&err, gotext.Get("download %q failed", url))
+
+	f, err := client.Open(url, 0, 0)
+	if err != nil {
+		return err
+	}
+	// Read() is on *libsmbclient.File, not libsmbclient.File
+	pf := &f
+	defer pf.Close()
+
+	dst, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := dst.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	// Copy manually with our own buffer rather than io.CopyBuffer: *os.File
+	// implements io.ReaderFrom, which would make io.CopyBuffer ignore our buffer
+	// and fall back to a small (32KiB) internal one.
+	buf := make([]byte, smbReadBufferSize)
+	for {
+		n, rerr := pf.Read(buf)
+		if n > 0 {
+			if _, werr := dst.Write(buf[:n]); werr != nil {
+				return werr
+			}
+		}
+		if errors.Is(rerr, io.EOF) {
+			break
+		}
+		if rerr != nil {
+			return rerr
 		}
 	}
 	return nil
