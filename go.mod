@@ -21,7 +21,7 @@ require (
 	github.com/maruel/natural v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
-	github.com/pkg/sftp v1.13.10
+	github.com/pkg/sftp v1.13.11
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
