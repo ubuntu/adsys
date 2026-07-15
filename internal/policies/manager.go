@@ -553,3 +553,41 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) []string {
 
 	return filteredRules
 }
+
+// Certificate management pass-throughs. These expose the certificate manager's
+// admin API (native "ldap" enrollment method) to the service layer.
+
+// CertificatesList returns the certificates enrolled for the given object.
+func (m *Manager) CertificatesList(ctx context.Context, objectName string) ([]certificate.CertInfo, error) {
+	return m.certificate.ListCertificates(ctx, objectName)
+}
+
+// CertificateStatus returns the health of a single enrolled certificate.
+func (m *Manager) CertificateStatus(ctx context.Context, objectName, nickname string) (certificate.CertInfo, error) {
+	return m.certificate.CertificateStatus(ctx, objectName, nickname)
+}
+
+// RenewCertificates forces re-enrollment of the targeted certificate(s).
+func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname string, all bool, progress func(string)) error {
+	return m.certificate.RenewCertificates(ctx, objectName, nickname, all, progress)
+}
+
+// RemoveCertificates removes the targeted certificate(s) and cleans up state.
+func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname string, all, force bool, progress func(string)) error {
+	return m.certificate.RemoveCertificates(ctx, objectName, nickname, all, force, progress)
+}
+
+// VerifyCertificates verifies the targeted enrolled certificate(s).
+func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname string, online bool) ([]certificate.VerifyResult, error) {
+	return m.certificate.VerifyCertificates(ctx, objectName, nickname, online)
+}
+
+// DiscoverCAsInfo returns the CAs and templates discovered in AD.
+func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]certificate.CAInfo, error) {
+	return m.certificate.DiscoverCAsInfo(ctx, objectName)
+}
+
+// SupportedCertTemplates returns the certificate templates offered by a CA server.
+func (m *Manager) SupportedCertTemplates(ctx context.Context, server string) ([]string, error) {
+	return m.certificate.SupportedTemplates(ctx, server)
+}
