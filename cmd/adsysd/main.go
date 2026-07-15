@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -49,6 +50,17 @@ func run(a app) int {
 	})
 
 	if err := a.Run(); err != nil {
+		// An error carrying an explicit exit code (e.g. certificate status)
+		// takes precedence: exit with that code, only logging when it also
+		// carries a message.
+		var codeErr interface{ ExitCode() int }
+		if errors.As(err, &codeErr) {
+			if err.Error() != "" {
+				log.Error(err)
+			}
+			return codeErr.ExitCode()
+		}
+
 		log.Error(err)
 
 		if a.UsageError() {

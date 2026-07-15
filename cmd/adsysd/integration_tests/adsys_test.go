@@ -204,6 +204,7 @@ type confOptions struct {
 	adsysDir           string
 	backend            string
 	detectCachedTicket bool
+	certEnrollment     string
 }
 
 func confWithAdsysDir(adsysDir string) confOption {
@@ -221,6 +222,12 @@ func confWithBackend(backend string) confOption {
 func confDetectCachedTicket(detectCachedTicket bool) confOption {
 	return func(o *confOptions) {
 		o.detectCachedTicket = detectCachedTicket
+	}
+}
+
+func confWithCertEnrollment(method string) confOption {
+	return func(o *confOptions) {
+		o.certEnrollment = method
 	}
 }
 
@@ -274,6 +281,13 @@ detect_cached_ticket: %[3]t
 `, args.adsysDir, args.backend, args.detectCachedTicket))
 
 	testutils.WriteFile(t, confFile, confData, os.ModePerm)
+	if args.certEnrollment != "" {
+		f, err := os.OpenFile(confFile, os.O_APPEND|os.O_WRONLY, 0600)
+		require.NoError(t, err, "Setup: should open config to append certificate enrollment")
+		_, err = fmt.Fprintf(f, "\ncertificate_enrollment: %s\n", args.certEnrollment)
+		require.NoError(t, err, "Setup: should append certificate enrollment to config")
+		require.NoError(t, f.Close(), "Setup: should close config after appending")
+	}
 	require.NoError(t, os.MkdirAll(filepath.Join(args.adsysDir, "dconf"), 0750), "Setup: should create dconf dir")
 	// Don’t create empty dirs for sudo and polkit: todo: same for dconf?
 

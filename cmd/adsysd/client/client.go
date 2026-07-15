@@ -109,6 +109,7 @@ func New() *App {
 	a.installDoc()
 	a.installPolicy()
 	a.installService()
+	a.installCertificate()
 	a.installVersion()
 
 	return &a

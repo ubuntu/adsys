@@ -55,6 +55,203 @@ adsysctl applied [USER_NAME] [flags]
   -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
+### adsysctl certificate
+
+Certificate management
+
+```
+adsysctl certificate COMMAND [flags]
+```
+
+#### Options
+
+```
+  -h, --help   help for certificate
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+### adsysctl certificate cas
+
+List certificate authorities and templates discovered in AD
+
+```
+adsysctl certificate cas [flags]
+```
+
+#### Options
+
+```
+      --format string   output format: text or json. (default "text")
+  -h, --help            help for cas
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+### adsysctl certificate list
+
+List certificates enrolled by adsys
+
+```
+adsysctl certificate list [flags]
+```
+
+#### Options
+
+```
+      --format string   output format: text or json. (default "text")
+  -h, --help            help for list
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+### adsysctl certificate remove
+
+Remove enrolled certificate(s) and clean up adsys state
+
+```
+adsysctl certificate remove [NICKNAME] [flags]
+```
+
+#### Options
+
+```
+  -a, --all     remove all enrolled certificates.
+  -f, --force   confirm removal of certificate material and adsys state.
+  -h, --help    help for remove
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+### adsysctl certificate renew
+
+Force re-enrollment of enrolled certificate(s) now
+
+```
+adsysctl certificate renew [NICKNAME] [flags]
+```
+
+#### Options
+
+```
+  -a, --all    renew all enrolled certificates.
+  -h, --help   help for renew
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+### adsysctl certificate status
+
+Show the health of an enrolled certificate
+
+#### Synopsis
+
+Show the health of an enrolled certificate.
+The process exit code reflects the certificate health: 0 healthy, 2 missing,
+3 expired, 4 due for renewal, 5 key mismatch or unparseable, 1 on error.
+
+```
+adsysctl certificate status [NICKNAME] [flags]
+```
+
+#### Options
+
+```
+      --format string   output format: text or json. (default "text")
+  -h, --help            help for status
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+### adsysctl certificate templates
+
+List certificate templates a CA server offers
+
+```
+adsysctl certificate templates SERVER [flags]
+```
+
+#### Options
+
+```
+  -h, --help   help for templates
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+### adsysctl certificate verify
+
+Verify chain, validity and key match of enrolled certificate(s)
+
+```
+adsysctl certificate verify [NICKNAME] [flags]
+```
+
+#### Options
+
+```
+  -h, --help     help for verify
+      --online   also perform an online revocation (CRL) check.
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
 ### adsysctl completion
 
 Generate the autocompletion script for the specified shell
@@ -607,6 +804,34 @@ adsysctl policy debug gpolist-script [flags]
 
 ```
   -h, --help   help for gpolist-script
+```
+
+#### Options inherited from parent commands
+
+```
+  -c, --config string   use a specific configuration file
+  -s, --socket string   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+  -t, --timeout int     time in seconds before cancelling the client request when the server gives no result. 0 for no timeout. (default 30)
+  -v, --verbose count   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+```
+
+### adsysctl policy debug ticket-path
+
+Print the path of the current (or given) user's Kerberos ticket
+
+#### Synopsis
+
+Infer and print the path of the current user's Kerberos ticket, leveraging the krb5 API.
+The command is a no-op if the ticket is not present on disk or the detect_cached_ticket setting is not true.
+
+```
+adsysctl policy debug ticket-path [flags]
+```
+
+#### Options
+
+```
+  -h, --help   help for ticket-path
 ```
 
 #### Options inherited from parent commands
