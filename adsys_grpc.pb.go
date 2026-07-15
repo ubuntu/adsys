@@ -31,6 +31,13 @@ const (
 	Service_ListUsers_FullMethodName               = "/service/ListUsers"
 	Service_GPOListScript_FullMethodName           = "/service/GPOListScript"
 	Service_CertAutoEnrollScript_FullMethodName    = "/service/CertAutoEnrollScript"
+	Service_CertList_FullMethodName                = "/service/CertList"
+	Service_CertStatus_FullMethodName              = "/service/CertStatus"
+	Service_CertRenew_FullMethodName               = "/service/CertRenew"
+	Service_CertRemove_FullMethodName              = "/service/CertRemove"
+	Service_CertVerify_FullMethodName              = "/service/CertVerify"
+	Service_CertListCAs_FullMethodName             = "/service/CertListCAs"
+	Service_CertTemplates_FullMethodName           = "/service/CertTemplates"
 )
 
 // ServiceClient is the client API for Service service.
@@ -49,6 +56,13 @@ type ServiceClient interface {
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
 	GPOListScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
 	CertAutoEnrollScript(ctx context.Context, in *Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
+	CertList(ctx context.Context, in *CertTargetRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CertInfo], error)
+	CertStatus(ctx context.Context, in *CertItemRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CertInfo], error)
+	CertRenew(ctx context.Context, in *CertItemRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
+	CertRemove(ctx context.Context, in *CertItemRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
+	CertVerify(ctx context.Context, in *CertItemRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CertVerifyResult], error)
+	CertListCAs(ctx context.Context, in *CertTargetRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CAInfo], error)
+	CertTemplates(ctx context.Context, in *CertTemplatesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
 }
 
 type serviceClient struct {
@@ -287,6 +301,139 @@ func (c *serviceClient) CertAutoEnrollScript(ctx context.Context, in *Empty, opt
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Service_CertAutoEnrollScriptClient = grpc.ServerStreamingClient[StringResponse]
 
+func (c *serviceClient) CertList(ctx context.Context, in *CertTargetRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CertInfo], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[12], Service_CertList_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CertTargetRequest, CertInfo]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertListClient = grpc.ServerStreamingClient[CertInfo]
+
+func (c *serviceClient) CertStatus(ctx context.Context, in *CertItemRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CertInfo], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[13], Service_CertStatus_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CertItemRequest, CertInfo]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertStatusClient = grpc.ServerStreamingClient[CertInfo]
+
+func (c *serviceClient) CertRenew(ctx context.Context, in *CertItemRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[14], Service_CertRenew_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CertItemRequest, StringResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertRenewClient = grpc.ServerStreamingClient[StringResponse]
+
+func (c *serviceClient) CertRemove(ctx context.Context, in *CertItemRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[15], Service_CertRemove_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CertItemRequest, StringResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertRemoveClient = grpc.ServerStreamingClient[StringResponse]
+
+func (c *serviceClient) CertVerify(ctx context.Context, in *CertItemRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CertVerifyResult], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[16], Service_CertVerify_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CertItemRequest, CertVerifyResult]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertVerifyClient = grpc.ServerStreamingClient[CertVerifyResult]
+
+func (c *serviceClient) CertListCAs(ctx context.Context, in *CertTargetRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[CAInfo], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[17], Service_CertListCAs_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CertTargetRequest, CAInfo]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertListCAsClient = grpc.ServerStreamingClient[CAInfo]
+
+func (c *serviceClient) CertTemplates(ctx context.Context, in *CertTemplatesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[18], Service_CertTemplates_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[CertTemplatesRequest, StringResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertTemplatesClient = grpc.ServerStreamingClient[StringResponse]
+
 // ServiceServer is the server API for Service service.
 // All implementations must embed UnimplementedServiceServer
 // for forward compatibility.
@@ -303,6 +450,13 @@ type ServiceServer interface {
 	ListUsers(*ListUsersRequest, grpc.ServerStreamingServer[StringResponse]) error
 	GPOListScript(*Empty, grpc.ServerStreamingServer[StringResponse]) error
 	CertAutoEnrollScript(*Empty, grpc.ServerStreamingServer[StringResponse]) error
+	CertList(*CertTargetRequest, grpc.ServerStreamingServer[CertInfo]) error
+	CertStatus(*CertItemRequest, grpc.ServerStreamingServer[CertInfo]) error
+	CertRenew(*CertItemRequest, grpc.ServerStreamingServer[StringResponse]) error
+	CertRemove(*CertItemRequest, grpc.ServerStreamingServer[StringResponse]) error
+	CertVerify(*CertItemRequest, grpc.ServerStreamingServer[CertVerifyResult]) error
+	CertListCAs(*CertTargetRequest, grpc.ServerStreamingServer[CAInfo]) error
+	CertTemplates(*CertTemplatesRequest, grpc.ServerStreamingServer[StringResponse]) error
 	mustEmbedUnimplementedServiceServer()
 }
 
@@ -348,6 +502,27 @@ func (UnimplementedServiceServer) GPOListScript(*Empty, grpc.ServerStreamingServ
 }
 func (UnimplementedServiceServer) CertAutoEnrollScript(*Empty, grpc.ServerStreamingServer[StringResponse]) error {
 	return status.Error(codes.Unimplemented, "method CertAutoEnrollScript not implemented")
+}
+func (UnimplementedServiceServer) CertList(*CertTargetRequest, grpc.ServerStreamingServer[CertInfo]) error {
+	return status.Error(codes.Unimplemented, "method CertList not implemented")
+}
+func (UnimplementedServiceServer) CertStatus(*CertItemRequest, grpc.ServerStreamingServer[CertInfo]) error {
+	return status.Error(codes.Unimplemented, "method CertStatus not implemented")
+}
+func (UnimplementedServiceServer) CertRenew(*CertItemRequest, grpc.ServerStreamingServer[StringResponse]) error {
+	return status.Error(codes.Unimplemented, "method CertRenew not implemented")
+}
+func (UnimplementedServiceServer) CertRemove(*CertItemRequest, grpc.ServerStreamingServer[StringResponse]) error {
+	return status.Error(codes.Unimplemented, "method CertRemove not implemented")
+}
+func (UnimplementedServiceServer) CertVerify(*CertItemRequest, grpc.ServerStreamingServer[CertVerifyResult]) error {
+	return status.Error(codes.Unimplemented, "method CertVerify not implemented")
+}
+func (UnimplementedServiceServer) CertListCAs(*CertTargetRequest, grpc.ServerStreamingServer[CAInfo]) error {
+	return status.Error(codes.Unimplemented, "method CertListCAs not implemented")
+}
+func (UnimplementedServiceServer) CertTemplates(*CertTemplatesRequest, grpc.ServerStreamingServer[StringResponse]) error {
+	return status.Error(codes.Unimplemented, "method CertTemplates not implemented")
 }
 func (UnimplementedServiceServer) mustEmbedUnimplementedServiceServer() {}
 func (UnimplementedServiceServer) testEmbeddedByValue()                 {}
@@ -502,6 +677,83 @@ func _Service_CertAutoEnrollScript_Handler(srv interface{}, stream grpc.ServerSt
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Service_CertAutoEnrollScriptServer = grpc.ServerStreamingServer[StringResponse]
 
+func _Service_CertList_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CertTargetRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).CertList(m, &grpc.GenericServerStream[CertTargetRequest, CertInfo]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertListServer = grpc.ServerStreamingServer[CertInfo]
+
+func _Service_CertStatus_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CertItemRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).CertStatus(m, &grpc.GenericServerStream[CertItemRequest, CertInfo]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertStatusServer = grpc.ServerStreamingServer[CertInfo]
+
+func _Service_CertRenew_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CertItemRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).CertRenew(m, &grpc.GenericServerStream[CertItemRequest, StringResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertRenewServer = grpc.ServerStreamingServer[StringResponse]
+
+func _Service_CertRemove_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CertItemRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).CertRemove(m, &grpc.GenericServerStream[CertItemRequest, StringResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertRemoveServer = grpc.ServerStreamingServer[StringResponse]
+
+func _Service_CertVerify_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CertItemRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).CertVerify(m, &grpc.GenericServerStream[CertItemRequest, CertVerifyResult]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertVerifyServer = grpc.ServerStreamingServer[CertVerifyResult]
+
+func _Service_CertListCAs_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CertTargetRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).CertListCAs(m, &grpc.GenericServerStream[CertTargetRequest, CAInfo]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertListCAsServer = grpc.ServerStreamingServer[CAInfo]
+
+func _Service_CertTemplates_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(CertTemplatesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ServiceServer).CertTemplates(m, &grpc.GenericServerStream[CertTemplatesRequest, StringResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type Service_CertTemplatesServer = grpc.ServerStreamingServer[StringResponse]
+
 // Service_ServiceDesc is the grpc.ServiceDesc for Service service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -568,6 +820,41 @@ var Service_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "CertAutoEnrollScript",
 			Handler:       _Service_CertAutoEnrollScript_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CertList",
+			Handler:       _Service_CertList_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CertStatus",
+			Handler:       _Service_CertStatus_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CertRenew",
+			Handler:       _Service_CertRenew_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CertRemove",
+			Handler:       _Service_CertRemove_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CertVerify",
+			Handler:       _Service_CertVerify_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CertListCAs",
+			Handler:       _Service_CertListCAs_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "CertTemplates",
+			Handler:       _Service_CertTemplates_Handler,
 			ServerStreams: true,
 		},
 	},
