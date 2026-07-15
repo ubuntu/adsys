@@ -33,6 +33,7 @@ CIFS
 compinit
 config
 constructiveCAs
+CRL
 CSR
 dac
 dconf
@@ -43,6 +44,8 @@ DCOM
 Dropdown
 dropdownList
 DSRM
+due_renewal
+EKU
 erroring
 ESM
 executables
@@ -81,11 +84,15 @@ ini
 interprocess
 ip
 Jira
+JSON
+json
 kerberos
 Kerberos
+key_mismatch
 keypress
 krb
 LDAP
+ldap
 libkrb
 lifecycle
 linux
@@ -101,6 +108,7 @@ manpages
 multiline
 multiText
 nameservice
+NICKNAME
 nfs
 NTP
 OpenLDAP
@@ -117,7 +125,9 @@ rb
 readthedocs
 RPC
 realmd
+rekey
 runscripts
+SANs
 schema
 schemas
 setgid
@@ -141,6 +151,7 @@ syntaxes
 systemd
 systemd's
 sysvol
+symlinks
 tc
 TDB
 TODO
@@ -156,6 +167,7 @@ unmount
 unmounting
 Unmounting
 unescaped
+unparseable
 uri
 URI
 URIs
