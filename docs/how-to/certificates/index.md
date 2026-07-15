@@ -13,6 +13,7 @@ Dedicated guides on using ADSys for certificate auto-enrollment.
 :titlesonly:
 Setting up certificate auto-enrollment <setup>
 Configuring certificate auto-enrollment <configure>
+Managing enrolled certificates <manage>
 Troubleshooting certificate auto-enrollment <troubleshoot>
 Using a VPN with certificate auto-enrollment <vpn>
 ```

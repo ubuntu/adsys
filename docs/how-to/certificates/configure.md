@@ -60,7 +60,7 @@ On the client system, a successful auto-enrollment will place certificate data i
 * `/var/lib/adsys/private/certs` - private key data
 * `/usr/local/share/ca-certificates` - root certificate data (symbolic link pointing to `/var/lib/adsys/certs`)
 
-With the native LDAP method, ADSys tracks the files it created in `/var/lib/adsys/certs/state_*.json`. Certificates are not registered with `certmonger`.
+With the native LDAP method, ADSys tracks the files it created in `/var/lib/adsys/certs/state_*.json`. Certificates are not registered with `certmonger`. Use `adsysctl certificate` to manage them; see {ref}`howto::certificates-manage`.
 
 With the legacy CEPCES method, `certmonger` tracks certificates and can be queried directly:
 
