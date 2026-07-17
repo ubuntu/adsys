@@ -121,7 +121,8 @@ func TestDocCompletion(t *testing.T) {
 					strings.HasPrefix(path, filepath.Join(docsDir, "reuse")) ||
 					strings.HasPrefix(path, docsDir+"/.") ||
 					strings.HasPrefix(path, filepath.Join(docsDir, "reference", "policies")) ||
-					strings.HasPrefix(path, filepath.Join(docsDir, "diagrams")) {
+					strings.HasPrefix(path, filepath.Join(docsDir, "diagrams")) ||
+					strings.HasPrefix(path, filepath.Join(docsDir, "AGENTS.md")) {
 					return nil
 				}
 				if !strings.HasSuffix(d.Name(), ".md") {
