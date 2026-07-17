@@ -6,13 +6,12 @@ Keybinding to open the Activities Overview.
 - Key: /org/gnome/shell/keybindings/toggle-overview
 - Default for 22.04: `["<Super>s"]`
 - Default for 24.04: `[]`
-- Default for 25.10: `[]`
 - Default for 26.04: `[]`
 - Default for 26.10: `[]`
 
 Note: default system value is used for "Not Configured" and enforced if "Disabled".
 
-Supported on Ubuntu 22.04, 24.04, 25.10, 26.04, 26.10.
+Supported on Ubuntu 22.04, 24.04, 26.04, 26.10.
 
 
 
