@@ -5,7 +5,7 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
 Build-Depends: debhelper-compat (= 13),
                dh-apport,
                dh-golang,
-               golang-go (>= 2:1.24~),
+               golang-go (>= 2:1.25~),
                apparmor,
                dbus,
                libdbus-1-dev,
@@ -44,9 +44,9 @@ Depends: ${shlibs:Depends},
          gvfs,
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
+            python3-cepces,
 Suggests: curlftpfs,
           ubuntu-proxy-manager,
-          python3-cepces,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
 

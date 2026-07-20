@@ -108,9 +108,10 @@ type options struct {
 	proxyApplier       proxy.Caller
 	systemdCaller      systemdCaller
 	gdm                *gdm.Manager
+	certificateManager *certificate.Manager
 
-	apparmorParserCmd []string
-	certAutoenrollCmd []string
+	certificateEnrollment string
+	apparmorParserCmd     []string
 }
 
 // Option reprents an optional function to change Policies behavior.
@@ -238,11 +239,27 @@ func WithSystemdCaller(p systemdCaller) Option {
 	}
 }
 
-// WithCertAutoenrollCmd specifies a personalized certificate autoenroll command.
-func WithCertAutoenrollCmd(cmd []string) Option {
+// WithCertificateManager specifies a personalized certificate manager.
+func WithCertificateManager(m *certificate.Manager) Option {
 	return func(o *options) error {
-		o.certAutoenrollCmd = cmd
+		o.certificateManager = m
 		return nil
+	}
+}
+
+// WithCertificateEnrollment specifies the certificate enrollment method (ldap or cepces).
+func WithCertificateEnrollment(method string) Option {
+	return func(o *options) error {
+		method = strings.ToLower(strings.TrimSpace(method))
+		switch method {
+		case "":
+			return nil
+		case consts.CertEnrollmentLDAP, consts.CertEnrollmentCEPCES:
+			o.certificateEnrollment = method
+			return nil
+		default:
+			return errors.New(gotext.Get("unsupported certificate enrollment method %q", method))
+		}
 	}
 }
 
@@ -319,10 +336,13 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 		certificate.WithShareDir(args.shareDir),
 		certificate.WithGlobalTrustDir(args.globalTrustDir),
 	}
-	if args.certAutoenrollCmd != nil {
-		certificateOpts = append(certificateOpts, certificate.WithCertAutoenrollCmd(args.certAutoenrollCmd))
+	if args.certificateEnrollment != "" {
+		certificateOpts = append(certificateOpts, certificate.WithEnrollmentMethod(args.certificateEnrollment))
 	}
-	certificateManager := certificate.New(backend.Domain(), certificateOpts...)
+	certificateManager := args.certificateManager
+	if certificateManager == nil {
+		certificateManager = certificate.New(backend.Domain(), certificateOpts...)
+	}
 
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {
@@ -532,4 +552,42 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) []string {
 	})
 
 	return filteredRules
+}
+
+// Certificate management pass-throughs. These expose the certificate manager's
+// admin API (native "ldap" enrollment method) to the service layer.
+
+// CertificatesList returns the certificates enrolled for the given object.
+func (m *Manager) CertificatesList(ctx context.Context, objectName string) ([]certificate.CertInfo, error) {
+	return m.certificate.ListCertificates(ctx, objectName)
+}
+
+// CertificateStatus returns the health of a single enrolled certificate.
+func (m *Manager) CertificateStatus(ctx context.Context, objectName, nickname string) (certificate.CertInfo, error) {
+	return m.certificate.CertificateStatus(ctx, objectName, nickname)
+}
+
+// RenewCertificates forces re-enrollment of the targeted certificate(s).
+func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname string, all bool, progress func(string)) error {
+	return m.certificate.RenewCertificates(ctx, objectName, nickname, all, progress)
+}
+
+// RemoveCertificates removes the targeted certificate(s) and cleans up state.
+func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname string, all, force bool, progress func(string)) error {
+	return m.certificate.RemoveCertificates(ctx, objectName, nickname, all, force, progress)
+}
+
+// VerifyCertificates verifies the targeted enrolled certificate(s).
+func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname string, online bool) ([]certificate.VerifyResult, error) {
+	return m.certificate.VerifyCertificates(ctx, objectName, nickname, online)
+}
+
+// DiscoverCAsInfo returns the CAs and templates discovered in AD.
+func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]certificate.CAInfo, error) {
+	return m.certificate.DiscoverCAsInfo(ctx, objectName)
+}
+
+// SupportedCertTemplates returns the certificate templates offered by a CA server.
+func (m *Manager) SupportedCertTemplates(ctx context.Context, server string) ([]string, error) {
+	return m.certificate.SupportedTemplates(ctx, server)
 }

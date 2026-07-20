@@ -13,6 +13,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -33,6 +35,15 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	// The integration tests run the daemon against a guest-only smbd with no
+	// real KDC, relying on libsmbclient falling back from kerberos to
+	// anonymous. Newer Samba (>= 4.23) dropped that implicit fallback, so we
+	// tell the daemon to skip kerberos entirely. This env var is only honored
+	// by the daemon for tests and is propagated to re-exec'd helper processes.
+	if err := os.Setenv("ADSYS_TESTS_WITHOUT_KERBEROS", "1"); err != nil {
+		log.Fatalf("Setup: can't disable kerberos for tests: %v", err)
+	}
+
 	if os.Getenv("ADSYS_SKIP_INTEGRATION_TESTS") != "" {
 		fmt.Println("Integration tests skipped as requested")
 		return
@@ -193,6 +204,7 @@ type confOptions struct {
 	adsysDir           string
 	backend            string
 	detectCachedTicket bool
+	certEnrollment     string
 }
 
 func confWithAdsysDir(adsysDir string) confOption {
@@ -210,6 +222,12 @@ func confWithBackend(backend string) confOption {
 func confDetectCachedTicket(detectCachedTicket bool) confOption {
 	return func(o *confOptions) {
 		o.detectCachedTicket = detectCachedTicket
+	}
+}
+
+func confWithCertEnrollment(method string) confOption {
+	return func(o *confOptions) {
+		o.certEnrollment = method
 	}
 }
 
@@ -263,6 +281,13 @@ detect_cached_ticket: %[3]t
 `, args.adsysDir, args.backend, args.detectCachedTicket))
 
 	testutils.WriteFile(t, confFile, confData, os.ModePerm)
+	if args.certEnrollment != "" {
+		f, err := os.OpenFile(confFile, os.O_APPEND|os.O_WRONLY, 0600)
+		require.NoError(t, err, "Setup: should open config to append certificate enrollment")
+		_, err = fmt.Fprintf(f, "\ncertificate_enrollment: %s\n", args.certEnrollment)
+		require.NoError(t, err, "Setup: should append certificate enrollment to config")
+		require.NoError(t, f.Close(), "Setup: should close config after appending")
+	}
 	require.NoError(t, os.MkdirAll(filepath.Join(args.adsysDir, "dconf"), 0750), "Setup: should create dconf dir")
 	// Don’t create empty dirs for sudo and polkit: todo: same for dconf?
 
@@ -402,6 +427,15 @@ func runDaemons() (teardown func()) {
 		answers[mode] = filepath.Join(dir, mode)
 	}
 
+	// The mock containers resolve the connecting user through the bind-mounted
+	// /etc/passwd and /etc/group. When the tests run as a user that is only
+	// known through NSS (e.g. an LDAP/SSSD user not present in the local files),
+	// the container's D-Bus daemon can't resolve the UID and resets the
+	// connection. Generate augmented databases that also contain the current
+	// user and group so the mocks work regardless of the NSS backend.
+	passwdFile := writeUserDatabase(dir, "passwd", "/etc/passwd")
+	groupFile := writeUserDatabase(dir, "group", "/etc/group")
+
 	var errsDocker error
 	var wg sync.WaitGroup
 	for answer, socketDir := range answers {
@@ -422,8 +456,8 @@ func runDaemons() (teardown func()) {
 				"run", "--rm", "--pid", "host",
 				"--name", containerName+answer,
 				"--volume", fmt.Sprintf("%s:%s:ro", adsysActionsDir, "/usr/share/polkit-1/actions.orig"),
-				"--volume", `/etc/group:/etc/group:ro`,
-				"--volume", `/etc/passwd:/etc/passwd:ro`,
+				"--volume", fmt.Sprintf("%s:/etc/group:ro", groupFile),
+				"--volume", fmt.Sprintf("%s:/etc/passwd:ro", passwdFile),
 				"--volume", fmt.Sprintf("%s:/dbus/", socketDir),
 				dockerSystemDaemonsImage,
 				answer,
@@ -472,6 +506,52 @@ func runDaemons() (teardown func()) {
 			log.Fatalf("Teardown: docker errors: %v", errsDocker)
 		}
 	}
+}
+
+// writeUserDatabase copies the host NSS database file (/etc/passwd or /etc/group)
+// into dir and ensures the current user and group are present so that the mock
+// containers can resolve the connecting UID even when it is only provided through
+// NSS (e.g. an LDAP/SSSD user not listed in the local files). It returns the path
+// to the generated file.
+func writeUserDatabase(dir, name, src string) string {
+	content, err := os.ReadFile(src)
+	if err != nil {
+		log.Fatalf("Setup: can't read %s: %v", src, err)
+	}
+
+	// Resolve the current user (passwd) or group (group) entry through NSS and
+	// append it if it isn't already provided by the local file.
+	var id, entry string
+	switch name {
+	case "passwd":
+		id = strconv.Itoa(os.Getuid())
+	case "group":
+		id = strconv.Itoa(os.Getgid())
+	}
+
+	// #nosec G204: name and id are controlled by the test.
+	out, err := exec.Command("getent", name, id).Output()
+	if err == nil {
+		entry = strings.TrimSpace(string(out))
+	}
+	// Only append when getent returned a well-formed entry (field:...); a
+	// missing ':' means an unexpected format, so skip rather than slice blindly.
+	if colon := strings.Index(entry, ":"); entry != "" && colon != -1 {
+		field := entry[:colon+1]
+		if !bytes.Contains(content, []byte("\n"+field)) && !bytes.HasPrefix(content, []byte(field)) {
+			if len(content) > 0 && content[len(content)-1] != '\n' {
+				content = append(content, '\n')
+			}
+			content = append(content, []byte(entry+"\n")...)
+		}
+	}
+
+	dest := filepath.Join(dir, name)
+	//nolint:gosec // G306: mirrors the world-readable 0644 of /etc/passwd and /etc/group that nss_wrapper consumers expect
+	if err := os.WriteFile(dest, content, 0644); err != nil {
+		log.Fatalf("Setup: can't write %s database: %v", name, err)
+	}
+	return dest
 }
 
 // dbusAnswer will flip to which polkit and systemd mock to communicate to:

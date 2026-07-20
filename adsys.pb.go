@@ -21,6 +21,67 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type CertHealth int32
+
+const (
+	CertHealth_CERT_HEALTH_UNSPECIFIED  CertHealth = 0
+	CertHealth_CERT_HEALTH_HEALTHY      CertHealth = 1
+	CertHealth_CERT_HEALTH_DUE_RENEWAL  CertHealth = 2 // within the renewal window of expiry
+	CertHealth_CERT_HEALTH_EXPIRED      CertHealth = 3
+	CertHealth_CERT_HEALTH_MISSING      CertHealth = 4 // referenced by state but absent on disk
+	CertHealth_CERT_HEALTH_KEY_MISMATCH CertHealth = 5
+	CertHealth_CERT_HEALTH_UNPARSEABLE  CertHealth = 6
+)
+
+// Enum value maps for CertHealth.
+var (
+	CertHealth_name = map[int32]string{
+		0: "CERT_HEALTH_UNSPECIFIED",
+		1: "CERT_HEALTH_HEALTHY",
+		2: "CERT_HEALTH_DUE_RENEWAL",
+		3: "CERT_HEALTH_EXPIRED",
+		4: "CERT_HEALTH_MISSING",
+		5: "CERT_HEALTH_KEY_MISMATCH",
+		6: "CERT_HEALTH_UNPARSEABLE",
+	}
+	CertHealth_value = map[string]int32{
+		"CERT_HEALTH_UNSPECIFIED":  0,
+		"CERT_HEALTH_HEALTHY":      1,
+		"CERT_HEALTH_DUE_RENEWAL":  2,
+		"CERT_HEALTH_EXPIRED":      3,
+		"CERT_HEALTH_MISSING":      4,
+		"CERT_HEALTH_KEY_MISMATCH": 5,
+		"CERT_HEALTH_UNPARSEABLE":  6,
+	}
+)
+
+func (x CertHealth) Enum() *CertHealth {
+	p := new(CertHealth)
+	*p = x
+	return p
+}
+
+func (x CertHealth) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CertHealth) Descriptor() protoreflect.EnumDescriptor {
+	return file_adsys_proto_enumTypes[0].Descriptor()
+}
+
+func (CertHealth) Type() protoreflect.EnumType {
+	return &file_adsys_proto_enumTypes[0]
+}
+
+func (x CertHealth) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CertHealth.Descriptor instead.
+func (CertHealth) EnumDescriptor() ([]byte, []int) {
+	return file_adsys_proto_rawDescGZIP(), []int{0}
+}
+
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -525,6 +586,558 @@ func (x *ListDocReponse) GetChapters() []string {
 	return nil
 }
 
+type CertTargetRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Target        string                 `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"` // short machine hostname; empty means the local host
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CertTargetRequest) Reset() {
+	*x = CertTargetRequest{}
+	mi := &file_adsys_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CertTargetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CertTargetRequest) ProtoMessage() {}
+
+func (x *CertTargetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_adsys_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CertTargetRequest.ProtoReflect.Descriptor instead.
+func (*CertTargetRequest) Descriptor() ([]byte, []int) {
+	return file_adsys_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *CertTargetRequest) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
+type CertItemRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Target        string                 `protobuf:"bytes,1,opt,name=target,proto3" json:"target,omitempty"`
+	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"` // on-disk nickname, e.g. "CA-Name.Machine"
+	All           bool                   `protobuf:"varint,3,opt,name=all,proto3" json:"all,omitempty"`
+	Force         bool                   `protobuf:"varint,4,opt,name=force,proto3" json:"force,omitempty"`
+	Online        bool                   `protobuf:"varint,5,opt,name=online,proto3" json:"online,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CertItemRequest) Reset() {
+	*x = CertItemRequest{}
+	mi := &file_adsys_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CertItemRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CertItemRequest) ProtoMessage() {}
+
+func (x *CertItemRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_adsys_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CertItemRequest.ProtoReflect.Descriptor instead.
+func (*CertItemRequest) Descriptor() ([]byte, []int) {
+	return file_adsys_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *CertItemRequest) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
+func (x *CertItemRequest) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *CertItemRequest) GetAll() bool {
+	if x != nil {
+		return x.All
+	}
+	return false
+}
+
+func (x *CertItemRequest) GetForce() bool {
+	if x != nil {
+		return x.Force
+	}
+	return false
+}
+
+func (x *CertItemRequest) GetOnline() bool {
+	if x != nil {
+		return x.Online
+	}
+	return false
+}
+
+type CertTemplatesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Server        string                 `protobuf:"bytes,1,opt,name=server,proto3" json:"server,omitempty"` // CA server hostname to query for supported templates
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CertTemplatesRequest) Reset() {
+	*x = CertTemplatesRequest{}
+	mi := &file_adsys_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CertTemplatesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CertTemplatesRequest) ProtoMessage() {}
+
+func (x *CertTemplatesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_adsys_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CertTemplatesRequest.ProtoReflect.Descriptor instead.
+func (*CertTemplatesRequest) Descriptor() ([]byte, []int) {
+	return file_adsys_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CertTemplatesRequest) GetServer() string {
+	if x != nil {
+		return x.Server
+	}
+	return ""
+}
+
+type CertInfo struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Nickname        string                 `protobuf:"bytes,1,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Template        string                 `protobuf:"bytes,2,opt,name=template,proto3" json:"template,omitempty"`
+	CaName          string                 `protobuf:"bytes,3,opt,name=ca_name,json=caName,proto3" json:"ca_name,omitempty"`
+	CaHostname      string                 `protobuf:"bytes,4,opt,name=ca_hostname,json=caHostname,proto3" json:"ca_hostname,omitempty"`
+	Subject         string                 `protobuf:"bytes,5,opt,name=subject,proto3" json:"subject,omitempty"`
+	Issuer          string                 `protobuf:"bytes,6,opt,name=issuer,proto3" json:"issuer,omitempty"`
+	Serial          string                 `protobuf:"bytes,7,opt,name=serial,proto3" json:"serial,omitempty"`
+	NotBefore       string                 `protobuf:"bytes,8,opt,name=not_before,json=notBefore,proto3" json:"not_before,omitempty"` // RFC3339
+	NotAfter        string                 `protobuf:"bytes,9,opt,name=not_after,json=notAfter,proto3" json:"not_after,omitempty"`    // RFC3339
+	DaysUntilExpiry int64                  `protobuf:"varint,10,opt,name=days_until_expiry,json=daysUntilExpiry,proto3" json:"days_until_expiry,omitempty"`
+	Sans            []string               `protobuf:"bytes,11,rep,name=sans,proto3" json:"sans,omitempty"`
+	Eku             []string               `protobuf:"bytes,12,rep,name=eku,proto3" json:"eku,omitempty"`
+	KeyAlgo         string                 `protobuf:"bytes,13,opt,name=key_algo,json=keyAlgo,proto3" json:"key_algo,omitempty"`
+	KeySize         int64                  `protobuf:"varint,14,opt,name=key_size,json=keySize,proto3" json:"key_size,omitempty"`
+	KeyFile         string                 `protobuf:"bytes,15,opt,name=key_file,json=keyFile,proto3" json:"key_file,omitempty"`
+	CertFile        string                 `protobuf:"bytes,16,opt,name=cert_file,json=certFile,proto3" json:"cert_file,omitempty"`
+	RootCertFiles   []string               `protobuf:"bytes,17,rep,name=root_cert_files,json=rootCertFiles,proto3" json:"root_cert_files,omitempty"`
+	TrustSymlinks   []string               `protobuf:"bytes,18,rep,name=trust_symlinks,json=trustSymlinks,proto3" json:"trust_symlinks,omitempty"`
+	OnDisk          bool                   `protobuf:"varint,19,opt,name=on_disk,json=onDisk,proto3" json:"on_disk,omitempty"`
+	KeyMatchesCert  bool                   `protobuf:"varint,20,opt,name=key_matches_cert,json=keyMatchesCert,proto3" json:"key_matches_cert,omitempty"`
+	Health          CertHealth             `protobuf:"varint,21,opt,name=health,proto3,enum=CertHealth" json:"health,omitempty"`
+	LastEnrolled    string                 `protobuf:"bytes,22,opt,name=last_enrolled,json=lastEnrolled,proto3" json:"last_enrolled,omitempty"` // RFC3339
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *CertInfo) Reset() {
+	*x = CertInfo{}
+	mi := &file_adsys_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CertInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CertInfo) ProtoMessage() {}
+
+func (x *CertInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_adsys_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CertInfo.ProtoReflect.Descriptor instead.
+func (*CertInfo) Descriptor() ([]byte, []int) {
+	return file_adsys_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CertInfo) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *CertInfo) GetTemplate() string {
+	if x != nil {
+		return x.Template
+	}
+	return ""
+}
+
+func (x *CertInfo) GetCaName() string {
+	if x != nil {
+		return x.CaName
+	}
+	return ""
+}
+
+func (x *CertInfo) GetCaHostname() string {
+	if x != nil {
+		return x.CaHostname
+	}
+	return ""
+}
+
+func (x *CertInfo) GetSubject() string {
+	if x != nil {
+		return x.Subject
+	}
+	return ""
+}
+
+func (x *CertInfo) GetIssuer() string {
+	if x != nil {
+		return x.Issuer
+	}
+	return ""
+}
+
+func (x *CertInfo) GetSerial() string {
+	if x != nil {
+		return x.Serial
+	}
+	return ""
+}
+
+func (x *CertInfo) GetNotBefore() string {
+	if x != nil {
+		return x.NotBefore
+	}
+	return ""
+}
+
+func (x *CertInfo) GetNotAfter() string {
+	if x != nil {
+		return x.NotAfter
+	}
+	return ""
+}
+
+func (x *CertInfo) GetDaysUntilExpiry() int64 {
+	if x != nil {
+		return x.DaysUntilExpiry
+	}
+	return 0
+}
+
+func (x *CertInfo) GetSans() []string {
+	if x != nil {
+		return x.Sans
+	}
+	return nil
+}
+
+func (x *CertInfo) GetEku() []string {
+	if x != nil {
+		return x.Eku
+	}
+	return nil
+}
+
+func (x *CertInfo) GetKeyAlgo() string {
+	if x != nil {
+		return x.KeyAlgo
+	}
+	return ""
+}
+
+func (x *CertInfo) GetKeySize() int64 {
+	if x != nil {
+		return x.KeySize
+	}
+	return 0
+}
+
+func (x *CertInfo) GetKeyFile() string {
+	if x != nil {
+		return x.KeyFile
+	}
+	return ""
+}
+
+func (x *CertInfo) GetCertFile() string {
+	if x != nil {
+		return x.CertFile
+	}
+	return ""
+}
+
+func (x *CertInfo) GetRootCertFiles() []string {
+	if x != nil {
+		return x.RootCertFiles
+	}
+	return nil
+}
+
+func (x *CertInfo) GetTrustSymlinks() []string {
+	if x != nil {
+		return x.TrustSymlinks
+	}
+	return nil
+}
+
+func (x *CertInfo) GetOnDisk() bool {
+	if x != nil {
+		return x.OnDisk
+	}
+	return false
+}
+
+func (x *CertInfo) GetKeyMatchesCert() bool {
+	if x != nil {
+		return x.KeyMatchesCert
+	}
+	return false
+}
+
+func (x *CertInfo) GetHealth() CertHealth {
+	if x != nil {
+		return x.Health
+	}
+	return CertHealth_CERT_HEALTH_UNSPECIFIED
+}
+
+func (x *CertInfo) GetLastEnrolled() string {
+	if x != nil {
+		return x.LastEnrolled
+	}
+	return ""
+}
+
+type CAInfo struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Name             string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Hostname         string                 `protobuf:"bytes,2,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	Templates        []string               `protobuf:"bytes,3,rep,name=templates,proto3" json:"templates,omitempty"`
+	RootFingerprints []string               `protobuf:"bytes,4,rep,name=root_fingerprints,json=rootFingerprints,proto3" json:"root_fingerprints,omitempty"` // hex SHA-256 of discovered CA cert(s)
+	InstalledInTrust bool                   `protobuf:"varint,5,opt,name=installed_in_trust,json=installedInTrust,proto3" json:"installed_in_trust,omitempty"`
+	Enrolled         bool                   `protobuf:"varint,6,opt,name=enrolled,proto3" json:"enrolled,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *CAInfo) Reset() {
+	*x = CAInfo{}
+	mi := &file_adsys_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CAInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CAInfo) ProtoMessage() {}
+
+func (x *CAInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_adsys_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CAInfo.ProtoReflect.Descriptor instead.
+func (*CAInfo) Descriptor() ([]byte, []int) {
+	return file_adsys_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CAInfo) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CAInfo) GetHostname() string {
+	if x != nil {
+		return x.Hostname
+	}
+	return ""
+}
+
+func (x *CAInfo) GetTemplates() []string {
+	if x != nil {
+		return x.Templates
+	}
+	return nil
+}
+
+func (x *CAInfo) GetRootFingerprints() []string {
+	if x != nil {
+		return x.RootFingerprints
+	}
+	return nil
+}
+
+func (x *CAInfo) GetInstalledInTrust() bool {
+	if x != nil {
+		return x.InstalledInTrust
+	}
+	return false
+}
+
+func (x *CAInfo) GetEnrolled() bool {
+	if x != nil {
+		return x.Enrolled
+	}
+	return false
+}
+
+type CertVerifyResult struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Nickname          string                 `protobuf:"bytes,1,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	ChainOk           bool                   `protobuf:"varint,2,opt,name=chain_ok,json=chainOk,proto3" json:"chain_ok,omitempty"`
+	ValidityOk        bool                   `protobuf:"varint,3,opt,name=validity_ok,json=validityOk,proto3" json:"validity_ok,omitempty"`
+	KeyMatchOk        bool                   `protobuf:"varint,4,opt,name=key_match_ok,json=keyMatchOk,proto3" json:"key_match_ok,omitempty"`
+	RevocationChecked bool                   `protobuf:"varint,5,opt,name=revocation_checked,json=revocationChecked,proto3" json:"revocation_checked,omitempty"`
+	Revoked           bool                   `protobuf:"varint,6,opt,name=revoked,proto3" json:"revoked,omitempty"`
+	Messages          []string               `protobuf:"bytes,7,rep,name=messages,proto3" json:"messages,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *CertVerifyResult) Reset() {
+	*x = CertVerifyResult{}
+	mi := &file_adsys_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CertVerifyResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CertVerifyResult) ProtoMessage() {}
+
+func (x *CertVerifyResult) ProtoReflect() protoreflect.Message {
+	mi := &file_adsys_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CertVerifyResult.ProtoReflect.Descriptor instead.
+func (*CertVerifyResult) Descriptor() ([]byte, []int) {
+	return file_adsys_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *CertVerifyResult) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *CertVerifyResult) GetChainOk() bool {
+	if x != nil {
+		return x.ChainOk
+	}
+	return false
+}
+
+func (x *CertVerifyResult) GetValidityOk() bool {
+	if x != nil {
+		return x.ValidityOk
+	}
+	return false
+}
+
+func (x *CertVerifyResult) GetKeyMatchOk() bool {
+	if x != nil {
+		return x.KeyMatchOk
+	}
+	return false
+}
+
+func (x *CertVerifyResult) GetRevocationChecked() bool {
+	if x != nil {
+		return x.RevocationChecked
+	}
+	return false
+}
+
+func (x *CertVerifyResult) GetRevoked() bool {
+	if x != nil {
+		return x.Revoked
+	}
+	return false
+}
+
+func (x *CertVerifyResult) GetMessages() []string {
+	if x != nil {
+		return x.Messages
+	}
+	return nil
+}
+
 var File_adsys_proto protoreflect.FileDescriptor
 
 const file_adsys_proto_rawDesc = "" +
@@ -561,7 +1174,69 @@ const file_adsys_proto_rawDesc = "" +
 	"\rGetDocRequest\x12\x18\n" +
 	"\achapter\x18\x01 \x01(\tR\achapter\",\n" +
 	"\x0eListDocReponse\x12\x1a\n" +
-	"\bchapters\x18\x01 \x03(\tR\bchapters2\xc0\x04\n" +
+	"\bchapters\x18\x01 \x03(\tR\bchapters\"+\n" +
+	"\x11CertTargetRequest\x12\x16\n" +
+	"\x06target\x18\x01 \x01(\tR\x06target\"\x85\x01\n" +
+	"\x0fCertItemRequest\x12\x16\n" +
+	"\x06target\x18\x01 \x01(\tR\x06target\x12\x1a\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x10\n" +
+	"\x03all\x18\x03 \x01(\bR\x03all\x12\x14\n" +
+	"\x05force\x18\x04 \x01(\bR\x05force\x12\x16\n" +
+	"\x06online\x18\x05 \x01(\bR\x06online\".\n" +
+	"\x14CertTemplatesRequest\x12\x16\n" +
+	"\x06server\x18\x01 \x01(\tR\x06server\"\x9e\x05\n" +
+	"\bCertInfo\x12\x1a\n" +
+	"\bnickname\x18\x01 \x01(\tR\bnickname\x12\x1a\n" +
+	"\btemplate\x18\x02 \x01(\tR\btemplate\x12\x17\n" +
+	"\aca_name\x18\x03 \x01(\tR\x06caName\x12\x1f\n" +
+	"\vca_hostname\x18\x04 \x01(\tR\n" +
+	"caHostname\x12\x18\n" +
+	"\asubject\x18\x05 \x01(\tR\asubject\x12\x16\n" +
+	"\x06issuer\x18\x06 \x01(\tR\x06issuer\x12\x16\n" +
+	"\x06serial\x18\a \x01(\tR\x06serial\x12\x1d\n" +
+	"\n" +
+	"not_before\x18\b \x01(\tR\tnotBefore\x12\x1b\n" +
+	"\tnot_after\x18\t \x01(\tR\bnotAfter\x12*\n" +
+	"\x11days_until_expiry\x18\n" +
+	" \x01(\x03R\x0fdaysUntilExpiry\x12\x12\n" +
+	"\x04sans\x18\v \x03(\tR\x04sans\x12\x10\n" +
+	"\x03eku\x18\f \x03(\tR\x03eku\x12\x19\n" +
+	"\bkey_algo\x18\r \x01(\tR\akeyAlgo\x12\x19\n" +
+	"\bkey_size\x18\x0e \x01(\x03R\akeySize\x12\x19\n" +
+	"\bkey_file\x18\x0f \x01(\tR\akeyFile\x12\x1b\n" +
+	"\tcert_file\x18\x10 \x01(\tR\bcertFile\x12&\n" +
+	"\x0froot_cert_files\x18\x11 \x03(\tR\rrootCertFiles\x12%\n" +
+	"\x0etrust_symlinks\x18\x12 \x03(\tR\rtrustSymlinks\x12\x17\n" +
+	"\aon_disk\x18\x13 \x01(\bR\x06onDisk\x12(\n" +
+	"\x10key_matches_cert\x18\x14 \x01(\bR\x0ekeyMatchesCert\x12#\n" +
+	"\x06health\x18\x15 \x01(\x0e2\v.CertHealthR\x06health\x12#\n" +
+	"\rlast_enrolled\x18\x16 \x01(\tR\flastEnrolled\"\xcd\x01\n" +
+	"\x06CAInfo\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
+	"\bhostname\x18\x02 \x01(\tR\bhostname\x12\x1c\n" +
+	"\ttemplates\x18\x03 \x03(\tR\ttemplates\x12+\n" +
+	"\x11root_fingerprints\x18\x04 \x03(\tR\x10rootFingerprints\x12,\n" +
+	"\x12installed_in_trust\x18\x05 \x01(\bR\x10installedInTrust\x12\x1a\n" +
+	"\benrolled\x18\x06 \x01(\bR\benrolled\"\xf1\x01\n" +
+	"\x10CertVerifyResult\x12\x1a\n" +
+	"\bnickname\x18\x01 \x01(\tR\bnickname\x12\x19\n" +
+	"\bchain_ok\x18\x02 \x01(\bR\achainOk\x12\x1f\n" +
+	"\vvalidity_ok\x18\x03 \x01(\bR\n" +
+	"validityOk\x12 \n" +
+	"\fkey_match_ok\x18\x04 \x01(\bR\n" +
+	"keyMatchOk\x12-\n" +
+	"\x12revocation_checked\x18\x05 \x01(\bR\x11revocationChecked\x12\x18\n" +
+	"\arevoked\x18\x06 \x01(\bR\arevoked\x12\x1a\n" +
+	"\bmessages\x18\a \x03(\tR\bmessages*\xcc\x01\n" +
+	"\n" +
+	"CertHealth\x12\x1b\n" +
+	"\x17CERT_HEALTH_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13CERT_HEALTH_HEALTHY\x10\x01\x12\x1b\n" +
+	"\x17CERT_HEALTH_DUE_RENEWAL\x10\x02\x12\x17\n" +
+	"\x13CERT_HEALTH_EXPIRED\x10\x03\x12\x17\n" +
+	"\x13CERT_HEALTH_MISSING\x10\x04\x12\x1c\n" +
+	"\x18CERT_HEALTH_KEY_MISMATCH\x10\x05\x12\x1b\n" +
+	"\x17CERT_HEALTH_UNPARSEABLE\x10\x062\x9d\a\n" +
 	"\aservice\x12 \n" +
 	"\x03Cat\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x12$\n" +
 	"\aVersion\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x12#\n" +
@@ -574,7 +1249,17 @@ const file_adsys_proto_rawDesc = "" +
 	"\aListDoc\x12\x06.Empty\x1a\x0f.ListDocReponse0\x01\x121\n" +
 	"\tListUsers\x12\x11.ListUsersRequest\x1a\x0f.StringResponse0\x01\x12*\n" +
 	"\rGPOListScript\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x121\n" +
-	"\x14CertAutoEnrollScript\x12\x06.Empty\x1a\x0f.StringResponse0\x01B\x19Z\x17github.com/ubuntu/adsysb\x06proto3"
+	"\x14CertAutoEnrollScript\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x12+\n" +
+	"\bCertList\x12\x12.CertTargetRequest\x1a\t.CertInfo0\x01\x12+\n" +
+	"\n" +
+	"CertStatus\x12\x10.CertItemRequest\x1a\t.CertInfo0\x01\x120\n" +
+	"\tCertRenew\x12\x10.CertItemRequest\x1a\x0f.StringResponse0\x01\x121\n" +
+	"\n" +
+	"CertRemove\x12\x10.CertItemRequest\x1a\x0f.StringResponse0\x01\x123\n" +
+	"\n" +
+	"CertVerify\x12\x10.CertItemRequest\x1a\x11.CertVerifyResult0\x01\x12,\n" +
+	"\vCertListCAs\x12\x12.CertTargetRequest\x1a\a.CAInfo0\x01\x129\n" +
+	"\rCertTemplates\x12\x15.CertTemplatesRequest\x1a\x0f.StringResponse0\x01B\x19Z\x17github.com/ubuntu/adsysb\x06proto3"
 
 var (
 	file_adsys_proto_rawDescOnce sync.Once
@@ -588,49 +1273,72 @@ func file_adsys_proto_rawDescGZIP() []byte {
 	return file_adsys_proto_rawDescData
 }
 
-var file_adsys_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_adsys_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_adsys_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_adsys_proto_goTypes = []any{
-	(*Empty)(nil),                         // 0: Empty
-	(*ListUsersRequest)(nil),              // 1: ListUsersRequest
-	(*StopRequest)(nil),                   // 2: StopRequest
-	(*StringResponse)(nil),                // 3: StringResponse
-	(*UpdatePolicyRequest)(nil),           // 4: UpdatePolicyRequest
-	(*DumpPoliciesRequest)(nil),           // 5: DumpPoliciesRequest
-	(*DumpPolicyDefinitionsRequest)(nil),  // 6: DumpPolicyDefinitionsRequest
-	(*DumpPolicyDefinitionsResponse)(nil), // 7: DumpPolicyDefinitionsResponse
-	(*GetDocRequest)(nil),                 // 8: GetDocRequest
-	(*ListDocReponse)(nil),                // 9: ListDocReponse
+	(CertHealth)(0),                       // 0: CertHealth
+	(*Empty)(nil),                         // 1: Empty
+	(*ListUsersRequest)(nil),              // 2: ListUsersRequest
+	(*StopRequest)(nil),                   // 3: StopRequest
+	(*StringResponse)(nil),                // 4: StringResponse
+	(*UpdatePolicyRequest)(nil),           // 5: UpdatePolicyRequest
+	(*DumpPoliciesRequest)(nil),           // 6: DumpPoliciesRequest
+	(*DumpPolicyDefinitionsRequest)(nil),  // 7: DumpPolicyDefinitionsRequest
+	(*DumpPolicyDefinitionsResponse)(nil), // 8: DumpPolicyDefinitionsResponse
+	(*GetDocRequest)(nil),                 // 9: GetDocRequest
+	(*ListDocReponse)(nil),                // 10: ListDocReponse
+	(*CertTargetRequest)(nil),             // 11: CertTargetRequest
+	(*CertItemRequest)(nil),               // 12: CertItemRequest
+	(*CertTemplatesRequest)(nil),          // 13: CertTemplatesRequest
+	(*CertInfo)(nil),                      // 14: CertInfo
+	(*CAInfo)(nil),                        // 15: CAInfo
+	(*CertVerifyResult)(nil),              // 16: CertVerifyResult
 }
 var file_adsys_proto_depIdxs = []int32{
-	0,  // 0: service.Cat:input_type -> Empty
-	0,  // 1: service.Version:input_type -> Empty
-	0,  // 2: service.Status:input_type -> Empty
-	2,  // 3: service.Stop:input_type -> StopRequest
-	4,  // 4: service.UpdatePolicy:input_type -> UpdatePolicyRequest
-	5,  // 5: service.DumpPolicies:input_type -> DumpPoliciesRequest
-	6,  // 6: service.DumpPoliciesDefinitions:input_type -> DumpPolicyDefinitionsRequest
-	8,  // 7: service.GetDoc:input_type -> GetDocRequest
-	0,  // 8: service.ListDoc:input_type -> Empty
-	1,  // 9: service.ListUsers:input_type -> ListUsersRequest
-	0,  // 10: service.GPOListScript:input_type -> Empty
-	0,  // 11: service.CertAutoEnrollScript:input_type -> Empty
-	3,  // 12: service.Cat:output_type -> StringResponse
-	3,  // 13: service.Version:output_type -> StringResponse
-	3,  // 14: service.Status:output_type -> StringResponse
-	0,  // 15: service.Stop:output_type -> Empty
-	0,  // 16: service.UpdatePolicy:output_type -> Empty
-	3,  // 17: service.DumpPolicies:output_type -> StringResponse
-	7,  // 18: service.DumpPoliciesDefinitions:output_type -> DumpPolicyDefinitionsResponse
-	3,  // 19: service.GetDoc:output_type -> StringResponse
-	9,  // 20: service.ListDoc:output_type -> ListDocReponse
-	3,  // 21: service.ListUsers:output_type -> StringResponse
-	3,  // 22: service.GPOListScript:output_type -> StringResponse
-	3,  // 23: service.CertAutoEnrollScript:output_type -> StringResponse
-	12, // [12:24] is the sub-list for method output_type
-	0,  // [0:12] is the sub-list for method input_type
-	0,  // [0:0] is the sub-list for extension type_name
-	0,  // [0:0] is the sub-list for extension extendee
-	0,  // [0:0] is the sub-list for field type_name
+	0,  // 0: CertInfo.health:type_name -> CertHealth
+	1,  // 1: service.Cat:input_type -> Empty
+	1,  // 2: service.Version:input_type -> Empty
+	1,  // 3: service.Status:input_type -> Empty
+	3,  // 4: service.Stop:input_type -> StopRequest
+	5,  // 5: service.UpdatePolicy:input_type -> UpdatePolicyRequest
+	6,  // 6: service.DumpPolicies:input_type -> DumpPoliciesRequest
+	7,  // 7: service.DumpPoliciesDefinitions:input_type -> DumpPolicyDefinitionsRequest
+	9,  // 8: service.GetDoc:input_type -> GetDocRequest
+	1,  // 9: service.ListDoc:input_type -> Empty
+	2,  // 10: service.ListUsers:input_type -> ListUsersRequest
+	1,  // 11: service.GPOListScript:input_type -> Empty
+	1,  // 12: service.CertAutoEnrollScript:input_type -> Empty
+	11, // 13: service.CertList:input_type -> CertTargetRequest
+	12, // 14: service.CertStatus:input_type -> CertItemRequest
+	12, // 15: service.CertRenew:input_type -> CertItemRequest
+	12, // 16: service.CertRemove:input_type -> CertItemRequest
+	12, // 17: service.CertVerify:input_type -> CertItemRequest
+	11, // 18: service.CertListCAs:input_type -> CertTargetRequest
+	13, // 19: service.CertTemplates:input_type -> CertTemplatesRequest
+	4,  // 20: service.Cat:output_type -> StringResponse
+	4,  // 21: service.Version:output_type -> StringResponse
+	4,  // 22: service.Status:output_type -> StringResponse
+	1,  // 23: service.Stop:output_type -> Empty
+	1,  // 24: service.UpdatePolicy:output_type -> Empty
+	4,  // 25: service.DumpPolicies:output_type -> StringResponse
+	8,  // 26: service.DumpPoliciesDefinitions:output_type -> DumpPolicyDefinitionsResponse
+	4,  // 27: service.GetDoc:output_type -> StringResponse
+	10, // 28: service.ListDoc:output_type -> ListDocReponse
+	4,  // 29: service.ListUsers:output_type -> StringResponse
+	4,  // 30: service.GPOListScript:output_type -> StringResponse
+	4,  // 31: service.CertAutoEnrollScript:output_type -> StringResponse
+	14, // 32: service.CertList:output_type -> CertInfo
+	14, // 33: service.CertStatus:output_type -> CertInfo
+	4,  // 34: service.CertRenew:output_type -> StringResponse
+	4,  // 35: service.CertRemove:output_type -> StringResponse
+	16, // 36: service.CertVerify:output_type -> CertVerifyResult
+	15, // 37: service.CertListCAs:output_type -> CAInfo
+	4,  // 38: service.CertTemplates:output_type -> StringResponse
+	20, // [20:39] is the sub-list for method output_type
+	1,  // [1:20] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_adsys_proto_init() }
@@ -643,13 +1351,14 @@ func file_adsys_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_adsys_proto_rawDesc), len(file_adsys_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   10,
+			NumEnums:      1,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_adsys_proto_goTypes,
 		DependencyIndexes: file_adsys_proto_depIdxs,
+		EnumInfos:         file_adsys_proto_enumTypes,
 		MessageInfos:      file_adsys_proto_msgTypes,
 	}.Build()
 	File_adsys_proto = out.File

@@ -13,15 +13,42 @@ myst:
 
 ## Policy implementation
 
-With the exception of policy parsing, ADSys leverages the Samba implementation of certificate auto-enrollment. As this feature is only available in newer versions of Samba, we have vendored the required Samba files to allow this policy to work on Ubuntu versions that ship an older Samba version. These files are shipped in `/usr/share/adsys/python/vendor_samba`.
+ADSys supports two certificate enrollment methods, selectable via the `certificate_enrollment` configuration key in `/etc/adsys.yaml`:
 
-To ensure idempotency when applying the policy, we set up a Samba [TDB cache file](https://wiki.samba.org/index.php/TDB) at `/var/lib/adsys/samba/cert_gpo_state_$(hostname).tdb` which contains information pertaining to the enrolled certificate(s).
+### LDAP enrollment (recommended for new installations)
+
+The **`ldap`** method is a native Go implementation that:
+
+* Discovers Certificate Authorities and certificate templates from Active Directory via LDAP
+* Installs root CA certificates to the system trust store
+* Submits signing requests directly to AD CS in-process using the MS-ICPR protocol (DCOM/RPC) and writes the issued certificate and private key to disk
+
+This method does not require CEPCES or Python dependencies on the client, and does not require Certificate Enrollment Web Service (CES) or Certificate Enrollment Policy Web Service (CEP) roles on the Windows server. Because ADSys discovers CA and template data over LDAP *before* it can install the CA certificates, on a freshly joined machine the domain controller's LDAP StartTLS certificate is typically not yet trusted by the client. On this first run ADSys therefore accepts a domain controller certificate signed by a not-yet-installed CA, anchoring trust instead on the mutually authenticated Kerberos (GSSAPI) bind and its TLS channel binding — the same directory-level trust that Windows autoenrollment relies on. It still enforces that the certificate matches the domain controller's hostname and is otherwise valid (for example, not expired); once the CA is installed, subsequent refreshes verify the full certificate chain strictly.
+Certificates enrolled with this method are not registered with `certmonger`. Instead, ADSys persists its own enrollment state and, on each policy refresh, re-enrolls a certificate when its file is missing or within 30 days of expiry, so machine certificates are renewed before they lapse.
+
+### CEPCES enrollment (default for existing installations)
+
+The **`cepces`** method is the legacy implementation that delegates certificate enrollment to an embedded Python script using vendored Samba code and the CEPCES helper. This requires `python3-samba`, `python3-cepces`, and `certmonger` to be installed.
+
+### Configuration
+
+Set the enrollment method in `/etc/adsys.yaml`:
+
+```yaml
+certificate_enrollment: ldap    # or "cepces"
+```
+
+* **New installations**: The package automatically creates `/etc/adsys.yaml` with `certificate_enrollment: ldap`.
+* **Existing installations**: The default is `cepces` for backward compatibility. To switch to the native LDAP enrollment, add the setting above to your configuration file.
+
+To ensure idempotency when applying the policy, enrollment state is persisted as a JSON file at `/var/lib/adsys/certs/state_$(hostname).json`, which contains information pertaining to the enrolled certificate(s).
 
 ### Policy application sequence
 
 Here is an overview of what happens during policy application:
 
 * Parse GPO (ADSys)
-* Execute Python helper script (ADSys)
-* Fetch root CA and policy servers (Samba)
-* Start monitoring certificate using `certmonger` and `cepces` (Samba)
+* Discover CAs and templates from AD via LDAP (ADSys)
+* Install root CA certificates to system trust store (ADSys)
+* Submit a CSR for each template directly to the CA over MS-ICPR (RPC) and write the issued certificate and private key to disk (ADSys)
+* Persist the enrollment state to make subsequent applications idempotent (ADSys)

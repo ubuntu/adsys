@@ -15,6 +15,13 @@ service service {
   rpc ListUsers(ListUsersRequest) returns (stream StringResponse);
   rpc GPOListScript(Empty) returns (stream StringResponse);
   rpc CertAutoEnrollScript(Empty) returns (stream StringResponse);
+  rpc CertList(CertTargetRequest) returns (stream CertInfo);
+  rpc CertStatus(CertItemRequest) returns (stream CertInfo);
+  rpc CertRenew(CertItemRequest) returns (stream StringResponse);
+  rpc CertRemove(CertItemRequest) returns (stream StringResponse);
+  rpc CertVerify(CertItemRequest) returns (stream CertVerifyResult);
+  rpc CertListCAs(CertTargetRequest) returns (stream CAInfo);
+  rpc CertTemplates(CertTemplatesRequest) returns (stream StringResponse);
 }
 
 message Empty {}
@@ -62,4 +69,76 @@ message GetDocRequest {
 
 message ListDocReponse {
   repeated string chapters = 1;
+}
+
+// Certificate management messages (native "ldap" enrollment method).
+
+message CertTargetRequest {
+  string target = 1;   // short machine hostname; empty means the local host
+}
+
+message CertItemRequest {
+  string target = 1;
+  string nickname = 2; // on-disk nickname, e.g. "CA-Name.Machine"
+  bool all = 3;
+  bool force = 4;
+  bool online = 5;
+}
+
+message CertTemplatesRequest {
+  string server = 1;   // CA server hostname to query for supported templates
+}
+
+enum CertHealth {
+  CERT_HEALTH_UNSPECIFIED = 0;
+  CERT_HEALTH_HEALTHY = 1;
+  CERT_HEALTH_DUE_RENEWAL = 2;   // within the renewal window of expiry
+  CERT_HEALTH_EXPIRED = 3;
+  CERT_HEALTH_MISSING = 4;       // referenced by state but absent on disk
+  CERT_HEALTH_KEY_MISMATCH = 5;
+  CERT_HEALTH_UNPARSEABLE = 6;
+}
+
+message CertInfo {
+  string nickname = 1;
+  string template = 2;
+  string ca_name = 3;
+  string ca_hostname = 4;
+  string subject = 5;
+  string issuer = 6;
+  string serial = 7;
+  string not_before = 8;         // RFC3339
+  string not_after = 9;          // RFC3339
+  int64 days_until_expiry = 10;
+  repeated string sans = 11;
+  repeated string eku = 12;
+  string key_algo = 13;
+  int64 key_size = 14;
+  string key_file = 15;
+  string cert_file = 16;
+  repeated string root_cert_files = 17;
+  repeated string trust_symlinks = 18;
+  bool on_disk = 19;
+  bool key_matches_cert = 20;
+  CertHealth health = 21;
+  string last_enrolled = 22;     // RFC3339
+}
+
+message CAInfo {
+  string name = 1;
+  string hostname = 2;
+  repeated string templates = 3;
+  repeated string root_fingerprints = 4;   // hex SHA-256 of discovered CA cert(s)
+  bool installed_in_trust = 5;
+  bool enrolled = 6;
+}
+
+message CertVerifyResult {
+  string nickname = 1;
+  bool chain_ok = 2;
+  bool validity_ok = 3;
+  bool key_match_ok = 4;
+  bool revocation_checked = 5;
+  bool revoked = 6;
+  repeated string messages = 7;
 }

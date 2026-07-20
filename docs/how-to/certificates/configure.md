@@ -12,8 +12,22 @@ myst:
     :end-before: <!-- Include end pro -->
 ```
 
-Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support. 
+Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support.
 This feature enables clients to seamlessly enroll for certificates from Active Directory Certificate Services.
+
+## Enrollment method
+
+ADSys supports two certificate enrollment methods. Set the method in `/etc/adsys.yaml`:
+
+```yaml
+# Native Go implementation (LDAP/RPC) — default for new installations
+certificate_enrollment: ldap
+
+# Legacy Python/CEPCES implementation — default for existing installations
+# certificate_enrollment: cepces
+```
+
+See {ref}`howto::certificates-setup` for the package requirements of each method.
 
 ## Rules precedence
 
@@ -46,7 +60,9 @@ On the client system, a successful auto-enrollment will place certificate data i
 * `/var/lib/adsys/private/certs` - private key data
 * `/usr/local/share/ca-certificates` - root certificate data (symbolic link pointing to `/var/lib/adsys/certs`)
 
-For detailed information on the tracked certificates, `certmonger` can be directly interacted with:
+With the native LDAP method, ADSys tracks the files it created in `/var/lib/adsys/certs/state_*.json`. Certificates are not registered with `certmonger`. Use `adsysctl certificate` to manage them; see {ref}`howto::certificates-manage`.
+
+With the legacy CEPCES method, `certmonger` tracks certificates and can be queried directly:
 
 ```output
 # Query monitored certificates
@@ -78,5 +94,5 @@ Request ID 'galacticcafe-CA.Machine':
 CA 'galacticcafe-CA':
  is-default: no
  ca-type: EXTERNAL
- helper-location: /usr/libexec/certmonger/cepces-submit --server=win-mk85nrq26nu.galacticcafe.com --auth=Kerberos
+ helper-location: /usr/lib/certmonger/cepces-submit
 ```
