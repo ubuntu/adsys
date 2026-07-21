@@ -1,9 +1,11 @@
 package certificate
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"fmt"
+	"sync"
 
 	"github.com/go-ldap/ldap/v3"
 	asn1 "github.com/jcmturner/gofork/encoding/asn1"
@@ -12,6 +14,7 @@ import (
 	"github.com/oiweiwei/gokrb5.fork/v9/crypto"
 	"github.com/oiweiwei/gokrb5.fork/v9/gssapi"
 	"github.com/oiweiwei/gokrb5.fork/v9/iana/chksumtype"
+	"github.com/oiweiwei/gokrb5.fork/v9/iana/etypeID"
 	"github.com/oiweiwei/gokrb5.fork/v9/iana/keyusage"
 	"github.com/oiweiwei/gokrb5.fork/v9/messages"
 	"github.com/oiweiwei/gokrb5.fork/v9/spnego"
@@ -33,7 +36,13 @@ type gssapiClient struct {
 	ticketKey      types.EncryptionKey // original key from the service ticket (before subkey extraction)
 	channelBinding []byte              // tls-server-end-point channel binding token (16-byte MD5), nil when none
 	established    bool
+
+	requireSecurityLayer bool
+	securityTransport    *saslSecurityConn
+	destroyOnce          sync.Once
 }
+
+var _ ldap.GSSAPIClient = (*gssapiClient)(nil)
 
 // newGSSAPIClient creates a GSSAPIClient adapter from a gokrb5 client.
 //
@@ -42,8 +51,8 @@ type gssapiClient struct {
 // the AP-REQ authenticator checksum so the bind succeeds against Domain
 // Controllers that enforce LDAP channel binding (CBT/EPA). Pass nil to bind
 // without channel binding.
-func newGSSAPIClient(cl *krbclient.Client, channelBinding []byte) ldap.GSSAPIClient {
-	return &gssapiClient{client: cl, channelBinding: channelBinding}
+func newGSSAPIClient(cl *krbclient.Client, channelBinding []byte) *gssapiClient {
+	return &gssapiClient{client: cl, channelBinding: append([]byte(nil), channelBinding...)}
 }
 
 // InitSecContext implements ldap.GSSAPIClient.
@@ -205,14 +214,13 @@ func (g *gssapiClient) processAPREP(token []byte) ([]byte, bool, error) {
 // It handles the final SASL negotiation step (RFC 4752 §3.1):
 //  1. Unwrap the server's GSSAPI wrap token to extract the 4-byte SASL payload
 //     describing supported security layers and max buffer size.
-//  2. Build a response selecting "no security layer" (auth only).
+//  2. Build a response selecting auth-only on a verified TLS connection, or
+//     confidentiality during first-use bootstrap.
 //  3. Wrap the response as an integrity-only GSSAPI wrap token.
 //
-// Auth-only (no SASL security layer) is selected because go-ldap does not
-// support wrapping/unwrapping individual LDAP messages after the SASL bind.
-// Message-level protection is provided by StartTLS, which is negotiated
-// before the GSSAPI bind and verified against the system trust store plus
-// any adsys-managed CA certificates.
+// The confidentiality layer is mandatory when StartTLS could not be chained
+// to a configured trust anchor. This prevents a CBT-disabled DC from being
+// used as a GSSAPI relay during first-use CA discovery.
 func (g *gssapiClient) NegotiateSaslAuth(token []byte, authzid string) ([]byte, error) {
 	payload, err := g.unwrapServerToken(token)
 	if err != nil {
@@ -228,15 +236,57 @@ func (g *gssapiClient) NegotiateSaslAuth(token []byte, authzid string) ([]byte, 
 	//   bit 1 (0x02) = integrity only
 	//   bit 2 (0x04) = confidentiality
 	//
-	// We require auth-only (0x01) because go-ldap cannot wrap/unwrap
-	// individual LDAP messages after the SASL bind. Message-level
-	// protection is provided by StartTLS.
-	if payload[0]&0x01 == 0 {
-		return nil, fmt.Errorf("server does not support auth-only security layer (bitmask: %02x); "+
-			"integrity/confidentiality SASL layers are not supported by go-ldap", payload[0])
+	if !g.requireSecurityLayer {
+		if payload[0]&0x01 == 0 {
+			return nil, fmt.Errorf("server does not support auth-only security layer (bitmask: %02x)", payload[0])
+		}
+		return g.wrapSASLResponse(authzid)
 	}
 
-	return g.wrapSASLResponse(authzid)
+	if payload[0]&0x04 == 0 {
+		return nil, fmt.Errorf("server does not support the confidentiality security layer required for bootstrap (bitmask: %02x)", payload[0])
+	}
+	if g.securityTransport == nil {
+		return nil, fmt.Errorf("bootstrap confidentiality transport is unavailable")
+	}
+
+	maxBuffer := int(payload[1])<<16 | int(payload[2])<<8 | int(payload[3])
+	if maxBuffer == 0 {
+		return nil, fmt.Errorf("server advertised a zero receive buffer for the confidentiality security layer")
+	}
+	recvSeq := binary.BigEndian.Uint64(token[8:16]) + 1
+	layer, err := newSASLSecurityLayer(g.sessionKey, !keysEqual(g.sessionKey, g.ticketKey), maxBuffer, recvSeq)
+	if err != nil {
+		return nil, err
+	}
+	response, err := g.wrapSASLResponseForLayer(authzid, 0x04, saslReceiveBufferSize)
+	if err != nil {
+		layer.Close()
+		return nil, err
+	}
+	if err := g.securityTransport.armSecurityLayer(layer); err != nil {
+		layer.Close()
+		return nil, err
+	}
+	return response, nil
+}
+
+const saslReceiveBufferSize = 0xFFFFFF
+
+func (g *gssapiClient) wrapSASLResponseForLayer(authzid string, securityLayer byte, receiveBuffer int) ([]byte, error) {
+	if receiveBuffer < 0 || receiveBuffer > saslReceiveBufferSize {
+		return nil, fmt.Errorf("invalid SASL receive buffer size %d", receiveBuffer)
+	}
+	response := make([]byte, 4, 4+len(authzid))
+	response[0] = securityLayer
+	response[1] = byte(receiveBuffer >> 16)
+	response[2] = byte(receiveBuffer >> 8) //nolint:gosec // The value is range-checked against the 24-bit SASL limit.
+	response[3] = byte(receiveBuffer)      //nolint:gosec // The value is range-checked against the 24-bit SASL limit.
+	if authzid != "" {
+		response = append(response, []byte(authzid)...)
+	}
+
+	return g.wrapSASLPayload(response)
 }
 
 // unwrapServerToken unwraps a GSSAPI wrap token (RFC 4121) from the server
@@ -255,6 +305,12 @@ func (g *gssapiClient) unwrapServerToken(token []byte) ([]byte, error) {
 	// Check token ID: 0x05 0x04 = GSS Wrap per RFC 4121.
 	if token[0] != 0x05 || token[1] != 0x04 {
 		return nil, fmt.Errorf("unexpected token ID: %02x%02x, expected 0504", token[0], token[1])
+	}
+	if token[2]&0x01 == 0 {
+		return nil, fmt.Errorf("server token is missing the acceptor flag")
+	}
+	if token[3] != gssapi.FillerByte {
+		return nil, fmt.Errorf("server token has invalid filler byte %02x", token[3])
 	}
 
 	isSealed := token[2]&0x02 != 0
@@ -331,48 +387,74 @@ func (g *gssapiClient) unwrapIntegrity(token []byte, rrc uint16) ([]byte, error)
 //
 //	{payload | EC-padding | header-copy(16 bytes)}
 func (g *gssapiClient) unwrapSealed(token []byte, rrc uint16) ([]byte, error) {
+	return unwrapSealedToken(token, g.sessionKey, rrc, nil)
+}
+
+func unwrapSealedToken(token []byte, key types.EncryptionKey, rrc uint16, expectedSeq *uint64) ([]byte, error) {
 	ec := binary.BigEndian.Uint16(token[4:6])
+	seq := binary.BigEndian.Uint64(token[8:16])
+	if expectedSeq != nil && seq != *expectedSeq {
+		return nil, fmt.Errorf("unexpected sealed token sequence number: got %d, want %d", seq, *expectedSeq)
+	}
 
 	// Copy the ciphertext portion (after the 16-byte header).
 	ciphertext := make([]byte, len(token)-gssapi.HdrLen)
 	copy(ciphertext, token[gssapi.HdrLen:])
-
-	// Undo RRC rotation on the ciphertext.
-	if rrc > 0 && len(ciphertext) > 0 {
-		rotateLeft(ciphertext, int(rrc))
+	encType, err := crypto.GetEtype(key.KeyType)
+	if err != nil {
+		return nil, fmt.Errorf("resolving sealed token encryption type %d: %w", key.KeyType, err)
+	}
+	minCiphertextLen := encType.GetConfounderByteSize() + encType.GetHMACBitLength()/8 + gssapi.HdrLen + int(ec)
+	if len(ciphertext) < minCiphertextLen {
+		return nil, fmt.Errorf("sealed token ciphertext too short for encryption type %d: got %d bytes, need at least %d",
+			key.KeyType, len(ciphertext), minCiphertextLen)
+	}
+	switch key.KeyType {
+	case etypeID.DES3_CBC_SHA1_KD, etypeID.DES_CBC_MD5, etypeID.DES_CBC_CRC:
+		encryptedLength := len(ciphertext) - encType.GetHMACBitLength()/8
+		if encryptedLength%encType.GetMessageBlockByteSize() != 0 {
+			return nil, fmt.Errorf("sealed token ciphertext length %d is not aligned for encryption type %d",
+				len(ciphertext), key.KeyType)
+		}
 	}
 
-	plaintext, err := crypto.DecryptMessage(ciphertext, g.sessionKey, keyusage.GSSAPI_ACCEPTOR_SEAL)
+	// RFC 4121 §4.2.4 rotates sealed data by RRC+EC.
+	if rrc > 0 || ec > 0 {
+		rotateLeft(ciphertext, int(rrc)+int(ec))
+	}
+
+	plaintext, err := crypto.DecryptMessage(ciphertext, key, keyusage.GSSAPI_ACCEPTOR_SEAL)
 	if err != nil {
 		return nil, fmt.Errorf("decrypting sealed token: %w", err)
 	}
 
-	// Strip the trailing header copy (16 bytes).
-	if len(plaintext) < gssapi.HdrLen {
-		return nil, fmt.Errorf("decrypted payload too short: %d bytes", len(plaintext))
-	}
-	payload := plaintext[:len(plaintext)-gssapi.HdrLen]
-
-	// Strip EC padding zeros.
-	if ec > 0 && len(payload) >= int(ec) {
-		payload = payload[:len(payload)-int(ec)]
+	if len(plaintext) < gssapi.HdrLen+int(ec) {
+		return nil, fmt.Errorf("decrypted sealed token too short: got %d bytes, need at least %d",
+			len(plaintext), gssapi.HdrLen+int(ec))
 	}
 
-	return payload, nil
+	headerOffset := len(plaintext) - gssapi.HdrLen
+	headerCopy := plaintext[headerOffset:]
+	expectedHeader := append([]byte(nil), token[:gssapi.HdrLen]...)
+	binary.BigEndian.PutUint16(expectedHeader[6:8], 0)
+	if !bytes.Equal(headerCopy, expectedHeader) {
+		return nil, fmt.Errorf("sealed token encrypted header does not match the outer header")
+	}
+
+	payloadEnd := headerOffset - int(ec)
+	if payloadEnd < 0 {
+		return nil, fmt.Errorf("sealed token EC padding %d exceeds decrypted payload length %d", ec, headerOffset)
+	}
+	return plaintext[:payloadEnd], nil
 }
 
 // wrapSASLResponse builds the client's SASL response wrapped in an
 // integrity-only GSSAPI wrap token (RFC 4752 §3.1, conf_flag=FALSE).
 func (g *gssapiClient) wrapSASLResponse(authzid string) ([]byte, error) {
-	// Build response: select no security layer (auth only), max buffer 0.
-	response := make([]byte, 4, 4+len(authzid))
-	response[0] = 0x01 // No security layer (authentication only)
-	// Bytes 1-3 = 0 (no buffer size needed)
+	return g.wrapSASLResponseForLayer(authzid, 0x01, 0)
+}
 
-	if authzid != "" {
-		response = append(response, []byte(authzid)...)
-	}
-
+func (g *gssapiClient) wrapSASLPayload(response []byte) ([]byte, error) {
 	encType, err := crypto.GetEtype(g.sessionKey.KeyType)
 	if err != nil {
 		return nil, fmt.Errorf("resolving encryption type for key type %d: %w", g.sessionKey.KeyType, err)
@@ -412,7 +494,157 @@ func (g *gssapiClient) wrapSASLResponse(authzid string) ([]byte, error) {
 
 // DeleteSecContext implements ldap.GSSAPIClient.
 func (g *gssapiClient) DeleteSecContext() error {
+	g.destroyOnce.Do(func() {
+		clearEncryptionKey(&g.sessionKey)
+		clearEncryptionKey(&g.ticketKey)
+		clear(g.channelBinding)
+		g.channelBinding = nil
+		g.established = false
+		if g.client != nil {
+			g.client.Destroy()
+			g.client = nil
+		}
+	})
 	return nil
+}
+
+// saslSecurityLayer protects LDAP protocol data after bootstrap GSSAPI bind.
+// The TLS certificate is still hostname-checked, while this layer gives the
+// LDAP messages end-to-end Kerberos confidentiality and integrity.
+type saslSecurityLayer struct {
+	mu             sync.Mutex
+	key            types.EncryptionKey
+	acceptorSubkey bool
+	maxSendToken   int
+	sendSeq        uint64
+	recvSeq        uint64
+	closed         bool
+}
+
+func newSASLSecurityLayer(key types.EncryptionKey, acceptorSubkey bool, maxSendToken int, recvSeq uint64) (*saslSecurityLayer, error) {
+	if _, err := crypto.GetEtype(key.KeyType); err != nil {
+		return nil, fmt.Errorf("resolving SASL security layer encryption type %d: %w", key.KeyType, err)
+	}
+	if len(key.KeyValue) == 0 {
+		return nil, fmt.Errorf("SASL security layer has no session key")
+	}
+	return &saslSecurityLayer{
+		key: types.EncryptionKey{
+			KeyType:  key.KeyType,
+			KeyValue: append([]byte(nil), key.KeyValue...),
+		},
+		acceptorSubkey: acceptorSubkey,
+		maxSendToken:   maxSendToken,
+		sendSeq:        1,
+		recvSeq:        recvSeq,
+	}, nil
+}
+
+func (s *saslSecurityLayer) maxPlaintextSize() (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return 0, fmt.Errorf("SASL security context is closed")
+	}
+	encType, err := crypto.GetEtype(s.key.KeyType)
+	if err != nil {
+		return 0, err
+	}
+	overhead := 2*gssapi.HdrLen + encType.GetConfounderByteSize() + encType.GetHMACBitLength()/8 + encType.GetMessageBlockByteSize() - 1
+	if s.maxSendToken <= overhead {
+		return 0, fmt.Errorf("server SASL receive buffer %d is too small for encryption overhead %d", s.maxSendToken, overhead)
+	}
+	return s.maxSendToken - overhead, nil
+}
+
+func (s *saslSecurityLayer) wrap(payload []byte) ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return nil, fmt.Errorf("SASL security context is closed")
+	}
+	encType, err := crypto.GetEtype(s.key.KeyType)
+	if err != nil {
+		return nil, err
+	}
+	blockSize := encType.GetMessageBlockByteSize()
+	ec := 0
+	if blockSize > 0 {
+		ec = (blockSize - len(payload)%blockSize) % blockSize
+	}
+
+	flags := byte(0x02)
+	if s.acceptorSubkey {
+		flags |= 0x04
+	}
+	header := make([]byte, gssapi.HdrLen)
+	copy(header[:2], []byte{0x05, 0x04})
+	header[2] = flags
+	header[3] = gssapi.FillerByte
+	binary.BigEndian.PutUint16(header[4:6], uint16(ec)) //nolint:gosec // EC is bounded by an encryption block.
+	binary.BigEndian.PutUint64(header[8:16], s.sendSeq)
+
+	plaintext := make([]byte, 0, len(payload)+ec+gssapi.HdrLen)
+	plaintext = append(plaintext, payload...)
+	plaintext = append(plaintext, bytes.Repeat([]byte{gssapi.FillerByte}, ec)...)
+	plaintext = append(plaintext, header...)
+	_, ciphertext, err := encType.EncryptMessage(s.key.KeyValue, plaintext, keyusage.GSSAPI_INITIATOR_SEAL)
+	if err != nil {
+		return nil, fmt.Errorf("encrypting SASL security layer token: %w", err)
+	}
+	if ec > 0 {
+		rotateRight(ciphertext, ec)
+	}
+	token := append(header, ciphertext...)
+	if len(token) > s.maxSendToken {
+		return nil, fmt.Errorf("SASL security layer token is %d bytes, exceeding server limit %d", len(token), s.maxSendToken)
+	}
+	s.sendSeq++
+	return token, nil
+}
+
+func (s *saslSecurityLayer) unwrap(token []byte) ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return nil, fmt.Errorf("SASL security context is closed")
+	}
+	if len(token) < gssapi.HdrLen {
+		return nil, fmt.Errorf("SASL security layer token too short: %d", len(token))
+	}
+	if token[0] != 0x05 || token[1] != 0x04 || token[2]&0x01 == 0 || token[2]&0x02 == 0 {
+		return nil, fmt.Errorf("invalid acceptor confidentiality token")
+	}
+	if token[3] != gssapi.FillerByte {
+		return nil, fmt.Errorf("invalid acceptor confidentiality token filler")
+	}
+	payload, err := unwrapSealedToken(token, s.key, binary.BigEndian.Uint16(token[6:8]), &s.recvSeq)
+	if err != nil {
+		return nil, err
+	}
+	s.recvSeq++
+	return payload, nil
+}
+
+func (s *saslSecurityLayer) Close() {
+	if s == nil {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.closed {
+		return
+	}
+	s.closed = true
+	clearEncryptionKey(&s.key)
+}
+
+func clearEncryptionKey(key *types.EncryptionKey) {
+	if key == nil {
+		return
+	}
+	clear(key.KeyValue)
+	*key = types.EncryptionKey{}
 }
 
 // rotateLeft rotates a byte slice left by count positions, undoing the RRC
@@ -430,6 +662,13 @@ func rotateLeft(data []byte, count int) {
 	copy(tmp, data[count:])
 	copy(tmp[n-count:], data[:count])
 	copy(data, tmp)
+}
+
+func rotateRight(data []byte, count int) {
+	if len(data) == 0 {
+		return
+	}
+	rotateLeft(data, len(data)-count%len(data))
 }
 
 // keysEqual returns true if two encryption keys have the same key value.

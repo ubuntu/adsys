@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"context"
 	"crypto/md5" //nolint:gosec // G501: MD5 mirrors the protocol-defined channel bindings transform under test.
 	"crypto/rand"
 	"crypto/rsa"
@@ -11,9 +12,12 @@ import (
 	"encoding/binary"
 	"encoding/pem"
 	"fmt"
+	"io"
 	"math/big"
+	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -348,6 +352,205 @@ func TestDiscoverCAsAndTemplates(t *testing.T) {
 	}
 }
 
+func TestDiscoverCAsAndTemplatesContextCancellation(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	called := false
+	_, err := discoverCAsAndTemplatesContext(ctx, func(string) (LDAPClient, error) {
+		called = true
+		return nil, nil
+	}, "example.com")
+	require.ErrorIs(t, err, context.Canceled)
+	assert.False(t, called)
+}
+
+type contextLDAPTestClient struct {
+	search func(context.Context, *ldap.SearchRequest) (*ldap.SearchResult, error)
+	closed bool
+}
+
+func (c *contextLDAPTestClient) Search(req *ldap.SearchRequest) (*ldap.SearchResult, error) {
+	return c.SearchContext(context.Background(), req)
+}
+
+func (c *contextLDAPTestClient) SearchContext(ctx context.Context, req *ldap.SearchRequest) (*ldap.SearchResult, error) {
+	return c.search(ctx, req)
+}
+
+func (c *contextLDAPTestClient) Close() error {
+	c.closed = true
+	return nil
+}
+
+func TestFailoverLDAPClient(t *testing.T) {
+	t.Parallel()
+
+	first := &contextLDAPTestClient{}
+	searchCount := 0
+	first.search = func(ctx context.Context, _ *ldap.SearchRequest) (*ldap.SearchResult, error) {
+		searchCount++
+		if searchCount == 1 {
+			return &ldap.SearchResult{}, nil
+		}
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
+	second := &contextLDAPTestClient{
+		search: func(_ context.Context, _ *ldap.SearchRequest) (*ldap.SearchResult, error) {
+			return &ldap.SearchResult{Entries: []*ldap.Entry{ldap.NewEntry("dc=example", nil)}}, nil
+		},
+	}
+
+	var connected []string
+	client := &failoverLDAPClient{
+		ctx: context.Background(),
+		candidates: []ldapServerCandidate{
+			{address: "dc1.example.com:389", host: "dc1.example.com"},
+			{address: "dc2.example.com:389", host: "dc2.example.com"},
+		},
+		candidateTimeout: 20 * time.Millisecond,
+		connect: func(_ context.Context, candidate ldapServerCandidate) (LDAPClient, error) {
+			connected = append(connected, candidate.host)
+			if candidate.host == "dc1.example.com" {
+				return first, nil
+			}
+			return second, nil
+		},
+	}
+	t.Cleanup(func() { require.NoError(t, client.Close()) })
+
+	_, err := client.Search(ldap.NewSearchRequest("", ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+	require.NoError(t, err)
+	result, err := client.Search(ldap.NewSearchRequest("dc=example", ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+	require.NoError(t, err)
+	require.Len(t, result.Entries, 1)
+	assert.Equal(t, []string{"dc1.example.com", "dc2.example.com"}, connected)
+	assert.True(t, first.closed)
+}
+
+func TestFailoverLDAPClientDeadFirstCandidate(t *testing.T) {
+	t.Parallel()
+
+	var connected []string
+	client := &failoverLDAPClient{
+		ctx: context.Background(),
+		candidates: []ldapServerCandidate{
+			{address: "dead.example.com:389", host: "dead.example.com"},
+			{address: "live.example.com:389", host: "live.example.com"},
+		},
+		candidateTimeout: time.Second,
+		connect: func(_ context.Context, candidate ldapServerCandidate) (LDAPClient, error) {
+			connected = append(connected, candidate.host)
+			if candidate.host == "dead.example.com" {
+				return nil, fmt.Errorf("connection refused")
+			}
+			return &contextLDAPTestClient{
+				search: func(context.Context, *ldap.SearchRequest) (*ldap.SearchResult, error) {
+					return &ldap.SearchResult{}, nil
+				},
+			}, nil
+		},
+	}
+	t.Cleanup(func() { require.NoError(t, client.Close()) })
+
+	_, err := client.Search(ldap.NewSearchRequest("", ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+	require.NoError(t, err)
+	assert.Equal(t, []string{"dead.example.com", "live.example.com"}, connected)
+}
+
+func TestFailoverLDAPClientCancellation(t *testing.T) {
+	t.Parallel()
+
+	client := &failoverLDAPClient{
+		ctx:              context.Background(),
+		candidates:       []ldapServerCandidate{{address: "dc1.example.com:389", host: "dc1.example.com"}},
+		candidateTimeout: time.Minute,
+		connect: func(_ context.Context, _ ldapServerCandidate) (LDAPClient, error) {
+			return &contextLDAPTestClient{
+				search: func(ctx context.Context, _ *ldap.SearchRequest) (*ldap.SearchResult, error) {
+					<-ctx.Done()
+					return nil, ctx.Err()
+				},
+			}, nil
+		},
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	time.AfterFunc(20*time.Millisecond, cancel)
+	defer cancel()
+
+	start := time.Now()
+	_, err := client.SearchContext(ctx, ldap.NewSearchRequest("", ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+	require.ErrorIs(t, err, context.Canceled)
+	assert.Less(t, time.Since(start), time.Second)
+}
+
+func TestLDAPServerCandidatesPreserveSRVOrder(t *testing.T) {
+	t.Parallel()
+
+	records := []*net.SRV{
+		{Target: "dc1.example.com.", Port: 1389},
+		{Target: "dc2.example.com.", Port: 2389},
+	}
+	candidates := ldapServerCandidatesFromRecords(records)
+	require.Len(t, candidates, 2)
+	assert.Equal(t, "dc1.example.com:1389", candidates[0].address)
+	assert.Equal(t, "dc2.example.com:2389", candidates[1].address)
+}
+
+func TestRequestStartTLS(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		response []byte
+		wantErr  bool
+	}{
+		"success": {
+			response: []byte{0x30, 0x0c, 0x02, 0x01, 0x01, 0x78, 0x07, 0x0a, 0x01, 0x00, 0x04, 0x00, 0x04, 0x00},
+		},
+		"LDAP failure": {
+			response: []byte{0x30, 0x12, 0x02, 0x01, 0x01, 0x78, 0x0d, 0x0a, 0x01, 0x02, 0x04, 0x00, 0x04, 0x06, 'f', 'a', 'i', 'l', 'e', 'd'},
+			wantErr:  true,
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			client, server := net.Pipe()
+			t.Cleanup(func() {
+				_ = client.Close()
+				_ = server.Close()
+			})
+			serverErr := make(chan error, 1)
+			go func() {
+				tag, _, err := readBERElement(server)
+				if err == nil && tag != 0x30 {
+					err = fmt.Errorf("unexpected request tag %x", tag)
+				}
+				if err == nil {
+					err = writeAll(server, tc.response)
+				}
+				serverErr <- err
+			}()
+
+			err := requestStartTLS(client)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.NoError(t, <-serverErr)
+		})
+	}
+}
+
+func TestReadBERElementRejectsTruncation(t *testing.T) {
+	t.Parallel()
+	_, _, err := readBERElement(io.LimitReader(strings.NewReader("\x30\x05abc"), 5))
+	require.Error(t, err)
+}
+
 func TestDcHostnameFromDomain(t *testing.T) {
 	t.Parallel()
 
@@ -564,7 +767,8 @@ func TestVerifyPeerCertificate(t *testing.T) {
 		setup          func(t *testing.T) (rawCerts [][]byte, trustDir, host string)
 		allowBootstrap bool
 
-		wantErr bool
+		wantErr       bool
+		wantBootstrap bool
 	}{
 		"strict rejects a certificate from an unknown authority": {
 			setup: func(t *testing.T) ([][]byte, string, string) {
@@ -580,7 +784,7 @@ func TestVerifyPeerCertificate(t *testing.T) {
 				return [][]byte{generateTestCertWithNames(t, host, nil).Raw}, t.TempDir(), host
 			},
 			allowBootstrap: true,
-			wantErr:        false,
+			wantBootstrap:  true,
 		},
 		"bootstrap still rejects a mismatched hostname": {
 			setup: func(t *testing.T) ([][]byte, string, string) {
@@ -597,6 +801,17 @@ func TestVerifyPeerCertificate(t *testing.T) {
 				caPEM, leafDER := generateTestCAAndLeaf(t, host, []string{host}, now.Add(-48*time.Hour), now.Add(-24*time.Hour))
 				require.NoError(t, os.WriteFile(filepath.Join(trustDir, "root.crt"), caPEM, 0600))
 				return [][]byte{leafDER}, trustDir, host
+			},
+			allowBootstrap: true,
+			wantErr:        true,
+		},
+		"bootstrap rejects unknown authority once managed trust exists": {
+			setup: func(t *testing.T) ([][]byte, string, string) {
+				t.Helper()
+				trustDir := t.TempDir()
+				unrelatedCA, _ := generateTestCAAndLeaf(t, "unrelated.example.com", nil, now.Add(-time.Hour), now.Add(time.Hour))
+				require.NoError(t, os.WriteFile(filepath.Join(trustDir, "configured-root.crt"), unrelatedCA, 0600))
+				return [][]byte{generateTestCertWithNames(t, host, nil).Raw}, trustDir, host
 			},
 			allowBootstrap: true,
 			wantErr:        true,
@@ -626,12 +841,14 @@ func TestVerifyPeerCertificate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			rawCerts, trustDir, h := tc.setup(t)
-			err := verifyPeerCertificate(h, trustDir, tc.allowBootstrap)(rawCerts, nil)
+			state := &ldapTLSTrustState{}
+			err := verifyPeerCertificateWithTrustState(h, trustDir, tc.allowBootstrap, state)(rawCerts, nil)
 			if tc.wantErr {
 				require.Error(t, err)
 				return
 			}
 			require.NoError(t, err)
+			assert.Equal(t, tc.wantBootstrap, state.bootstrap.Load())
 		})
 	}
 }

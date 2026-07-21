@@ -2,9 +2,14 @@ package certificate
 
 import (
 	"encoding/binary"
+	"errors"
+	"fmt"
+	"net"
 	"testing"
 
+	"github.com/go-ldap/ldap/v3"
 	krbclient "github.com/oiweiwei/gokrb5.fork/v9/client"
+	krbconfig "github.com/oiweiwei/gokrb5.fork/v9/config"
 	"github.com/oiweiwei/gokrb5.fork/v9/credentials"
 	"github.com/oiweiwei/gokrb5.fork/v9/crypto"
 	"github.com/oiweiwei/gokrb5.fork/v9/gssapi"
@@ -54,6 +59,26 @@ func buildIntegrityWrapToken(t *testing.T, key types.EncryptionKey, payload []by
 	b, err := wt.Marshal()
 	require.NoError(t, err)
 	return b
+}
+
+func buildSealedWrapToken(t *testing.T, key types.EncryptionKey, payload []byte) []byte {
+	t.Helper()
+	encType, err := crypto.GetEtype(key.KeyType)
+	require.NoError(t, err)
+	ec := (encType.GetMessageBlockByteSize() - len(payload)%encType.GetMessageBlockByteSize()) % encType.GetMessageBlockByteSize()
+	header := make([]byte, gssapi.HdrLen)
+	copy(header, []byte{0x05, 0x04, 0x03, gssapi.FillerByte})
+	binary.BigEndian.PutUint16(header[4:6], uint16(ec)) //nolint:gosec // Test EC is bounded by the encryption block size.
+
+	plaintext := append([]byte(nil), payload...)
+	for range ec {
+		plaintext = append(plaintext, gssapi.FillerByte)
+	}
+	plaintext = append(plaintext, header...)
+	_, ciphertext, err := encType.EncryptMessage(key.KeyValue, plaintext, keyusage.GSSAPI_ACCEPTOR_SEAL)
+	require.NoError(t, err)
+	rotateRight(ciphertext, ec)
+	return append(header, ciphertext...)
 }
 
 func TestNegotiateSaslAuth(t *testing.T) {
@@ -191,6 +216,44 @@ func TestNegotiateSaslAuth(t *testing.T) {
 	}
 }
 
+func TestNegotiateSaslAuthBootstrapRequiresConfidentiality(t *testing.T) {
+	t.Parallel()
+
+	key := testKey()
+	challenge := buildIntegrityWrapToken(t, key, []byte{0x07, 0x01, 0x00, 0x00}, keyusage.GSSAPI_ACCEPTOR_SEAL)
+	clientConn, serverConn := net.Pipe()
+	t.Cleanup(func() { _ = serverConn.Close() })
+	transport := newSASLSecurityConn(clientConn)
+	t.Cleanup(func() { _ = transport.Close() })
+	g := &gssapiClient{
+		sessionKey:           key,
+		ticketKey:            key,
+		established:          true,
+		requireSecurityLayer: true,
+		securityTransport:    transport,
+	}
+
+	response, err := g.NegotiateSaslAuth(challenge, "")
+	require.NoError(t, err)
+
+	var responseToken gssapi.WrapToken
+	require.NoError(t, responseToken.Unmarshal(response, false))
+	ok, err := responseToken.Verify(key, keyusage.GSSAPI_INITIATOR_SEAL)
+	require.NoError(t, err)
+	require.True(t, ok)
+	require.Len(t, responseToken.Payload, 4)
+	assert.Equal(t, byte(0x04), responseToken.Payload[0])
+	assert.Equal(t, []byte{0xff, 0xff, 0xff}, responseToken.Payload[1:])
+
+	transport.observeRawBindResponse([]byte{0x30, 0x00})
+	require.NoError(t, transport.securityLayerStatus())
+	transport.stateMu.Lock()
+	layerKey := transport.layer.key.KeyValue
+	transport.stateMu.Unlock()
+	require.NoError(t, transport.Close())
+	assert.Equal(t, make([]byte, len(layerKey)), layerKey)
+}
+
 func TestNegotiateSaslAuth_RRCHandling(t *testing.T) {
 	t.Parallel()
 
@@ -260,6 +323,17 @@ func TestUnwrapServerToken_IntegrityOnly(t *testing.T) {
 	}
 }
 
+func TestUnwrapServerToken_Sealed(t *testing.T) {
+	t.Parallel()
+	key := testKey()
+	want := []byte{0x07, 0x00, 0xff, 0xff}
+	token := buildSealedWrapToken(t, key, want)
+
+	got, err := (&gssapiClient{sessionKey: key}).unwrapServerToken(token)
+	require.NoError(t, err)
+	assert.Equal(t, want, got)
+}
+
 func TestUnwrapServerToken_Errors(t *testing.T) {
 	t.Parallel()
 
@@ -296,6 +370,43 @@ func TestUnwrapServerToken_Errors(t *testing.T) {
 			g := &gssapiClient{sessionKey: key}
 			_, err := g.unwrapServerToken(tc.token)
 			require.Error(t, err)
+		})
+	}
+}
+
+func TestUnwrapServerToken_TruncatedSealedTokensNeverPanic(t *testing.T) {
+	t.Parallel()
+
+	etypes := []int32{
+		etypeID.AES128_CTS_HMAC_SHA1_96,
+		etypeID.AES256_CTS_HMAC_SHA1_96,
+		etypeID.AES128_CTS_HMAC_SHA256_128,
+		etypeID.AES256_CTS_HMAC_SHA384_192,
+		etypeID.DES3_CBC_SHA1_KD,
+		etypeID.RC4_HMAC,
+		etypeID.DES_CBC_MD5,
+		etypeID.DES_CBC_CRC,
+	}
+	for _, keyType := range etypes {
+		t.Run(fmt.Sprintf("etype_%d", keyType), func(t *testing.T) {
+			t.Parallel()
+			encType, err := crypto.GetEtype(keyType)
+			require.NoError(t, err)
+			minCiphertext := encType.GetConfounderByteSize() + encType.GetHMACBitLength()/8 + gssapi.HdrLen
+
+			for ciphertextLen := 0; ciphertextLen < minCiphertext+encType.GetMessageBlockByteSize(); ciphertextLen++ {
+				token := make([]byte, gssapi.HdrLen+ciphertextLen)
+				copy(token[:2], []byte{0x05, 0x04})
+				token[2] = 0x03
+				token[3] = gssapi.FillerByte
+				g := &gssapiClient{sessionKey: types.EncryptionKey{KeyType: keyType}}
+
+				var unwrapErr error
+				require.NotPanics(t, func() {
+					_, unwrapErr = g.unwrapServerToken(token)
+				})
+				require.Error(t, unwrapErr)
+			}
 		})
 	}
 }
@@ -379,6 +490,46 @@ func TestDeleteSecContext(t *testing.T) {
 	t.Parallel()
 	g := &gssapiClient{}
 	assert.NoError(t, g.DeleteSecContext())
+}
+
+func TestBindKerberosClientAlwaysCleansUp(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		bindErr error
+	}{
+		"successful bind": {},
+		"failed bind":     {bindErr: errors.New("bind failed")},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			client := krbclient.NewWithPassword("machine$", "EXAMPLE.COM", "secret", krbconfig.New())
+			ownedKey := testKey()
+			ownedKeyBytes := ownedKey.KeyValue
+			err := bindKerberosClient(client, "dc.example.com", []byte("channel binding"), false, nil,
+				func(gssClient ldap.GSSAPIClient, spn string) error {
+					assert.Equal(t, "ldap/dc.example.com", spn)
+					g, ok := gssClient.(*gssapiClient)
+					require.True(t, ok)
+					g.sessionKey = ownedKey
+					g.ticketKey = types.EncryptionKey{
+						KeyType:  ownedKey.KeyType,
+						KeyValue: append([]byte(nil), ownedKey.KeyValue...),
+					}
+					return tc.bindErr
+				})
+			if tc.bindErr != nil {
+				require.ErrorIs(t, err, tc.bindErr)
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Empty(t, client.Credentials.UserName())
+			assert.Empty(t, client.Credentials.Domain())
+			assert.Equal(t, make([]byte, len(ownedKeyBytes)), ownedKeyBytes)
+		})
+	}
 }
 
 func TestGSSAPIBindingChecksum(t *testing.T) {
