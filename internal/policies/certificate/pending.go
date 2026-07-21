@@ -71,9 +71,19 @@ func createEnrollmentDraft(stateDir string, target enrollmentTarget, keySize int
 	if err != nil {
 		return enrollmentDraft{}, fmt.Errorf("creating pending enrollment directory: %w", err)
 	}
+	if err := syncDirectory(root); err != nil {
+		cleanupErr := removeDraftPaths(enrollmentDraft{Directory: directory})
+		return enrollmentDraft{}, errors.Join(
+			fmt.Errorf("syncing pending enrollment directory entry: %w", err),
+			cleanupErr,
+		)
+	}
 	if err := os.Chmod(directory, 0700); err != nil { //nolint:gosec // This is a directory; 0700 is the required private mode.
-		_ = os.Remove(directory)
-		return enrollmentDraft{}, fmt.Errorf("securing pending enrollment directory: %w", err)
+		cleanupErr := removeDraftPaths(enrollmentDraft{Directory: directory})
+		return enrollmentDraft{}, errors.Join(
+			fmt.Errorf("securing pending enrollment directory: %w", err),
+			cleanupErr,
+		)
 	}
 	draft := enrollmentDraft{
 		Directory:      directory,
@@ -371,11 +381,12 @@ func publicKeyFingerprint(publicKey any) (string, error) {
 
 func removeDraftPaths(draft enrollmentDraft) error {
 	var errs []error
+	ops := defaultGenerationPublishOps()
 	for _, path := range []string{draft.CSRFile, draft.KeyFile, draft.Directory} {
 		if path == "" {
 			continue
 		}
-		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		if err := removePathAndSync(path, ops); err != nil {
 			errs = append(errs, fmt.Errorf("removing enrollment draft %s: %w", path, err))
 		}
 	}

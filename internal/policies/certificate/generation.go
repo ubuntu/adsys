@@ -1,6 +1,8 @@
 package certificate
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,19 +13,21 @@ import (
 )
 
 const (
-	generationKeyName  = "private.key"
-	generationCertName = "certificate.crt"
-	generationMarker   = "publication.json"
+	generationKeyName    = "private.key"
+	generationCertName   = "certificate.crt"
+	generationMarker     = "publication.json"
+	generationMarkerTemp = ".publication.json.tmp"
 )
 
 type generationPaths struct {
-	Root       string
-	Pointer    string
-	Directory  string
-	KeyFile    string
-	CertFile   string
-	MarkerFile string
-	Switched   bool
+	Root              string
+	Pointer           string
+	Directory         string
+	PreviousDirectory string
+	KeyFile           string
+	CertFile          string
+	MarkerFile        string
+	Switched          bool
 }
 
 type generationPublishOps struct {
@@ -31,6 +35,8 @@ type generationPublishOps struct {
 	syncDir   func(string) error
 	symlink   func(string, string) error
 	rename    func(string, string) error
+	remove    func(string) error
+	mkdirTemp func(string, string) (string, error)
 }
 
 func defaultGenerationPublishOps() generationPublishOps {
@@ -39,6 +45,8 @@ func defaultGenerationPublishOps() generationPublishOps {
 		syncDir:   syncDirectory,
 		symlink:   os.Symlink,
 		rename:    os.Rename,
+		remove:    os.Remove,
+		mkdirTemp: os.MkdirTemp,
 	}
 }
 
@@ -53,21 +61,26 @@ type publicationMarker struct {
 
 // publishCertificateGeneration stages a complete immutable key/certificate
 // generation and exposes both through one atomically replaced directory
-// symlink. A non-empty result with an error means the pointer was switched and
-// callers must still durably save state; the marker is deliberately retained
-// for later reconciliation.
+// symlink. The publication marker remains until the caller durably commits the
+// corresponding state. Any post-rename failure is rolled back to the previous
+// pointer before the error is returned; the marker is retained so restart
+// reconciliation can resolve an uncertain rollback.
 func publishCertificateGeneration(root string, keyPEM, certPEM []byte, ops generationPublishOps) (result generationPaths, err error) {
 	if len(keyPEM) == 0 || len(certPEM) == 0 {
 		return generationPaths{}, fmt.Errorf("refusing to publish an incomplete certificate generation")
 	}
-	if ops.writeFile == nil || ops.syncDir == nil || ops.symlink == nil || ops.rename == nil {
+	if !ops.complete() {
 		return generationPaths{}, fmt.Errorf("certificate generation publisher is incomplete")
 	}
-	if err := ensurePrivateDirectory(root); err != nil {
+	root, err = filepath.Abs(root)
+	if err != nil {
+		return generationPaths{}, fmt.Errorf("resolving certificate generation root: %w", err)
+	}
+	if err := ensurePrivateDirectoryWithSync(root, ops.syncDir); err != nil {
 		return generationPaths{}, err
 	}
 	generationsDir := filepath.Join(root, "generations")
-	if err := ensurePrivateDirectory(generationsDir); err != nil {
+	if err := ensurePrivateDirectoryWithSync(generationsDir, ops.syncDir); err != nil {
 		return generationPaths{}, err
 	}
 
@@ -75,29 +88,40 @@ func publishCertificateGeneration(root string, keyPEM, certPEM []byte, ops gener
 	if err != nil {
 		return generationPaths{}, err
 	}
-	generationDir, err := os.MkdirTemp(generationsDir, "generation-")
+	generationDir, err := ops.mkdirTemp(generationsDir, "generation-")
 	if err != nil {
 		return generationPaths{}, fmt.Errorf("creating immutable certificate generation: %w", err)
 	}
+	if err := ops.syncDir(generationsDir); err != nil {
+		cleanupErr := removeStagedGeneration(generationDir, ops)
+		return generationPaths{}, errors.Join(
+			fmt.Errorf("syncing new immutable certificate generation entry: %w", err),
+			cleanupErr,
+		)
+	}
 	if err := os.Chmod(generationDir, 0700); err != nil { //nolint:gosec // This is a directory; 0700 is the required private mode.
-		_ = os.Remove(generationDir)
-		return generationPaths{}, fmt.Errorf("securing immutable certificate generation: %w", err)
+		cleanupErr := removeStagedGeneration(generationDir, ops)
+		return generationPaths{}, errors.Join(
+			fmt.Errorf("securing immutable certificate generation: %w", err),
+			cleanupErr,
+		)
 	}
 
 	result = generationPaths{
-		Root:       root,
-		Pointer:    filepath.Join(root, "current"),
-		Directory:  generationDir,
-		KeyFile:    filepath.Join(root, "current", generationKeyName),
-		CertFile:   filepath.Join(root, "current", generationCertName),
-		MarkerFile: filepath.Join(generationDir, generationMarker),
+		Root:              root,
+		Pointer:           filepath.Join(root, "current"),
+		Directory:         generationDir,
+		PreviousDirectory: previousGeneration,
+		KeyFile:           filepath.Join(root, "current", generationKeyName),
+		CertFile:          filepath.Join(root, "current", generationCertName),
+		MarkerFile:        filepath.Join(generationDir, generationMarker),
 	}
 	cleanupStaged := true
 	defer func() {
 		if !cleanupStaged {
 			return
 		}
-		if cleanupErr := removeStagedGeneration(generationDir); cleanupErr != nil {
+		if cleanupErr := removeStagedGeneration(generationDir, ops); cleanupErr != nil {
 			err = errors.Join(err, cleanupErr)
 		}
 	}()
@@ -105,8 +129,14 @@ func publishCertificateGeneration(root string, keyPEM, certPEM []byte, ops gener
 	if err := ops.writeFile(filepath.Join(generationDir, generationKeyName), keyPEM, 0600); err != nil {
 		return generationPaths{}, fmt.Errorf("writing staged private key: %w", err)
 	}
+	if err := ops.syncDir(generationDir); err != nil {
+		return generationPaths{}, fmt.Errorf("syncing staged private-key entry: %w", err)
+	}
 	if err := ops.writeFile(filepath.Join(generationDir, generationCertName), certPEM, 0644); err != nil {
 		return generationPaths{}, fmt.Errorf("writing staged certificate: %w", err)
+	}
+	if err := ops.syncDir(generationDir); err != nil {
+		return generationPaths{}, fmt.Errorf("syncing staged certificate entry: %w", err)
 	}
 	marker, err := json.Marshal(publicationMarker{
 		CreatedAt:          time.Now().UTC(),
@@ -119,44 +149,51 @@ func publishCertificateGeneration(root string, keyPEM, certPEM []byte, ops gener
 	if err != nil {
 		return generationPaths{}, fmt.Errorf("marshalling generation publication marker: %w", err)
 	}
-	if err := ops.writeFile(result.MarkerFile, marker, 0600); err != nil {
+	markerTemp := filepath.Join(generationDir, generationMarkerTemp)
+	if err := ops.writeFile(markerTemp, marker, 0600); err != nil {
 		return generationPaths{}, fmt.Errorf("writing generation publication marker: %w", err)
 	}
 	if err := ops.syncDir(generationDir); err != nil {
-		return generationPaths{}, fmt.Errorf("syncing staged certificate generation: %w", err)
+		return generationPaths{}, fmt.Errorf("syncing staged generation publication marker: %w", err)
 	}
-	if err := ops.syncDir(generationsDir); err != nil {
-		return generationPaths{}, fmt.Errorf("syncing certificate generations directory: %w", err)
+	if err := ops.rename(markerTemp, result.MarkerFile); err != nil {
+		return generationPaths{}, fmt.Errorf("publishing generation publication marker: %w", err)
+	}
+	if err := ops.syncDir(generationDir); err != nil {
+		return generationPaths{}, fmt.Errorf("syncing generation publication marker: %w", err)
 	}
 
-	pointerTemp, err := uniquePointerPath(root)
-	if err != nil {
-		return generationPaths{}, err
-	}
-	defer func() {
-		if removeErr := os.Remove(pointerTemp); removeErr != nil && !os.IsNotExist(removeErr) {
-			err = errors.Join(err, fmt.Errorf("removing temporary generation pointer %s: %w", pointerTemp, removeErr))
-		}
-	}()
 	relativeTarget, err := filepath.Rel(root, generationDir)
 	if err != nil {
 		return generationPaths{}, fmt.Errorf("building relative generation pointer: %w", err)
 	}
-	if err := ops.symlink(relativeTarget, pointerTemp); err != nil {
-		return generationPaths{}, fmt.Errorf("creating temporary generation pointer: %w", err)
+	pointerTemp, err := createTemporaryGenerationPointer(root, relativeTarget, ops)
+	if err != nil {
+		return generationPaths{}, err
 	}
-	if err := ops.syncDir(root); err != nil {
-		return generationPaths{}, fmt.Errorf("syncing temporary generation pointer: %w", err)
-	}
+	defer func() {
+		if removeErr := removePathAndSync(pointerTemp, ops); removeErr != nil {
+			err = errors.Join(err, fmt.Errorf("removing temporary generation pointer %s: %w", pointerTemp, removeErr))
+		}
+	}()
 	if err := ops.rename(pointerTemp, result.Pointer); err != nil {
 		return generationPaths{}, fmt.Errorf("publishing certificate generation pointer: %w", err)
 	}
 	result.Switched = true
 	cleanupStaged = false
 	if err := ops.syncDir(root); err != nil {
-		return result, fmt.Errorf("syncing published certificate generation pointer: %w", err)
+		publishErr := fmt.Errorf("syncing published certificate generation pointer: %w", err)
+		if rollbackErr := rollbackGenerationPublication(result, ops); rollbackErr != nil {
+			return result, errors.Join(publishErr, fmt.Errorf("rolling back uncertain generation pointer: %w", rollbackErr))
+		}
+		return result, publishErr
 	}
 	return result, nil
+}
+
+func (ops generationPublishOps) complete() bool {
+	return ops.writeFile != nil && ops.syncDir != nil && ops.symlink != nil &&
+		ops.rename != nil && ops.remove != nil && ops.mkdirTemp != nil
 }
 
 func inspectGenerationPointer(root string) (string, error) {
@@ -215,20 +252,29 @@ func inspectGenerationPointer(root string) (string, error) {
 	return resolved, nil
 }
 
-func uniquePointerPath(root string) (string, error) {
-	file, err := os.CreateTemp(root, ".current.tmp.*")
-	if err != nil {
-		return "", fmt.Errorf("reserving temporary generation pointer: %w", err)
+func createTemporaryGenerationPointer(root, relativeTarget string, ops generationPublishOps) (string, error) {
+	for range 32 {
+		random := make([]byte, 16)
+		if _, err := rand.Read(random); err != nil {
+			return "", fmt.Errorf("generating temporary generation pointer name: %w", err)
+		}
+		path := filepath.Join(root, ".current.tmp."+hex.EncodeToString(random))
+		if err := ops.symlink(relativeTarget, path); err != nil {
+			if os.IsExist(err) {
+				continue
+			}
+			return "", fmt.Errorf("creating temporary generation pointer: %w", err)
+		}
+		if err := ops.syncDir(root); err != nil {
+			cleanupErr := removePathAndSync(path, ops)
+			return "", errors.Join(
+				fmt.Errorf("syncing temporary generation pointer: %w", err),
+				cleanupErr,
+			)
+		}
+		return path, nil
 	}
-	path := file.Name()
-	if err := file.Close(); err != nil {
-		_ = os.Remove(path)
-		return "", err
-	}
-	if err := os.Remove(path); err != nil {
-		return "", err
-	}
-	return path, nil
+	return "", fmt.Errorf("could not allocate a unique temporary generation pointer")
 }
 
 func writeExclusiveSyncedFile(path string, data []byte, mode os.FileMode) error {
@@ -241,6 +287,9 @@ func writeExclusiveSyncedFile(path string, data []byte, mode os.FileMode) error 
 			return errors.Join(cause, closeErr)
 		}
 		return cause
+	}
+	if err := syncDirectory(filepath.Dir(path)); err != nil {
+		return closeWith(err)
 	}
 	if _, err := file.Write(data); err != nil {
 		return closeWith(err)
@@ -264,7 +313,11 @@ func syncDirectory(path string) error {
 }
 
 func ensurePrivateDirectory(path string) error {
-	if err := mkdirAllWithoutSymlinks(path, 0700); err != nil {
+	return ensurePrivateDirectoryWithSync(path, syncDirectory)
+}
+
+func ensurePrivateDirectoryWithSync(path string, syncDir func(string) error) error {
+	if err := mkdirAllWithoutSymlinksWithSync(path, 0700, syncDir); err != nil {
 		return fmt.Errorf("creating private certificate directory %s: %w", path, err)
 	}
 	info, err := os.Lstat(path)
@@ -281,11 +334,25 @@ func ensurePrivateDirectory(path string) error {
 }
 
 func mkdirAllWithoutSymlinks(path string, mode os.FileMode) error {
+	return mkdirAllWithoutSymlinksWithSync(path, mode, syncDirectory)
+}
+
+func mkdirAllWithoutSymlinksWithSync(path string, mode os.FileMode, syncDir func(string) error) error {
+	if syncDir == nil {
+		return fmt.Errorf("directory sync operation is unavailable")
+	}
 	clean := filepath.Clean(path)
 	info, err := os.Lstat(clean)
 	if err == nil {
 		if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
 			return fmt.Errorf("%s is not a regular directory", clean)
+		}
+		if err := validateDirectoryComponents(clean); err != nil {
+			return err
+		}
+		parent := filepath.Dir(clean)
+		if parent != clean {
+			return syncDir(parent)
 		}
 		return nil
 	}
@@ -296,11 +363,24 @@ func mkdirAllWithoutSymlinks(path string, mode os.FileMode) error {
 	if parent == clean {
 		return err
 	}
-	if err := mkdirAllWithoutSymlinks(parent, mode); err != nil {
+	if err := mkdirAllWithoutSymlinksWithSync(parent, mode, syncDir); err != nil {
 		return err
 	}
-	if err := os.Mkdir(clean, mode); err != nil && !os.IsExist(err) {
-		return err
+	created := false
+	if err := os.Mkdir(clean, mode); err != nil {
+		if !os.IsExist(err) {
+			return err
+		}
+		if err := syncDir(parent); err != nil {
+			return err
+		}
+	} else {
+		created = true
+	}
+	if created {
+		if err := syncDir(parent); err != nil {
+			return err
+		}
 	}
 	info, err = os.Lstat(clean)
 	if err != nil {
@@ -312,30 +392,163 @@ func mkdirAllWithoutSymlinks(path string, mode os.FileMode) error {
 	return nil
 }
 
-func removeStagedGeneration(directory string) error {
+func validateDirectoryComponents(path string) error {
+	absolute, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	volume := filepath.VolumeName(absolute)
+	current := volume + string(filepath.Separator)
+	relative := strings.TrimPrefix(absolute, current)
+	if relative == "" {
+		return nil
+	}
+	for _, component := range strings.Split(relative, string(filepath.Separator)) {
+		current = filepath.Join(current, component)
+		info, err := os.Lstat(current)
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("%s is not a regular directory", current)
+		}
+	}
+	return nil
+}
+
+func removePathAndSync(path string, ops generationPublishOps) error {
+	err := ops.remove(path)
+	if os.IsNotExist(err) {
+		parent := filepath.Dir(path)
+		if _, statErr := os.Lstat(parent); statErr == nil {
+			return ops.syncDir(parent)
+		} else if !os.IsNotExist(statErr) {
+			return statErr
+		}
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return ops.syncDir(filepath.Dir(path))
+}
+
+func removeStagedGeneration(directory string, ops generationPublishOps) error {
 	var errs []error
-	for _, name := range []string{generationMarker, generationCertName, generationKeyName} {
+	for _, name := range []string{generationMarker, generationMarkerTemp, generationCertName, generationKeyName} {
 		path := filepath.Join(directory, name)
-		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		if err := removePathAndSync(path, ops); err != nil {
 			errs = append(errs, fmt.Errorf("removing staged generation path %s: %w", path, err))
 		}
 	}
-	if err := os.Remove(directory); err != nil && !os.IsNotExist(err) {
+	if err := removePathAndSync(directory, ops); err != nil {
 		errs = append(errs, fmt.Errorf("removing staged generation directory %s: %w", directory, err))
 	}
 	return errors.Join(errs...)
 }
 
 func finalizeGenerationPublication(paths generationPaths) error {
+	return finalizeGenerationPublicationWithOps(paths, defaultGenerationPublishOps())
+}
+
+func finalizeGenerationPublicationWithOps(paths generationPaths, ops generationPublishOps) error {
 	if paths.MarkerFile == "" {
 		return nil
 	}
-	if err := os.Remove(paths.MarkerFile); err != nil && !os.IsNotExist(err) {
+	if err := ops.remove(paths.MarkerFile); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("removing committed generation marker %s: %w", paths.MarkerFile, err)
 	}
 	if paths.Directory != "" {
-		if err := syncDirectory(paths.Directory); err != nil {
+		if err := ops.syncDir(paths.Directory); err != nil {
 			return fmt.Errorf("syncing committed generation directory: %w", err)
+		}
+	}
+	return nil
+}
+
+func rollbackGenerationPublication(paths generationPaths, ops generationPublishOps) error {
+	if paths.Root == "" || paths.Pointer == "" {
+		return fmt.Errorf("generation rollback paths are incomplete")
+	}
+	return selectGenerationPointer(paths.Root, paths.PreviousDirectory, ops)
+}
+
+func selectGenerationPointer(root, desired string, ops generationPublishOps) (err error) {
+	if !ops.complete() {
+		return fmt.Errorf("certificate generation publisher is incomplete")
+	}
+	current, err := inspectGenerationPointer(root)
+	if err != nil {
+		return err
+	}
+	if desired != "" {
+		if err := validateGenerationDirectory(root, desired); err != nil {
+			return fmt.Errorf("validating generation rollback target: %w", err)
+		}
+	}
+	if filepath.Clean(current) == filepath.Clean(desired) {
+		return ops.syncDir(root)
+	}
+	pointer := filepath.Join(root, "current")
+	if desired == "" {
+		if current == "" {
+			return ops.syncDir(root)
+		}
+		if err := ops.remove(pointer); err != nil {
+			return fmt.Errorf("removing generation pointer during rollback: %w", err)
+		}
+		return ops.syncDir(root)
+	}
+	relativeTarget, err := filepath.Rel(root, desired)
+	if err != nil {
+		return err
+	}
+	temp, err := createTemporaryGenerationPointer(root, relativeTarget, ops)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if removeErr := removePathAndSync(temp, ops); removeErr != nil {
+			err = errors.Join(err, fmt.Errorf("removing rollback pointer %s: %w", temp, removeErr))
+		}
+	}()
+	if err := ops.rename(temp, pointer); err != nil {
+		return fmt.Errorf("restoring generation pointer: %w", err)
+	}
+	if err := ops.syncDir(root); err != nil {
+		return fmt.Errorf("syncing restored generation pointer: %w", err)
+	}
+	return nil
+}
+
+func validateGenerationDirectory(root, directory string) error {
+	generations := filepath.Join(root, "generations")
+	directoryAbs, err := filepath.Abs(directory)
+	if err != nil {
+		return err
+	}
+	generationsAbs, err := filepath.Abs(generations)
+	if err != nil {
+		return err
+	}
+	if !pathWithin(generationsAbs, directoryAbs) || filepath.Clean(directoryAbs) == filepath.Clean(generationsAbs) {
+		return fmt.Errorf("generation %s is outside %s", directory, generations)
+	}
+	info, err := os.Lstat(directoryAbs)
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("generation %s is not a regular directory", directory)
+	}
+	for _, name := range []string{generationKeyName, generationCertName} {
+		path := filepath.Join(directoryAbs, name)
+		info, err := os.Lstat(path)
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("generation artifact %s is not a regular file", path)
 		}
 	}
 	return nil

@@ -93,8 +93,8 @@ func (m *Manager) ListCertificates(ctx context.Context, objectName string) ([]Ce
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	trustLifecycleMu.RLock()
-	defer trustLifecycleMu.RUnlock()
+	trustLifecycleMu.Lock()
+	defer trustLifecycleMu.Unlock()
 
 	return m.listCertificatesLocked(ctx, objectName)
 }
@@ -102,7 +102,7 @@ func (m *Manager) ListCertificates(ctx context.Context, objectName string) ([]Ce
 // listCertificatesLocked builds the CertInfo slice for objectName. The caller
 // must hold m.mu.
 func (m *Manager) listCertificatesLocked(ctx context.Context, objectName string) ([]CertInfo, error) {
-	state, err := loadState(m.stateDir, objectName, m.domain)
+	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -134,10 +134,10 @@ func (m *Manager) CertificateStatus(_ context.Context, objectName, nickname stri
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	trustLifecycleMu.RLock()
-	defer trustLifecycleMu.RUnlock()
+	trustLifecycleMu.Lock()
+	defer trustLifecycleMu.Unlock()
 
-	state, err := loadState(m.stateDir, objectName, m.domain)
+	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return CertInfo{}, err
 	}
@@ -168,7 +168,7 @@ func (m *Manager) CertificateStatus(_ context.Context, objectName, nickname stri
 // is. A failure to renew one template is logged and reported through progress
 // but does not abort the others; an aggregated error is returned at the end if
 // any renewal failed.
-func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname string, all bool, progress func(string)) error {
+func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname string, all bool, progress func(string)) (err error) {
 	if m.enrollmentMethod != consts.CertEnrollmentLDAP {
 		return ErrNotLDAPMethod
 	}
@@ -177,7 +177,7 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	trustLifecycleMu.Lock()
 	defer trustLifecycleMu.Unlock()
 
-	state, err := loadState(m.stateDir, objectName, m.domain)
+	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -240,7 +240,7 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		}
 	}
 	for _, dir := range []string{filepath.Join(m.stateDir, "certs"), m.globalTrustDir} {
-		if err := os.MkdirAll(dir, 0750); err != nil {
+		if err := mkdirAllWithoutSymlinks(dir, 0750); err != nil {
 			return fmt.Errorf("creating CA trust directory %s: %w", dir, err)
 		}
 	}
@@ -270,6 +270,19 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	var obsoletePaths []string
 	var activeInstallations []*caChainInstallation
 	var publications []generationPaths
+	publicationStateCommitted := false
+	defer func() {
+		if publicationStateCommitted {
+			return
+		}
+		var publicationRollbackErrs []error
+		for index := len(publications) - 1; index >= 0; index-- {
+			if rollbackErr := rollbackGenerationPublication(publications[index], m.generationOps); rollbackErr != nil {
+				publicationRollbackErrs = append(publicationRollbackErrs, fmt.Errorf("rolling back unpublished renewed generation: %w", rollbackErr))
+			}
+		}
+		err = errors.Join(err, errors.Join(publicationRollbackErrs...))
+	}()
 	pendingAdded := 0
 	now := time.Now()
 	requestedDomain := normalizeDomainIdentity(m.domain)
@@ -441,12 +454,12 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 			if result.Pending != nil {
 				workingState := cloneEnrollmentState(state)
 				if err := addPendingEnrollment(workingState, *result.Pending); err != nil {
-					cleanupErr := removePendingMaterial(m.stateDir, *result.Pending)
+					cleanupErr := m.removePending(m.stateDir, *result.Pending)
 					retainFailed(fmt.Sprintf("tracking pending request: %v", errors.Join(err, cleanupErr)))
 					continue
 				}
 				if err := m.saveEnrollmentState(m.stateDir, workingState); err != nil {
-					cleanupErr := removePendingMaterial(m.stateDir, *result.Pending)
+					cleanupErr := m.removePending(m.stateDir, *result.Pending)
 					retainFailed(fmt.Sprintf("saving pending request: %v", errors.Join(err, cleanupErr)))
 					continue
 				}
@@ -459,16 +472,8 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 				continue
 			}
 			renewed := result.Template
-			if result.PublishErr != nil {
-				failures = append(failures, fmt.Sprintf("%s: publishing generation: %v", tmpl.Nickname, result.PublishErr))
-			} else {
-				publications = append(publications, result.Publication)
-			}
-			if tmpl.GenerationDir != "" {
-				obsoletePaths = append(obsoletePaths, generationArtifactPaths(tmpl)...)
-			} else {
-				obsoletePaths = append(obsoletePaths, tmpl.KeyFile, tmpl.CertFile)
-			}
+			publications = append(publications, result.Publication)
+			obsoletePaths = append(obsoletePaths, templateArtifactRemovalPaths(tmpl)...)
 			workingTemplates = append(workingTemplates, renewed)
 			renewedOnCA = true
 			report(progress, gotext.Get("Renewed %s", tmpl.Nickname))
@@ -536,13 +541,18 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		saveErrs = append(saveErrs, rollbackErrs...)
 		return errors.Join(saveErrs...)
 	}
+	publicationStateCommitted = true
+	publicationsFinalized := true
 	for _, publication := range publications {
-		if err := finalizeGenerationPublication(publication); err != nil {
+		if err := finalizeGenerationPublicationWithOps(publication, m.generationOps); err != nil {
 			rollbackErrs = append(rollbackErrs, err)
+			publicationsFinalized = false
 		}
 	}
-	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, m.domain, state, obsoletePaths); err != nil {
-		rollbackErrs = append(rollbackErrs, fmt.Errorf("pruning obsolete CA chain paths after renewal: %w", err))
+	if publicationsFinalized {
+		if err := removeUnreferencedPaths(ctx, m.stateDir, m.globalTrustDir, state.ObjectName, m.domain, state, obsoletePaths); err != nil {
+			rollbackErrs = append(rollbackErrs, fmt.Errorf("pruning obsolete CA chain paths after renewal: %w", err))
+		}
 	}
 	if trustChanged {
 		if err := updateCATrustStore(); err != nil {
@@ -612,7 +622,7 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 		return nil
 	}
 
-	state, err := loadState(m.stateDir, objectName, m.domain)
+	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -663,8 +673,7 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 				}
 				report(progress, gotext.Get("Removing certificate %s", tmpl.Nickname))
 				log.Debugf(ctx, "Removing certificate files for %s", tmpl.Nickname)
-				obsoletePaths = append(obsoletePaths, tmpl.CertFile, tmpl.KeyFile)
-				obsoletePaths = append(obsoletePaths, generationArtifactPaths(tmpl)...)
+				obsoletePaths = append(obsoletePaths, templateArtifactRemovalPaths(tmpl)...)
 				obsoletePaths = append(obsoletePaths, tmpl.ChainFiles...)
 				obsoletePaths = append(obsoletePaths, tmpl.TrustAnchorSymlink)
 				ca.Templates = append(ca.Templates[:ti], ca.Templates[ti+1:]...)
@@ -709,7 +718,7 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 	if len(state.CAs) != 0 || len(state.Pending) != 0 {
 		replacement = state
 	}
-	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, m.domain, replacement, obsoletePaths); err != nil {
+	if err := removeUnreferencedPaths(ctx, m.stateDir, m.globalTrustDir, state.ObjectName, m.domain, replacement, obsoletePaths); err != nil {
 		pendingPathErrs = append(pendingPathErrs, fmt.Errorf("failed to prune unreferenced CA chain paths after removal: %w", err))
 	}
 
@@ -730,10 +739,10 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	trustLifecycleMu.RLock()
-	defer trustLifecycleMu.RUnlock()
+	trustLifecycleMu.Lock()
+	defer trustLifecycleMu.Unlock()
 
-	state, err := loadState(m.stateDir, objectName, m.domain)
+	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -779,17 +788,16 @@ func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]CAI
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	trustLifecycleMu.RLock()
-	defer trustLifecycleMu.RUnlock()
+	trustLifecycleMu.Lock()
+	defer trustLifecycleMu.Unlock()
 
+	state, err := m.loadEnrollmentState(objectName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load enrollment state for cross-reference: %w", err)
+	}
 	cas, err := discoverCAsAndTemplates(ctx, m.ldapConnect, dcHostnameFromDomain(m.domain))
 	if err != nil {
 		return nil, fmt.Errorf("failed to discover certificate authorities: %w", err)
-	}
-
-	state, err := loadState(m.stateDir, objectName, m.domain)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load enrollment state for cross-reference: %w", err)
 	}
 
 	trustDir := filepath.Join(m.stateDir, "certs")

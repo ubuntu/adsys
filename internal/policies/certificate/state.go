@@ -105,7 +105,11 @@ func legacyStateFilePath(stateDir, objectName string) string {
 // matching legacy state is migrated atomically to the collision-resistant
 // filename. A legacy file for a different raw object is a sanitized-name
 // collision and is ignored, never removed or reused.
-func loadState(stateDir, objectName, domain string) (*enrollmentState, error) {
+func loadState(stateDir, objectName, domain string) (*enrollmentState, error) { //nolint:unparam // Tests exercise raw state loading with explicit ownership.
+	return loadStateWithOwnedRoots(stateDir, "", objectName, domain)
+}
+
+func loadStateWithOwnedRoots(stateDir, globalTrustDir, objectName, domain string) (*enrollmentState, error) {
 	stateFileMu.Lock()
 	defer stateFileMu.Unlock()
 
@@ -120,6 +124,9 @@ func loadState(stateDir, objectName, domain string) (*enrollmentState, error) {
 		}
 		if err := validateGenerationStatePaths(stateDir, state); err != nil {
 			return nil, fmt.Errorf("validating enrollment state %s: %w", path, err)
+		}
+		if err := validateStateArtifactOwnership(stateDir, globalTrustDir, state); err != nil {
+			return nil, fmt.Errorf("validating enrollment artifact ownership in %s: %w", path, err)
 		}
 		removeMatchingLegacyState(stateDir, objectName, domain)
 		log.Debugf(context.Background(), "Loaded enrollment state for %s (last updated: %s)", state.ObjectName, state.UpdatedAt.Format("2006-01-02 15:04:05"))
@@ -150,6 +157,9 @@ func loadState(stateDir, objectName, domain string) (*enrollmentState, error) {
 	}
 	if err := validateGenerationStatePaths(stateDir, legacy); err != nil {
 		return nil, fmt.Errorf("validating legacy enrollment state %s: %w", legacyPath, err)
+	}
+	if err := validateStateArtifactOwnership(stateDir, globalTrustDir, legacy); err != nil {
+		return nil, fmt.Errorf("validating legacy enrollment artifact ownership in %s: %w", legacyPath, err)
 	}
 	if err := writeStateFile(path, legacy); err != nil {
 		return nil, fmt.Errorf("migrating legacy enrollment state to %s: %w", path, err)
@@ -261,6 +271,9 @@ func saveState(stateDir string, state *enrollmentState) error {
 	if err := validateGenerationStatePaths(stateDir, working); err != nil {
 		return fmt.Errorf("refusing to save invalid enrollment state: %w", err)
 	}
+	if err := validateStateArtifactOwnership(stateDir, "", working); err != nil {
+		return fmt.Errorf("refusing to save enrollment state with unsafe artifact paths: %w", err)
+	}
 	path := stateFilePath(stateDir, working.ObjectName)
 	log.Debugf(context.Background(), "Writing enrollment state for %s to %s", working.ObjectName, path)
 	if err := writeStateFile(path, working); err != nil {
@@ -275,6 +288,7 @@ func validateGenerationStatePaths(stateDir string, state *enrollmentState) error
 	if err != nil {
 		return err
 	}
+
 	for _, ca := range state.CAs {
 		for _, tmpl := range ca.Templates {
 			if tmpl.GenerationRoot == "" && tmpl.GenerationPointer == "" && tmpl.GenerationDir == "" {
@@ -298,6 +312,88 @@ func validateGenerationStatePaths(stateDir string, state *enrollmentState) error
 			if err != nil || !pathWithin(filepath.Join(root, "generations"), directory) ||
 				filepath.Clean(directory) == filepath.Join(root, "generations") {
 				return fmt.Errorf("template %s immutable generation is outside its root", tmpl.Nickname)
+			}
+		}
+	}
+	return nil
+}
+
+func validateStateArtifactOwnership(stateDir, globalTrustDir string, state *enrollmentState) error {
+	if state == nil {
+		return nil
+	}
+	privateRoot, err := filepath.Abs(filepath.Join(stateDir, "private"))
+	if err != nil {
+		return err
+	}
+	certRoot, err := filepath.Abs(filepath.Join(stateDir, "certs"))
+	if err != nil {
+		return err
+	}
+	trustRoot := ""
+	if globalTrustDir != "" {
+		trustRoot, err = filepath.Abs(globalTrustDir)
+		if err != nil {
+			return err
+		}
+	}
+	validateRegular := func(root, path, label string) error {
+		if path == "" {
+			return nil
+		}
+		pathAbs, err := filepath.Abs(path)
+		if err != nil {
+			return err
+		}
+		info, exists, err := inspectOwnedPath(root, pathAbs)
+		if err != nil {
+			return fmt.Errorf("%s %s is unsafe: %w", label, path, err)
+		}
+		if exists && !info.Mode().IsRegular() {
+			return fmt.Errorf("%s %s is not a regular non-symlink file", label, path)
+		}
+		return nil
+	}
+	validateTrust := func(path string) error {
+		if path == "" || trustRoot == "" {
+			return nil
+		}
+		pathAbs, err := filepath.Abs(path)
+		if err != nil {
+			return err
+		}
+		if err := validateTrustSymlink(trustRoot, certRoot, pathAbs); err != nil {
+			return fmt.Errorf("trust artifact %s is unsafe: %w", path, err)
+		}
+		return nil
+	}
+	for _, ca := range state.CAs {
+		for _, path := range append(append([]string(nil), ca.RootCerts...), ca.IntermediateCerts...) {
+			if err := validateRegular(certRoot, path, "CA certificate"); err != nil {
+				return err
+			}
+		}
+		for _, path := range ca.Symlinks {
+			if err := validateTrust(path); err != nil {
+				return err
+			}
+		}
+		for _, template := range ca.Templates {
+			if template.GenerationRoot == "" && template.GenerationPointer == "" && template.GenerationDir == "" {
+				if err := validateRegular(privateRoot, template.KeyFile, "legacy private key"); err != nil {
+					return err
+				}
+				if err := validateRegular(certRoot, template.CertFile, "legacy certificate"); err != nil {
+					return err
+				}
+			}
+			for _, path := range template.ChainFiles {
+				if err := validateRegular(certRoot, path, "template chain certificate"); err != nil {
+					return err
+				}
+			}
+			if err := validateTrust(template.TrustAnchorSymlink); err != nil {
+				return err
 			}
 		}
 	}
@@ -448,6 +544,9 @@ func removeState(stateDir, objectName, domain string) error {
 		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
 			return fmt.Errorf("failed to remove enrollment state %s: %w", path, err)
 		}
+		if err := syncDirectory(filepath.Dir(path)); err != nil {
+			return fmt.Errorf("syncing enrollment state directory after removing %s: %w", path, err)
+		}
 	}
 	return nil
 }
@@ -484,7 +583,10 @@ func removeStateFileIfSame(path string, expected os.FileInfo) error {
 	if expected == nil || !os.SameFile(expected, current) {
 		return fmt.Errorf("state file changed during migration")
 	}
-	return os.Remove(path)
+	if err := os.Remove(path); err != nil {
+		return err
+	}
+	return syncDirectory(filepath.Dir(path))
 }
 
 func stateOwnerKey(state *enrollmentState) string {

@@ -169,6 +169,79 @@ func TestPendingSubmitPollAndIssueAcrossRestart(t *testing.T) {
 	assert.Equal(t, 2, fake.polls)
 }
 
+func TestTerminalPendingCleanupErrorDoesNotSkipAdjacentRequest(t *testing.T) {
+	stateDir := filepath.Join(t.TempDir(), "state")
+	trustDir := filepath.Join(t.TempDir(), "trust")
+	caCert, _, caDER := mgrTestCA(t)
+	rootFile := mgrWriteCACertificate(t, stateDir, "pending-root.crt", caDER)
+	fingerprint := certificateFingerprint(caCert)
+	identity, err := enrollmentMachineIdentity(mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+
+	makePending := func(template, nickname string, requestID uint32) pendingEnrollment {
+		target := enrollmentTarget{
+			ObjectName:     mgrTestObject,
+			Domain:         mgrTestDomain,
+			Identity:       identity.dnsName,
+			CAName:         "TestCA",
+			Server:         "ca.example.com",
+			Template:       template,
+			Nickname:       nickname,
+			GenerationRoot: filepath.Join(stateDir, "private", "certs", nickname),
+			Binding: templateChainBinding{
+				IssuerFingerprint: fingerprint,
+				Fingerprints:      []string{fingerprint},
+				Files:             []string{rootFile},
+			},
+			RootCerts: []string{rootFile},
+		}
+		draft, err := createEnrollmentDraft(stateDir, target, 2048)
+		require.NoError(t, err)
+		return newPendingEnrollment(target, draft, requestID)
+	}
+	first := makePending("Machine", "TestCA.Machine", 301)
+	second := makePending("WebServer", "TestCA.WebServer", 302)
+	state := &enrollmentState{
+		ObjectName: mgrTestObject,
+		Identity:   identity.dnsName,
+		Domain:     mgrTestDomain,
+		Pending:    []pendingEnrollment{first, second},
+	}
+	require.NoError(t, saveState(stateDir, state))
+
+	var polled []uint32
+	requester := RequesterFunc(func(_ context.Context, request Request) (Response, error) {
+		require.NotNil(t, request.Poll)
+		polled = append(polled, request.Poll.RequestID)
+		if request.Poll.RequestID == first.RequestID {
+			return Response{Disposition: DispositionDenied, RequestID: first.RequestID}, nil
+		}
+		return Response{Disposition: DispositionPending, RequestID: second.RequestID}, nil
+	})
+	manager := lifecycleManager(t, stateDir, trustDir, caDER, requester)
+	removePending := manager.removePending
+	manager.removePending = func(stateDir string, pending pendingEnrollment) error {
+		if pending.RequestID == first.RequestID {
+			return errors.New("injected post-save pending cleanup failure")
+		}
+		return removePending(stateDir, pending)
+	}
+
+	summary := manager.pollPendingEnrollments(context.Background(), state, nil, nil)
+	assert.Equal(t, []uint32{first.RequestID, second.RequestID}, polled)
+	assert.Equal(t, 1, summary.Pending)
+	require.Len(t, state.Pending, 1)
+	assert.Equal(t, second.RequestID, state.Pending[0].RequestID)
+	assert.False(t, state.Pending[0].LastPolledAt.IsZero())
+	assert.ErrorContains(t, errors.Join(summary.Errors...), "injected post-save pending cleanup failure")
+
+	persisted, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	require.Len(t, persisted.Pending, 1)
+	assert.Equal(t, second.RequestID, persisted.Pending[0].RequestID)
+	assert.False(t, persisted.Pending[0].LastPolledAt.IsZero())
+}
+
 func TestPendingRenewalPreservesOldGenerationUntilIssued(t *testing.T) {
 	stateDir := filepath.Join(t.TempDir(), "state")
 	trustDir := filepath.Join(t.TempDir(), "trust")

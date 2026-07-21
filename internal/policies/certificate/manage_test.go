@@ -580,7 +580,7 @@ func TestRemoveCertificates(t *testing.T) {
 			templates = append(templates, mgrWritePair(t, stateDir, "TestCA."+tmpl, tmpl, keyPEM, certPEM))
 		}
 		require.NoError(t, os.WriteFile(rootPath, []byte("root"), 0600))
-		require.NoError(t, os.WriteFile(symlinkPath, []byte("root"), 0600))
+		require.NoError(t, os.Symlink(rootPath, symlinkPath))
 		mgrWriteState(t, stateDir, []enrolledCA{{
 			Name: "TestCA", Hostname: "ca.example.com",
 			RootCerts: []string{rootPath}, Symlinks: []string{symlinkPath}, Templates: templates,
@@ -619,7 +619,7 @@ func TestRemoveCertificates(t *testing.T) {
 		certPEM := mgrSelfSigned(t, key, "Machine", time.Now().Add(-time.Hour), time.Now().Add(365*24*time.Hour))
 		tmpl := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, certPEM)
 		require.NoError(t, os.WriteFile(rootPath, []byte("root"), 0600))
-		require.NoError(t, os.WriteFile(symlinkPath, []byte("root"), 0600))
+		require.NoError(t, os.Symlink(rootPath, symlinkPath))
 		mgrWriteState(t, stateDir, []enrolledCA{{
 			Name: "TestCA", Hostname: "ca.example.com",
 			RootCerts: []string{rootPath}, Symlinks: []string{symlinkPath}, Templates: []enrolledTemplate{tmpl},
@@ -664,7 +664,7 @@ func TestRemoveCertificates(t *testing.T) {
 		certPEM := mgrSelfSigned(t, key, "Machine", time.Now().Add(-time.Hour), time.Now().Add(365*24*time.Hour))
 		tmpl := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, certPEM)
 		require.NoError(t, os.WriteFile(rootPath, []byte("root"), 0600))
-		require.NoError(t, os.WriteFile(symlinkPath, []byte("root"), 0600))
+		require.NoError(t, os.Symlink(rootPath, symlinkPath))
 		mgrWriteState(t, stateDir, []enrolledCA{{
 			Name: "TestCA", Hostname: "ca.example.com",
 			RootCerts: []string{rootPath}, Symlinks: []string{symlinkPath}, Templates: []enrolledTemplate{tmpl},

@@ -51,6 +51,18 @@ func TestValidateStoredEnrollmentMigratesValidLegacyState(t *testing.T) {
 	state.CAs[0].ChainFingerprints = append([]string(nil), current.Chain.Fingerprints...)
 	state.CAs[0].Templates[0] = migrated
 	stateDir := t.TempDir()
+	ownedKey := filepath.Join(stateDir, "private", "legacy.key")
+	ownedCert := filepath.Join(stateDir, "certs", "legacy.crt")
+	ownedRoot := filepath.Join(stateDir, "certs", "root.crt")
+	require.NoError(t, os.MkdirAll(filepath.Dir(ownedKey), 0700))
+	require.NoError(t, os.MkdirAll(filepath.Dir(ownedCert), 0750))
+	require.NoError(t, copyFileForTest(migrated.KeyFile, ownedKey))
+	require.NoError(t, copyFileForTest(migrated.CertFile, ownedCert))
+	require.NoError(t, copyFileForTest(currentBinding.Files[0], ownedRoot))
+	state.CAs[0].RootCerts = []string{ownedRoot}
+	state.CAs[0].Templates[0].KeyFile = ownedKey
+	state.CAs[0].Templates[0].CertFile = ownedCert
+	state.CAs[0].Templates[0].ChainFiles = []string{ownedRoot}
 	require.NoError(t, saveState(stateDir, state))
 	loaded, err := loadState(stateDir, "host", "example.com")
 	require.NoError(t, err)
@@ -59,7 +71,15 @@ func TestValidateStoredEnrollmentMigratesValidLegacyState(t *testing.T) {
 	assert.Equal(t, current.Chain.issuerFingerprint(), loaded.CAs[0].IssuerFingerprint)
 	assert.Equal(t, migrated.LeafFingerprint, loaded.CAs[0].Templates[0].LeafFingerprint)
 	assert.Equal(t, currentBinding.Fingerprints, loaded.CAs[0].Templates[0].ChainFingerprints)
-	assert.Equal(t, currentBinding.Files, loaded.CAs[0].Templates[0].ChainFiles)
+	assert.Equal(t, []string{ownedRoot}, loaded.CAs[0].Templates[0].ChainFiles)
+}
+
+func copyFileForTest(source, destination string) error {
+	data, err := os.ReadFile(source)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(destination, data, 0600) //nolint:gosec // Test-owned destination copied from fixture state.
 }
 
 func TestValidateStoredEnrollmentRejectsMismatchAndStaleBindings(t *testing.T) {
@@ -126,11 +146,11 @@ func TestRemoveUnreferencedPathsHonorsOtherObjectState(t *testing.T) {
 		}))
 	}
 
-	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, "host-a", "example.com", nil, []string{shared}))
+	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, filepath.Join(stateDir, "trust"), "host-a", "example.com", nil, []string{shared}))
 	assert.FileExists(t, shared, "another object state still owns the shared root")
 
 	require.NoError(t, removeState(stateDir, "host-b", "example.com"))
-	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, "host-a", "example.com", nil, []string{shared}))
+	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, filepath.Join(stateDir, "trust"), "host-a", "example.com", nil, []string{shared}))
 	assert.NoFileExists(t, shared)
 }
 
@@ -192,12 +212,124 @@ func TestStateEnumerationPrefersCanonicalStateOverLegacyDuplicate(t *testing.T) 
 	require.NoError(t, removeUnreferencedPaths(
 		context.Background(),
 		stateDir,
+		filepath.Join(stateDir, "trust"),
 		"host-b",
 		"example.com",
 		nil,
 		[]string{stalePath},
 	))
 	assert.NoFileExists(t, stalePath, "stale duplicate legacy state must not keep a path referenced")
+}
+
+func TestRemoveOwnedEnrollmentPathContainment(t *testing.T) {
+	t.Run("external regular file", func(t *testing.T) {
+		base := t.TempDir()
+		stateDir := filepath.Join(base, "state")
+		trustDir := filepath.Join(base, "trust")
+		external := filepath.Join(base, "external.crt")
+		require.NoError(t, os.WriteFile(external, []byte("foreign"), 0600))
+
+		err := removeOwnedEnrollmentPath(stateDir, trustDir, external)
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "outside ADSys-owned")
+		assert.FileExists(t, external)
+	})
+
+	t.Run("intermediate symlink", func(t *testing.T) {
+		base := t.TempDir()
+		stateDir := filepath.Join(base, "state")
+		trustDir := filepath.Join(base, "trust")
+		privateRoot := filepath.Join(stateDir, "private")
+		externalDir := filepath.Join(base, "external")
+		require.NoError(t, os.MkdirAll(privateRoot, 0700))
+		require.NoError(t, os.MkdirAll(externalDir, 0700))
+		victim := filepath.Join(externalDir, "victim.key")
+		require.NoError(t, os.WriteFile(victim, []byte("foreign"), 0600))
+		require.NoError(t, os.Symlink(externalDir, filepath.Join(privateRoot, "escape")))
+
+		err := removeOwnedEnrollmentPath(stateDir, trustDir, filepath.Join(privateRoot, "escape", "victim.key"))
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "not a regular directory")
+		assert.FileExists(t, victim)
+	})
+
+	t.Run("malicious final symlinks", func(t *testing.T) {
+		base := t.TempDir()
+		stateDir := filepath.Join(base, "state")
+		trustDir := filepath.Join(base, "trust")
+		privateRoot := filepath.Join(stateDir, "private", "certs")
+		require.NoError(t, os.MkdirAll(privateRoot, 0700))
+		require.NoError(t, os.MkdirAll(trustDir, 0750))
+		external := filepath.Join(base, "foreign")
+		require.NoError(t, os.WriteFile(external, []byte("foreign"), 0600))
+		keyLink := filepath.Join(privateRoot, "legacy.key")
+		trustLink := filepath.Join(trustDir, "foreign.crt")
+		require.NoError(t, os.Symlink(external, keyLink))
+		require.NoError(t, os.Symlink(external, trustLink))
+
+		require.Error(t, removeOwnedEnrollmentPath(stateDir, trustDir, keyLink))
+		require.Error(t, removeOwnedEnrollmentPath(stateDir, trustDir, trustLink))
+		assert.FileExists(t, keyLink)
+		assert.FileExists(t, trustLink)
+		assert.FileExists(t, external)
+	})
+
+	t.Run("valid legacy paths and trust symlink", func(t *testing.T) {
+		base := t.TempDir()
+		stateDir := filepath.Join(base, "state")
+		trustDir := filepath.Join(base, "trust")
+		key := filepath.Join(stateDir, "private", "certs", "legacy.key")
+		cert := filepath.Join(stateDir, "certs", "legacy.crt")
+		link := filepath.Join(trustDir, "legacy.crt")
+		require.NoError(t, os.MkdirAll(filepath.Dir(key), 0700))
+		require.NoError(t, os.MkdirAll(filepath.Dir(cert), 0750))
+		require.NoError(t, os.MkdirAll(trustDir, 0750))
+		require.NoError(t, os.WriteFile(key, []byte("key"), 0600))
+		require.NoError(t, os.WriteFile(cert, []byte("cert"), 0600))
+		require.NoError(t, os.Symlink(cert, link))
+
+		require.NoError(t, removeOwnedEnrollmentPath(stateDir, trustDir, link))
+		require.NoError(t, removeOwnedEnrollmentPath(stateDir, trustDir, key))
+		require.NoError(t, removeOwnedEnrollmentPath(stateDir, trustDir, cert))
+		assert.NoFileExists(t, link)
+		assert.NoFileExists(t, key)
+		assert.NoFileExists(t, cert)
+	})
+}
+
+func TestLegacyStateMigrationRejectsExternalArtifacts(t *testing.T) {
+	base := t.TempDir()
+	stateDir := filepath.Join(base, "state")
+	trustDir := filepath.Join(base, "trust")
+	externalKey := filepath.Join(base, "external.key")
+	externalCert := filepath.Join(base, "external.crt")
+	require.NoError(t, os.WriteFile(externalKey, []byte("key"), 0600))
+	require.NoError(t, os.WriteFile(externalCert, []byte("cert"), 0600))
+	state := &enrollmentState{
+		ObjectName: "host",
+		Identity:   "host.example.com",
+		Domain:     "example.com",
+		CAs: []enrolledCA{{
+			Name: "TestCA",
+			Templates: []enrolledTemplate{{
+				Nickname: "TestCA.Machine",
+				Template: "Machine",
+				KeyFile:  externalKey,
+				CertFile: externalCert,
+			}},
+		}},
+	}
+	legacyPath := legacyStateFilePath(stateDir, "host")
+	require.NoError(t, writeStateFile(legacyPath, state))
+
+	loaded, err := loadStateWithOwnedRoots(stateDir, trustDir, "host", "example.com")
+	require.Error(t, err)
+	assert.Nil(t, loaded)
+	assert.ErrorContains(t, err, "outside owned root")
+	assert.FileExists(t, legacyPath)
+	assert.NoFileExists(t, stateFilePath(stateDir, "host"))
+	assert.FileExists(t, externalKey)
+	assert.FileExists(t, externalCert)
 }
 
 func writeStateBindingPair(t *testing.T, keyPEM, certPEM []byte) enrolledTemplate {

@@ -21,7 +21,6 @@ type enrollmentAttemptResult struct {
 	Template    enrolledTemplate
 	Certificate *x509.Certificate
 	Publication generationPaths
-	PublishErr  error
 }
 
 func (m *Manager) requestNewCertificate(ctx context.Context, target enrollmentTarget, keySize int, expectedChain []*x509.Certificate) (result enrollmentAttemptResult, err error) {
@@ -91,9 +90,18 @@ func (m *Manager) finishIssuedResponse(target enrollmentTarget, keyPEM []byte, e
 	if err != nil {
 		return enrollmentAttemptResult{}, fmt.Errorf("issued certificate verification failed: %w", err)
 	}
-	publication, publishErr := m.publishGeneration(target.GenerationRoot, keyPEM, certPEM, defaultGenerationPublishOps())
-	if publishErr != nil && !publication.Switched {
+	publication, publishErr := m.publishGeneration(target.GenerationRoot, keyPEM, certPEM, m.generationOps)
+	if publishErr != nil {
+		if publication.Switched {
+			publishErr = errors.Join(
+				publishErr,
+				rollbackContext("published certificate generation", rollbackGenerationPublication(publication, m.generationOps)),
+			)
+		}
 		return enrollmentAttemptResult{}, publishErr
+	}
+	if !publication.Switched {
+		return enrollmentAttemptResult{}, fmt.Errorf("certificate generation publisher returned without a durable pointer switch")
 	}
 	enrolled := enrolledTemplate{
 		Nickname:          target.Nickname,
@@ -110,7 +118,6 @@ func (m *Manager) finishIssuedResponse(target enrollmentTarget, keyPEM []byte, e
 		Template:    enrolled,
 		Certificate: cert,
 		Publication: publication,
-		PublishErr:  publishErr,
 	}, nil
 }
 
@@ -189,24 +196,22 @@ func (m *Manager) pollPendingEnrollments(ctx context.Context, state *enrollmentS
 			index++
 		case DispositionDenied, DispositionRevoked:
 			terminal := terminalDispositionError(response, nil)
-			if err := m.removeTerminalPending(ctx, state, index, pending); err != nil {
-				summary.Errors = append(summary.Errors, errors.Join(terminal, err))
+			removed, cleanupErr := m.removeTerminalPending(ctx, state, index, pending)
+			summary.Errors = append(summary.Errors, errors.Join(terminal, cleanupErr))
+			if !removed {
 				index++
-				continue
 			}
-			summary.Errors = append(summary.Errors, terminal)
 		case DispositionIssued, DispositionIssuedOutOfBand:
 			target := targetFromPending(pending)
 			result, issuedErr := m.finishIssuedResponse(target, keyPEM, chain, response)
 			if issuedErr != nil {
 				if response.Disposition == DispositionIssuedOutOfBand {
 					terminal := terminalDispositionError(response, issuedErr)
-					if err := m.removeTerminalPending(ctx, state, index, pending); err != nil {
-						summary.Errors = append(summary.Errors, errors.Join(terminal, err))
+					removed, cleanupErr := m.removeTerminalPending(ctx, state, index, pending)
+					summary.Errors = append(summary.Errors, errors.Join(terminal, cleanupErr))
+					if !removed {
 						index++
-						continue
 					}
-					summary.Errors = append(summary.Errors, terminal)
 					continue
 				}
 				issuedErr = fmt.Errorf("%s: validating issued response for request %d: %w", pending.Nickname, pending.RequestID, issuedErr)
@@ -220,14 +225,16 @@ func (m *Manager) pollPendingEnrollments(ctx context.Context, state *enrollmentS
 			oldTemplate, err := upsertIssuedTemplate(working, pending, result.Template)
 			if err != nil {
 				stateErr := fmt.Errorf("%s: building issued certificate state: %w", pending.Nickname, err)
-				summary.Errors = append(summary.Errors, errors.Join(result.PublishErr, stateErr))
+				rollbackErr := rollbackGenerationPublication(result.Publication, m.generationOps)
+				summary.Errors = append(summary.Errors, errors.Join(stateErr, rollbackContext("issued certificate generation", rollbackErr)))
 				logPendingRetention(ctx, pending, stateErr)
 				index++
 				continue
 			}
 			if err := m.saveEnrollmentState(m.stateDir, working); err != nil {
 				saveErr := fmt.Errorf("%s: saving issued certificate state: %w", pending.Nickname, err)
-				summary.Errors = append(summary.Errors, errors.Join(result.PublishErr, saveErr))
+				rollbackErr := rollbackGenerationPublication(result.Publication, m.generationOps)
+				summary.Errors = append(summary.Errors, errors.Join(saveErr, rollbackContext("issued certificate generation", rollbackErr)))
 				logPendingRetention(ctx, pending, saveErr)
 				index++
 				continue
@@ -235,19 +242,18 @@ func (m *Manager) pollPendingEnrollments(ctx context.Context, state *enrollmentS
 			*state = *working
 			summary.Issued++
 			var cleanupErrs []error
-			if result.PublishErr == nil {
-				if err := finalizeGenerationPublication(result.Publication); err != nil {
-					cleanupErrs = append(cleanupErrs, err)
-				}
-			} else {
-				cleanupErrs = append(cleanupErrs, result.PublishErr)
+			if err := finalizeGenerationPublicationWithOps(result.Publication, m.generationOps); err != nil {
+				cleanupErrs = append(cleanupErrs, err)
+				summary.Errors = append(summary.Errors, fmt.Errorf("%s: finalizing issued request: %w", pending.Nickname, errors.Join(cleanupErrs...)))
+				report(progress, fmt.Sprintf("Certificate issued for %s", pending.Nickname))
+				continue
 			}
-			if err := removePendingMaterial(m.stateDir, pending); err != nil {
+			if err := m.removePending(m.stateDir, pending); err != nil {
 				cleanupErrs = append(cleanupErrs, err)
 			}
 			obsolete := pendingReferencedPaths(pending)
-			obsolete = append(obsolete, generationArtifactPaths(oldTemplate)...)
-			if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, state.Domain, state, obsolete); err != nil {
+			obsolete = append(obsolete, templateArtifactRemovalPaths(oldTemplate)...)
+			if err := removeUnreferencedPaths(ctx, m.stateDir, m.globalTrustDir, state.ObjectName, state.Domain, state, obsolete); err != nil {
 				cleanupErrs = append(cleanupErrs, err)
 			}
 			if cleanupErr := errors.Join(cleanupErrs...); cleanupErr != nil {
@@ -259,21 +265,21 @@ func (m *Manager) pollPendingEnrollments(ctx context.Context, state *enrollmentS
 	return summary
 }
 
-func (m *Manager) removeTerminalPending(ctx context.Context, state *enrollmentState, index int, pending pendingEnrollment) error {
+func (m *Manager) removeTerminalPending(ctx context.Context, state *enrollmentState, index int, pending pendingEnrollment) (bool, error) {
 	working := cloneEnrollmentState(state)
 	working.Pending = append(working.Pending[:index], working.Pending[index+1:]...)
 	if err := m.saveEnrollmentState(m.stateDir, working); err != nil {
-		return fmt.Errorf("saving terminal pending-request removal: %w", err)
+		return false, fmt.Errorf("saving terminal pending-request removal: %w", err)
 	}
 	*state = *working
 	var errs []error
-	if err := removePendingMaterial(m.stateDir, pending); err != nil {
+	if err := m.removePending(m.stateDir, pending); err != nil {
 		errs = append(errs, err)
 	}
-	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, state.Domain, state, pendingReferencedPaths(pending)); err != nil {
+	if err := removeUnreferencedPaths(ctx, m.stateDir, m.globalTrustDir, state.ObjectName, state.Domain, state, pendingReferencedPaths(pending)); err != nil {
 		errs = append(errs, err)
 	}
-	return errors.Join(errs...)
+	return true, errors.Join(errs...)
 }
 
 func targetFromPending(pending pendingEnrollment) enrollmentTarget {
@@ -344,6 +350,7 @@ func generationArtifactPaths(template enrolledTemplate) []string {
 	}
 	paths := []string{
 		filepath.Join(template.GenerationDir, generationMarker),
+		filepath.Join(template.GenerationDir, generationMarkerTemp),
 		filepath.Join(template.GenerationDir, generationCertName),
 		filepath.Join(template.GenerationDir, generationKeyName),
 		template.GenerationDir,
@@ -355,6 +362,13 @@ func generationArtifactPaths(template enrolledTemplate) []string {
 		paths = append(paths, filepath.Join(template.GenerationRoot, "generations"), template.GenerationRoot)
 	}
 	return paths
+}
+
+func templateArtifactRemovalPaths(template enrolledTemplate) []string {
+	if template.GenerationDir != "" {
+		return generationArtifactPaths(template)
+	}
+	return []string{template.CertFile, template.KeyFile}
 }
 
 func pendingForTarget(state *enrollmentState, caName, server, template string) (pendingEnrollment, bool) {

@@ -385,7 +385,7 @@ func stateReferencedPaths(state *enrollmentState) map[string]struct{} {
 	return paths
 }
 
-func removeUnreferencedPaths(ctx context.Context, stateDir, objectName, domain string, replacement *enrollmentState, candidates ...[]string) error {
+func removeUnreferencedPaths(ctx context.Context, stateDir, globalTrustDir, objectName, domain string, replacement *enrollmentState, candidates ...[]string) error {
 	stateFileMu.Lock()
 	defer stateFileMu.Unlock()
 
@@ -407,6 +407,9 @@ func removeUnreferencedPaths(ctx context.Context, stateDir, objectName, domain s
 		}
 		if err := validateEnumeratedState(state); err != nil {
 			return fmt.Errorf("validating enrollment state %s before cleanup: %w", path, err)
+		}
+		if err := validateStateArtifactOwnership(stateDir, globalTrustDir, state); err != nil {
+			return fmt.Errorf("validating enrollment artifact ownership in %s before cleanup: %w", path, err)
 		}
 		canonical := isCanonicalStatePath(stateDir, path, state)
 		if !canonical && !isLegacyStatePath(stateDir, path, state) {
@@ -435,7 +438,7 @@ func removeUnreferencedPaths(ctx context.Context, stateDir, objectName, domain s
 		if _, keep := referenced[path]; keep {
 			continue
 		}
-		if err := removeOwnedEnrollmentPath(stateDir, path); err != nil && !os.IsNotExist(err) {
+		if err := removeOwnedEnrollmentPath(stateDir, globalTrustDir, path); err != nil && !os.IsNotExist(err) {
 			cleanupErrs = append(cleanupErrs, fmt.Errorf("removing unreferenced enrollment path %s: %w", path, err))
 			continue
 		}
@@ -444,11 +447,19 @@ func removeUnreferencedPaths(ctx context.Context, stateDir, objectName, domain s
 	return errors.Join(cleanupErrs...)
 }
 
-func removeOwnedEnrollmentPath(stateDir, path string) error {
+func removeOwnedEnrollmentPath(stateDir, globalTrustDir, path string) error {
 	if path == "" {
 		return nil
 	}
-	stateRoot, err := filepath.Abs(stateDir)
+	privateRoot, err := filepath.Abs(filepath.Join(stateDir, "private"))
+	if err != nil {
+		return err
+	}
+	certRoot, err := filepath.Abs(filepath.Join(stateDir, "certs"))
+	if err != nil {
+		return err
+	}
+	trustRoot, err := filepath.Abs(globalTrustDir)
 	if err != nil {
 		return err
 	}
@@ -456,27 +467,177 @@ func removeOwnedEnrollmentPath(stateDir, path string) error {
 	if err != nil {
 		return err
 	}
-	// Global trust artifacts intentionally live outside stateDir. Directories
-	// are never accepted there, while legacy state may still own a regular
-	// trust file in addition to current symlinks.
-	if !pathWithin(stateRoot, pathAbs) {
-		info, err := os.Lstat(pathAbs)
+	switch {
+	case pathWithin(privateRoot, pathAbs) && filepath.Clean(pathAbs) != filepath.Clean(privateRoot):
+		info, exists, err := inspectOwnedPath(privateRoot, pathAbs)
 		if err != nil {
 			return err
 		}
-		if !info.Mode().IsRegular() && info.Mode()&os.ModeSymlink == 0 {
-			return fmt.Errorf("refusing to remove unsupported path outside ADSys state")
+		if exists && info.Mode()&os.ModeSymlink != 0 {
+			if err := validateGenerationPointerSymlink(pathAbs); err != nil {
+				return err
+			}
+		} else if exists && !info.Mode().IsRegular() && !info.IsDir() {
+			return fmt.Errorf("refusing to remove unsupported private-state file type")
 		}
-		return os.Remove(pathAbs)
+	case pathWithin(certRoot, pathAbs) && filepath.Clean(pathAbs) != filepath.Clean(certRoot):
+		info, exists, err := inspectOwnedPath(certRoot, pathAbs)
+		if err != nil {
+			return err
+		}
+		if exists && !info.Mode().IsRegular() {
+			return fmt.Errorf("refusing to remove non-regular certificate-state path %s", path)
+		}
+	case globalTrustDir != "" && pathWithin(trustRoot, pathAbs) && filepath.Clean(pathAbs) != filepath.Clean(trustRoot):
+		if err := validateTrustSymlink(trustRoot, certRoot, pathAbs); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("refusing to remove path outside ADSys-owned enrollment roots: %s", path)
 	}
-	info, err := os.Lstat(pathAbs)
+	if err := os.Remove(pathAbs); err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+		if _, statErr := os.Lstat(filepath.Dir(pathAbs)); statErr != nil {
+			if os.IsNotExist(statErr) {
+				return nil
+			}
+			return statErr
+		}
+	}
+	if err := syncDirectory(filepath.Dir(pathAbs)); err != nil {
+		return fmt.Errorf("syncing parent after removing %s: %w", pathAbs, err)
+	}
+	return nil
+}
+
+func inspectOwnedPath(root, path string) (os.FileInfo, bool, error) {
+	root = filepath.Clean(root)
+	path = filepath.Clean(path)
+	if !pathWithin(root, path) || path == root {
+		return nil, false, fmt.Errorf("%s is outside owned root %s", path, root)
+	}
+	if err := validateExistingDirectoryPrefix(root); err != nil {
+		return nil, false, err
+	}
+	relative, err := filepath.Rel(root, path)
+	if err != nil {
+		return nil, false, err
+	}
+	current := root
+	components := strings.Split(relative, string(filepath.Separator))
+	for index, component := range components {
+		current = filepath.Join(current, component)
+		info, err := os.Lstat(current)
+		if os.IsNotExist(err) {
+			return nil, false, nil
+		}
+		if err != nil {
+			return nil, false, err
+		}
+		if index != len(components)-1 {
+			if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+				return nil, false, fmt.Errorf("owned path component %s is not a regular directory", current)
+			}
+			continue
+		}
+		return info, true, nil
+	}
+	return nil, false, nil
+}
+
+func validateExistingDirectoryPrefix(path string) error {
+	absolute, err := filepath.Abs(path)
 	if err != nil {
 		return err
 	}
-	if info.Mode().IsRegular() || info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
-		return os.Remove(pathAbs)
+	volume := filepath.VolumeName(absolute)
+	current := volume + string(filepath.Separator)
+	relative := strings.TrimPrefix(absolute, current)
+	for _, component := range strings.Split(relative, string(filepath.Separator)) {
+		if component == "" {
+			continue
+		}
+		current = filepath.Join(current, component)
+		info, err := os.Lstat(current)
+		if os.IsNotExist(err) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("owned root component %s is not a regular directory", current)
+		}
 	}
-	return fmt.Errorf("refusing to remove unsupported file type")
+	return nil
+}
+
+func validateGenerationPointerSymlink(path string) error {
+	if filepath.Base(path) != "current" {
+		return fmt.Errorf("refusing to remove unexpected private-state symlink %s", path)
+	}
+	root := filepath.Dir(path)
+	generations := filepath.Join(root, "generations")
+	info, exists, err := inspectOwnedPath(root, generations)
+	if err != nil {
+		return err
+	}
+	if !exists || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("generation pointer %s has no regular generations directory", path)
+	}
+	target, err := os.Readlink(path)
+	if err != nil {
+		return err
+	}
+	if !filepath.IsAbs(target) {
+		target = filepath.Join(root, target)
+	}
+	target, err = filepath.Abs(target)
+	if err != nil {
+		return err
+	}
+	if !pathWithin(generations, target) || filepath.Clean(target) == filepath.Clean(generations) {
+		return fmt.Errorf("generation pointer %s targets a path outside its owned generations", path)
+	}
+	_, _, err = inspectOwnedPath(generations, target)
+	return err
+}
+
+func validateTrustSymlink(trustRoot, certRoot, path string) error {
+	info, exists, err := inspectOwnedPath(trustRoot, path)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return nil
+	}
+	if info.Mode()&os.ModeSymlink == 0 {
+		return fmt.Errorf("trust artifact %s is not an ADSys-owned symlink", path)
+	}
+	target, err := os.Readlink(path)
+	if err != nil {
+		return err
+	}
+	if !filepath.IsAbs(target) {
+		target = filepath.Join(filepath.Dir(path), target)
+	}
+	target, err = filepath.Abs(target)
+	if err != nil {
+		return err
+	}
+	if !pathWithin(certRoot, target) || filepath.Clean(target) == filepath.Clean(certRoot) {
+		return fmt.Errorf("trust symlink %s targets a path outside ADSys certificate state", path)
+	}
+	targetInfo, targetExists, err := inspectOwnedPath(certRoot, target)
+	if err != nil {
+		return err
+	}
+	if targetExists && !targetInfo.Mode().IsRegular() {
+		return fmt.Errorf("trust symlink %s does not target a regular certificate", path)
+	}
+	return nil
 }
 
 func flattenStrings(groups ...[]string) []string {

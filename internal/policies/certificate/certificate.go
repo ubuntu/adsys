@@ -98,6 +98,8 @@ type Manager struct {
 	installChain        func(certAuthority, string, string) (*caChainInstallation, error)
 	publishGeneration   func(string, []byte, []byte, generationPublishOps) (generationPaths, error)
 	saveEnrollmentState func(string, *enrollmentState) error
+	generationOps       generationPublishOps
+	removePending       func(string, pendingEnrollment) error
 
 	// Fields used by "cepces" enrollment method.
 	vendorPythonDir string
@@ -207,6 +209,8 @@ func New(domain string, opts ...Option) *Manager {
 		installChain:        installCAChainTransaction,
 		publishGeneration:   publishCertificateGeneration,
 		saveEnrollmentState: saveState,
+		generationOps:       defaultGenerationPublishOps(),
+		removePending:       removePendingMaterial,
 	}
 
 	switch m.enrollmentMethod {
@@ -238,6 +242,13 @@ func New(domain string, opts ...Option) *Manager {
 	}
 
 	return m
+}
+
+func (m *Manager) loadEnrollmentState(objectName string) (*enrollmentState, error) {
+	if err := reconcileGenerationPublications(m.stateDir, m.generationOps); err != nil {
+		return nil, err
+	}
+	return loadStateWithOwnedRoots(m.stateDir, m.globalTrustDir, objectName, m.domain)
 }
 
 func normalizeEnrollmentMethod(method string) (string, bool) {
@@ -285,7 +296,7 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == "autoenroll" })
 	if idx == -1 {
 		// Check if we have existing enrollment state or legacy Samba cache to clean up
-		existingState, stateErr := loadState(m.stateDir, objectName, m.domain)
+		existingState, stateErr := m.loadEnrollmentState(objectName)
 		_, sambaErr := os.Stat(filepath.Join(m.stateDir, "samba"))
 		hasSambaCache := sambaErr == nil
 
@@ -443,8 +454,8 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 //  5. Saves CA/domain-bound enrollment state
 //
 // The caller must hold m.mu and trustLifecycleMu for writing.
-func (m *Manager) enrollLocked(ctx context.Context, objectName string) error {
-	existingState, err := loadState(m.stateDir, objectName, m.domain)
+func (m *Manager) enrollLocked(ctx context.Context, objectName string) (err error) {
+	existingState, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return fmt.Errorf("failed to load existing enrollment state: %w", err)
 	}
@@ -485,11 +496,11 @@ func (m *Manager) enrollLocked(ctx context.Context, objectName string) error {
 	trustDir := filepath.Join(m.stateDir, "certs")
 	privateDir := filepath.Join(m.stateDir, "private", "certs")
 	for _, dir := range []string{trustDir, m.globalTrustDir} {
-		if err := os.MkdirAll(dir, 0750); err != nil {
+		if err := mkdirAllWithoutSymlinks(dir, 0750); err != nil {
 			return fmt.Errorf("failed to create directory %s: %w", dir, err)
 		}
 	}
-	if err := os.MkdirAll(privateDir, 0700); err != nil {
+	if err := mkdirAllWithoutSymlinks(privateDir, 0700); err != nil {
 		return fmt.Errorf("failed to create private directory: %w", err)
 	}
 
@@ -569,6 +580,19 @@ func (m *Manager) enrollLocked(ctx context.Context, objectName string) error {
 	var rollbackErrs []error
 	var enrollmentErrs []error
 	var publications []generationPaths
+	publicationStateCommitted := false
+	defer func() {
+		if publicationStateCommitted {
+			return
+		}
+		var publicationRollbackErrs []error
+		for index := len(publications) - 1; index >= 0; index-- {
+			if rollbackErr := rollbackGenerationPublication(publications[index], m.generationOps); rollbackErr != nil {
+				publicationRollbackErrs = append(publicationRollbackErrs, fmt.Errorf("rolling back unpublished certificate generation: %w", rollbackErr))
+			}
+		}
+		err = errors.Join(err, errors.Join(publicationRollbackErrs...))
+	}()
 	for _, prepared := range preparedCAs {
 		ca := prepared.authority
 		if prepared.skip {
@@ -658,10 +682,10 @@ func (m *Manager) enrollLocked(ctx context.Context, objectName string) error {
 					}
 				}
 				if err := addPendingEnrollment(working, *result.Pending); err != nil {
-					cleanupErr := removePendingMaterial(m.stateDir, *result.Pending)
+					cleanupErr := m.removePending(m.stateDir, *result.Pending)
 					enrollmentErrs = append(enrollmentErrs, errors.Join(err, cleanupErr))
 				} else if err := m.saveEnrollmentState(m.stateDir, working); err != nil {
-					cleanupErr := removePendingMaterial(m.stateDir, *result.Pending)
+					cleanupErr := m.removePending(m.stateDir, *result.Pending)
 					enrollmentErrs = append(enrollmentErrs, errors.Join(fmt.Errorf("saving pending request %d: %w", result.Pending.RequestID, err), cleanupErr))
 				} else {
 					existingState = working
@@ -676,9 +700,6 @@ func (m *Manager) enrollLocked(ctx context.Context, objectName string) error {
 
 			log.Debugf(ctx, "Successfully enrolled certificate for template %s from CA %s", attrs.Name, ca.Name)
 			publications = append(publications, result.Publication)
-			if result.PublishErr != nil {
-				enrollmentErrs = append(enrollmentErrs, fmt.Errorf("publishing certificate generation for %s: %w", nickname, result.PublishErr))
-			}
 			enrolledTemplates = append(enrolledTemplates, result.Template)
 		}
 
@@ -738,19 +759,22 @@ func (m *Manager) enrollLocked(ctx context.Context, objectName string) error {
 			rollbackContext("prepared CA chain installations", rollbackPrepared()),
 		}, append(rollbackErrs, enrollmentErrs...)...)...)
 	}
+	publicationStateCommitted = true
 
 	var terminalErrs []error
 	terminalErrs = append(terminalErrs, rollbackErrs...)
 	terminalErrs = append(terminalErrs, enrollmentErrs...)
+	publicationsFinalized := true
 	for _, publication := range publications {
 		if publication.MarkerFile == "" {
 			continue
 		}
-		if err := finalizeGenerationPublication(publication); err != nil {
+		if err := finalizeGenerationPublicationWithOps(publication, m.generationOps); err != nil {
 			terminalErrs = append(terminalErrs, err)
+			publicationsFinalized = false
 		}
 	}
-	if existingState != nil {
+	if existingState != nil && publicationsFinalized {
 		if err := cleanupOrphanedCerts(ctx, m.stateDir, m.globalTrustDir, m.domain, existingState, state); err != nil {
 			terminalErrs = append(terminalErrs, fmt.Errorf("cleaning up obsolete enrollment artifacts: %w", err))
 		}
@@ -774,7 +798,7 @@ func (m *Manager) enrollLocked(ctx context.Context, objectName string) error {
 // unenrollLocked removes all certificate enrollments and cleans up state. The
 // caller must hold m.mu and trustLifecycleMu for writing.
 func (m *Manager) unenrollLocked(ctx context.Context, objectName string) error {
-	state, err := loadState(m.stateDir, objectName, m.domain)
+	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -790,8 +814,7 @@ func (m *Manager) unenrollLocked(ctx context.Context, objectName string) error {
 			// removeUnreferencedPaths below, which honors other state files.
 			for _, tmpl := range ca.Templates {
 				log.Debugf(ctx, "Removing certificate files for template %s", tmpl.Nickname)
-				obsoleteChainPaths = append(obsoleteChainPaths, tmpl.CertFile, tmpl.KeyFile)
-				obsoleteChainPaths = append(obsoleteChainPaths, generationArtifactPaths(tmpl)...)
+				obsoleteChainPaths = append(obsoleteChainPaths, templateArtifactRemovalPaths(tmpl)...)
 				obsoleteChainPaths = append(obsoleteChainPaths, tmpl.ChainFiles...)
 				if tmpl.TrustAnchorSymlink != "" {
 					obsoleteChainPaths = append(obsoleteChainPaths, tmpl.TrustAnchorSymlink)
@@ -825,7 +848,7 @@ func (m *Manager) unenrollLocked(ctx context.Context, objectName string) error {
 	if err := removeState(m.stateDir, objectName, m.domain); err != nil {
 		cleanupErrs = append(cleanupErrs, fmt.Errorf("removing enrollment state: %w", err))
 	} else {
-		if err := removeUnreferencedPaths(ctx, m.stateDir, objectName, m.domain, nil, obsoleteChainPaths); err != nil {
+		if err := removeUnreferencedPaths(ctx, m.stateDir, m.globalTrustDir, objectName, m.domain, nil, obsoleteChainPaths); err != nil {
 			cleanupErrs = append(cleanupErrs, fmt.Errorf("removing unreferenced certificate paths: %w", err))
 		}
 	}
@@ -871,9 +894,7 @@ func cleanupOrphanedCerts(ctx context.Context, stateDir, globalTrustDir, domain 
 			add(cert)
 		}
 		for _, tmpl := range ca.Templates {
-			add(tmpl.CertFile)
-			add(tmpl.KeyFile)
-			for _, path := range generationArtifactPaths(tmpl) {
+			for _, path := range templateArtifactRemovalPaths(tmpl) {
 				add(path)
 			}
 			for _, path := range tmpl.ChainFiles {
@@ -894,7 +915,7 @@ func cleanupOrphanedCerts(ctx context.Context, stateDir, globalTrustDir, domain 
 
 	return errors.Join(
 		errors.Join(validationErrs...),
-		removeUnreferencedPaths(ctx, stateDir, oldState.ObjectName, domain, replacement, orphaned),
+		removeUnreferencedPaths(ctx, stateDir, globalTrustDir, oldState.ObjectName, domain, replacement, orphaned),
 	)
 }
 
