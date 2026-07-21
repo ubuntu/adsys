@@ -127,24 +127,34 @@ func TestFetchMachineTokenContext(t *testing.T) {
 	const defaultDN = "DC=example,DC=com"
 	identity, err := deriveMachineDirectoryIdentity("HOST$", "EXAMPLE.COM.", "")
 	require.NoError(t, err)
-	entry := ldap.NewEntry("CN=HOST,CN=Computers,"+defaultDN, map[string][]string{
+	computerDN := "CN=HOST,CN=Computers," + defaultDN
+	resolved := ldap.NewEntry(computerDN, map[string][]string{
+		"sAMAccountName": {"HOST$"},
+		"dNSHostName":    {"host.example.com"},
+	})
+	entry := ldap.NewEntry(computerDN, map[string][]string{
 		"sAMAccountName": {"HOST$"},
 		"dNSHostName":    {"host.example.com"},
 		"primaryGroupID": {"515"},
 	})
 	entry.Attributes = append(entry.Attributes,
 		&ldap.EntryAttribute{Name: "objectSid", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 1000)}},
-		&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 2200)}},
+		&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{
+			aclSID(5, 21, 1, 2, 3, 2100),
+			aclSID(5, 21, 1, 2, 3, 2200),
+		}},
 		&ldap.EntryAttribute{Name: "sIDHistory", ByteValues: [][]byte{aclSID(5, 21, 9, 8, 7, 1000)}},
 	)
 	conn := &mockLDAPClient{searchResults: map[string]*ldap.SearchResult{
-		defaultDN: {Entries: []*ldap.Entry{entry}},
+		defaultDN:  {Entries: []*ldap.Entry{resolved}},
+		computerDN: {Entries: []*ldap.Entry{entry}},
 	}}
 
 	token, err := fetchMachineTokenContext(context.Background(), conn, defaultDN, identity)
 	require.NoError(t, err)
 	for _, sid := range []string{
 		"S-1-5-21-1-2-3-1000",
+		"S-1-5-21-1-2-3-2100",
 		"S-1-5-21-1-2-3-2200",
 		"S-1-5-21-1-2-3-515",
 		"S-1-5-21-9-8-7-1000",
@@ -153,9 +163,15 @@ func TestFetchMachineTokenContext(t *testing.T) {
 		assert.Contains(t, token, sid)
 	}
 	assert.NotContains(t, token, "S-1-5-10")
-	require.Len(t, conn.requests, 1)
+	require.Len(t, conn.requests, 2)
+	assert.Equal(t, defaultDN, conn.requests[0].BaseDN)
+	assert.Equal(t, ldap.ScopeWholeSubtree, conn.requests[0].Scope)
 	assert.Contains(t, conn.requests[0].Filter, "(sAMAccountName=host$)")
 	assert.Contains(t, conn.requests[0].Filter, "(dNSHostName=host.example.com)")
+	assert.Equal(t, computerDN, conn.requests[1].BaseDN)
+	assert.Equal(t, ldap.ScopeBaseObject, conn.requests[1].Scope)
+	assert.Equal(t, "(objectClass=computer)", conn.requests[1].Filter)
+	assert.Contains(t, conn.requests[1].Attributes, "tokenGroups")
 }
 
 func TestDeriveMachineDirectoryIdentity(t *testing.T) {
@@ -196,25 +212,47 @@ func TestFetchMachineTokenContextFailsClosed(t *testing.T) {
 
 	identity, err := deriveMachineDirectoryIdentity("host", "example.com", "")
 	require.NoError(t, err)
-	for name, entries := range map[string][]*ldap.Entry{
-		"missing object": nil,
+	const defaultDN = "DC=example,DC=com"
+	const computerDN = "CN=host,CN=Computers,DC=example,DC=com"
+	resolved := ldap.NewEntry(computerDN, map[string][]string{
+		"sAMAccountName": {"host$"},
+		"dNSHostName":    {"host.example.com"},
+	})
+	for name, results := range map[string]map[string]*ldap.SearchResult{
+		"missing object": {
+			defaultDN: {},
+		},
 		"ambiguous object": {
-			ldap.NewEntry("CN=one", nil),
-			ldap.NewEntry("CN=two", nil),
+			defaultDN: {Entries: []*ldap.Entry{
+				ldap.NewEntry("CN=one", nil),
+				ldap.NewEntry("CN=two", nil),
+			}},
+		},
+		"missing base object": {
+			defaultDN:  {Entries: []*ldap.Entry{resolved}},
+			computerDN: {},
+		},
+		"base object changed identity": {
+			defaultDN: {Entries: []*ldap.Entry{resolved}},
+			computerDN: {Entries: []*ldap.Entry{ldap.NewEntry(computerDN, map[string][]string{
+				"sAMAccountName": {"other$"},
+				"dNSHostName":    {"other.example.com"},
+				"primaryGroupID": {"515"},
+			})}},
 		},
 		"missing binary SID": {
-			ldap.NewEntry("CN=host", map[string][]string{
+			defaultDN: {Entries: []*ldap.Entry{resolved}},
+			computerDN: {Entries: []*ldap.Entry{ldap.NewEntry(computerDN, map[string][]string{
 				"sAMAccountName": {"host$"},
+				"dNSHostName":    {"host.example.com"},
 				"primaryGroupID": {"515"},
-			}),
+			})}},
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			conn := &mockLDAPClient{searchResults: map[string]*ldap.SearchResult{
-				"DC=example,DC=com": {Entries: entries},
-			}}
-			_, err := fetchMachineTokenContext(context.Background(), conn, "DC=example,DC=com", identity)
+			conn := &mockLDAPClient{searchResults: results}
+			_, err := fetchMachineTokenContext(context.Background(), conn, defaultDN, identity)
 			require.Error(t, err)
 		})
 	}
@@ -350,10 +388,48 @@ func TestFetchDirectoryCACertificatesReadsCAAndAIAContainers(t *testing.T) {
 
 	certs, err := fetchDirectoryCACertificatesContext(context.Background(), conn, configDN)
 	require.NoError(t, err)
-	assert.Equal(t, [][]byte{{1}, {2}, {3}, {1}}, certs)
+	assert.Equal(t, []directoryCACertificate{
+		{DER: []byte{1}, Source: certificateSourceTrustedRoot},
+		{DER: []byte{2}, Source: certificateSourceTrustedRoot},
+		{DER: []byte{3}, Source: certificateSourceAIA},
+		{DER: []byte{1}, Source: certificateSourceAIA},
+	}, certs)
 	require.Len(t, conn.requests, 2)
 	assert.Equal(t, caBase, conn.requests[0].BaseDN)
 	assert.Equal(t, aiaBase, conn.requests[1].BaseDN)
+}
+
+func TestLDAPUint32AttributeAcceptsSignedADInteger(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		value   string
+		want    uint32
+		wantErr bool
+	}{
+		"signed high bit":        {value: "-2147483648", want: 0x80000000},
+		"signed all bits":        {value: "-1", want: 0xffffffff},
+		"positive compatibility": {value: "4294967295", want: 0xffffffff},
+		"negative overflow":      {value: "-2147483649", wantErr: true},
+		"positive overflow":      {value: "4294967296", wantErr: true},
+		"malformed":              {value: "not-an-integer", wantErr: true},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			entry := ldap.NewEntry("CN=Template", map[string][]string{
+				"msPKI-Certificate-Name-Flag": {tc.value},
+			})
+			got, present, err := ldapUint32Attribute(entry, "msPKI-Certificate-Name-Flag")
+			assert.True(t, present)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.want, got)
+		})
+	}
 }
 
 func TestFetchTemplateAttrs(t *testing.T) {
@@ -688,6 +764,7 @@ func TestDiscoverCAsAndTemplates(t *testing.T) {
 
 	configDN := "CN=Configuration,DC=example,DC=com"
 	enrollBaseDN := fmt.Sprintf("CN=Enrollment Services,CN=Public Key Services,CN=Services,%s", configDN)
+	caBaseDN := fmt.Sprintf("CN=Certification Authorities,CN=Public Key Services,CN=Services,%s", configDN)
 	ca := newChainTestCA(t, "Test CA", nil, time.Now().Add(-time.Hour), time.Now().Add(time.Hour), 1)
 
 	tests := map[string]struct {
@@ -710,6 +787,11 @@ func TestDiscoverCAsAndTemplates(t *testing.T) {
 				enrollBaseDN: {
 					Entries: []*ldap.Entry{
 						newCAEntry(enrollBaseDN, "TestCA", "ca.example.com", []string{"Machine"}, ca.cert.Raw),
+					},
+				},
+				caBaseDN: {
+					Entries: []*ldap.Entry{
+						newCAEntry(caBaseDN, "TestCA", "ca.example.com", nil, ca.cert.Raw),
 					},
 				},
 			},
@@ -858,7 +940,9 @@ func TestEnrollmentDiscoveryRestartsAuthorizationTransactionOnNextCandidate(t *t
 		defaultDN = "DC=example,DC=com"
 	)
 	enrollBase := "CN=Enrollment Services,CN=Public Key Services,CN=Services," + configDN
+	caBase := "CN=Certification Authorities,CN=Public Key Services,CN=Services," + configDN
 	templateBase := "CN=Certificate Templates,CN=Public Key Services,CN=Services," + configDN
+	computerDN := "CN=host," + defaultDN
 	ca := newChainTestCA(t, "Test CA", nil, time.Now().Add(-time.Hour), time.Now().Add(time.Hour), 1)
 	var searchesByDC = map[string][]string{}
 	connector := &candidateLDAPTestConnector{
@@ -879,11 +963,22 @@ func TestEnrollmentDiscoveryRestartsAuthorizationTransactionOnNextCandidate(t *t
 					return &ldap.SearchResult{Entries: []*ldap.Entry{
 						newCAEntry(enrollBase, "TestCA", "ca.example.com", []string{"Machine"}, ca.cert.Raw),
 					}}, nil
+				case caBase:
+					return &ldap.SearchResult{Entries: []*ldap.Entry{
+						newCAEntry(caBase, "TestCA", "", nil, ca.cert.Raw),
+					}}, nil
 				case defaultDN:
+					return &ldap.SearchResult{Entries: []*ldap.Entry{
+						ldap.NewEntry(computerDN, map[string][]string{
+							"sAMAccountName": {"host$"},
+							"dNSHostName":    {"host.example.com"},
+						}),
+					}}, nil
+				case computerDN:
 					if candidate.host == "dc1.example.com" {
 						return nil, fmt.Errorf("tokenGroups lookup failed")
 					}
-					entry := ldap.NewEntry("CN=host,"+defaultDN, map[string][]string{
+					entry := ldap.NewEntry(computerDN, map[string][]string{
 						"sAMAccountName": {"host$"},
 						"dNSHostName":    {"host.example.com"},
 						"primaryGroupID": {"515"},

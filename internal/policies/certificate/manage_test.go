@@ -758,6 +758,7 @@ func mgrWriteState(t *testing.T, stateDir string, cas []enrolledCA) {
 func mgrConnector(configDN string, templates []string, caDER []byte) LDAPConnector {
 	defaultDN := "DC=example,DC=com"
 	enrollBaseDN := fmt.Sprintf("CN=Enrollment Services,CN=Public Key Services,CN=Services,%s", configDN)
+	caBaseDN := fmt.Sprintf("CN=Certification Authorities,CN=Public Key Services,CN=Services,%s", configDN)
 	templateBaseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
 
 	results := map[string]*ldap.SearchResult{
@@ -766,6 +767,7 @@ func mgrConnector(configDN string, templates []string, caDER []byte) LDAPConnect
 			"defaultNamingContext":       {defaultDN},
 		})}},
 		enrollBaseDN: {Entries: []*ldap.Entry{newCAEntry(enrollBaseDN, "TestCA", "ca.example.com", templates, caDER)}},
+		caBaseDN:     {Entries: []*ldap.Entry{newCAEntry(caBaseDN, "TestCA", "", nil, caDER)}},
 	}
 	tEntries := make([]*ldap.Entry, 0, len(templates))
 	for _, tmpl := range templates {
@@ -783,7 +785,12 @@ func mgrConnector(configDN string, templates []string, caDER []byte) LDAPConnect
 		tEntries = append(tEntries, entry)
 	}
 	results[templateBaseDN] = &ldap.SearchResult{Entries: tEntries}
-	computer := ldap.NewEntry("CN=keypress,CN=Computers,"+defaultDN, map[string][]string{
+	computerDN := "CN=keypress,CN=Computers," + defaultDN
+	resolvedComputer := ldap.NewEntry(computerDN, map[string][]string{
+		"sAMAccountName": {"keypress$"},
+		"dNSHostName":    {"keypress.example.com"},
+	})
+	computer := ldap.NewEntry(computerDN, map[string][]string{
 		"sAMAccountName": {"keypress$"},
 		"dNSHostName":    {"keypress.example.com"},
 		"primaryGroupID": {"515"},
@@ -792,7 +799,8 @@ func mgrConnector(configDN string, templates []string, caDER []byte) LDAPConnect
 		&ldap.EntryAttribute{Name: "objectSid", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 1000)}},
 		&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 515)}},
 	)
-	results[defaultDN] = &ldap.SearchResult{Entries: []*ldap.Entry{computer}}
+	results[defaultDN] = &ldap.SearchResult{Entries: []*ldap.Entry{resolvedComputer}}
+	results[computerDN] = &ldap.SearchResult{Entries: []*ldap.Entry{computer}}
 
 	conn := &mockLDAPClient{searchResults: results}
 	return LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) { return conn, nil })

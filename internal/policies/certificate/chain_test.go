@@ -39,7 +39,7 @@ func TestResolveCAChainsSelectsNewestRenewalDeterministically(t *testing.T) {
 		resolved, err := resolveCAChains([]certAuthority{{
 			Name:           "Enterprise CA",
 			CACertificates: values,
-		}}, nil, now)
+		}}, trustedRootValues(values...), now)
 		require.NoError(t, err)
 		require.Len(t, resolved, 1)
 		require.NotNil(t, resolved[0].Chain)
@@ -59,7 +59,7 @@ func TestResolveCAChainsOfflineRootAndSubordinate(t *testing.T) {
 	resolved, err := resolveCAChains([]certAuthority{{
 		Name:           "Enterprise Issuing CA",
 		CACertificates: [][]byte{subordinate.cert.Raw},
-	}}, [][]byte{root.cert.Raw, root.cert.Raw}, now)
+	}}, trustedRootValues(root.cert.Raw, root.cert.Raw), now)
 	require.NoError(t, err)
 	require.Len(t, resolved, 1)
 	require.Len(t, resolved[0].Chain.Certificates, 2)
@@ -77,6 +77,63 @@ func TestResolveCAChainsOfflineRootAndSubordinate(t *testing.T) {
 	)
 	require.NoError(t, err)
 	assert.Equal(t, "host.example.com", verified.Subject.CommonName)
+}
+
+func TestResolveCAChainsRequiresTrustedRootPublication(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	root := newChainTestCA(t, "Enterprise Root", nil, now.Add(-time.Hour), now.Add(24*time.Hour), 1)
+	subordinate := newChainTestCA(t, "Enterprise Issuer", root, now.Add(-time.Hour), now.Add(12*time.Hour), 2)
+
+	tests := map[string]struct {
+		caValues  [][]byte
+		directory []directoryCACertificate
+		wantErr   bool
+	}{
+		"self-signed only on enrollment service": {
+			caValues: [][]byte{root.cert.Raw},
+			wantErr:  true,
+		},
+		"self-signed only in AIA": {
+			caValues: [][]byte{subordinate.cert.Raw},
+			directory: []directoryCACertificate{
+				{DER: root.cert.Raw, Source: certificateSourceAIA},
+			},
+			wantErr: true,
+		},
+		"offline root in trusted container": {
+			caValues: [][]byte{subordinate.cert.Raw},
+			directory: []directoryCACertificate{
+				{DER: root.cert.Raw, Source: certificateSourceTrustedRoot},
+				{DER: subordinate.cert.Raw, Source: certificateSourceAIA},
+			},
+		},
+		"enterprise root duplicated in trusted container": {
+			caValues: [][]byte{root.cert.Raw},
+			directory: []directoryCACertificate{
+				{DER: root.cert.Raw, Source: certificateSourceAIA},
+				{DER: root.cert.Raw, Source: certificateSourceTrustedRoot},
+			},
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			resolved, err := resolveCAChains([]certAuthority{{
+				Name:           "Enterprise CA",
+				CACertificates: tc.caValues,
+			}}, tc.directory, now)
+			if tc.wantErr {
+				require.Error(t, err)
+				assert.ErrorContains(t, err, "Certification Authorities")
+				return
+			}
+			require.NoError(t, err)
+			require.Len(t, resolved, 1)
+			assert.Equal(t, certificateFingerprint(root.cert), certificateFingerprint(resolved[0].Chain.root()))
+		})
+	}
 }
 
 func TestResolveCAChainsRejectsMissingAndMalformedValues(t *testing.T) {
@@ -177,4 +234,15 @@ func chainTestLeaf(t *testing.T, publicKey any, issuer *chainTestCA, identity st
 	der, err := x509.CreateCertificate(rand.Reader, template, issuer.cert, publicKey, issuer.key)
 	require.NoError(t, err)
 	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+}
+
+func trustedRootValues(values ...[]byte) []directoryCACertificate {
+	published := make([]directoryCACertificate, 0, len(values))
+	for _, value := range values {
+		published = append(published, directoryCACertificate{
+			DER:    value,
+			Source: certificateSourceTrustedRoot,
+		})
+	}
+	return published
 }

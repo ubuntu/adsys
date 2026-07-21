@@ -38,6 +38,18 @@ type certAuthority struct {
 	Templates      []string // Certificate templates the CA is configured to issue
 }
 
+type directoryCertificateSource string
+
+const (
+	certificateSourceTrustedRoot directoryCertificateSource = "certification-authorities"
+	certificateSourceAIA         directoryCertificateSource = "aia"
+)
+
+type directoryCACertificate struct {
+	DER    []byte
+	Source directoryCertificateSource
+}
+
 // templateAttrs represents attributes of a certificate template.
 type templateAttrs struct {
 	Name                   string
@@ -1104,20 +1116,28 @@ func fetchCertificationAuthoritiesContext(ctx context.Context, conn LDAPClient, 
 	return cas, nil
 }
 
-// fetchDirectoryCACertificatesContext retrieves every current and historical
-// cACertificate value published in the Certification Authorities and AIA
-// containers. These values provide the directory-only roots and intermediates
-// needed for subordinate enterprise CA deployments.
-func fetchDirectoryCACertificatesContext(ctx context.Context, conn LDAPClient, configDN string) ([][]byte, error) {
-	containers := []string{
-		fmt.Sprintf("CN=Certification Authorities,CN=Public Key Services,CN=Services,%s", configDN),
-		fmt.Sprintf("CN=AIA,CN=Public Key Services,CN=Services,%s", configDN),
+// fetchDirectoryCACertificatesContext keeps the publication container attached
+// to every certificate. Only Certification Authorities publishes trust
+// anchors; AIA publishes issuer candidates.
+func fetchDirectoryCACertificatesContext(ctx context.Context, conn LDAPClient, configDN string) ([]directoryCACertificate, error) {
+	containers := []struct {
+		baseDN string
+		source directoryCertificateSource
+	}{
+		{
+			baseDN: fmt.Sprintf("CN=Certification Authorities,CN=Public Key Services,CN=Services,%s", configDN),
+			source: certificateSourceTrustedRoot,
+		},
+		{
+			baseDN: fmt.Sprintf("CN=AIA,CN=Public Key Services,CN=Services,%s", configDN),
+			source: certificateSourceAIA,
+		},
 	}
 
-	var certificates [][]byte
-	for _, baseDN := range containers {
+	var certificates []directoryCACertificate
+	for _, container := range containers {
 		searchReq := ldap.NewSearchRequest(
-			baseDN,
+			container.baseDN,
 			ldap.ScopeWholeSubtree,
 			ldap.NeverDerefAliases,
 			0, 0, false,
@@ -1127,11 +1147,14 @@ func fetchDirectoryCACertificatesContext(ctx context.Context, conn LDAPClient, c
 		)
 		result, err := ldapSearchContext(ctx, conn, searchReq)
 		if err != nil {
-			return nil, fmt.Errorf("LDAP search for CA certificates under %s failed: %w", baseDN, err)
+			return nil, fmt.Errorf("LDAP search for CA certificates under %s failed: %w", container.baseDN, err)
 		}
 		for _, entry := range result.Entries {
 			for _, value := range entry.GetRawAttributeValues("cACertificate") {
-				certificates = append(certificates, append([]byte(nil), value...))
+				certificates = append(certificates, directoryCACertificate{
+					DER:    append([]byte(nil), value...),
+					Source: container.source,
+				})
 			}
 		}
 	}
@@ -1442,9 +1465,16 @@ func ldapUint32Attribute(entry *ldap.Entry, name string) (uint32, bool, error) {
 	if value == "" {
 		return 0, true, fmt.Errorf("%s is empty", name)
 	}
+	if strings.HasPrefix(value, "-") {
+		parsed, err := strconv.ParseInt(value, 10, 32)
+		if err != nil {
+			return 0, true, fmt.Errorf("%s signed 32-bit value %q is malformed or out of range: %w", name, value, err)
+		}
+		return uint32(int32(parsed)), true, nil
+	}
 	parsed, err := strconv.ParseUint(value, 10, 32)
 	if err != nil {
-		return 0, true, fmt.Errorf("%s value %q is malformed: %w", name, value, err)
+		return 0, true, fmt.Errorf("%s unsigned 32-bit value %q is malformed or out of range: %w", name, value, err)
 	}
 	return uint32(parsed), true, nil
 }

@@ -55,8 +55,9 @@ func rawCertificateFingerprint(der []byte) string {
 // deterministically selects a currently usable issuing certificate for each
 // enrollment service. Renewal values are ordered by newest NotBefore, newest
 // NotAfter, then ascending SHA-256 fingerprint.
-func resolveCAChains(cas []certAuthority, directoryCertificates [][]byte, now time.Time) ([]certAuthority, error) {
+func resolveCAChains(cas []certAuthority, directoryCertificates []directoryCACertificate, now time.Time) ([]certAuthority, error) {
 	allByFingerprint := make(map[string]*x509.Certificate)
+	trustedRootFingerprints := make(map[string]struct{})
 	addCertificate := func(der []byte, source string) (*x509.Certificate, error) {
 		if len(der) == 0 {
 			return nil, fmt.Errorf("%s contains an empty cACertificate value", source)
@@ -76,9 +77,13 @@ func resolveCAChains(cas []certAuthority, directoryCertificates [][]byte, now ti
 		return cert, nil
 	}
 
-	for i, der := range directoryCertificates {
-		if _, err := addCertificate(der, fmt.Sprintf("directory CA store value %d", i)); err != nil {
+	for i, published := range directoryCertificates {
+		cert, err := addCertificate(published.DER, fmt.Sprintf("directory %s value %d", published.Source, i))
+		if err != nil {
 			return nil, err
+		}
+		if published.Source == certificateSourceTrustedRoot {
+			trustedRootFingerprints[certificateFingerprint(cert)] = struct{}{}
 		}
 	}
 
@@ -127,7 +132,7 @@ func resolveCAChains(cas []certAuthority, directoryCertificates [][]byte, now ti
 				candidateErrors = append(candidateErrors, fmt.Sprintf("%s: %v", certificateFingerprint(candidate), err))
 				continue
 			}
-			path, err := buildDirectoryCAPath(candidate, all, now, map[string]bool{})
+			path, err := buildDirectoryCAPath(candidate, all, trustedRootFingerprints, now, map[string]bool{})
 			if err != nil {
 				candidateErrors = append(candidateErrors, fmt.Sprintf("%s: %v", certificateFingerprint(candidate), err))
 				continue
@@ -186,7 +191,7 @@ func sortCertificatesForRenewal(certs []*x509.Certificate) {
 	})
 }
 
-func buildDirectoryCAPath(cert *x509.Certificate, all []*x509.Certificate, now time.Time, visiting map[string]bool) ([]*x509.Certificate, error) {
+func buildDirectoryCAPath(cert *x509.Certificate, all []*x509.Certificate, trustedRootFingerprints map[string]struct{}, now time.Time, visiting map[string]bool) ([]*x509.Certificate, error) {
 	fp := certificateFingerprint(cert)
 	if visiting[fp] {
 		return nil, fmt.Errorf("certificate chain contains a cycle")
@@ -199,6 +204,9 @@ func buildDirectoryCAPath(cert *x509.Certificate, all []*x509.Certificate, now t
 	}
 
 	if bytes.Equal(cert.RawSubject, cert.RawIssuer) && cert.CheckSignatureFrom(cert) == nil {
+		if _, trusted := trustedRootFingerprints[fp]; !trusted {
+			return nil, fmt.Errorf("self-signed certificate is not published in the Certification Authorities container")
+		}
 		path := []*x509.Certificate{cert}
 		if err := verifyExactCAPath(path, now); err != nil {
 			return nil, err
@@ -224,7 +232,7 @@ func buildDirectoryCAPath(cert *x509.Certificate, all []*x509.Certificate, now t
 	defer delete(visiting, fp)
 	var pathErrors []string
 	for _, parent := range parents {
-		parentPath, err := buildDirectoryCAPath(parent, all, now, visiting)
+		parentPath, err := buildDirectoryCAPath(parent, all, trustedRootFingerprints, now, visiting)
 		if err != nil {
 			pathErrors = append(pathErrors, err.Error())
 			continue

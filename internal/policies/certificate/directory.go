@@ -118,7 +118,7 @@ func fetchMachineTokenContext(ctx context.Context, conn LDAPClient, defaultDN st
 		ldap.NeverDerefAliases,
 		2, 0, false,
 		filter,
-		[]string{"sAMAccountName", "dNSHostName", "objectSid", "tokenGroups", "primaryGroupID", "sIDHistory"},
+		[]string{"sAMAccountName", "dNSHostName"},
 		nil,
 	)
 	result, err := ldapSearchContext(ctx, conn, searchReq)
@@ -128,11 +128,36 @@ func fetchMachineTokenContext(ctx context.Context, conn LDAPClient, defaultDN st
 	if len(result.Entries) != 1 {
 		return nil, fmt.Errorf("current computer identity resolved to %d directory objects, want exactly one", len(result.Entries))
 	}
-	entry := result.Entries[0]
-	samMatches := strings.EqualFold(entry.GetAttributeValue("sAMAccountName"), identity.samAccountName)
-	dnsMatches := normalizeMachineIdentity(entry.GetAttributeValue("dNSHostName")) == identity.dnsName
-	if !samMatches && !dnsMatches {
+	resolved := result.Entries[0]
+	if strings.TrimSpace(resolved.DN) == "" {
+		return nil, fmt.Errorf("resolved computer object has no distinguished name")
+	}
+	if !machineEntryMatchesIdentity(resolved, identity) {
 		return nil, fmt.Errorf("resolved computer object does not match machine identity %q", identity.dnsName)
+	}
+
+	baseReq := ldap.NewSearchRequest(
+		resolved.DN,
+		ldap.ScopeBaseObject,
+		ldap.NeverDerefAliases,
+		1, 0, false,
+		"(objectClass=computer)",
+		[]string{"sAMAccountName", "dNSHostName", "objectSid", "tokenGroups", "primaryGroupID", "sIDHistory"},
+		nil,
+	)
+	baseResult, err := ldapSearchContext(ctx, conn, baseReq)
+	if err != nil {
+		return nil, fmt.Errorf("LDAP base read for current computer object %q failed: %w", resolved.DN, err)
+	}
+	if len(baseResult.Entries) != 1 {
+		return nil, fmt.Errorf("LDAP base read for current computer object %q returned %d entries, want exactly one", resolved.DN, len(baseResult.Entries))
+	}
+	entry := baseResult.Entries[0]
+	if !strings.EqualFold(strings.TrimSpace(entry.DN), strings.TrimSpace(resolved.DN)) {
+		return nil, fmt.Errorf("LDAP base read returned computer DN %q, want %q", entry.DN, resolved.DN)
+	}
+	if !machineEntryMatchesIdentity(entry, identity) {
+		return nil, fmt.Errorf("base-read computer object no longer matches machine identity %q", identity.dnsName)
 	}
 
 	objectSIDValues := entry.GetRawAttributeValues("objectSid")
@@ -149,4 +174,10 @@ func fetchMachineTokenContext(ctx context.Context, conn LDAPClient, defaultDN st
 		primaryGroupIDs[0],
 		entry.GetRawAttributeValues("sIDHistory"),
 	)
+}
+
+func machineEntryMatchesIdentity(entry *ldap.Entry, identity machineDirectoryIdentity) bool {
+	samMatches := strings.EqualFold(entry.GetAttributeValue("sAMAccountName"), identity.samAccountName)
+	dnsMatches := normalizeMachineIdentity(entry.GetAttributeValue("dNSHostName")) == identity.dnsName
+	return samMatches || dnsMatches
 }

@@ -91,6 +91,7 @@ func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string
 	configDN := "CN=Configuration,DC=example,DC=com"
 	defaultDN := "DC=example,DC=com"
 	enrollBaseDN := fmt.Sprintf("CN=Enrollment Services,CN=Public Key Services,CN=Services,%s", configDN)
+	caBaseDN := fmt.Sprintf("CN=Certification Authorities,CN=Public Key Services,CN=Services,%s", configDN)
 	templateBaseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
 
 	// Build enrollment services search result
@@ -127,7 +128,12 @@ func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string
 		templateEntries = append(templateEntries, templateEntry)
 	}
 
-	computerEntry := ldap.NewEntry("CN=keypress,CN=Computers,"+defaultDN, map[string][]string{
+	computerDN := "CN=keypress,CN=Computers," + defaultDN
+	computerResult := ldap.NewEntry(computerDN, map[string][]string{
+		"sAMAccountName": {"keypress$"},
+		"dNSHostName":    {"keypress.example.com"},
+	})
+	computerEntry := ldap.NewEntry(computerDN, map[string][]string{
 		"sAMAccountName": {"keypress$"},
 		"dNSHostName":    {"keypress.example.com"},
 		"primaryGroupID": {"515"},
@@ -150,10 +156,14 @@ func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string
 			enrollBaseDN: {
 				Entries: []*ldap.Entry{enrollEntry},
 			},
+			caBaseDN: {
+				Entries: []*ldap.Entry{enrollEntry},
+			},
 			templateBaseDN: {
 				Entries: templateEntries,
 			},
-			defaultDN: {Entries: []*ldap.Entry{computerEntry}},
+			defaultDN:  {Entries: []*ldap.Entry{computerResult}},
+			computerDN: {Entries: []*ldap.Entry{computerEntry}},
 		},
 	}
 }
