@@ -251,7 +251,7 @@ func TestApplyPolicy(t *testing.T) {
 		"Computer, configured to unenroll":          {entries: []entry.Entry{{Key: "autoenroll", Value: unenrollValue}}},
 		"Computer, no entries, samba cache present": {sambaDirExists: true},
 		"Computer, no entries, existing state":      {existingState: true},
-		"Computer, no entries, corrupted state":     {corruptedState: true},
+		"Computer, no entries, corrupted state":     {corruptedState: true, wantErr: true},
 
 		// Skip cases (previously errors, now graceful skips)
 		"Computer, disabled advanced LDAP endpoint": {entries: append([]entry.Entry{enrollEntry}, disabledLDAPEndpointEntries...)},
@@ -336,7 +336,9 @@ func TestApplyPolicy(t *testing.T) {
 				if tc.submitErr {
 					require.NoFileExists(t, filepath.Join(stateDir, "certs", "TestCA.crt"))
 					require.NoFileExists(t, filepath.Join(globalTrustDir, "TestCA.crt"))
-					require.NoFileExists(t, filepath.Join(stateDir, "certs", "state_keypress.json"))
+					stateFiles, globErr := filepath.Glob(filepath.Join(stateDir, "certs", "state_keypress*.json"))
+					require.NoError(t, globErr)
+					require.Empty(t, stateFiles)
 				}
 				return
 			}
@@ -349,9 +351,6 @@ func TestApplyPolicy(t *testing.T) {
 				keys, err := filepath.Glob(filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*.key"))
 				require.NoError(t, err)
 				require.Len(t, keys, 1, "expected exactly one enrolled private key")
-			}
-			if tc.corruptedState {
-				require.NoFileExists(t, filepath.Join(stateDir, "certs", "state_keypress.json"))
 			}
 		})
 	}

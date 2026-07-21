@@ -19,6 +19,7 @@ import (
 	"github.com/go-ldap/ldap/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 )
 
 const mgrTestDomain = "example.com"
@@ -242,19 +243,21 @@ func TestRenewCertificates(t *testing.T) {
 		m, stateDir, certPaths := setup(t, []string{"Machine"})
 		before, err := os.ReadFile(certPaths[0])
 		require.NoError(t, err)
-		stateBefore, err := loadState(stateDir, mgrTestObject)
+		stateBefore, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
 		require.NoError(t, err)
 
 		var msgs []string
 		err = m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, func(s string) { msgs = append(msgs, s) })
 		require.NoError(t, err)
 
-		after, err := os.ReadFile(certPaths[0])
+		stateAfter, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
 		require.NoError(t, err)
-		assert.NotEqual(t, before, after, "certificate file should be rewritten on renewal")
-
-		stateAfter, err := loadState(stateDir, mgrTestObject)
+		renewedPath := stateAfter.CAs[0].Templates[0].CertFile
+		require.NotEqual(t, certPaths[0], renewedPath)
+		after, err := os.ReadFile(renewedPath)
 		require.NoError(t, err)
+		assert.NotEqual(t, before, after, "certificate file should be replaced on renewal")
+		assert.NoFileExists(t, certPaths[0], "legacy certificate path should be pruned after state is saved")
 		assert.False(t, stateAfter.UpdatedAt.Before(stateBefore.UpdatedAt), "state UpdatedAt should advance")
 
 		joined := strings.Join(msgs, "\n")
@@ -264,7 +267,7 @@ func TestRenewCertificates(t *testing.T) {
 
 	t.Run("renew all templates", func(t *testing.T) {
 		t.Parallel()
-		m, _, certPaths := setup(t, []string{"Machine", "WebServer"})
+		m, stateDir, certPaths := setup(t, []string{"Machine", "WebServer"})
 		before := make([][]byte, len(certPaths))
 		for i, p := range certPaths {
 			b, err := os.ReadFile(p)
@@ -276,10 +279,14 @@ func TestRenewCertificates(t *testing.T) {
 		err := m.RenewCertificates(context.Background(), mgrTestObject, "", true, func(s string) { msgs = append(msgs, s) })
 		require.NoError(t, err)
 
-		for i, p := range certPaths {
-			after, err := os.ReadFile(p)
+		state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+		require.NoError(t, err)
+		for i, tmpl := range state.CAs[0].Templates {
+			require.NotEqual(t, certPaths[i], tmpl.CertFile)
+			after, err := os.ReadFile(tmpl.CertFile)
 			require.NoError(t, err)
-			assert.NotEqual(t, before[i], after, "certificate %d should be rewritten", i)
+			assert.NotEqual(t, before[i], after, "certificate %d should be replaced", i)
+			assert.NoFileExists(t, certPaths[i])
 		}
 		assert.Equal(t, 2, strings.Count(strings.Join(msgs, "\n"), "Renewed"))
 	})
@@ -292,7 +299,7 @@ func TestRenewCertificates(t *testing.T) {
 		assert.Contains(t, err.Error(), "TestCA.Machine")
 	})
 
-	t.Run("renewal failure is aggregated but state is saved", func(t *testing.T) {
+	t.Run("renewal failure is aggregated without changing state", func(t *testing.T) {
 		t.Parallel()
 		tmpdir := t.TempDir()
 		stateDir := filepath.Join(tmpdir, "state")
@@ -319,13 +326,18 @@ func TestRenewCertificates(t *testing.T) {
 			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
 			WithCSRSubmitter(submitter),
 		)
+		stateBefore, err := os.ReadFile(stateFilePath(stateDir, mgrTestObject))
+		require.NoError(t, err)
 
 		var msgs []string
-		err := m.RenewCertificates(context.Background(), mgrTestObject, "", true, func(s string) { msgs = append(msgs, s) })
+		err = m.RenewCertificates(context.Background(), mgrTestObject, "", true, func(s string) { msgs = append(msgs, s) })
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "TestCA.Machine")
 		assert.Contains(t, strings.Join(msgs, "\n"), "Failed to renew")
-		require.FileExists(t, filepath.Join(stateDir, "certs", "state_keypress.json"))
+		require.FileExists(t, stateFilePath(stateDir, mgrTestObject))
+		stateAfter, readErr := os.ReadFile(stateFilePath(stateDir, mgrTestObject))
+		require.NoError(t, readErr)
+		assert.Equal(t, stateBefore, stateAfter)
 	})
 }
 
@@ -430,7 +442,7 @@ func TestTargetedRenewalRetainsPerTemplateExactChains(t *testing.T) {
 				require.FileExists(t, oldIssuerPath)
 			}
 
-			stateAfterFirst, err := loadState(stateDir, mgrTestObject)
+			stateAfterFirst, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
 			require.NoError(t, err)
 			require.Len(t, stateAfterFirst.CAs, 1)
 			require.Len(t, stateAfterFirst.CAs[0].Templates, 2)
@@ -448,7 +460,7 @@ func TestTargetedRenewalRetainsPerTemplateExactChains(t *testing.T) {
 			}
 
 			require.NoError(t, manager.RenewCertificates(context.Background(), mgrTestObject, "TestCA.WebServer", false, nil))
-			stateAfterSecond, err := loadState(stateDir, mgrTestObject)
+			stateAfterSecond, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
 			require.NoError(t, err)
 			assert.Equal(
 				t,
@@ -531,7 +543,7 @@ func TestPolicyReconciliationPreservesPreviousStateOnTrustInstallFailure(t *test
 	require.NoError(t, err)
 	assert.Equal(t, "owned by another enrollment", string(blocker))
 
-	state, err := loadState(stateDir, mgrTestObject)
+	state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
 	require.NoError(t, err)
 	require.Len(t, state.CAs, 1)
 	require.Len(t, state.CAs[0].Templates, 1)
@@ -587,7 +599,7 @@ func TestRemoveCertificates(t *testing.T) {
 		assert.FileExists(t, rootPath)
 		assert.FileExists(t, symlinkPath)
 
-		state, err := loadState(stateDir, mgrTestObject)
+		state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
 		require.NoError(t, err)
 		require.Len(t, state.CAs, 1)
 		require.Len(t, state.CAs[0].Templates, 1)
@@ -621,7 +633,7 @@ func TestRemoveCertificates(t *testing.T) {
 		assert.NoFileExists(t, tmpl.KeyFile)
 		assert.NoFileExists(t, rootPath, "root cert should be removed with the last template")
 		assert.NoFileExists(t, symlinkPath, "trust symlink should be removed with the last template")
-		assert.NoFileExists(t, filepath.Join(stateDir, "certs", "state_keypress.json"), "state file should be removed")
+		assert.NoFileExists(t, stateFilePath(stateDir, mgrTestObject), "state file should be removed")
 	})
 
 	t.Run("unknown nickname lists valid nicknames", func(t *testing.T) {
@@ -667,7 +679,7 @@ func TestRemoveCertificates(t *testing.T) {
 		assert.NoFileExists(t, tmpl.KeyFile)
 		assert.NoFileExists(t, rootPath)
 		assert.NoFileExists(t, symlinkPath)
-		assert.NoFileExists(t, filepath.Join(stateDir, "certs", "state_keypress.json"))
+		assert.NoFileExists(t, stateFilePath(stateDir, mgrTestObject))
 		assert.Contains(t, strings.Join(msgs, "\n"), "Removed all certificates")
 	})
 }
@@ -849,7 +861,7 @@ func TestVerifyCertificatesRejectsCrossCABindingAndChainTampering(t *testing.T) 
 		)
 		require.NoError(t, os.WriteFile(fixture.caATemplate.KeyFile, wrongKeyPEM, 0600))
 		require.NoError(t, os.WriteFile(fixture.caATemplate.CertFile, wrongLeafPEM, 0600))
-		state, err := loadState(fixture.stateDir, mgrTestObject)
+		state, err := loadState(fixture.stateDir, mgrTestObject, mgrTestDomain)
 		require.NoError(t, err)
 		block, _ := pem.Decode(wrongLeafPEM)
 		require.NotNil(t, block)
@@ -1043,7 +1055,10 @@ func TestRenewCertificatesReplacesInvalidTargets(t *testing.T) {
 		t.Parallel()
 		m, certFile := build(t, now.Add(-time.Hour), false)
 		require.NoError(t, m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil))
-		require.FileExists(t, certFile)
+		state, err := loadState(m.stateDir, mgrTestObject, mgrTestDomain)
+		require.NoError(t, err)
+		require.FileExists(t, state.CAs[0].Templates[0].CertFile)
+		assert.NoFileExists(t, certFile)
 		results, err := m.VerifyCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false)
 		require.NoError(t, err)
 		require.Len(t, results, 1)
@@ -1057,7 +1072,10 @@ func TestRenewCertificatesReplacesInvalidTargets(t *testing.T) {
 		m, certFile := build(t, now.Add(365*24*time.Hour), true)
 		require.NoFileExists(t, certFile)
 		require.NoError(t, m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil))
-		require.FileExists(t, certFile)
+		state, err := loadState(m.stateDir, mgrTestObject, mgrTestDomain)
+		require.NoError(t, err)
+		require.FileExists(t, state.CAs[0].Templates[0].CertFile)
+		assert.NotEqual(t, certFile, state.CAs[0].Templates[0].CertFile)
 		results, err := m.VerifyCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false)
 		require.NoError(t, err)
 		require.Len(t, results, 1)
@@ -1176,7 +1194,7 @@ func TestRenewCertificatesFailsSafelyOnBrokenNonTarget(t *testing.T) {
 	machineAfter, err := os.ReadFile(machine.CertFile)
 	require.NoError(t, err)
 	assert.Equal(t, machineBefore, machineAfter, "target cert must not change on a fail-safe abort")
-	state, err := loadState(stateDir, mgrTestObject)
+	state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
 	require.NoError(t, err)
 	require.Len(t, state.CAs, 1)
 	require.Len(t, state.CAs[0].Templates, 2, "no template may be dropped on a fail-safe abort")
@@ -1221,7 +1239,7 @@ func TestRenewCertificatesRetainsValidOldEntryOnFailure(t *testing.T) {
 	after, err := os.ReadFile(tmpl.CertFile)
 	require.NoError(t, err)
 	assert.Equal(t, before, after, "still-valid old certificate must be preserved on failed renewal")
-	state, err := loadState(stateDir, mgrTestObject)
+	state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
 	require.NoError(t, err)
 	require.Len(t, state.CAs, 1)
 	require.Len(t, state.CAs[0].Templates, 1, "valid old template must be retained")
@@ -1253,9 +1271,11 @@ func TestRemovalPreservesOtherObjectSharedPaths(t *testing.T) {
 		shared.TrustAnchorSymlink = symlinkPath
 		caFP := rawCertificateFingerprint(caDER)
 		for _, obj := range []string{"host-a", "host-b"} {
+			identity, err := enrollmentMachineIdentity(obj, mgrTestDomain)
+			require.NoError(t, err)
 			require.NoError(t, saveState(stateDir, &enrollmentState{
 				ObjectName: obj,
-				Identity:   "host.example.com",
+				Identity:   identity.dnsName,
 				Domain:     mgrTestDomain,
 				CAs: []enrolledCA{{
 					Name:              "TestCA",
@@ -1276,7 +1296,7 @@ func TestRemovalPreservesOtherObjectSharedPaths(t *testing.T) {
 		assert.FileExists(t, shared.KeyFile, "shared key deleted despite another owner")
 		assert.FileExists(t, rootPath, "shared root deleted despite another owner")
 		assert.FileExists(t, symlinkPath, "shared trust anchor deleted despite another owner")
-		stateB, err := loadState(stateDir, "host-b")
+		stateB, err := loadState(stateDir, "host-b", mgrTestDomain)
 		require.NoError(t, err)
 		require.Len(t, stateB.CAs, 1)
 		require.Len(t, stateB.CAs[0].Templates, 1, "the untouched object state must be intact")
@@ -1311,7 +1331,7 @@ func TestVerifyCertificatesRejectsMismatchedRequestedIdentity(t *testing.T) {
 		tmpl := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, leafPEM)
 		tmpl = mgrBindTemplate(t, tmpl, leafPEM, caDER, rootPath)
 		caFP := rawCertificateFingerprint(caDER)
-		require.NoError(t, saveState(stateDir, &enrollmentState{
+		state := &enrollmentState{
 			ObjectName: objectName,
 			Identity:   identity,
 			Domain:     mgrTestDomain,
@@ -1323,21 +1343,20 @@ func TestVerifyCertificatesRejectsMismatchedRequestedIdentity(t *testing.T) {
 				RootCerts:         []string{rootPath},
 				Templates:         []enrolledTemplate{tmpl},
 			}},
-		}))
+		}
+		require.NoError(t, writeStateFile(stateFilePath(stateDir, objectName), state))
 		return mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"))
 	}
 
-	t.Run("sanitized object-name collision is rejected", func(t *testing.T) {
+	t.Run("sanitized object-name collision is isolated", func(t *testing.T) {
 		t.Parallel()
 		m := setup(t, "host-", "host-.example.com")
-		// "host$" and "host-" sanitize to the same state file yet are different
-		// machines; verification must refuse the mismatched state.
-		require.Equal(t, stateFilePath(m.stateDir, "host$"), stateFilePath(m.stateDir, "host-"))
-		_, err := m.VerifyCertificates(context.Background(), "host$", "", false)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "does not match")
+		require.NotEqual(t, stateFilePath(m.stateDir, "host$"), stateFilePath(m.stateDir, "host-"))
+		results, err := m.VerifyCertificates(context.Background(), "host$", "", false)
+		require.NoError(t, err)
+		assert.Empty(t, results)
 
-		results, err := m.VerifyCertificates(context.Background(), "host-", "", false)
+		results, err = m.VerifyCertificates(context.Background(), "host-", "", false)
 		require.NoError(t, err)
 		require.Len(t, results, 1)
 		assert.True(t, results[0].ChainOK, "%v", results[0].Messages)
@@ -1352,6 +1371,579 @@ func TestVerifyCertificatesRejectsMismatchedRequestedIdentity(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "does not match")
 	})
+}
+
+func TestCollidingObjectNamesStayIsolatedAcrossManagement(t *testing.T) {
+	t.Parallel()
+
+	setup := func(t *testing.T) (*Manager, string, map[string]enrolledTemplate) {
+		t.Helper()
+		baseDir := t.TempDir()
+		stateDir := filepath.Join(baseDir, "state")
+		templates := make(map[string]enrolledTemplate)
+		for _, objectName := range []string{"host$", "host-"} {
+			identity, err := enrollmentMachineIdentity(objectName, mgrTestDomain)
+			require.NoError(t, err)
+			key, keyPEM := mgrKeyPEM(t)
+			nickname := map[string]string{"host$": "Dollar.Machine", "host-": "Dash.Machine"}[objectName]
+			certPEM := mgrSelfSigned(t, key, identity.dnsName, time.Now().Add(-time.Hour), time.Now().Add(365*24*time.Hour))
+			tmpl := mgrWritePair(t, stateDir, nickname, "Machine", keyPEM, certPEM)
+			templates[objectName] = tmpl
+			require.NoError(t, saveState(stateDir, &enrollmentState{
+				ObjectName: objectName,
+				Identity:   identity.dnsName,
+				Domain:     mgrTestDomain,
+				CAs: []enrolledCA{{
+					Name:      "TestCA",
+					Hostname:  "ca.example.com",
+					Templates: []enrolledTemplate{tmpl},
+				}},
+			}))
+		}
+		return mgrManager(t, stateDir, filepath.Join(baseDir, "trust")), stateDir, templates
+	}
+
+	t.Run("list", func(t *testing.T) {
+		t.Parallel()
+		manager, _, _ := setup(t)
+		dollar, err := manager.ListCertificates(context.Background(), "host$")
+		require.NoError(t, err)
+		require.Len(t, dollar, 1)
+		assert.Equal(t, "Dollar.Machine", dollar[0].Nickname)
+		dash, err := manager.ListCertificates(context.Background(), "host-")
+		require.NoError(t, err)
+		require.Len(t, dash, 1)
+		assert.Equal(t, "Dash.Machine", dash[0].Nickname)
+	})
+
+	t.Run("remove", func(t *testing.T) {
+		t.Parallel()
+		manager, stateDir, templates := setup(t)
+		require.NoError(t, manager.RemoveCertificates(context.Background(), "host$", "Dollar.Machine", false, true, nil))
+		assert.NoFileExists(t, templates["host$"].CertFile)
+		assert.FileExists(t, templates["host-"].CertFile)
+		dash, err := loadState(stateDir, "host-", mgrTestDomain)
+		require.NoError(t, err)
+		require.NotNil(t, dash)
+		require.Len(t, dash.CAs, 1)
+	})
+
+	t.Run("full unenroll", func(t *testing.T) {
+		t.Parallel()
+		manager, stateDir, templates := setup(t)
+		require.NoError(t, manager.RemoveCertificates(context.Background(), "host$", "", true, true, nil))
+		assert.NoFileExists(t, stateFilePath(stateDir, "host$"))
+		assert.FileExists(t, stateFilePath(stateDir, "host-"))
+		assert.FileExists(t, templates["host-"].CertFile)
+	})
+}
+
+func TestCollidingObjectLegacyRenewalUsesCurrentArtifactPaths(t *testing.T) {
+	t.Parallel()
+
+	for _, submitFails := range []bool{false, true} {
+		name := "success"
+		if submitFails {
+			name = "failure"
+		}
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			baseDir := t.TempDir()
+			stateDir := filepath.Join(baseDir, "state")
+			globalTrustDir := filepath.Join(baseDir, "trust")
+			caCert, caKey, caDER := mgrTestCA(t)
+			rootPath := mgrWriteCACertificate(t, stateDir, "legacy-root.crt", caDER)
+
+			sharedKey, sharedKeyPEM := mgrKeyPEM(t)
+			sharedCertPEM := mgrCASignedLeafForIdentity(
+				t,
+				caCert,
+				caKey,
+				&sharedKey.PublicKey,
+				"host-.example.com",
+				time.Now().Add(-time.Hour),
+				time.Now().Add(365*24*time.Hour),
+			)
+			shared := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", sharedKeyPEM, sharedCertPEM)
+			shared = mgrBindTemplate(t, shared, sharedCertPEM, caDER, rootPath)
+			caFP := certificateFingerprint(caCert)
+			for _, objectName := range []string{"host$", "host-"} {
+				identity, err := enrollmentMachineIdentity(objectName, mgrTestDomain)
+				require.NoError(t, err)
+				require.NoError(t, saveState(stateDir, &enrollmentState{
+					ObjectName: objectName,
+					Identity:   identity.dnsName,
+					Domain:     mgrTestDomain,
+					CAs: []enrolledCA{{
+						Name:              "TestCA",
+						Hostname:          "ca.example.com",
+						IssuerFingerprint: caFP,
+						ChainFingerprints: []string{caFP},
+						RootCerts:         []string{rootPath},
+						Templates:         []enrolledTemplate{shared},
+					}},
+				}))
+			}
+
+			sharedKeyBefore, err := os.ReadFile(shared.KeyFile)
+			require.NoError(t, err)
+			sharedCertBefore, err := os.ReadFile(shared.CertFile)
+			require.NoError(t, err)
+			dollarStateBefore, err := os.ReadFile(stateFilePath(stateDir, "host$"))
+			require.NoError(t, err)
+			dashStateBefore, err := os.ReadFile(stateFilePath(stateDir, "host-"))
+			require.NoError(t, err)
+
+			identity, err := enrollmentMachineIdentity("host$", mgrTestDomain)
+			require.NoError(t, err)
+			submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+				if submitFails {
+					return "", fmt.Errorf("injected renewal failure")
+				}
+				return mgrIssueFromCSRForIdentity(t, csrPEM, time.Now().Add(365*24*time.Hour), caCert, caKey, identity.dnsName), nil
+			}
+			manager := mgrManager(
+				t,
+				stateDir,
+				globalTrustDir,
+				WithLDAPConnector(mgrConnectorForIdentity(identity, []mgrDirectoryCA{{
+					name: "TestCA", hostname: "ca.example.com", templates: []string{"Machine"}, der: caDER,
+				}})),
+				WithCSRSubmitter(submitter),
+			)
+
+			err = manager.RenewCertificates(context.Background(), "host$", "TestCA.Machine", false, nil)
+			if submitFails {
+				require.Error(t, err)
+				dollarStateAfter, readErr := os.ReadFile(stateFilePath(stateDir, "host$"))
+				require.NoError(t, readErr)
+				assert.Equal(t, dollarStateBefore, dollarStateAfter, "failed renewal changed persisted state")
+			} else {
+				require.NoError(t, err)
+				state, loadErr := loadState(stateDir, "host$", mgrTestDomain)
+				require.NoError(t, loadErr)
+				renewed := state.CAs[0].Templates[0]
+				assert.NotEqual(t, shared.KeyFile, renewed.KeyFile)
+				assert.NotEqual(t, shared.CertFile, renewed.CertFile)
+				assert.Contains(t, filepath.Base(renewed.CertFile), leafArtifactBase("host$", certAuthority{
+					Name: "TestCA", Hostname: "ca.example.com",
+				}, "Machine"))
+				assert.FileExists(t, renewed.KeyFile)
+				assert.FileExists(t, renewed.CertFile)
+			}
+
+			gotSharedKey, err := os.ReadFile(shared.KeyFile)
+			require.NoError(t, err)
+			gotSharedCert, err := os.ReadFile(shared.CertFile)
+			require.NoError(t, err)
+			assert.Equal(t, sharedKeyBefore, gotSharedKey, "renewal overwrote the other object's legacy key")
+			assert.Equal(t, sharedCertBefore, gotSharedCert, "renewal overwrote the other object's legacy certificate")
+			dashStateAfter, err := os.ReadFile(stateFilePath(stateDir, "host-"))
+			require.NoError(t, err)
+			assert.Equal(t, dashStateBefore, dashStateAfter, "renewal changed the other object's state")
+		})
+	}
+}
+
+func TestEnrollmentIgnoresCollidingForeignLegacyState(t *testing.T) {
+	t.Parallel()
+
+	baseDir := t.TempDir()
+	stateDir := filepath.Join(baseDir, "state")
+	foreign := &enrollmentState{
+		ObjectName: "host-",
+		Identity:   "host-.example.com",
+		Domain:     mgrTestDomain,
+	}
+	require.NoError(t, writeStateFile(legacyStateFilePath(stateDir, "host-"), foreign))
+
+	caCert, caKey, caDER := mgrTestCA(t)
+	identity, err := enrollmentMachineIdentity("host$", mgrTestDomain)
+	require.NoError(t, err)
+	manager := mgrManager(
+		t,
+		stateDir,
+		filepath.Join(baseDir, "trust"),
+		WithLDAPConnector(mgrConnectorForIdentity(identity, []mgrDirectoryCA{{
+			name: "TestCA", hostname: "ca.example.com", templates: []string{"Machine"}, der: caDER,
+		}})),
+		WithCSRSubmitter(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+			return mgrIssueFromCSRForIdentity(t, csrPEM, time.Now().Add(365*24*time.Hour), caCert, caKey, identity.dnsName), nil
+		}),
+	)
+
+	require.NoError(t, manager.enroll(context.Background(), "host$"))
+	assert.FileExists(t, stateFilePath(stateDir, "host$"))
+	assert.FileExists(t, legacyStateFilePath(stateDir, "host-"), "foreign legacy state was deleted")
+	certs, err := manager.ListCertificates(context.Background(), "host$")
+	require.NoError(t, err)
+	require.Len(t, certs, 1)
+	assert.Equal(t, managementNickname("TestCA", "ca.example.com", "Machine"), certs[0].Nickname)
+
+	migrated, err := loadState(stateDir, "host-", mgrTestDomain)
+	require.NoError(t, err)
+	require.NotNil(t, migrated)
+	assert.FileExists(t, stateFilePath(stateDir, "host-"))
+	assert.FileExists(t, stateFilePath(stateDir, "host$"))
+	assert.NoFileExists(t, legacyStateFilePath(stateDir, "host-"))
+}
+
+func TestManagementNicknameCollisionsAreDisambiguated(t *testing.T) {
+	t.Parallel()
+
+	baseDir := t.TempDir()
+	stateDir := filepath.Join(baseDir, "state")
+	caACert, caAKey, caADER := mgrTestCA(t)
+	caBCert, caBKey, caBDER := mgrTestCA(t)
+	rootA := mgrWriteCACertificate(t, stateDir, "ca-a-legacy-root.crt", caADER)
+	rootB := mgrWriteCACertificate(t, stateDir, "ca-b-legacy-root.crt", caBDER)
+
+	buildTemplate := func(caCert *x509.Certificate, caKey *ecdsa.PrivateKey, caDER []byte, root string) enrolledTemplate {
+		key, keyPEM := mgrKeyPEM(t)
+		leaf := mgrCASignedLeaf(t, caCert, caKey, &key.PublicKey, time.Now().Add(-time.Hour), time.Now().Add(365*24*time.Hour))
+		tmpl := mgrWritePair(t, stateDir, legacyManagementNickname("Corp CA", "Machine"), "Machine", keyPEM, leaf)
+		return mgrBindTemplate(t, tmpl, leaf, caDER, root)
+	}
+	templateA := buildTemplate(caACert, caAKey, caADER, rootA)
+	// Both raw CA names sanitize to the same historical nickname and file
+	// prefix. Give the second legacy leaf a separate fixture path while keeping
+	// the colliding management nickname.
+	keyB, keyBPEM := mgrKeyPEM(t)
+	leafB := mgrCASignedLeaf(t, caBCert, caBKey, &keyB.PublicKey, time.Now().Add(-time.Hour), time.Now().Add(365*24*time.Hour))
+	templateB := mgrWritePair(t, stateDir, "legacy-ca-b-leaf", "Machine", keyBPEM, leafB)
+	templateB.Nickname = legacyManagementNickname("Corp-CA", "Machine")
+	templateB = mgrBindTemplate(t, templateB, leafB, caBDER, rootB)
+
+	state := &enrollmentState{
+		ObjectName: mgrTestObject,
+		Identity:   "keypress.example.com",
+		Domain:     mgrTestDomain,
+		CAs: []enrolledCA{
+			{
+				Name:              "Corp CA",
+				Hostname:          "ca-a.example.com",
+				IssuerFingerprint: certificateFingerprint(caACert),
+				ChainFingerprints: []string{certificateFingerprint(caACert)},
+				RootCerts:         []string{rootA},
+				Templates:         []enrolledTemplate{templateA},
+			},
+			{
+				Name:              "Corp-CA",
+				Hostname:          "ca-b.example.com",
+				IssuerFingerprint: certificateFingerprint(caBCert),
+				ChainFingerprints: []string{certificateFingerprint(caBCert)},
+				RootCerts:         []string{rootB},
+				Templates:         []enrolledTemplate{templateB},
+			},
+		},
+	}
+	require.NoError(t, saveState(stateDir, state))
+	nicknameA := state.CAs[0].Templates[0].Nickname
+	nicknameB := state.CAs[1].Templates[0].Nickname
+	require.NotEqual(t, nicknameA, nicknameB)
+	assert.Equal(t, managementNickname("Corp CA", "ca-a.example.com", "Machine"), nicknameA)
+	assert.Equal(t, managementNickname("Corp-CA", "ca-b.example.com", "Machine"), nicknameB)
+
+	identity, err := enrollmentMachineIdentity(mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	manager := mgrManager(
+		t,
+		stateDir,
+		filepath.Join(baseDir, "trust"),
+		WithLDAPConnector(mgrConnectorForIdentity(identity, []mgrDirectoryCA{
+			{name: "Corp CA", hostname: "ca-a.example.com", templates: []string{"Machine"}, der: caADER},
+			{name: "Corp-CA", hostname: "ca-b.example.com", templates: []string{"Machine"}, der: caBDER},
+		})),
+		WithCSRSubmitter(func(_ context.Context, _, caName, _ string, csrPEM string) (string, error) {
+			switch caName {
+			case "Corp CA":
+				return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caACert, caAKey), nil
+			case "Corp-CA":
+				return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caBCert, caBKey), nil
+			default:
+				return "", fmt.Errorf("unexpected CA %q", caName)
+			}
+		}),
+	)
+
+	listed, err := manager.ListCertificates(context.Background(), mgrTestObject)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{nicknameA, nicknameB}, nicknamesOf(listed))
+
+	legacyNickname := legacyManagementNickname("Corp CA", "Machine")
+	certABefore, err := os.ReadFile(templateA.CertFile)
+	require.NoError(t, err)
+	certBBefore, err := os.ReadFile(templateB.CertFile)
+	require.NoError(t, err)
+	err = manager.RenewCertificates(context.Background(), mgrTestObject, legacyNickname, false, nil)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "ambiguous")
+	assert.ErrorContains(t, err, nicknameA)
+	assert.ErrorContains(t, err, nicknameB)
+	gotA, err := os.ReadFile(templateA.CertFile)
+	require.NoError(t, err)
+	gotB, err := os.ReadFile(templateB.CertFile)
+	require.NoError(t, err)
+	assert.Equal(t, certABefore, gotA)
+	assert.Equal(t, certBBefore, gotB)
+
+	require.NoError(t, manager.RenewCertificates(context.Background(), mgrTestObject, nicknameA, false, nil))
+	afterRenew, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	assert.NotEqual(t, templateA.CertFile, afterRenew.CAs[0].Templates[0].CertFile)
+	assert.Equal(t, templateB.CertFile, afterRenew.CAs[1].Templates[0].CertFile)
+	gotB, err = os.ReadFile(templateB.CertFile)
+	require.NoError(t, err)
+	assert.Equal(t, certBBefore, gotB, "targeted renewal changed the colliding CA")
+
+	require.NoError(t, manager.RemoveCertificates(context.Background(), mgrTestObject, nicknameB, false, true, nil))
+	afterRemove, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	require.Len(t, afterRemove.CAs, 1)
+	assert.Equal(t, "Corp CA", afterRemove.CAs[0].Name)
+}
+
+func TestEnrollmentRollbackFailuresAreNeverMasked(t *testing.T) {
+	t.Parallel()
+
+	for _, includeSuccessfulCA := range []bool{false, true} {
+		name := "zero successful CAs"
+		if includeSuccessfulCA {
+			name = "one successful CA"
+		}
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			baseDir := t.TempDir()
+			stateDir := filepath.Join(baseDir, "state")
+			badCert, _, badDER := mgrTestCA(t)
+			goodCert, goodKey, goodDER := mgrTestCA(t)
+			identity, err := enrollmentMachineIdentity(mgrTestObject, mgrTestDomain)
+			require.NoError(t, err)
+
+			cas := []mgrDirectoryCA{{
+				name: "Rollback CA", hostname: "rollback.example.com", templates: []string{"Machine"}, der: badDER,
+			}}
+			if includeSuccessfulCA {
+				cas = append([]mgrDirectoryCA{{
+					name: "Good CA", hostname: "good.example.com", templates: []string{"Machine"}, der: goodDER,
+				}}, cas...)
+			}
+			manager := mgrManager(
+				t,
+				stateDir,
+				filepath.Join(baseDir, "trust"),
+				WithLDAPConnector(mgrConnectorForIdentity(identity, cas)),
+				WithCSRSubmitter(func(_ context.Context, _, caName, _ string, csrPEM string) (string, error) {
+					if caName == "Rollback CA" {
+						return "", fmt.Errorf("injected submission failure")
+					}
+					return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), goodCert, goodKey), nil
+				}),
+			)
+			manager.installChain = func(ca certAuthority, trustDir, globalTrustDir string) (*caChainInstallation, error) {
+				installation, err := installCAChainTransaction(ca, trustDir, globalTrustDir)
+				if err != nil {
+					return nil, err
+				}
+				if ca.Name == "Rollback CA" {
+					installation.removeFile = func(string) error {
+						return fmt.Errorf("injected rollback removal failure")
+					}
+				}
+				return installation, nil
+			}
+
+			err = manager.enroll(context.Background(), mgrTestObject)
+			require.Error(t, err)
+			assert.ErrorContains(t, err, "injected rollback removal failure")
+			badRoot := filepath.Join(
+				stateDir,
+				"certs",
+				trustArtifactFileName(certAuthority{Name: "Rollback CA", Hostname: "rollback.example.com"}, badCert, "root"),
+			)
+			assert.FileExists(t, badRoot, "injected rollback failure should leave a named repairable artifact")
+
+			state, loadErr := loadState(stateDir, mgrTestObject, mgrTestDomain)
+			require.NoError(t, loadErr)
+			if includeSuccessfulCA {
+				require.NotNil(t, state)
+				require.Len(t, state.CAs, 1)
+				assert.Equal(t, "Good CA", state.CAs[0].Name)
+			} else {
+				assert.Nil(t, state)
+				assert.ErrorContains(t, err, "could not enroll to any certificate authorities")
+			}
+		})
+	}
+}
+
+func TestEnrollmentSerializesCreatorRollbackAndAdopterCommit(t *testing.T) {
+	baseDir := t.TempDir()
+	stateDir := filepath.Join(baseDir, "state")
+	globalTrustDir := filepath.Join(baseDir, "trust")
+	caCert, caKey, caDER := mgrTestCA(t)
+	identity, err := enrollmentMachineIdentity(mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	connector := mgrConnectorForIdentity(identity, []mgrDirectoryCA{{
+		name: "Shared CA", hostname: "ca.example.com", templates: []string{"Machine"}, der: caDER,
+	}})
+
+	creatorSubmitted := make(chan struct{})
+	releaseCreator := make(chan struct{})
+	creator := mgrManager(
+		t,
+		stateDir,
+		globalTrustDir,
+		WithLDAPConnector(connector),
+		WithCSRSubmitter(func(context.Context, string, string, string, string) (string, error) {
+			close(creatorSubmitted)
+			<-releaseCreator
+			return "", fmt.Errorf("injected creator failure")
+		}),
+	)
+	adopterConnected := make(chan struct{})
+	adopterConnector := LDAPConnectorFunc(func(ctx context.Context, server string) (LDAPClient, error) {
+		close(adopterConnected)
+		return connector.Connect(ctx, server)
+	})
+	adopter := mgrManager(
+		t,
+		stateDir,
+		globalTrustDir,
+		WithLDAPConnector(adopterConnector),
+		WithCSRSubmitter(func(_ context.Context, _, _, _ string, csrPEM string) (string, error) {
+			return mgrIssueFromCSRForIdentityResult(
+				csrPEM,
+				time.Now().Add(365*24*time.Hour),
+				caCert,
+				caKey,
+				"keypress.example.com",
+			)
+		}),
+	)
+
+	creatorDone := make(chan error, 1)
+	go func() {
+		creatorDone <- creator.enroll(context.Background(), mgrTestObject)
+	}()
+	select {
+	case <-creatorSubmitted:
+	case <-time.After(5 * time.Second):
+		t.Fatal("creator did not reach certificate submission")
+	}
+
+	adopterDone := make(chan error, 1)
+	go func() {
+		adopterDone <- adopter.enroll(context.Background(), mgrTestObject)
+	}()
+	select {
+	case <-adopterConnected:
+		t.Fatal("adopter entered the trust lifecycle before the creator rolled back")
+	case <-time.After(100 * time.Millisecond):
+	}
+
+	close(releaseCreator)
+	require.Error(t, <-creatorDone)
+	require.NoError(t, <-adopterDone)
+
+	state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	require.NotNil(t, state)
+	require.Len(t, state.CAs, 1)
+	require.Len(t, state.CAs[0].RootCerts, 1)
+	require.Len(t, state.CAs[0].Symlinks, 1)
+	require.Len(t, state.CAs[0].Templates, 1)
+	assert.FileExists(t, state.CAs[0].RootCerts[0], "creator rollback removed the adopter's committed root")
+	assert.FileExists(t, state.CAs[0].Symlinks[0], "creator rollback removed the adopter's committed anchor")
+	assert.FileExists(t, state.CAs[0].Templates[0].KeyFile)
+	assert.FileExists(t, state.CAs[0].Templates[0].CertFile)
+	target, err := os.Readlink(state.CAs[0].Symlinks[0])
+	require.NoError(t, err)
+	assert.Equal(t, state.CAs[0].RootCerts[0], target)
+}
+
+func TestManagementRejectsForeignCanonicalState(t *testing.T) {
+	t.Parallel()
+
+	baseDir := t.TempDir()
+	stateDir := filepath.Join(baseDir, "state")
+	marker := filepath.Join(stateDir, "certs", "foreign.crt")
+	require.NoError(t, os.MkdirAll(filepath.Dir(marker), 0750))
+	require.NoError(t, os.WriteFile(marker, []byte("foreign"), 0600))
+	foreign := &enrollmentState{
+		ObjectName: "host-",
+		Identity:   "host-.example.com",
+		Domain:     mgrTestDomain,
+		CAs: []enrolledCA{{
+			Name:     "Foreign CA",
+			Hostname: "foreign.example.com",
+			Templates: []enrolledTemplate{{
+				Nickname: "Foreign-CA.Machine",
+				Template: "Machine",
+				CertFile: marker,
+				KeyFile:  marker,
+			}},
+		}},
+	}
+	foreignPath := stateFilePath(stateDir, mgrTestObject)
+	require.NoError(t, writeStateFile(foreignPath, foreign))
+
+	_, _, caDER := mgrTestCA(t)
+	manager := mgrManager(
+		t,
+		stateDir,
+		filepath.Join(baseDir, "trust"),
+		WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
+		WithCSRSubmitter(func(context.Context, string, string, string, string) (string, error) {
+			return "", fmt.Errorf("CSR submission must not use foreign state")
+		}),
+	)
+
+	operations := map[string]func() error{
+		"list": func() error {
+			_, err := manager.ListCertificates(context.Background(), mgrTestObject)
+			return err
+		},
+		"status": func() error {
+			_, err := manager.CertificateStatus(context.Background(), mgrTestObject, "")
+			return err
+		},
+		"renew": func() error {
+			return manager.RenewCertificates(context.Background(), mgrTestObject, "Foreign-CA.Machine", false, nil)
+		},
+		"remove": func() error {
+			return manager.RemoveCertificates(context.Background(), mgrTestObject, "Foreign-CA.Machine", false, true, nil)
+		},
+		"full unenroll": func() error {
+			return manager.RemoveCertificates(context.Background(), mgrTestObject, "", true, true, nil)
+		},
+		"verify": func() error {
+			_, err := manager.VerifyCertificates(context.Background(), mgrTestObject, "", false)
+			return err
+		},
+		"show CAs": func() error {
+			_, err := manager.DiscoverCAsInfo(context.Background(), mgrTestObject)
+			return err
+		},
+		"policy enroll": func() error {
+			return manager.ApplyPolicy(context.Background(), mgrTestObject, true, true, []entry.Entry{{
+				Key: "autoenroll", Value: "1",
+			}})
+		},
+		"policy unenroll": func() error {
+			return manager.ApplyPolicy(context.Background(), mgrTestObject, true, true, nil)
+		},
+	}
+	for name, operation := range operations {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			err := operation()
+			require.Error(t, err)
+			assert.ErrorContains(t, err, "does not match requested object")
+			assert.FileExists(t, foreignPath)
+			assert.FileExists(t, marker)
+		})
+	}
 }
 
 // --- test helpers ---
@@ -1434,22 +2026,41 @@ func mgrCASignedLeafForIdentity(t *testing.T, caCert *x509.Certificate, caKey *e
 
 func mgrIssueFromCSR(t *testing.T, csrPEM string, notAfter time.Time, caCert *x509.Certificate, caKey *ecdsa.PrivateKey) string {
 	t.Helper()
-	block, _ := pem.Decode([]byte(csrPEM))
-	require.NotNil(t, block, "failed to decode CSR PEM")
-	csr, err := x509.ParseCertificateRequest(block.Bytes)
+	return mgrIssueFromCSRForIdentity(t, csrPEM, notAfter, caCert, caKey, "keypress.example.com")
+}
+
+func mgrIssueFromCSRForIdentity(t *testing.T, csrPEM string, notAfter time.Time, caCert *x509.Certificate, caKey *ecdsa.PrivateKey, identity string) string {
+	t.Helper()
+	certPEM, err := mgrIssueFromCSRForIdentityResult(csrPEM, notAfter, caCert, caKey, identity)
 	require.NoError(t, err)
+	return certPEM
+}
+
+func mgrIssueFromCSRForIdentityResult(csrPEM string, notAfter time.Time, caCert *x509.Certificate, caKey *ecdsa.PrivateKey, identity string) (string, error) {
+	block, _ := pem.Decode([]byte(csrPEM))
+	if block == nil {
+		return "", fmt.Errorf("failed to decode CSR PEM")
+	}
+	csr, err := x509.ParseCertificateRequest(block.Bytes)
+	if err != nil {
+		return "", fmt.Errorf("parsing CSR: %w", err)
+	}
 
 	serial, err := rand.Int(rand.Reader, big.NewInt(1<<62))
-	require.NoError(t, err)
+	if err != nil {
+		return "", fmt.Errorf("generating certificate serial: %w", err)
+	}
 	leaf := x509.Certificate{
 		SerialNumber: serial,
-		Subject:      pkix.Name{CommonName: "keypress.example.com"},
+		Subject:      pkix.Name{CommonName: identity},
 		NotBefore:    time.Now().Add(-time.Hour),
 		NotAfter:     notAfter,
 	}
 	der, err := x509.CreateCertificate(rand.Reader, &leaf, caCert, csr.PublicKey, caKey)
-	require.NoError(t, err)
-	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}))
+	if err != nil {
+		return "", fmt.Errorf("creating certificate: %w", err)
+	}
+	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})), nil
 }
 
 // mgrPaths returns the on-disk key and cert paths for a nickname without
@@ -1517,6 +2128,76 @@ func mgrBindTemplateChain(t *testing.T, tmpl enrolledTemplate, leafPEM []byte, c
 // answers root DSE, enrollment service and certificate template queries.
 func mgrConnector(configDN string, templates []string, caDER []byte) LDAPConnector {
 	return mgrConnectorWithChain(configDN, templates, caDER, caDER)
+}
+
+type mgrDirectoryCA struct {
+	name      string
+	hostname  string
+	templates []string
+	der       []byte
+}
+
+func mgrConnectorForIdentity(identity machineDirectoryIdentity, cas []mgrDirectoryCA) LDAPConnector {
+	configDN := "CN=Configuration,DC=example,DC=com"
+	defaultDN := "DC=example,DC=com"
+	enrollBaseDN := fmt.Sprintf("CN=Enrollment Services,CN=Public Key Services,CN=Services,%s", configDN)
+	caBaseDN := fmt.Sprintf("CN=Certification Authorities,CN=Public Key Services,CN=Services,%s", configDN)
+	templateBaseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
+
+	enrollmentEntries := make([]*ldap.Entry, 0, len(cas))
+	caEntries := make([]*ldap.Entry, 0, len(cas))
+	templateNames := make(map[string]struct{})
+	for _, ca := range cas {
+		enrollmentEntries = append(enrollmentEntries, newCAEntry(enrollBaseDN, ca.name, ca.hostname, ca.templates, ca.der))
+		caEntries = append(caEntries, newCAEntry(caBaseDN, ca.name, "", nil, ca.der))
+		for _, template := range ca.templates {
+			templateNames[template] = struct{}{}
+		}
+	}
+
+	templateEntries := make([]*ldap.Entry, 0, len(templateNames))
+	for template := range templateNames {
+		templateEntry := ldap.NewEntry(fmt.Sprintf("CN=%s,%s", template, templateBaseDN), map[string][]string{
+			"cn":                            {template},
+			"flags":                         {"64"},
+			"msPKI-Template-Schema-Version": {"2"},
+			"msPKI-Enrollment-Flag":         {"32"},
+			"msPKI-Minimal-Key-Size":        {"2048"},
+		})
+		templateEntry.Attributes = append(templateEntry.Attributes, &ldap.EntryAttribute{
+			Name:       "nTSecurityDescriptor",
+			ByteValues: [][]byte{aclNullDACL()},
+		})
+		templateEntries = append(templateEntries, templateEntry)
+	}
+
+	computerDN := fmt.Sprintf("CN=%s,CN=Computers,%s", identity.shortName, defaultDN)
+	resolvedComputer := ldap.NewEntry(computerDN, map[string][]string{
+		"sAMAccountName": {identity.samAccountName},
+		"dNSHostName":    {identity.dnsName},
+	})
+	computer := ldap.NewEntry(computerDN, map[string][]string{
+		"sAMAccountName": {identity.samAccountName},
+		"dNSHostName":    {identity.dnsName},
+		"primaryGroupID": {"515"},
+	})
+	computer.Attributes = append(computer.Attributes,
+		&ldap.EntryAttribute{Name: "objectSid", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 1000)}},
+		&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 515)}},
+	)
+
+	conn := &mockLDAPClient{searchResults: map[string]*ldap.SearchResult{
+		"": {Entries: []*ldap.Entry{ldap.NewEntry("", map[string][]string{
+			"configurationNamingContext": {configDN},
+			"defaultNamingContext":       {defaultDN},
+		})}},
+		enrollBaseDN:   {Entries: enrollmentEntries},
+		caBaseDN:       {Entries: caEntries},
+		templateBaseDN: {Entries: templateEntries},
+		defaultDN:      {Entries: []*ldap.Entry{resolvedComputer}},
+		computerDN:     {Entries: []*ldap.Entry{computer}},
+	}}
+	return LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) { return conn, nil })
 }
 
 func mgrConnectorWithChain(configDN string, templates []string, issuerDER, trustedRootDER []byte, aiaDER ...[]byte) LDAPConnector {

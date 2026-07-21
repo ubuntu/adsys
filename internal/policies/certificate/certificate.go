@@ -67,6 +67,11 @@ type gpoEntry struct {
 // integerGPOValues is a list of GPO registry values that contain integer data.
 var integerGPOValues = []string{"AuthFlags", "Cost", "Flags"}
 
+// trustLifecycleMu protects the complete state-and-artifact lifecycle across
+// Manager instances. Individual trust installation helpers intentionally do
+// not acquire it, because one lifecycle may prepare several CA installations.
+var trustLifecycleMu sync.RWMutex
+
 const (
 	gpoTypeString  int = 1 // REG_SZ
 	gpoTypeInteger int = 4 // REG_DWORD
@@ -88,8 +93,9 @@ type Manager struct {
 	enrollmentMethod string
 
 	// Fields used by "ldap" enrollment method.
-	ldapConnect LDAPConnector
-	submitCSR   CSRSubmitter
+	ldapConnect  LDAPConnector
+	submitCSR    CSRSubmitter
+	installChain func(certAuthority, string, string) (*caChainInstallation, error)
 
 	// Fields used by "cepces" enrollment method.
 	vendorPythonDir string
@@ -196,6 +202,7 @@ func New(domain string, opts ...Option) *Manager {
 		krb5CacheDir:     krb5CacheDir,
 		globalTrustDir:   args.globalTrustDir,
 		enrollmentMethod: args.enrollmentMethod,
+		installChain:     installCAChainTransaction,
 	}
 
 	switch m.enrollmentMethod {
@@ -258,6 +265,9 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		return nil
 	}
 
+	trustLifecycleMu.Lock()
+	defer trustLifecycleMu.Unlock()
+
 	switch m.enrollmentMethod {
 	case consts.CertEnrollmentLDAP:
 		return m.applyPolicyLDAP(ctx, objectName, entries)
@@ -271,7 +281,7 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 	idx := slices.IndexFunc(entries, func(e entry.Entry) bool { return e.Key == "autoenroll" })
 	if idx == -1 {
 		// Check if we have existing enrollment state or legacy Samba cache to clean up
-		existingState, stateErr := loadState(m.stateDir, objectName)
+		existingState, stateErr := loadState(m.stateDir, objectName, m.domain)
 		_, sambaErr := os.Stat(filepath.Join(m.stateDir, "samba"))
 		hasSambaCache := sambaErr == nil
 
@@ -279,11 +289,11 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 			return nil
 		}
 		if stateErr != nil {
-			log.Warningf(ctx, "Failed to load existing enrollment state, attempting cleanup anyway: %v", stateErr)
+			return fmt.Errorf("failed to load existing enrollment state before unenrollment: %w", stateErr)
 		}
 
 		log.Debug(ctx, "Certificate autoenrollment is not configured, unenrolling machine")
-		return m.unenroll(ctx, objectName)
+		return m.unenrollLocked(ctx, objectName)
 	}
 
 	log.Debug(ctx, "ApplyPolicy certificate policy")
@@ -302,7 +312,7 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 	log.Debugf(ctx, "Certificate policy value: %d", value)
 
 	if value&enrollFlag != enrollFlag {
-		return m.unenroll(ctx, objectName)
+		return m.unenrollLocked(ctx, objectName)
 	}
 
 	allowed, err := ldapPolicyAllowsEnrollment(entries)
@@ -314,7 +324,7 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 		return nil
 	}
 
-	return m.enroll(ctx, objectName)
+	return m.enrollLocked(ctx, objectName)
 }
 
 // applyPolicyCEPCES implements the legacy CEPCES/Python enrollment path.
@@ -412,13 +422,24 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 	return nil
 }
 
-// enroll performs the full enrollment flow:
+// enroll performs a complete enrollment lifecycle when called directly.
+func (m *Manager) enroll(ctx context.Context, objectName string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	trustLifecycleMu.Lock()
+	defer trustLifecycleMu.Unlock()
+	return m.enrollLocked(ctx, objectName)
+}
+
+// enrollLocked performs the full enrollment flow:
 //  1. Discovers and verifies CA chains from LDAP
 //  2. Authorizes published templates against the machine token
 //  3. Installs discovered root CA certificates
 //  4. Requests and verifies certificates directly from AD CS
 //  5. Saves CA/domain-bound enrollment state
-func (m *Manager) enroll(ctx context.Context, objectName string) error {
+//
+// The caller must hold m.mu and trustLifecycleMu for writing.
+func (m *Manager) enrollLocked(ctx context.Context, objectName string) error {
 	server := dcHostnameFromDomain(m.domain)
 	log.Debugf(ctx, "Discovering CAs from LDAP server: %s", server)
 
@@ -438,9 +459,9 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 
 	log.Debugf(ctx, "Discovered %d eligible certificate authorities from LDAP", len(cas))
 
-	existingState, err := loadState(m.stateDir, objectName)
+	existingState, err := loadState(m.stateDir, objectName, m.domain)
 	if err != nil {
-		log.Warningf(ctx, "Failed to load existing enrollment state: %v", err)
+		return fmt.Errorf("failed to load existing enrollment state: %w", err)
 	}
 	if existingState != nil {
 		log.Debugf(ctx, "Loaded existing enrollment state with %d CAs", len(existingState.CAs))
@@ -482,8 +503,14 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	}
 	for _, ca := range cas {
 		prepared := preparedEnrollmentCA{authority: ca}
-		installation, err := installCAChainTransaction(ca, trustDir, m.globalTrustDir)
+		installation, err := m.installChain(ca, trustDir, m.globalTrustDir)
 		if err != nil {
+			if containsRollbackFailure(err) {
+				return errors.Join(
+					fmt.Errorf("installing verified CA chain for %s left trust artifacts behind: %w", ca.Name, err),
+					rollbackContext("prepared CA chain installations", rollbackPrepared()),
+				)
+			}
 			previousCA, found := existingCAEnrollment(existingState, ca.Name, ca.Hostname)
 			if !found {
 				log.Warningf(ctx, "Skipping CA %s: could not install its verified CA chain: %v", ca.Name, err)
@@ -524,8 +551,9 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	}
 
 	var enrolledCAs []enrolledCA
+	var newLeafCandidates []string
 	var rollbackErrs []error
-	for preparedIndex, prepared := range preparedCAs {
+	for _, prepared := range preparedCAs {
 		ca := prepared.authority
 		if prepared.skip {
 			continue
@@ -539,7 +567,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		currentBinding := prepared.binding
 		var enrolledTemplates []enrolledTemplate
 		for _, tmplName := range ca.Templates {
-			if previousCA, tmpl, ok := existingEnrollment(existingState, ca.Name, tmplName); ok {
+			if previousCA, tmpl, ok := existingEnrollment(existingState, ca.Name, ca.Hostname, tmplName); ok {
 				validated, validationErr := validateStoredEnrollment(previousCA, tmpl, existingState, ca, currentBinding, machineIdentity, normalizeDomainIdentity(m.domain), time.Now())
 				if validationErr != nil {
 					log.Warningf(ctx, "Existing certificate for template %s on CA %s is not reusable: %v", tmplName, ca.Name, validationErr)
@@ -562,7 +590,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 			// traversing filenames. On-disk key/cert paths additionally embed a
 			// raw-identity hash so distinct CA identities that sanitize to the
 			// same nickname (e.g. "Corp CA" vs "Corp-CA") never share files.
-			nickname := sanitizeName(fmt.Sprintf("%s.%s", ca.Name, tmplName))
+			nickname := managementNickname(ca.Name, ca.Hostname, tmplName)
 			artifactBase := leafArtifactBase(objectName, ca, tmplName)
 			keyFile := filepath.Join(privateDir, artifactBase+".key")
 			certFile := filepath.Join(trustDir, artifactBase+".crt")
@@ -580,7 +608,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 				log.Warningf(ctx, "Failed to request certificate for template %s: %v", tmplName, err)
 				// A failed renewal may retain only material that still validates
 				// against the current machine identity, key and selected CA chain.
-				if previousCA, tmpl, ok := existingEnrollment(existingState, ca.Name, tmplName); ok {
+				if previousCA, tmpl, ok := existingEnrollment(existingState, ca.Name, ca.Hostname, tmplName); ok {
 					validated, validationErr := validateStoredEnrollment(previousCA, tmpl, existingState, ca, currentBinding, machineIdentity, normalizeDomainIdentity(m.domain), time.Now())
 					if validationErr != nil {
 						continue
@@ -592,6 +620,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 			}
 
 			log.Debugf(ctx, "Successfully enrolled certificate for template %s from CA %s", attrs.Name, ca.Name)
+			newLeafCandidates = append(newLeafCandidates, keyFile, certFile)
 			issuedCert := parseCertFile(certFile)
 			if issuedCert == nil {
 				log.Warningf(ctx, "Issued certificate for template %s could not be reloaded after enrollment", tmplName)
@@ -627,42 +656,39 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 			Templates:         enrolledTemplates,
 		}
 		if err := rebuildCAArtifacts(&enrolledCA); err != nil {
-			var pendingErrs []error
-			for _, pending := range preparedCAs[preparedIndex+1:] {
-				if pending.installation != nil {
-					if rbErr := pending.installation.rollback(); rbErr != nil {
-						pendingErrs = append(pendingErrs, rbErr)
-					}
-				}
-			}
-			return errors.Join(
-				fmt.Errorf("building enrollment state for CA %s: %w", ca.Name, err),
-				rollbackContext("installed CA chain", installation.rollback()),
-				rollbackContext("pending CA chain installations", errors.Join(pendingErrs...)),
+			trustRollbackErr := rollbackPrepared()
+			leafCleanupErr := removeUnreferencedPaths(
+				ctx,
+				m.stateDir,
+				objectName,
+				m.domain,
+				existingState,
+				newLeafCandidates,
 			)
+			return errors.Join(append([]error{
+				fmt.Errorf("building enrollment state for CA %s: %w", ca.Name, err),
+				rollbackContext("prepared CA chain installations", trustRollbackErr),
+				rollbackContext("new leaf certificate files", leafCleanupErr),
+			}, rollbackErrs...)...)
 		}
 		enrolledCAs = append(enrolledCAs, enrolledCA)
 	}
 
 	if len(enrolledCAs) == 0 {
-		return fmt.Errorf("could not enroll to any certificate authorities out of %d discovered", len(cas))
+		cleanupErr := removeUnreferencedPaths(
+			ctx,
+			m.stateDir,
+			objectName,
+			m.domain,
+			existingState,
+			newLeafCandidates,
+		)
+		return errors.Join(append([]error{
+			fmt.Errorf("could not enroll to any certificate authorities out of %d discovered", len(cas)),
+			rollbackContext("new leaf certificate files", cleanupErr),
+		}, rollbackErrs...)...)
 	}
 
-	// Clean up certificates and symlinks from the previous state that are
-	// no longer present in the newly discovered CAs/templates. This prevents
-	// orphaned cert/key files and trust store symlinks from accumulating.
-	if existingState != nil {
-		cleanupOrphanedCerts(ctx, m.stateDir, existingState, enrolledCAs)
-	}
-
-	// Rebuild the system trust store after BOTH installing new roots and
-	// removing orphaned ones, so the consolidated bundle reflects additions
-	// and removals in a single pass.
-	if err := updateCATrustStore(); err != nil {
-		log.Warningf(ctx, "Failed to update CA trust store: %v", err)
-	}
-
-	// Save state
 	log.Debugf(ctx, "Saving enrollment state for %s with %d enrolled CAs", objectName, len(enrolledCAs))
 	state := &enrollmentState{
 		ObjectName: objectName,
@@ -671,7 +697,30 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		CAs:        enrolledCAs,
 	}
 	if err := saveState(m.stateDir, state); err != nil {
-		return fmt.Errorf("failed to save enrollment state: %w", err)
+		cleanupErr := removeUnreferencedPaths(
+			ctx,
+			m.stateDir,
+			objectName,
+			m.domain,
+			existingState,
+			newLeafCandidates,
+		)
+		return errors.Join(append([]error{
+			fmt.Errorf("failed to save enrollment state: %w", err),
+			rollbackContext("prepared CA chain installations", rollbackPrepared()),
+			rollbackContext("new leaf certificate files", cleanupErr),
+		}, rollbackErrs...)...)
+	}
+
+	var terminalErrs []error
+	terminalErrs = append(terminalErrs, rollbackErrs...)
+	if existingState != nil {
+		if err := cleanupOrphanedCerts(ctx, m.stateDir, m.domain, existingState, state); err != nil {
+			terminalErrs = append(terminalErrs, fmt.Errorf("cleaning up obsolete enrollment artifacts: %w", err))
+		}
+	}
+	if err := updateCATrustStore(); err != nil {
+		log.Warningf(ctx, "Failed to update CA trust store after enrollment: %v", err)
 	}
 
 	caNames := make([]string, 0, len(enrolledCAs))
@@ -680,17 +729,15 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	}
 	log.Infof(ctx, "Enrolled to certificate authorities: %s", strings.Join(caNames, ", "))
 
-	if len(rollbackErrs) > 0 {
-		return fmt.Errorf("enrollment succeeded but rolling back unused trust artifacts failed: %w", errors.Join(rollbackErrs...))
-	}
-	return nil
+	return errors.Join(terminalErrs...)
 }
 
-// unenroll removes all certificate enrollments and cleans up state.
-func (m *Manager) unenroll(ctx context.Context, objectName string) error {
-	state, err := loadState(m.stateDir, objectName)
+// unenrollLocked removes all certificate enrollments and cleans up state. The
+// caller must hold m.mu and trustLifecycleMu for writing.
+func (m *Manager) unenrollLocked(ctx context.Context, objectName string) error {
+	state, err := loadState(m.stateDir, objectName, m.domain)
 	if err != nil {
-		log.Warningf(ctx, "Failed to load enrollment state: %v", err)
+		return fmt.Errorf("failed to load enrollment state: %w", err)
 	}
 
 	var obsoleteChainPaths []string
@@ -715,30 +762,35 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 		}
 	}
 
-	// Clean up legacy Samba cache if present
+	var cleanupErrs []error
+
+	// Clean up legacy Samba cache if present.
 	sambaDir := filepath.Join(m.stateDir, "samba")
 	if _, err := os.Stat(sambaDir); err == nil {
 		log.Debugf(ctx, "Removing legacy Samba cache directory: %s", sambaDir)
-		os.RemoveAll(sambaDir)
+		if err := os.RemoveAll(sambaDir); err != nil {
+			cleanupErrs = append(cleanupErrs, fmt.Errorf("removing legacy Samba cache: %w", err))
+		}
+	} else if !os.IsNotExist(err) {
+		cleanupErrs = append(cleanupErrs, fmt.Errorf("inspecting legacy Samba cache: %w", err))
 	}
 
-	// Remove state file
-	stateRemoved := true
-	if err := removeState(m.stateDir, objectName); err != nil {
-		stateRemoved = false
-		log.Warningf(ctx, "Failed to remove enrollment state file: %v", err)
-	}
-	if stateRemoved {
-		if err := removeUnreferencedPaths(ctx, m.stateDir, objectName, nil, obsoleteChainPaths); err != nil {
-			log.Warningf(ctx, "Failed to safely remove unreferenced CA chain paths: %v", err)
+	if err := removeState(m.stateDir, objectName, m.domain); err != nil {
+		cleanupErrs = append(cleanupErrs, fmt.Errorf("removing enrollment state: %w", err))
+	} else {
+		if err := removeUnreferencedPaths(ctx, m.stateDir, objectName, m.domain, nil, obsoleteChainPaths); err != nil {
+			cleanupErrs = append(cleanupErrs, fmt.Errorf("removing unreferenced certificate paths: %w", err))
 		}
 	}
 	if state != nil {
 		if err := updateCATrustStore(); err != nil {
-			log.Warningf(ctx, "Failed to update CA trust store: %v", err)
+			log.Warningf(ctx, "Failed to update CA trust store after unenrollment: %v", err)
 		}
 	}
 
+	if len(cleanupErrs) != 0 {
+		return errors.Join(cleanupErrs...)
+	}
 	log.Info(ctx, "Certificate unenrollment completed")
 	return nil
 }
@@ -747,30 +799,16 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 // that exist in the old state but are not present in the new set of enrolled
 // CAs. This prevents orphaned files from accumulating when CAs or templates
 // are removed from AD.
-func cleanupOrphanedCerts(ctx context.Context, stateDir string, oldState *enrollmentState, newCAs []enrolledCA) {
-	// Build a set of all cert/key/symlink paths in the new state
-	newPaths := make(map[string]bool)
-	for _, ca := range newCAs {
-		for _, cert := range ca.RootCerts {
-			newPaths[cert] = true
-		}
-		for _, cert := range ca.IntermediateCerts {
-			newPaths[cert] = true
-		}
-		for _, link := range ca.Symlinks {
-			newPaths[link] = true
-		}
-		for _, tmpl := range ca.Templates {
-			newPaths[tmpl.KeyFile] = true
-			newPaths[tmpl.CertFile] = true
-		}
-	}
-
+func cleanupOrphanedCerts(ctx context.Context, stateDir, domain string, oldState, replacement *enrollmentState) error {
+	newPaths := stateReferencedPaths(replacement)
 	// Remove any old paths not in the new set, logging both successes and
 	// failures so a stuck orphan is visible in the daemon logs.
 	var orphaned []string
 	add := func(path string) {
-		if path != "" && !newPaths[path] {
+		if path != "" {
+			if _, retained := newPaths[path]; retained {
+				return
+			}
 			orphaned = append(orphaned, path)
 		}
 	}
@@ -794,23 +832,15 @@ func cleanupOrphanedCerts(ctx context.Context, stateDir string, oldState *enroll
 		}
 	}
 
-	replacement := &enrollmentState{
-		ObjectName: oldState.ObjectName,
-		Identity:   oldState.Identity,
-		Domain:     oldState.Domain,
-		CAs:        newCAs,
-	}
-	if err := removeUnreferencedPaths(ctx, stateDir, oldState.ObjectName, replacement, orphaned); err != nil {
-		log.Warningf(ctx, "Failed to safely clean up orphaned certificate paths: %v", err)
-	}
+	return removeUnreferencedPaths(ctx, stateDir, oldState.ObjectName, domain, replacement, orphaned)
 }
 
-func existingEnrollment(state *enrollmentState, caName, template string) (enrolledCA, enrolledTemplate, bool) {
+func existingEnrollment(state *enrollmentState, caName, caHostname, template string) (enrolledCA, enrolledTemplate, bool) {
 	if state == nil {
 		return enrolledCA{}, enrolledTemplate{}, false
 	}
 	for _, ca := range state.CAs {
-		if !strings.EqualFold(ca.Name, caName) {
+		if !strings.EqualFold(ca.Name, caName) || !strings.EqualFold(ca.Hostname, caHostname) {
 			continue
 		}
 		for _, enrolled := range ca.Templates {
@@ -886,6 +916,25 @@ func leafArtifactBase(objectName string, ca certAuthority, template string) stri
 	h.Write([]byte(template))
 	digest := hex.EncodeToString(h.Sum(nil))
 	return sanitizeName(fmt.Sprintf("%s.%s", ca.Name, template)) + "." + digest[:16]
+}
+
+func legacyManagementNickname(caName, template string) string {
+	return sanitizeName(fmt.Sprintf("%s.%s", caName, template))
+}
+
+// managementNickname keeps the historical readable prefix while binding the
+// identifier to the complete raw CA name, hostname, and template. The suffix
+// lets management operations target one entry even when raw names sanitize to
+// the same prefix.
+func managementNickname(caName, caHostname, template string) string {
+	h := sha256.New()
+	h.Write([]byte(caName))
+	h.Write([]byte{0})
+	h.Write([]byte(caHostname))
+	h.Write([]byte{0})
+	h.Write([]byte(template))
+	digest := hex.EncodeToString(h.Sum(nil))
+	return legacyManagementNickname(caName, template) + "." + digest[:12]
 }
 
 // rollbackContext wraps a rollback failure with a description so it can be

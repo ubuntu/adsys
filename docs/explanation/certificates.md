@@ -41,7 +41,7 @@ certificate_enrollment: ldap    # or "cepces"
 * **New installations**: The package automatically creates `/etc/adsys.yaml` with `certificate_enrollment: ldap`.
 * **Existing installations**: The default is `cepces` for backward compatibility. To switch to the native LDAP enrollment, add the setting above to your configuration file.
 
-To ensure idempotency when applying the policy, enrollment state is persisted as a JSON file at `/var/lib/adsys/certs/state_$(hostname).json`, which contains information pertaining to the enrolled certificate(s).
+To ensure idempotency when applying the policy, enrollment state is persisted as a JSON file at `/var/lib/adsys/certs/state_$(hostname).<object-id>.json`, which contains information pertaining to the enrolled certificate(s).
 
 ### Policy application sequence
 

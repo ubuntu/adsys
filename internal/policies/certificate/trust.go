@@ -58,6 +58,21 @@ type trustInstallOps struct {
 	beforeSymlink  func() error
 }
 
+// trustRollbackError marks an installation error that left one or more trust
+// artifacts behind. Callers may skip an ordinary CA installation failure, but
+// must never mask this error by preserving or enrolling through another CA.
+type trustRollbackError struct {
+	err error
+}
+
+func (e *trustRollbackError) Error() string {
+	return fmt.Sprintf("rolling back partial CA chain installation: %v", e.err)
+}
+
+func (e *trustRollbackError) Unwrap() error {
+	return e.err
+}
+
 type certificateInstallPlan struct {
 	cert    *x509.Certificate
 	path    string
@@ -108,10 +123,16 @@ func installCAChainTransactionWithOps(ca certAuthority, trustDir, globalTrustDir
 
 	plans := make([]certificateInstallPlan, 0, len(chain.Certificates))
 	defer func() {
+		var cleanupErrs []error
 		for _, plan := range plans {
 			if plan.staged != "" {
-				_ = os.Remove(plan.staged)
+				if removeErr := os.Remove(plan.staged); removeErr != nil && !os.IsNotExist(removeErr) {
+					cleanupErrs = append(cleanupErrs, fmt.Errorf("removing staged CA certificate %s: %w", plan.staged, removeErr))
+				}
 			}
+		}
+		if cleanupErr := errors.Join(cleanupErrs...); cleanupErr != nil {
+			err = errors.Join(err, &trustRollbackError{err: cleanupErr})
 		}
 	}()
 	installation := &caChainInstallation{}
@@ -243,9 +264,14 @@ func trustArtifactFileName(ca certAuthority, cert *x509.Certificate, role string
 // abort.
 func withRollback(installation *caChainInstallation, err error) error {
 	if rbErr := installation.rollback(); rbErr != nil {
-		return errors.Join(err, fmt.Errorf("rolling back partial CA chain installation: %w", rbErr))
+		return errors.Join(err, &trustRollbackError{err: rbErr})
 	}
 	return err
+}
+
+func containsRollbackFailure(err error) bool {
+	var rollbackErr *trustRollbackError
+	return errors.As(err, &rollbackErr)
 }
 
 func existingCertificateMatches(path string, expected *x509.Certificate) (bool, error) {
@@ -277,7 +303,7 @@ func existingCertificateMatches(path string, expected *x509.Certificate) (bool, 
 	return true, nil
 }
 
-func stageCertificateFile(dst string, data []byte, mode os.FileMode) (string, error) {
+func stageCertificateFile(dst string, data []byte, mode os.FileMode) (_ string, err error) {
 	f, err := os.CreateTemp(filepath.Dir(dst), "."+filepath.Base(dst)+".stage.*")
 	if err != nil {
 		return "", err
@@ -287,7 +313,11 @@ func stageCertificateFile(dst string, data []byte, mode os.FileMode) (string, er
 	defer func() {
 		_ = f.Close()
 		if !ok {
-			_ = os.Remove(path)
+			if removeErr := os.Remove(path); removeErr != nil && !os.IsNotExist(removeErr) {
+				err = errors.Join(err, &trustRollbackError{
+					err: fmt.Errorf("removing staged CA certificate %s: %w", path, removeErr),
+				})
+			}
 		}
 	}()
 	if _, err := f.Write(data); err != nil {
@@ -424,7 +454,7 @@ func findUpdateCACommand() string {
 // then renames it over the target, avoiding TOCTOU race conditions.
 // If the existing entry is a regular file (not a symlink), it refuses to
 // overwrite it.
-func atomicSymlink(src, dst string) error {
+func atomicSymlink(src, dst string) (err error) {
 	dir := filepath.Dir(dst)
 	base := filepath.Base(dst)
 
@@ -434,7 +464,13 @@ func atomicSymlink(src, dst string) error {
 	// installs never collide on the temporary name.
 	tmpName := filepath.Join(dir, fmt.Sprintf(".%s.tmp.%d.%d", base, os.Getpid(), symlinkTmpCounter.Add(1)))
 	// Clean up the temp symlink if anything fails
-	defer os.Remove(tmpName)
+	defer func() {
+		if removeErr := os.Remove(tmpName); removeErr != nil && !os.IsNotExist(removeErr) {
+			err = errors.Join(err, &trustRollbackError{
+				err: fmt.Errorf("removing temporary trust symlink %s: %w", tmpName, removeErr),
+			})
+		}
+	}()
 
 	// If the target already exists, check that it's a symlink (not a real file)
 	if info, err := os.Lstat(dst); err == nil {

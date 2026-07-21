@@ -16,7 +16,7 @@ Use `adsysctl certificate` to inspect and manage certificates enrolled by ADSys 
 
 These commands are machine-scoped. They operate only on certificates enrolled through the `ldap` method. With the legacy `cepces` method, they make no changes and point administrators to `getcert`, because those certificates are tracked by `certmonger`.
 
-Certificate files are stored under `/var/lib/adsys/certs`, private keys under `/var/lib/adsys/private/certs`, and ADSys state in `/var/lib/adsys/certs/state_<hostname>.json`.
+Certificate files are stored under `/var/lib/adsys/certs`, private keys under `/var/lib/adsys/private/certs`, and ADSys state in `/var/lib/adsys/certs/state_<hostname>.<object-id>.json`. New state filenames and certificate nicknames include stable hash suffixes so raw object, CA, hostname, and template names that sanitize alike remain distinct. A legacy nickname remains accepted only when it identifies exactly one enrollment.
 
 ```{note}
 Lifecycle commands that enroll or re-enroll certificates require the machine to be online with a valid Kerberos ticket.
@@ -28,7 +28,7 @@ Use `list` to show every certificate enrolled by ADSys, including template, CA, 
 
 ```output
 > sudo adsysctl certificate list
-Certificate 'galacticcafe-CA.Machine':
+Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6':
   status: healthy
   template: Machine
   CA: galacticcafe-CA (ca01.galacticcafe.com)
@@ -39,8 +39,8 @@ Certificate 'galacticcafe-CA.Machine':
   SANs: keypress.galacticcafe.com
   EKU: id-kp-clientAuth, id-kp-serverAuth
   key: RSA 2048 bits
-  key file: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.key
-  certificate: /var/lib/adsys/certs/galacticcafe-CA.Machine.crt
+  key file: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.0123456789abcdef.key
+  certificate: /var/lib/adsys/certs/galacticcafe-CA.Machine.0123456789abcdef.crt
   on disk: yes
   key matches certificate: yes
   last enrolled: 2024-01-20T11:22:03+03:00
@@ -50,7 +50,7 @@ Certificate 'galacticcafe-CA.Machine':
 > sudo adsysctl certificate list --format json
 [
   {
-    "nickname": "galacticcafe-CA.Machine",
+    "nickname": "galacticcafe-CA.Machine.a1b2c3d4e5f6",
     "template": "Machine",
     "ca": "galacticcafe-CA",
     "ca_hostname": "ca01.galacticcafe.com",
@@ -64,10 +64,10 @@ Certificate 'galacticcafe-CA.Machine':
     "eku": ["id-kp-clientAuth", "id-kp-serverAuth"],
     "key_algo": "RSA",
     "key_size": 2048,
-    "key_file": "/var/lib/adsys/private/certs/galacticcafe-CA.Machine.key",
-    "cert_file": "/var/lib/adsys/certs/galacticcafe-CA.Machine.crt",
-    "root_cert_files": ["/var/lib/adsys/certs/galacticcafe-CA_0.crt"],
-    "trust_symlinks": ["/usr/local/share/ca-certificates/galacticcafe-CA_0.crt"],
+    "key_file": "/var/lib/adsys/private/certs/galacticcafe-CA.Machine.0123456789abcdef.key",
+    "cert_file": "/var/lib/adsys/certs/galacticcafe-CA.Machine.0123456789abcdef.crt",
+    "root_cert_files": ["/var/lib/adsys/certs/galacticcafe-CA.root.<certificate-id>.crt"],
+    "trust_symlinks": ["/usr/local/share/ca-certificates/galacticcafe-CA.root.<certificate-id>.crt"],
     "on_disk": true,
     "key_matches_cert": true,
     "health": "healthy",
@@ -81,8 +81,8 @@ Certificate 'galacticcafe-CA.Machine':
 Use `status` to check the health of one certificate or, without a nickname, the overall health of all enrolled certificates. Use `--format json` when integrating with monitoring tools.
 
 ```output
-> sudo adsysctl certificate status galacticcafe-CA.Machine
-Certificate 'galacticcafe-CA.Machine':
+> sudo adsysctl certificate status galacticcafe-CA.Machine.a1b2c3d4e5f6
+Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6':
   status: healthy
   template: Machine
   CA: galacticcafe-CA (ca01.galacticcafe.com)
@@ -110,8 +110,8 @@ The command returns a process exit code suitable for monitoring and scripts:
 Use `verify` to validate the certificate chain, validity window, and private key match. Add `--online` to also perform a best-effort CRL revocation check.
 
 ```output
-> sudo adsysctl certificate verify galacticcafe-CA.Machine --online
-Certificate 'galacticcafe-CA.Machine': PASS
+> sudo adsysctl certificate verify galacticcafe-CA.Machine.a1b2c3d4e5f6 --online
+Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6': PASS
   chain: yes
   validity: yes
   key matches certificate: yes
@@ -123,9 +123,9 @@ Certificate 'galacticcafe-CA.Machine': PASS
 Use `renew` to force re-enrollment immediately, bypassing the normal 30-day renewal window. Renewal generates a fresh private key, so this is also a rekey operation. Use `--all` to renew every enrolled certificate.
 
 ```output
-> sudo adsysctl certificate renew galacticcafe-CA.Machine
-Renewing galacticcafe-CA.Machine…
-Renewed galacticcafe-CA.Machine
+> sudo adsysctl certificate renew galacticcafe-CA.Machine.a1b2c3d4e5f6
+Renewing galacticcafe-CA.Machine.a1b2c3d4e5f6…
+Renewed galacticcafe-CA.Machine.a1b2c3d4e5f6
 ```
 
 ## Remove a certificate
@@ -133,10 +133,10 @@ Renewed galacticcafe-CA.Machine
 Use `remove --force` to cleanly delete enrolled certificates, private keys, root-CA trust symlinks, and ADSys state. Use `--all --force` to remove every enrolled certificate.
 
 ```output
-> sudo adsysctl certificate remove galacticcafe-CA.Machine --force
-Removing certificate galacticcafe-CA.Machine
+> sudo adsysctl certificate remove galacticcafe-CA.Machine.a1b2c3d4e5f6 --force
+Removing certificate galacticcafe-CA.Machine.a1b2c3d4e5f6
 Removing root CA galacticcafe-CA from the trust store
-Removed certificate galacticcafe-CA.Machine
+Removed certificate galacticcafe-CA.Machine.a1b2c3d4e5f6
 ```
 
 ```{note}

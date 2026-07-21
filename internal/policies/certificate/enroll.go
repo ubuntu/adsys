@@ -9,6 +9,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/binary"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -400,14 +401,17 @@ func verifyLeafAgainstExactChain(cert *x509.Certificate, expectedChain []*x509.C
 // os.CreateTemp (O_CREATE|O_EXCL with a random suffix) avoids a predictable
 // temp path and refuses to follow a pre-existing symlink, and the temp file is
 // cleaned up if anything before the rename fails.
-func safeWriteFile(dst string, data []byte, mode os.FileMode) error {
+func safeWriteFile(dst string, data []byte, mode os.FileMode) (err error) {
 	f, err := os.CreateTemp(filepath.Dir(dst), "."+filepath.Base(dst)+".tmp.*")
 	if err != nil {
 		return err
 	}
 	tmp := f.Name()
-	// Best-effort cleanup; the Remove is a no-op once the rename succeeds.
-	defer func() { _ = os.Remove(tmp) }()
+	defer func() {
+		if removeErr := os.Remove(tmp); removeErr != nil && !os.IsNotExist(removeErr) {
+			err = errors.Join(err, fmt.Errorf("removing temporary file %s: %w", tmp, removeErr))
+		}
+	}()
 
 	if _, err := f.Write(data); err != nil {
 		_ = f.Close()

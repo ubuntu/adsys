@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -92,6 +93,8 @@ func (m *Manager) ListCertificates(ctx context.Context, objectName string) ([]Ce
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	trustLifecycleMu.RLock()
+	defer trustLifecycleMu.RUnlock()
 
 	return m.listCertificatesLocked(ctx, objectName)
 }
@@ -99,7 +102,7 @@ func (m *Manager) ListCertificates(ctx context.Context, objectName string) ([]Ce
 // listCertificatesLocked builds the CertInfo slice for objectName. The caller
 // must hold m.mu.
 func (m *Manager) listCertificatesLocked(ctx context.Context, objectName string) ([]CertInfo, error) {
-	state, err := loadState(m.stateDir, objectName)
+	state, err := loadState(m.stateDir, objectName, m.domain)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -108,30 +111,40 @@ func (m *Manager) listCertificatesLocked(ctx context.Context, objectName string)
 		return []CertInfo{}, nil
 	}
 
+	return certInfosForState(state), nil
+}
+
+func certInfosForState(state *enrollmentState) []CertInfo {
 	infos := make([]CertInfo, 0)
 	for _, ca := range state.CAs {
 		for _, tmpl := range ca.Templates {
 			infos = append(infos, certInfoFor(ca, tmpl, state.UpdatedAt))
 		}
 	}
-	return infos, nil
+	return infos
 }
 
 // CertificateStatus returns the CertInfo for a single enrolled certificate. If
 // nickname is empty and exactly one certificate is enrolled, that certificate
 // is returned; if several are enrolled the returned error lists their
 // nicknames.
-func (m *Manager) CertificateStatus(ctx context.Context, objectName, nickname string) (CertInfo, error) {
+func (m *Manager) CertificateStatus(_ context.Context, objectName, nickname string) (CertInfo, error) {
 	if m.enrollmentMethod != consts.CertEnrollmentLDAP {
 		return CertInfo{}, ErrNotLDAPMethod
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	trustLifecycleMu.RLock()
+	defer trustLifecycleMu.RUnlock()
 
-	certs, err := m.listCertificatesLocked(ctx, objectName)
+	state, err := loadState(m.stateDir, objectName, m.domain)
 	if err != nil {
 		return CertInfo{}, err
 	}
+	if state == nil {
+		return CertInfo{}, errors.New(gotext.Get("no enrolled certificates found for %q", objectName))
+	}
+	certs := certInfosForState(state)
 	if len(certs) == 0 {
 		return CertInfo{}, errors.New(gotext.Get("no enrolled certificates found for %q", objectName))
 	}
@@ -143,12 +156,11 @@ func (m *Manager) CertificateStatus(ctx context.Context, objectName, nickname st
 		return CertInfo{}, errors.New(gotext.Get("multiple certificates enrolled, specify a nickname (one of: %s)", strings.Join(nicknamesOf(certs), ", ")))
 	}
 
-	for _, c := range certs {
-		if c.Nickname == nickname {
-			return c, nil
-		}
+	target, err := resolveNickname(state, nickname)
+	if err != nil {
+		return CertInfo{}, err
 	}
-	return CertInfo{}, errors.New(gotext.Get("certificate %q not found (valid nicknames: %s)", nickname, strings.Join(nicknamesOf(certs), ", ")))
+	return certInfoFor(state.CAs[target.ca], state.CAs[target.ca].Templates[target.template], state.UpdatedAt), nil
 }
 
 // RenewCertificates re-enrolls certificates from AD CS. If all is true every
@@ -162,8 +174,10 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	trustLifecycleMu.Lock()
+	defer trustLifecycleMu.Unlock()
 
-	state, err := loadState(m.stateDir, objectName)
+	state, err := loadState(m.stateDir, objectName, m.domain)
 	if err != nil {
 		return fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -173,6 +187,14 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	if !all && nickname == "" {
 		return errors.New(gotext.Get("a certificate nickname is required unless renewing all certificates"))
 	}
+	var target templateStateRef
+	if !all {
+		target, err = resolveNickname(state, nickname)
+		if err != nil {
+			return err
+		}
+	}
+	originalState := cloneEnrollmentState(state)
 	for _, dir := range []string{filepath.Join(m.stateDir, "certs"), m.globalTrustDir} {
 		if err := os.MkdirAll(dir, 0750); err != nil {
 			return fmt.Errorf("creating CA trust directory %s: %w", dir, err)
@@ -199,12 +221,16 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 
 	var failures []string
 	var rollbackErrs []error
-	found := false
 	trustChanged := false
+	anyRenewed := false
 	var obsoletePaths []string
+	var newLeafPaths []string
+	var activeInstallations []*caChainInstallation
 	now := time.Now()
 	requestedDomain := normalizeDomainIdentity(m.domain)
-	isTarget := func(tmpl enrolledTemplate) bool { return all || tmpl.Nickname == nickname }
+	isTarget := func(caIndex, templateIndex int) bool {
+		return all || target == (templateStateRef{ca: caIndex, template: templateIndex})
+	}
 	// retainOldTemplate keeps a failed target's previous entry only when it
 	// still validates exactly and currently against its own persisted chain.
 	retainOldTemplate := func(ca enrolledCA, tmpl enrolledTemplate) (enrolledTemplate, bool) {
@@ -218,8 +244,8 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	for i := range state.CAs {
 		ca := &state.CAs[i]
 		hasTarget := false
-		for _, tmpl := range ca.Templates {
-			if isTarget(tmpl) {
+		for ti := range ca.Templates {
+			if isTarget(i, ti) {
 				hasTarget = true
 				break
 			}
@@ -233,9 +259,8 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		// an expired, missing or mismatched target leaf, or a target whose old
 		// issuer chain has expired, as long as the state it belongs to is safe.
 		if err := validateStateEnvelope(state, identity.dnsName, requestedDomain); err != nil {
-			for _, tmpl := range ca.Templates {
-				if isTarget(tmpl) {
-					found = true
+			for ti, tmpl := range ca.Templates {
+				if isTarget(i, ti) {
 					failures = append(failures, fmt.Sprintf("%s: persisted enrollment is invalid: %v", tmpl.Nickname, err))
 				}
 			}
@@ -250,7 +275,7 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		retainErr := ""
 		for ti := range ca.Templates {
 			tmpl := ca.Templates[ti]
-			if isTarget(tmpl) {
+			if isTarget(i, ti) {
 				continue
 			}
 			validated, err := validatePersistedTemplate(*ca, tmpl, identity.dnsName, now)
@@ -261,9 +286,8 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 			retained[ti] = validated
 		}
 		if retainErr != "" {
-			for _, tmpl := range ca.Templates {
-				if isTarget(tmpl) {
-					found = true
+			for ti, tmpl := range ca.Templates {
+				if isTarget(i, ti) {
 					failures = append(failures, fmt.Sprintf("%s: %s", tmpl.Nickname, retainErr))
 				}
 			}
@@ -275,7 +299,7 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		var currentBinding templateChainBinding
 		var chainInstallErr error
 		if caFound && discoveredCA.Chain != nil {
-			installation, chainInstallErr = installCAChainTransaction(
+			installation, chainInstallErr = m.installChain(
 				discoveredCA,
 				filepath.Join(m.stateDir, "certs"),
 				m.globalTrustDir,
@@ -302,11 +326,10 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		renewedOnCA := false
 		for ti := range ca.Templates {
 			tmpl := ca.Templates[ti]
-			if !isTarget(tmpl) {
+			if !isTarget(i, ti) {
 				workingTemplates = append(workingTemplates, retained[ti])
 				continue
 			}
-			found = true
 			retainFailed := func(msg string) {
 				failures = append(failures, fmt.Sprintf("%s: %s", tmpl.Nickname, msg))
 				if kept, ok := retainOldTemplate(*ca, tmpl); ok {
@@ -321,30 +344,33 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 				retainFailed(fmt.Sprintf("installing current CA chain: %v", chainInstallErr))
 				continue
 			}
-			templatePublished := false
+			publishedTemplate := ""
 			for _, published := range discoveredCA.Templates {
 				if strings.EqualFold(published, tmpl.Template) {
-					templatePublished = true
+					publishedTemplate = published
 					break
 				}
 			}
-			if !templatePublished {
+			if publishedTemplate == "" {
 				retainFailed("template is no longer published by CA")
 				continue
 			}
 
 			keySize := 2048
-			if attrs, ok := directoryData.TemplateAttrs[tmpl.Template]; ok && attrs.MinKeySize > 0 {
+			if attrs, ok := directoryData.TemplateAttrs[publishedTemplate]; ok && attrs.MinKeySize > 0 {
 				keySize = attrs.MinKeySize
 			}
 			report(progress, gotext.Get("Renewing %s…", tmpl.Nickname))
 			log.Debugf(ctx, "Renewing certificate %s (template %s) from CA %s", tmpl.Nickname, tmpl.Template, ca.Name)
 
 			renewed := tmpl
+			artifactBase := leafArtifactBase(objectName, discoveredCA, publishedTemplate)
+			renewed.KeyFile = filepath.Join(m.stateDir, "private", "certs", artifactBase+".key")
+			renewed.CertFile = filepath.Join(m.stateDir, "certs", artifactBase+".crt")
 			if err := EnrollCertificate(ctx, m.submitCSR, EnrollmentRequest{
-				Server:        ca.Hostname,
-				CAName:        ca.Name,
-				Template:      renewed.Template,
+				Server:        discoveredCA.Hostname,
+				CAName:        discoveredCA.Name,
+				Template:      publishedTemplate,
 				CommonName:    identity.dnsName,
 				KeyFile:       renewed.KeyFile,
 				CertFile:      renewed.CertFile,
@@ -356,10 +382,18 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 				retainFailed(fmt.Sprintf("%v", err))
 				continue
 			}
+			newLeafPaths = append(newLeafPaths, renewed.KeyFile, renewed.CertFile)
 			issued := parseCertFile(renewed.CertFile)
 			if issued == nil {
+				obsoletePaths = append(obsoletePaths, renewed.KeyFile, renewed.CertFile)
 				retainFailed("renewed certificate could not be reloaded")
 				continue
+			}
+			if tmpl.KeyFile != renewed.KeyFile {
+				obsoletePaths = append(obsoletePaths, tmpl.KeyFile)
+			}
+			if tmpl.CertFile != renewed.CertFile {
+				obsoletePaths = append(obsoletePaths, tmpl.CertFile)
 			}
 			renewed.LeafFingerprint = certificateFingerprint(issued)
 			bindTemplateToChain(&renewed, currentBinding)
@@ -372,14 +406,30 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 			workingCA := *ca
 			workingCA.Templates = workingTemplates
 			if err := rebuildCAArtifacts(&workingCA); err != nil {
-				return errors.Join(
+				var cleanupErrs []error
+				if rbErr := installation.rollback(); rbErr != nil {
+					cleanupErrs = append(cleanupErrs, fmt.Errorf("rolling back installed CA chain: %w", rbErr))
+				}
+				for _, active := range activeInstallations {
+					if rbErr := active.rollback(); rbErr != nil {
+						cleanupErrs = append(cleanupErrs, fmt.Errorf("rolling back previously renewed CA chain: %w", rbErr))
+					}
+				}
+				if cleanupErr := removeUnreferencedPaths(ctx, m.stateDir, objectName, m.domain, originalState, newLeafPaths); cleanupErr != nil {
+					cleanupErrs = append(cleanupErrs, fmt.Errorf("removing uncommitted renewed leaf files: %w", cleanupErr))
+				}
+				rebuildErrs := []error{
 					fmt.Errorf("rebuilding CA chain state after renewal of %s: %w", ca.Name, err),
-					rollbackContext("installed CA chain", installation.rollback()),
-				)
+				}
+				rebuildErrs = append(rebuildErrs, cleanupErrs...)
+				rebuildErrs = append(rebuildErrs, rollbackErrs...)
+				return errors.Join(rebuildErrs...)
 			}
 			*ca = workingCA
 			obsoletePaths = append(obsoletePaths, pathsNotRetained(oldRootFiles, oldIntermediateFiles, oldSymlinkFiles, *ca)...)
+			activeInstallations = append(activeInstallations, installation)
 			trustChanged = true
+			anyRenewed = true
 		} else if installation != nil {
 			if err := installation.rollback(); err != nil {
 				rollbackErrs = append(rollbackErrs, fmt.Errorf("rolling back unused CA chain for %s: %w", ca.Name, err))
@@ -387,16 +437,35 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		}
 	}
 
-	if !all && !found {
-		return errors.New(gotext.Get("certificate %q not found (valid nicknames: %s)", nickname, strings.Join(nicknamesOfState(state), ", ")))
+	if !anyRenewed {
+		if cleanupErr := removeUnreferencedPaths(ctx, m.stateDir, objectName, m.domain, originalState, newLeafPaths); cleanupErr != nil {
+			rollbackErrs = append(rollbackErrs, fmt.Errorf("removing uncommitted renewed leaf files: %w", cleanupErr))
+		}
+		if len(failures) != 0 {
+			renewErr := errors.New(gotext.Get("failed to renew %d certificate(s): %s", len(failures), strings.Join(failures, "; ")))
+			return errors.Join(append([]error{renewErr}, rollbackErrs...)...)
+		}
+		return errors.Join(rollbackErrs...)
 	}
 
 	state.Domain = normalizeDomainIdentity(m.domain)
 	state.Identity = identity.dnsName
 	if err := saveState(m.stateDir, state); err != nil {
-		return fmt.Errorf("failed to save enrollment state: %w", err)
+		var cleanupErrs []error
+		for _, installation := range activeInstallations {
+			if rbErr := installation.rollback(); rbErr != nil {
+				cleanupErrs = append(cleanupErrs, fmt.Errorf("rolling back renewed CA chain: %w", rbErr))
+			}
+		}
+		if cleanupErr := removeUnreferencedPaths(ctx, m.stateDir, objectName, m.domain, originalState, newLeafPaths); cleanupErr != nil {
+			cleanupErrs = append(cleanupErrs, fmt.Errorf("removing uncommitted renewed leaf files: %w", cleanupErr))
+		}
+		saveErrs := []error{fmt.Errorf("failed to save enrollment state: %w", err)}
+		saveErrs = append(saveErrs, cleanupErrs...)
+		saveErrs = append(saveErrs, rollbackErrs...)
+		return errors.Join(saveErrs...)
 	}
-	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, state, obsoletePaths); err != nil {
+	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, m.domain, state, obsoletePaths); err != nil {
 		rollbackErrs = append(rollbackErrs, fmt.Errorf("pruning obsolete CA chain paths after renewal: %w", err))
 	}
 	if trustChanged {
@@ -447,6 +516,8 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	trustLifecycleMu.Lock()
+	defer trustLifecycleMu.Unlock()
 
 	if !force {
 		return errors.New(gotext.Get("refusing to remove certificates without confirmation, pass force to proceed"))
@@ -454,14 +525,14 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 
 	if all {
 		report(progress, gotext.Get("Removing all certificates for %s", objectName))
-		if err := m.unenroll(ctx, objectName); err != nil {
+		if err := m.unenrollLocked(ctx, objectName); err != nil {
 			return err
 		}
 		report(progress, gotext.Get("Removed all certificates for %s", objectName))
 		return nil
 	}
 
-	state, err := loadState(m.stateDir, objectName)
+	state, err := loadState(m.stateDir, objectName, m.domain)
 	if err != nil {
 		return fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -469,17 +540,22 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 		return errors.New(gotext.Get("no enrolled certificates found for %q", objectName))
 	}
 
-	found := false
+	target, err := resolveNickname(state, nickname)
+	if err != nil {
+		return err
+	}
 	var obsoletePaths []string
 	for ci := range state.CAs {
+		if ci != target.ca {
+			continue
+		}
 		ca := &state.CAs[ci]
 		for ti, tmpl := range ca.Templates {
-			if tmpl.Nickname != nickname {
+			if ti != target.template {
 				continue
 			}
-			found = true
-			report(progress, gotext.Get("Removing certificate %s", nickname))
-			log.Debugf(ctx, "Removing certificate files for %s", nickname)
+			report(progress, gotext.Get("Removing certificate %s", tmpl.Nickname))
+			log.Debugf(ctx, "Removing certificate files for %s", tmpl.Nickname)
 			// Do not delete the key/cert directly: another object's state may
 			// reference the same paths. Route every candidate through
 			// removeUnreferencedPaths below after the current state is saved.
@@ -488,9 +564,6 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 			obsoletePaths = append(obsoletePaths, tmpl.TrustAnchorSymlink)
 			ca.Templates = append(ca.Templates[:ti], ca.Templates[ti+1:]...)
 			break
-		}
-		if !found {
-			continue
 		}
 		if len(ca.Templates) == 0 {
 			report(progress, gotext.Get("Removing root CA %s from the trust store", ca.Name))
@@ -519,12 +592,8 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 		break
 	}
 
-	if !found {
-		return errors.New(gotext.Get("certificate %q not found (valid nicknames: %s)", nickname, strings.Join(nicknamesOfState(state), ", ")))
-	}
-
 	if len(state.CAs) == 0 {
-		if err := removeState(m.stateDir, objectName); err != nil {
+		if err := removeState(m.stateDir, objectName, m.domain); err != nil {
 			return fmt.Errorf("failed to remove enrollment state: %w", err)
 		}
 	} else if err := saveState(m.stateDir, state); err != nil {
@@ -534,12 +603,12 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 	if len(state.CAs) != 0 {
 		replacement = state
 	}
-	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, replacement, obsoletePaths); err != nil {
+	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, m.domain, replacement, obsoletePaths); err != nil {
 		return fmt.Errorf("failed to prune unreferenced CA chain paths after removal: %w", err)
 	}
 
 	if err := updateCATrustStore(); err != nil {
-		log.Warningf(ctx, "Failed to update CA trust store: %v", err)
+		log.Warningf(ctx, "Failed to update CA trust store after removal: %v", err)
 	}
 	report(progress, gotext.Get("Removed certificate %s", nickname))
 	return nil
@@ -555,8 +624,10 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	trustLifecycleMu.RLock()
+	defer trustLifecycleMu.RUnlock()
 
-	state, err := loadState(m.stateDir, objectName)
+	state, err := loadState(m.stateDir, objectName, m.domain)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load enrollment state: %w", err)
 	}
@@ -567,41 +638,29 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 		return []VerifyResult{}, nil
 	}
 
-	// The verification identity is always derived from the requested object and
-	// the manager domain, never taken from the stored state, so a state file
-	// that collides on disk (sanitizeName maps e.g. "host$" and "host-" to the
-	// same file) cannot be verified against the wrong machine. The stored
-	// domain/object/identity are only validated as legacy values.
+	// The verification identity is always derived from the request. loadState
+	// has already proved that the state envelope belongs to this object/domain.
 	requested, err := enrollmentMachineIdentity(objectName, m.domain)
 	if err != nil {
 		return nil, fmt.Errorf("could not determine requested machine identity: %w", err)
 	}
-	domain := normalizeDomainIdentity(m.domain)
-	if state.Domain != "" && normalizeDomainIdentity(state.Domain) != domain {
-		return nil, fmt.Errorf("enrollment state domain %q does not match requested domain %q", state.Domain, m.domain)
-	}
-	if state.ObjectName != "" && !strings.EqualFold(strings.TrimSpace(state.ObjectName), strings.TrimSpace(objectName)) {
-		return nil, fmt.Errorf("enrollment state object %q does not match requested object %q", state.ObjectName, objectName)
-	}
-	if state.Identity != "" && normalizeMachineIdentity(state.Identity) != normalizeMachineIdentity(requested.dnsName) {
-		return nil, fmt.Errorf("enrollment state identity %q does not match requested machine %q", state.Identity, requested.dnsName)
-	}
 	identity := requested.dnsName
 
-	results := make([]VerifyResult, 0)
-	found := false
-	for _, ca := range state.CAs {
-		for _, tmpl := range ca.Templates {
-			if nickname != "" && tmpl.Nickname != nickname {
-				continue
-			}
-			found = true
-			results = append(results, verifyCertificate(ctx, ca, tmpl, identity, online))
+	var target templateStateRef
+	if nickname != "" {
+		target, err = resolveNickname(state, nickname)
+		if err != nil {
+			return nil, err
 		}
 	}
-
-	if nickname != "" && !found {
-		return nil, errors.New(gotext.Get("certificate %q not found (valid nicknames: %s)", nickname, strings.Join(nicknamesOfState(state), ", ")))
+	results := make([]VerifyResult, 0)
+	for ci, ca := range state.CAs {
+		for ti, tmpl := range ca.Templates {
+			if nickname != "" && target != (templateStateRef{ca: ci, template: ti}) {
+				continue
+			}
+			results = append(results, verifyCertificate(ctx, ca, tmpl, identity, online))
+		}
 	}
 	return results, nil
 }
@@ -614,15 +673,17 @@ func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]CAI
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	trustLifecycleMu.RLock()
+	defer trustLifecycleMu.RUnlock()
 
 	cas, err := discoverCAsAndTemplates(ctx, m.ldapConnect, dcHostnameFromDomain(m.domain))
 	if err != nil {
 		return nil, fmt.Errorf("failed to discover certificate authorities: %w", err)
 	}
 
-	state, err := loadState(m.stateDir, objectName)
+	state, err := loadState(m.stateDir, objectName, m.domain)
 	if err != nil {
-		log.Warningf(ctx, "Failed to load enrollment state for cross-reference: %v", err)
+		return nil, fmt.Errorf("failed to load enrollment state for cross-reference: %w", err)
 	}
 
 	trustDir := filepath.Join(m.stateDir, "certs")
@@ -637,7 +698,7 @@ func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]CAI
 			info.RootFingerprints = append([]string(nil), ca.Chain.Fingerprints...)
 		}
 		info.InstalledInTrust = caInstalledInTrust(ca, state, trustDir, m.globalTrustDir)
-		info.Enrolled = caEnrolled(ca.Name, state)
+		info.Enrolled = caEnrolled(ca, state)
 		infos = append(infos, info)
 	}
 	return infos, nil
@@ -651,6 +712,8 @@ func (m *Manager) SupportedTemplates(ctx context.Context, server string) ([]stri
 	}
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	trustLifecycleMu.RLock()
+	defer trustLifecycleMu.RUnlock()
 
 	log.Debugf(ctx, "Discovering supported templates for server %s", server)
 	connector := newKerberosLDAPConnector(m.krb5CacheDir, m.globalTrustDir, true)
@@ -885,7 +948,10 @@ func caInstalledInTrust(ca certAuthority, state *enrollmentState, trustDir, glob
 	}
 	if state != nil {
 		for _, sca := range state.CAs {
-			if sca.Name == ca.Name && len(sca.RootCerts) > 0 && filesExist(sca.RootCerts...) {
+			if strings.EqualFold(sca.Name, ca.Name) &&
+				strings.EqualFold(sca.Hostname, ca.Hostname) &&
+				len(sca.RootCerts) > 0 &&
+				filesExist(sca.RootCerts...) {
 				return true
 			}
 		}
@@ -895,12 +961,12 @@ func caInstalledInTrust(ca certAuthority, state *enrollmentState, trustDir, glob
 
 // caEnrolled reports whether the state records at least one enrolled template
 // with an on-disk certificate for the named CA.
-func caEnrolled(name string, state *enrollmentState) bool {
+func caEnrolled(authority certAuthority, state *enrollmentState) bool {
 	if state == nil {
 		return false
 	}
 	for _, sca := range state.CAs {
-		if sca.Name != name {
+		if !strings.EqualFold(sca.Name, authority.Name) || !strings.EqualFold(sca.Hostname, authority.Hostname) {
 			continue
 		}
 		for _, tmpl := range sca.Templates {
@@ -982,6 +1048,39 @@ func nicknamesOf(certs []CertInfo) []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+type templateStateRef struct {
+	ca       int
+	template int
+}
+
+// resolveNickname accepts the persisted identifier, the current
+// raw-identity-disambiguated identifier, or a historical sanitized alias. A
+// historical alias is safe only when it identifies exactly one template.
+func resolveNickname(state *enrollmentState, nickname string) (templateStateRef, error) {
+	var matches []templateStateRef
+	for ci, ca := range state.CAs {
+		for ti, tmpl := range ca.Templates {
+			aliases := []string{
+				tmpl.Nickname,
+				managementNickname(ca.Name, ca.Hostname, tmpl.Template),
+				legacyManagementNickname(ca.Name, tmpl.Template),
+			}
+			if slices.Contains(aliases, nickname) {
+				matches = append(matches, templateStateRef{ca: ci, template: ti})
+			}
+		}
+	}
+	valid := strings.Join(nicknamesOfState(state), ", ")
+	switch len(matches) {
+	case 0:
+		return templateStateRef{}, errors.New(gotext.Get("certificate %q not found (valid nicknames: %s)", nickname, valid))
+	case 1:
+		return matches[0], nil
+	default:
+		return templateStateRef{}, errors.New(gotext.Get("certificate nickname %q is ambiguous (valid nicknames: %s)", nickname, valid))
+	}
 }
 
 // nicknamesOfState returns the sorted nicknames recorded in the enrollment state.

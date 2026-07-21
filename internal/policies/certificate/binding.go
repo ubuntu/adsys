@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -364,40 +364,63 @@ func stateReferencedPaths(state *enrollmentState) map[string]struct{} {
 	return paths
 }
 
-func removeUnreferencedPaths(ctx context.Context, stateDir, objectName string, replacement *enrollmentState, candidates ...[]string) error {
+func removeUnreferencedPaths(ctx context.Context, stateDir, objectName, domain string, replacement *enrollmentState, candidates ...[]string) error {
+	stateFileMu.Lock()
+	defer stateFileMu.Unlock()
+
 	referenced := stateReferencedPaths(replacement)
 	stateFiles, err := filepath.Glob(filepath.Join(stateDir, "certs", "state_*.json"))
 	if err != nil {
 		return fmt.Errorf("listing enrollment state files: %w", err)
 	}
-	excluded := stateFilePath(stateDir, objectName)
+
+	type enumeratedState struct {
+		state     *enrollmentState
+		canonical bool
+	}
+	states := make(map[string]enumeratedState)
 	for _, path := range stateFiles {
-		if path == excluded {
-			continue
-		}
-		data, err := os.ReadFile(path)
+		state, _, err := readStateFile(path)
 		if err != nil {
 			return fmt.Errorf("reading enrollment state %s before cleanup: %w", path, err)
 		}
-		var state enrollmentState
-		if err := json.Unmarshal(data, &state); err != nil {
-			return fmt.Errorf("parsing enrollment state %s before cleanup: %w", path, err)
+		if err := validateEnumeratedState(state); err != nil {
+			return fmt.Errorf("validating enrollment state %s before cleanup: %w", path, err)
 		}
-		for referencedPath := range stateReferencedPaths(&state) {
+		canonical := isCanonicalStatePath(stateDir, path, state)
+		if !canonical && !isLegacyStatePath(stateDir, path, state) {
+			return fmt.Errorf("enrollment state %s does not match its embedded object name %q", path, state.ObjectName)
+		}
+		key := stateOwnerKey(state)
+		current, found := states[key]
+		if !found || canonical && !current.canonical {
+			states[key] = enumeratedState{state: state, canonical: canonical}
+		}
+	}
+
+	requestedDomain := normalizeDomainIdentity(domain)
+	for _, entry := range states {
+		state := entry.state
+		if state.ObjectName == objectName && normalizeDomainIdentity(state.Domain) == requestedDomain {
+			continue
+		}
+		for referencedPath := range stateReferencedPaths(state) {
 			referenced[referencedPath] = struct{}{}
 		}
 	}
 
+	var cleanupErrs []error
 	for _, path := range uniqueStrings(flattenStrings(candidates...)) {
 		if _, keep := referenced[path]; keep {
 			continue
 		}
 		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
-			return fmt.Errorf("removing unreferenced enrollment path %s: %w", path, err)
+			cleanupErrs = append(cleanupErrs, fmt.Errorf("removing unreferenced enrollment path %s: %w", path, err))
+			continue
 		}
 		log.Debugf(ctx, "Removed unreferenced enrollment path: %s", path)
 	}
-	return nil
+	return errors.Join(cleanupErrs...)
 }
 
 func flattenStrings(groups ...[]string) []string {

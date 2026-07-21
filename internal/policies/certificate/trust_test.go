@@ -312,6 +312,36 @@ func TestInstallationRollbackAggregatesFailures(t *testing.T) {
 	})
 }
 
+func TestWithRollbackClassifiesLeftoverTrustArtifacts(t *testing.T) {
+	t.Parallel()
+
+	primary := fmt.Errorf("injected installation failure")
+	assert.False(t, containsRollbackFailure(withRollback(&caChainInstallation{}, primary)))
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "leftover.crt")
+	now := time.Now()
+	root := newChainTestCA(t, "Root", nil, now.Add(-time.Hour), now.Add(time.Hour), 1)
+	require.NoError(t, os.WriteFile(path, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: root.cert.Raw}), 0600))
+	info, err := os.Lstat(path)
+	require.NoError(t, err)
+	installation := &caChainInstallation{
+		removeFile: func(string) error { return fmt.Errorf("injected cleanup failure") },
+		createdFiles: []createdCertificateFile{{
+			path: path,
+			raw:  root.cert.Raw,
+			info: info,
+		}},
+	}
+
+	err = withRollback(installation, primary)
+	require.Error(t, err)
+	assert.True(t, containsRollbackFailure(err))
+	assert.ErrorContains(t, err, "injected installation failure")
+	assert.ErrorContains(t, err, "injected cleanup failure")
+	assert.FileExists(t, path)
+}
+
 func testCertificateDER(t *testing.T, isCA bool, keyUsage x509.KeyUsage) []byte {
 	t.Helper()
 

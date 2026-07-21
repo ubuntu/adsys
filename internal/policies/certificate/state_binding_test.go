@@ -3,6 +3,7 @@ package certificate
 import (
 	"context"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"os"
 	"path/filepath"
@@ -51,7 +52,7 @@ func TestValidateStoredEnrollmentMigratesValidLegacyState(t *testing.T) {
 	state.CAs[0].Templates[0] = migrated
 	stateDir := t.TempDir()
 	require.NoError(t, saveState(stateDir, state))
-	loaded, err := loadState(stateDir, "host")
+	loaded, err := loadState(stateDir, "host", "example.com")
 	require.NoError(t, err)
 	require.NotNil(t, loaded)
 	assert.Equal(t, "host.example.com", loaded.Identity)
@@ -125,12 +126,78 @@ func TestRemoveUnreferencedPathsHonorsOtherObjectState(t *testing.T) {
 		}))
 	}
 
-	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, "host-a", nil, []string{shared}))
+	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, "host-a", "example.com", nil, []string{shared}))
 	assert.FileExists(t, shared, "another object state still owns the shared root")
 
-	require.NoError(t, removeState(stateDir, "host-b"))
-	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, "host-a", nil, []string{shared}))
+	require.NoError(t, removeState(stateDir, "host-b", "example.com"))
+	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, "host-a", "example.com", nil, []string{shared}))
 	assert.NoFileExists(t, shared)
+}
+
+func TestStateFileCollisionAndLegacyMigration(t *testing.T) {
+	t.Parallel()
+
+	stateDir := t.TempDir()
+	legacy := &enrollmentState{
+		ObjectName: "host-",
+		Identity:   "host-.example.com",
+		Domain:     "example.com",
+		CAs: []enrolledCA{{
+			Name:     "Test CA",
+			Hostname: "ca.example.com",
+			Templates: []enrolledTemplate{{
+				Nickname: "Test-CA.Machine",
+				Template: "Machine",
+			}},
+		}},
+	}
+	data, err := json.Marshal(legacy)
+	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Dir(legacyStateFilePath(stateDir, "host-")), 0750))
+	require.NoError(t, os.WriteFile(legacyStateFilePath(stateDir, "host-"), data, 0600))
+
+	require.NotEqual(t, stateFilePath(stateDir, "host$"), stateFilePath(stateDir, "host-"))
+
+	foreign, err := loadState(stateDir, "host$", "example.com")
+	require.NoError(t, err)
+	assert.Nil(t, foreign)
+	assert.FileExists(t, legacyStateFilePath(stateDir, "host-"), "foreign legacy state must not be removed")
+
+	migrated, err := loadState(stateDir, "host-", "example.com")
+	require.NoError(t, err)
+	require.NotNil(t, migrated)
+	assert.Equal(t, "host-", migrated.ObjectName)
+	assert.FileExists(t, stateFilePath(stateDir, "host-"))
+	assert.NoFileExists(t, legacyStateFilePath(stateDir, "host-"))
+}
+
+func TestStateEnumerationPrefersCanonicalStateOverLegacyDuplicate(t *testing.T) {
+	t.Parallel()
+
+	stateDir := t.TempDir()
+	stalePath := filepath.Join(stateDir, "certs", "stale.crt")
+	require.NoError(t, os.MkdirAll(filepath.Dir(stalePath), 0750))
+	require.NoError(t, os.WriteFile(stalePath, []byte("stale"), 0600))
+
+	canonical := &enrollmentState{
+		ObjectName: "host-a",
+		Identity:   "host-a.example.com",
+		Domain:     "example.com",
+	}
+	require.NoError(t, saveState(stateDir, canonical))
+	legacy := cloneEnrollmentState(canonical)
+	legacy.CAs = []enrolledCA{{Name: "Test CA", RootCerts: []string{stalePath}}}
+	require.NoError(t, writeStateFile(legacyStateFilePath(stateDir, "host-a"), legacy))
+
+	require.NoError(t, removeUnreferencedPaths(
+		context.Background(),
+		stateDir,
+		"host-b",
+		"example.com",
+		nil,
+		[]string{stalePath},
+	))
+	assert.NoFileExists(t, stalePath, "stale duplicate legacy state must not keep a path referenced")
 }
 
 func writeStateBindingPair(t *testing.T, keyPEM, certPEM []byte) enrolledTemplate {

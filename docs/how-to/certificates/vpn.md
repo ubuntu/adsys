@@ -82,14 +82,14 @@ The output should look something like this:
 :dir: 
 
 /var/lib/adsys/certs:
-galacticcafe-CA.crt
-galacticcafe-CA.Machine.crt
-galacticcafe-CA.Workstation.crt
-state_keypress.json
+galacticcafe-CA.root.<certificate-id>.crt
+galacticcafe-CA.Machine.<artifact-id>.crt
+galacticcafe-CA.Workstation.<artifact-id>.crt
+state_keypress.<object-id>.json
 
 /var/lib/adsys/private/certs:
-galacticcafe-CA.Machine.key
-galacticcafe-CA.Workstation.key
+galacticcafe-CA.Machine.<artifact-id>.key
+galacticcafe-CA.Workstation.<artifact-id>.key
 ```
 
 From this truncated output, we can see that two certificates were enrolled:
@@ -127,9 +127,9 @@ name        keypress.galacticcafe.com
 plugin      sstp-pppd-plugin.so
 ...
 ...
-ca: /var/lib/adsys/certs/galacticcafe-CA.2.crt
-cert: /var/lib/adsys/certs/galacticcafe-CA.Machine.crt
-key: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.crt
+ca: /var/lib/adsys/certs/galacticcafe-CA.root.<certificate-id>.crt
+cert: /var/lib/adsys/certs/galacticcafe-CA.Machine.<artifact-id>.crt
+key: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.<artifact-id>.key
 ...
 ...
 
