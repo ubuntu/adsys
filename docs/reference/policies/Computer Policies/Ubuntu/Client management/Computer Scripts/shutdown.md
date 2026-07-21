@@ -4,6 +4,8 @@ Define scripts that are executed on machine power off.
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
 
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using a user placeholder in a machine policy, or using an unknown placeholder, makes the policy fail to apply.
+
 
 - Type: scripts
 - Key: /shutdown

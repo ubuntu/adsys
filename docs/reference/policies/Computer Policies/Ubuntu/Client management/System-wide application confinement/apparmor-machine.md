@@ -7,6 +7,8 @@ Files can be included in each other either using a path relative to the current 
 
 Profiles from this GPO will be appended to the list of profiles referenced higher in the GPO hierarchy.
 
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using a user placeholder in a machine policy, or using an unknown placeholder, makes the policy fail to apply.
+
 
 - Type: apparmor
 - Key: /apparmor-machine

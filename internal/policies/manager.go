@@ -42,6 +42,7 @@ import (
 	"github.com/ubuntu/adsys/internal/policies/apparmor"
 	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/adsys/internal/policies/dconf"
+	"github.com/ubuntu/adsys/internal/policies/dynamicvalues"
 	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/policies/gdm"
 	"github.com/ubuntu/adsys/internal/policies/mount"
@@ -380,17 +381,30 @@ func (m *Manager) ApplyPolicies(ctx context.Context, objectName string, isComput
 	}
 	log.Info(ctx, gotext.Get("%s policies for %s (machine: %v)", action, objectName, isComputer))
 
-	var g errgroup.Group
-	// Applying dconf policies take a while to complete, so it's better to start applying them before
-	// querying dbus for the Pro subscription state, as it does not rely on that.
-	g.Go(func() error {
-		return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"])
-	})
+	// Filter out Ubuntu Pro-only rules before expanding dynamic values and
+	// dispatching to managers, so a bad template in a rule that will not be
+	// applied does not block a non-Pro machine.
 	if !m.GetSubscriptionState(ctx) {
 		if filteredRules := filterRules(ctx, rules); len(filteredRules) > 0 {
 			log.Warning(ctx, gotext.Get("Rules from the following policy types will be filtered out as the machine is not enrolled to Ubuntu Pro: %s", strings.Join(filteredRules, ", ")))
 		}
 	}
+
+	// Expand dynamic values (${USER}, ${HOSTNAME}, ...) in the remaining rules
+	// before starting any manager goroutine, so an invalid template fails closed
+	// before any partial policy write can occur.
+	dynCtx, err := m.dynamicValuesContext(objectName, isComputer)
+	if err != nil {
+		return err
+	}
+	if err := expandDynamicValues(rules, dynCtx); err != nil {
+		return err
+	}
+
+	var g errgroup.Group
+	g.Go(func() error {
+		return m.dconf.ApplyPolicy(ctx, objectName, isComputer, rules["dconf"])
+	})
 
 	g.Go(func() error {
 		return m.privilege.ApplyPolicy(ctx, objectName, isComputer, rules["privilege"])
@@ -532,4 +546,63 @@ func filterRules(ctx context.Context, rules map[string][]entry.Entry) []string {
 	})
 
 	return filteredRules
+}
+
+// dynamicValuesContext builds the substitution context used to expand dynamic
+// values in policy entries for the given object.
+//
+// For a user policy, objectName is the normalized "user@domain" form (enforced
+// upstream in internal/ad); ${USER}, ${FULL_USER} and ${DOMAIN} are derived from
+// it. ${HOSTNAME} and ${FULL_HOSTNAME} always refer to the local machine, with
+// ${FULL_HOSTNAME} using the machine domain so it stays correct for cross-domain
+// logons.
+func (m *Manager) dynamicValuesContext(objectName string, isComputer bool) (dynamicvalues.Context, error) {
+	machineDomain := m.backend.Domain()
+
+	fullHostname := m.hostname
+	if machineDomain != "" && !strings.Contains(m.hostname, ".") {
+		fullHostname = m.hostname + "." + machineDomain
+	}
+
+	dynCtx := dynamicvalues.Context{
+		Hostname:     m.hostname,
+		FullHostname: fullHostname,
+		IsComputer:   isComputer,
+	}
+
+	if isComputer {
+		dynCtx.Domain = machineDomain
+		return dynCtx, nil
+	}
+
+	at := strings.LastIndex(objectName, "@")
+	if at == -1 {
+		return dynamicvalues.Context{}, errors.New(gotext.Get("invalid user name %q: expected the form user@domain", objectName))
+	}
+	dynCtx.User = objectName[:at]
+	dynCtx.FullUser = objectName
+	dynCtx.Domain = objectName[at+1:]
+
+	return dynCtx, nil
+}
+
+// expandDynamicValues expands dynamic value placeholders in the values of all
+// enabled entries of rules, in place. Disabled entries are left untouched as
+// they are inactive configuration. It returns the first expansion error
+// encountered.
+func expandDynamicValues(rules map[string][]entry.Entry, dynCtx dynamicvalues.Context) error {
+	for _, entries := range rules {
+		for i := range entries {
+			if entries[i].Disabled {
+				continue
+			}
+			expanded, err := dynamicvalues.Expand(entries[i].Value, dynCtx)
+			if err != nil {
+				return err
+			}
+			entries[i].Value = expanded
+		}
+	}
+
+	return nil
 }

@@ -1,6 +1,8 @@
 package policies
 
 import (
+	"github.com/ubuntu/adsys/internal/policies/dynamicvalues"
+	"github.com/ubuntu/adsys/internal/policies/entry"
 	"github.com/ubuntu/adsys/internal/policies/gdm"
 )
 
@@ -24,4 +26,14 @@ func WithGDM(m *gdm.Manager) Option {
 
 func (pols Policies) HasAssets() bool {
 	return pols.assets != nil
+}
+
+// DynamicValuesContext exposes dynamicValuesContext for testing.
+func (m *Manager) DynamicValuesContext(objectName string, isComputer bool) (dynamicvalues.Context, error) {
+	return m.dynamicValuesContext(objectName, isComputer)
+}
+
+// ExpandDynamicValues exposes expandDynamicValues for testing.
+func ExpandDynamicValues(rules map[string][]entry.Entry, dynCtx dynamicvalues.Context) error {
+	return expandDynamicValues(rules, dynCtx)
 }

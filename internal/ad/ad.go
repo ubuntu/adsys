@@ -371,13 +371,26 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 		ad.Lock()
 		defer ad.Unlock()
 
-		// Only compress assets if we have fetched them, otherwise attach optionally
-		// existing db.
+		// Only compress assets if we have fetched them, otherwise attach an
+		// existing db or (if missing) build it from the current assets dir.
 		if !assetsWereRefresh {
 			db := filepath.Join(assetsSrc + ".db")
-			if _, err := os.Stat(db); errors.Is(err, os.ErrNotExist) {
+			if _, err := os.Stat(db); err == nil {
+				assetsDBPath = db
+				return nil
+			} else if !errors.Is(err, os.ErrNotExist) {
+				return err
+			}
+
+			// Another concurrent request may have downloaded assets and not yet
+			// packed the db. If assets exist, build the db now so this caller can
+			// still attach assets.
+			if _, err := os.Stat(assetsSrc); errors.Is(err, fs.ErrNotExist) {
 				return nil
 			} else if err != nil {
+				return err
+			}
+			if err := policies.CompressAssets(ctx, assetsSrc); err != nil {
 				return err
 			}
 			assetsDBPath = db
@@ -406,6 +419,13 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 
 	if err := errg.Wait(); err != nil {
 		return pols, fmt.Errorf("one or more error while parsing downloaded elements: %w", err)
+	}
+
+	// Serialise reads of the assets db with concurrent compressions, which also
+	// hold ad.Lock(), so we don't open a partially-written archive.
+	if assetsDBPath != "" {
+		ad.Lock()
+		defer ad.Unlock()
 	}
 
 	return policies.New(ctx, gposRules, assetsDBPath)

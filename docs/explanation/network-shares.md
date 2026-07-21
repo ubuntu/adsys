@@ -78,6 +78,16 @@ The mount process is handled with GVfs and it defines in which directory the sha
 
 The policy strategy is "append". Therefore, if multiple policies defining mount locations are to be applied to a user, all of the listed entries will be mounted.
 
+### Per-user shares with dynamic values
+
+The share path can include {ref}`dynamic value placeholders <exp::dynamic-values>` such as `${USER}`, which are expanded on the client when the policy is applied. This lets a single policy mount a personal share for every user, for example:
+
+```text
+smb://server/homes/${USER}
+```
+
+The `[krb5]` and `[anonymous]` tags can be combined with dynamic values, for example `[krb5]smb://server/homes/${USER}`.
+
 ### Invalid mounts
 
 If the mounting of an entry listed in the policy fails, ADSys will proceed with the other entries in the policy, mounting those it can and logging those that cannot be mounted.

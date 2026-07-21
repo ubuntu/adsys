@@ -1064,6 +1064,8 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
 
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using a user placeholder in a machine policy, or using an unknown placeholder, makes the policy fail to apply.
+
 
 - Type: scripts
 - Key: /startup
@@ -1086,6 +1088,8 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuExplainTextMachineScriptsShutdown">Define scripts that are executed on machine power off.
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using a user placeholder in a machine policy, or using an unknown placeholder, makes the policy fail to apply.
 
 
 - Type: scripts
@@ -1112,6 +1116,8 @@ On the client machine, computer profiles are stored in /etc/apparmor.d/adsys/mac
 Files can be included in each other either using a path relative to the current directory of the profile (include &#34;path/to/profile&#34;), or relying on the include path of AppArmor (include &lt;adsys/machine/path/to/profile&gt;).
 
 Profiles from this GPO will be appended to the list of profiles referenced higher in the GPO hierarchy.
+
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using a user placeholder in a machine policy, or using an unknown placeholder, makes the policy fail to apply.
 
 
 - Type: apparmor
@@ -1510,7 +1516,7 @@ Supported on Ubuntu 22.04, 24.04, 25.10, 26.04, 26.10.</string>
       <string id="UbuntuExplainTextMachineMountSystemMounts">Define network shares that will be mounted for the system.
 If more shares are defined higher in the GPO hierarchy, the entries listed here will be appended to the list and duplicates will be removed.
 
-Values should be in the format: 
+Values should be in the format:
     &lt;protocol&gt;://&lt;hostname-or-ip&gt;/&lt;shared-dir&gt;
 e.g.
     nfs://example_nfs.com/nfs_shared_dir
@@ -1527,6 +1533,8 @@ If the tag is added, the mount will require Kerberos authentication in order to 
 The supported protocols / file systems are the same as the ones supported by the mount command.
 They are listed on the mount man page on https://man7.org/linux/man-pages/man8/mount.8.html
 It&#39;s up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
+
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using a user placeholder in a machine policy, or using an unknown placeholder, makes the policy fail to apply. For example: smb://server/${HOSTNAME}/data
 
 
 - Type: mount
@@ -1698,6 +1706,8 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
 
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using an unknown placeholder makes the policy fail to apply. For example: ${USER}/logon.sh
+
 
 - Type: scripts
 - Key: /logon
@@ -1720,6 +1730,8 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuExplainTextUserScriptsLogoff">Define scripts that are executed when the user exits from last session.
 Those scripts are ordered, one by line, and relative to SYSVOL/ubuntu/scripts/ directory.
 Scripts from this GPO will be appended to the list of scripts referenced higher in the GPO hierarchy.
+
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using an unknown placeholder makes the policy fail to apply. For example: ${USER}/logoff.sh
 
 
 - Type: scripts
@@ -1763,6 +1775,8 @@ The GPO client will wrap this into an apparmor block declaration containing the 
 
 The configured profile will override any profile referenced higher in the GPO hierarchy.
 
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using an unknown placeholder makes the policy fail to apply.
+
 
 - Type: apparmor
 - Key: /apparmor-users
@@ -1785,7 +1799,7 @@ An Ubuntu Pro subscription on the client is required to apply this policy.</stri
       <string id="UbuntuExplainTextUserMountUserMounts">Define network shares that will be mounted for the client.
 If more shares are defined higher the GPO hierarchy, the entries listed here will be appended to the list and duplicates will be removed.
 
-Values should be in the format: 
+Values should be in the format:
     &lt;protocol&gt;://&lt;hostname-or-ip&gt;/&lt;shared-dir&gt;
 e.g.
     nfs://example_nfs.com/nfs_shared_dir
@@ -1802,6 +1816,8 @@ If the tag is added, the mount will require Kerberos authentication in order to 
 The supported protocols are the same as the ones supported by gvfs.
 They are listed on the man page of gvfs, under the gvfs-backends section: https://manpages.ubuntu.com/manpages/jammy/en/man7/gvfs.7.html
 It&#39;s up to the user to ensure that the requested protocols are valid and supported and that the shared directories have the correct configuration for the requested connection.
+
+Dynamic values: this field supports the placeholders ${USER}, ${FULL_USER}, ${HOSTNAME}, ${FULL_HOSTNAME} and ${DOMAIN}, which are expanded on the client when the policy is applied. ${USER} and ${FULL_USER} are only valid in user policies. Using a user placeholder in a machine policy, or using an unknown placeholder, makes the policy fail to apply. For example: smb://server/homes/${USER}
 
 
 - Type: mount
