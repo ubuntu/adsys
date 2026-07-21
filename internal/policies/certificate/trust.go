@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"bytes"
 	"context"
 	"crypto/x509"
 	"encoding/pem"
@@ -19,22 +20,65 @@ import (
 // symlink name.
 var symlinkTmpCounter atomic.Uint64
 
-// installRootCACerts is kept for callers that only need the root paths. The
-// enrollment flow uses installCAChain so subordinate intermediates are tracked.
-func installRootCACerts(ca certAuthority, trustDir, globalTrustDir string) (certFiles []string, symlinkFiles []string, err error) {
-	roots, _, symlinks, err := installCAChain(ca, trustDir, globalTrustDir)
-	return roots, symlinks, err
+type caChainInstallation struct {
+	RootFiles         []string
+	IntermediateFiles []string
+	SymlinkFiles      []string
+	ChainFiles        []string
+
+	createdFiles   []createdCertificateFile
+	symlinkChanges []symlinkChange
+}
+
+type createdCertificateFile struct {
+	path string
+	raw  []byte
+	info os.FileInfo
+}
+
+type symlinkChange struct {
+	path            string
+	installedTarget string
+	previousTarget  string
+	hadPrevious     bool
+	installedInfo   os.FileInfo
+}
+
+type trustInstallOps struct {
+	replaceSymlink func(src, dst string) error
+	beforeSymlink  func() error
+}
+
+type certificateInstallPlan struct {
+	cert    *x509.Certificate
+	path    string
+	staged  string
+	publish bool
 }
 
 func installCAChain(ca certAuthority, trustDir, globalTrustDir string) (rootFiles, intermediateFiles, symlinkFiles []string, err error) {
+	installation, err := installCAChainTransaction(ca, trustDir, globalTrustDir)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	return installation.RootFiles, installation.IntermediateFiles, installation.SymlinkFiles, nil
+}
+
+func installCAChainTransaction(ca certAuthority, trustDir, globalTrustDir string) (*caChainInstallation, error) {
+	return installCAChainTransactionWithOps(ca, trustDir, globalTrustDir, trustInstallOps{
+		replaceSymlink: atomicSymlink,
+	})
+}
+
+func installCAChainTransactionWithOps(ca certAuthority, trustDir, globalTrustDir string, ops trustInstallOps) (_ *caChainInstallation, err error) {
 	chain := ca.Chain
 	if chain == nil {
 		if len(ca.CACertificate) == 0 {
-			return nil, nil, nil, fmt.Errorf("CA %s has no selected certificate chain", ca.Name)
+			return nil, fmt.Errorf("CA %s has no selected certificate chain", ca.Name)
 		}
 		cert, parseErr := x509.ParseCertificate(ca.CACertificate)
 		if parseErr != nil {
-			return nil, nil, nil, fmt.Errorf("failed to parse CA certificate for %s: %w", ca.Name, parseErr)
+			return nil, fmt.Errorf("failed to parse CA certificate for %s: %w", ca.Name, parseErr)
 		}
 		chain = &expectedCertificateChain{
 			Certificates: []*x509.Certificate{cert},
@@ -42,9 +86,26 @@ func installCAChain(ca certAuthority, trustDir, globalTrustDir string) (rootFile
 		}
 	}
 	if err := verifyExactCAPath(chain.Certificates, time.Now()); err != nil {
-		return nil, nil, nil, fmt.Errorf("CA certificate for %s failed directory-chain verification: %w", ca.Name, err)
+		return nil, fmt.Errorf("CA certificate for %s failed directory-chain verification: %w", ca.Name, err)
+	}
+	if len(chain.Fingerprints) != 0 && len(chain.Fingerprints) != len(chain.Certificates) {
+		return nil, fmt.Errorf("CA certificate chain for %s has %d fingerprints for %d certificates", ca.Name, len(chain.Fingerprints), len(chain.Certificates))
+	}
+	for i, cert := range chain.Certificates {
+		if len(chain.Fingerprints) != 0 && chain.Fingerprints[i] != certificateFingerprint(cert) {
+			return nil, fmt.Errorf("CA certificate chain fingerprint %d for %s does not match its certificate", i, ca.Name)
+		}
 	}
 
+	plans := make([]certificateInstallPlan, 0, len(chain.Certificates))
+	defer func() {
+		for _, plan := range plans {
+			if plan.staged != "" {
+				_ = os.Remove(plan.staged)
+			}
+		}
+	}()
+	installation := &caChainInstallation{}
 	log.Debugf(context.Background(), "Installing CA chain for %s with %d certificate(s)", ca.Name, len(chain.Certificates))
 	for i, cert := range chain.Certificates {
 		fp := certificateFingerprint(cert)
@@ -59,22 +120,206 @@ func installCAChain(ca certAuthority, trustDir, globalTrustDir string) (rootFile
 		certFileName := fmt.Sprintf("%s.%s.%s.crt", sanitizeName(ca.Name), role, fp[:16])
 		certPath := filepath.Join(trustDir, certFileName)
 		certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
-		if err := safeWriteFile(certPath, certPEM, 0644); err != nil {
-			return rootFiles, intermediateFiles, symlinkFiles, fmt.Errorf("failed to write CA certificate: %w", err)
+		plan := certificateInstallPlan{cert: cert, path: certPath}
+		switch matches, inspectErr := existingCertificateMatches(certPath, cert); {
+		case inspectErr != nil:
+			return nil, fmt.Errorf("failed to inspect CA certificate %s: %w", certPath, inspectErr)
+		case matches:
+		default:
+			staged, stageErr := stageCertificateFile(certPath, certPEM, 0644)
+			if stageErr != nil {
+				return nil, fmt.Errorf("failed to stage CA certificate %s: %w", certPath, stageErr)
+			}
+			plan.staged = staged
+			plan.publish = true
 		}
+		plans = append(plans, plan)
+		installation.ChainFiles = append(installation.ChainFiles, certPath)
 
 		if !isRoot {
-			intermediateFiles = append(intermediateFiles, certPath)
+			installation.IntermediateFiles = append(installation.IntermediateFiles, certPath)
 			continue
 		}
-		rootFiles = append(rootFiles, certPath)
+		installation.RootFiles = append(installation.RootFiles, certPath)
 		symlinkPath := filepath.Join(globalTrustDir, certFileName)
-		if err := atomicSymlink(certPath, symlinkPath); err != nil {
-			return rootFiles, intermediateFiles, symlinkFiles, fmt.Errorf("failed to create trust store symlink %s -> %s: %w", symlinkPath, certPath, err)
+		if info, inspectErr := os.Lstat(symlinkPath); inspectErr == nil {
+			if info.Mode()&os.ModeSymlink == 0 {
+				return nil, fmt.Errorf("refusing to overwrite non-symlink trust store entry %s", symlinkPath)
+			}
+		} else if !os.IsNotExist(inspectErr) {
+			return nil, fmt.Errorf("failed to inspect existing trust store entry %s: %w", symlinkPath, inspectErr)
 		}
-		symlinkFiles = append(symlinkFiles, symlinkPath)
+		installation.SymlinkFiles = append(installation.SymlinkFiles, symlinkPath)
 	}
-	return rootFiles, intermediateFiles, symlinkFiles, nil
+
+	for i := range plans {
+		if !plans[i].publish {
+			continue
+		}
+		created, err := publishStagedCertificate(plans[i].staged, plans[i].path, plans[i].cert)
+		if err != nil {
+			installation.rollback()
+			return nil, fmt.Errorf("failed to publish CA certificate %s: %w", plans[i].path, err)
+		}
+		if created {
+			createdFile := createdCertificateFile{
+				path: plans[i].path,
+				raw:  append([]byte(nil), plans[i].cert.Raw...),
+			}
+			createdFile.info, err = os.Lstat(plans[i].path)
+			installation.createdFiles = append(installation.createdFiles, createdFile)
+			if err != nil {
+				installation.rollback()
+				return nil, fmt.Errorf("failed to inspect published CA certificate %s: %w", plans[i].path, err)
+			}
+		}
+		if err := os.Remove(plans[i].staged); err != nil {
+			installation.rollback()
+			return nil, fmt.Errorf("failed to remove staged CA certificate %s: %w", plans[i].staged, err)
+		}
+		plans[i].staged = ""
+	}
+
+	rootPath := installation.RootFiles[0]
+	symlinkPath := installation.SymlinkFiles[0]
+	if ops.beforeSymlink != nil {
+		if err := ops.beforeSymlink(); err != nil {
+			installation.rollback()
+			return nil, fmt.Errorf("failed before publishing trust store symlink: %w", err)
+		}
+	}
+	previousTarget, readErr := os.Readlink(symlinkPath)
+	hadPrevious := readErr == nil
+	if readErr != nil && !os.IsNotExist(readErr) {
+		installation.rollback()
+		return nil, fmt.Errorf("failed to read existing trust store symlink %s: %w", symlinkPath, readErr)
+	}
+	if !hadPrevious || previousTarget != rootPath {
+		if ops.replaceSymlink == nil {
+			installation.rollback()
+			return nil, fmt.Errorf("trust symlink publisher is unavailable")
+		}
+		if err := ops.replaceSymlink(rootPath, symlinkPath); err != nil {
+			installation.rollback()
+			return nil, fmt.Errorf("failed to create trust store symlink %s -> %s: %w", symlinkPath, rootPath, err)
+		}
+		change := symlinkChange{
+			path:            symlinkPath,
+			installedTarget: rootPath,
+			previousTarget:  previousTarget,
+			hadPrevious:     hadPrevious,
+		}
+		change.installedInfo, err = os.Lstat(symlinkPath)
+		installation.symlinkChanges = append(installation.symlinkChanges, change)
+		if err != nil {
+			installation.rollback()
+			return nil, fmt.Errorf("failed to inspect published trust store symlink %s: %w", symlinkPath, err)
+		}
+	}
+
+	return installation, nil
+}
+
+func existingCertificateMatches(path string, expected *x509.Certificate) (bool, error) {
+	info, err := os.Lstat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+	if !info.Mode().IsRegular() {
+		return false, fmt.Errorf("refusing to overwrite non-regular certificate file")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return false, err
+	}
+	block, rest := pem.Decode(data)
+	if block == nil || block.Type != "CERTIFICATE" || len(bytes.TrimSpace(rest)) != 0 {
+		return false, fmt.Errorf("existing file is not exactly one PEM certificate")
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return false, err
+	}
+	if !bytes.Equal(cert.Raw, expected.Raw) {
+		return false, fmt.Errorf("existing certificate does not match deterministic path fingerprint")
+	}
+	return true, nil
+}
+
+func stageCertificateFile(dst string, data []byte, mode os.FileMode) (string, error) {
+	f, err := os.CreateTemp(filepath.Dir(dst), "."+filepath.Base(dst)+".stage.*")
+	if err != nil {
+		return "", err
+	}
+	path := f.Name()
+	ok := false
+	defer func() {
+		_ = f.Close()
+		if !ok {
+			_ = os.Remove(path)
+		}
+	}()
+	if _, err := f.Write(data); err != nil {
+		return "", err
+	}
+	if err := f.Chmod(mode); err != nil {
+		return "", err
+	}
+	if err := f.Close(); err != nil {
+		return "", err
+	}
+	ok = true
+	return path, nil
+}
+
+func publishStagedCertificate(staged, dst string, expected *x509.Certificate) (bool, error) {
+	if err := os.Link(staged, dst); err != nil {
+		if matches, inspectErr := existingCertificateMatches(dst, expected); inspectErr == nil && matches {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+func (installation *caChainInstallation) rollback() {
+	if installation == nil {
+		return
+	}
+	for i := len(installation.symlinkChanges) - 1; i >= 0; i-- {
+		change := installation.symlinkChanges[i]
+		currentTarget, err := os.Readlink(change.path)
+		if err != nil || currentTarget != change.installedTarget {
+			continue
+		}
+		if currentInfo, err := os.Lstat(change.path); err != nil ||
+			(change.installedInfo != nil && !os.SameFile(change.installedInfo, currentInfo)) {
+			continue
+		}
+		if change.hadPrevious {
+			_ = atomicSymlink(change.previousTarget, change.path)
+		} else {
+			_ = os.Remove(change.path)
+		}
+	}
+	for i := len(installation.createdFiles) - 1; i >= 0; i-- {
+		created := installation.createdFiles[i]
+		currentInfo, err := os.Lstat(created.path)
+		if err != nil || (created.info != nil && !os.SameFile(created.info, currentInfo)) {
+			continue
+		}
+		data, err := os.ReadFile(created.path)
+		if err != nil {
+			continue
+		}
+		block, _ := pem.Decode(data)
+		if block != nil && bytes.Equal(block.Bytes, created.raw) {
+			_ = os.Remove(created.path)
+		}
+	}
 }
 
 // updateCATrustStore runs update-ca-certificates to rebuild the system
@@ -93,26 +338,6 @@ func updateCATrustStore() error {
 	}
 	log.Debug(context.Background(), "CA trust store updated successfully")
 	return nil
-}
-
-// removeRootCACerts removes the certificate files and symlinks for a given CA.
-func removeRootCACerts(certFiles, symlinkFiles []string) {
-	for _, f := range symlinkFiles {
-		log.Debugf(context.Background(), "Removing CA trust store symlink: %s", f)
-		os.Remove(f)
-	}
-	for _, f := range certFiles {
-		log.Debugf(context.Background(), "Removing CA certificate file: %s", f)
-		os.Remove(f)
-	}
-}
-
-func removeCAChainCerts(rootFiles, intermediateFiles, symlinkFiles []string) {
-	removeRootCACerts(rootFiles, symlinkFiles)
-	for _, f := range intermediateFiles {
-		log.Debugf(context.Background(), "Removing intermediate CA certificate: %s", f)
-		_ = os.Remove(f)
-	}
 }
 
 // findUpdateCACommand returns the path to the system command for updating

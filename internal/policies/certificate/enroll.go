@@ -323,34 +323,48 @@ func verifyIssuedCertificate(certPEM string, keyPEM []byte, identity string, exp
 		return nil, fmt.Errorf("unsupported private key type: %T", key)
 	}
 
-	identity = normalizeMachineIdentity(identity)
-	if identity == "" {
-		return nil, fmt.Errorf("expected machine identity is empty")
-	}
-	if len(cert.DNSNames) > 0 {
-		matched := false
-		for _, dnsName := range cert.DNSNames {
-			if normalizeMachineIdentity(dnsName) == identity {
-				matched = true
-				break
-			}
-		}
-		if !matched {
-			return nil, fmt.Errorf("issued certificate DNS names do not contain expected machine identity %q", identity)
-		}
-	} else if normalizeMachineIdentity(cert.Subject.CommonName) != identity {
-		return nil, fmt.Errorf("issued certificate common name %q does not match expected machine identity %q", cert.Subject.CommonName, identity)
+	if err := verifyCertificateIdentity(cert, identity); err != nil {
+		return nil, err
 	}
 
+	if err := verifyLeafAgainstExactChain(cert, expectedChain, now); err != nil {
+		return nil, err
+	}
+	return cert, nil
+}
+
+func verifyCertificateIdentity(cert *x509.Certificate, identity string) error {
+	identity = normalizeMachineIdentity(identity)
+	if identity == "" {
+		return fmt.Errorf("expected machine identity is empty")
+	}
+	if len(cert.DNSNames) > 0 {
+		for _, dnsName := range cert.DNSNames {
+			if normalizeMachineIdentity(dnsName) == identity {
+				return nil
+			}
+		}
+		return fmt.Errorf("issued certificate DNS names do not contain expected machine identity %q", identity)
+	}
+	if normalizeMachineIdentity(cert.Subject.CommonName) != identity {
+		return fmt.Errorf("issued certificate common name %q does not match expected machine identity %q", cert.Subject.CommonName, identity)
+	}
+	return nil
+}
+
+func verifyLeafAgainstExactChain(cert *x509.Certificate, expectedChain []*x509.Certificate, now time.Time) error {
+	if cert.IsCA {
+		return fmt.Errorf("issued certificate is a CA certificate")
+	}
 	if len(expectedChain) == 0 {
-		return nil, fmt.Errorf("no expected CA chain was provided")
+		return fmt.Errorf("no expected CA chain was provided")
 	}
 	if err := verifyExactCAPath(expectedChain, now); err != nil {
-		return nil, fmt.Errorf("expected CA chain is invalid: %w", err)
+		return fmt.Errorf("expected CA chain is invalid: %w", err)
 	}
 	issuer := expectedChain[0]
 	if err := cert.CheckSignatureFrom(issuer); err != nil {
-		return nil, fmt.Errorf("issued certificate was not signed by selected issuing CA %s: %w", certificateFingerprint(issuer), err)
+		return fmt.Errorf("issued certificate was not signed by selected issuing CA %s: %w", certificateFingerprint(issuer), err)
 	}
 
 	roots := x509.NewCertPool()
@@ -366,7 +380,7 @@ func verifyIssuedCertificate(certPEM string, keyPEM []byte, identity string, exp
 		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("issued certificate does not chain through the selected CA: %w", err)
+		return fmt.Errorf("issued certificate does not chain through the selected CA: %w", err)
 	}
 	matchedIssuer := false
 	for _, chain := range chains {
@@ -376,10 +390,9 @@ func verifyIssuedCertificate(certPEM string, keyPEM []byte, identity string, exp
 		}
 	}
 	if !matchedIssuer {
-		return nil, fmt.Errorf("issued certificate verification did not use selected issuing CA %s", certificateFingerprint(issuer))
+		return fmt.Errorf("issued certificate verification did not use selected issuing CA %s", certificateFingerprint(issuer))
 	}
-
-	return cert, nil
+	return nil
 }
 
 // safeWriteFile writes data to dst atomically by first writing to a uniquely

@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"os"
@@ -20,10 +21,13 @@ func TestValidateStoredEnrollmentMigratesValidLegacyState(t *testing.T) {
 	key, keyPEM := chainTestRSAKey(t)
 	certPEM := chainTestLeaf(t, key.Public(), ca, "host.example.com", now.Add(-time.Hour), now.Add(time.Hour))
 	tmpl := writeStateBindingPair(t, keyPEM, certPEM)
+	legacyCA, currentBinding := writeStateBindingCA(t, ca)
+	legacyCA.Name = "Enterprise CA"
+	legacyCA.Templates = []enrolledTemplate{tmpl}
 	state := &enrollmentState{
 		ObjectName: "host",
 		Domain:     "EXAMPLE.COM.",
-		CAs:        []enrolledCA{{Name: "Enterprise CA", Templates: []enrolledTemplate{tmpl}}},
+		CAs:        []enrolledCA{legacyCA},
 	}
 	current := certAuthority{
 		Name: "Enterprise CA",
@@ -33,9 +37,12 @@ func TestValidateStoredEnrollmentMigratesValidLegacyState(t *testing.T) {
 		},
 	}
 
-	migrated, err := validateStoredEnrollment(state.CAs[0], tmpl, state, current, "host.example.com", "example.com", now)
+	migrated, err := validateStoredEnrollment(state.CAs[0], tmpl, state, current, currentBinding, "host.example.com", "example.com", now)
 	require.NoError(t, err)
 	assert.Equal(t, rawCertificateFingerprint(pemDER(t, certPEM)), migrated.LeafFingerprint)
+	assert.Equal(t, currentBinding.IssuerFingerprint, migrated.IssuerFingerprint)
+	assert.Equal(t, currentBinding.Fingerprints, migrated.ChainFingerprints)
+	assert.Equal(t, currentBinding.Files, migrated.ChainFiles)
 
 	state.Identity = "host.example.com"
 	state.Domain = "example.com"
@@ -50,6 +57,8 @@ func TestValidateStoredEnrollmentMigratesValidLegacyState(t *testing.T) {
 	assert.Equal(t, "host.example.com", loaded.Identity)
 	assert.Equal(t, current.Chain.issuerFingerprint(), loaded.CAs[0].IssuerFingerprint)
 	assert.Equal(t, migrated.LeafFingerprint, loaded.CAs[0].Templates[0].LeafFingerprint)
+	assert.Equal(t, currentBinding.Fingerprints, loaded.CAs[0].Templates[0].ChainFingerprints)
+	assert.Equal(t, currentBinding.Files, loaded.CAs[0].Templates[0].ChainFiles)
 }
 
 func TestValidateStoredEnrollmentRejectsMismatchAndStaleBindings(t *testing.T) {
@@ -61,6 +70,8 @@ func TestValidateStoredEnrollmentRejectsMismatchAndStaleBindings(t *testing.T) {
 	_, wrongKeyPEM := chainTestRSAKey(t)
 	certPEM := chainTestLeaf(t, key.Public(), ca, "host.example.com", now.Add(-time.Hour), now.Add(time.Hour))
 	tmpl := writeStateBindingPair(t, wrongKeyPEM, certPEM)
+	stateCA, currentBinding := writeStateBindingCA(t, ca)
+	stateCA.Name = "Enterprise CA"
 	current := certAuthority{
 		Name: "Enterprise CA",
 		Chain: &expectedCertificateChain{
@@ -69,8 +80,8 @@ func TestValidateStoredEnrollmentRejectsMismatchAndStaleBindings(t *testing.T) {
 		},
 	}
 
-	state := &enrollmentState{Domain: "example.com", CAs: []enrolledCA{{Name: "Enterprise CA"}}}
-	_, err := validateStoredEnrollment(state.CAs[0], tmpl, state, current, "host.example.com", "example.com", now)
+	state := &enrollmentState{Domain: "example.com", CAs: []enrolledCA{stateCA}}
+	_, err := validateStoredEnrollment(state.CAs[0], tmpl, state, current, currentBinding, "host.example.com", "example.com", now)
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "does not match")
 
@@ -78,21 +89,48 @@ func TestValidateStoredEnrollmentRejectsMismatchAndStaleBindings(t *testing.T) {
 	tmpl = writeStateBindingPair(t, validKeyPEM, chainTestLeaf(t, validKey.Public(), ca, "host.example.com", now.Add(-time.Hour), now.Add(time.Hour)))
 
 	state.Domain = "other.example"
-	_, err = validateStoredEnrollment(state.CAs[0], tmpl, state, current, "host.example.com", "example.com", now)
+	_, err = validateStoredEnrollment(state.CAs[0], tmpl, state, current, currentBinding, "host.example.com", "example.com", now)
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "state domain")
 
 	state.Domain = "example.com"
 	state.Identity = "other.example.com"
-	_, err = validateStoredEnrollment(state.CAs[0], tmpl, state, current, "host.example.com", "example.com", now)
+	_, err = validateStoredEnrollment(state.CAs[0], tmpl, state, current, currentBinding, "host.example.com", "example.com", now)
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "machine identity")
 
 	state.Identity = "host.example.com"
 	state.CAs[0].IssuerFingerprint = "deadbeef"
-	_, err = validateStoredEnrollment(state.CAs[0], tmpl, state, current, "host.example.com", "example.com", now)
+	state.CAs[0].ChainFingerprints = append([]string(nil), currentBinding.Fingerprints...)
+	_, err = validateStoredEnrollment(state.CAs[0], tmpl, state, current, currentBinding, "host.example.com", "example.com", now)
 	require.Error(t, err)
-	assert.ErrorContains(t, err, "issuing CA fingerprint")
+	assert.ErrorContains(t, err, "issuer fingerprint")
+}
+
+func TestRemoveUnreferencedPathsHonorsOtherObjectState(t *testing.T) {
+	t.Parallel()
+
+	stateDir := t.TempDir()
+	shared := filepath.Join(stateDir, "certs", "shared-root.crt")
+	require.NoError(t, os.MkdirAll(filepath.Dir(shared), 0750))
+	require.NoError(t, os.WriteFile(shared, []byte("shared"), 0600))
+	for _, objectName := range []string{"host-a", "host-b"} {
+		require.NoError(t, saveState(stateDir, &enrollmentState{
+			ObjectName: objectName,
+			Domain:     "example.com",
+			CAs: []enrolledCA{{
+				Name:      "Enterprise CA",
+				RootCerts: []string{shared},
+			}},
+		}))
+	}
+
+	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, "host-a", nil, []string{shared}))
+	assert.FileExists(t, shared, "another object state still owns the shared root")
+
+	require.NoError(t, removeState(stateDir, "host-b"))
+	require.NoError(t, removeUnreferencedPaths(context.Background(), stateDir, "host-a", nil, []string{shared}))
+	assert.NoFileExists(t, shared)
 }
 
 func writeStateBindingPair(t *testing.T, keyPEM, certPEM []byte) enrolledTemplate {
@@ -115,4 +153,24 @@ func pemDER(t *testing.T, value []byte) []byte {
 	block, _ := pem.Decode(value)
 	require.NotNil(t, block)
 	return block.Bytes
+}
+
+func writeStateBindingCA(t *testing.T, ca *chainTestCA) (enrolledCA, templateChainBinding) {
+	t.Helper()
+	dir := t.TempDir()
+	rootPath := filepath.Join(dir, "root.crt")
+	require.NoError(t, os.WriteFile(rootPath, pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: ca.cert.Raw,
+	}), 0600))
+	fp := certificateFingerprint(ca.cert)
+	return enrolledCA{
+			IssuerFingerprint: fp,
+			ChainFingerprints: []string{fp},
+			RootCerts:         []string{rootPath},
+		}, templateChainBinding{
+			IssuerFingerprint: fp,
+			Fingerprints:      []string{fp},
+			Files:             []string{rootPath},
+		}
 }

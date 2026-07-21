@@ -459,25 +459,79 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	attrsByName := directoryData.TemplateAttrs
 	machineIdentity := directoryData.MachineIdentity.dnsName
 
-	var enrolledCAs []enrolledCA
+	type preparedEnrollmentCA struct {
+		authority    certAuthority
+		installation *caChainInstallation
+		binding      templateChainBinding
+		preserved    *enrolledCA
+		skip         bool
+	}
+	preparedCAs := make([]preparedEnrollmentCA, 0, len(cas))
+	rollbackPrepared := func() {
+		for _, prepared := range preparedCAs {
+			if prepared.installation != nil {
+				prepared.installation.rollback()
+			}
+		}
+	}
 	for _, ca := range cas {
-		log.Debugf(ctx, "Processing CA: %s (%s) with %d templates", ca.Name, ca.Hostname, len(ca.Templates))
-
-		// Install root CA certificate. If this fails (e.g. the CA cert is
-		// malformed, expired, or unverifiable) skip the CA entirely, since
-		// certificates issued by it would not validate without its root in
-		// the trust store.
-		rootFiles, intermediateFiles, symlinkFiles, err := installCAChain(ca, trustDir, m.globalTrustDir)
+		prepared := preparedEnrollmentCA{authority: ca}
+		installation, err := installCAChainTransaction(ca, trustDir, m.globalTrustDir)
 		if err != nil {
-			log.Warningf(ctx, "Skipping CA %s: could not install its verified CA chain: %v", ca.Name, err)
-			removeCAChainCerts(rootFiles, intermediateFiles, symlinkFiles)
+			previousCA, found := existingCAEnrollment(existingState, ca.Name, ca.Hostname)
+			if !found {
+				log.Warningf(ctx, "Skipping CA %s: could not install its verified CA chain: %v", ca.Name, err)
+				prepared.skip = true
+				preparedCAs = append(preparedCAs, prepared)
+				continue
+			}
+			preserved, validationErr := validatePreviousCAForPreservation(
+				previousCA,
+				existingState,
+				machineIdentity,
+				normalizeDomainIdentity(m.domain),
+				time.Now(),
+			)
+			if validationErr != nil {
+				rollbackPrepared()
+				return fmt.Errorf("could not install current chain for CA %s and previous enrollment cannot be safely preserved: %w", ca.Name, errors.Join(
+					fmt.Errorf("installing current chain: %w", err),
+					fmt.Errorf("validating previous state: %w", validationErr),
+				))
+			}
+			log.Warningf(ctx, "Could not install current chain for CA %s; preserving its validated previous enrollment: %v", ca.Name, err)
+			prepared.preserved = &preserved
+			preparedCAs = append(preparedCAs, prepared)
 			continue
 		}
+		currentBinding, err := chainBindingFromInstallation(ca.Chain, installation)
+		if err != nil {
+			installation.rollback()
+			rollbackPrepared()
+			return fmt.Errorf("failed to bind installed CA chain for %s: %w", ca.Name, err)
+		}
+		prepared.installation = installation
+		prepared.binding = currentBinding
+		preparedCAs = append(preparedCAs, prepared)
+	}
 
+	var enrolledCAs []enrolledCA
+	for preparedIndex, prepared := range preparedCAs {
+		ca := prepared.authority
+		if prepared.skip {
+			continue
+		}
+		if prepared.preserved != nil {
+			enrolledCAs = append(enrolledCAs, *prepared.preserved)
+			continue
+		}
+		log.Debugf(ctx, "Processing CA: %s (%s) with %d templates", ca.Name, ca.Hostname, len(ca.Templates))
+		installation := prepared.installation
+		currentBinding := prepared.binding
 		var enrolledTemplates []enrolledTemplate
 		for _, tmplName := range ca.Templates {
 			if previousCA, tmpl, ok := existingEnrollment(existingState, ca.Name, tmplName); ok {
-				validated, validationErr := validateStoredEnrollment(previousCA, tmpl, existingState, ca, machineIdentity, normalizeDomainIdentity(m.domain), time.Now())
+				validated, validationErr := validateStoredEnrollment(previousCA, tmpl, existingState, ca, currentBinding, machineIdentity, normalizeDomainIdentity(m.domain), time.Now())
 				if validationErr != nil {
 					log.Warningf(ctx, "Existing certificate for template %s on CA %s is not reusable: %v", tmplName, ca.Name, validationErr)
 				} else if !certNeedsRenewal(ctx, tmpl.CertFile) {
@@ -514,7 +568,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 				// A failed renewal may retain only material that still validates
 				// against the current machine identity, key and selected CA chain.
 				if previousCA, tmpl, ok := existingEnrollment(existingState, ca.Name, tmplName); ok {
-					validated, validationErr := validateStoredEnrollment(previousCA, tmpl, existingState, ca, machineIdentity, normalizeDomainIdentity(m.domain), time.Now())
+					validated, validationErr := validateStoredEnrollment(previousCA, tmpl, existingState, ca, currentBinding, machineIdentity, normalizeDomainIdentity(m.domain), time.Now())
 					if validationErr != nil {
 						continue
 					}
@@ -530,31 +584,43 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 				log.Warningf(ctx, "Issued certificate for template %s could not be reloaded after enrollment", tmplName)
 				continue
 			}
-			enrolledTemplates = append(enrolledTemplates, enrolledTemplate{
+			enrolled := enrolledTemplate{
 				Nickname:        nickname,
 				Template:        attrs.Name,
 				KeyFile:         keyFile,
 				CertFile:        certFile,
 				LeafFingerprint: certificateFingerprint(issuedCert),
-			})
+			}
+			bindTemplateToChain(&enrolled, currentBinding)
+			enrolledTemplates = append(enrolledTemplates, enrolled)
 		}
 
 		if len(enrolledTemplates) == 0 {
 			log.Warningf(ctx, "No certificate templates enrolled for CA %s, skipping", ca.Name)
-			removeCAChainCerts(rootFiles, intermediateFiles, symlinkFiles)
+			installation.rollback()
 			continue
 		}
 
-		enrolledCAs = append(enrolledCAs, enrolledCA{
+		enrolledCA := enrolledCA{
 			Name:              ca.Name,
 			Hostname:          ca.Hostname,
 			IssuerFingerprint: ca.Chain.issuerFingerprint(),
 			ChainFingerprints: append([]string(nil), ca.Chain.Fingerprints...),
-			RootCerts:         rootFiles,
-			IntermediateCerts: intermediateFiles,
-			Symlinks:          symlinkFiles,
+			RootCerts:         append([]string(nil), installation.RootFiles...),
+			IntermediateCerts: append([]string(nil), installation.IntermediateFiles...),
+			Symlinks:          append([]string(nil), installation.SymlinkFiles...),
 			Templates:         enrolledTemplates,
-		})
+		}
+		if err := rebuildCAArtifacts(&enrolledCA); err != nil {
+			installation.rollback()
+			for _, pending := range preparedCAs[preparedIndex+1:] {
+				if pending.installation != nil {
+					pending.installation.rollback()
+				}
+			}
+			return fmt.Errorf("building enrollment state for CA %s: %w", ca.Name, err)
+		}
+		enrolledCAs = append(enrolledCAs, enrolledCA)
 	}
 
 	if len(enrolledCAs) == 0 {
@@ -565,7 +631,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	// no longer present in the newly discovered CAs/templates. This prevents
 	// orphaned cert/key files and trust store symlinks from accumulating.
 	if existingState != nil {
-		cleanupOrphanedCerts(ctx, existingState, enrolledCAs)
+		cleanupOrphanedCerts(ctx, m.stateDir, existingState, enrolledCAs)
 	}
 
 	// Rebuild the system trust store after BOTH installing new roots and
@@ -603,6 +669,7 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 		log.Warningf(ctx, "Failed to load enrollment state: %v", err)
 	}
 
+	var obsoleteChainPaths []string
 	if state != nil {
 		log.Debugf(ctx, "Unenrolling %d certificate authorities", len(state.CAs))
 		for _, ca := range state.CAs {
@@ -612,13 +679,9 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 				os.Remove(tmpl.CertFile)
 				os.Remove(tmpl.KeyFile)
 			}
-
-			removeCAChainCerts(ca.RootCerts, ca.IntermediateCerts, ca.Symlinks)
-		}
-
-		// Update trust store after removing certs
-		if err := updateCATrustStore(); err != nil {
-			log.Warningf(ctx, "Failed to update CA trust store: %v", err)
+			obsoleteChainPaths = append(obsoleteChainPaths, ca.RootCerts...)
+			obsoleteChainPaths = append(obsoleteChainPaths, ca.IntermediateCerts...)
+			obsoleteChainPaths = append(obsoleteChainPaths, ca.Symlinks...)
 		}
 	}
 
@@ -630,8 +693,20 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 	}
 
 	// Remove state file
+	stateRemoved := true
 	if err := removeState(m.stateDir, objectName); err != nil {
+		stateRemoved = false
 		log.Warningf(ctx, "Failed to remove enrollment state file: %v", err)
+	}
+	if stateRemoved {
+		if err := removeUnreferencedPaths(ctx, m.stateDir, objectName, nil, obsoleteChainPaths); err != nil {
+			log.Warningf(ctx, "Failed to safely remove unreferenced CA chain paths: %v", err)
+		}
+	}
+	if state != nil {
+		if err := updateCATrustStore(); err != nil {
+			log.Warningf(ctx, "Failed to update CA trust store: %v", err)
+		}
 	}
 
 	log.Info(ctx, "Certificate unenrollment completed")
@@ -642,7 +717,7 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 // that exist in the old state but are not present in the new set of enrolled
 // CAs. This prevents orphaned files from accumulating when CAs or templates
 // are removed from AD.
-func cleanupOrphanedCerts(ctx context.Context, oldState *enrollmentState, newCAs []enrolledCA) {
+func cleanupOrphanedCerts(ctx context.Context, stateDir string, oldState *enrollmentState, newCAs []enrolledCA) {
 	// Build a set of all cert/key/symlink paths in the new state
 	newPaths := make(map[string]bool)
 	for _, ca := range newCAs {
@@ -663,38 +738,40 @@ func cleanupOrphanedCerts(ctx context.Context, oldState *enrollmentState, newCAs
 
 	// Remove any old paths not in the new set, logging both successes and
 	// failures so a stuck orphan is visible in the daemon logs.
-	var removed int
-	remove := func(path, kind string) {
-		if path == "" || newPaths[path] {
-			return
+	var orphaned []string
+	add := func(path string) {
+		if path != "" && !newPaths[path] {
+			orphaned = append(orphaned, path)
 		}
-		if err := os.Remove(path); err != nil {
-			if !os.IsNotExist(err) {
-				log.Warningf(ctx, "Failed to remove orphaned %s %s: %v", kind, path, err)
-			}
-			return
-		}
-		log.Debugf(ctx, "Removed orphaned %s: %s", kind, path)
-		removed++
 	}
 	for _, ca := range oldState.CAs {
 		for _, link := range ca.Symlinks {
-			remove(link, "trust store symlink")
+			add(link)
 		}
 		for _, cert := range ca.RootCerts {
-			remove(cert, "CA certificate")
+			add(cert)
 		}
 		for _, cert := range ca.IntermediateCerts {
-			remove(cert, "intermediate CA certificate")
+			add(cert)
 		}
 		for _, tmpl := range ca.Templates {
-			remove(tmpl.CertFile, "certificate")
-			remove(tmpl.KeyFile, "private key")
+			add(tmpl.CertFile)
+			add(tmpl.KeyFile)
+			for _, path := range tmpl.ChainFiles {
+				add(path)
+			}
+			add(tmpl.TrustAnchorSymlink)
 		}
 	}
 
-	if removed > 0 {
-		log.Debugf(ctx, "Cleaned up %d orphaned trust store entries", removed)
+	replacement := &enrollmentState{
+		ObjectName: oldState.ObjectName,
+		Identity:   oldState.Identity,
+		Domain:     oldState.Domain,
+		CAs:        newCAs,
+	}
+	if err := removeUnreferencedPaths(ctx, stateDir, oldState.ObjectName, replacement, orphaned); err != nil {
+		log.Warningf(ctx, "Failed to safely clean up orphaned certificate paths: %v", err)
 	}
 }
 
@@ -715,7 +792,42 @@ func existingEnrollment(state *enrollmentState, caName, template string) (enroll
 	return enrolledCA{}, enrolledTemplate{}, false
 }
 
-func validateStoredEnrollment(previousCA enrolledCA, tmpl enrolledTemplate, state *enrollmentState, currentCA certAuthority, identity, domain string, now time.Time) (enrolledTemplate, error) {
+func existingCAEnrollment(state *enrollmentState, caName, hostname string) (enrolledCA, bool) {
+	if state == nil {
+		return enrolledCA{}, false
+	}
+	for _, ca := range state.CAs {
+		if strings.EqualFold(ca.Name, caName) && strings.EqualFold(ca.Hostname, hostname) {
+			return ca, true
+		}
+	}
+	return enrolledCA{}, false
+}
+
+func validatePreviousCAForPreservation(previousCA enrolledCA, state *enrollmentState, identity, domain string, now time.Time) (enrolledCA, error) {
+	if state == nil {
+		return enrolledCA{}, fmt.Errorf("enrollment state is missing")
+	}
+	if normalizeDomainIdentity(state.Domain) != domain {
+		return enrolledCA{}, fmt.Errorf("state domain %q does not match %q", state.Domain, domain)
+	}
+	if state.Identity != "" && normalizeMachineIdentity(state.Identity) != normalizeMachineIdentity(identity) {
+		return enrolledCA{}, fmt.Errorf("state machine identity %q does not match %q", state.Identity, identity)
+	}
+	for i, tmpl := range previousCA.Templates {
+		validated, err := validatePersistedTemplate(previousCA, tmpl, identity, now)
+		if err != nil {
+			return enrolledCA{}, fmt.Errorf("validating template %s: %w", tmpl.Nickname, err)
+		}
+		previousCA.Templates[i] = validated
+	}
+	if err := rebuildCAArtifacts(&previousCA); err != nil {
+		return enrolledCA{}, err
+	}
+	return previousCA, nil
+}
+
+func validateStoredEnrollment(previousCA enrolledCA, tmpl enrolledTemplate, state *enrollmentState, currentCA certAuthority, currentBinding templateChainBinding, identity, domain string, now time.Time) (enrolledTemplate, error) {
 	if state == nil {
 		return enrolledTemplate{}, fmt.Errorf("enrollment state is missing")
 	}
@@ -728,11 +840,17 @@ func validateStoredEnrollment(previousCA enrolledCA, tmpl enrolledTemplate, stat
 	if currentCA.Chain == nil || currentCA.Chain.issuer() == nil {
 		return enrolledTemplate{}, fmt.Errorf("current CA chain is unavailable")
 	}
-	currentIssuerFingerprint := currentCA.Chain.issuerFingerprint()
-	if previousCA.IssuerFingerprint != "" && !strings.EqualFold(previousCA.IssuerFingerprint, currentIssuerFingerprint) {
-		return enrolledTemplate{}, fmt.Errorf("state issuing CA fingerprint %s does not match discovered CA %s", previousCA.IssuerFingerprint, currentIssuerFingerprint)
+	if err := validateBindingShape(currentBinding); err != nil {
+		return enrolledTemplate{}, fmt.Errorf("current CA chain binding is invalid: %w", err)
 	}
-	if len(previousCA.ChainFingerprints) > 0 && !slices.EqualFunc(previousCA.ChainFingerprints, currentCA.Chain.Fingerprints, strings.EqualFold) {
+	previousBinding, _, _, err := loadTemplateChain(previousCA, tmpl, now)
+	if err != nil {
+		return enrolledTemplate{}, fmt.Errorf("loading persisted CA chain: %w", err)
+	}
+	if !strings.EqualFold(previousBinding.IssuerFingerprint, currentBinding.IssuerFingerprint) {
+		return enrolledTemplate{}, fmt.Errorf("state issuing CA fingerprint %s does not match discovered CA %s", previousBinding.IssuerFingerprint, currentBinding.IssuerFingerprint)
+	}
+	if !equalFoldStrings(previousBinding.Fingerprints, currentBinding.Fingerprints) {
 		return enrolledTemplate{}, fmt.Errorf("state CA chain fingerprints do not match the discovered chain")
 	}
 
@@ -753,6 +871,7 @@ func validateStoredEnrollment(previousCA enrolledCA, tmpl enrolledTemplate, stat
 		return enrolledTemplate{}, fmt.Errorf("state leaf fingerprint %s does not match certificate %s", tmpl.LeafFingerprint, leafFingerprint)
 	}
 	tmpl.LeafFingerprint = leafFingerprint
+	bindTemplateToChain(&tmpl, currentBinding)
 	return tmpl, nil
 }
 

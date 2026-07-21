@@ -200,6 +200,7 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	var failures []string
 	found := false
 	trustChanged := false
+	var obsoletePaths []string
 	for i := range state.CAs {
 		ca := &state.CAs[i]
 		hasTarget := false
@@ -212,18 +213,47 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		if !hasTarget {
 			continue
 		}
+		validatedCA, validationErr := validatePreviousCAForPreservation(
+			*ca,
+			state,
+			identity.dnsName,
+			normalizeDomainIdentity(m.domain),
+			time.Now(),
+		)
+		if validationErr != nil {
+			for _, tmpl := range ca.Templates {
+				if all || tmpl.Nickname == nickname {
+					found = true
+					failures = append(failures, fmt.Sprintf("%s: persisted enrollment is invalid: %v", tmpl.Nickname, validationErr))
+				}
+			}
+			continue
+		}
+		*ca = validatedCA
 		discoveredCA, caFound := findDiscoveredCA(*ca)
-		var newRootFiles, newIntermediateFiles, newSymlinkFiles []string
+		var installation *caChainInstallation
+		var currentBinding templateChainBinding
 		var chainInstallErr error
 		if caFound && discoveredCA.Chain != nil {
-			newRootFiles, newIntermediateFiles, newSymlinkFiles, chainInstallErr = installCAChain(
+			installation, chainInstallErr = installCAChainTransaction(
 				discoveredCA,
 				filepath.Join(m.stateDir, "certs"),
 				m.globalTrustDir,
 			)
+			if chainInstallErr == nil {
+				currentBinding, chainInstallErr = chainBindingFromInstallation(discoveredCA.Chain, installation)
+				if chainInstallErr != nil {
+					installation.rollback()
+					installation = nil
+				}
+			}
 		}
+		oldRootFiles := append([]string(nil), ca.RootCerts...)
+		oldIntermediateFiles := append([]string(nil), ca.IntermediateCerts...)
+		oldSymlinkFiles := append([]string(nil), ca.Symlinks...)
 		renewedOnCA := false
-		for _, tmpl := range ca.Templates {
+		for templateIndex := range ca.Templates {
+			tmpl := &ca.Templates[templateIndex]
 			if !all && tmpl.Nickname != nickname {
 				continue
 			}
@@ -275,28 +305,22 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 				failures = append(failures, fmt.Sprintf("%s: renewed certificate could not be reloaded", tmpl.Nickname))
 				continue
 			}
-			for templateIndex := range ca.Templates {
-				if ca.Templates[templateIndex].Nickname == tmpl.Nickname {
-					ca.Templates[templateIndex].LeafFingerprint = certificateFingerprint(issued)
-					break
-				}
-			}
-			ca.IssuerFingerprint = discoveredCA.Chain.issuerFingerprint()
-			ca.ChainFingerprints = append([]string(nil), discoveredCA.Chain.Fingerprints...)
+			tmpl.LeafFingerprint = certificateFingerprint(issued)
+			bindTemplateToChain(tmpl, currentBinding)
 			renewedOnCA = true
 			report(progress, gotext.Get("Renewed %s", tmpl.Nickname))
 		}
 		if renewedOnCA {
-			oldRootFiles := ca.RootCerts
-			oldIntermediateFiles := ca.IntermediateCerts
-			oldSymlinkFiles := ca.Symlinks
-			ca.RootCerts = newRootFiles
-			ca.IntermediateCerts = newIntermediateFiles
-			ca.Symlinks = newSymlinkFiles
-			removePathsNotRetained(oldRootFiles, oldIntermediateFiles, oldSymlinkFiles, *ca)
+			if err := rebuildCAArtifacts(ca); err != nil {
+				if installation != nil {
+					installation.rollback()
+				}
+				return fmt.Errorf("rebuilding CA chain state after renewal of %s: %w", ca.Name, err)
+			}
+			obsoletePaths = append(obsoletePaths, pathsNotRetained(oldRootFiles, oldIntermediateFiles, oldSymlinkFiles, *ca)...)
 			trustChanged = true
-		} else {
-			removePathsNotRetained(newRootFiles, newIntermediateFiles, newSymlinkFiles, *ca)
+		} else if installation != nil {
+			installation.rollback()
 		}
 	}
 
@@ -308,6 +332,9 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	state.Identity = identity.dnsName
 	if err := saveState(m.stateDir, state); err != nil {
 		return fmt.Errorf("failed to save enrollment state: %w", err)
+	}
+	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, state, obsoletePaths); err != nil {
+		log.Warningf(ctx, "Failed to prune obsolete CA chain paths after renewal: %v", err)
 	}
 	if trustChanged {
 		if err := updateCATrustStore(); err != nil {
@@ -321,24 +348,26 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	return nil
 }
 
-func removePathsNotRetained(rootFiles, intermediateFiles, symlinkFiles []string, retained enrolledCA) {
+func pathsNotRetained(rootFiles, intermediateFiles, symlinkFiles []string, retained enrolledCA) []string {
 	keep := make(map[string]struct{})
 	for _, paths := range [][]string{retained.RootCerts, retained.IntermediateCerts, retained.Symlinks} {
 		for _, path := range paths {
 			keep[path] = struct{}{}
 		}
 	}
-	remove := func(paths []string) {
+	var obsolete []string
+	add := func(paths []string) {
 		for _, path := range paths {
 			if _, ok := keep[path]; ok {
 				continue
 			}
-			_ = os.Remove(path)
+			obsolete = append(obsolete, path)
 		}
 	}
-	remove(symlinkFiles)
-	remove(intermediateFiles)
-	remove(rootFiles)
+	add(symlinkFiles)
+	add(intermediateFiles)
+	add(rootFiles)
+	return obsolete
 }
 
 // RemoveCertificates removes enrolled certificates. force must be true or the
@@ -374,6 +403,7 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 	}
 
 	found := false
+	var obsoletePaths []string
 	for ci := range state.CAs {
 		ca := &state.CAs[ci]
 		for ti, tmpl := range ca.Templates {
@@ -385,6 +415,8 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 			log.Debugf(ctx, "Removing certificate files for %s", nickname)
 			os.Remove(tmpl.CertFile)
 			os.Remove(tmpl.KeyFile)
+			obsoletePaths = append(obsoletePaths, tmpl.ChainFiles...)
+			obsoletePaths = append(obsoletePaths, tmpl.TrustAnchorSymlink)
 			ca.Templates = append(ca.Templates[:ti], ca.Templates[ti+1:]...)
 			break
 		}
@@ -393,8 +425,27 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 		}
 		if len(ca.Templates) == 0 {
 			report(progress, gotext.Get("Removing root CA %s from the trust store", ca.Name))
-			removeCAChainCerts(ca.RootCerts, ca.IntermediateCerts, ca.Symlinks)
+			obsoletePaths = append(obsoletePaths, ca.RootCerts...)
+			obsoletePaths = append(obsoletePaths, ca.IntermediateCerts...)
+			obsoletePaths = append(obsoletePaths, ca.Symlinks...)
 			state.CAs = append(state.CAs[:ci], state.CAs[ci+1:]...)
+		} else {
+			allBound := true
+			for _, remaining := range ca.Templates {
+				if !templateHasChainBinding(remaining) {
+					allBound = false
+					break
+				}
+			}
+			if allBound {
+				oldRoots := append([]string(nil), ca.RootCerts...)
+				oldIntermediates := append([]string(nil), ca.IntermediateCerts...)
+				oldSymlinks := append([]string(nil), ca.Symlinks...)
+				if err := rebuildCAArtifacts(ca); err != nil {
+					return fmt.Errorf("rebuilding CA chain state after removal: %w", err)
+				}
+				obsoletePaths = append(obsoletePaths, pathsNotRetained(oldRoots, oldIntermediates, oldSymlinks, *ca)...)
+			}
 		}
 		break
 	}
@@ -409,6 +460,13 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 		}
 	} else if err := saveState(m.stateDir, state); err != nil {
 		return fmt.Errorf("failed to save enrollment state: %w", err)
+	}
+	var replacement *enrollmentState
+	if len(state.CAs) != 0 {
+		replacement = state
+	}
+	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, replacement, obsoletePaths); err != nil {
+		log.Warningf(ctx, "Failed to prune unreferenced CA chain paths after removal: %v", err)
 	}
 
 	if err := updateCATrustStore(); err != nil {
@@ -440,7 +498,21 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 		return []VerifyResult{}, nil
 	}
 
-	roots := rootPoolFromState(state)
+	domain := normalizeDomainIdentity(state.Domain)
+	if domain == "" {
+		domain = normalizeDomainIdentity(m.domain)
+	}
+	if domain != normalizeDomainIdentity(m.domain) {
+		return nil, fmt.Errorf("enrollment state domain %q does not match manager domain %q", state.Domain, m.domain)
+	}
+	identity := normalizeMachineIdentity(state.Identity)
+	if identity == "" {
+		derived, err := enrollmentMachineIdentity(objectName, domain)
+		if err != nil {
+			return nil, fmt.Errorf("determining persisted machine identity: %w", err)
+		}
+		identity = derived.dnsName
+	}
 
 	results := make([]VerifyResult, 0)
 	found := false
@@ -450,7 +522,7 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 				continue
 			}
 			found = true
-			results = append(results, verifyCertificate(ctx, ca, tmpl, roots, online))
+			results = append(results, verifyCertificate(ctx, ca, tmpl, identity, online))
 		}
 	}
 
@@ -573,7 +645,7 @@ func deriveHealth(info CertInfo, cert *x509.Certificate, now time.Time) CertHeal
 
 // verifyCertificate performs the chain, validity, key-match and (optionally)
 // revocation checks for a single enrolled template.
-func verifyCertificate(ctx context.Context, ca enrolledCA, tmpl enrolledTemplate, roots *x509.CertPool, online bool) VerifyResult {
+func verifyCertificate(ctx context.Context, ca enrolledCA, tmpl enrolledTemplate, identity string, online bool) VerifyResult {
 	res := VerifyResult{Nickname: tmpl.Nickname}
 
 	cert := parseCertFile(tmpl.CertFile)
@@ -596,18 +668,36 @@ func verifyCertificate(ctx context.Context, ca enrolledCA, tmpl enrolledTemplate
 		res.Messages = append(res.Messages, gotext.Get("private key does not match the certificate"))
 	}
 
-	// Accept any extended key usage: adsys-enrolled machine certificates
-	// commonly carry client-auth (VPN, 802.1x) rather than server-auth, and
-	// the goal here is to confirm the chain builds to a trusted root, not to
-	// restrict the certificate to a particular usage.
-	if _, err := cert.Verify(x509.VerifyOptions{
-		Roots:         roots,
-		Intermediates: intermediatePool(ca, tmpl.CertFile),
-		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
-	}); err != nil {
-		res.Messages = append(res.Messages, gotext.Get("chain verification failed: %v", err))
+	identityOK := true
+	if err := verifyCertificateIdentity(cert, identity); err != nil {
+		identityOK = false
+		res.Messages = append(res.Messages, gotext.Get("machine identity verification failed: %v", err))
+	}
+
+	binding, chain, legacy, err := loadTemplateChain(ca, tmpl, now)
+	if err != nil {
+		res.Messages = append(res.Messages, gotext.Get("persisted exact chain is unavailable or invalid: %v", err))
 	} else {
-		res.ChainOK = true
+		leafBindingOK := true
+		leafFingerprint := certificateFingerprint(cert)
+		if tmpl.LeafFingerprint == "" {
+			if !legacy {
+				leafBindingOK = false
+				res.Messages = append(res.Messages, gotext.Get("persisted leaf fingerprint is missing"))
+			}
+		} else if !strings.EqualFold(tmpl.LeafFingerprint, leafFingerprint) {
+			leafBindingOK = false
+			res.Messages = append(res.Messages, gotext.Get("certificate fingerprint %s does not match persisted fingerprint %s", leafFingerprint, tmpl.LeafFingerprint))
+		}
+		if !strings.EqualFold(binding.IssuerFingerprint, certificateFingerprint(chain[0])) {
+			leafBindingOK = false
+			res.Messages = append(res.Messages, gotext.Get("persisted issuer fingerprint does not match the exact chain"))
+		}
+		if err := verifyLeafAgainstExactChain(cert, chain, now); err != nil {
+			res.Messages = append(res.Messages, gotext.Get("chain verification failed: %v", err))
+		} else if leafBindingOK && identityOK {
+			res.ChainOK = true
+		}
 	}
 
 	if online {
@@ -698,54 +788,6 @@ func publicKeysMatch(cert *x509.Certificate, keyPEMPath string) (bool, error) {
 	default:
 		return false, fmt.Errorf("unsupported private key type: %T", key)
 	}
-}
-
-// rootPoolFromState builds a certificate pool solely from roots bound in the
-// enrollment state. Host system roots are intentionally excluded.
-func rootPoolFromState(state *enrollmentState) *x509.CertPool {
-	pool := x509.NewCertPool()
-	for _, ca := range state.CAs {
-		for _, rootFile := range ca.RootCerts {
-			if data, err := os.ReadFile(rootFile); err == nil {
-				pool.AppendCertsFromPEM(data)
-			}
-		}
-	}
-	return pool
-}
-
-// intermediatePool returns a pool built from any CERTIFICATE blocks in certFile
-// after the first (leaf) one, treating them as intermediates.
-func intermediatePool(ca enrolledCA, certFile string) *x509.CertPool {
-	pool := x509.NewCertPool()
-	for _, path := range ca.IntermediateCerts {
-		if data, err := os.ReadFile(path); err == nil {
-			pool.AppendCertsFromPEM(data)
-		}
-	}
-	data, err := os.ReadFile(certFile)
-	if err != nil {
-		return pool
-	}
-	var seenLeaf bool
-	for {
-		var block *pem.Block
-		block, data = pem.Decode(data)
-		if block == nil {
-			break
-		}
-		if block.Type != "CERTIFICATE" {
-			continue
-		}
-		if !seenLeaf {
-			seenLeaf = true
-			continue
-		}
-		if c, err := x509.ParseCertificate(block.Bytes); err == nil {
-			pool.AddCert(c)
-		}
-	}
-	return pool
 }
 
 // caInstalledInTrust reports whether the discovered CA's root is trusted, either

@@ -241,6 +241,13 @@ func (p *policiesTestLDAPConn) Search(req *ldap.SearchRequest) (*ldap.SearchResu
 			ByteValues: [][]byte{p.ca.cert.Raw},
 		})
 		return &ldap.SearchResult{Entries: []*ldap.Entry{entry}}, nil
+	case "CN=Certification Authorities,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com":
+		entry := ldap.NewEntry("CN=TestCA,CN=Certification Authorities,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com", nil)
+		entry.Attributes = append(entry.Attributes, &ldap.EntryAttribute{
+			Name:       "cACertificate",
+			ByteValues: [][]byte{p.ca.cert.Raw},
+		})
+		return &ldap.SearchResult{Entries: []*ldap.Entry{entry}}, nil
 	case "CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com":
 		entry := ldap.NewEntry("CN=Machine,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com", map[string][]string{
 			"cn":                            {"Machine"},
@@ -255,6 +262,13 @@ func (p *policiesTestLDAPConn) Search(req *ldap.SearchRequest) (*ldap.SearchResu
 		})
 		return &ldap.SearchResult{Entries: []*ldap.Entry{entry}}, nil
 	case "DC=example,DC=com":
+		return &ldap.SearchResult{Entries: []*ldap.Entry{
+			ldap.NewEntry("CN=hostname,CN=Computers,DC=example,DC=com", map[string][]string{
+				"sAMAccountName": {"hostname$"},
+				"dNSHostName":    {"hostname.example.com"},
+			}),
+		}}, nil
+	case "CN=hostname,CN=Computers,DC=example,DC=com":
 		entry := ldap.NewEntry("CN=hostname,CN=Computers,DC=example,DC=com", map[string][]string{
 			"sAMAccountName": {"hostname$"},
 			"dNSHostName":    {"hostname.example.com"},

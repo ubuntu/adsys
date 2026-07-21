@@ -258,6 +258,38 @@ func TestFetchMachineTokenContextFailsClosed(t *testing.T) {
 	}
 }
 
+func TestFetchMachineTokenContextReportsBaseReadFailure(t *testing.T) {
+	t.Parallel()
+
+	identity, err := deriveMachineDirectoryIdentity("host", "example.com", "")
+	require.NoError(t, err)
+	const (
+		defaultDN  = "DC=example,DC=com"
+		computerDN = "CN=host,CN=Computers,DC=example,DC=com"
+	)
+	var requests []*ldap.SearchRequest
+	conn := &contextLDAPTestClient{search: func(_ context.Context, req *ldap.SearchRequest) (*ldap.SearchResult, error) {
+		requests = append(requests, req)
+		if req.BaseDN == defaultDN {
+			return &ldap.SearchResult{Entries: []*ldap.Entry{
+				ldap.NewEntry(computerDN, map[string][]string{
+					"sAMAccountName": {"host$"},
+					"dNSHostName":    {"host.example.com"},
+				}),
+			}}, nil
+		}
+		return nil, fmt.Errorf("base read denied")
+	}}
+
+	_, err = fetchMachineTokenContext(context.Background(), conn, defaultDN, identity)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "base read denied")
+	require.Len(t, requests, 2)
+	assert.Equal(t, ldap.ScopeWholeSubtree, requests[0].Scope)
+	assert.Equal(t, computerDN, requests[1].BaseDN)
+	assert.Equal(t, ldap.ScopeBaseObject, requests[1].Scope)
+}
+
 func TestFetchCertificationAuthorities(t *testing.T) {
 	t.Parallel()
 

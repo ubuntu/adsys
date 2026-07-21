@@ -6,9 +6,12 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/pem"
+	"fmt"
 	"math/big"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -39,7 +42,7 @@ func TestInstallRootCACertsRejectsInvalidCA(t *testing.T) {
 			trustDir := t.TempDir()
 			globalTrustDir := t.TempDir()
 
-			_, _, err := installRootCACerts(certAuthority{
+			_, _, _, err := installCAChain(certAuthority{
 				Name:          "TestCA",
 				CACertificate: testCertificateDER(t, tc.isCA, tc.keyUsage),
 			}, trustDir, globalTrustDir)
@@ -61,7 +64,7 @@ func TestInstallRootCACertsRefusesToOverwriteRegularTrustFile(t *testing.T) {
 	existingTrustFile := filepath.Join(globalTrustDir, "TestCA.root."+certificateFingerprint(cert)[:16]+".crt")
 	require.NoError(t, os.WriteFile(existingTrustFile, []byte("existing"), 0600))
 
-	_, _, err = installRootCACerts(certAuthority{
+	_, _, _, err = installCAChain(certAuthority{
 		Name:          "TestCA",
 		CACertificate: caDER,
 	}, trustDir, globalTrustDir)
@@ -98,6 +101,115 @@ func TestInstallCAChainSeparatesSubordinateAndRoot(t *testing.T) {
 	info, err := os.Lstat(symlinks[0])
 	require.NoError(t, err)
 	assert.NotZero(t, info.Mode()&os.ModeSymlink)
+}
+
+func TestInstallCAChainRollbackPreservesExistingArtifacts(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	root := newChainTestCA(t, "Offline Root", nil, now.Add(-time.Hour), now.Add(24*time.Hour), 1)
+	oldIssuer := newChainTestCA(t, "Enterprise Issuer", root, now.Add(-time.Hour), now.Add(12*time.Hour), 2)
+	newIssuer := newChainTestCA(t, "Enterprise Issuer", root, now.Add(-30*time.Minute), now.Add(18*time.Hour), 3)
+	trustDir := t.TempDir()
+	globalTrustDir := t.TempDir()
+
+	oldInstallation, err := installCAChainTransaction(certAuthority{
+		Name: "Enterprise Issuer",
+		Chain: &expectedCertificateChain{
+			Certificates: []*x509.Certificate{oldIssuer.cert, root.cert},
+			Fingerprints: []string{certificateFingerprint(oldIssuer.cert), certificateFingerprint(root.cert)},
+		},
+	}, trustDir, globalTrustDir)
+	require.NoError(t, err)
+	require.Len(t, oldInstallation.RootFiles, 1)
+	require.Len(t, oldInstallation.IntermediateFiles, 1)
+	require.Len(t, oldInstallation.SymlinkFiles, 1)
+
+	oldRoot, err := os.ReadFile(oldInstallation.RootFiles[0])
+	require.NoError(t, err)
+	oldIssuerPEM, err := os.ReadFile(oldInstallation.IntermediateFiles[0])
+	require.NoError(t, err)
+	oldLinkTarget, err := os.Readlink(oldInstallation.SymlinkFiles[0])
+	require.NoError(t, err)
+	fixedTime := now.Add(-6 * time.Hour)
+	require.NoError(t, os.Chtimes(oldInstallation.RootFiles[0], fixedTime, fixedTime))
+
+	_, err = installCAChainTransactionWithOps(certAuthority{
+		Name: "Enterprise Issuer",
+		Chain: &expectedCertificateChain{
+			Certificates: []*x509.Certificate{newIssuer.cert, root.cert},
+			Fingerprints: []string{certificateFingerprint(newIssuer.cert), certificateFingerprint(root.cert)},
+		},
+	}, trustDir, globalTrustDir, trustInstallOps{
+		replaceSymlink: atomicSymlink,
+		beforeSymlink: func() error {
+			return fmt.Errorf("injected publication failure")
+		},
+	})
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "injected publication failure")
+
+	gotRoot, err := os.ReadFile(oldInstallation.RootFiles[0])
+	require.NoError(t, err)
+	assert.Equal(t, oldRoot, gotRoot)
+	gotIssuer, err := os.ReadFile(oldInstallation.IntermediateFiles[0])
+	require.NoError(t, err)
+	assert.Equal(t, oldIssuerPEM, gotIssuer)
+	gotTarget, err := os.Readlink(oldInstallation.SymlinkFiles[0])
+	require.NoError(t, err)
+	assert.Equal(t, oldLinkTarget, gotTarget)
+	rootInfo, err := os.Stat(oldInstallation.RootFiles[0])
+	require.NoError(t, err)
+	assert.True(t, rootInfo.ModTime().Equal(fixedTime), "identical preexisting root was rewritten")
+
+	newIssuerPath := filepath.Join(
+		trustDir,
+		"Enterprise-Issuer.issuer."+certificateFingerprint(newIssuer.cert)[:16]+".crt",
+	)
+	assert.NoFileExists(t, newIssuerPath, "failed attempt must remove only its newly published issuer")
+	entries, err := os.ReadDir(trustDir)
+	require.NoError(t, err)
+	for _, entry := range entries {
+		assert.False(t, strings.Contains(entry.Name(), ".stage."), "staged certificate leaked after rollback")
+	}
+}
+
+func TestInstallCAChainRollbackRestoresReplacedSymlink(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	root := newChainTestCA(t, "Enterprise Root", nil, now.Add(-time.Hour), now.Add(24*time.Hour), 1)
+	trustDir := t.TempDir()
+	globalTrustDir := t.TempDir()
+	fingerprint := certificateFingerprint(root.cert)
+	fileName := "Enterprise-CA.root." + fingerprint[:16] + ".crt"
+	rootPath := filepath.Join(trustDir, fileName)
+	require.NoError(t, os.WriteFile(rootPath, pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: root.cert.Raw,
+	}), 0600))
+	previousTarget := filepath.Join(trustDir, "previous-root.crt")
+	require.NoError(t, os.WriteFile(previousTarget, []byte("previous"), 0600))
+	symlinkPath := filepath.Join(globalTrustDir, fileName)
+	require.NoError(t, os.Symlink(previousTarget, symlinkPath))
+
+	installation, err := installCAChainTransaction(certAuthority{
+		Name: "Enterprise CA",
+		Chain: &expectedCertificateChain{
+			Certificates: []*x509.Certificate{root.cert},
+			Fingerprints: []string{fingerprint},
+		},
+	}, trustDir, globalTrustDir)
+	require.NoError(t, err)
+	target, err := os.Readlink(symlinkPath)
+	require.NoError(t, err)
+	assert.Equal(t, rootPath, target)
+
+	installation.rollback()
+	target, err = os.Readlink(symlinkPath)
+	require.NoError(t, err)
+	assert.Equal(t, previousTarget, target)
+	assert.FileExists(t, rootPath, "rollback removed a preexisting certificate")
 }
 
 func testCertificateDER(t *testing.T, isCA bool, keyUsage x509.KeyUsage) []byte {

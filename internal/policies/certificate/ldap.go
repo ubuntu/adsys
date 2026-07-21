@@ -1470,7 +1470,7 @@ func ldapUint32Attribute(entry *ldap.Entry, name string) (uint32, bool, error) {
 		if err != nil {
 			return 0, true, fmt.Errorf("%s signed 32-bit value %q is malformed or out of range: %w", name, value, err)
 		}
-		return uint32(int32(parsed)), true, nil
+		return uint32(int32(parsed)), true, nil //nolint:gosec // G115: the signed AD INTEGER bit pattern is intentionally preserved as uint32.
 	}
 	parsed, err := strconv.ParseUint(value, 10, 32)
 	if err != nil {

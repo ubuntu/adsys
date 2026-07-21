@@ -35,11 +35,15 @@ type enrolledCA struct {
 
 // enrolledTemplate tracks a single certificate template enrollment.
 type enrolledTemplate struct {
-	Nickname        string `json:"nickname"`  // sanitized on-disk identifier (e.g. "CA-Name.Machine")
-	Template        string `json:"template"`  // template name
-	KeyFile         string `json:"key_file"`  // path to private key
-	CertFile        string `json:"cert_file"` // path to certificate
-	LeafFingerprint string `json:"leaf_fingerprint,omitempty"`
+	Nickname           string   `json:"nickname"`  // sanitized on-disk identifier (e.g. "CA-Name.Machine")
+	Template           string   `json:"template"`  // template name
+	KeyFile            string   `json:"key_file"`  // path to private key
+	CertFile           string   `json:"cert_file"` // path to certificate
+	LeafFingerprint    string   `json:"leaf_fingerprint,omitempty"`
+	IssuerFingerprint  string   `json:"issuer_fingerprint,omitempty"`
+	ChainFingerprints  []string `json:"chain_fingerprints,omitempty"`
+	ChainFiles         []string `json:"chain_files,omitempty"` // ordered issuer-to-root certificate files
+	TrustAnchorSymlink string   `json:"trust_anchor_symlink,omitempty"`
 }
 
 // stateFilePath returns the path to the enrollment state file for a given object.
