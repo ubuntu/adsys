@@ -36,6 +36,9 @@ type gssapiClient struct {
 	ticketKey      types.EncryptionKey // original key from the service ticket (before subkey extraction)
 	channelBinding []byte              // tls-server-end-point channel binding token (16-byte MD5), nil when none
 	established    bool
+	sendSeq        uint64
+	recvSeq        uint64
+	sequenceReady  bool
 
 	requireSecurityLayer bool
 	securityTransport    *saslSecurityConn
@@ -89,6 +92,7 @@ func (g *gssapiClient) initContextAPREQ(target string, options []int) ([]byte, b
 		gssapi.ContextFlagInteg,
 		gssapi.ContextFlagConf,
 		gssapi.ContextFlagMutual,
+		gssapi.ContextFlagSequence,
 	}
 
 	// Build AP options: merge caller-provided options with mutual-required
@@ -98,10 +102,11 @@ func (g *gssapiClient) initContextAPREQ(target string, options []int) ([]byte, b
 	copy(apOptions, options)
 	apOptions[len(options)] = 2
 
-	tokenBytes, err := buildKRB5APREQToken(g.client, tkt, key, gssFlags, apOptions, g.channelBinding)
+	tokenBytes, initialSequence, err := buildKRB5APREQToken(g.client, tkt, key, gssFlags, apOptions, g.channelBinding)
 	if err != nil {
 		return nil, false, err
 	}
+	g.sendSeq = initialSequence
 
 	return tokenBytes, true, nil
 }
@@ -114,10 +119,10 @@ func (g *gssapiClient) initContextAPREQ(target string, options []int) ([]byte, b
 // field to zeros, which makes the bind fail against Domain Controllers that
 // enforce LDAP channel binding (LDAP result code 49 with data 80090346 /
 // SEC_E_BAD_BINDINGS).
-func buildKRB5APREQToken(cl *krbclient.Client, tkt messages.Ticket, key types.EncryptionKey, gssFlags, apOptions []int, channelBinding []byte) ([]byte, error) {
+func buildKRB5APREQToken(cl *krbclient.Client, tkt messages.Ticket, key types.EncryptionKey, gssFlags, apOptions []int, channelBinding []byte) ([]byte, uint64, error) {
 	auth, err := types.NewAuthenticator(cl.Credentials.Domain(), cl.Credentials.CName())
 	if err != nil {
-		return nil, fmt.Errorf("creating Kerberos authenticator: %w", err)
+		return nil, 0, fmt.Errorf("creating Kerberos authenticator: %w", err)
 	}
 	auth.Cksum = types.Checksum{
 		CksumType: chksumtype.GSSAPI,
@@ -126,7 +131,7 @@ func buildKRB5APREQToken(cl *krbclient.Client, tkt messages.Ticket, key types.En
 
 	apReq, err := messages.NewAPReq(tkt, key, auth)
 	if err != nil {
-		return nil, fmt.Errorf("creating AP-REQ: %w", err)
+		return nil, 0, fmt.Errorf("creating AP-REQ: %w", err)
 	}
 	for _, o := range apOptions {
 		types.SetFlag(&apReq.APOptions, o)
@@ -136,16 +141,16 @@ func buildKRB5APREQToken(cl *krbclient.Client, tkt messages.Ticket, key types.En
 	// AP-REQ, wrapped in a GSS application tag (mirrors KRB5Token.Marshal).
 	oid, err := asn1.Marshal(gssapi.OIDKRB5.OID())
 	if err != nil {
-		return nil, fmt.Errorf("marshalling KRB5 OID: %w", err)
+		return nil, 0, fmt.Errorf("marshalling KRB5 OID: %w", err)
 	}
 	apReqBytes, err := apReq.Marshal()
 	if err != nil {
-		return nil, fmt.Errorf("marshalling AP-REQ: %w", err)
+		return nil, 0, fmt.Errorf("marshalling AP-REQ: %w", err)
 	}
 
 	token := append(oid, 0x01, 0x00) // TOK_ID_KRB_AP_REQ
 	token = append(token, apReqBytes...)
-	return asn1tools.AddASNAppTag(token, 0), nil
+	return asn1tools.AddASNAppTag(token, 0), uint64(auth.SeqNumber), nil //nolint:gosec // NewAuthenticator generates a non-negative 30-bit value.
 }
 
 // gssAPIBindingChecksum builds the RFC 4121 §4.1.1 GSS-API authenticator
@@ -204,6 +209,11 @@ func (g *gssapiClient) processAPREP(token []byte) ([]byte, bool, error) {
 	} else {
 		log.Debug(context.Background(), "gssapi: no subkey in AP-REP, using ticket session key")
 	}
+	if krb5Token.APRep.DecryptedEncPart.SequenceNumber < 0 {
+		return nil, false, fmt.Errorf("server AP-REP contains negative sequence number %d", krb5Token.APRep.DecryptedEncPart.SequenceNumber)
+	}
+	g.recvSeq = uint64(krb5Token.APRep.DecryptedEncPart.SequenceNumber)
+	g.sequenceReady = true
 
 	g.established = true
 	return nil, false, nil
@@ -222,6 +232,9 @@ func (g *gssapiClient) processAPREP(token []byte) ([]byte, bool, error) {
 // to a configured trust anchor. This prevents a CBT-disabled DC from being
 // used as a GSSAPI relay during first-use CA discovery.
 func (g *gssapiClient) NegotiateSaslAuth(token []byte, authzid string) ([]byte, error) {
+	if !g.sequenceReady {
+		return nil, fmt.Errorf("GSSAPI sequence state was not established by AP-REQ/AP-REP")
+	}
 	payload, err := g.unwrapServerToken(token)
 	if err != nil {
 		return nil, fmt.Errorf("unwrapping server SASL token: %w", err)
@@ -254,14 +267,12 @@ func (g *gssapiClient) NegotiateSaslAuth(token []byte, authzid string) ([]byte, 
 	if maxBuffer == 0 {
 		return nil, fmt.Errorf("server advertised a zero receive buffer for the confidentiality security layer")
 	}
-	recvSeq := binary.BigEndian.Uint64(token[8:16]) + 1
-	layer, err := newSASLSecurityLayer(g.sessionKey, !keysEqual(g.sessionKey, g.ticketKey), maxBuffer, recvSeq)
+	response, err := g.wrapSASLResponseForLayer(authzid, 0x04, saslReceiveBufferSize)
 	if err != nil {
 		return nil, err
 	}
-	response, err := g.wrapSASLResponseForLayer(authzid, 0x04, saslReceiveBufferSize)
+	layer, err := newSASLSecurityLayer(g.sessionKey, !keysEqual(g.sessionKey, g.ticketKey), maxBuffer, g.sendSeq, g.recvSeq)
 	if err != nil {
-		layer.Close()
 		return nil, err
 	}
 	if err := g.securityTransport.armSecurityLayer(layer); err != nil {
@@ -315,15 +326,26 @@ func (g *gssapiClient) unwrapServerToken(token []byte) ([]byte, error) {
 
 	isSealed := token[2]&0x02 != 0
 	rrc := binary.BigEndian.Uint16(token[6:8])
+	sequence := binary.BigEndian.Uint64(token[8:16])
+	if g.sequenceReady && sequence != g.recvSeq {
+		return nil, fmt.Errorf("unexpected server token sequence number: got %d, want %d", sequence, g.recvSeq)
+	}
 
 	log.Debugf(context.Background(), "gssapi: unwrapServerToken: len=%d flags=0x%02x sealed=%v EC=%d RRC=%d",
 		len(token), token[2], isSealed,
 		binary.BigEndian.Uint16(token[4:6]), rrc)
 
+	var payload []byte
+	var err error
 	if isSealed {
-		return g.unwrapSealed(token, rrc)
+		payload, err = g.unwrapSealed(token, rrc)
+	} else {
+		payload, err = g.unwrapIntegrity(token, rrc)
 	}
-	return g.unwrapIntegrity(token, rrc)
+	if err == nil && g.sequenceReady {
+		g.recvSeq++
+	}
+	return payload, err
 }
 
 // unwrapIntegrity verifies and extracts the payload from an integrity-only
@@ -387,10 +409,10 @@ func (g *gssapiClient) unwrapIntegrity(token []byte, rrc uint16) ([]byte, error)
 //
 //	{payload | EC-padding | header-copy(16 bytes)}
 func (g *gssapiClient) unwrapSealed(token []byte, rrc uint16) ([]byte, error) {
-	return unwrapSealedToken(token, g.sessionKey, rrc, nil)
+	return unwrapSealedToken(token, g.sessionKey, rrc, nil, keyusage.GSSAPI_ACCEPTOR_SEAL)
 }
 
-func unwrapSealedToken(token []byte, key types.EncryptionKey, rrc uint16, expectedSeq *uint64) ([]byte, error) {
+func unwrapSealedToken(token []byte, key types.EncryptionKey, rrc uint16, expectedSeq *uint64, usage uint32) ([]byte, error) {
 	ec := binary.BigEndian.Uint16(token[4:6])
 	seq := binary.BigEndian.Uint64(token[8:16])
 	if expectedSeq != nil && seq != *expectedSeq {
@@ -418,12 +440,11 @@ func unwrapSealedToken(token []byte, key types.EncryptionKey, rrc uint16, expect
 		}
 	}
 
-	// RFC 4121 §4.2.4 rotates sealed data by RRC+EC.
-	if rrc > 0 || ec > 0 {
-		rotateLeft(ciphertext, int(rrc)+int(ec))
+	if rrc > 0 {
+		rotateLeft(ciphertext, int(rrc))
 	}
 
-	plaintext, err := crypto.DecryptMessage(ciphertext, key, keyusage.GSSAPI_ACCEPTOR_SEAL)
+	plaintext, err := crypto.DecryptMessage(ciphertext, key, usage)
 	if err != nil {
 		return nil, fmt.Errorf("decrypting sealed token: %w", err)
 	}
@@ -474,7 +495,7 @@ func (g *gssapiClient) wrapSASLPayload(response []byte) ([]byte, error) {
 		Flags:     flags,
 		EC:        uint16(encType.GetHMACBitLength() / 8), //nolint:gosec // G115: HMAC byte length is a small constant within uint16
 		RRC:       0,
-		SndSeqNum: 0,
+		SndSeqNum: g.sendSeq,
 		Payload:   response,
 	}
 
@@ -489,6 +510,9 @@ func (g *gssapiClient) wrapSASLPayload(response []byte) ([]byte, error) {
 		return nil, fmt.Errorf("marshalling SASL response token: %w", err)
 	}
 
+	if g.sequenceReady {
+		g.sendSeq++
+	}
 	return tokenBytes, nil
 }
 
@@ -500,6 +524,9 @@ func (g *gssapiClient) DeleteSecContext() error {
 		clear(g.channelBinding)
 		g.channelBinding = nil
 		g.established = false
+		g.sendSeq = 0
+		g.recvSeq = 0
+		g.sequenceReady = false
 		if g.client != nil {
 			g.client.Destroy()
 			g.client = nil
@@ -521,7 +548,7 @@ type saslSecurityLayer struct {
 	closed         bool
 }
 
-func newSASLSecurityLayer(key types.EncryptionKey, acceptorSubkey bool, maxSendToken int, recvSeq uint64) (*saslSecurityLayer, error) {
+func newSASLSecurityLayer(key types.EncryptionKey, acceptorSubkey bool, maxSendToken int, sendSeq, recvSeq uint64) (*saslSecurityLayer, error) {
 	if _, err := crypto.GetEtype(key.KeyType); err != nil {
 		return nil, fmt.Errorf("resolving SASL security layer encryption type %d: %w", key.KeyType, err)
 	}
@@ -535,7 +562,7 @@ func newSASLSecurityLayer(key types.EncryptionKey, acceptorSubkey bool, maxSendT
 		},
 		acceptorSubkey: acceptorSubkey,
 		maxSendToken:   maxSendToken,
-		sendSeq:        1,
+		sendSeq:        sendSeq,
 		recvSeq:        recvSeq,
 	}, nil
 }
@@ -592,9 +619,6 @@ func (s *saslSecurityLayer) wrap(payload []byte) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("encrypting SASL security layer token: %w", err)
 	}
-	if ec > 0 {
-		rotateRight(ciphertext, ec)
-	}
 	token := append(header, ciphertext...)
 	if len(token) > s.maxSendToken {
 		return nil, fmt.Errorf("SASL security layer token is %d bytes, exceeding server limit %d", len(token), s.maxSendToken)
@@ -618,7 +642,7 @@ func (s *saslSecurityLayer) unwrap(token []byte) ([]byte, error) {
 	if token[3] != gssapi.FillerByte {
 		return nil, fmt.Errorf("invalid acceptor confidentiality token filler")
 	}
-	payload, err := unwrapSealedToken(token, s.key, binary.BigEndian.Uint16(token[6:8]), &s.recvSeq)
+	payload, err := unwrapSealedToken(token, s.key, binary.BigEndian.Uint16(token[6:8]), &s.recvSeq, keyusage.GSSAPI_ACCEPTOR_SEAL)
 	if err != nil {
 		return nil, err
 	}
@@ -662,13 +686,6 @@ func rotateLeft(data []byte, count int) {
 	copy(tmp, data[count:])
 	copy(tmp[n-count:], data[:count])
 	copy(data, tmp)
-}
-
-func rotateRight(data []byte, count int) {
-	if len(data) == 0 {
-		return
-	}
-	rotateLeft(data, len(data)-count%len(data))
 }
 
 // keysEqual returns true if two encryption keys have the same key value.

@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -8,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/go-ldap/ldap/v3"
+	asn1 "github.com/jcmturner/gofork/encoding/asn1"
+	"github.com/oiweiwei/gokrb5.fork/v9/asn1tools"
 	krbclient "github.com/oiweiwei/gokrb5.fork/v9/client"
 	krbconfig "github.com/oiweiwei/gokrb5.fork/v9/config"
 	"github.com/oiweiwei/gokrb5.fork/v9/credentials"
@@ -42,6 +45,11 @@ func testKey() types.EncryptionKey {
 // from the acceptor using the provided key, payload, and key usage.
 func buildIntegrityWrapToken(t *testing.T, key types.EncryptionKey, payload []byte, keyUsage uint32) []byte {
 	t.Helper()
+	return buildIntegrityWrapTokenWithSequence(t, key, payload, keyUsage, 0)
+}
+
+func buildIntegrityWrapTokenWithSequence(t *testing.T, key types.EncryptionKey, payload []byte, keyUsage uint32, sequence uint64) []byte {
+	t.Helper()
 
 	encType, err := crypto.GetEtype(key.KeyType)
 	require.NoError(t, err)
@@ -50,7 +58,7 @@ func buildIntegrityWrapToken(t *testing.T, key types.EncryptionKey, payload []by
 		Flags:     0x01,                                   // sent by acceptor
 		EC:        uint16(encType.GetHMACBitLength() / 8), //nolint:gosec // G115: HMAC byte length is a small constant within uint16
 		RRC:       0,
-		SndSeqNum: 0,
+		SndSeqNum: sequence,
 		Payload:   payload,
 	}
 
@@ -63,12 +71,18 @@ func buildIntegrityWrapToken(t *testing.T, key types.EncryptionKey, payload []by
 
 func buildSealedWrapToken(t *testing.T, key types.EncryptionKey, payload []byte) []byte {
 	t.Helper()
+	return buildSealedWrapTokenWithSequence(t, key, payload, 0)
+}
+
+func buildSealedWrapTokenWithSequence(t *testing.T, key types.EncryptionKey, payload []byte, sequence uint64) []byte {
+	t.Helper()
 	encType, err := crypto.GetEtype(key.KeyType)
 	require.NoError(t, err)
 	ec := (encType.GetMessageBlockByteSize() - len(payload)%encType.GetMessageBlockByteSize()) % encType.GetMessageBlockByteSize()
 	header := make([]byte, gssapi.HdrLen)
 	copy(header, []byte{0x05, 0x04, 0x03, gssapi.FillerByte})
 	binary.BigEndian.PutUint16(header[4:6], uint16(ec)) //nolint:gosec // Test EC is bounded by the encryption block size.
+	binary.BigEndian.PutUint64(header[8:16], sequence)
 
 	plaintext := append([]byte(nil), payload...)
 	for range ec {
@@ -77,7 +91,6 @@ func buildSealedWrapToken(t *testing.T, key types.EncryptionKey, payload []byte)
 	plaintext = append(plaintext, header...)
 	_, ciphertext, err := encType.EncryptMessage(key.KeyValue, plaintext, keyusage.GSSAPI_ACCEPTOR_SEAL)
 	require.NoError(t, err)
-	rotateRight(ciphertext, ec)
 	return append(header, ciphertext...)
 }
 
@@ -182,7 +195,7 @@ func TestNegotiateSaslAuth(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			g := &gssapiClient{sessionKey: key, established: true}
+			g := &gssapiClient{sessionKey: key, established: true, sequenceReady: true}
 			token := tc.token(t)
 
 			result, err := g.NegotiateSaslAuth(token, tc.authzid)
@@ -216,11 +229,37 @@ func TestNegotiateSaslAuth(t *testing.T) {
 	}
 }
 
+func TestProcessAPREPInitializesAcceptorSequence(t *testing.T) {
+	t.Parallel()
+
+	key := testKey()
+	const acceptorSequence = 4321
+	apRep, err := messages.NewAPRep(key, messages.NewEncAPRepPart(acceptorSequence))
+	require.NoError(t, err)
+	oid, err := asn1.Marshal(gssapi.OIDKRB5.OID())
+	require.NoError(t, err)
+	apRepBytes, err := apRep.Marshal()
+	require.NoError(t, err)
+	token := asn1tools.AddASNAppTag(append(append(oid, 0x02, 0x00), apRepBytes...), 0)
+
+	g := &gssapiClient{sessionKey: key, ticketKey: key, sendSeq: 1234}
+	_, continueNeeded, err := g.processAPREP(token)
+	require.NoError(t, err)
+	assert.False(t, continueNeeded)
+	assert.True(t, g.sequenceReady)
+	assert.Equal(t, uint64(acceptorSequence), g.recvSeq)
+	assert.Equal(t, uint64(1234), g.sendSeq)
+}
+
 func TestNegotiateSaslAuthBootstrapRequiresConfidentiality(t *testing.T) {
 	t.Parallel()
 
 	key := testKey()
-	challenge := buildIntegrityWrapToken(t, key, []byte{0x07, 0x01, 0x00, 0x00}, keyusage.GSSAPI_ACCEPTOR_SEAL)
+	const (
+		initiatorSequence = 17
+		acceptorSequence  = 23
+	)
+	challenge := buildIntegrityWrapTokenWithSequence(t, key, []byte{0x07, 0x01, 0x00, 0x00}, keyusage.GSSAPI_ACCEPTOR_SEAL, acceptorSequence)
 	clientConn, serverConn := net.Pipe()
 	t.Cleanup(func() { _ = serverConn.Close() })
 	transport := newSASLSecurityConn(clientConn)
@@ -229,6 +268,9 @@ func TestNegotiateSaslAuthBootstrapRequiresConfidentiality(t *testing.T) {
 		sessionKey:           key,
 		ticketKey:            key,
 		established:          true,
+		sendSeq:              initiatorSequence,
+		recvSeq:              acceptorSequence,
+		sequenceReady:        true,
 		requireSecurityLayer: true,
 		securityTransport:    transport,
 	}
@@ -242,6 +284,7 @@ func TestNegotiateSaslAuthBootstrapRequiresConfidentiality(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, ok)
 	require.Len(t, responseToken.Payload, 4)
+	assert.Equal(t, uint64(initiatorSequence), responseToken.SndSeqNum)
 	assert.Equal(t, byte(0x04), responseToken.Payload[0])
 	assert.Equal(t, []byte{0xff, 0xff, 0xff}, responseToken.Payload[1:])
 
@@ -249,9 +292,97 @@ func TestNegotiateSaslAuthBootstrapRequiresConfidentiality(t *testing.T) {
 	require.NoError(t, transport.securityLayerStatus())
 	transport.stateMu.Lock()
 	layerKey := transport.layer.key.KeyValue
+	assert.Equal(t, uint64(initiatorSequence+1), transport.layer.sendSeq)
+	assert.Equal(t, uint64(acceptorSequence+1), transport.layer.recvSeq)
 	transport.stateMu.Unlock()
 	require.NoError(t, transport.Close())
 	assert.Equal(t, make([]byte, len(layerKey)), layerKey)
+}
+
+func TestNegotiateSaslAuthRejectsReplayAndOutOfOrder(t *testing.T) {
+	t.Parallel()
+
+	key := testKey()
+	const (
+		initiatorSequence = 100
+		acceptorSequence  = 200
+	)
+	challenge := func(sequence uint64) []byte {
+		return buildIntegrityWrapTokenWithSequence(t, key, []byte{0x01, 0, 0, 0}, keyusage.GSSAPI_ACCEPTOR_SEAL, sequence)
+	}
+	g := &gssapiClient{
+		sessionKey:    key,
+		ticketKey:     key,
+		established:   true,
+		sendSeq:       initiatorSequence,
+		recvSeq:       acceptorSequence,
+		sequenceReady: true,
+	}
+
+	response, err := g.NegotiateSaslAuth(challenge(acceptorSequence), "")
+	require.NoError(t, err)
+	var responseToken gssapi.WrapToken
+	require.NoError(t, responseToken.Unmarshal(response, false))
+	assert.Equal(t, uint64(initiatorSequence), responseToken.SndSeqNum)
+	assert.Equal(t, uint64(initiatorSequence+1), g.sendSeq)
+	assert.Equal(t, uint64(acceptorSequence+1), g.recvSeq)
+
+	_, err = g.unwrapServerToken(challenge(acceptorSequence))
+	require.ErrorContains(t, err, "sequence number")
+	_, err = g.unwrapServerToken(challenge(acceptorSequence + 2))
+	require.ErrorContains(t, err, "sequence number")
+	_, err = g.unwrapServerToken(challenge(acceptorSequence + 1))
+	require.NoError(t, err)
+}
+
+func TestSASLSecurityLayerSequenceContinuation(t *testing.T) {
+	t.Parallel()
+
+	key := testKey()
+	layer, err := newSASLSecurityLayer(key, false, 64*1024, 101, 201)
+	require.NoError(t, err)
+	t.Cleanup(layer.Close)
+
+	inbound := buildSealedWrapTokenWithSequence(t, key, []byte("response"), 201)
+	got, err := layer.unwrap(inbound)
+	require.NoError(t, err)
+	assert.Equal(t, []byte("response"), got)
+
+	_, err = layer.unwrap(inbound)
+	require.ErrorContains(t, err, "sequence number")
+	_, err = layer.unwrap(buildSealedWrapTokenWithSequence(t, key, []byte("future"), 203))
+	require.ErrorContains(t, err, "sequence number")
+	_, err = layer.unwrap(buildSealedWrapTokenWithSequence(t, key, []byte("next"), 202))
+	require.NoError(t, err)
+
+	first, err := layer.wrap([]byte("request one"))
+	require.NoError(t, err)
+	second, err := layer.wrap([]byte("request two"))
+	require.NoError(t, err)
+	assert.Equal(t, uint64(101), binary.BigEndian.Uint64(first[8:16]))
+	assert.Equal(t, uint64(102), binary.BigEndian.Uint64(second[8:16]))
+}
+
+func TestSASLSecurityLayerNonzeroECSenderInteroperability(t *testing.T) {
+	t.Parallel()
+
+	key := types.EncryptionKey{
+		KeyType:  etypeID.DES3_CBC_SHA1_KD,
+		KeyValue: []byte("0123456789abcdefghijklmn"),
+	}
+	const sequence = 55
+	layer, err := newSASLSecurityLayer(key, false, 64*1024, sequence, 0)
+	require.NoError(t, err)
+	t.Cleanup(layer.Close)
+
+	want := []byte{0x01, 0x02, 0x03, 0x04}
+	token, err := layer.wrap(want)
+	require.NoError(t, err)
+	require.NotZero(t, binary.BigEndian.Uint16(token[4:6]))
+	expectedSequence := uint64(sequence)
+	got, err := unwrapSealedToken(token, key, 0, &expectedSequence, keyusage.GSSAPI_INITIATOR_SEAL)
+	require.NoError(t, err)
+	assert.Equal(t, want, got)
 }
 
 func TestNegotiateSaslAuth_RRCHandling(t *testing.T) {
@@ -276,7 +407,7 @@ func TestNegotiateSaslAuth_RRCHandling(t *testing.T) {
 	// Set the RRC field in the header.
 	binary.BigEndian.PutUint16(tok[6:8], rrc)
 
-	g := &gssapiClient{sessionKey: key, established: true}
+	g := &gssapiClient{sessionKey: key, established: true, sequenceReady: true}
 	result, err := g.NegotiateSaslAuth(tok, "")
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
@@ -325,13 +456,39 @@ func TestUnwrapServerToken_IntegrityOnly(t *testing.T) {
 
 func TestUnwrapServerToken_Sealed(t *testing.T) {
 	t.Parallel()
-	key := testKey()
-	want := []byte{0x07, 0x00, 0xff, 0xff}
-	token := buildSealedWrapToken(t, key, want)
+	tests := map[string]struct {
+		key              types.EncryptionKey
+		requireNonzeroEC bool
+	}{
+		"AES256": {key: testKey()},
+		"DES3 with nonzero EC": {
+			key: types.EncryptionKey{
+				KeyType:  etypeID.DES3_CBC_SHA1_KD,
+				KeyValue: []byte("0123456789abcdefghijklmn"),
+			},
+			requireNonzeroEC: true,
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			want := []byte{0x07, 0x00, 0xff, 0xff}
+			token := buildSealedWrapToken(t, tc.key, want)
+			if tc.requireNonzeroEC {
+				require.NotZero(t, binary.BigEndian.Uint16(token[4:6]))
+			}
+			const rrc = 3
+			ciphertext := token[gssapi.HdrLen:]
+			rotated := append([]byte(nil), ciphertext[len(ciphertext)-rrc:]...)
+			rotated = append(rotated, ciphertext[:len(ciphertext)-rrc]...)
+			copy(ciphertext, rotated)
+			binary.BigEndian.PutUint16(token[6:8], rrc)
 
-	got, err := (&gssapiClient{sessionKey: key}).unwrapServerToken(token)
-	require.NoError(t, err)
-	assert.Equal(t, want, got)
+			got, err := (&gssapiClient{sessionKey: tc.key}).unwrapServerToken(token)
+			require.NoError(t, err)
+			assert.Equal(t, want, got)
+		})
+	}
 }
 
 func TestUnwrapServerToken_Errors(t *testing.T) {
@@ -508,7 +665,7 @@ func TestBindKerberosClientAlwaysCleansUp(t *testing.T) {
 			client := krbclient.NewWithPassword("machine$", "EXAMPLE.COM", "secret", krbconfig.New())
 			ownedKey := testKey()
 			ownedKeyBytes := ownedKey.KeyValue
-			err := bindKerberosClient(client, "dc.example.com", []byte("channel binding"), false, nil,
+			err := bindKerberosClient(context.Background(), client, "dc.example.com", []byte("channel binding"), false, nil,
 				func(gssClient ldap.GSSAPIClient, spn string) error {
 					assert.Equal(t, "ldap/dc.example.com", spn)
 					g, ok := gssClient.(*gssapiClient)
@@ -535,7 +692,7 @@ func TestBindKerberosClientAlwaysCleansUp(t *testing.T) {
 func TestGSSAPIBindingChecksum(t *testing.T) {
 	t.Parallel()
 
-	flags := []int{gssapi.ContextFlagInteg, gssapi.ContextFlagConf, gssapi.ContextFlagMutual}
+	flags := []int{gssapi.ContextFlagInteg, gssapi.ContextFlagConf, gssapi.ContextFlagMutual, gssapi.ContextFlagSequence}
 
 	repeat := func(b byte) []byte {
 		x := make([]byte, 16)
@@ -610,7 +767,7 @@ func TestBuildKRB5APREQToken(t *testing.T) {
 		EncPart: types.EncryptedData{EType: key.KeyType, KVNO: 1},
 	}
 
-	gssFlags := []int{gssapi.ContextFlagInteg, gssapi.ContextFlagConf, gssapi.ContextFlagMutual}
+	gssFlags := []int{gssapi.ContextFlagInteg, gssapi.ContextFlagConf, gssapi.ContextFlagMutual, gssapi.ContextFlagSequence}
 	apOptions := []int{2}
 
 	channelBinding := make([]byte, 16)
@@ -637,7 +794,7 @@ func TestBuildKRB5APREQToken(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			tokenBytes, err := buildKRB5APREQToken(cl, tkt, key, gssFlags, apOptions, tc.channelBinding)
+			tokenBytes, initialSequence, err := buildKRB5APREQToken(cl, tkt, key, gssFlags, apOptions, tc.channelBinding)
 			require.NoError(t, err)
 			require.NotEmpty(t, tokenBytes)
 
@@ -649,6 +806,7 @@ func TestBuildKRB5APREQToken(t *testing.T) {
 			// Decrypt the authenticator and inspect its GSS-API checksum.
 			apReq := tok.APReq
 			require.NoError(t, apReq.DecryptAuthenticator(key))
+			assert.Equal(t, uint64(apReq.Authenticator.SeqNumber), initialSequence) //nolint:gosec // Authenticator sequence is non-negative.
 
 			cksum := apReq.Authenticator.Cksum
 			assert.Equal(t, chksumtype.GSSAPI, cksum.CksumType)

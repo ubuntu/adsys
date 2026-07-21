@@ -49,8 +49,26 @@ type LDAPClient interface {
 	Close() error
 }
 
-// LDAPConnector abstracts LDAP connection establishment for testing.
-type LDAPConnector func(server string) (LDAPClient, error)
+// LDAPConnector abstracts context-aware LDAP connection establishment.
+type LDAPConnector interface {
+	Connect(context.Context, string) (LDAPClient, error)
+}
+
+// LDAPConnectorFunc adapts a context-aware function to LDAPConnector.
+type LDAPConnectorFunc func(context.Context, string) (LDAPClient, error)
+
+// Connect invokes the adapted connector function.
+func (f LDAPConnectorFunc) Connect(ctx context.Context, server string) (LDAPClient, error) {
+	return f(ctx, server)
+}
+
+// LegacyLDAPConnector adapts an existing connector which cannot consume a
+// context. Production connectors must implement context cancellation directly.
+func LegacyLDAPConnector(connect func(string) (LDAPClient, error)) LDAPConnector {
+	return LDAPConnectorFunc(func(_ context.Context, server string) (LDAPClient, error) {
+		return connect(server)
+	})
+}
 
 const ldapCandidateTimeout = 10 * time.Second
 
@@ -60,11 +78,13 @@ type ldapServerCandidate struct {
 }
 
 type kerberosLDAPConnector struct {
-	ctx            context.Context
 	krb5CacheDir   string
 	globalTrustDir string
 	allowBootstrap bool
+	bind           kerberosLDAPBindFunc
 }
+
+type kerberosLDAPBindFunc func(context.Context, *ldap.Conn, string, string, []byte, bool, *saslSecurityConn) error
 
 // newKerberosLDAPConnector returns an LDAPConnector that performs GSSAPI bind
 // using the machine's Kerberos credential cache from krb5CacheDir.
@@ -79,34 +99,41 @@ type kerberosLDAPConnector struct {
 // Kerberos GSSAPI confidentiality layer. Unknown issuers are never accepted
 // after adsys-managed trust has been configured.
 func newKerberosLDAPConnector(krb5CacheDir, globalTrustDir string, allowBootstrap bool) LDAPConnector {
-	return newKerberosLDAPConnectorWithContext(context.Background(), krb5CacheDir, globalTrustDir, allowBootstrap)
-}
-
-func newKerberosLDAPConnectorWithContext(ctx context.Context, krb5CacheDir, globalTrustDir string, allowBootstrap bool) LDAPConnector {
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	config := kerberosLDAPConnector{
-		ctx:            ctx,
+	return &kerberosLDAPConnector{
 		krb5CacheDir:   krb5CacheDir,
 		globalTrustDir: globalTrustDir,
 		allowBootstrap: allowBootstrap,
+		bind:           gssapiBindWithOptions,
 	}
-	return func(server string) (LDAPClient, error) {
-		candidates, err := ldapServerCandidates(ctx, server)
-		if err != nil {
-			return nil, err
-		}
-		if len(candidates) == 0 {
-			return nil, fmt.Errorf("no LDAP server candidates found for %s", server)
-		}
-		return &failoverLDAPClient{
-			ctx:              config.ctx,
-			candidates:       candidates,
-			connect:          config.connectCandidate,
-			candidateTimeout: ldapCandidateTimeout,
-		}, nil
+}
+
+func (c *kerberosLDAPConnector) Connect(ctx context.Context, server string) (LDAPClient, error) {
+	candidates, err := c.Candidates(ctx, server)
+	if err != nil {
+		return nil, err
 	}
+	var candidateErrs []error
+	for _, candidate := range candidates {
+		candidateCtx, cancel := context.WithTimeout(ctx, ldapCandidateTimeout)
+		client, err := c.ConnectCandidate(candidateCtx, candidate)
+		cancel()
+		if err == nil {
+			return client, nil
+		}
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		candidateErrs = append(candidateErrs, fmt.Errorf("%s: %w", candidate.address, err))
+	}
+	return nil, fmt.Errorf("all LDAP candidates failed: %w", errors.Join(candidateErrs...))
+}
+
+func (c *kerberosLDAPConnector) Candidates(ctx context.Context, server string) ([]ldapServerCandidate, error) {
+	return ldapServerCandidates(ctx, server)
+}
+
+func (c *kerberosLDAPConnector) ConnectCandidate(ctx context.Context, candidate ldapServerCandidate) (LDAPClient, error) {
+	return c.connectCandidate(ctx, candidate)
 }
 
 func ldapServerCandidates(ctx context.Context, server string) ([]ldapServerCandidate, error) {
@@ -160,100 +187,10 @@ func NewKerberosLDAPConnector(krb5CacheDir, globalTrustDir string) LDAPConnector
 	return newKerberosLDAPConnector(krb5CacheDir, globalTrustDir, false)
 }
 
-type ldapCandidateConnector func(context.Context, ldapServerCandidate) (LDAPClient, error)
-
-type failoverLDAPClient struct {
-	mu               sync.Mutex
-	ctx              context.Context
-	candidates       []ldapServerCandidate
-	connect          ldapCandidateConnector
-	candidateTimeout time.Duration
-	next             int
-	current          LDAPClient
-	closed           bool
-}
-
-func (c *failoverLDAPClient) Search(req *ldap.SearchRequest) (*ldap.SearchResult, error) {
-	return c.SearchContext(c.ctx, req)
-}
-
-func (c *failoverLDAPClient) SearchContext(ctx context.Context, req *ldap.SearchRequest) (*ldap.SearchResult, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if c.closed {
-		return nil, fmt.Errorf("LDAP client is closed")
-	}
-
-	searchCtx, cancel := context.WithCancel(ctx)
-	stopBaseCancel := context.AfterFunc(c.ctx, cancel)
-	defer func() {
-		stopBaseCancel()
-		cancel()
-	}()
-
-	var candidateErrs []error
-	candidateTimeout := c.candidateTimeout
-	if candidateTimeout <= 0 {
-		candidateTimeout = ldapCandidateTimeout
-	}
-	for c.next < len(c.candidates) || c.current != nil {
-		if err := searchCtx.Err(); err != nil {
-			return nil, err
-		}
-		if c.current == nil {
-			candidate := c.candidates[c.next]
-			c.next++
-			candidateCtx, cancelCandidate := context.WithTimeout(searchCtx, candidateTimeout)
-			client, err := c.connect(candidateCtx, candidate)
-			cancelCandidate()
-			if err != nil {
-				candidateErrs = append(candidateErrs, fmt.Errorf("%s: %w", candidate.address, err))
-				continue
-			}
-			c.current = client
-		}
-
-		var result *ldap.SearchResult
-		var err error
-		operationCtx, cancelOperation := context.WithTimeout(searchCtx, candidateTimeout)
-		if contextClient, ok := c.current.(interface {
-			SearchContext(context.Context, *ldap.SearchRequest) (*ldap.SearchResult, error)
-		}); ok {
-			result, err = contextClient.SearchContext(operationCtx, req)
-		} else {
-			result, err = c.current.Search(req)
-		}
-		cancelOperation()
-		if err == nil {
-			return result, nil
-		}
-		candidateErrs = append(candidateErrs, err)
-		_ = c.current.Close()
-		c.current = nil
-		if err := searchCtx.Err(); err != nil {
-			return nil, err
-		}
-	}
-	if len(candidateErrs) == 0 {
-		return nil, fmt.Errorf("no LDAP candidates remain")
-	}
-	return nil, fmt.Errorf("all LDAP candidates failed: %w", errors.Join(candidateErrs...))
-}
-
-func (c *failoverLDAPClient) Close() error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if c.closed {
-		return nil
-	}
-	c.closed = true
-	if c.current != nil {
-		err := c.current.Close()
-		c.current = nil
-		return err
-	}
-	return nil
+type ldapCandidateProvider interface {
+	LDAPConnector
+	Candidates(context.Context, string) ([]ldapServerCandidate, error)
+	ConnectCandidate(context.Context, ldapServerCandidate) (LDAPClient, error)
 }
 
 type deadlineLDAPClient struct {
@@ -305,6 +242,8 @@ func (c kerberosLDAPConnector) connectCandidate(ctx context.Context, candidate l
 			_ = rawConn.Close()
 		}
 	}()
+	stopContextInterrupt := interruptConnectionOnDone(ctx, rawConn)
+	defer stopContextInterrupt()
 	if deadline, ok := ctx.Deadline(); ok {
 		if err := rawConn.SetDeadline(deadline); err != nil {
 			return nil, fmt.Errorf("setting LDAP candidate deadline: %w", err)
@@ -312,12 +251,18 @@ func (c kerberosLDAPConnector) connectCandidate(ctx context.Context, candidate l
 	}
 
 	if err := requestStartTLS(rawConn); err != nil {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		return nil, fmt.Errorf("starting TLS on LDAP connection to %s: %w", candidate.host, err)
 	}
 
 	trustState := &ldapTLSTrustState{}
 	tlsConn := tls.Client(rawConn, ldapTLSConfigWithTrustState(candidate.host, c.globalTrustDir, c.allowBootstrap, trustState))
 	if err := tlsConn.HandshakeContext(ctx); err != nil {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		return nil, fmt.Errorf("TLS handshake with LDAP server %s: %w", candidate.host, err)
 	}
 
@@ -334,8 +279,15 @@ func (c kerberosLDAPConnector) connectCandidate(ctx context.Context, candidate l
 	}
 	channelBinding := tlsServerEndPointChannelBinding(tlsState.PeerCertificates[0])
 	requireConfidentiality := trustState.bootstrap.Load()
-	if err := gssapiBindWithOptions(conn, candidate.host, c.krb5CacheDir, channelBinding, requireConfidentiality, transport); err != nil {
+	bind := c.bind
+	if bind == nil {
+		bind = gssapiBindWithOptions
+	}
+	if err := bind(ctx, conn, candidate.host, c.krb5CacheDir, channelBinding, requireConfidentiality, transport); err != nil {
 		_ = conn.Close()
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		return nil, fmt.Errorf("GSSAPI bind to %s failed: %w", candidate.host, err)
 	}
 	if requireConfidentiality {
@@ -345,12 +297,33 @@ func (c kerberosLDAPConnector) connectCandidate(ctx context.Context, candidate l
 		}
 	}
 
+	stopContextInterrupt()
+	if err := ctx.Err(); err != nil {
+		_ = conn.Close()
+		return nil, err
+	}
 	if err := transport.SetDeadline(time.Time{}); err != nil {
 		_ = conn.Close()
 		return nil, fmt.Errorf("clearing LDAP candidate deadline: %w", err)
 	}
 	log.Debugf(ctx, "LDAP connection established and authenticated to %s", candidate.host)
 	return &deadlineLDAPClient{conn: conn, transport: transport, timeout: ldapCandidateTimeout}, nil
+}
+
+func interruptConnectionOnDone(ctx context.Context, conn net.Conn) func() {
+	done := make(chan struct{})
+	stop := context.AfterFunc(ctx, func() {
+		_ = conn.SetDeadline(time.Now())
+		close(done)
+	})
+	var once sync.Once
+	return func() {
+		once.Do(func() {
+			if !stop() {
+				<-done
+			}
+		})
+	}
 }
 
 func requestStartTLS(conn net.Conn) error {
@@ -372,9 +345,15 @@ func requestStartTLS(conn net.Conn) error {
 	if tag != 0x30 {
 		return fmt.Errorf("invalid StartTLS response")
 	}
-	_, _, response, err = splitBERElement(response)
+	messageIDTag, messageID, response, err := splitBERElement(response)
 	if err != nil {
 		return fmt.Errorf("invalid StartTLS message ID: %w", err)
+	}
+	if messageIDTag != 0x02 {
+		return fmt.Errorf("invalid StartTLS message ID tag 0x%02x", messageIDTag)
+	}
+	if len(messageID) != 1 || messageID[0] != 1 {
+		return fmt.Errorf("invalid StartTLS message ID value %x, want 1", messageID)
 	}
 	tag, protocolOp, _, err := splitBERElement(response)
 	if err != nil || tag != 0x78 {
@@ -888,7 +867,7 @@ func tlsServerName(server string) string {
 //  1. KRB5CCNAME environment variable
 //  2. The krb5CacheDir managed by the AD backend
 //  3. Default /tmp/krb5cc_0
-func gssapiBindWithOptions(conn *ldap.Conn, server, krb5CacheDir string, channelBinding []byte, requireConfidentiality bool, transport *saslSecurityConn) error {
+func gssapiBindWithOptions(ctx context.Context, conn *ldap.Conn, server, krb5CacheDir string, channelBinding []byte, requireConfidentiality bool, transport *saslSecurityConn) error {
 	ccachePath, err := findKrb5CCachePath(krb5CacheDir)
 	if err != nil {
 		return fmt.Errorf("locating Kerberos credential cache: %w", err)
@@ -913,14 +892,14 @@ func gssapiBindWithOptions(conn *ldap.Conn, server, krb5CacheDir string, channel
 		return fmt.Errorf("creating Kerberos client from ccache: %w", err)
 	}
 
-	return bindKerberosClient(cl, server, channelBinding, requireConfidentiality, transport, func(client ldap.GSSAPIClient, spn string) error {
+	return bindKerberosClient(ctx, cl, server, channelBinding, requireConfidentiality, transport, func(client ldap.GSSAPIClient, spn string) error {
 		return conn.GSSAPIBind(client, spn, "")
 	})
 }
 
-func bindKerberosClient(cl *krbclient.Client, server string, channelBinding []byte, requireConfidentiality bool, transport *saslSecurityConn, bind func(ldap.GSSAPIClient, string) error) error {
+func bindKerberosClient(ctx context.Context, cl *krbclient.Client, server string, channelBinding []byte, requireConfidentiality bool, transport *saslSecurityConn, bind func(ldap.GSSAPIClient, string) error) error {
 	spn := fmt.Sprintf("ldap/%s", server)
-	log.Debugf(context.Background(), "Performing GSSAPI bind using SPN: %s", spn)
+	log.Debugf(ctx, "Performing GSSAPI bind using SPN: %s", spn)
 	gssClient := newGSSAPIClient(cl, channelBinding)
 	gssClient.requireSecurityLayer = requireConfidentiality
 	gssClient.securityTransport = transport
@@ -930,7 +909,7 @@ func bindKerberosClient(cl *krbclient.Client, server string, channelBinding []by
 		return fmt.Errorf("GSSAPI bind failed for SPN %s: %w", spn, err)
 	}
 
-	log.Debugf(context.Background(), "GSSAPI bind successful for SPN: %s", spn)
+	log.Debugf(ctx, "GSSAPI bind successful for SPN: %s", spn)
 	return nil
 }
 
@@ -1148,6 +1127,27 @@ func fetchTemplateAttrsContext(ctx context.Context, conn LDAPClient, configDN, t
 	}, nil
 }
 
+func fetchTemplateAttrsWithConnector(ctx context.Context, connect LDAPConnector, server string, templateNames []string) (map[string]templateAttrs, error) {
+	return runLDAPTransaction(ctx, connect, server, func(candidateCtx context.Context, conn LDAPClient) (map[string]templateAttrs, error) {
+		configDN, err := fetchConfigDNContext(candidateCtx, conn)
+		if err != nil {
+			return nil, err
+		}
+		attrsByName := make(map[string]templateAttrs, len(templateNames))
+		for _, templateName := range templateNames {
+			if _, exists := attrsByName[templateName]; exists {
+				continue
+			}
+			attrs, err := fetchTemplateAttrsContext(candidateCtx, conn, configDN, templateName)
+			if err != nil {
+				return nil, err
+			}
+			attrsByName[templateName] = attrs
+		}
+		return attrsByName, nil
+	})
+}
+
 // fetchConfigDN retrieves the configuration naming context from the LDAP
 // root DSE of the given server.
 func fetchConfigDN(conn LDAPClient) (string, error) {
@@ -1200,33 +1200,70 @@ func ldapSearchContext(ctx context.Context, conn LDAPClient, req *ldap.SearchReq
 // CAs and their supported templates. This is the main entry point for
 // LDAP-based discovery, replacing both the Samba LDAP queries and the
 // CEPCES GET-SUPPORTED-TEMPLATES call.
-func discoverCAsAndTemplates(connect LDAPConnector, server string) ([]certAuthority, error) {
-	return discoverCAsAndTemplatesContext(context.Background(), connect, server)
+func discoverCAsAndTemplates(ctx context.Context, connect LDAPConnector, server string) ([]certAuthority, error) {
+	log.Debugf(ctx, "Discovering CAs and certificate templates from DC: %s", server)
+	return runLDAPTransaction(ctx, connect, server, func(candidateCtx context.Context, conn LDAPClient) ([]certAuthority, error) {
+		configDN, err := fetchConfigDNContext(candidateCtx, conn)
+		if err != nil {
+			return nil, err
+		}
+		cas, err := fetchCertificationAuthoritiesContext(candidateCtx, conn, configDN)
+		if err != nil {
+			return nil, err
+		}
+		log.Debugf(candidateCtx, "Discovery complete: found %d CAs on %s", len(cas), server)
+		return cas, nil
+	})
 }
 
-func discoverCAsAndTemplatesContext(ctx context.Context, connect LDAPConnector, server string) ([]certAuthority, error) {
-	log.Debugf(ctx, "Discovering CAs and certificate templates from DC: %s", server)
+func runLDAPTransaction[T any](ctx context.Context, connect LDAPConnector, server string, operation func(context.Context, LDAPClient) (T, error)) (T, error) {
+	var zero T
 	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	conn, err := connect(server)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-
-	configDN, err := fetchConfigDNContext(ctx, conn)
-	if err != nil {
-		return nil, err
+		return zero, err
 	}
 
-	cas, err := fetchCertificationAuthoritiesContext(ctx, conn, configDN)
-	if err != nil {
-		return nil, err
+	candidates := []ldapServerCandidate{{address: server, host: tlsServerName(server)}}
+	provider, hasCandidates := connect.(ldapCandidateProvider)
+	if hasCandidates {
+		var err error
+		candidates, err = provider.Candidates(ctx, server)
+		if err != nil {
+			return zero, err
+		}
+	}
+	if len(candidates) == 0 {
+		return zero, fmt.Errorf("no LDAP candidates found for %s", server)
 	}
 
-	log.Debugf(ctx, "Discovery complete: found %d CAs on %s", len(cas), server)
-	return cas, nil
+	var candidateErrs []error
+	for _, candidate := range candidates {
+		candidateCtx, cancel := context.WithTimeout(ctx, ldapCandidateTimeout)
+		var conn LDAPClient
+		var err error
+		if hasCandidates {
+			conn, err = provider.ConnectCandidate(candidateCtx, candidate)
+		} else {
+			conn, err = connect.Connect(candidateCtx, candidate.address)
+		}
+		if err == nil {
+			var result T
+			result, err = operation(candidateCtx, conn)
+			closeErr := conn.Close()
+			if err == nil && closeErr != nil {
+				err = fmt.Errorf("closing LDAP connection: %w", closeErr)
+			}
+			if err == nil {
+				cancel()
+				return result, nil
+			}
+		}
+		cancel()
+		if ctx.Err() != nil {
+			return zero, ctx.Err()
+		}
+		candidateErrs = append(candidateErrs, fmt.Errorf("%s: %w", candidate.address, err))
+	}
+	return zero, fmt.Errorf("all LDAP candidates failed: %w", errors.Join(candidateErrs...))
 }
 
 // dcHostnameFromDomain derives the DC hostname from the domain name.

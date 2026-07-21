@@ -204,8 +204,8 @@ func New(domain string, opts ...Option) *Manager {
 		if ldapConnect == nil {
 			// allowBootstrap: on the first enrollment the enterprise CA is not
 			// installed yet; adsys discovers and installs it during this run, so
-			// the DC's StartTLS certificate is trusted via the Kerberos bind
-			// until then (see verifyPeerCertificate).
+			// LDAP discovery is protected by Kerberos confidentiality until the
+			// DC's StartTLS certificate chains to managed trust.
 			ldapConnect = newKerberosLDAPConnector(krb5CacheDir, args.globalTrustDir, true)
 		}
 
@@ -419,7 +419,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	server := dcHostnameFromDomain(m.domain)
 	log.Debugf(ctx, "Discovering CAs from LDAP server: %s", server)
 
-	cas, err := discoverCAsAndTemplates(m.ldapConnect, server)
+	cas, err := discoverCAsAndTemplates(ctx, m.ldapConnect, server)
 	if err != nil {
 		return fmt.Errorf("failed to discover CAs: %w", err)
 	}
@@ -451,15 +451,16 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		return fmt.Errorf("failed to create private directory: %w", err)
 	}
 
-	conn, err := m.ldapConnect(server)
-	if err != nil {
-		return fmt.Errorf("failed to connect to LDAP for template attrs: %w", err)
+	var templateNames []string
+	for _, ca := range cas {
+		templateNames = append(templateNames, ca.Templates...)
 	}
-	defer conn.Close()
-
-	configDN, err := fetchConfigDN(conn)
-	if err != nil {
-		return fmt.Errorf("failed to fetch config DN: %w", err)
+	attrsByName, attrsErr := fetchTemplateAttrsWithConnector(ctx, m.ldapConnect, server, templateNames)
+	if attrsErr != nil {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		log.Warningf(ctx, "Failed to fetch LDAP template attributes, using safe defaults: %v", attrsErr)
 	}
 
 	var enrolledCAs []enrolledCA
@@ -492,9 +493,8 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 				continue
 			}
 
-			attrs, err := fetchTemplateAttrs(conn, configDN, tmplName)
-			if err != nil {
-				log.Warningf(ctx, "Failed to fetch attrs for template %s: %v", tmplName, err)
+			attrs, ok := attrsByName[tmplName]
+			if !ok {
 				attrs = templateAttrs{Name: tmplName, MinKeySize: 2048}
 			}
 			log.Debugf(ctx, "Template %s requires minimum key size: %d bits", attrs.Name, attrs.MinKeySize)

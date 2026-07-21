@@ -350,7 +350,7 @@ func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]CAI
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	cas, err := discoverCAsAndTemplates(m.ldapConnect, dcHostnameFromDomain(m.domain))
+	cas, err := discoverCAsAndTemplates(ctx, m.ldapConnect, dcHostnameFromDomain(m.domain))
 	if err != nil {
 		return nil, fmt.Errorf("failed to discover certificate authorities: %w", err)
 	}
@@ -390,7 +390,7 @@ func (m *Manager) SupportedTemplates(ctx context.Context, server string) ([]stri
 
 	log.Debugf(ctx, "Discovering supported templates for server %s", server)
 	connector := newKerberosLDAPConnector(m.krb5CacheDir, m.globalTrustDir, true)
-	return GetSupportedTemplatesWithConnector(connector, server)
+	return GetSupportedTemplatesWithConnector(ctx, connector, server)
 }
 
 // certInfoFor builds a CertInfo from a persisted CA/template pair, parsing the
@@ -552,18 +552,12 @@ func checkRevocation(ctx context.Context, cert *x509.Certificate, res *VerifyRes
 func (m *Manager) templateKeySize(ctx context.Context, template string) int {
 	const defaultKeySize = 2048
 
-	conn, err := m.ldapConnect(dcHostnameFromDomain(m.domain))
-	if err != nil || conn == nil {
+	attrsByName, err := fetchTemplateAttrsWithConnector(ctx, m.ldapConnect, dcHostnameFromDomain(m.domain), []string{template})
+	if err != nil {
 		log.Debugf(ctx, "Could not connect to LDAP to determine key size for template %s, using %d bits", template, defaultKeySize)
 		return defaultKeySize
 	}
-	defer conn.Close()
-
-	configDN, err := fetchConfigDN(conn)
-	if err != nil {
-		return defaultKeySize
-	}
-	attrs, _ := fetchTemplateAttrs(conn, configDN, template)
+	attrs := attrsByName[template]
 	if attrs.MinKeySize > 0 {
 		return attrs.MinKeySize
 	}

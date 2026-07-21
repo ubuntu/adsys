@@ -135,9 +135,9 @@ func TestApplyPolicies(t *testing.T) {
 					certificate.WithShareDir(filepath.Join(certRootDir, "share")),
 					certificate.WithGlobalTrustDir(filepath.Join(certRootDir, "trust")),
 					certificate.WithEnrollmentMethod("ldap"),
-					certificate.WithLDAPConnector(func(string) (certificate.LDAPClient, error) {
+					certificate.WithLDAPConnector(certificate.LDAPConnectorFunc(func(context.Context, string) (certificate.LDAPClient, error) {
 						return &policiesTestLDAPConn{}, nil
-					}),
+					})),
 					certificate.WithCSRSubmitter(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 						return dummyIssuedCertificateFromCSR(t, csrPEM), nil
 					}),

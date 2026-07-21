@@ -296,7 +296,7 @@ func TestRenewCertificates(t *testing.T) {
 			return "", fmt.Errorf("mock submit failure")
 		}
 		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
-			WithLDAPConnector(func(string) (LDAPClient, error) { return nil, fmt.Errorf("no ldap") }),
+			WithLDAPConnector(LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) { return nil, fmt.Errorf("no ldap") })),
 			WithCSRSubmitter(submitter),
 		)
 
@@ -568,11 +568,32 @@ func TestDiscoverCAsInfo(t *testing.T) {
 		t.Parallel()
 		tmpdir := t.TempDir()
 		m := mgrManager(t, filepath.Join(tmpdir, "state"), filepath.Join(tmpdir, "trust"),
-			WithLDAPConnector(func(string) (LDAPClient, error) { return nil, fmt.Errorf("connection failed") }),
+			WithLDAPConnector(LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) { return nil, fmt.Errorf("connection failed") })),
 		)
 		_, err := m.DiscoverCAsInfo(context.Background(), mgrTestObject)
 		require.Error(t, err)
 	})
+}
+
+func TestDiscoverCAsInfoCancellationReleasesManagerLock(t *testing.T) {
+	t.Parallel()
+
+	m := mgrManager(t, t.TempDir(), t.TempDir(), WithLDAPConnector(LDAPConnectorFunc(
+		func(ctx context.Context, _ string) (LDAPClient, error) {
+			<-ctx.Done()
+			return nil, ctx.Err()
+		},
+	)))
+	ctx, cancel := context.WithCancel(context.Background())
+	time.AfterFunc(20*time.Millisecond, cancel)
+	defer cancel()
+
+	start := time.Now()
+	_, err := m.DiscoverCAsInfo(ctx, mgrTestObject)
+	require.ErrorIs(t, err, context.Canceled)
+	assert.Less(t, time.Since(start), time.Second)
+	require.True(t, m.mu.TryLock(), "manager lock remained held after LDAP cancellation")
+	m.mu.Unlock()
 }
 
 func TestManagementMethodsRequireLDAPMethod(t *testing.T) {
@@ -768,5 +789,5 @@ func mgrConnector(configDN, caName, hostname string, templates []string, caDER [
 	results[templateBaseDN] = &ldap.SearchResult{Entries: tEntries}
 
 	conn := &mockLDAPClient{searchResults: results}
-	return func(string) (LDAPClient, error) { return conn, nil }
+	return LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) { return conn, nil })
 }

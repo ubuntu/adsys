@@ -352,21 +352,26 @@ func safeWriteFile(dst string, data []byte, mode os.FileMode) error {
 // GetSupportedTemplates discovers templates for the CA server via LDAP.
 // It uses the KRB5CCNAME environment variable for Kerberos authentication.
 func GetSupportedTemplates(server string) ([]string, error) {
+	return GetSupportedTemplatesContext(context.Background(), server)
+}
+
+// GetSupportedTemplatesContext discovers templates while honoring caller cancellation.
+func GetSupportedTemplatesContext(ctx context.Context, server string) ([]string, error) {
 	// allowBootstrap: the DC certificate may not chain to an installed CA on a
-	// freshly joined machine; the LDAP channel is authenticated by Kerberos.
+	// freshly joined machine; GSSAPI protects LDAP with Kerberos confidentiality.
 	connector := newKerberosLDAPConnector("", "", true)
-	return GetSupportedTemplatesWithConnector(connector, server)
+	return GetSupportedTemplatesWithConnector(ctx, connector, server)
 }
 
 // GetSupportedTemplatesWithConnector discovers templates for the CA server via LDAP.
-func GetSupportedTemplatesWithConnector(connect LDAPConnector, server string) ([]string, error) {
+func GetSupportedTemplatesWithConnector(ctx context.Context, connect LDAPConnector, server string) ([]string, error) {
 	discoveryServer := server
 	if strings.Contains(server, ".") {
 		discoveryServer = dcHostnameFromDomain(domainFromServer(server))
 	}
 
-	log.Debugf(context.Background(), "Discovering supported templates for server %s (discovery server: %s)", server, discoveryServer)
-	cas, err := discoverCAsAndTemplates(connect, discoveryServer)
+	log.Debugf(ctx, "Discovering supported templates for server %s (discovery server: %s)", server, discoveryServer)
+	cas, err := discoverCAsAndTemplates(ctx, connect, discoveryServer)
 	if err != nil {
 		return nil, err
 	}
@@ -390,7 +395,7 @@ func GetSupportedTemplatesWithConnector(connect LDAPConnector, server string) ([
 		return nil, fmt.Errorf("no templates found for server %s", server)
 	}
 
-	log.Debugf(context.Background(), "Found %d supported templates for server %s: %s", len(templates), server, strings.Join(templates, ", "))
+	log.Debugf(ctx, "Found %d supported templates for server %s: %s", len(templates), server, strings.Join(templates, ", "))
 	return templates, nil
 }
 

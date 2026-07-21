@@ -61,17 +61,17 @@ func (m *mockLDAPConn) Search(req *ldap.SearchRequest) (*ldap.SearchResult, erro
 func (m *mockLDAPConn) Close() error { return nil }
 
 // mockLDAPConnector returns a connector function that returns the mock connection.
-func mockLDAPConnector(conn *mockLDAPConn) func(string) (certificate.LDAPClient, error) {
-	return func(_ string) (certificate.LDAPClient, error) {
+func mockLDAPConnector(conn *mockLDAPConn) certificate.LDAPConnector {
+	return certificate.LDAPConnectorFunc(func(context.Context, string) (certificate.LDAPClient, error) {
 		return conn, nil
-	}
+	})
 }
 
 // mockLDAPConnectorErr returns a connector function that always errors.
-func mockLDAPConnectorErr() func(string) (certificate.LDAPClient, error) {
-	return func(_ string) (certificate.LDAPClient, error) {
+func mockLDAPConnectorErr() certificate.LDAPConnector {
+	return certificate.LDAPConnectorFunc(func(context.Context, string) (certificate.LDAPClient, error) {
 		return nil, fmt.Errorf("mock LDAP connection error")
-	}
+	})
 }
 
 // newMockLDAPWithCA creates a mock LDAP connection with a single CA and templates.
@@ -229,7 +229,7 @@ func TestApplyPolicy(t *testing.T) {
 			}
 
 			// Set up LDAP mock
-			var ldapConnect func(string) (certificate.LDAPClient, error)
+			var ldapConnect certificate.LDAPConnector
 			switch {
 			case tc.ldapConnErr:
 				ldapConnect = mockLDAPConnectorErr()

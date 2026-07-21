@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/sha512"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/binary"
@@ -328,20 +329,20 @@ func TestDiscoverCAsAndTemplates(t *testing.T) {
 
 			var connector LDAPConnector
 			if tc.connErr {
-				connector = func(_ string) (LDAPClient, error) {
+				connector = LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) {
 					return nil, fmt.Errorf("connection failed")
-				}
+				})
 			} else {
 				conn := &mockLDAPClient{
 					searchResults: tc.searchResults,
 					searchErr:     tc.searchErr,
 				}
-				connector = func(_ string) (LDAPClient, error) {
+				connector = LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) {
 					return conn, nil
-				}
+				})
 			}
 
-			cas, err := discoverCAsAndTemplates(connector, "dc.example.com")
+			cas, err := discoverCAsAndTemplates(context.Background(), connector, "dc.example.com")
 			if tc.wantErr {
 				require.Error(t, err)
 				return
@@ -358,10 +359,10 @@ func TestDiscoverCAsAndTemplatesContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	called := false
-	_, err := discoverCAsAndTemplatesContext(ctx, func(string) (LDAPClient, error) {
+	_, err := discoverCAsAndTemplates(ctx, LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) {
 		called = true
 		return nil, nil
-	}, "example.com")
+	}), "example.com")
 	require.ErrorIs(t, err, context.Canceled)
 	assert.False(t, called)
 }
@@ -384,63 +385,70 @@ func (c *contextLDAPTestClient) Close() error {
 	return nil
 }
 
-func TestFailoverLDAPClient(t *testing.T) {
+type candidateLDAPTestConnector struct {
+	candidates []ldapServerCandidate
+	connect    func(context.Context, ldapServerCandidate) (LDAPClient, error)
+}
+
+func (c *candidateLDAPTestConnector) Connect(ctx context.Context, server string) (LDAPClient, error) {
+	return c.connect(ctx, ldapServerCandidate{address: server, host: tlsServerName(server)})
+}
+
+func (c *candidateLDAPTestConnector) Candidates(context.Context, string) ([]ldapServerCandidate, error) {
+	return c.candidates, nil
+}
+
+func (c *candidateLDAPTestConnector) ConnectCandidate(ctx context.Context, candidate ldapServerCandidate) (LDAPClient, error) {
+	return c.connect(ctx, candidate)
+}
+
+func TestDiscoveryRestartsWholeTransactionOnNextCandidate(t *testing.T) {
 	t.Parallel()
 
-	first := &contextLDAPTestClient{}
-	searchCount := 0
-	first.search = func(ctx context.Context, _ *ldap.SearchRequest) (*ldap.SearchResult, error) {
-		searchCount++
-		if searchCount == 1 {
-			return &ldap.SearchResult{}, nil
-		}
-		<-ctx.Done()
-		return nil, ctx.Err()
-	}
-	second := &contextLDAPTestClient{
-		search: func(_ context.Context, _ *ldap.SearchRequest) (*ldap.SearchResult, error) {
-			return &ldap.SearchResult{Entries: []*ldap.Entry{ldap.NewEntry("dc=example", nil)}}, nil
-		},
-	}
-
+	const configDN = "CN=Configuration,DC=example,DC=com"
 	var connected []string
-	client := &failoverLDAPClient{
-		ctx: context.Background(),
+	var searchesByDC = map[string][]string{}
+	connector := &candidateLDAPTestConnector{
 		candidates: []ldapServerCandidate{
 			{address: "dc1.example.com:389", host: "dc1.example.com"},
 			{address: "dc2.example.com:389", host: "dc2.example.com"},
 		},
-		candidateTimeout: 20 * time.Millisecond,
 		connect: func(_ context.Context, candidate ldapServerCandidate) (LDAPClient, error) {
 			connected = append(connected, candidate.host)
-			if candidate.host == "dc1.example.com" {
-				return first, nil
-			}
-			return second, nil
+			return &contextLDAPTestClient{search: func(_ context.Context, req *ldap.SearchRequest) (*ldap.SearchResult, error) {
+				searchesByDC[candidate.host] = append(searchesByDC[candidate.host], req.BaseDN)
+				if req.BaseDN == "" {
+					return &ldap.SearchResult{Entries: []*ldap.Entry{
+						ldap.NewEntry("", map[string][]string{"configurationNamingContext": {configDN}}),
+					}}, nil
+				}
+				if candidate.host == "dc1.example.com" {
+					return nil, fmt.Errorf("CA search stalled")
+				}
+				return &ldap.SearchResult{Entries: []*ldap.Entry{
+					newCAEntry(req.BaseDN, "TestCA", "ca.example.com", []string{"Machine"}, []byte{1}),
+				}}, nil
+			}}, nil
 		},
 	}
-	t.Cleanup(func() { require.NoError(t, client.Close()) })
 
-	_, err := client.Search(ldap.NewSearchRequest("", ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+	result, err := discoverCAsAndTemplates(context.Background(), connector, "example.com")
 	require.NoError(t, err)
-	result, err := client.Search(ldap.NewSearchRequest("dc=example", ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
-	require.NoError(t, err)
-	require.Len(t, result.Entries, 1)
+	require.Len(t, result, 1)
 	assert.Equal(t, []string{"dc1.example.com", "dc2.example.com"}, connected)
-	assert.True(t, first.closed)
+	assert.Equal(t, []string{"", "CN=Enrollment Services,CN=Public Key Services,CN=Services," + configDN}, searchesByDC["dc1.example.com"])
+	assert.Equal(t, []string{"", "CN=Enrollment Services,CN=Public Key Services,CN=Services," + configDN}, searchesByDC["dc2.example.com"])
 }
 
-func TestFailoverLDAPClientDeadFirstCandidate(t *testing.T) {
+func TestLDAPTransactionDeadFirstCandidate(t *testing.T) {
 	t.Parallel()
 
 	var connected []string
-	client := &failoverLDAPClient{
-		ctx: context.Background(),
+	connector := &candidateLDAPTestConnector{
 		candidates: []ldapServerCandidate{
 			{address: "dead.example.com:389", host: "dead.example.com"},
 			{address: "live.example.com:389", host: "live.example.com"},
 		},
-		candidateTimeout: time.Second,
 		connect: func(_ context.Context, candidate ldapServerCandidate) (LDAPClient, error) {
 			connected = append(connected, candidate.host)
 			if candidate.host == "dead.example.com" {
@@ -453,20 +461,20 @@ func TestFailoverLDAPClientDeadFirstCandidate(t *testing.T) {
 			}, nil
 		},
 	}
-	t.Cleanup(func() { require.NoError(t, client.Close()) })
 
-	_, err := client.Search(ldap.NewSearchRequest("", ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+	_, err := runLDAPTransaction(context.Background(), connector, "example.com", func(ctx context.Context, client LDAPClient) (struct{}, error) {
+		_, err := ldapSearchContext(ctx, client, ldap.NewSearchRequest("", ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+		return struct{}{}, err
+	})
 	require.NoError(t, err)
 	assert.Equal(t, []string{"dead.example.com", "live.example.com"}, connected)
 }
 
-func TestFailoverLDAPClientCancellation(t *testing.T) {
+func TestLDAPTransactionCancellation(t *testing.T) {
 	t.Parallel()
 
-	client := &failoverLDAPClient{
-		ctx:              context.Background(),
-		candidates:       []ldapServerCandidate{{address: "dc1.example.com:389", host: "dc1.example.com"}},
-		candidateTimeout: time.Minute,
+	connector := &candidateLDAPTestConnector{
+		candidates: []ldapServerCandidate{{address: "dc1.example.com:389", host: "dc1.example.com"}},
 		connect: func(_ context.Context, _ ldapServerCandidate) (LDAPClient, error) {
 			return &contextLDAPTestClient{
 				search: func(ctx context.Context, _ *ldap.SearchRequest) (*ldap.SearchResult, error) {
@@ -481,7 +489,10 @@ func TestFailoverLDAPClientCancellation(t *testing.T) {
 	defer cancel()
 
 	start := time.Now()
-	_, err := client.SearchContext(ctx, ldap.NewSearchRequest("", ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+	_, err := runLDAPTransaction(ctx, connector, "example.com", func(ctx context.Context, client LDAPClient) (struct{}, error) {
+		_, err := ldapSearchContext(ctx, client, ldap.NewSearchRequest("", ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false, "(objectClass=*)", nil, nil))
+		return struct{}{}, err
+	})
 	require.ErrorIs(t, err, context.Canceled)
 	assert.Less(t, time.Since(start), time.Second)
 }
@@ -511,6 +522,18 @@ func TestRequestStartTLS(t *testing.T) {
 		},
 		"LDAP failure": {
 			response: []byte{0x30, 0x12, 0x02, 0x01, 0x01, 0x78, 0x0d, 0x0a, 0x01, 0x02, 0x04, 0x00, 0x04, 0x06, 'f', 'a', 'i', 'l', 'e', 'd'},
+			wantErr:  true,
+		},
+		"wrong message ID tag": {
+			response: []byte{0x30, 0x0c, 0x04, 0x01, 0x01, 0x78, 0x07, 0x0a, 0x01, 0x00, 0x04, 0x00, 0x04, 0x00},
+			wantErr:  true,
+		},
+		"malformed message ID integer": {
+			response: []byte{0x30, 0x0b, 0x02, 0x00, 0x78, 0x07, 0x0a, 0x01, 0x00, 0x04, 0x00, 0x04, 0x00},
+			wantErr:  true,
+		},
+		"wrong message ID": {
+			response: []byte{0x30, 0x0c, 0x02, 0x01, 0x02, 0x78, 0x07, 0x0a, 0x01, 0x00, 0x04, 0x00, 0x04, 0x00},
 			wantErr:  true,
 		},
 	}
@@ -549,6 +572,135 @@ func TestReadBERElementRejectsTruncation(t *testing.T) {
 	t.Parallel()
 	_, _, err := readBERElement(io.LimitReader(strings.NewReader("\x30\x05abc"), 5))
 	require.Error(t, err)
+}
+
+func TestCandidateSetupCancellation(t *testing.T) {
+	tests := map[string]bool{
+		"stalled StartTLS response": true,
+		"stalled GSSAPI bind":       false,
+	}
+	for name, stallStartTLS := range tests {
+		t.Run(name, func(t *testing.T) {
+			address, ready, serverErr := runStalledLDAPServer(t, stallStartTLS)
+			connector := &kerberosLDAPConnector{
+				allowBootstrap: true,
+				bind: func(_ context.Context, conn *ldap.Conn, _, _ string, _ []byte, _ bool, _ *saslSecurityConn) error {
+					return conn.GSSAPIBind(&stalledGSSAPIClient{}, "ldap/127.0.0.1", "")
+				},
+			}
+			host, _, err := net.SplitHostPort(address)
+			require.NoError(t, err)
+			candidate := ldapServerCandidate{address: address, host: host}
+			ctx, cancel := context.WithCancel(context.Background())
+			result := make(chan error, 1)
+			go func() {
+				_, err := connector.connectCandidate(ctx, candidate)
+				result <- err
+			}()
+
+			<-ready
+			start := time.Now()
+			cancel()
+			require.ErrorIs(t, <-result, context.Canceled)
+			assert.Less(t, time.Since(start), time.Second)
+			require.NoError(t, <-serverErr)
+		})
+	}
+}
+
+type stalledGSSAPIClient struct{}
+
+func (*stalledGSSAPIClient) InitSecContext(string, []byte) ([]byte, bool, error) {
+	return []byte("token"), false, nil
+}
+
+func (*stalledGSSAPIClient) InitSecContextWithOptions(string, []byte, []int) ([]byte, bool, error) {
+	return []byte("token"), false, nil
+}
+
+func (*stalledGSSAPIClient) NegotiateSaslAuth([]byte, string) ([]byte, error) {
+	return nil, nil
+}
+
+func (*stalledGSSAPIClient) DeleteSecContext() error {
+	return nil
+}
+
+func runStalledLDAPServer(t *testing.T, stallStartTLS bool) (address string, ready <-chan struct{}, result <-chan error) {
+	t.Helper()
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = listener.Close() })
+
+	serverReady := make(chan struct{})
+	serverResult := make(chan error, 1)
+	var serverCertificate tls.Certificate
+	if !stallStartTLS {
+		serverCertificate = generateLDAPServerCertificate(t)
+	}
+	go func() {
+		conn, err := listener.Accept()
+		if err != nil {
+			serverResult <- err
+			return
+		}
+		defer conn.Close()
+		if _, _, err := readBERElement(conn); err != nil {
+			serverResult <- err
+			return
+		}
+		if stallStartTLS {
+			close(serverReady)
+			var b [1]byte
+			for err == nil {
+				_, err = conn.Read(b[:])
+			}
+			serverResult <- nil
+			return
+		}
+		if err := writeAll(conn, []byte{0x30, 0x0c, 0x02, 0x01, 0x01, 0x78, 0x07, 0x0a, 0x01, 0x00, 0x04, 0x00, 0x04, 0x00}); err != nil {
+			serverResult <- err
+			return
+		}
+		tlsConn := tls.Server(conn, &tls.Config{
+			MinVersion:   tls.VersionTLS12,
+			Certificates: []tls.Certificate{serverCertificate},
+		})
+		if err := tlsConn.Handshake(); err != nil {
+			serverResult <- err
+			return
+		}
+		close(serverReady)
+		var b [1]byte
+		for err == nil {
+			_, err = tlsConn.Read(b[:])
+		}
+		serverResult <- nil
+	}()
+	return listener.Addr().String(), serverReady, serverResult
+}
+
+func generateLDAPServerCertificate(t *testing.T) tls.Certificate {
+	t.Helper()
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(42),
+		Subject:      pkix.Name{CommonName: "127.0.0.1"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(time.Hour),
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+	}
+	der, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	require.NoError(t, err)
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+	keyDER, err := x509.MarshalPKCS8PrivateKey(key)
+	require.NoError(t, err)
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: keyDER})
+	cert, err := tls.X509KeyPair(certPEM, keyPEM)
+	require.NoError(t, err)
+	return cert
 }
 
 func TestDcHostnameFromDomain(t *testing.T) {
