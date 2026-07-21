@@ -1,4 +1,4 @@
-name: Code quality nightly scan
+name: TIOBE TiCS Framework - Report
 
 on:
   schedule:
