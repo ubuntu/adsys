@@ -242,14 +242,17 @@ func (m *Manager) pollPendingEnrollments(ctx context.Context, state *enrollmentS
 			*state = *working
 			summary.Issued++
 			var cleanupErrs []error
-			if err := finalizeGenerationPublicationWithOps(result.Publication, m.generationOps); err != nil {
-				cleanupErrs = append(cleanupErrs, err)
-				summary.Errors = append(summary.Errors, fmt.Errorf("%s: finalizing issued request: %w", pending.Nickname, errors.Join(cleanupErrs...)))
-				report(progress, fmt.Sprintf("Certificate issued for %s", pending.Nickname))
-				continue
+			finalizeErr := finalizeGenerationPublicationWithOps(result.Publication, m.generationOps)
+			if finalizeErr != nil {
+				cleanupErrs = append(cleanupErrs, finalizeErr)
 			}
 			if err := m.removePending(m.stateDir, pending); err != nil {
 				cleanupErrs = append(cleanupErrs, err)
+			}
+			if finalizeErr != nil {
+				summary.Errors = append(summary.Errors, fmt.Errorf("%s: finalizing issued request: %w", pending.Nickname, errors.Join(cleanupErrs...)))
+				report(progress, fmt.Sprintf("Certificate issued for %s", pending.Nickname))
+				continue
 			}
 			obsolete := pendingReferencedPaths(pending)
 			obsolete = append(obsolete, templateArtifactRemovalPaths(oldTemplate)...)

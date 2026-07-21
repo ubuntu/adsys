@@ -308,6 +308,81 @@ func TestPendingRenewalPreservesOldGenerationUntilIssued(t *testing.T) {
 	assert.NoDirExists(t, old.GenerationDir)
 }
 
+func TestIssuedPendingCleanupSurvivesGenerationFinalizationFailure(t *testing.T) {
+	stateDir := filepath.Join(t.TempDir(), "state")
+	trustDir := filepath.Join(t.TempDir(), "trust")
+	caCert, caKey, caDER := mgrTestCA(t)
+	requester := RequesterFunc(func(_ context.Context, request Request) (Response, error) {
+		require.NotNil(t, request.Submit)
+		certificatePEM := mgrIssueFromCSR(t, request.Submit.CSRPEM, time.Now().Add(365*24*time.Hour), caCert, caKey)
+		return Response{Disposition: DispositionIssued, RequestID: 9, CertificateDER: certificateDER(t, certificatePEM)}, nil
+	})
+	manager := lifecycleManager(t, stateDir, trustDir, caDER, requester)
+	require.NoError(t, manager.enroll(context.Background(), mgrTestObject))
+	state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	old := state.CAs[0].Templates[0]
+
+	var csr string
+	requester = RequesterFunc(func(_ context.Context, request Request) (Response, error) {
+		if request.Submit != nil {
+			csr = request.Submit.CSRPEM
+			return Response{Disposition: DispositionPending, RequestID: 77}, nil
+		}
+		certificatePEM := mgrIssueFromCSR(t, csr, time.Now().Add(365*24*time.Hour), caCert, caKey)
+		return Response{Disposition: DispositionIssued, RequestID: 77, CertificateDER: certificateDER(t, certificatePEM)}, nil
+	})
+	manager = lifecycleManager(t, stateDir, trustDir, caDER, requester)
+	require.ErrorIs(t, manager.RenewCertificates(context.Background(), mgrTestObject, old.Nickname, false, nil), ErrEnrollmentPending)
+	state, err = loadState(stateDir, mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	require.Len(t, state.Pending, 1)
+	pending := state.Pending[0]
+
+	manager = lifecycleManager(t, stateDir, trustDir, caDER, requester)
+	remove := manager.generationOps.remove
+	manager.generationOps.remove = func(path string) error {
+		if filepath.Base(path) == generationMarker {
+			return errors.New("injected generation marker remove failure")
+		}
+		return remove(path)
+	}
+	removePending := manager.removePending
+	manager.removePending = func(stateDir string, pending pendingEnrollment) error {
+		return errors.Join(
+			removePending(stateDir, pending),
+			errors.New("injected post-cleanup pending error"),
+		)
+	}
+
+	err = manager.RenewCertificates(context.Background(), mgrTestObject, old.Nickname, false, nil)
+	require.ErrorContains(t, err, "injected generation marker remove failure")
+	require.ErrorContains(t, err, "injected post-cleanup pending error")
+
+	state, err = loadState(stateDir, mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	require.Empty(t, state.Pending)
+	require.Len(t, state.CAs, 1)
+	require.Len(t, state.CAs[0].Templates, 1)
+	renewed := state.CAs[0].Templates[0]
+	assert.NotEqual(t, old.GenerationDir, renewed.GenerationDir)
+	assert.FileExists(t, renewed.KeyFile)
+	assert.FileExists(t, renewed.CertFile)
+	assert.NoFileExists(t, pending.KeyFile)
+	assert.NoFileExists(t, pending.CSRFile)
+	assert.NoDirExists(t, filepath.Dir(pending.KeyFile))
+	assert.FileExists(t, filepath.Join(renewed.GenerationDir, generationMarker))
+	assert.DirExists(t, old.GenerationDir)
+
+	require.NoError(t, reconcileGenerationPublications(stateDir, defaultGenerationPublishOps()))
+	assert.NoFileExists(t, filepath.Join(renewed.GenerationDir, generationMarker))
+	assert.NoDirExists(t, old.GenerationDir)
+	reconciled, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+	require.NoError(t, err)
+	require.Empty(t, reconciled.Pending)
+	assert.Equal(t, renewed.GenerationDir, reconciled.CAs[0].Templates[0].GenerationDir)
+}
+
 func TestDeniedPendingRenewalPreservesOldGeneration(t *testing.T) {
 	stateDir := filepath.Join(t.TempDir(), "state")
 	trustDir := filepath.Join(t.TempDir(), "trust")
