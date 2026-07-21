@@ -225,6 +225,61 @@ Files: vendor/github.com/ubuntu/decorate/*
 Copyright: Canonical
 License: MIT
 
+Files: vendor/github.com/Azure/go-ntlmssp/*
+Copyright: 2015-2016 Microsoft Corporation
+License: MIT
+
+Files: vendor/github.com/go-ldap/ldap/*
+Copyright: 2011-2015 Michael Mitton <mmitton@gmail.com>
+           2015-2024 go-ldap Authors
+License: MIT
+
+Files: vendor/github.com/go-asn1-ber/asn1-ber/*
+Copyright: 2011-2015 Michael Mitton <mmitton@gmail.com>
+           2015-2016 go-asn1-ber Authors
+License: MIT
+
+Files: vendor/github.com/geoffgarside/ber/*
+Copyright: 2009 The Go Authors.
+           2017 Geoff Garside
+License: BSD-3
+
+Files: vendor/github.com/indece-official/go-ebcdic/*
+Copyright: 2019 indece
+License: MIT
+
+Files: vendor/github.com/jcmturner/aescts/*
+       vendor/github.com/jcmturner/dnsutils/*
+       vendor/github.com/jcmturner/goidentity/*
+       vendor/github.com/jcmturner/gokrb5/*
+       vendor/github.com/jcmturner/rpc/*
+Copyright: 2016-2018 Jonathan Turner
+License: Apache-2.0
+
+Files: vendor/github.com/jcmturner/gofork/*
+Copyright: 2017 Jonathan Turner
+           2009 The Go Authors.
+License: BSD-3
+
+Files: vendor/github.com/oiweiwei/go-msrpc/*
+       vendor/github.com/oiweiwei/go-math/*
+       vendor/github.com/oiweiwei/go-oem/*
+Copyright: 2026 oiweiwei
+License: MIT
+
+Files: vendor/github.com/oiweiwei/go-smb2.fork/*
+Copyright: 2016 Hiroshi Ioka
+License: BSD-2
+
+Files: vendor/github.com/oiweiwei/gokrb5.fork/*
+Copyright: 2016 Jonathan Turner (original gokrb5 upstream)
+           oiweiwei (fork maintainer)
+License: Apache-2.0
+
+Files: vendor/github.com/rs/zerolog/*
+Copyright: 2017 Olivier Poitrey
+License: MIT
+
 Files: internal/policies/certificate/python/vendor_samba/*
 Copyright: 2021 David Mulder <dmulder@suse.com>
 License: GPL-3+

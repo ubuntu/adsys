@@ -1,0 +1,111 @@
+#!/bin/sh
+# Packaging-level smoke test for the adsys binary package lifecycle.
+#
+# Covers:
+#  - M11: adsys directly depends on ca-certificates because the native LDAP
+#    certificate backend requires update-ca-certificates to be present.
+#  - M12: /etc/adsys.yaml is only ever created by postinst on a genuinely
+#    new install (dpkg's "most-recently-configured-version" is empty) that
+#    finds no file already in place, and is only ever removed by postrm on
+#    purge, never on a plain remove. So an administrator's edits, or any
+#    file already present before the very first install, always survive
+#    upgrades, reinstalls and remove.
+set -e
+
+CONFFILE=/etc/adsys.yaml
+PKG=adsys
+
+fail() {
+    echo "FAIL: $*" >&2
+    exit 1
+}
+
+# Resolve the exact package-under-test candidate version and pin every
+# install/reinstall to it below, so this test always exercises the
+# freshly built package and fails loudly instead of silently falling back
+# to some other version an archive mirror configured in the testbed might
+# offer.
+CANDIDATE=$(apt-cache policy "$PKG" | awk '/Candidate:/ {print $2}')
+[ -n "$CANDIDATE" ] && [ "$CANDIDATE" != "(none)" ] \
+    || fail "could not determine an install candidate for $PKG"
+
+assert_installed_version() {
+    INSTALLED=$(dpkg-query -W -f='${Version}' "$PKG" 2>/dev/null || true)
+    [ "$INSTALLED" = "$CANDIDATE" ] \
+        || fail "expected $PKG $CANDIDATE to be installed, got '${INSTALLED:-<none>}'"
+}
+
+# Plain install: used both for a genuinely fresh/first configure and for
+# reinstalling over a "config-files" (removed but not purged) package.
+apt_install() {
+    apt-get install -y "${PKG}=${CANDIDATE}"
+    assert_installed_version
+}
+
+# Forces maintainer scripts to rerun even though the same version is
+# already fully installed, to simulate an upgrade-like reconfigure.
+apt_reinstall() {
+    apt-get install --reinstall -y "${PKG}=${CANDIDATE}"
+    assert_installed_version
+}
+
+echo "== M11: ca-certificates is a direct runtime dependency =="
+command -v update-ca-certificates >/dev/null 2>&1 \
+    || fail "update-ca-certificates is not available; ca-certificates dependency is missing or broken"
+dpkg-query -W -f='${Depends}\n' "$PKG" | tr ',' '\n' | grep -qw 'ca-certificates' \
+    || fail "$PKG no longer declares a direct dependency on ca-certificates"
+
+echo "== M12: /etc/adsys.yaml lifecycle (candidate: $CANDIDATE) =="
+
+# Fresh install: autopkgtest already installed the package under test, so
+# the LDAP default must be in place.
+assert_installed_version
+[ -e "$CONFFILE" ] || fail "$CONFFILE is missing after a fresh install"
+grep -q '^certificate_enrollment: ldap$' "$CONFFILE" \
+    || fail "$CONFFILE does not contain the expected fresh-install default"
+
+# Simulate an administrator edit, then an upgrade-like reconfigure of the
+# already-installed package (most-recently-configured-version is set):
+# local edits must survive untouched.
+echo "# local-admin-edit-marker" >> "$CONFFILE"
+apt_reinstall
+grep -q 'local-admin-edit-marker' "$CONFFILE" \
+    || fail "reinstalling $PKG discarded administrator edits to $CONFFILE"
+
+# Plain remove must keep the conffile around (postrm only acts on purge).
+apt-get remove -y "$PKG"
+[ -e "$CONFFILE" ] || fail "'apt-get remove' deleted $CONFFILE; it must survive until purge"
+grep -q 'local-admin-edit-marker' "$CONFFILE" \
+    || fail "$CONFFILE lost its content across 'apt-get remove'"
+
+# Installing again over the "config-files" state left by remove still has
+# a most-recently-configured-version recorded by dpkg, so postinst must
+# not touch the file at all.
+apt_install
+grep -q 'local-admin-edit-marker' "$CONFFILE" \
+    || fail "reinstalling over the config-files state lost administrator edits"
+
+# Purge must remove the file.
+apt-get purge -y "$PKG"
+[ ! -e "$CONFFILE" ] || fail "'apt-get purge' left $CONFFILE behind"
+
+# A file created by an administrator after a purge, while the package is
+# fully uninstalled, must be preserved by the next install: this is the
+# genuinely-new-install-with-a-pre-existing-file case, and the only one
+# where postinst's "file already present" guard actually has to trigger.
+printf '# custom-pre-existing-marker\ncertificate_enrollment: cepces\n' > "$CONFFILE"
+apt_install
+grep -q 'custom-pre-existing-marker' "$CONFFILE" \
+    || fail "installing over a file created after purge lost its content"
+grep -q '^certificate_enrollment: cepces$' "$CONFFILE" \
+    || fail "installing over a pre-existing file changed its certificate_enrollment setting"
+
+# Leave the testbed in a clean, usable state: purge the custom file away
+# and reinstall so a plain fresh LDAP default is in place again.
+apt-get purge -y "$PKG"
+apt_install
+[ -e "$CONFFILE" ] || fail "$CONFFILE is missing after the final reinstall"
+grep -q '^certificate_enrollment: ldap$' "$CONFFILE" \
+    || fail "$CONFFILE does not contain the expected default after the final reinstall"
+
+echo "OK"

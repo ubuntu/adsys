@@ -7,3 +7,10 @@ Depends: @builddeps@
 Test-Command: ./debian/tests/test sudo
 Restrictions: allow-stderr, needs-root, skippable
 Depends: @builddeps@
+
+# Exercise packaging-level guarantees on the built binary package: the
+# ca-certificates runtime dependency (M11) and the /etc/adsys.yaml
+# lifecycle across fresh install, reinstall, remove and purge (M12).
+Test-Command: ./debian/tests/packaging-smoke
+Restrictions: allow-stderr, needs-root, skippable
+Depends: @, ca-certificates

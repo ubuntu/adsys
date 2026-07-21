@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    purge)
+        # Only "dpkg --purge" removes the administrator's configuration;
+        # "remove" leaves it in place. There is no ucf/conffile machinery
+        # involved: the file is created directly by postinst (see there),
+        # so a plain rm is all that is needed here.
+        rm -f /etc/adsys.yaml
+    ;;
+esac
+
+#DEBHELPER#
