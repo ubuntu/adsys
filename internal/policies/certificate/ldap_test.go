@@ -361,6 +361,100 @@ func TestFetchTemplateAttrsBulkContext(t *testing.T) {
 		_, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"Machine", "User"})
 		require.Error(t, err)
 	})
+
+	t.Run("Case variants of the same template are deduplicated and all populated", func(t *testing.T) {
+		t.Parallel()
+
+		conn := &mockLDAPClient{
+			searchResults: map[string]*ldap.SearchResult{
+				templateBaseDN: {
+					Entries: []*ldap.Entry{
+						templateEntry(templateBaseDN, "Machine", "2048"),
+					},
+				},
+			},
+		}
+
+		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"machine", "Machine", "MACHINE"})
+		require.NoError(t, err)
+		require.Len(t, conn.requests, 1, "case variants of the same name must be deduplicated into a single filter clause")
+
+		// AD's CN matching is case-insensitive: a single "Machine" entry must
+		// satisfy every originally requested spelling, under its own key, and
+		// none of them should silently fall back to the 2048 default just
+		// because the requested case differs from the returned CN's case.
+		want := templateAttrs{Name: "Machine", MinKeySize: 2048}
+		assert.Equal(t, want, got["machine"])
+		assert.Equal(t, want, got["Machine"])
+		assert.Equal(t, want, got["MACHINE"])
+		assert.Len(t, got, 3)
+
+		filter := conn.requests[0].Filter
+		assert.Equal(t, 1, strings.Count(filter, "(cn="), "expected a single deduplicated filter clause for case variants of the same name")
+	})
+
+	t.Run("Unrequested entries never leak into the returned map", func(t *testing.T) {
+		t.Parallel()
+
+		conn := &mockLDAPClient{
+			searchResults: map[string]*ldap.SearchResult{
+				templateBaseDN: {
+					Entries: []*ldap.Entry{
+						templateEntry(templateBaseDN, "Machine", "2048"),
+						// Not requested: a well-behaved LDAP server would
+						// never return this given the filter, but the
+						// result map must guard against it defensively.
+						templateEntry(templateBaseDN, "OtherTemplate", "1024"),
+					},
+				},
+			},
+		}
+
+		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"Machine"})
+		require.NoError(t, err)
+		assert.Equal(t, templateAttrs{Name: "Machine", MinKeySize: 2048}, got["Machine"])
+		_, ok := got["OtherTemplate"]
+		assert.False(t, ok, "unrequested entries must not appear in the returned map")
+		assert.Len(t, got, 1)
+	})
+
+	t.Run("Conflicting case-insensitive duplicates fail closed", func(t *testing.T) {
+		t.Parallel()
+
+		conn := &mockLDAPClient{
+			searchResults: map[string]*ldap.SearchResult{
+				templateBaseDN: {
+					Entries: []*ldap.Entry{
+						templateEntry(templateBaseDN, "Machine", "2048"),
+						templateEntry(templateBaseDN, "MACHINE", "4096"),
+					},
+				},
+			},
+		}
+
+		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"machine"})
+		require.Error(t, err, "ambiguous conflicting entries must fail closed instead of nondeterministically picking one")
+		assert.Nil(t, got)
+	})
+
+	t.Run("Non-conflicting case-insensitive duplicates do not error", func(t *testing.T) {
+		t.Parallel()
+
+		conn := &mockLDAPClient{
+			searchResults: map[string]*ldap.SearchResult{
+				templateBaseDN: {
+					Entries: []*ldap.Entry{
+						templateEntry(templateBaseDN, "Machine", "2048"),
+						templateEntry(templateBaseDN, "Machine", "2048"),
+					},
+				},
+			},
+		}
+
+		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"machine"})
+		require.NoError(t, err)
+		assert.Equal(t, templateAttrs{Name: "Machine", MinKeySize: 2048}, got["machine"])
+	})
 }
 
 func TestFetchTemplateAttrsWithConnectorUsesSingleBulkSearch(t *testing.T) {

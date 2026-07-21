@@ -55,44 +55,76 @@ func (d *contextKDCDialer) Dial(network, address string) (net.Conn, error) {
 //     the context;
 //   - Close stops the context.AfterFunc watching ctx, so the watch does not
 //     outlive the connection and no goroutine/registration is leaked.
+//
+// Cancellation and every SetDeadline/SetReadDeadline/SetWriteDeadline call
+// are serialized through mu so that, once ctx is canceled, no deadline
+// requested concurrently or afterwards can extend I/O past that
+// cancellation. Without this, a caller's SetDeadline could decide on a
+// future deadline while ctx is still live, then actually apply it to the
+// underlying connection after the cancellation callback has already set an
+// immediate deadline, silently reverting the cancellation. mu is only held
+// across the (fast, non-blocking) underlying SetDeadline call itself, never
+// across Read/Write, so it cannot deadlock against in-flight I/O.
 type contextConn struct {
 	net.Conn
 	ctx       context.Context
 	closeOnce sync.Once
 	closeErr  error
 	stop      func() bool
+
+	mu       sync.Mutex
+	canceled bool
 }
 
 func newContextConn(ctx context.Context, conn net.Conn) *contextConn {
 	c := &contextConn{Conn: conn, ctx: ctx}
-	c.stop = context.AfterFunc(ctx, func() {
-		_ = conn.SetDeadline(time.Now())
-	})
+	c.stop = context.AfterFunc(ctx, c.cancel)
 	return c
 }
 
-// capDeadline lowers t to ctx's deadline when ctx has one that is earlier
-// (including when t is the zero Time, meaning "no deadline").
-func (c *contextConn) capDeadline(t time.Time) time.Time {
-	if c.ctx.Err() != nil {
-		return time.Now()
+// cancel is invoked once ctx is done. It marks the connection as canceled
+// and sets an immediate deadline on the underlying connection, all while
+// holding mu so that no concurrent SetDeadline call can race with it: either
+// the SetDeadline call completes first (and cancel then applies the
+// immediate deadline afterwards, overriding it) or cancel completes first
+// (and the SetDeadline call then observes canceled and refuses to extend).
+func (c *contextConn) cancel() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.canceled = true
+	_ = c.Conn.SetDeadline(time.Now())
+}
+
+// applyDeadline decides the effective deadline for a SetDeadline-family call
+// and applies it via set, atomically with respect to cancel: once ctx is
+// canceled (observed either through c.canceled or c.ctx.Err()), the
+// requested deadline t is ignored and an immediate deadline is applied
+// instead, so a stale decision made before cancellation can never overwrite
+// it.
+func (c *contextConn) applyDeadline(set func(time.Time) error, t time.Time) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if c.canceled || c.ctx.Err() != nil {
+		c.canceled = true
+		return set(time.Now())
 	}
 	if deadline, ok := c.ctx.Deadline(); ok && (t.IsZero() || deadline.Before(t)) {
-		return deadline
+		t = deadline
 	}
-	return t
+	return set(t)
 }
 
 func (c *contextConn) SetDeadline(t time.Time) error {
-	return c.Conn.SetDeadline(c.capDeadline(t))
+	return c.applyDeadline(c.Conn.SetDeadline, t)
 }
 
 func (c *contextConn) SetReadDeadline(t time.Time) error {
-	return c.Conn.SetReadDeadline(c.capDeadline(t))
+	return c.applyDeadline(c.Conn.SetReadDeadline, t)
 }
 
 func (c *contextConn) SetWriteDeadline(t time.Time) error {
-	return c.Conn.SetWriteDeadline(c.capDeadline(t))
+	return c.applyDeadline(c.Conn.SetWriteDeadline, t)
 }
 
 // Close stops watching ctx before closing the underlying connection, so the

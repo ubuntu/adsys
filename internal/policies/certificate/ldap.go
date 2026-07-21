@@ -1148,40 +1148,73 @@ func fetchTemplateAttrsWithConnector(ctx context.Context, connect LDAPConnector,
 
 // fetchTemplateAttrsBulkContext queries LDAP once for all requested
 // certificate templates using a single escaped OR filter, returning their
-// attributes keyed by template (CN) name.
+// attributes keyed by every originally requested template (CN) spelling.
 //
 // Querying once instead of once per template avoids the failure mode where a
 // single slow or timed-out lookup (all of them share the same bounded
 // candidate transaction) discards every key size already fetched for the
 // other templates, forcing every template back to the 2048-bit default.
-// Duplicate names in templateNames are only queried once. Templates that
-// LDAP does not return get the same safe 2048-bit default as
+// Templates that LDAP does not return get the same safe 2048-bit default as
 // fetchTemplateAttrsContext, without discarding entries that were found.
+//
+// AD's CN matching is case-insensitive, so requested names are deduplicated
+// and matched against returned entries case-insensitively: requesting
+// "machine" and "Machine" only issues one filter clause, and a single
+// returned entry (regardless of its case) populates the result under every
+// originally requested spelling. Result entries LDAP returns that were not
+// requested are ignored. If LDAP itself returns two entries that collide
+// case-insensitively with conflicting attributes, the lookup fails closed
+// with an explicit error instead of nondeterministically picking one.
 func fetchTemplateAttrsBulkContext(ctx context.Context, conn LDAPClient, configDN string, templateNames []string) (map[string]templateAttrs, error) {
 	attrsByName := make(map[string]templateAttrs, len(templateNames))
 	if len(templateNames) == 0 {
 		return attrsByName, nil
 	}
 
-	uniqueNames := make([]string, 0, len(templateNames))
-	seen := make(map[string]struct{}, len(templateNames))
+	// Group requested names case-insensitively (AD CN matching is
+	// case-insensitive) while keeping every distinct originally requested
+	// spelling, so the returned map has an entry for each key callers
+	// expect (e.g. both "machine" and "Machine" if both were requested).
+	type requestGroup struct {
+		filterName string   // representative spelling used to build the LDAP filter
+		names      []string // every distinct originally requested spelling for this group
+	}
+	groupOrder := make([]string, 0, len(templateNames))
+	groups := make(map[string]*requestGroup, len(templateNames))
 	for _, name := range templateNames {
-		if _, ok := seen[name]; ok {
-			continue
+		folded := strings.ToLower(name)
+		group, ok := groups[folded]
+		if !ok {
+			group = &requestGroup{filterName: name}
+			groups[folded] = group
+			groupOrder = append(groupOrder, folded)
 		}
-		seen[name] = struct{}{}
-		uniqueNames = append(uniqueNames, name)
+		alreadyRequested := false
+		for _, existing := range group.names {
+			if existing == name {
+				alreadyRequested = true
+				break
+			}
+		}
+		if !alreadyRequested {
+			group.names = append(group.names, name)
+		}
+	}
+
+	filterNames := make([]string, 0, len(groupOrder))
+	for _, folded := range groupOrder {
+		filterNames = append(filterNames, groups[folded].filterName)
 	}
 
 	baseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
-	log.Debugf(ctx, "Fetching LDAP attributes for %d certificate template(s)", len(uniqueNames))
+	log.Debugf(ctx, "Fetching LDAP attributes for %d certificate template(s)", len(filterNames))
 
 	searchReq := ldap.NewSearchRequest(
 		baseDN,
 		ldap.ScopeWholeSubtree,
 		ldap.NeverDerefAliases,
 		0, 0, false,
-		templateNamesFilter(uniqueNames),
+		templateNamesFilter(filterNames),
 		[]string{"cn", "msPKI-Minimal-Key-Size"},
 		nil,
 	)
@@ -1191,26 +1224,51 @@ func fetchTemplateAttrsBulkContext(ctx context.Context, conn LDAPClient, configD
 		return nil, fmt.Errorf("LDAP search for certificate templates failed: %w", err)
 	}
 
+	foundByFold := make(map[string]templateAttrs, len(groupOrder))
 	for _, entry := range result.Entries {
 		cn := entry.GetAttributeValue("cn")
 		if cn == "" {
 			continue
 		}
+		folded := strings.ToLower(cn)
+		// Defensively ignore entries that were not actually requested, even
+		// though the filter itself is built from the same folded names:
+		// unrequested entries must never leak into the returned map.
+		if _, requested := groups[folded]; !requested {
+			continue
+		}
+
 		minKeySize := 2048
 		if v := entry.GetAttributeValue("msPKI-Minimal-Key-Size"); v != "" {
 			if parsed, err := strconv.Atoi(v); err == nil {
 				minKeySize = parsed
 			}
 		}
-		attrsByName[cn] = templateAttrs{Name: cn, MinKeySize: minKeySize}
-	}
+		attrs := templateAttrs{Name: cn, MinKeySize: minKeySize}
 
-	for _, name := range uniqueNames {
-		if _, ok := attrsByName[name]; ok {
+		if existing, ok := foundByFold[folded]; ok {
+			if existing != attrs {
+				return nil, fmt.Errorf("ambiguous certificate template %q: LDAP returned conflicting entries %q (key size %d) and %q (key size %d)",
+					folded, existing.Name, existing.MinKeySize, attrs.Name, attrs.MinKeySize)
+			}
 			continue
 		}
-		log.Debugf(ctx, "Template %s not found in LDAP, defaulting to 2048-bit key size", name)
-		attrsByName[name] = templateAttrs{Name: name, MinKeySize: 2048}
+		foundByFold[folded] = attrs
+	}
+
+	for _, folded := range groupOrder {
+		group := groups[folded]
+		attrs, ok := foundByFold[folded]
+		if !ok {
+			log.Debugf(ctx, "Template %s not found in LDAP, defaulting to 2048-bit key size", group.filterName)
+		}
+		for _, name := range group.names {
+			if ok {
+				attrsByName[name] = attrs
+			} else {
+				attrsByName[name] = templateAttrs{Name: name, MinKeySize: 2048}
+			}
+		}
 	}
 
 	return attrsByName, nil
