@@ -2,6 +2,7 @@ package certificate
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -10,7 +11,15 @@ import (
 	krbconfig "github.com/oiweiwei/gokrb5.fork/v9/config"
 )
 
-func newKerberosClientConfig(server, fallbackRealm string) (*krbconfig.Config, error) {
+// newKerberosClientConfig builds the Kerberos client configuration used for a
+// single candidate's GSSAPI bind. It takes ctx so that a request already
+// canceled or past its deadline fails fast, before any KDC discovery is
+// attempted, and so the caller consistently threads the same context through
+// to the KDC dialer built around this configuration.
+func newKerberosClientConfig(ctx context.Context, server, fallbackRealm string) (*krbconfig.Config, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	krb5Conf := krb5pkg.NewConfig()
 	conf := krb5Conf.GetKRB5Config()
 	if conf == nil {

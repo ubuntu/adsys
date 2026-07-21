@@ -12,6 +12,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/binary"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"math/big"
@@ -32,9 +33,14 @@ type mockLDAPClient struct {
 	searchResults map[string]*ldap.SearchResult
 	searchErr     error
 	closed        bool
+
+	// requests records every search request received, in order, so tests can
+	// assert on how many searches were performed and with which filter.
+	requests []*ldap.SearchRequest
 }
 
 func (m *mockLDAPClient) Search(req *ldap.SearchRequest) (*ldap.SearchResult, error) {
+	m.requests = append(m.requests, req)
 	if m.searchErr != nil {
 		return nil, m.searchErr
 	}
@@ -278,6 +284,134 @@ func TestFetchTemplateAttrs(t *testing.T) {
 			assert.Equal(t, tc.wantMinKeySize, attrs.MinKeySize)
 		})
 	}
+}
+
+func templateEntry(baseDN, cn, minKeySize string) *ldap.Entry {
+	attrs := map[string][]string{"cn": {cn}}
+	if minKeySize != "" {
+		attrs["msPKI-Minimal-Key-Size"] = []string{minKeySize}
+	}
+	return ldap.NewEntry(fmt.Sprintf("CN=%s,%s", cn, baseDN), attrs)
+}
+
+func TestFetchTemplateAttrsBulkContext(t *testing.T) {
+	t.Parallel()
+
+	configDN := "CN=Configuration,DC=example,DC=com"
+	templateBaseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
+
+	t.Run("One search fetches several templates", func(t *testing.T) {
+		t.Parallel()
+
+		conn := &mockLDAPClient{
+			searchResults: map[string]*ldap.SearchResult{
+				templateBaseDN: {
+					Entries: []*ldap.Entry{
+						templateEntry(templateBaseDN, "Machine", "2048"),
+						templateEntry(templateBaseDN, "User", "4096"),
+					},
+				},
+			},
+		}
+
+		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"Machine", "User", "Missing"})
+		require.NoError(t, err)
+		require.Len(t, conn.requests, 1, "expected exactly one bulk LDAP search, not one per template")
+
+		assert.Equal(t, templateAttrs{Name: "Machine", MinKeySize: 2048}, got["Machine"])
+		assert.Equal(t, templateAttrs{Name: "User", MinKeySize: 4096}, got["User"])
+		// A template LDAP doesn't return still gets a safe default instead of
+		// the whole call failing and discarding the entries that were found.
+		assert.Equal(t, templateAttrs{Name: "Missing", MinKeySize: 2048}, got["Missing"])
+	})
+
+	t.Run("Filter escapes special characters and deduplicates names", func(t *testing.T) {
+		t.Parallel()
+
+		conn := &mockLDAPClient{
+			searchResults: map[string]*ldap.SearchResult{
+				templateBaseDN: {Entries: []*ldap.Entry{}},
+			},
+		}
+
+		_, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"Foo(Bar)", "Machine", "Machine", "Foo(Bar)"})
+		require.NoError(t, err)
+		require.Len(t, conn.requests, 1)
+
+		filter := conn.requests[0].Filter
+		assert.Equal(t, fmt.Sprintf("(|(cn=%s)(cn=Machine))", ldap.EscapeFilter("Foo(Bar)")), filter)
+	})
+
+	t.Run("Empty input performs no search and returns no error", func(t *testing.T) {
+		t.Parallel()
+
+		conn := &mockLDAPClient{}
+
+		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, nil)
+		require.NoError(t, err)
+		assert.Empty(t, got)
+		assert.Empty(t, conn.requests, "no LDAP search should be issued for an empty template list")
+	})
+
+	t.Run("Search failure is reported and not swallowed", func(t *testing.T) {
+		t.Parallel()
+
+		conn := &mockLDAPClient{searchErr: fmt.Errorf("search failed")}
+
+		_, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"Machine", "User"})
+		require.Error(t, err)
+	})
+}
+
+func TestFetchTemplateAttrsWithConnectorUsesSingleBulkSearch(t *testing.T) {
+	t.Parallel()
+
+	configDN := "CN=Configuration,DC=example,DC=com"
+	templateBaseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
+
+	conn := &mockLDAPClient{
+		searchResults: map[string]*ldap.SearchResult{
+			"": {
+				Entries: []*ldap.Entry{
+					ldap.NewEntry("", map[string][]string{"configurationNamingContext": {configDN}}),
+				},
+			},
+			templateBaseDN: {
+				Entries: []*ldap.Entry{
+					templateEntry(templateBaseDN, "Machine", "2048"),
+					templateEntry(templateBaseDN, "User", "4096"),
+					templateEntry(templateBaseDN, "WebServer", "2048"),
+				},
+			},
+		},
+	}
+	connector := LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) {
+		return conn, nil
+	})
+
+	got, err := fetchTemplateAttrsWithConnector(context.Background(), connector, "dc.example.com", []string{"Machine", "User", "WebServer", "Machine"})
+	require.NoError(t, err)
+
+	// One search for configurationNamingContext plus exactly one bulk search
+	// for all (deduplicated) templates, instead of one per template.
+	require.Len(t, conn.requests, 2)
+	assert.Len(t, got, 3)
+	assert.Equal(t, 4096, got["User"].MinKeySize)
+}
+
+func TestFetchTemplateAttrsWithConnectorEmptyInputSkipsLDAP(t *testing.T) {
+	t.Parallel()
+
+	connectCalled := false
+	connector := LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) {
+		connectCalled = true
+		return nil, errors.New("unexpected connection")
+	})
+
+	got, err := fetchTemplateAttrsWithConnector(context.Background(), connector, "dc.example.com", nil)
+	require.NoError(t, err)
+	assert.Empty(t, got)
+	assert.False(t, connectCalled)
 }
 
 func TestDiscoverCAsAndTemplates(t *testing.T) {

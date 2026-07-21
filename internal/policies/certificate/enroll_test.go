@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -143,7 +144,7 @@ func TestNewKerberosClientConfigHonorsKRB5Config(t *testing.T) {
 `), 0600))
 	t.Setenv("KRB5_CONFIG", krb5ConfPath)
 
-	conf, err := newKerberosClientConfig("ca.custom.com", "CUSTOM.COM")
+	conf, err := newKerberosClientConfig(context.Background(), "ca.custom.com", "CUSTOM.COM")
 	require.NoError(t, err)
 	require.NotNil(t, conf)
 

@@ -879,12 +879,18 @@ func gssapiBindWithOptions(ctx context.Context, conn *ldap.Conn, server, krb5Cac
 	}
 	defer clearCCache(ccache)
 
-	krb5Conf, err := newKerberosClientConfig(server, ccache.DefaultPrincipal.Realm)
+	krb5Conf, err := newKerberosClientConfig(ctx, server, ccache.DefaultPrincipal.Realm)
 	if err != nil {
 		return fmt.Errorf("configuring Kerberos client for LDAP server %s: %w", server, err)
 	}
 
-	cl, err := krbclient.NewFromCCache(ccache, krb5Conf)
+	// Bind KDC/TGS network operations (used by the InitSecContext ->
+	// GetServiceTicket call below) to ctx: gokrb5's default KDCDialer only
+	// bounds the dial with a fixed 5-minute timeout and otherwise uses
+	// independent sockets, so without this a canceled or expired candidate
+	// context would not interrupt an in-flight or subsequent KDC/referral
+	// request.
+	cl, err := krbclient.NewFromCCache(ccache, krb5Conf, krbclient.Dialer(newContextKDCDialer(ctx)))
 	if err != nil {
 		if cl != nil {
 			cl.Destroy()
@@ -1128,24 +1134,100 @@ func fetchTemplateAttrsContext(ctx context.Context, conn LDAPClient, configDN, t
 }
 
 func fetchTemplateAttrsWithConnector(ctx context.Context, connect LDAPConnector, server string, templateNames []string) (map[string]templateAttrs, error) {
+	if len(templateNames) == 0 {
+		return map[string]templateAttrs{}, nil
+	}
 	return runLDAPTransaction(ctx, connect, server, func(candidateCtx context.Context, conn LDAPClient) (map[string]templateAttrs, error) {
 		configDN, err := fetchConfigDNContext(candidateCtx, conn)
 		if err != nil {
 			return nil, err
 		}
-		attrsByName := make(map[string]templateAttrs, len(templateNames))
-		for _, templateName := range templateNames {
-			if _, exists := attrsByName[templateName]; exists {
-				continue
-			}
-			attrs, err := fetchTemplateAttrsContext(candidateCtx, conn, configDN, templateName)
-			if err != nil {
-				return nil, err
-			}
-			attrsByName[templateName] = attrs
-		}
-		return attrsByName, nil
+		return fetchTemplateAttrsBulkContext(candidateCtx, conn, configDN, templateNames)
 	})
+}
+
+// fetchTemplateAttrsBulkContext queries LDAP once for all requested
+// certificate templates using a single escaped OR filter, returning their
+// attributes keyed by template (CN) name.
+//
+// Querying once instead of once per template avoids the failure mode where a
+// single slow or timed-out lookup (all of them share the same bounded
+// candidate transaction) discards every key size already fetched for the
+// other templates, forcing every template back to the 2048-bit default.
+// Duplicate names in templateNames are only queried once. Templates that
+// LDAP does not return get the same safe 2048-bit default as
+// fetchTemplateAttrsContext, without discarding entries that were found.
+func fetchTemplateAttrsBulkContext(ctx context.Context, conn LDAPClient, configDN string, templateNames []string) (map[string]templateAttrs, error) {
+	attrsByName := make(map[string]templateAttrs, len(templateNames))
+	if len(templateNames) == 0 {
+		return attrsByName, nil
+	}
+
+	uniqueNames := make([]string, 0, len(templateNames))
+	seen := make(map[string]struct{}, len(templateNames))
+	for _, name := range templateNames {
+		if _, ok := seen[name]; ok {
+			continue
+		}
+		seen[name] = struct{}{}
+		uniqueNames = append(uniqueNames, name)
+	}
+
+	baseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
+	log.Debugf(ctx, "Fetching LDAP attributes for %d certificate template(s)", len(uniqueNames))
+
+	searchReq := ldap.NewSearchRequest(
+		baseDN,
+		ldap.ScopeWholeSubtree,
+		ldap.NeverDerefAliases,
+		0, 0, false,
+		templateNamesFilter(uniqueNames),
+		[]string{"cn", "msPKI-Minimal-Key-Size"},
+		nil,
+	)
+
+	result, err := ldapSearchContext(ctx, conn, searchReq)
+	if err != nil {
+		return nil, fmt.Errorf("LDAP search for certificate templates failed: %w", err)
+	}
+
+	for _, entry := range result.Entries {
+		cn := entry.GetAttributeValue("cn")
+		if cn == "" {
+			continue
+		}
+		minKeySize := 2048
+		if v := entry.GetAttributeValue("msPKI-Minimal-Key-Size"); v != "" {
+			if parsed, err := strconv.Atoi(v); err == nil {
+				minKeySize = parsed
+			}
+		}
+		attrsByName[cn] = templateAttrs{Name: cn, MinKeySize: minKeySize}
+	}
+
+	for _, name := range uniqueNames {
+		if _, ok := attrsByName[name]; ok {
+			continue
+		}
+		log.Debugf(ctx, "Template %s not found in LDAP, defaulting to 2048-bit key size", name)
+		attrsByName[name] = templateAttrs{Name: name, MinKeySize: 2048}
+	}
+
+	return attrsByName, nil
+}
+
+// templateNamesFilter builds an LDAP OR filter matching the given,
+// already-deduplicated certificate template common names.
+func templateNamesFilter(names []string) string {
+	var filter strings.Builder
+	filter.WriteString("(|")
+	for _, name := range names {
+		filter.WriteString("(cn=")
+		filter.WriteString(ldap.EscapeFilter(name))
+		filter.WriteByte(')')
+	}
+	filter.WriteByte(')')
+	return filter.String()
 }
 
 // fetchConfigDN retrieves the configuration naming context from the LDAP
