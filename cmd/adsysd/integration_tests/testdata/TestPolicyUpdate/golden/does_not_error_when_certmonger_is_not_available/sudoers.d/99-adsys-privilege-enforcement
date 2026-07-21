@@ -7,4 +7,3 @@
 
 "bob@example.com"	ALL=(ALL:ALL) ALL
 "%mygroup@example2.com"	ALL=(ALL:ALL) ALL
-

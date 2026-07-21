@@ -6,4 +6,3 @@
 "bob@domain2"	ALL=(ALL:ALL) ALL
 "%mygroup@domain"	ALL=(ALL:ALL) ALL
 "cosmic carole@domain"	ALL=(ALL:ALL) ALL
-

@@ -1,6 +1,7 @@
 package privilege_test
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
@@ -134,4 +135,28 @@ func TestApplyPolicy(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, filepath.Join(tmpRootDir, "etc"), testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
+}
+
+func TestApplyPolicySudoersFormatting(t *testing.T) {
+	t.Parallel()
+
+	tmpRootDir := filepath.Join(t.TempDir(), "root")
+	sudoersDir := filepath.Join(tmpRootDir, "etc", "sudoers.d")
+	policyKitDir := filepath.Join(tmpRootDir, "etc", "polkit-1")
+	polkitSystemDir := filepath.Join(tmpRootDir, "usr", "share", "polkit-1")
+
+	m := privilege.NewWithDirs(sudoersDir, policyKitDir, polkitSystemDir)
+	err := m.ApplyPolicy(context.Background(), "ubuntu", true, []entry.Entry{
+		{Key: "allow-local-admins", Disabled: true},
+		{Key: "client-admins", Value: "alice@domain.com"},
+	})
+	require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
+
+	content, err := os.ReadFile(filepath.Join(sudoersDir, "99-adsys-privilege-enforcement"))
+	require.NoError(t, err, "Setup: couldn't read generated sudoers file")
+
+	require.Contains(t, string(content), "%sudo\tALL=(ALL:ALL) !ALL\n\n\"alice@domain.com\"\tALL=(ALL:ALL) ALL\n",
+		"sudoers output should preserve the blank separator between sections")
+	require.False(t, bytes.HasSuffix(content, []byte("\n\n")),
+		"sudoers output should end with exactly one trailing newline")
 }
