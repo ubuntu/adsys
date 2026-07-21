@@ -228,7 +228,7 @@ func TestRenewCertificates(t *testing.T) {
 		}})
 
 		submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
-			return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caCert, caKey, "keypress.example.com"), nil
+			return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caCert, caKey), nil
 		}
 		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
 			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", templates, caDER)),
@@ -403,7 +403,7 @@ func TestTargetedRenewalRetainsPerTemplateExactChains(t *testing.T) {
 				trustedRoot = root.cert
 			}
 			submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
-				return mgrIssueFromCSR(t, csrPEM, now.Add(180*24*time.Hour), newIssuer.cert, newIssuer.key, "keypress.example.com"), nil
+				return mgrIssueFromCSR(t, csrPEM, now.Add(180*24*time.Hour), newIssuer.cert, newIssuer.key), nil
 			}
 			manager := mgrManager(
 				t,
@@ -500,7 +500,7 @@ func TestPolicyReconciliationPreservesPreviousStateOnTrustInstallFailure(t *test
 
 	blockedSymlink := filepath.Join(
 		globalTrustDir,
-		"TestCA.root."+certificateFingerprint(newCA.cert)[:16]+".crt",
+		trustArtifactFileName(certAuthority{Name: "TestCA", Hostname: "ca.example.com"}, newCA.cert, "root"),
 	)
 	require.NoError(t, os.WriteFile(blockedSymlink, []byte("owned by another enrollment"), 0600))
 	var submissions int
@@ -1001,6 +1001,359 @@ func TestManagementMethodsRequireLDAPMethod(t *testing.T) {
 	assert.ErrorIs(t, err, ErrNotLDAPMethod)
 }
 
+func TestRenewCertificatesReplacesInvalidTargets(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	// build persists a single self-signed CA enrollment whose only template's
+	// leaf expires at leafNotAfter, optionally deleting the leaf on disk.
+	build := func(t *testing.T, leafNotAfter time.Time, removeCert bool) (*Manager, string) {
+		t.Helper()
+		tmpdir := t.TempDir()
+		stateDir := filepath.Join(tmpdir, "state")
+		caCert, caKey, caDER := mgrTestCA(t)
+		rootPath := mgrWriteCACertificate(t, stateDir, "TestCA.root.crt", caDER)
+		key, keyPEM := mgrKeyPEM(t)
+		leafPEM := mgrCASignedLeaf(t, caCert, caKey, &key.PublicKey, now.Add(-2*time.Hour), leafNotAfter)
+		tmpl := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, leafPEM)
+		tmpl = mgrBindTemplate(t, tmpl, leafPEM, caDER, rootPath)
+		caFP := rawCertificateFingerprint(caDER)
+		mgrWriteState(t, stateDir, []enrolledCA{{
+			Name:              "TestCA",
+			Hostname:          "ca.example.com",
+			IssuerFingerprint: caFP,
+			ChainFingerprints: []string{caFP},
+			RootCerts:         []string{rootPath},
+			Templates:         []enrolledTemplate{tmpl},
+		}})
+		if removeCert {
+			require.NoError(t, os.Remove(tmpl.CertFile))
+		}
+		submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+			return mgrIssueFromCSR(t, csrPEM, now.Add(365*24*time.Hour), caCert, caKey), nil
+		}
+		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
+			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
+			WithCSRSubmitter(submitter),
+		)
+		return m, tmpl.CertFile
+	}
+
+	t.Run("expired target leaf is replaced", func(t *testing.T) {
+		t.Parallel()
+		m, certFile := build(t, now.Add(-time.Hour), false)
+		require.NoError(t, m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil))
+		require.FileExists(t, certFile)
+		results, err := m.VerifyCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false)
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+		assert.True(t, results[0].ValidityOK, "renewed leaf must be within its validity window")
+		assert.True(t, results[0].ChainOK, "%v", results[0].Messages)
+		assert.True(t, results[0].KeyMatchOK)
+	})
+
+	t.Run("missing target cert is replaced", func(t *testing.T) {
+		t.Parallel()
+		m, certFile := build(t, now.Add(365*24*time.Hour), true)
+		require.NoFileExists(t, certFile)
+		require.NoError(t, m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil))
+		require.FileExists(t, certFile)
+		results, err := m.VerifyCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false)
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+		assert.True(t, results[0].ChainOK, "%v", results[0].Messages)
+	})
+}
+
+func TestRenewCertificatesReplacesTargetWithExpiredOldIssuer(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	root := newChainTestCA(t, "Offline Root", nil, now.Add(-48*time.Hour), now.Add(365*24*time.Hour), 1)
+	oldIssuer := newChainTestCA(t, "Enterprise Issuer", root, now.Add(-40*time.Hour), now.Add(-time.Hour), 2)
+	newIssuer := newChainTestCA(t, "Enterprise Issuer", root, now.Add(-time.Hour), now.Add(240*24*time.Hour), 3)
+
+	tmpdir := t.TempDir()
+	stateDir := filepath.Join(tmpdir, "state")
+	globalTrustDir := filepath.Join(tmpdir, "trust")
+	oldRootPath := mgrWriteCACertificate(t, stateDir, "old-root.crt", root.cert.Raw)
+	oldIssuerPath := mgrWriteCACertificate(t, stateDir, "old-issuer.crt", oldIssuer.cert.Raw)
+
+	key, keyPEM := mgrKeyPEM(t)
+	leafPEM := mgrCASignedLeaf(t, oldIssuer.cert, oldIssuer.key, &key.PublicKey, now.Add(-30*time.Hour), now.Add(90*24*time.Hour))
+	tmpl := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, leafPEM)
+	oldChain := []*x509.Certificate{oldIssuer.cert, root.cert}
+	tmpl = mgrBindTemplateChain(t, tmpl, leafPEM, oldChain, oldIssuerPath, oldRootPath)
+	oldFPs := []string{certificateFingerprint(oldIssuer.cert), certificateFingerprint(root.cert)}
+	mgrWriteState(t, stateDir, []enrolledCA{{
+		Name:              "TestCA",
+		Hostname:          "ca.example.com",
+		IssuerFingerprint: oldFPs[0],
+		ChainFingerprints: oldFPs,
+		RootCerts:         []string{oldRootPath},
+		IntermediateCerts: []string{oldIssuerPath},
+		Templates:         []enrolledTemplate{tmpl},
+	}})
+
+	submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+		return mgrIssueFromCSR(t, csrPEM, now.Add(180*24*time.Hour), newIssuer.cert, newIssuer.key), nil
+	}
+	m := mgrManager(t, stateDir, globalTrustDir,
+		WithLDAPConnector(mgrConnectorWithChain(
+			"CN=Configuration,DC=example,DC=com",
+			[]string{"Machine"},
+			newIssuer.cert.Raw,
+			root.cert.Raw,
+		)),
+		WithCSRSubmitter(submitter),
+	)
+
+	// Precondition: the persisted chain is currently invalid because the old
+	// issuer has expired.
+	before, err := m.VerifyCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false)
+	require.NoError(t, err)
+	require.Len(t, before, 1)
+	require.False(t, before[0].ChainOK, "precondition: expired old issuer chain must not verify")
+
+	require.NoError(t, m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil))
+
+	after, err := m.VerifyCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false)
+	require.NoError(t, err)
+	require.Len(t, after, 1)
+	assert.True(t, after[0].ChainOK, "%v", after[0].Messages)
+	assert.True(t, after[0].ValidityOK)
+	assert.True(t, after[0].KeyMatchOK)
+}
+
+func TestRenewCertificatesFailsSafelyOnBrokenNonTarget(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	tmpdir := t.TempDir()
+	stateDir := filepath.Join(tmpdir, "state")
+	caCert, caKey, caDER := mgrTestCA(t)
+	rootPath := mgrWriteCACertificate(t, stateDir, "TestCA.root.crt", caDER)
+
+	mkTemplate := func(name string) enrolledTemplate {
+		key, keyPEM := mgrKeyPEM(t)
+		leafPEM := mgrCASignedLeaf(t, caCert, caKey, &key.PublicKey, now.Add(-time.Hour), now.Add(365*24*time.Hour))
+		tmpl := mgrWritePair(t, stateDir, "TestCA."+name, name, keyPEM, leafPEM)
+		return mgrBindTemplate(t, tmpl, leafPEM, caDER, rootPath)
+	}
+	machine := mkTemplate("Machine")
+	web := mkTemplate("WebServer")
+	caFP := rawCertificateFingerprint(caDER)
+	mgrWriteState(t, stateDir, []enrolledCA{{
+		Name:              "TestCA",
+		Hostname:          "ca.example.com",
+		IssuerFingerprint: caFP,
+		ChainFingerprints: []string{caFP},
+		RootCerts:         []string{rootPath},
+		Templates:         []enrolledTemplate{machine, web},
+	}})
+	// Break the unrelated non-target template's certificate on disk.
+	require.NoError(t, os.Remove(web.CertFile))
+
+	machineBefore, err := os.ReadFile(machine.CertFile)
+	require.NoError(t, err)
+
+	var submissions int
+	submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+		submissions++
+		return mgrIssueFromCSR(t, csrPEM, now.Add(365*24*time.Hour), caCert, caKey), nil
+	}
+	m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
+		WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine", "WebServer"}, caDER)),
+		WithCSRSubmitter(submitter),
+	)
+
+	err = m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "WebServer", "the broken retained template must be named")
+	assert.Zero(t, submissions, "no target may be renewed while a retained template is broken")
+
+	// The target certificate is untouched and no state entry is dropped.
+	machineAfter, err := os.ReadFile(machine.CertFile)
+	require.NoError(t, err)
+	assert.Equal(t, machineBefore, machineAfter, "target cert must not change on a fail-safe abort")
+	state, err := loadState(stateDir, mgrTestObject)
+	require.NoError(t, err)
+	require.Len(t, state.CAs, 1)
+	require.Len(t, state.CAs[0].Templates, 2, "no template may be dropped on a fail-safe abort")
+}
+
+func TestRenewCertificatesRetainsValidOldEntryOnFailure(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	tmpdir := t.TempDir()
+	stateDir := filepath.Join(tmpdir, "state")
+	caCert, caKey, caDER := mgrTestCA(t)
+	rootPath := mgrWriteCACertificate(t, stateDir, "TestCA.root.crt", caDER)
+	key, keyPEM := mgrKeyPEM(t)
+	leafPEM := mgrCASignedLeaf(t, caCert, caKey, &key.PublicKey, now.Add(-time.Hour), now.Add(365*24*time.Hour))
+	tmpl := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, leafPEM)
+	tmpl = mgrBindTemplate(t, tmpl, leafPEM, caDER, rootPath)
+	caFP := rawCertificateFingerprint(caDER)
+	mgrWriteState(t, stateDir, []enrolledCA{{
+		Name:              "TestCA",
+		Hostname:          "ca.example.com",
+		IssuerFingerprint: caFP,
+		ChainFingerprints: []string{caFP},
+		RootCerts:         []string{rootPath},
+		Templates:         []enrolledTemplate{tmpl},
+	}})
+	before, err := os.ReadFile(tmpl.CertFile)
+	require.NoError(t, err)
+
+	submitter := func(_ context.Context, _, _, _, _ string) (string, error) {
+		return "", fmt.Errorf("mock submit failure")
+	}
+	m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
+		WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
+		WithCSRSubmitter(submitter),
+	)
+
+	err = m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "TestCA.Machine")
+
+	after, err := os.ReadFile(tmpl.CertFile)
+	require.NoError(t, err)
+	assert.Equal(t, before, after, "still-valid old certificate must be preserved on failed renewal")
+	state, err := loadState(stateDir, mgrTestObject)
+	require.NoError(t, err)
+	require.Len(t, state.CAs, 1)
+	require.Len(t, state.CAs[0].Templates, 1, "valid old template must be retained")
+	results, err := m.VerifyCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false)
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	assert.True(t, results[0].ChainOK, "%v", results[0].Messages)
+}
+
+func TestRemovalPreservesOtherObjectSharedPaths(t *testing.T) {
+	t.Parallel()
+
+	setup := func(t *testing.T) (*Manager, enrolledTemplate, string, string) {
+		t.Helper()
+		tmpdir := t.TempDir()
+		stateDir := filepath.Join(tmpdir, "state")
+		globalTrustDir := filepath.Join(tmpdir, "trust")
+		require.NoError(t, os.MkdirAll(globalTrustDir, 0750))
+
+		caCert, caKey, caDER := mgrTestCA(t)
+		rootPath := mgrWriteCACertificate(t, stateDir, "shared-root.crt", caDER)
+		symlinkPath := filepath.Join(globalTrustDir, "shared-anchor.crt")
+		require.NoError(t, os.Symlink(rootPath, symlinkPath))
+
+		key, keyPEM := mgrKeyPEM(t)
+		leafPEM := mgrCASignedLeaf(t, caCert, caKey, &key.PublicKey, time.Now().Add(-time.Hour), time.Now().Add(365*24*time.Hour))
+		shared := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, leafPEM)
+		shared = mgrBindTemplate(t, shared, leafPEM, caDER, rootPath)
+		shared.TrustAnchorSymlink = symlinkPath
+		caFP := rawCertificateFingerprint(caDER)
+		for _, obj := range []string{"host-a", "host-b"} {
+			require.NoError(t, saveState(stateDir, &enrollmentState{
+				ObjectName: obj,
+				Identity:   "host.example.com",
+				Domain:     mgrTestDomain,
+				CAs: []enrolledCA{{
+					Name:              "TestCA",
+					Hostname:          "ca.example.com",
+					IssuerFingerprint: caFP,
+					ChainFingerprints: []string{caFP},
+					RootCerts:         []string{rootPath},
+					Symlinks:          []string{symlinkPath},
+					Templates:         []enrolledTemplate{shared},
+				}},
+			}))
+		}
+		return mgrManager(t, stateDir, globalTrustDir), shared, rootPath, symlinkPath
+	}
+	assertShared := func(t *testing.T, stateDir string, shared enrolledTemplate, rootPath, symlinkPath string) {
+		t.Helper()
+		assert.FileExists(t, shared.CertFile, "shared cert deleted despite another owner")
+		assert.FileExists(t, shared.KeyFile, "shared key deleted despite another owner")
+		assert.FileExists(t, rootPath, "shared root deleted despite another owner")
+		assert.FileExists(t, symlinkPath, "shared trust anchor deleted despite another owner")
+		stateB, err := loadState(stateDir, "host-b")
+		require.NoError(t, err)
+		require.Len(t, stateB.CAs, 1)
+		require.Len(t, stateB.CAs[0].Templates, 1, "the untouched object state must be intact")
+	}
+
+	t.Run("single removal", func(t *testing.T) {
+		t.Parallel()
+		m, shared, rootPath, symlinkPath := setup(t)
+		require.NoError(t, m.RemoveCertificates(context.Background(), "host-a", "TestCA.Machine", false, true, nil))
+		assertShared(t, m.stateDir, shared, rootPath, symlinkPath)
+	})
+
+	t.Run("full unenroll", func(t *testing.T) {
+		t.Parallel()
+		m, shared, rootPath, symlinkPath := setup(t)
+		require.NoError(t, m.RemoveCertificates(context.Background(), "host-a", "", true, true, nil))
+		assertShared(t, m.stateDir, shared, rootPath, symlinkPath)
+	})
+}
+
+func TestVerifyCertificatesRejectsMismatchedRequestedIdentity(t *testing.T) {
+	t.Parallel()
+
+	setup := func(t *testing.T, objectName, identity string) *Manager {
+		t.Helper()
+		tmpdir := t.TempDir()
+		stateDir := filepath.Join(tmpdir, "state")
+		caCert, caKey, caDER := mgrTestCA(t)
+		rootPath := mgrWriteCACertificate(t, stateDir, "TestCA.root.crt", caDER)
+		key, keyPEM := mgrKeyPEM(t)
+		leafPEM := mgrCASignedLeafForIdentity(t, caCert, caKey, &key.PublicKey, identity, time.Now().Add(-time.Hour), time.Now().Add(365*24*time.Hour))
+		tmpl := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, leafPEM)
+		tmpl = mgrBindTemplate(t, tmpl, leafPEM, caDER, rootPath)
+		caFP := rawCertificateFingerprint(caDER)
+		require.NoError(t, saveState(stateDir, &enrollmentState{
+			ObjectName: objectName,
+			Identity:   identity,
+			Domain:     mgrTestDomain,
+			CAs: []enrolledCA{{
+				Name:              "TestCA",
+				Hostname:          "ca.example.com",
+				IssuerFingerprint: caFP,
+				ChainFingerprints: []string{caFP},
+				RootCerts:         []string{rootPath},
+				Templates:         []enrolledTemplate{tmpl},
+			}},
+		}))
+		return mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"))
+	}
+
+	t.Run("sanitized object-name collision is rejected", func(t *testing.T) {
+		t.Parallel()
+		m := setup(t, "host-", "host-.example.com")
+		// "host$" and "host-" sanitize to the same state file yet are different
+		// machines; verification must refuse the mismatched state.
+		require.Equal(t, stateFilePath(m.stateDir, "host$"), stateFilePath(m.stateDir, "host-"))
+		_, err := m.VerifyCertificates(context.Background(), "host$", "", false)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "does not match")
+
+		results, err := m.VerifyCertificates(context.Background(), "host-", "", false)
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+		assert.True(t, results[0].ChainOK, "%v", results[0].Messages)
+	})
+
+	t.Run("stored identity that does not match the target is rejected", func(t *testing.T) {
+		t.Parallel()
+		// The state claims a different machine identity than the requested
+		// object resolves to; the stored value must never override the target.
+		m := setup(t, "keypress", "other.example.com")
+		_, err := m.VerifyCertificates(context.Background(), mgrTestObject, "", false)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "does not match")
+	})
+}
+
 // --- test helpers ---
 
 func mgrManager(t *testing.T, stateDir, globalTrustDir string, opts ...Option) *Manager {
@@ -1079,7 +1432,7 @@ func mgrCASignedLeafForIdentity(t *testing.T, caCert *x509.Certificate, caKey *e
 	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 }
 
-func mgrIssueFromCSR(t *testing.T, csrPEM string, notAfter time.Time, caCert *x509.Certificate, caKey *ecdsa.PrivateKey, identity string) string {
+func mgrIssueFromCSR(t *testing.T, csrPEM string, notAfter time.Time, caCert *x509.Certificate, caKey *ecdsa.PrivateKey) string {
 	t.Helper()
 	block, _ := pem.Decode([]byte(csrPEM))
 	require.NotNil(t, block, "failed to decode CSR PEM")
@@ -1090,7 +1443,7 @@ func mgrIssueFromCSR(t *testing.T, csrPEM string, notAfter time.Time, caCert *x5
 	require.NoError(t, err)
 	leaf := x509.Certificate{
 		SerialNumber: serial,
-		Subject:      pkix.Name{CommonName: identity},
+		Subject:      pkix.Name{CommonName: "keypress.example.com"},
 		NotBefore:    time.Now().Add(-time.Hour),
 		NotAfter:     notAfter,
 	}

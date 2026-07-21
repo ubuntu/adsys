@@ -61,7 +61,7 @@ func TestInstallRootCACertsRefusesToOverwriteRegularTrustFile(t *testing.T) {
 	caDER := testCertificateDER(t, true, x509.KeyUsageCertSign)
 	cert, err := x509.ParseCertificate(caDER)
 	require.NoError(t, err)
-	existingTrustFile := filepath.Join(globalTrustDir, "TestCA.root."+certificateFingerprint(cert)[:16]+".crt")
+	existingTrustFile := filepath.Join(globalTrustDir, trustArtifactFileName(certAuthority{Name: "TestCA"}, cert, "root"))
 	require.NoError(t, os.WriteFile(existingTrustFile, []byte("existing"), 0600))
 
 	_, _, _, err = installCAChain(certAuthority{
@@ -164,7 +164,7 @@ func TestInstallCAChainRollbackPreservesExistingArtifacts(t *testing.T) {
 
 	newIssuerPath := filepath.Join(
 		trustDir,
-		"Enterprise-Issuer.issuer."+certificateFingerprint(newIssuer.cert)[:16]+".crt",
+		trustArtifactFileName(certAuthority{Name: "Enterprise Issuer"}, newIssuer.cert, "issuer"),
 	)
 	assert.NoFileExists(t, newIssuerPath, "failed attempt must remove only its newly published issuer")
 	entries, err := os.ReadDir(trustDir)
@@ -182,7 +182,7 @@ func TestInstallCAChainRollbackRestoresReplacedSymlink(t *testing.T) {
 	trustDir := t.TempDir()
 	globalTrustDir := t.TempDir()
 	fingerprint := certificateFingerprint(root.cert)
-	fileName := "Enterprise-CA.root." + fingerprint[:16] + ".crt"
+	fileName := trustArtifactFileName(certAuthority{Name: "Enterprise CA"}, root.cert, "root")
 	rootPath := filepath.Join(trustDir, fileName)
 	require.NoError(t, os.WriteFile(rootPath, pem.EncodeToMemory(&pem.Block{
 		Type:  "CERTIFICATE",
@@ -205,11 +205,111 @@ func TestInstallCAChainRollbackRestoresReplacedSymlink(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, rootPath, target)
 
-	installation.rollback()
+	require.NoError(t, installation.rollback())
 	target, err = os.Readlink(symlinkPath)
 	require.NoError(t, err)
 	assert.Equal(t, previousTarget, target)
 	assert.FileExists(t, rootPath, "rollback removed a preexisting certificate")
+}
+
+func TestInstallCAChainDistinctIdentitiesAvoidCollision(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	// A single shared offline root that both CAs chain to.
+	root := newChainTestCA(t, "Shared Offline Root", nil, now.Add(-time.Hour), now.Add(365*24*time.Hour), 1)
+	chain := &expectedCertificateChain{
+		Certificates: []*x509.Certificate{root.cert},
+		Fingerprints: []string{certificateFingerprint(root.cert)},
+	}
+	trustDir := t.TempDir()
+	globalTrustDir := t.TempDir()
+
+	// "Corp CA" and "Corp-CA" sanitize to the same nickname and, sharing a
+	// root certificate, previously collided on the same artifact paths.
+	caA := certAuthority{Name: "Corp CA", Hostname: "ca.example.com", Chain: chain}
+	caB := certAuthority{Name: "Corp-CA", Hostname: "ca.example.com", Chain: chain}
+
+	instA, err := installCAChainTransaction(caA, trustDir, globalTrustDir)
+	require.NoError(t, err)
+	instB, err := installCAChainTransaction(caB, trustDir, globalTrustDir)
+	require.NoError(t, err)
+
+	require.NotEqual(t, instA.RootFiles[0], instB.RootFiles[0], "distinct CA identities shared a root path")
+	require.NotEqual(t, instA.SymlinkFiles[0], instB.SymlinkFiles[0], "distinct CA identities shared a symlink path")
+
+	// The unsuccessful CA rolling back must not disturb the committed CA.
+	require.NoError(t, instB.rollback())
+	assert.FileExists(t, instA.RootFiles[0], "the committed CA root was deleted by the other CA rollback")
+	targetA, err := os.Readlink(instA.SymlinkFiles[0])
+	require.NoError(t, err)
+	assert.Equal(t, instA.RootFiles[0], targetA, "the committed CA trust binding was broken by the other CA rollback")
+	assert.NoFileExists(t, instB.RootFiles[0], "the rolled-back CA left its own root behind")
+	assert.NoFileExists(t, instB.SymlinkFiles[0], "the rolled-back CA left its own symlink behind")
+}
+
+func TestInstallationRollbackAggregatesFailures(t *testing.T) {
+	t.Parallel()
+
+	t.Run("failed symlink restoration is reported and preserved", func(t *testing.T) {
+		t.Parallel()
+		dir := t.TempDir()
+		symlinkPath := filepath.Join(dir, "anchor.crt")
+		installedTarget := filepath.Join(dir, "new-root.crt")
+		previousTarget := filepath.Join(dir, "old-root.crt")
+		require.NoError(t, os.WriteFile(installedTarget, []byte("new"), 0600))
+		require.NoError(t, os.WriteFile(previousTarget, []byte("old"), 0600))
+		require.NoError(t, os.Symlink(installedTarget, symlinkPath))
+		info, err := os.Lstat(symlinkPath)
+		require.NoError(t, err)
+
+		installation := &caChainInstallation{
+			restoreSymlink: func(string, string) error { return fmt.Errorf("injected restore failure") },
+			symlinkChanges: []symlinkChange{{
+				path:            symlinkPath,
+				installedTarget: installedTarget,
+				previousTarget:  previousTarget,
+				hadPrevious:     true,
+				installedInfo:   info,
+			}},
+		}
+		err = installation.rollback()
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "injected restore failure")
+		assert.ErrorContains(t, err, symlinkPath, "rollback error must name the affected path for a later repair")
+
+		target, err := os.Readlink(symlinkPath)
+		require.NoError(t, err)
+		assert.Equal(t, installedTarget, target, "the unrestored symlink must be left in place for a later attempt")
+	})
+
+	t.Run("failed file removal is reported and preserved", func(t *testing.T) {
+		t.Parallel()
+		dir := t.TempDir()
+		created := filepath.Join(dir, "published.crt")
+		now := time.Now()
+		root := newChainTestCA(t, "Root", nil, now.Add(-time.Hour), now.Add(time.Hour), 1)
+		require.NoError(t, os.WriteFile(created, pem.EncodeToMemory(&pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: root.cert.Raw,
+		}), 0600))
+		info, err := os.Lstat(created)
+		require.NoError(t, err)
+
+		installation := &caChainInstallation{
+			removeFile: func(string) error { return fmt.Errorf("injected remove failure") },
+			createdFiles: []createdCertificateFile{{
+				path: created,
+				raw:  append([]byte(nil), root.cert.Raw...),
+				info: info,
+			}},
+		}
+		err = installation.rollback()
+		require.Error(t, err)
+		assert.ErrorContains(t, err, "injected remove failure")
+		assert.ErrorContains(t, err, created, "rollback error must name the leftover artifact for a later attempt")
+		assert.FileExists(t, created, "the artifact must remain so a later attempt can adopt or repair it")
+	})
 }
 
 func testCertificateDER(t *testing.T, isCA bool, keyUsage x509.KeyUsage) []byte {

@@ -21,8 +21,10 @@ package certificate
 
 import (
 	"context"
+	"crypto/sha256"
 	"crypto/x509"
 	_ "embed" // embed cert enroll python script
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -467,12 +469,16 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		skip         bool
 	}
 	preparedCAs := make([]preparedEnrollmentCA, 0, len(cas))
-	rollbackPrepared := func() {
+	rollbackPrepared := func() error {
+		var errs []error
 		for _, prepared := range preparedCAs {
 			if prepared.installation != nil {
-				prepared.installation.rollback()
+				if err := prepared.installation.rollback(); err != nil {
+					errs = append(errs, err)
+				}
 			}
 		}
+		return errors.Join(errs...)
 	}
 	for _, ca := range cas {
 		prepared := preparedEnrollmentCA{authority: ca}
@@ -493,10 +499,10 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 				time.Now(),
 			)
 			if validationErr != nil {
-				rollbackPrepared()
 				return fmt.Errorf("could not install current chain for CA %s and previous enrollment cannot be safely preserved: %w", ca.Name, errors.Join(
 					fmt.Errorf("installing current chain: %w", err),
 					fmt.Errorf("validating previous state: %w", validationErr),
+					rollbackContext("prepared CA chain installations", rollbackPrepared()),
 				))
 			}
 			log.Warningf(ctx, "Could not install current chain for CA %s; preserving its validated previous enrollment: %v", ca.Name, err)
@@ -506,9 +512,11 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		}
 		currentBinding, err := chainBindingFromInstallation(ca.Chain, installation)
 		if err != nil {
-			installation.rollback()
-			rollbackPrepared()
-			return fmt.Errorf("failed to bind installed CA chain for %s: %w", ca.Name, err)
+			return errors.Join(
+				fmt.Errorf("failed to bind installed CA chain for %s: %w", ca.Name, err),
+				rollbackContext("installed CA chain", installation.rollback()),
+				rollbackContext("prepared CA chain installations", rollbackPrepared()),
+			)
 		}
 		prepared.installation = installation
 		prepared.binding = currentBinding
@@ -516,6 +524,7 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	}
 
 	var enrolledCAs []enrolledCA
+	var rollbackErrs []error
 	for preparedIndex, prepared := range preparedCAs {
 		ca := prepared.authority
 		if prepared.skip {
@@ -548,11 +557,15 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 			}
 			log.Debugf(ctx, "Template %s requires minimum key size: %d bits", attrs.Name, attrs.MinKeySize)
 
-			// CA and template names come from LDAP and are used to build on-disk
-			// paths, so sanitize them to avoid unexpected or traversing filenames.
+			// CA and template names come from LDAP and are used to build the
+			// human-readable nickname, so sanitize them to avoid unexpected or
+			// traversing filenames. On-disk key/cert paths additionally embed a
+			// raw-identity hash so distinct CA identities that sanitize to the
+			// same nickname (e.g. "Corp CA" vs "Corp-CA") never share files.
 			nickname := sanitizeName(fmt.Sprintf("%s.%s", ca.Name, tmplName))
-			keyFile := filepath.Join(privateDir, nickname+".key")
-			certFile := filepath.Join(trustDir, nickname+".crt")
+			artifactBase := leafArtifactBase(objectName, ca, tmplName)
+			keyFile := filepath.Join(privateDir, artifactBase+".key")
+			certFile := filepath.Join(trustDir, artifactBase+".crt")
 
 			if err := EnrollCertificate(ctx, m.submitCSR, EnrollmentRequest{
 				Server:        ca.Hostname,
@@ -597,7 +610,9 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 
 		if len(enrolledTemplates) == 0 {
 			log.Warningf(ctx, "No certificate templates enrolled for CA %s, skipping", ca.Name)
-			installation.rollback()
+			if err := installation.rollback(); err != nil {
+				rollbackErrs = append(rollbackErrs, fmt.Errorf("rolling back unused CA chain for %s: %w", ca.Name, err))
+			}
 			continue
 		}
 
@@ -612,13 +627,19 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 			Templates:         enrolledTemplates,
 		}
 		if err := rebuildCAArtifacts(&enrolledCA); err != nil {
-			installation.rollback()
+			var pendingErrs []error
 			for _, pending := range preparedCAs[preparedIndex+1:] {
 				if pending.installation != nil {
-					pending.installation.rollback()
+					if rbErr := pending.installation.rollback(); rbErr != nil {
+						pendingErrs = append(pendingErrs, rbErr)
+					}
 				}
 			}
-			return fmt.Errorf("building enrollment state for CA %s: %w", ca.Name, err)
+			return errors.Join(
+				fmt.Errorf("building enrollment state for CA %s: %w", ca.Name, err),
+				rollbackContext("installed CA chain", installation.rollback()),
+				rollbackContext("pending CA chain installations", errors.Join(pendingErrs...)),
+			)
 		}
 		enrolledCAs = append(enrolledCAs, enrolledCA)
 	}
@@ -659,6 +680,9 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	}
 	log.Infof(ctx, "Enrolled to certificate authorities: %s", strings.Join(caNames, ", "))
 
+	if len(rollbackErrs) > 0 {
+		return fmt.Errorf("enrollment succeeded but rolling back unused trust artifacts failed: %w", errors.Join(rollbackErrs...))
+	}
 	return nil
 }
 
@@ -674,10 +698,16 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 		log.Debugf(ctx, "Unenrolling %d certificate authorities", len(state.CAs))
 		for _, ca := range state.CAs {
 			log.Debugf(ctx, "Removing certificates for CA %s (%d templates)", ca.Name, len(ca.Templates))
+			// Do not delete key/cert/chain paths directly: another object's
+			// state may reference the same files. Route every candidate through
+			// removeUnreferencedPaths below, which honors other state files.
 			for _, tmpl := range ca.Templates {
 				log.Debugf(ctx, "Removing certificate files for template %s", tmpl.Nickname)
-				os.Remove(tmpl.CertFile)
-				os.Remove(tmpl.KeyFile)
+				obsoleteChainPaths = append(obsoleteChainPaths, tmpl.CertFile, tmpl.KeyFile)
+				obsoleteChainPaths = append(obsoleteChainPaths, tmpl.ChainFiles...)
+				if tmpl.TrustAnchorSymlink != "" {
+					obsoleteChainPaths = append(obsoleteChainPaths, tmpl.TrustAnchorSymlink)
+				}
 			}
 			obsoleteChainPaths = append(obsoleteChainPaths, ca.RootCerts...)
 			obsoleteChainPaths = append(obsoleteChainPaths, ca.IntermediateCerts...)
@@ -804,15 +834,27 @@ func existingCAEnrollment(state *enrollmentState, caName, hostname string) (enro
 	return enrolledCA{}, false
 }
 
-func validatePreviousCAForPreservation(previousCA enrolledCA, state *enrollmentState, identity, domain string, now time.Time) (enrolledCA, error) {
+// validateStateEnvelope checks the persisted enrollment state envelope (its
+// domain and, when present, machine identity) independently of any single
+// leaf's current validity. Keeping this separate lets a targeted renewal
+// replace an expired, missing or mismatched target leaf as long as the state it
+// belongs to is safe.
+func validateStateEnvelope(state *enrollmentState, identity, domain string) error {
 	if state == nil {
-		return enrolledCA{}, fmt.Errorf("enrollment state is missing")
+		return fmt.Errorf("enrollment state is missing")
 	}
 	if normalizeDomainIdentity(state.Domain) != domain {
-		return enrolledCA{}, fmt.Errorf("state domain %q does not match %q", state.Domain, domain)
+		return fmt.Errorf("state domain %q does not match %q", state.Domain, domain)
 	}
 	if state.Identity != "" && normalizeMachineIdentity(state.Identity) != normalizeMachineIdentity(identity) {
-		return enrolledCA{}, fmt.Errorf("state machine identity %q does not match %q", state.Identity, identity)
+		return fmt.Errorf("state machine identity %q does not match %q", state.Identity, identity)
+	}
+	return nil
+}
+
+func validatePreviousCAForPreservation(previousCA enrolledCA, state *enrollmentState, identity, domain string, now time.Time) (enrolledCA, error) {
+	if err := validateStateEnvelope(state, identity, domain); err != nil {
+		return enrolledCA{}, err
 	}
 	for i, tmpl := range previousCA.Templates {
 		validated, err := validatePersistedTemplate(previousCA, tmpl, identity, now)
@@ -825,6 +867,35 @@ func validatePreviousCAForPreservation(previousCA enrolledCA, state *enrollmentS
 		return enrolledCA{}, err
 	}
 	return previousCA, nil
+}
+
+// leafArtifactBase builds a collision-resistant on-disk basename for a template
+// leaf's key and certificate. Distinct object/CA/template raw identities that
+// sanitize to the same nickname (for example "Corp CA" and "Corp-CA") would
+// otherwise share the same key/cert path; embedding a SHA-256 digest over the
+// full unsanitized identity guarantees separate files while keeping the
+// readable nickname prefix.
+func leafArtifactBase(objectName string, ca certAuthority, template string) string {
+	h := sha256.New()
+	h.Write([]byte(objectName))
+	h.Write([]byte{0})
+	h.Write([]byte(ca.Name))
+	h.Write([]byte{0})
+	h.Write([]byte(ca.Hostname))
+	h.Write([]byte{0})
+	h.Write([]byte(template))
+	digest := hex.EncodeToString(h.Sum(nil))
+	return sanitizeName(fmt.Sprintf("%s.%s", ca.Name, template)) + "." + digest[:16]
+}
+
+// rollbackContext wraps a rollback failure with a description so it can be
+// joined into a caller's primary error, or returns nil when the rollback was
+// clean.
+func rollbackContext(what string, err error) error {
+	if err == nil {
+		return nil
+	}
+	return fmt.Errorf("rolling back %s: %w", what, err)
 }
 
 func validateStoredEnrollment(previousCA enrolledCA, tmpl enrolledTemplate, state *enrollmentState, currentCA certAuthority, currentBinding templateChainBinding, identity, domain string, now time.Time) (enrolledTemplate, error) {

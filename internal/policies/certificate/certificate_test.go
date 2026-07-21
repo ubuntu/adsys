@@ -343,8 +343,12 @@ func TestApplyPolicy(t *testing.T) {
 			require.NoError(t, err, "ApplyPolicy should succeed")
 
 			if name == "Computer, configured to enroll" {
-				require.FileExists(t, filepath.Join(stateDir, "certs", "TestCA.Machine.crt"))
-				require.FileExists(t, filepath.Join(stateDir, "private", "certs", "TestCA.Machine.key"))
+				certs, err := filepath.Glob(filepath.Join(stateDir, "certs", "TestCA.Machine.*.crt"))
+				require.NoError(t, err)
+				require.Len(t, certs, 1, "expected exactly one enrolled certificate")
+				keys, err := filepath.Glob(filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*.key"))
+				require.NoError(t, err)
+				require.Len(t, keys, 1, "expected exactly one enrolled private key")
 			}
 			if tc.corruptedState {
 				require.NoFileExists(t, filepath.Join(stateDir, "certs", "state_keypress.json"))
@@ -377,6 +381,17 @@ func issueCertFromCSR(t *testing.T, csrPEM string, notAfter time.Time, ca *testC
 	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER}))
 }
 
+// singleGlobMatch returns the sole file matching pattern, failing the test when
+// zero or multiple files match. Enrollment embeds a raw-identity hash in leaf
+// key/cert file names, so tests locate them by their stable nickname prefix.
+func singleGlobMatch(t *testing.T, pattern string) string {
+	t.Helper()
+	matches, err := filepath.Glob(pattern)
+	require.NoError(t, err)
+	require.Len(t, matches, 1, "expected exactly one file matching %s", pattern)
+	return matches[0]
+}
+
 // TestLDAPEnrollmentRenewal verifies that a still-valid certificate is reused
 // across policy refreshes, while a certificate within the renewal window (or
 // past expiry) is re-enrolled.
@@ -407,11 +422,10 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
 	}
 
-	certFile := filepath.Join(stateDir, "certs", "TestCA.Machine.crt")
-
 	// Initial enrollment issues a long-lived certificate.
 	require.NoError(t, apply())
 	require.Equal(t, 1, submitCount, "first apply should enroll once")
+	certFile := singleGlobMatch(t, filepath.Join(stateDir, "certs", "TestCA.Machine.*.crt"))
 	require.FileExists(t, certFile)
 
 	// A still-valid certificate is reused without contacting the CA again.
@@ -456,11 +470,10 @@ func TestRenewalFailureRejectsUnexpectedStoredCert(t *testing.T) {
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
 	}
 
-	machineCert := filepath.Join(stateDir, "certs", "TestCA.Machine.crt")
-	machineKey := filepath.Join(stateDir, "private", "certs", "TestCA.Machine.key")
-
 	// Initial enrollment issues long-lived certs for both templates.
 	require.NoError(t, apply())
+	machineCert := singleGlobMatch(t, filepath.Join(stateDir, "certs", "TestCA.Machine.*.crt"))
+	machineKey := singleGlobMatch(t, filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*.key"))
 	require.FileExists(t, machineCert)
 	require.FileExists(t, machineKey)
 

@@ -198,14 +198,28 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	}
 
 	var failures []string
+	var rollbackErrs []error
 	found := false
 	trustChanged := false
 	var obsoletePaths []string
+	now := time.Now()
+	requestedDomain := normalizeDomainIdentity(m.domain)
+	isTarget := func(tmpl enrolledTemplate) bool { return all || tmpl.Nickname == nickname }
+	// retainOldTemplate keeps a failed target's previous entry only when it
+	// still validates exactly and currently against its own persisted chain.
+	retainOldTemplate := func(ca enrolledCA, tmpl enrolledTemplate) (enrolledTemplate, bool) {
+		validated, err := validatePersistedTemplate(ca, tmpl, identity.dnsName, now)
+		if err != nil {
+			return enrolledTemplate{}, false
+		}
+		return validated, true
+	}
+
 	for i := range state.CAs {
 		ca := &state.CAs[i]
 		hasTarget := false
 		for _, tmpl := range ca.Templates {
-			if all || tmpl.Nickname == nickname {
+			if isTarget(tmpl) {
 				hasTarget = true
 				break
 			}
@@ -213,23 +227,49 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		if !hasTarget {
 			continue
 		}
-		validatedCA, validationErr := validatePreviousCAForPreservation(
-			*ca,
-			state,
-			identity.dnsName,
-			normalizeDomainIdentity(m.domain),
-			time.Now(),
-		)
-		if validationErr != nil {
+
+		// Envelope integrity is validated independently of any single leaf's
+		// current validity, so a targeted (or --all) renewal can still replace
+		// an expired, missing or mismatched target leaf, or a target whose old
+		// issuer chain has expired, as long as the state it belongs to is safe.
+		if err := validateStateEnvelope(state, identity.dnsName, requestedDomain); err != nil {
 			for _, tmpl := range ca.Templates {
-				if all || tmpl.Nickname == nickname {
+				if isTarget(tmpl) {
 					found = true
-					failures = append(failures, fmt.Sprintf("%s: persisted enrollment is invalid: %v", tmpl.Nickname, validationErr))
+					failures = append(failures, fmt.Sprintf("%s: persisted enrollment is invalid: %v", tmpl.Nickname, err))
 				}
 			}
 			continue
 		}
-		*ca = validatedCA
+
+		// Untouched (non-target) templates that would be retained in state must
+		// validate exactly and currently before we mutate this CA. If any is
+		// broken we fail safely without touching state, never migrating around
+		// or persisting a broken unrelated entry.
+		retained := make(map[int]enrolledTemplate, len(ca.Templates))
+		retainErr := ""
+		for ti := range ca.Templates {
+			tmpl := ca.Templates[ti]
+			if isTarget(tmpl) {
+				continue
+			}
+			validated, err := validatePersistedTemplate(*ca, tmpl, identity.dnsName, now)
+			if err != nil {
+				retainErr = fmt.Sprintf("retained template %s is invalid: %v", tmpl.Nickname, err)
+				break
+			}
+			retained[ti] = validated
+		}
+		if retainErr != "" {
+			for _, tmpl := range ca.Templates {
+				if isTarget(tmpl) {
+					found = true
+					failures = append(failures, fmt.Sprintf("%s: %s", tmpl.Nickname, retainErr))
+				}
+			}
+			continue
+		}
+
 		discoveredCA, caFound := findDiscoveredCA(*ca)
 		var installation *caChainInstallation
 		var currentBinding templateChainBinding
@@ -243,27 +283,42 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 			if chainInstallErr == nil {
 				currentBinding, chainInstallErr = chainBindingFromInstallation(discoveredCA.Chain, installation)
 				if chainInstallErr != nil {
-					installation.rollback()
+					if rbErr := installation.rollback(); rbErr != nil {
+						chainInstallErr = errors.Join(chainInstallErr, rbErr)
+					}
 					installation = nil
 				}
 			}
 		}
+
 		oldRootFiles := append([]string(nil), ca.RootCerts...)
 		oldIntermediateFiles := append([]string(nil), ca.IntermediateCerts...)
 		oldSymlinkFiles := append([]string(nil), ca.Symlinks...)
+
+		// Build the CA's templates in a working copy; the persisted state is
+		// only replaced once at least one target renews successfully, so target
+		// state is never mutated or migrated until renewal succeeds.
+		workingTemplates := make([]enrolledTemplate, 0, len(ca.Templates))
 		renewedOnCA := false
-		for templateIndex := range ca.Templates {
-			tmpl := &ca.Templates[templateIndex]
-			if !all && tmpl.Nickname != nickname {
+		for ti := range ca.Templates {
+			tmpl := ca.Templates[ti]
+			if !isTarget(tmpl) {
+				workingTemplates = append(workingTemplates, retained[ti])
 				continue
 			}
 			found = true
+			retainFailed := func(msg string) {
+				failures = append(failures, fmt.Sprintf("%s: %s", tmpl.Nickname, msg))
+				if kept, ok := retainOldTemplate(*ca, tmpl); ok {
+					workingTemplates = append(workingTemplates, kept)
+				}
+			}
 			if !caFound || discoveredCA.Chain == nil {
-				failures = append(failures, fmt.Sprintf("%s: current CA chain was not discovered", tmpl.Nickname))
+				retainFailed("current CA chain was not discovered")
 				continue
 			}
 			if chainInstallErr != nil {
-				failures = append(failures, fmt.Sprintf("%s: installing current CA chain: %v", tmpl.Nickname, chainInstallErr))
+				retainFailed(fmt.Sprintf("installing current CA chain: %v", chainInstallErr))
 				continue
 			}
 			templatePublished := false
@@ -274,7 +329,7 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 				}
 			}
 			if !templatePublished {
-				failures = append(failures, fmt.Sprintf("%s: template is no longer published by CA", tmpl.Nickname))
+				retainFailed("template is no longer published by CA")
 				continue
 			}
 
@@ -285,42 +340,50 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 			report(progress, gotext.Get("Renewing %s…", tmpl.Nickname))
 			log.Debugf(ctx, "Renewing certificate %s (template %s) from CA %s", tmpl.Nickname, tmpl.Template, ca.Name)
 
+			renewed := tmpl
 			if err := EnrollCertificate(ctx, m.submitCSR, EnrollmentRequest{
 				Server:        ca.Hostname,
 				CAName:        ca.Name,
-				Template:      tmpl.Template,
+				Template:      renewed.Template,
 				CommonName:    identity.dnsName,
-				KeyFile:       tmpl.KeyFile,
-				CertFile:      tmpl.CertFile,
+				KeyFile:       renewed.KeyFile,
+				CertFile:      renewed.CertFile,
 				KeySize:       keySize,
 				ExpectedChain: discoveredCA.Chain.Certificates,
 			}); err != nil {
 				log.Warningf(ctx, "Failed to renew certificate %s: %v", tmpl.Nickname, err)
 				report(progress, gotext.Get("Failed to renew %s: %v", tmpl.Nickname, err))
-				failures = append(failures, fmt.Sprintf("%s: %v", tmpl.Nickname, err))
+				retainFailed(fmt.Sprintf("%v", err))
 				continue
 			}
-			issued := parseCertFile(tmpl.CertFile)
+			issued := parseCertFile(renewed.CertFile)
 			if issued == nil {
-				failures = append(failures, fmt.Sprintf("%s: renewed certificate could not be reloaded", tmpl.Nickname))
+				retainFailed("renewed certificate could not be reloaded")
 				continue
 			}
-			tmpl.LeafFingerprint = certificateFingerprint(issued)
-			bindTemplateToChain(tmpl, currentBinding)
+			renewed.LeafFingerprint = certificateFingerprint(issued)
+			bindTemplateToChain(&renewed, currentBinding)
+			workingTemplates = append(workingTemplates, renewed)
 			renewedOnCA = true
 			report(progress, gotext.Get("Renewed %s", tmpl.Nickname))
 		}
+
 		if renewedOnCA {
-			if err := rebuildCAArtifacts(ca); err != nil {
-				if installation != nil {
-					installation.rollback()
-				}
-				return fmt.Errorf("rebuilding CA chain state after renewal of %s: %w", ca.Name, err)
+			workingCA := *ca
+			workingCA.Templates = workingTemplates
+			if err := rebuildCAArtifacts(&workingCA); err != nil {
+				return errors.Join(
+					fmt.Errorf("rebuilding CA chain state after renewal of %s: %w", ca.Name, err),
+					rollbackContext("installed CA chain", installation.rollback()),
+				)
 			}
+			*ca = workingCA
 			obsoletePaths = append(obsoletePaths, pathsNotRetained(oldRootFiles, oldIntermediateFiles, oldSymlinkFiles, *ca)...)
 			trustChanged = true
 		} else if installation != nil {
-			installation.rollback()
+			if err := installation.rollback(); err != nil {
+				rollbackErrs = append(rollbackErrs, fmt.Errorf("rolling back unused CA chain for %s: %w", ca.Name, err))
+			}
 		}
 	}
 
@@ -334,7 +397,7 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		return fmt.Errorf("failed to save enrollment state: %w", err)
 	}
 	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, state, obsoletePaths); err != nil {
-		log.Warningf(ctx, "Failed to prune obsolete CA chain paths after renewal: %v", err)
+		rollbackErrs = append(rollbackErrs, fmt.Errorf("pruning obsolete CA chain paths after renewal: %w", err))
 	}
 	if trustChanged {
 		if err := updateCATrustStore(); err != nil {
@@ -343,7 +406,11 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	}
 
 	if len(failures) > 0 {
-		return errors.New(gotext.Get("failed to renew %d certificate(s): %s", len(failures), strings.Join(failures, "; ")))
+		renewErr := errors.New(gotext.Get("failed to renew %d certificate(s): %s", len(failures), strings.Join(failures, "; ")))
+		return errors.Join(append([]error{renewErr}, rollbackErrs...)...)
+	}
+	if len(rollbackErrs) > 0 {
+		return errors.Join(rollbackErrs...)
 	}
 	return nil
 }
@@ -413,8 +480,10 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 			found = true
 			report(progress, gotext.Get("Removing certificate %s", nickname))
 			log.Debugf(ctx, "Removing certificate files for %s", nickname)
-			os.Remove(tmpl.CertFile)
-			os.Remove(tmpl.KeyFile)
+			// Do not delete the key/cert directly: another object's state may
+			// reference the same paths. Route every candidate through
+			// removeUnreferencedPaths below after the current state is saved.
+			obsoletePaths = append(obsoletePaths, tmpl.CertFile, tmpl.KeyFile)
 			obsoletePaths = append(obsoletePaths, tmpl.ChainFiles...)
 			obsoletePaths = append(obsoletePaths, tmpl.TrustAnchorSymlink)
 			ca.Templates = append(ca.Templates[:ti], ca.Templates[ti+1:]...)
@@ -466,7 +535,7 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 		replacement = state
 	}
 	if err := removeUnreferencedPaths(ctx, m.stateDir, state.ObjectName, replacement, obsoletePaths); err != nil {
-		log.Warningf(ctx, "Failed to prune unreferenced CA chain paths after removal: %v", err)
+		return fmt.Errorf("failed to prune unreferenced CA chain paths after removal: %w", err)
 	}
 
 	if err := updateCATrustStore(); err != nil {
@@ -498,21 +567,26 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 		return []VerifyResult{}, nil
 	}
 
-	domain := normalizeDomainIdentity(state.Domain)
-	if domain == "" {
-		domain = normalizeDomainIdentity(m.domain)
+	// The verification identity is always derived from the requested object and
+	// the manager domain, never taken from the stored state, so a state file
+	// that collides on disk (sanitizeName maps e.g. "host$" and "host-" to the
+	// same file) cannot be verified against the wrong machine. The stored
+	// domain/object/identity are only validated as legacy values.
+	requested, err := enrollmentMachineIdentity(objectName, m.domain)
+	if err != nil {
+		return nil, fmt.Errorf("could not determine requested machine identity: %w", err)
 	}
-	if domain != normalizeDomainIdentity(m.domain) {
-		return nil, fmt.Errorf("enrollment state domain %q does not match manager domain %q", state.Domain, m.domain)
+	domain := normalizeDomainIdentity(m.domain)
+	if state.Domain != "" && normalizeDomainIdentity(state.Domain) != domain {
+		return nil, fmt.Errorf("enrollment state domain %q does not match requested domain %q", state.Domain, m.domain)
 	}
-	identity := normalizeMachineIdentity(state.Identity)
-	if identity == "" {
-		derived, err := enrollmentMachineIdentity(objectName, domain)
-		if err != nil {
-			return nil, fmt.Errorf("determining persisted machine identity: %w", err)
-		}
-		identity = derived.dnsName
+	if state.ObjectName != "" && !strings.EqualFold(strings.TrimSpace(state.ObjectName), strings.TrimSpace(objectName)) {
+		return nil, fmt.Errorf("enrollment state object %q does not match requested object %q", state.ObjectName, objectName)
 	}
+	if state.Identity != "" && normalizeMachineIdentity(state.Identity) != normalizeMachineIdentity(requested.dnsName) {
+		return nil, fmt.Errorf("enrollment state identity %q does not match requested machine %q", state.Identity, requested.dnsName)
+	}
+	identity := requested.dnsName
 
 	results := make([]VerifyResult, 0)
 	found := false

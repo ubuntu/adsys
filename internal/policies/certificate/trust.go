@@ -3,8 +3,11 @@ package certificate
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -28,6 +31,12 @@ type caChainInstallation struct {
 
 	createdFiles   []createdCertificateFile
 	symlinkChanges []symlinkChange
+
+	// removeFile and restoreSymlink let tests inject rollback failures.
+	// Production installations leave them nil and fall back to os.Remove and
+	// atomicSymlink respectively.
+	removeFile     func(string) error
+	restoreSymlink func(src, dst string) error
 }
 
 type createdCertificateFile struct {
@@ -108,7 +117,6 @@ func installCAChainTransactionWithOps(ca certAuthority, trustDir, globalTrustDir
 	installation := &caChainInstallation{}
 	log.Debugf(context.Background(), "Installing CA chain for %s with %d certificate(s)", ca.Name, len(chain.Certificates))
 	for i, cert := range chain.Certificates {
-		fp := certificateFingerprint(cert)
 		role := fmt.Sprintf("intermediate-%d", i)
 		if i == 0 {
 			role = "issuer"
@@ -117,7 +125,7 @@ func installCAChainTransactionWithOps(ca certAuthority, trustDir, globalTrustDir
 		if isRoot {
 			role = "root"
 		}
-		certFileName := fmt.Sprintf("%s.%s.%s.crt", sanitizeName(ca.Name), role, fp[:16])
+		certFileName := trustArtifactFileName(ca, cert, role)
 		certPath := filepath.Join(trustDir, certFileName)
 		certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
 		plan := certificateInstallPlan{cert: cert, path: certPath}
@@ -158,8 +166,7 @@ func installCAChainTransactionWithOps(ca certAuthority, trustDir, globalTrustDir
 		}
 		created, err := publishStagedCertificate(plans[i].staged, plans[i].path, plans[i].cert)
 		if err != nil {
-			installation.rollback()
-			return nil, fmt.Errorf("failed to publish CA certificate %s: %w", plans[i].path, err)
+			return nil, withRollback(installation, fmt.Errorf("failed to publish CA certificate %s: %w", plans[i].path, err))
 		}
 		if created {
 			createdFile := createdCertificateFile{
@@ -169,13 +176,11 @@ func installCAChainTransactionWithOps(ca certAuthority, trustDir, globalTrustDir
 			createdFile.info, err = os.Lstat(plans[i].path)
 			installation.createdFiles = append(installation.createdFiles, createdFile)
 			if err != nil {
-				installation.rollback()
-				return nil, fmt.Errorf("failed to inspect published CA certificate %s: %w", plans[i].path, err)
+				return nil, withRollback(installation, fmt.Errorf("failed to inspect published CA certificate %s: %w", plans[i].path, err))
 			}
 		}
 		if err := os.Remove(plans[i].staged); err != nil {
-			installation.rollback()
-			return nil, fmt.Errorf("failed to remove staged CA certificate %s: %w", plans[i].staged, err)
+			return nil, withRollback(installation, fmt.Errorf("failed to remove staged CA certificate %s: %w", plans[i].staged, err))
 		}
 		plans[i].staged = ""
 	}
@@ -184,24 +189,20 @@ func installCAChainTransactionWithOps(ca certAuthority, trustDir, globalTrustDir
 	symlinkPath := installation.SymlinkFiles[0]
 	if ops.beforeSymlink != nil {
 		if err := ops.beforeSymlink(); err != nil {
-			installation.rollback()
-			return nil, fmt.Errorf("failed before publishing trust store symlink: %w", err)
+			return nil, withRollback(installation, fmt.Errorf("failed before publishing trust store symlink: %w", err))
 		}
 	}
 	previousTarget, readErr := os.Readlink(symlinkPath)
 	hadPrevious := readErr == nil
 	if readErr != nil && !os.IsNotExist(readErr) {
-		installation.rollback()
-		return nil, fmt.Errorf("failed to read existing trust store symlink %s: %w", symlinkPath, readErr)
+		return nil, withRollback(installation, fmt.Errorf("failed to read existing trust store symlink %s: %w", symlinkPath, readErr))
 	}
 	if !hadPrevious || previousTarget != rootPath {
 		if ops.replaceSymlink == nil {
-			installation.rollback()
-			return nil, fmt.Errorf("trust symlink publisher is unavailable")
+			return nil, withRollback(installation, fmt.Errorf("trust symlink publisher is unavailable"))
 		}
 		if err := ops.replaceSymlink(rootPath, symlinkPath); err != nil {
-			installation.rollback()
-			return nil, fmt.Errorf("failed to create trust store symlink %s -> %s: %w", symlinkPath, rootPath, err)
+			return nil, withRollback(installation, fmt.Errorf("failed to create trust store symlink %s -> %s: %w", symlinkPath, rootPath, err))
 		}
 		change := symlinkChange{
 			path:            symlinkPath,
@@ -212,12 +213,39 @@ func installCAChainTransactionWithOps(ca certAuthority, trustDir, globalTrustDir
 		change.installedInfo, err = os.Lstat(symlinkPath)
 		installation.symlinkChanges = append(installation.symlinkChanges, change)
 		if err != nil {
-			installation.rollback()
-			return nil, fmt.Errorf("failed to inspect published trust store symlink %s: %w", symlinkPath, err)
+			return nil, withRollback(installation, fmt.Errorf("failed to inspect published trust store symlink %s: %w", symlinkPath, err))
 		}
 	}
 
 	return installation, nil
+}
+
+// trustArtifactFileName builds a collision-resistant on-disk name for a CA
+// chain certificate. Distinct raw CA identities such as "Corp CA" and "Corp-CA"
+// sanitize to the same readable prefix, so the disambiguating component is a
+// SHA-256 digest over the full unsanitized CA identity (name and hostname) and
+// the certificate's full fingerprint. Two installations therefore share a path
+// only when they refer to the exact same CA identity and certificate, and never
+// merely because their sanitized names happen to match.
+func trustArtifactFileName(ca certAuthority, cert *x509.Certificate, role string) string {
+	h := sha256.New()
+	h.Write([]byte(ca.Name))
+	h.Write([]byte{0})
+	h.Write([]byte(ca.Hostname))
+	h.Write([]byte{0})
+	h.Write([]byte(certificateFingerprint(cert)))
+	digest := hex.EncodeToString(h.Sum(nil))
+	return fmt.Sprintf("%s.%s.%s.crt", sanitizeName(ca.Name), role, digest)
+}
+
+// withRollback rolls back a partial installation and joins any rollback failure
+// with the primary error, so leftover artifacts are never reported as a clean
+// abort.
+func withRollback(installation *caChainInstallation, err error) error {
+	if rbErr := installation.rollback(); rbErr != nil {
+		return errors.Join(err, fmt.Errorf("rolling back partial CA chain installation: %w", rbErr))
+	}
+	return err
 }
 
 func existingCertificateMatches(path string, expected *x509.Certificate) (bool, error) {
@@ -285,41 +313,81 @@ func publishStagedCertificate(staged, dst string, expected *x509.Certificate) (b
 	return true, nil
 }
 
-func (installation *caChainInstallation) rollback() {
+// rollback reverses the artifacts published by this installation, restoring or
+// removing only entries that still match what it created. It returns an
+// aggregated error describing every symlink restoration or file removal that
+// could not be completed, so callers never report a clean rollback while
+// leftover artifacts remain on disk for a later attempt to repair or adopt.
+func (installation *caChainInstallation) rollback() error {
 	if installation == nil {
-		return
+		return nil
 	}
+	remove := installation.removeFile
+	if remove == nil {
+		remove = os.Remove
+	}
+	restore := installation.restoreSymlink
+	if restore == nil {
+		restore = atomicSymlink
+	}
+	var errs []error
 	for i := len(installation.symlinkChanges) - 1; i >= 0; i-- {
 		change := installation.symlinkChanges[i]
 		currentTarget, err := os.Readlink(change.path)
-		if err != nil || currentTarget != change.installedTarget {
+		if err != nil {
+			if !os.IsNotExist(err) {
+				errs = append(errs, fmt.Errorf("reading trust store symlink %s during rollback: %w", change.path, err))
+			}
 			continue
 		}
-		if currentInfo, err := os.Lstat(change.path); err != nil ||
-			(change.installedInfo != nil && !os.SameFile(change.installedInfo, currentInfo)) {
+		// A different target means something else now owns this entry; leave it.
+		if currentTarget != change.installedTarget {
+			continue
+		}
+		currentInfo, err := os.Lstat(change.path)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("inspecting trust store symlink %s during rollback: %w", change.path, err))
+			continue
+		}
+		if change.installedInfo != nil && !os.SameFile(change.installedInfo, currentInfo) {
 			continue
 		}
 		if change.hadPrevious {
-			_ = atomicSymlink(change.previousTarget, change.path)
-		} else {
-			_ = os.Remove(change.path)
+			if err := restore(change.previousTarget, change.path); err != nil {
+				errs = append(errs, fmt.Errorf("restoring previous trust store symlink %s -> %s during rollback: %w", change.path, change.previousTarget, err))
+			}
+			continue
+		}
+		if err := remove(change.path); err != nil && !os.IsNotExist(err) {
+			errs = append(errs, fmt.Errorf("removing trust store symlink %s during rollback: %w", change.path, err))
 		}
 	}
 	for i := len(installation.createdFiles) - 1; i >= 0; i-- {
 		created := installation.createdFiles[i]
 		currentInfo, err := os.Lstat(created.path)
-		if err != nil || (created.info != nil && !os.SameFile(created.info, currentInfo)) {
+		if err != nil {
+			if !os.IsNotExist(err) {
+				errs = append(errs, fmt.Errorf("inspecting published certificate %s during rollback: %w", created.path, err))
+			}
+			continue
+		}
+		if created.info != nil && !os.SameFile(created.info, currentInfo) {
 			continue
 		}
 		data, err := os.ReadFile(created.path)
 		if err != nil {
+			errs = append(errs, fmt.Errorf("reading published certificate %s during rollback: %w", created.path, err))
 			continue
 		}
 		block, _ := pem.Decode(data)
-		if block != nil && bytes.Equal(block.Bytes, created.raw) {
-			_ = os.Remove(created.path)
+		if block == nil || !bytes.Equal(block.Bytes, created.raw) {
+			continue
+		}
+		if err := remove(created.path); err != nil && !os.IsNotExist(err) {
+			errs = append(errs, fmt.Errorf("removing published certificate %s during rollback: %w", created.path, err))
 		}
 	}
+	return errors.Join(errs...)
 }
 
 // updateCATrustStore runs update-ca-certificates to rebuild the system
