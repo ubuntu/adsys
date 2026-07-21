@@ -25,11 +25,12 @@ var errStateOwnership = errors.New("enrollment state belongs to a different obje
 // enrollmentState represents the persisted state of certificate enrollment
 // for a single machine. This replaces the Samba TDB cache.
 type enrollmentState struct {
-	ObjectName string       `json:"object_name"`
-	Identity   string       `json:"identity,omitempty"`
-	Domain     string       `json:"domain"`
-	CAs        []enrolledCA `json:"cas"`
-	UpdatedAt  time.Time    `json:"updated_at"`
+	ObjectName string              `json:"object_name"`
+	Identity   string              `json:"identity,omitempty"`
+	Domain     string              `json:"domain"`
+	CAs        []enrolledCA        `json:"cas"`
+	Pending    []pendingEnrollment `json:"pending,omitempty"`
+	UpdatedAt  time.Time           `json:"updated_at"`
 }
 
 // enrolledCA tracks a single CA that the machine is enrolled with.
@@ -50,11 +51,42 @@ type enrolledTemplate struct {
 	Template           string   `json:"template"`  // template name
 	KeyFile            string   `json:"key_file"`  // path to private key
 	CertFile           string   `json:"cert_file"` // path to certificate
+	GenerationRoot     string   `json:"generation_root,omitempty"`
+	GenerationPointer  string   `json:"generation_pointer,omitempty"`
+	GenerationDir      string   `json:"generation_dir,omitempty"`
 	LeafFingerprint    string   `json:"leaf_fingerprint,omitempty"`
 	IssuerFingerprint  string   `json:"issuer_fingerprint,omitempty"`
 	ChainFingerprints  []string `json:"chain_fingerprints,omitempty"`
 	ChainFiles         []string `json:"chain_files,omitempty"` // ordered issuer-to-root certificate files
 	TrustAnchorSymlink string   `json:"trust_anchor_symlink,omitempty"`
+}
+
+// pendingEnrollment contains everything required to poll and finish a request
+// without rediscovery, failover, or generating another key.
+type pendingEnrollment struct {
+	ObjectName          string    `json:"object_name"`
+	Domain              string    `json:"domain"`
+	Identity            string    `json:"identity"`
+	CAName              string    `json:"ca_name"`
+	Server              string    `json:"server"`
+	Template            string    `json:"template"`
+	Nickname            string    `json:"nickname"`
+	RequestID           uint32    `json:"request_id"`
+	KeyFile             string    `json:"key_file"`
+	CSRFile             string    `json:"csr_file"`
+	KeyFingerprint      string    `json:"key_fingerprint"`
+	GenerationRoot      string    `json:"generation_root"`
+	IssuerFingerprint   string    `json:"issuer_fingerprint"`
+	ChainFingerprints   []string  `json:"chain_fingerprints"`
+	ChainFiles          []string  `json:"chain_files"`
+	TrustAnchorSymlink  string    `json:"trust_anchor_symlink"`
+	RootCerts           []string  `json:"root_certs"`
+	IntermediateCerts   []string  `json:"intermediate_certs,omitempty"`
+	Symlinks            []string  `json:"symlinks"`
+	Renewal             bool      `json:"renewal,omitempty"`
+	CreatedAt           time.Time `json:"created_at"`
+	LastPolledAt        time.Time `json:"last_polled_at,omitempty"`
+	MetadataFingerprint string    `json:"metadata_fingerprint"`
 }
 
 // stateFilePath returns the collision-resistant state path for objectName. The
@@ -86,6 +118,9 @@ func loadState(stateDir, objectName, domain string) (*enrollmentState, error) {
 		if err := validateUniqueNicknames(state); err != nil {
 			return nil, fmt.Errorf("validating enrollment state %s: %w", path, err)
 		}
+		if err := validateGenerationStatePaths(stateDir, state); err != nil {
+			return nil, fmt.Errorf("validating enrollment state %s: %w", path, err)
+		}
 		removeMatchingLegacyState(stateDir, objectName, domain)
 		log.Debugf(context.Background(), "Loaded enrollment state for %s (last updated: %s)", state.ObjectName, state.UpdatedAt.Format("2006-01-02 15:04:05"))
 		return state, nil
@@ -112,6 +147,9 @@ func loadState(stateDir, objectName, domain string) (*enrollmentState, error) {
 	}
 	if err := normalizeDuplicateNicknames(legacy); err != nil {
 		return nil, fmt.Errorf("migrating legacy enrollment state %s: %w", legacyPath, err)
+	}
+	if err := validateGenerationStatePaths(stateDir, legacy); err != nil {
+		return nil, fmt.Errorf("validating legacy enrollment state %s: %w", legacyPath, err)
 	}
 	if err := writeStateFile(path, legacy); err != nil {
 		return nil, fmt.Errorf("migrating legacy enrollment state to %s: %w", path, err)
@@ -217,6 +255,12 @@ func saveState(stateDir string, state *enrollmentState) error {
 	if err := normalizeDuplicateNicknames(working); err != nil {
 		return fmt.Errorf("refusing to save invalid enrollment state: %w", err)
 	}
+	if err := validatePendingStateMetadata(working); err != nil {
+		return fmt.Errorf("refusing to save invalid enrollment state: %w", err)
+	}
+	if err := validateGenerationStatePaths(stateDir, working); err != nil {
+		return fmt.Errorf("refusing to save invalid enrollment state: %w", err)
+	}
 	path := stateFilePath(stateDir, working.ObjectName)
 	log.Debugf(context.Background(), "Writing enrollment state for %s to %s", working.ObjectName, path)
 	if err := writeStateFile(path, working); err != nil {
@@ -226,11 +270,109 @@ func saveState(stateDir string, state *enrollmentState) error {
 	return nil
 }
 
+func validateGenerationStatePaths(stateDir string, state *enrollmentState) error {
+	privateRoot, err := filepath.Abs(filepath.Join(stateDir, "private", "certs"))
+	if err != nil {
+		return err
+	}
+	for _, ca := range state.CAs {
+		for _, tmpl := range ca.Templates {
+			if tmpl.GenerationRoot == "" && tmpl.GenerationPointer == "" && tmpl.GenerationDir == "" {
+				continue
+			}
+			root, err := filepath.Abs(tmpl.GenerationRoot)
+			if err != nil {
+				return err
+			}
+			if !pathWithin(privateRoot, root) || filepath.Clean(root) == filepath.Clean(privateRoot) {
+				return fmt.Errorf("template %s generation root is outside ADSys private state", tmpl.Nickname)
+			}
+			if err := validateGenerationRootComponents(privateRoot, root); err != nil {
+				return fmt.Errorf("template %s generation root is unsafe: %w", tmpl.Nickname, err)
+			}
+			pointer, err := filepath.Abs(tmpl.GenerationPointer)
+			if err != nil || filepath.Clean(pointer) != filepath.Join(root, "current") {
+				return fmt.Errorf("template %s generation pointer is outside its root", tmpl.Nickname)
+			}
+			directory, err := filepath.Abs(tmpl.GenerationDir)
+			if err != nil || !pathWithin(filepath.Join(root, "generations"), directory) ||
+				filepath.Clean(directory) == filepath.Join(root, "generations") {
+				return fmt.Errorf("template %s immutable generation is outside its root", tmpl.Nickname)
+			}
+		}
+	}
+	return nil
+}
+
+func validateGenerationRootComponents(privateRoot, root string) error {
+	rootInfo, err := os.Lstat(privateRoot)
+	if err != nil {
+		return err
+	}
+	if !rootInfo.IsDir() || rootInfo.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("private certificate root is not a regular directory")
+	}
+	relative, err := filepath.Rel(privateRoot, root)
+	if err != nil {
+		return err
+	}
+	current := privateRoot
+	for _, component := range strings.Split(relative, string(filepath.Separator)) {
+		current = filepath.Join(current, component)
+		info, err := os.Lstat(current)
+		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
+			return err
+		}
+		if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("%s is not a regular directory", current)
+		}
+	}
+	return nil
+}
+
+func validatePendingStateMetadata(state *enrollmentState) error {
+	targets := make(map[string]struct{}, len(state.Pending))
+	requests := make(map[string]struct{}, len(state.Pending))
+	for _, pending := range state.Pending {
+		if pending.ObjectName != state.ObjectName ||
+			normalizeDomainIdentity(pending.Domain) != normalizeDomainIdentity(state.Domain) ||
+			normalizeMachineIdentity(pending.Identity) != normalizeMachineIdentity(state.Identity) {
+			return fmt.Errorf("pending request %d ownership does not match state", pending.RequestID)
+		}
+		if pending.RequestID == 0 {
+			return fmt.Errorf("pending request for %s has ID 0", pending.Nickname)
+		}
+		if pending.CAName == "" || pending.Server == "" || pending.Template == "" || pending.Nickname == "" ||
+			pending.KeyFile == "" || pending.CSRFile == "" || pending.KeyFingerprint == "" ||
+			pending.GenerationRoot == "" || pending.IssuerFingerprint == "" ||
+			len(pending.ChainFingerprints) == 0 || len(pending.ChainFiles) != len(pending.ChainFingerprints) {
+			return fmt.Errorf("pending request %d metadata is incomplete", pending.RequestID)
+		}
+		if !strings.EqualFold(pending.MetadataFingerprint, pendingMetadataFingerprint(pending)) {
+			return fmt.Errorf("pending request %d metadata fingerprint does not match", pending.RequestID)
+		}
+		target := pendingTargetKey(pending.CAName, pending.Server, pending.Template)
+		if _, exists := targets[target]; exists {
+			return fmt.Errorf("duplicate pending target %s", pending.Nickname)
+		}
+		targets[target] = struct{}{}
+		request := strings.ToLower(pending.Server) + "\x00" + strings.ToLower(pending.CAName) + fmt.Sprintf("\x00%d", pending.RequestID)
+		if _, exists := requests[request]; exists {
+			return fmt.Errorf("duplicate pending request ID %d for CA %s", pending.RequestID, pending.CAName)
+		}
+		requests[request] = struct{}{}
+	}
+	return nil
+}
+
 func writeStateFile(path string, state *enrollmentState) error {
 	if err := validateUniqueNicknames(state); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0750); err != nil {
+	if err := mkdirAllWithoutSymlinks(filepath.Dir(path), 0750); err != nil {
 		return fmt.Errorf("failed to create state directory: %w", err)
 	}
 	data, err := json.MarshalIndent(state, "", "  ")
@@ -247,7 +389,23 @@ func cloneEnrollmentState(state *enrollmentState) *enrollmentState {
 	clone := *state
 	clone.CAs = append([]enrolledCA(nil), state.CAs...)
 	for i := range clone.CAs {
+		clone.CAs[i].ChainFingerprints = append([]string(nil), state.CAs[i].ChainFingerprints...)
+		clone.CAs[i].RootCerts = append([]string(nil), state.CAs[i].RootCerts...)
+		clone.CAs[i].IntermediateCerts = append([]string(nil), state.CAs[i].IntermediateCerts...)
+		clone.CAs[i].Symlinks = append([]string(nil), state.CAs[i].Symlinks...)
 		clone.CAs[i].Templates = append([]enrolledTemplate(nil), state.CAs[i].Templates...)
+		for j := range clone.CAs[i].Templates {
+			clone.CAs[i].Templates[j].ChainFingerprints = append([]string(nil), state.CAs[i].Templates[j].ChainFingerprints...)
+			clone.CAs[i].Templates[j].ChainFiles = append([]string(nil), state.CAs[i].Templates[j].ChainFiles...)
+		}
+	}
+	clone.Pending = append([]pendingEnrollment(nil), state.Pending...)
+	for i := range clone.Pending {
+		clone.Pending[i].ChainFingerprints = append([]string(nil), state.Pending[i].ChainFingerprints...)
+		clone.Pending[i].ChainFiles = append([]string(nil), state.Pending[i].ChainFiles...)
+		clone.Pending[i].RootCerts = append([]string(nil), state.Pending[i].RootCerts...)
+		clone.Pending[i].IntermediateCerts = append([]string(nil), state.Pending[i].IntermediateCerts...)
+		clone.Pending[i].Symlinks = append([]string(nil), state.Pending[i].Symlinks...)
 	}
 	return &clone
 }

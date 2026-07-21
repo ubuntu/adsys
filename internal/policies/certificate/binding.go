@@ -235,11 +235,15 @@ func validatePersistedTemplate(ca enrolledCA, tmpl enrolledTemplate, identity st
 	if err != nil {
 		return enrolledTemplate{}, err
 	}
-	certPEM, err := os.ReadFile(tmpl.CertFile)
+	keyPath, certPath, err := templateGenerationReadPaths(tmpl)
+	if err != nil {
+		return enrolledTemplate{}, fmt.Errorf("validating certificate generation: %w", err)
+	}
+	certPEM, err := os.ReadFile(certPath)
 	if err != nil {
 		return enrolledTemplate{}, fmt.Errorf("reading existing certificate: %w", err)
 	}
-	keyPEM, err := os.ReadFile(tmpl.KeyFile)
+	keyPEM, err := os.ReadFile(keyPath)
 	if err != nil {
 		return enrolledTemplate{}, fmt.Errorf("reading existing private key: %w", err)
 	}
@@ -354,10 +358,27 @@ func stateReferencedPaths(state *enrollmentState) map[string]struct{} {
 			}
 		}
 		for _, tmpl := range ca.Templates {
-			for _, path := range append([]string{tmpl.KeyFile, tmpl.CertFile, tmpl.TrustAnchorSymlink}, tmpl.ChainFiles...) {
+			templatePaths := []string{
+				tmpl.KeyFile,
+				tmpl.CertFile,
+				tmpl.GenerationRoot,
+				tmpl.GenerationPointer,
+				tmpl.GenerationDir,
+				tmpl.TrustAnchorSymlink,
+			}
+			templatePaths = append(templatePaths, generationArtifactPaths(tmpl)...)
+			templatePaths = append(templatePaths, tmpl.ChainFiles...)
+			for _, path := range templatePaths {
 				if path != "" {
 					paths[path] = struct{}{}
 				}
+			}
+		}
+	}
+	for _, pending := range state.Pending {
+		for _, path := range pendingReferencedPaths(pending) {
+			if path != "" {
+				paths[path] = struct{}{}
 			}
 		}
 	}
@@ -414,13 +435,48 @@ func removeUnreferencedPaths(ctx context.Context, stateDir, objectName, domain s
 		if _, keep := referenced[path]; keep {
 			continue
 		}
-		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
+		if err := removeOwnedEnrollmentPath(stateDir, path); err != nil && !os.IsNotExist(err) {
 			cleanupErrs = append(cleanupErrs, fmt.Errorf("removing unreferenced enrollment path %s: %w", path, err))
 			continue
 		}
 		log.Debugf(ctx, "Removed unreferenced enrollment path: %s", path)
 	}
 	return errors.Join(cleanupErrs...)
+}
+
+func removeOwnedEnrollmentPath(stateDir, path string) error {
+	if path == "" {
+		return nil
+	}
+	stateRoot, err := filepath.Abs(stateDir)
+	if err != nil {
+		return err
+	}
+	pathAbs, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	// Global trust artifacts intentionally live outside stateDir. Directories
+	// are never accepted there, while legacy state may still own a regular
+	// trust file in addition to current symlinks.
+	if !pathWithin(stateRoot, pathAbs) {
+		info, err := os.Lstat(pathAbs)
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() && info.Mode()&os.ModeSymlink == 0 {
+			return fmt.Errorf("refusing to remove unsupported path outside ADSys state")
+		}
+		return os.Remove(pathAbs)
+	}
+	info, err := os.Lstat(pathAbs)
+	if err != nil {
+		return err
+	}
+	if info.Mode().IsRegular() || info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+		return os.Remove(pathAbs)
+	}
+	return fmt.Errorf("refusing to remove unsupported file type")
 }
 
 func flattenStrings(groups ...[]string) []string {

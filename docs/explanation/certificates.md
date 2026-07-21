@@ -50,5 +50,6 @@ Here is an overview of what happens during policy application:
 * Parse GPO (ADSys)
 * Discover CAs and templates from AD via LDAP (ADSys)
 * Install root CA certificates to system trust store (ADSys)
-* Submit a CSR for each template directly to the CA over MS-ICPR (RPC) and write the issued certificate and private key to disk (ADSys)
+* Submit a CSR for each template directly to the CA over MS-ICPR (RPC); securely persist and poll requests that require approval (ADSys)
+* Verify an issued leaf against its persisted key, identity, and exact CA chain, then atomically publish the matched key/certificate generation (ADSys)
 * Persist the enrollment state to make subsequent applications idempotent (ADSys)

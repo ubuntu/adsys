@@ -56,8 +56,8 @@ For more advanced configuration, a list of policy servers can be specified in th
 
 On the client system, a successful auto-enrollment will place certificate data in the following paths:
 
-* `/var/lib/adsys/certs` - certificate data
-* `/var/lib/adsys/private/certs` - private key data
+* `/var/lib/adsys/certs` - CA certificates and enrollment state
+* `/var/lib/adsys/private/certs` - native LDAP matched leaf/private-key generations
 * `/usr/local/share/ca-certificates` - root certificate data (symbolic link pointing to `/var/lib/adsys/certs`)
 
 With the native LDAP method, ADSys tracks the files it created in `/var/lib/adsys/certs/state_*.json`. Certificates are not registered with `certmonger`. Use `adsysctl certificate` to manage them; see {ref}`howto::certificates-manage`.

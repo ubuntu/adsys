@@ -140,9 +140,9 @@ func TestApplyPolicies(t *testing.T) {
 					certificate.WithLDAPConnector(certificate.LDAPConnectorFunc(func(context.Context, string) (certificate.LDAPClient, error) {
 						return &policiesTestLDAPConn{ca: testCA}, nil
 					})),
-					certificate.WithCSRSubmitter(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+					certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 						return dummyIssuedCertificateFromCSR(t, csrPEM, testCA), nil
-					}),
+					})),
 				)),
 				policies.WithProxyApplier(&mockProxyApplier{wantApplyError: tc.noUbuntuProxyManager}),
 				policies.WithSystemdCaller(&testutils.MockSystemdCaller{}),

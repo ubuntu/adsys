@@ -233,7 +233,7 @@ func TestRenewCertificates(t *testing.T) {
 		}
 		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
 			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", templates, caDER)),
-			WithCSRSubmitter(submitter),
+			WithCertificateRequester(IssuedCertificateRequester(submitter)),
 		)
 		return m, stateDir, certPaths
 	}
@@ -324,7 +324,7 @@ func TestRenewCertificates(t *testing.T) {
 		}
 		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
 			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
-			WithCSRSubmitter(submitter),
+			WithCertificateRequester(IssuedCertificateRequester(submitter)),
 		)
 		stateBefore, err := os.ReadFile(stateFilePath(stateDir, mgrTestObject))
 		require.NoError(t, err)
@@ -427,7 +427,7 @@ func TestTargetedRenewalRetainsPerTemplateExactChains(t *testing.T) {
 					newIssuer.cert.Raw,
 					trustedRoot.Raw,
 				)),
-				WithCSRSubmitter(submitter),
+				WithCertificateRequester(IssuedCertificateRequester(submitter)),
 			)
 
 			untouchedBefore, err := os.ReadFile(templates[1].CertFile)
@@ -525,10 +525,10 @@ func TestPolicyReconciliationPreservesPreviousStateOnTrustInstallFailure(t *test
 			[]string{"Machine"},
 			newCA.cert.Raw,
 		)),
-		WithCSRSubmitter(func(context.Context, string, string, string, string) (string, error) {
+		WithCertificateRequester(IssuedCertificateRequester(func(context.Context, string, string, string, string) (string, error) {
 			submissions++
 			return "", fmt.Errorf("unexpected submission")
-		}),
+		})),
 	)
 
 	require.NoError(t, manager.enroll(context.Background(), mgrTestObject))
@@ -1046,7 +1046,7 @@ func TestRenewCertificatesReplacesInvalidTargets(t *testing.T) {
 		}
 		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
 			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
-			WithCSRSubmitter(submitter),
+			WithCertificateRequester(IssuedCertificateRequester(submitter)),
 		)
 		return m, tmpl.CertFile
 	}
@@ -1123,7 +1123,7 @@ func TestRenewCertificatesReplacesTargetWithExpiredOldIssuer(t *testing.T) {
 			newIssuer.cert.Raw,
 			root.cert.Raw,
 		)),
-		WithCSRSubmitter(submitter),
+		WithCertificateRequester(IssuedCertificateRequester(submitter)),
 	)
 
 	// Precondition: the persisted chain is currently invalid because the old
@@ -1182,7 +1182,7 @@ func TestRenewCertificatesFailsSafelyOnBrokenNonTarget(t *testing.T) {
 	}
 	m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
 		WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine", "WebServer"}, caDER)),
-		WithCSRSubmitter(submitter),
+		WithCertificateRequester(IssuedCertificateRequester(submitter)),
 	)
 
 	err = m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil)
@@ -1229,7 +1229,7 @@ func TestRenewCertificatesRetainsValidOldEntryOnFailure(t *testing.T) {
 	}
 	m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
 		WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
-		WithCSRSubmitter(submitter),
+		WithCertificateRequester(IssuedCertificateRequester(submitter)),
 	)
 
 	err = m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil)
@@ -1509,7 +1509,7 @@ func TestCollidingObjectLegacyRenewalUsesCurrentArtifactPaths(t *testing.T) {
 				WithLDAPConnector(mgrConnectorForIdentity(identity, []mgrDirectoryCA{{
 					name: "TestCA", hostname: "ca.example.com", templates: []string{"Machine"}, der: caDER,
 				}})),
-				WithCSRSubmitter(submitter),
+				WithCertificateRequester(IssuedCertificateRequester(submitter)),
 			)
 
 			err = manager.RenewCertificates(context.Background(), "host$", "TestCA.Machine", false, nil)
@@ -1525,7 +1525,7 @@ func TestCollidingObjectLegacyRenewalUsesCurrentArtifactPaths(t *testing.T) {
 				renewed := state.CAs[0].Templates[0]
 				assert.NotEqual(t, shared.KeyFile, renewed.KeyFile)
 				assert.NotEqual(t, shared.CertFile, renewed.CertFile)
-				assert.Contains(t, filepath.Base(renewed.CertFile), leafArtifactBase("host$", certAuthority{
+				assert.Contains(t, filepath.Base(renewed.GenerationRoot), leafArtifactBase("host$", certAuthority{
 					Name: "TestCA", Hostname: "ca.example.com",
 				}, "Machine"))
 				assert.FileExists(t, renewed.KeyFile)
@@ -1567,9 +1567,9 @@ func TestEnrollmentIgnoresCollidingForeignLegacyState(t *testing.T) {
 		WithLDAPConnector(mgrConnectorForIdentity(identity, []mgrDirectoryCA{{
 			name: "TestCA", hostname: "ca.example.com", templates: []string{"Machine"}, der: caDER,
 		}})),
-		WithCSRSubmitter(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+		WithCertificateRequester(IssuedCertificateRequester(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 			return mgrIssueFromCSRForIdentity(t, csrPEM, time.Now().Add(365*24*time.Hour), caCert, caKey, identity.dnsName), nil
-		}),
+		})),
 	)
 
 	require.NoError(t, manager.enroll(context.Background(), "host$"))
@@ -1654,7 +1654,7 @@ func TestManagementNicknameCollisionsAreDisambiguated(t *testing.T) {
 			{name: "Corp CA", hostname: "ca-a.example.com", templates: []string{"Machine"}, der: caADER},
 			{name: "Corp-CA", hostname: "ca-b.example.com", templates: []string{"Machine"}, der: caBDER},
 		})),
-		WithCSRSubmitter(func(_ context.Context, _, caName, _ string, csrPEM string) (string, error) {
+		WithCertificateRequester(IssuedCertificateRequester(func(_ context.Context, _, caName, _ string, csrPEM string) (string, error) {
 			switch caName {
 			case "Corp CA":
 				return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caACert, caAKey), nil
@@ -1663,7 +1663,7 @@ func TestManagementNicknameCollisionsAreDisambiguated(t *testing.T) {
 			default:
 				return "", fmt.Errorf("unexpected CA %q", caName)
 			}
-		}),
+		})),
 	)
 
 	listed, err := manager.ListCertificates(context.Background(), mgrTestObject)
@@ -1733,12 +1733,12 @@ func TestEnrollmentRollbackFailuresAreNeverMasked(t *testing.T) {
 				stateDir,
 				filepath.Join(baseDir, "trust"),
 				WithLDAPConnector(mgrConnectorForIdentity(identity, cas)),
-				WithCSRSubmitter(func(_ context.Context, _, caName, _ string, csrPEM string) (string, error) {
+				WithCertificateRequester(IssuedCertificateRequester(func(_ context.Context, _, caName, _ string, csrPEM string) (string, error) {
 					if caName == "Rollback CA" {
 						return "", fmt.Errorf("injected submission failure")
 					}
 					return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), goodCert, goodKey), nil
-				}),
+				})),
 			)
 			manager.installChain = func(ca certAuthority, trustDir, globalTrustDir string) (*caChainInstallation, error) {
 				installation, err := installCAChainTransaction(ca, trustDir, globalTrustDir)
@@ -1795,11 +1795,11 @@ func TestEnrollmentSerializesCreatorRollbackAndAdopterCommit(t *testing.T) {
 		stateDir,
 		globalTrustDir,
 		WithLDAPConnector(connector),
-		WithCSRSubmitter(func(context.Context, string, string, string, string) (string, error) {
+		WithCertificateRequester(IssuedCertificateRequester(func(context.Context, string, string, string, string) (string, error) {
 			close(creatorSubmitted)
 			<-releaseCreator
 			return "", fmt.Errorf("injected creator failure")
-		}),
+		})),
 	)
 	adopterConnected := make(chan struct{})
 	adopterConnector := LDAPConnectorFunc(func(ctx context.Context, server string) (LDAPClient, error) {
@@ -1811,7 +1811,7 @@ func TestEnrollmentSerializesCreatorRollbackAndAdopterCommit(t *testing.T) {
 		stateDir,
 		globalTrustDir,
 		WithLDAPConnector(adopterConnector),
-		WithCSRSubmitter(func(_ context.Context, _, _, _ string, csrPEM string) (string, error) {
+		WithCertificateRequester(IssuedCertificateRequester(func(_ context.Context, _, _, _ string, csrPEM string) (string, error) {
 			return mgrIssueFromCSRForIdentityResult(
 				csrPEM,
 				time.Now().Add(365*24*time.Hour),
@@ -1819,7 +1819,7 @@ func TestEnrollmentSerializesCreatorRollbackAndAdopterCommit(t *testing.T) {
 				caKey,
 				"keypress.example.com",
 			)
-		}),
+		})),
 	)
 
 	creatorDone := make(chan error, 1)
@@ -1894,9 +1894,9 @@ func TestManagementRejectsForeignCanonicalState(t *testing.T) {
 		stateDir,
 		filepath.Join(baseDir, "trust"),
 		WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
-		WithCSRSubmitter(func(context.Context, string, string, string, string) (string, error) {
+		WithCertificateRequester(IssuedCertificateRequester(func(context.Context, string, string, string, string) (string, error) {
 			return "", fmt.Errorf("CSR submission must not use foreign state")
-		}),
+		})),
 	)
 
 	operations := map[string]func() error{

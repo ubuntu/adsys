@@ -327,7 +327,7 @@ func TestApplyPolicy(t *testing.T) {
 				certificate.WithGlobalTrustDir(globalTrustDir),
 				certificate.WithEnrollmentMethod("ldap"),
 				certificate.WithLDAPConnector(ldapConnect),
-				certificate.WithCSRSubmitter(submitter),
+				certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
 			)
 
 			err := m.ApplyPolicy(context.Background(), "keypress", !tc.isUser, !tc.isOffline, tc.entries)
@@ -345,10 +345,10 @@ func TestApplyPolicy(t *testing.T) {
 			require.NoError(t, err, "ApplyPolicy should succeed")
 
 			if name == "Computer, configured to enroll" {
-				certs, err := filepath.Glob(filepath.Join(stateDir, "certs", "TestCA.Machine.*.crt"))
+				certs, err := filepath.Glob(filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*", "current", "certificate.crt"))
 				require.NoError(t, err)
 				require.Len(t, certs, 1, "expected exactly one enrolled certificate")
-				keys, err := filepath.Glob(filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*.key"))
+				keys, err := filepath.Glob(filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*", "current", "private.key"))
 				require.NoError(t, err)
 				require.Len(t, keys, 1, "expected exactly one enrolled private key")
 			}
@@ -381,8 +381,8 @@ func issueCertFromCSR(t *testing.T, csrPEM string, notAfter time.Time, ca *testC
 }
 
 // singleGlobMatch returns the sole file matching pattern, failing the test when
-// zero or multiple files match. Enrollment embeds a raw-identity hash in leaf
-// key/cert file names, so tests locate them by their stable nickname prefix.
+// zero or multiple files match. Enrollment embeds a raw-identity hash in each
+// leaf generation directory, so tests locate it by its stable nickname prefix.
 func singleGlobMatch(t *testing.T, pattern string) string {
 	t.Helper()
 	matches, err := filepath.Glob(pattern)
@@ -402,7 +402,8 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 	var submitCount int
 	leafValidity := 365 * 24 * time.Hour
 	caFixture := generateTestCA(t)
-	var submitter certificate.CSRSubmitter = func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+	//nolint:unparam // The error result is required by IssuedCertificateRequester.
+	submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 		submitCount++
 		return issueCertFromCSR(t, csrPEM, time.Now().Add(leafValidity), caFixture, "keypress.example.com"), nil
 	}
@@ -416,7 +417,7 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 			certificate.WithGlobalTrustDir(globalTrustDir),
 			certificate.WithEnrollmentMethod("ldap"),
 			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
-			certificate.WithCSRSubmitter(submitter),
+			certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
 		)
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
 	}
@@ -424,7 +425,7 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 	// Initial enrollment issues a long-lived certificate.
 	require.NoError(t, apply())
 	require.Equal(t, 1, submitCount, "first apply should enroll once")
-	certFile := singleGlobMatch(t, filepath.Join(stateDir, "certs", "TestCA.Machine.*.crt"))
+	certFile := singleGlobMatch(t, filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*", "current", "certificate.crt"))
 	require.FileExists(t, certFile)
 
 	// A still-valid certificate is reused without contacting the CA again.
@@ -448,7 +449,7 @@ func TestRenewalFailureRejectsUnexpectedStoredCert(t *testing.T) {
 	caFixture := generateTestCA(t)
 
 	var fail bool
-	var submitter certificate.CSRSubmitter = func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+	submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 		if fail {
 			return "", fmt.Errorf("mock transient submit failure")
 		}
@@ -464,23 +465,24 @@ func TestRenewalFailureRejectsUnexpectedStoredCert(t *testing.T) {
 			certificate.WithGlobalTrustDir(globalTrustDir),
 			certificate.WithEnrollmentMethod("ldap"),
 			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine", "WebServer"}, caFixture))),
-			certificate.WithCSRSubmitter(submitter),
+			certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
 		)
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
 	}
 
 	// Initial enrollment issues long-lived certs for both templates.
 	require.NoError(t, apply())
-	machineCert := singleGlobMatch(t, filepath.Join(stateDir, "certs", "TestCA.Machine.*.crt"))
-	machineKey := singleGlobMatch(t, filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*.key"))
+	machineCert := singleGlobMatch(t, filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*", "current", "certificate.crt"))
+	machineKey := singleGlobMatch(t, filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*", "current", "private.key"))
 	require.FileExists(t, machineCert)
 	require.FileExists(t, machineKey)
 
 	// Push the Machine cert into the renewal window, then make enrollment fail.
-	// WebServer remains long-lived and is reused, so enrollment overall succeeds.
+	// WebServer remains long-lived and is reused, while the transient Machine
+	// failure is still surfaced to the caller.
 	require.NoError(t, os.WriteFile(machineCert, selfSignedCertPEM(t, 10*24*time.Hour), 0600))
 	fail = true
-	require.NoError(t, apply())
+	require.ErrorContains(t, apply(), "mock transient submit failure")
 
 	// The self-signed replacement is not from the expected CA and does not
 	// match the stored key, so a failed renewal must not preserve it.

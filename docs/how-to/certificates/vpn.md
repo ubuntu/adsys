@@ -66,7 +66,7 @@ This command also typically runs on a fixed schedule and during system reboots.
 ```
 
 ADSys enrolls certificates from Active Directory Certificate Services.
-With the native LDAP method, the issued certificates and private keys are stored under `/var/lib/adsys/certs` and `/var/lib/adsys/private/certs`:
+With the native LDAP method, CA certificates and state are stored under `/var/lib/adsys/certs`. Issued leaf/private-key pairs use atomic generations under `/var/lib/adsys/private/certs`:
 
 ```text
 sudo ls -l /var/lib/adsys/certs /var/lib/adsys/private/certs
@@ -83,13 +83,13 @@ The output should look something like this:
 
 /var/lib/adsys/certs:
 galacticcafe-CA.root.<certificate-id>.crt
-galacticcafe-CA.Machine.<artifact-id>.crt
-galacticcafe-CA.Workstation.<artifact-id>.crt
 state_keypress.<object-id>.json
 
 /var/lib/adsys/private/certs:
-galacticcafe-CA.Machine.<artifact-id>.key
-galacticcafe-CA.Workstation.<artifact-id>.key
+galacticcafe-CA.Machine.<artifact-id>/current/private.key
+galacticcafe-CA.Machine.<artifact-id>/current/certificate.crt
+galacticcafe-CA.Workstation.<artifact-id>/current/private.key
+galacticcafe-CA.Workstation.<artifact-id>/current/certificate.crt
 ```
 
 From this truncated output, we can see that two certificates were enrolled:
@@ -99,7 +99,7 @@ From this truncated output, we can see that two certificates were enrolled:
 
 These correspond to certificate templates that are configured on the certificate authority.
 
-The private key and certificate paths are the files listed under `/var/lib/adsys/private/certs` and `/var/lib/adsys/certs`.
+Use each artifact's stable `current/private.key` and `current/certificate.crt` paths.
 Everything should now be in place for the use of corporate services like VPNs and WiFi.
 
 ## Connect to VPN server using certificates
@@ -128,8 +128,8 @@ plugin      sstp-pppd-plugin.so
 ...
 ...
 ca: /var/lib/adsys/certs/galacticcafe-CA.root.<certificate-id>.crt
-cert: /var/lib/adsys/certs/galacticcafe-CA.Machine.<artifact-id>.crt
-key: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.<artifact-id>.key
+cert: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.<artifact-id>/current/certificate.crt
+key: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.<artifact-id>/current/private.key
 ...
 ...
 

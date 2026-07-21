@@ -2,17 +2,79 @@ package certificate
 
 import (
 	"context"
+	"crypto/x509"
 	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 
+	icertpassage "github.com/oiweiwei/go-msrpc/msrpc/icpr/icertpassage/v0"
 	krbcredentials "github.com/oiweiwei/gokrb5.fork/v9/credentials"
 	"github.com/oiweiwei/gokrb5.fork/v9/iana/nametype"
 	"github.com/oiweiwei/gokrb5.fork/v9/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestRawRequestShapes(t *testing.T) {
+	t.Parallel()
+
+	_, csrPEM, err := generateKeyAndCSR("host.example.com", 2048)
+	require.NoError(t, err)
+
+	t.Run("submit", func(t *testing.T) {
+		t.Parallel()
+		requester := &rpcRequester{request: func(_ context.Context, server string, request *icertpassage.CertServerRequestRequest) (*icertpassage.CertServerRequestResponse, error) {
+			assert.Equal(t, "ca01.example.com", server)
+			assert.Equal(t, uint32(crInPKCS10|crInBinary), request.Flags)
+			assert.Equal(t, "Example Issuing CA", request.Authority)
+			assert.Zero(t, request.RequestID)
+			require.NotNil(t, request.Request)
+			require.NotEmpty(t, request.Request.Buffer)
+			assert.Equal(t, uint32(len(request.Request.Buffer)), request.Request.Length) //nolint:gosec // Test CSR is tiny.
+			_, err := x509.ParseCertificateRequest(request.Request.Buffer)
+			require.NoError(t, err)
+			require.NotNil(t, request.Attributes)
+			assert.Equal(t, uint32(len(request.Attributes.Buffer)), request.Attributes.Length) //nolint:gosec // Test attributes are tiny.
+			assert.Equal(t, "CertificateTemplate:Machine", decodeUTF16(request.Attributes.Buffer))
+			assert.Equal(t, []byte{0, 0}, request.Attributes.Buffer[len(request.Attributes.Buffer)-2:])
+			return &icertpassage.CertServerRequestResponse{
+				Disposition: uint32(DispositionPending),
+				RequestID:   73,
+			}, nil
+		}}
+
+		response, err := requester.Submit(context.Background(), SubmitRequest{
+			Server: "ca01.example.com", CAName: "Example Issuing CA", Template: "Machine", CSRPEM: csrPEM,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, DispositionPending, response.Disposition)
+		assert.Equal(t, uint32(73), response.RequestID)
+	})
+
+	t.Run("poll", func(t *testing.T) {
+		t.Parallel()
+		requester := &rpcRequester{request: func(_ context.Context, server string, request *icertpassage.CertServerRequestRequest) (*icertpassage.CertServerRequestResponse, error) {
+			assert.Equal(t, "ca01.example.com", server)
+			assert.Zero(t, request.Flags)
+			assert.Equal(t, "Example Issuing CA", request.Authority)
+			assert.Equal(t, uint32(73), request.RequestID)
+			assert.Nil(t, request.Request)
+			assert.Nil(t, request.Attributes)
+			return &icertpassage.CertServerRequestResponse{
+				Disposition: uint32(DispositionPending),
+				RequestID:   73,
+			}, nil
+		}}
+
+		response, err := requester.Poll(context.Background(), PollRequest{
+			Server: "ca01.example.com", CAName: "Example Issuing CA", RequestID: 73,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, DispositionPending, response.Disposition)
+		assert.Equal(t, uint32(73), response.RequestID)
+	})
+}
 
 func TestRPCCredentialFromCCache(t *testing.T) {
 	t.Parallel()
