@@ -1074,7 +1074,11 @@ func TestPolicyUpdate(t *testing.T) {
 				err := os.WriteFile(filepath.Join(binDir, "cepces-submit"), []byte("#!/bin/sh\necho $@\n"), 0755)
 				require.NoError(t, err, "Setup: could not create cepces-submit binary")
 			}
-			t.Setenv("PATH", binDir+":"+os.Getenv("PATH"))
+			if tc.missingCertmonger || tc.missingCepces {
+				isolatePolicyUpdatePath(t, binDir)
+			} else {
+				t.Setenv("PATH", binDir+":"+os.Getenv("PATH"))
+			}
 
 			// Some tests will need some initial state assets
 			for _, k := range tc.clearDirs {
@@ -1483,6 +1487,29 @@ func modifyAndAddUsers(t *testing.T, newUsername string, users ...string) (passw
 	}
 
 	return dest
+}
+
+func isolatePolicyUpdatePath(t *testing.T, binDir string) {
+	t.Helper()
+
+	for _, command := range []string{"mkdir", "dconf", "apparmor_parser", "python3"} {
+		exposeCommandOnPath(t, binDir, command)
+	}
+	if _, err := exec.LookPath("python3-coverage"); err == nil {
+		exposeCommandOnPath(t, binDir, "python3-coverage")
+	}
+
+	t.Setenv("PATH", binDir)
+}
+
+func exposeCommandOnPath(t *testing.T, dir, command string) {
+	t.Helper()
+
+	src, err := exec.LookPath(command)
+	require.NoErrorf(t, err, "Setup: could not find %s on PATH", command)
+
+	err = os.Symlink(src, filepath.Join(dir, command))
+	require.NoErrorf(t, err, "Setup: could not expose %s in isolated PATH", command)
 }
 
 // setupSubprocessForTest prepares a subprocess with a mock passwd file for running the tests.
