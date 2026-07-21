@@ -15,6 +15,7 @@ import (
 // for a single machine. This replaces the Samba TDB cache.
 type enrollmentState struct {
 	ObjectName string       `json:"object_name"`
+	Identity   string       `json:"identity,omitempty"`
 	Domain     string       `json:"domain"`
 	CAs        []enrolledCA `json:"cas"`
 	UpdatedAt  time.Time    `json:"updated_at"`
@@ -22,19 +23,23 @@ type enrollmentState struct {
 
 // enrolledCA tracks a single CA that the machine is enrolled with.
 type enrolledCA struct {
-	Name      string             `json:"name"`
-	Hostname  string             `json:"hostname"`
-	RootCerts []string           `json:"root_certs"` // paths to root CA cert files
-	Symlinks  []string           `json:"symlinks"`   // paths to symlinks in global trust dir
-	Templates []enrolledTemplate `json:"templates"`
+	Name              string             `json:"name"`
+	Hostname          string             `json:"hostname"`
+	IssuerFingerprint string             `json:"issuer_fingerprint,omitempty"`
+	ChainFingerprints []string           `json:"chain_fingerprints,omitempty"`
+	RootCerts         []string           `json:"root_certs"`                   // paths to self-signed root CA cert files
+	IntermediateCerts []string           `json:"intermediate_certs,omitempty"` // ordered issuing/intermediate CA files
+	Symlinks          []string           `json:"symlinks"`                     // paths to root symlinks in global trust dir
+	Templates         []enrolledTemplate `json:"templates"`
 }
 
 // enrolledTemplate tracks a single certificate template enrollment.
 type enrolledTemplate struct {
-	Nickname string `json:"nickname"`  // sanitized on-disk identifier (e.g. "CA-Name.Machine")
-	Template string `json:"template"`  // template name
-	KeyFile  string `json:"key_file"`  // path to private key
-	CertFile string `json:"cert_file"` // path to certificate
+	Nickname        string `json:"nickname"`  // sanitized on-disk identifier (e.g. "CA-Name.Machine")
+	Template        string `json:"template"`  // template name
+	KeyFile         string `json:"key_file"`  // path to private key
+	CertFile        string `json:"cert_file"` // path to certificate
+	LeafFingerprint string `json:"leaf_fingerprint,omitempty"`
 }
 
 // stateFilePath returns the path to the enrollment state file for a given object.
@@ -83,7 +88,7 @@ func saveState(stateDir string, state *enrollmentState) error {
 
 	path := stateFilePath(stateDir, state.ObjectName)
 	log.Debugf(context.Background(), "Writing enrollment state for %s to %s", state.ObjectName, path)
-	if err := os.WriteFile(path, data, 0600); err != nil {
+	if err := safeWriteFile(path, data, 0600); err != nil {
 		return fmt.Errorf("failed to write enrollment state: %w", err)
 	}
 

@@ -19,107 +19,62 @@ import (
 // symlink name.
 var symlinkTmpCounter atomic.Uint64
 
-// installRootCACerts writes the DER-encoded CA certificate to the trust
-// directory and creates a symlink in the global trust directory.
-// Returns the list of created cert files and symlink paths.
+// installRootCACerts is kept for callers that only need the root paths. The
+// enrollment flow uses installCAChain so subordinate intermediates are tracked.
 func installRootCACerts(ca certAuthority, trustDir, globalTrustDir string) (certFiles []string, symlinkFiles []string, err error) {
-	if len(ca.CACertificate) == 0 {
-		log.Debugf(context.Background(), "No CA certificate to install for %s", ca.Name)
-		return nil, nil, nil
-	}
-	log.Debugf(context.Background(), "Installing root CA certificate for %s", ca.Name)
-
-	// Parse the DER certificate to PEM
-	cert, err := x509.ParseCertificate(ca.CACertificate)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to parse CA certificate for %s: %w", ca.Name, err)
-	}
-	if !cert.IsCA {
-		return nil, nil, fmt.Errorf("certificate for %s is not a CA certificate", ca.Name)
-	}
-	if cert.KeyUsage != 0 && cert.KeyUsage&x509.KeyUsageCertSign == 0 {
-		return nil, nil, fmt.Errorf("CA certificate for %s is not allowed to sign certificates", ca.Name)
-	}
-
-	// Sanity-check the discovered CA certificate before installing it. For a
-	// self-signed AD CS root this can only confirm the certificate is
-	// well-formed and currently valid; legitimacy is established by the
-	// authenticated, StartTLS-protected LDAP channel it was discovered through
-	// (see verifyPeerCertificate), mirroring how Windows autoenrollment trusts
-	// the directory. A non-self-signed CA must additionally chain to a root
-	// already trusted by the system or previously installed by adsys.
-	if err := verifyCACertificate(cert, globalTrustDir); err != nil {
-		return nil, nil, fmt.Errorf("CA certificate for %s failed verification: %w", ca.Name, err)
-	}
-
-	certPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: cert.Raw,
-	})
-
-	// Write the certificate file
-	certFileName := fmt.Sprintf("%s.crt", sanitizeName(ca.Name))
-	certPath := filepath.Join(trustDir, certFileName)
-	//nolint:gosec // G306: CA certificates are public trust anchors and must be world-readable by TLS clients
-	if err := os.WriteFile(certPath, certPEM, 0644); err != nil {
-		return nil, nil, fmt.Errorf("failed to write CA certificate: %w", err)
-	}
-	log.Debugf(context.Background(), "Wrote CA certificate to %s", certPath)
-	certFiles = append(certFiles, certPath)
-
-	// Create symlink in the global trust directory using an atomic
-	// rename pattern to avoid TOCTOU race conditions: create the symlink
-	// with a temporary name, then rename it over the final path.
-	symlinkPath := filepath.Join(globalTrustDir, certFileName)
-	if err := atomicSymlink(certPath, symlinkPath); err != nil {
-		return certFiles, nil, fmt.Errorf("failed to create trust store symlink %s -> %s: %w", symlinkPath, certPath, err)
-	}
-	log.Debugf(context.Background(), "Created trust store symlink: %s -> %s", symlinkPath, certPath)
-	symlinkFiles = append(symlinkFiles, symlinkPath)
-
-	return certFiles, symlinkFiles, nil
+	roots, _, symlinks, err := installCAChain(ca, trustDir, globalTrustDir)
+	return roots, symlinks, err
 }
 
-// verifyCACertificate performs a best-effort sanity check on a CA certificate
-// discovered over LDAP before it is installed into the system trust store.
-//
-// AD CS root CAs are self-signed, so for the common case this can only confirm
-// the certificate is currently within its validity period; a self-signed
-// certificate carries no external proof of legitimacy. The real trust anchor is
-// the authenticated, StartTLS-protected LDAP channel the certificate was
-// discovered through (see verifyPeerCertificate), exactly as Windows
-// autoenrollment trusts the directory itself. A non-self-signed CA is held to a
-// stronger bar: it must chain to a root already trusted by the system or
-// previously installed by adsys. Any additional trustDirs are consulted when
-// building that chain (e.g. a non-default configured global trust directory).
-func verifyCACertificate(cert *x509.Certificate, trustDirs ...string) error {
-	now := time.Now()
-
-	// Self-signed (root) CA: we can only validate the temporal window.
-	if cert.CheckSignatureFrom(cert) == nil {
-		if now.Before(cert.NotBefore) {
-			return fmt.Errorf("self-signed CA certificate is not yet valid (NotBefore: %s)", cert.NotBefore)
+func installCAChain(ca certAuthority, trustDir, globalTrustDir string) (rootFiles, intermediateFiles, symlinkFiles []string, err error) {
+	chain := ca.Chain
+	if chain == nil {
+		if len(ca.CACertificate) == 0 {
+			return nil, nil, nil, fmt.Errorf("CA %s has no selected certificate chain", ca.Name)
 		}
-		if now.After(cert.NotAfter) {
-			return fmt.Errorf("self-signed CA certificate has expired (NotAfter: %s)", cert.NotAfter)
+		cert, parseErr := x509.ParseCertificate(ca.CACertificate)
+		if parseErr != nil {
+			return nil, nil, nil, fmt.Errorf("failed to parse CA certificate for %s: %w", ca.Name, parseErr)
 		}
-		return nil
+		chain = &expectedCertificateChain{
+			Certificates: []*x509.Certificate{cert},
+			Fingerprints: []string{certificateFingerprint(cert)},
+		}
+	}
+	if err := verifyExactCAPath(chain.Certificates, time.Now()); err != nil {
+		return nil, nil, nil, fmt.Errorf("CA certificate for %s failed directory-chain verification: %w", ca.Name, err)
 	}
 
-	// Non-self-signed CA: require a chain to a trusted anchor.
-	pool, err := x509.SystemCertPool()
-	if err != nil || pool == nil {
-		pool = x509.NewCertPool()
-	}
-	addAdsysCAsToPool(pool, trustDirs...)
+	log.Debugf(context.Background(), "Installing CA chain for %s with %d certificate(s)", ca.Name, len(chain.Certificates))
+	for i, cert := range chain.Certificates {
+		fp := certificateFingerprint(cert)
+		role := fmt.Sprintf("intermediate-%d", i)
+		if i == 0 {
+			role = "issuer"
+		}
+		isRoot := i == len(chain.Certificates)-1
+		if isRoot {
+			role = "root"
+		}
+		certFileName := fmt.Sprintf("%s.%s.%s.crt", sanitizeName(ca.Name), role, fp[:16])
+		certPath := filepath.Join(trustDir, certFileName)
+		certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})
+		if err := safeWriteFile(certPath, certPEM, 0644); err != nil {
+			return rootFiles, intermediateFiles, symlinkFiles, fmt.Errorf("failed to write CA certificate: %w", err)
+		}
 
-	if _, err := cert.Verify(x509.VerifyOptions{
-		Roots:         pool,
-		Intermediates: x509.NewCertPool(),
-	}); err != nil {
-		return fmt.Errorf("CA certificate does not chain to a trusted root: %w", err)
+		if !isRoot {
+			intermediateFiles = append(intermediateFiles, certPath)
+			continue
+		}
+		rootFiles = append(rootFiles, certPath)
+		symlinkPath := filepath.Join(globalTrustDir, certFileName)
+		if err := atomicSymlink(certPath, symlinkPath); err != nil {
+			return rootFiles, intermediateFiles, symlinkFiles, fmt.Errorf("failed to create trust store symlink %s -> %s: %w", symlinkPath, certPath, err)
+		}
+		symlinkFiles = append(symlinkFiles, symlinkPath)
 	}
-	return nil
+	return rootFiles, intermediateFiles, symlinkFiles, nil
 }
 
 // updateCATrustStore runs update-ca-certificates to rebuild the system
@@ -149,6 +104,14 @@ func removeRootCACerts(certFiles, symlinkFiles []string) {
 	for _, f := range certFiles {
 		log.Debugf(context.Background(), "Removing CA certificate file: %s", f)
 		os.Remove(f)
+	}
+}
+
+func removeCAChainCerts(rootFiles, intermediateFiles, symlinkFiles []string) {
+	removeRootCACerts(rootFiles, symlinkFiles)
+	for _, f := range intermediateFiles {
+		log.Debugf(context.Background(), "Removing intermediate CA certificate: %s", f)
+		_ = os.Remove(f)
 	}
 }
 

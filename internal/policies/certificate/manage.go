@@ -11,9 +11,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
-	"encoding/hex"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -175,36 +173,130 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 	if !all && nickname == "" {
 		return errors.New(gotext.Get("a certificate nickname is required unless renewing all certificates"))
 	}
+	for _, dir := range []string{filepath.Join(m.stateDir, "certs"), m.globalTrustDir} {
+		if err := os.MkdirAll(dir, 0750); err != nil {
+			return fmt.Errorf("creating CA trust directory %s: %w", dir, err)
+		}
+	}
+
+	identity, err := enrollmentMachineIdentity(objectName, m.domain)
+	if err != nil {
+		return fmt.Errorf("could not determine machine identity: %w", err)
+	}
+	directoryData, err := discoverEnrollmentDirectoryData(ctx, m.ldapConnect, dcHostnameFromDomain(m.domain), objectName, m.domain)
+	if err != nil {
+		return fmt.Errorf("failed to discover current enrollment configuration: %w", err)
+	}
+	discoveredCAs := directoryData.CAs
+	findDiscoveredCA := func(enrolled enrolledCA) (certAuthority, bool) {
+		for _, discovered := range discoveredCAs {
+			if strings.EqualFold(discovered.Name, enrolled.Name) && strings.EqualFold(discovered.Hostname, enrolled.Hostname) {
+				return discovered, true
+			}
+		}
+		return certAuthority{}, false
+	}
 
 	var failures []string
 	found := false
+	trustChanged := false
 	for i := range state.CAs {
 		ca := &state.CAs[i]
+		hasTarget := false
+		for _, tmpl := range ca.Templates {
+			if all || tmpl.Nickname == nickname {
+				hasTarget = true
+				break
+			}
+		}
+		if !hasTarget {
+			continue
+		}
+		discoveredCA, caFound := findDiscoveredCA(*ca)
+		var newRootFiles, newIntermediateFiles, newSymlinkFiles []string
+		var chainInstallErr error
+		if caFound && discoveredCA.Chain != nil {
+			newRootFiles, newIntermediateFiles, newSymlinkFiles, chainInstallErr = installCAChain(
+				discoveredCA,
+				filepath.Join(m.stateDir, "certs"),
+				m.globalTrustDir,
+			)
+		}
+		renewedOnCA := false
 		for _, tmpl := range ca.Templates {
 			if !all && tmpl.Nickname != nickname {
 				continue
 			}
 			found = true
+			if !caFound || discoveredCA.Chain == nil {
+				failures = append(failures, fmt.Sprintf("%s: current CA chain was not discovered", tmpl.Nickname))
+				continue
+			}
+			if chainInstallErr != nil {
+				failures = append(failures, fmt.Sprintf("%s: installing current CA chain: %v", tmpl.Nickname, chainInstallErr))
+				continue
+			}
+			templatePublished := false
+			for _, published := range discoveredCA.Templates {
+				if strings.EqualFold(published, tmpl.Template) {
+					templatePublished = true
+					break
+				}
+			}
+			if !templatePublished {
+				failures = append(failures, fmt.Sprintf("%s: template is no longer published by CA", tmpl.Nickname))
+				continue
+			}
 
-			keySize := m.templateKeySize(ctx, tmpl.Template)
+			keySize := 2048
+			if attrs, ok := directoryData.TemplateAttrs[tmpl.Template]; ok && attrs.MinKeySize > 0 {
+				keySize = attrs.MinKeySize
+			}
 			report(progress, gotext.Get("Renewing %s…", tmpl.Nickname))
 			log.Debugf(ctx, "Renewing certificate %s (template %s) from CA %s", tmpl.Nickname, tmpl.Template, ca.Name)
 
 			if err := EnrollCertificate(ctx, m.submitCSR, EnrollmentRequest{
-				Server:     ca.Hostname,
-				CAName:     ca.Name,
-				Template:   tmpl.Template,
-				CommonName: certificateCommonName(objectName, m.domain),
-				KeyFile:    tmpl.KeyFile,
-				CertFile:   tmpl.CertFile,
-				KeySize:    keySize,
+				Server:        ca.Hostname,
+				CAName:        ca.Name,
+				Template:      tmpl.Template,
+				CommonName:    identity.dnsName,
+				KeyFile:       tmpl.KeyFile,
+				CertFile:      tmpl.CertFile,
+				KeySize:       keySize,
+				ExpectedChain: discoveredCA.Chain.Certificates,
 			}); err != nil {
 				log.Warningf(ctx, "Failed to renew certificate %s: %v", tmpl.Nickname, err)
 				report(progress, gotext.Get("Failed to renew %s: %v", tmpl.Nickname, err))
 				failures = append(failures, fmt.Sprintf("%s: %v", tmpl.Nickname, err))
 				continue
 			}
+			issued := parseCertFile(tmpl.CertFile)
+			if issued == nil {
+				failures = append(failures, fmt.Sprintf("%s: renewed certificate could not be reloaded", tmpl.Nickname))
+				continue
+			}
+			for templateIndex := range ca.Templates {
+				if ca.Templates[templateIndex].Nickname == tmpl.Nickname {
+					ca.Templates[templateIndex].LeafFingerprint = certificateFingerprint(issued)
+					break
+				}
+			}
+			ca.IssuerFingerprint = discoveredCA.Chain.issuerFingerprint()
+			ca.ChainFingerprints = append([]string(nil), discoveredCA.Chain.Fingerprints...)
+			renewedOnCA = true
 			report(progress, gotext.Get("Renewed %s", tmpl.Nickname))
+		}
+		if renewedOnCA {
+			oldRootFiles := ca.RootCerts
+			oldIntermediateFiles := ca.IntermediateCerts
+			oldSymlinkFiles := ca.Symlinks
+			ca.RootCerts = newRootFiles
+			ca.IntermediateCerts = newIntermediateFiles
+			ca.Symlinks = newSymlinkFiles
+			removePathsNotRetained(oldRootFiles, oldIntermediateFiles, oldSymlinkFiles, *ca)
+			trustChanged = true
+		} else {
+			removePathsNotRetained(newRootFiles, newIntermediateFiles, newSymlinkFiles, *ca)
 		}
 	}
 
@@ -212,14 +304,41 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		return errors.New(gotext.Get("certificate %q not found (valid nicknames: %s)", nickname, strings.Join(nicknamesOfState(state), ", ")))
 	}
 
+	state.Domain = normalizeDomainIdentity(m.domain)
+	state.Identity = identity.dnsName
 	if err := saveState(m.stateDir, state); err != nil {
 		return fmt.Errorf("failed to save enrollment state: %w", err)
+	}
+	if trustChanged {
+		if err := updateCATrustStore(); err != nil {
+			log.Warningf(ctx, "Failed to update CA trust store after renewal: %v", err)
+		}
 	}
 
 	if len(failures) > 0 {
 		return errors.New(gotext.Get("failed to renew %d certificate(s): %s", len(failures), strings.Join(failures, "; ")))
 	}
 	return nil
+}
+
+func removePathsNotRetained(rootFiles, intermediateFiles, symlinkFiles []string, retained enrolledCA) {
+	keep := make(map[string]struct{})
+	for _, paths := range [][]string{retained.RootCerts, retained.IntermediateCerts, retained.Symlinks} {
+		for _, path := range paths {
+			keep[path] = struct{}{}
+		}
+	}
+	remove := func(paths []string) {
+		for _, path := range paths {
+			if _, ok := keep[path]; ok {
+				continue
+			}
+			_ = os.Remove(path)
+		}
+	}
+	remove(symlinkFiles)
+	remove(intermediateFiles)
+	remove(rootFiles)
 }
 
 // RemoveCertificates removes enrolled certificates. force must be true or the
@@ -274,7 +393,7 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 		}
 		if len(ca.Templates) == 0 {
 			report(progress, gotext.Get("Removing root CA %s from the trust store", ca.Name))
-			removeRootCACerts(ca.RootCerts, ca.Symlinks)
+			removeCAChainCerts(ca.RootCerts, ca.IntermediateCerts, ca.Symlinks)
 			state.CAs = append(state.CAs[:ci], state.CAs[ci+1:]...)
 		}
 		break
@@ -331,7 +450,7 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 				continue
 			}
 			found = true
-			results = append(results, verifyCertificate(ctx, tmpl, roots, online))
+			results = append(results, verifyCertificate(ctx, ca, tmpl, roots, online))
 		}
 	}
 
@@ -368,9 +487,8 @@ func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]CAI
 			Hostname:  ca.Hostname,
 			Templates: ca.Templates,
 		}
-		if len(ca.CACertificate) > 0 {
-			sum := sha256.Sum256(ca.CACertificate)
-			info.RootFingerprints = []string{hex.EncodeToString(sum[:])}
+		if ca.Chain != nil {
+			info.RootFingerprints = append([]string(nil), ca.Chain.Fingerprints...)
 		}
 		info.InstalledInTrust = caInstalledInTrust(ca, state, trustDir, m.globalTrustDir)
 		info.Enrolled = caEnrolled(ca.Name, state)
@@ -455,7 +573,7 @@ func deriveHealth(info CertInfo, cert *x509.Certificate, now time.Time) CertHeal
 
 // verifyCertificate performs the chain, validity, key-match and (optionally)
 // revocation checks for a single enrolled template.
-func verifyCertificate(ctx context.Context, tmpl enrolledTemplate, roots *x509.CertPool, online bool) VerifyResult {
+func verifyCertificate(ctx context.Context, ca enrolledCA, tmpl enrolledTemplate, roots *x509.CertPool, online bool) VerifyResult {
 	res := VerifyResult{Nickname: tmpl.Nickname}
 
 	cert := parseCertFile(tmpl.CertFile)
@@ -484,7 +602,7 @@ func verifyCertificate(ctx context.Context, tmpl enrolledTemplate, roots *x509.C
 	// restrict the certificate to a particular usage.
 	if _, err := cert.Verify(x509.VerifyOptions{
 		Roots:         roots,
-		Intermediates: intermediatePool(tmpl.CertFile),
+		Intermediates: intermediatePool(ca, tmpl.CertFile),
 		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
 	}); err != nil {
 		res.Messages = append(res.Messages, gotext.Get("chain verification failed: %v", err))
@@ -547,23 +665,6 @@ func checkRevocation(ctx context.Context, cert *x509.Certificate, res *VerifyRes
 	}
 }
 
-// templateKeySize returns the minimum key size configured for a template,
-// discovered best-effort via LDAP. Any failure falls back to 2048 bits.
-func (m *Manager) templateKeySize(ctx context.Context, template string) int {
-	const defaultKeySize = 2048
-
-	attrsByName, err := fetchTemplateAttrsWithConnector(ctx, m.ldapConnect, dcHostnameFromDomain(m.domain), []string{template})
-	if err != nil {
-		log.Debugf(ctx, "Could not connect to LDAP to determine key size for template %s, using %d bits", template, defaultKeySize)
-		return defaultKeySize
-	}
-	attrs := attrsByName[template]
-	if attrs.MinKeySize > 0 {
-		return attrs.MinKeySize
-	}
-	return defaultKeySize
-}
-
 // publicKeysMatch reports whether the certificate's public key matches the
 // private key stored at keyPEMPath. It returns false (with an error) when the
 // key is missing or unreadable, and false without error on a genuine mismatch.
@@ -599,13 +700,10 @@ func publicKeysMatch(cert *x509.Certificate, keyPEMPath string) (bool, error) {
 	}
 }
 
-// rootPoolFromState builds a certificate pool from the system trust store plus
-// every root certificate referenced by the enrollment state.
+// rootPoolFromState builds a certificate pool solely from roots bound in the
+// enrollment state. Host system roots are intentionally excluded.
 func rootPoolFromState(state *enrollmentState) *x509.CertPool {
-	pool, err := x509.SystemCertPool()
-	if err != nil || pool == nil {
-		pool = x509.NewCertPool()
-	}
+	pool := x509.NewCertPool()
 	for _, ca := range state.CAs {
 		for _, rootFile := range ca.RootCerts {
 			if data, err := os.ReadFile(rootFile); err == nil {
@@ -618,8 +716,13 @@ func rootPoolFromState(state *enrollmentState) *x509.CertPool {
 
 // intermediatePool returns a pool built from any CERTIFICATE blocks in certFile
 // after the first (leaf) one, treating them as intermediates.
-func intermediatePool(certFile string) *x509.CertPool {
+func intermediatePool(ca enrolledCA, certFile string) *x509.CertPool {
 	pool := x509.NewCertPool()
+	for _, path := range ca.IntermediateCerts {
+		if data, err := os.ReadFile(path); err == nil {
+			pool.AppendCertsFromPEM(data)
+		}
+	}
 	data, err := os.ReadFile(certFile)
 	if err != nil {
 		return pool
@@ -649,10 +752,18 @@ func intermediatePool(certFile string) *x509.CertPool {
 // because the discovered certificate verifies against the trust store or
 // because the enrollment state records installed root files for it.
 func caInstalledInTrust(ca certAuthority, state *enrollmentState, trustDir, globalTrustDir string) bool {
-	if len(ca.CACertificate) > 0 {
-		if cert, err := x509.ParseCertificate(ca.CACertificate); err == nil {
-			if verifyCACertificate(cert, trustDir, globalTrustDir) == nil {
-				return true
+	if ca.Chain != nil && ca.Chain.root() != nil {
+		rootFingerprint := certificateFingerprint(ca.Chain.root())
+		for _, dir := range []string{trustDir, globalTrustDir} {
+			entries, err := os.ReadDir(dir)
+			if err != nil {
+				continue
+			}
+			for _, entry := range entries {
+				cert := parseCertFile(filepath.Join(dir, entry.Name()))
+				if cert != nil && certificateFingerprint(cert) == rootFingerprint {
+					return true
+				}
 			}
 		}
 	}

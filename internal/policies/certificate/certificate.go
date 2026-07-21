@@ -411,25 +411,30 @@ func (m *Manager) runScript(ctx context.Context, action, objectName string, extr
 }
 
 // enroll performs the full enrollment flow:
-//  1. Discovers CAs and templates from LDAP
-//  2. Installs root CA certificates to the system trust store
-//  3. Requests certificates directly from AD CS for each template
-//  4. Saves enrollment state
+//  1. Discovers and verifies CA chains from LDAP
+//  2. Authorizes published templates against the machine token
+//  3. Installs discovered root CA certificates
+//  4. Requests and verifies certificates directly from AD CS
+//  5. Saves CA/domain-bound enrollment state
 func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	server := dcHostnameFromDomain(m.domain)
 	log.Debugf(ctx, "Discovering CAs from LDAP server: %s", server)
 
-	cas, err := discoverCAsAndTemplates(ctx, m.ldapConnect, server)
+	directoryData, err := discoverEnrollmentDirectoryData(ctx, m.ldapConnect, server, objectName, m.domain)
 	if err != nil {
-		return fmt.Errorf("failed to discover CAs: %w", err)
+		return fmt.Errorf("failed to discover enrollment configuration: %w", err)
 	}
 
-	if len(cas) == 0 {
+	if directoryData.PublishedCAs == 0 {
 		log.Info(ctx, "No certificate authorities found in AD, skipping enrollment")
 		return nil
 	}
+	cas := directoryData.CAs
+	if len(cas) == 0 {
+		return fmt.Errorf("no published certificate templates are eligible for machine autoenrollment")
+	}
 
-	log.Debugf(ctx, "Discovered %d certificate authorities from LDAP", len(cas))
+	log.Debugf(ctx, "Discovered %d eligible certificate authorities from LDAP", len(cas))
 
 	existingState, err := loadState(m.stateDir, objectName)
 	if err != nil {
@@ -451,17 +456,8 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		return fmt.Errorf("failed to create private directory: %w", err)
 	}
 
-	var templateNames []string
-	for _, ca := range cas {
-		templateNames = append(templateNames, ca.Templates...)
-	}
-	attrsByName, attrsErr := fetchTemplateAttrsWithConnector(ctx, m.ldapConnect, server, templateNames)
-	if attrsErr != nil {
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
-		log.Warningf(ctx, "Failed to fetch LDAP template attributes, using safe defaults: %v", attrsErr)
-	}
+	attrsByName := directoryData.TemplateAttrs
+	machineIdentity := directoryData.MachineIdentity.dnsName
 
 	var enrolledCAs []enrolledCA
 	for _, ca := range cas {
@@ -471,31 +467,30 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 		// malformed, expired, or unverifiable) skip the CA entirely, since
 		// certificates issued by it would not validate without its root in
 		// the trust store.
-		certFiles, symlinkFiles, err := installRootCACerts(ca, trustDir, m.globalTrustDir)
+		rootFiles, intermediateFiles, symlinkFiles, err := installCAChain(ca, trustDir, m.globalTrustDir)
 		if err != nil {
-			log.Warningf(ctx, "Skipping CA %s: could not install its root certificate: %v", ca.Name, err)
-			// Preserve previously-enrolled state for this CA so a transient
-			// failure doesn't orphan still-valid certificates; otherwise drop
-			// any partial files this attempt may have created.
-			if prev, ok := existingCA(existingState, ca.Name); ok {
-				enrolledCAs = append(enrolledCAs, prev)
-			} else {
-				removeRootCACerts(certFiles, symlinkFiles)
-			}
+			log.Warningf(ctx, "Skipping CA %s: could not install its verified CA chain: %v", ca.Name, err)
+			removeCAChainCerts(rootFiles, intermediateFiles, symlinkFiles)
 			continue
 		}
 
 		var enrolledTemplates []enrolledTemplate
 		for _, tmplName := range ca.Templates {
-			if tmpl, ok := existingTemplate(existingState, ca.Name, tmplName); ok && filesExist(tmpl.KeyFile, tmpl.CertFile) && !certNeedsRenewal(ctx, tmpl.CertFile) {
-				log.Debugf(ctx, "Template %s for CA %s already enrolled and current, reusing existing cert files", tmplName, ca.Name)
-				enrolledTemplates = append(enrolledTemplates, tmpl)
-				continue
+			if previousCA, tmpl, ok := existingEnrollment(existingState, ca.Name, tmplName); ok {
+				validated, validationErr := validateStoredEnrollment(previousCA, tmpl, existingState, ca, machineIdentity, normalizeDomainIdentity(m.domain), time.Now())
+				if validationErr != nil {
+					log.Warningf(ctx, "Existing certificate for template %s on CA %s is not reusable: %v", tmplName, ca.Name, validationErr)
+				} else if !certNeedsRenewal(ctx, tmpl.CertFile) {
+					log.Debugf(ctx, "Template %s for CA %s is bound to the current domain and CA chain, reusing existing cert files", tmplName, ca.Name)
+					enrolledTemplates = append(enrolledTemplates, validated)
+					continue
+				}
 			}
 
 			attrs, ok := attrsByName[tmplName]
 			if !ok {
-				attrs = templateAttrs{Name: tmplName, MinKeySize: 2048}
+				log.Warningf(ctx, "Skipping template %s on CA %s: LDAP attributes are unavailable", tmplName, ca.Name)
+				continue
 			}
 			log.Debugf(ctx, "Template %s requires minimum key size: %d bits", attrs.Name, attrs.MinKeySize)
 
@@ -506,47 +501,59 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 			certFile := filepath.Join(trustDir, nickname+".crt")
 
 			if err := EnrollCertificate(ctx, m.submitCSR, EnrollmentRequest{
-				Server:     ca.Hostname,
-				CAName:     ca.Name,
-				Template:   attrs.Name,
-				CommonName: certificateCommonName(objectName, m.domain),
-				KeyFile:    keyFile,
-				CertFile:   certFile,
-				KeySize:    attrs.MinKeySize,
+				Server:        ca.Hostname,
+				CAName:        ca.Name,
+				Template:      attrs.Name,
+				CommonName:    machineIdentity,
+				KeyFile:       keyFile,
+				CertFile:      certFile,
+				KeySize:       attrs.MinKeySize,
+				ExpectedChain: ca.Chain.Certificates,
 			}); err != nil {
 				log.Warningf(ctx, "Failed to request certificate for template %s: %v", tmplName, err)
-				// If a previously-issued certificate is still on disk and not
-				// yet expired, keep using it rather than dropping it: dropping
-				// would let cleanupOrphanedCerts delete still-valid key material
-				// just because a renewal attempt failed transiently.
-				if tmpl, ok := existingTemplate(existingState, ca.Name, tmplName); ok && filesExist(tmpl.KeyFile) && certUsable(tmpl.CertFile) {
+				// A failed renewal may retain only material that still validates
+				// against the current machine identity, key and selected CA chain.
+				if previousCA, tmpl, ok := existingEnrollment(existingState, ca.Name, tmplName); ok {
+					validated, validationErr := validateStoredEnrollment(previousCA, tmpl, existingState, ca, machineIdentity, normalizeDomainIdentity(m.domain), time.Now())
+					if validationErr != nil {
+						continue
+					}
 					log.Infof(ctx, "Retaining still-valid certificate for template %s after failed renewal", tmplName)
-					enrolledTemplates = append(enrolledTemplates, tmpl)
+					enrolledTemplates = append(enrolledTemplates, validated)
 				}
 				continue
 			}
 
 			log.Debugf(ctx, "Successfully enrolled certificate for template %s from CA %s", attrs.Name, ca.Name)
+			issuedCert := parseCertFile(certFile)
+			if issuedCert == nil {
+				log.Warningf(ctx, "Issued certificate for template %s could not be reloaded after enrollment", tmplName)
+				continue
+			}
 			enrolledTemplates = append(enrolledTemplates, enrolledTemplate{
-				Nickname: nickname,
-				Template: attrs.Name,
-				KeyFile:  keyFile,
-				CertFile: certFile,
+				Nickname:        nickname,
+				Template:        attrs.Name,
+				KeyFile:         keyFile,
+				CertFile:        certFile,
+				LeafFingerprint: certificateFingerprint(issuedCert),
 			})
 		}
 
 		if len(enrolledTemplates) == 0 {
 			log.Warningf(ctx, "No certificate templates enrolled for CA %s, skipping", ca.Name)
-			removeRootCACerts(certFiles, symlinkFiles)
+			removeCAChainCerts(rootFiles, intermediateFiles, symlinkFiles)
 			continue
 		}
 
 		enrolledCAs = append(enrolledCAs, enrolledCA{
-			Name:      ca.Name,
-			Hostname:  ca.Hostname,
-			RootCerts: certFiles,
-			Symlinks:  symlinkFiles,
-			Templates: enrolledTemplates,
+			Name:              ca.Name,
+			Hostname:          ca.Hostname,
+			IssuerFingerprint: ca.Chain.issuerFingerprint(),
+			ChainFingerprints: append([]string(nil), ca.Chain.Fingerprints...),
+			RootCerts:         rootFiles,
+			IntermediateCerts: intermediateFiles,
+			Symlinks:          symlinkFiles,
+			Templates:         enrolledTemplates,
 		})
 	}
 
@@ -572,7 +579,8 @@ func (m *Manager) enroll(ctx context.Context, objectName string) error {
 	log.Debugf(ctx, "Saving enrollment state for %s with %d enrolled CAs", objectName, len(enrolledCAs))
 	state := &enrollmentState{
 		ObjectName: objectName,
-		Domain:     m.domain,
+		Identity:   machineIdentity,
+		Domain:     normalizeDomainIdentity(m.domain),
 		CAs:        enrolledCAs,
 	}
 	if err := saveState(m.stateDir, state); err != nil {
@@ -605,7 +613,7 @@ func (m *Manager) unenroll(ctx context.Context, objectName string) error {
 				os.Remove(tmpl.KeyFile)
 			}
 
-			removeRootCACerts(ca.RootCerts, ca.Symlinks)
+			removeCAChainCerts(ca.RootCerts, ca.IntermediateCerts, ca.Symlinks)
 		}
 
 		// Update trust store after removing certs
@@ -641,6 +649,9 @@ func cleanupOrphanedCerts(ctx context.Context, oldState *enrollmentState, newCAs
 		for _, cert := range ca.RootCerts {
 			newPaths[cert] = true
 		}
+		for _, cert := range ca.IntermediateCerts {
+			newPaths[cert] = true
+		}
 		for _, link := range ca.Symlinks {
 			newPaths[link] = true
 		}
@@ -673,6 +684,9 @@ func cleanupOrphanedCerts(ctx context.Context, oldState *enrollmentState, newCAs
 		for _, cert := range ca.RootCerts {
 			remove(cert, "CA certificate")
 		}
+		for _, cert := range ca.IntermediateCerts {
+			remove(cert, "intermediate CA certificate")
+		}
 		for _, tmpl := range ca.Templates {
 			remove(tmpl.CertFile, "certificate")
 			remove(tmpl.KeyFile, "private key")
@@ -684,34 +698,62 @@ func cleanupOrphanedCerts(ctx context.Context, oldState *enrollmentState, newCAs
 	}
 }
 
-func existingTemplate(state *enrollmentState, caName, template string) (enrolledTemplate, bool) {
+func existingEnrollment(state *enrollmentState, caName, template string) (enrolledCA, enrolledTemplate, bool) {
 	if state == nil {
-		return enrolledTemplate{}, false
+		return enrolledCA{}, enrolledTemplate{}, false
 	}
 	for _, ca := range state.CAs {
-		if ca.Name != caName {
+		if !strings.EqualFold(ca.Name, caName) {
 			continue
 		}
 		for _, enrolled := range ca.Templates {
-			if enrolled.Template == template {
-				return enrolled, true
+			if strings.EqualFold(enrolled.Template, template) {
+				return ca, enrolled, true
 			}
 		}
 	}
-	return enrolledTemplate{}, false
+	return enrolledCA{}, enrolledTemplate{}, false
 }
 
-// existingCA returns the previously-enrolled state for the named CA, if any.
-func existingCA(state *enrollmentState, caName string) (enrolledCA, bool) {
+func validateStoredEnrollment(previousCA enrolledCA, tmpl enrolledTemplate, state *enrollmentState, currentCA certAuthority, identity, domain string, now time.Time) (enrolledTemplate, error) {
 	if state == nil {
-		return enrolledCA{}, false
+		return enrolledTemplate{}, fmt.Errorf("enrollment state is missing")
 	}
-	for _, ca := range state.CAs {
-		if ca.Name == caName {
-			return ca, true
-		}
+	if normalizeDomainIdentity(state.Domain) != domain {
+		return enrolledTemplate{}, fmt.Errorf("state domain %q does not match %q", state.Domain, domain)
 	}
-	return enrolledCA{}, false
+	if state.Identity != "" && normalizeMachineIdentity(state.Identity) != normalizeMachineIdentity(identity) {
+		return enrolledTemplate{}, fmt.Errorf("state machine identity %q does not match %q", state.Identity, identity)
+	}
+	if currentCA.Chain == nil || currentCA.Chain.issuer() == nil {
+		return enrolledTemplate{}, fmt.Errorf("current CA chain is unavailable")
+	}
+	currentIssuerFingerprint := currentCA.Chain.issuerFingerprint()
+	if previousCA.IssuerFingerprint != "" && !strings.EqualFold(previousCA.IssuerFingerprint, currentIssuerFingerprint) {
+		return enrolledTemplate{}, fmt.Errorf("state issuing CA fingerprint %s does not match discovered CA %s", previousCA.IssuerFingerprint, currentIssuerFingerprint)
+	}
+	if len(previousCA.ChainFingerprints) > 0 && !slices.EqualFunc(previousCA.ChainFingerprints, currentCA.Chain.Fingerprints, strings.EqualFold) {
+		return enrolledTemplate{}, fmt.Errorf("state CA chain fingerprints do not match the discovered chain")
+	}
+
+	certPEM, err := os.ReadFile(tmpl.CertFile)
+	if err != nil {
+		return enrolledTemplate{}, fmt.Errorf("reading existing certificate: %w", err)
+	}
+	keyPEM, err := os.ReadFile(tmpl.KeyFile)
+	if err != nil {
+		return enrolledTemplate{}, fmt.Errorf("reading existing private key: %w", err)
+	}
+	cert, err := verifyIssuedCertificate(string(certPEM), keyPEM, identity, currentCA.Chain.Certificates, now)
+	if err != nil {
+		return enrolledTemplate{}, err
+	}
+	leafFingerprint := certificateFingerprint(cert)
+	if tmpl.LeafFingerprint != "" && !strings.EqualFold(tmpl.LeafFingerprint, leafFingerprint) {
+		return enrolledTemplate{}, fmt.Errorf("state leaf fingerprint %s does not match certificate %s", tmpl.LeafFingerprint, leafFingerprint)
+	}
+	tmpl.LeafFingerprint = leafFingerprint
+	return tmpl, nil
 }
 
 func filesExist(paths ...string) bool {
@@ -762,14 +804,6 @@ func certNeedsRenewal(ctx context.Context, certFile string) bool {
 		return true
 	}
 	return false
-}
-
-// certUsable reports whether the certificate at certFile is present, parseable
-// and not yet expired. Unlike certNeedsRenewal it ignores the renewal window,
-// so a still-valid (if soon-to-expire) certificate is considered usable.
-func certUsable(certFile string) bool {
-	cert := parseCertFile(certFile)
-	return cert != nil && time.Now().Before(cert.NotAfter)
 }
 
 func ldapPolicyAllowsEnrollment(entries []entry.Entry) (bool, error) {

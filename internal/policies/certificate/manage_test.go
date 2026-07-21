@@ -12,7 +12,6 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -204,7 +203,7 @@ func TestRenewCertificates(t *testing.T) {
 		tmpdir := t.TempDir()
 		stateDir := filepath.Join(tmpdir, "state")
 
-		_, _, caDER := mgrTestCA(t)
+		caCert, caKey, caDER := mgrTestCA(t)
 
 		var enrolled []enrolledTemplate
 		var certPaths []string
@@ -219,10 +218,10 @@ func TestRenewCertificates(t *testing.T) {
 		mgrWriteState(t, stateDir, []enrolledCA{{Name: "TestCA", Hostname: "ca.example.com", Templates: enrolled}})
 
 		submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
-			return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour)), nil
+			return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caCert, caKey, "keypress.example.com"), nil
 		}
 		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
-			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", "TestCA", "ca.example.com", templates, caDER, 2048)),
+			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", templates, caDER)),
 			WithCSRSubmitter(submitter),
 		)
 		return m, stateDir, certPaths
@@ -295,8 +294,9 @@ func TestRenewCertificates(t *testing.T) {
 		submitter := func(_ context.Context, _, _, _, _ string) (string, error) {
 			return "", fmt.Errorf("mock submit failure")
 		}
+		_, _, caDER := mgrTestCA(t)
 		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
-			WithLDAPConnector(LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) { return nil, fmt.Errorf("no ldap") })),
+			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", []string{"Machine"}, caDER)),
 			WithCSRSubmitter(submitter),
 		)
 
@@ -528,7 +528,7 @@ func TestDiscoverCAsInfo(t *testing.T) {
 		t.Parallel()
 		tmpdir := t.TempDir()
 		m := mgrManager(t, filepath.Join(tmpdir, "state"), filepath.Join(tmpdir, "trust"),
-			WithLDAPConnector(mgrConnector(configDN, "TestCA", "ca.example.com", []string{"Machine", "WebServer"}, caDER, 2048)),
+			WithLDAPConnector(mgrConnector(configDN, []string{"Machine", "WebServer"}, caDER)),
 		)
 
 		cas, err := m.DiscoverCAsInfo(context.Background(), mgrTestObject)
@@ -541,7 +541,7 @@ func TestDiscoverCAsInfo(t *testing.T) {
 		assert.ElementsMatch(t, []string{"Machine", "WebServer"}, ca.Templates)
 		require.Len(t, ca.RootFingerprints, 1)
 		assert.Len(t, ca.RootFingerprints[0], 64, "SHA-256 fingerprint should be 64 hex chars")
-		assert.True(t, ca.InstalledInTrust, "a temporally valid self-signed CA verifies as installed")
+		assert.False(t, ca.InstalledInTrust, "directory discovery alone does not mean the CA is installed locally")
 		assert.False(t, ca.Enrolled, "no local state means not enrolled")
 	})
 
@@ -555,7 +555,7 @@ func TestDiscoverCAsInfo(t *testing.T) {
 		mgrWriteState(t, stateDir, []enrolledCA{{Name: "TestCA", Hostname: "ca.example.com", Templates: []enrolledTemplate{tmpl}}})
 
 		m := mgrManager(t, stateDir, filepath.Join(tmpdir, "trust"),
-			WithLDAPConnector(mgrConnector(configDN, "TestCA", "ca.example.com", []string{"Machine"}, caDER, 2048)),
+			WithLDAPConnector(mgrConnector(configDN, []string{"Machine"}, caDER)),
 		)
 
 		cas, err := m.DiscoverCAsInfo(context.Background(), mgrTestObject)
@@ -705,34 +705,18 @@ func mgrCASignedLeaf(t *testing.T, caCert *x509.Certificate, caKey *ecdsa.Privat
 	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 }
 
-func mgrIssueFromCSR(t *testing.T, csrPEM string, notAfter time.Time) string {
+func mgrIssueFromCSR(t *testing.T, csrPEM string, notAfter time.Time, caCert *x509.Certificate, caKey *ecdsa.PrivateKey, identity string) string {
 	t.Helper()
 	block, _ := pem.Decode([]byte(csrPEM))
 	require.NotNil(t, block, "failed to decode CSR PEM")
 	csr, err := x509.ParseCertificateRequest(block.Bytes)
 	require.NoError(t, err)
 
-	caKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	require.NoError(t, err)
-	caTmpl := x509.Certificate{
-		SerialNumber:          big.NewInt(1),
-		Subject:               pkix.Name{CommonName: "Renew Test CA"},
-		IsCA:                  true,
-		BasicConstraintsValid: true,
-		KeyUsage:              x509.KeyUsageCertSign,
-		NotBefore:             time.Now().Add(-time.Hour),
-		NotAfter:              time.Now().Add(24 * time.Hour),
-	}
-	caDER, err := x509.CreateCertificate(rand.Reader, &caTmpl, &caTmpl, &caKey.PublicKey, caKey)
-	require.NoError(t, err)
-	caCert, err := x509.ParseCertificate(caDER)
-	require.NoError(t, err)
-
 	serial, err := rand.Int(rand.Reader, big.NewInt(1<<62))
 	require.NoError(t, err)
 	leaf := x509.Certificate{
 		SerialNumber: serial,
-		Subject:      pkix.Name{CommonName: "renewed"},
+		Subject:      pkix.Name{CommonName: identity},
 		NotBefore:    time.Now().Add(-time.Hour),
 		NotAfter:     notAfter,
 	}
@@ -771,22 +755,44 @@ func mgrWriteState(t *testing.T, stateDir string, cas []enrolledCA) {
 
 // mgrConnector returns an LDAPConnector backed by an in-memory mock that
 // answers root DSE, enrollment service and certificate template queries.
-func mgrConnector(configDN, caName, hostname string, templates []string, caDER []byte, minKeySize int) LDAPConnector {
+func mgrConnector(configDN string, templates []string, caDER []byte) LDAPConnector {
+	defaultDN := "DC=example,DC=com"
 	enrollBaseDN := fmt.Sprintf("CN=Enrollment Services,CN=Public Key Services,CN=Services,%s", configDN)
 	templateBaseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
 
 	results := map[string]*ldap.SearchResult{
-		"":           {Entries: []*ldap.Entry{ldap.NewEntry("", map[string][]string{"configurationNamingContext": {configDN}})}},
-		enrollBaseDN: {Entries: []*ldap.Entry{newCAEntry(enrollBaseDN, caName, hostname, templates, caDER)}},
+		"": {Entries: []*ldap.Entry{ldap.NewEntry("", map[string][]string{
+			"configurationNamingContext": {configDN},
+			"defaultNamingContext":       {defaultDN},
+		})}},
+		enrollBaseDN: {Entries: []*ldap.Entry{newCAEntry(enrollBaseDN, "TestCA", "ca.example.com", templates, caDER)}},
 	}
 	tEntries := make([]*ldap.Entry, 0, len(templates))
 	for _, tmpl := range templates {
-		tEntries = append(tEntries, ldap.NewEntry(fmt.Sprintf("CN=%s,%s", tmpl, templateBaseDN), map[string][]string{
-			"cn":                     {tmpl},
-			"msPKI-Minimal-Key-Size": {strconv.Itoa(minKeySize)},
-		}))
+		entry := ldap.NewEntry(fmt.Sprintf("CN=%s,%s", tmpl, templateBaseDN), map[string][]string{
+			"cn":                            {tmpl},
+			"flags":                         {"64"},
+			"msPKI-Template-Schema-Version": {"2"},
+			"msPKI-Enrollment-Flag":         {"32"},
+			"msPKI-Minimal-Key-Size":        {"2048"},
+		})
+		entry.Attributes = append(entry.Attributes, &ldap.EntryAttribute{
+			Name:       "nTSecurityDescriptor",
+			ByteValues: [][]byte{aclNullDACL()},
+		})
+		tEntries = append(tEntries, entry)
 	}
 	results[templateBaseDN] = &ldap.SearchResult{Entries: tEntries}
+	computer := ldap.NewEntry("CN=keypress,CN=Computers,"+defaultDN, map[string][]string{
+		"sAMAccountName": {"keypress$"},
+		"dNSHostName":    {"keypress.example.com"},
+		"primaryGroupID": {"515"},
+	})
+	computer.Attributes = append(computer.Attributes,
+		&ldap.EntryAttribute{Name: "objectSid", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 1000)}},
+		&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 515)}},
+	)
+	results[defaultDN] = &ldap.SearchResult{Entries: []*ldap.Entry{computer}}
 
 	conn := &mockLDAPClient{searchResults: results}
 	return LDAPConnectorFunc(func(context.Context, string) (LDAPClient, error) { return conn, nil })

@@ -54,6 +54,9 @@ type EnrollmentRequest struct {
 	KeyFile    string
 	CertFile   string
 	KeySize    int
+	// ExpectedChain is ordered from the selected issuing CA to the
+	// self-signed trust anchor discovered from Active Directory.
+	ExpectedChain []*x509.Certificate
 }
 
 // SubmitCSR submits a certificate signing request to an AD CS server using
@@ -218,6 +221,12 @@ func EnrollCertificate(ctx context.Context, submitCSR CSRSubmitter, request Enro
 	if submitCSR == nil {
 		submitCSR = SubmitCSR
 	}
+	if normalizeMachineIdentity(request.CommonName) == "" {
+		return fmt.Errorf("expected machine identity is required")
+	}
+	if len(request.ExpectedChain) == 0 {
+		return fmt.Errorf("expected directory CA chain is required")
+	}
 	if request.KeySize == 0 {
 		request.KeySize = 2048
 	}
@@ -237,7 +246,8 @@ func EnrollCertificate(ctx context.Context, submitCSR CSRSubmitter, request Enro
 	// Verify the returned certificate's public key matches the generated
 	// private key. This prevents a compromised or malicious CA from returning
 	// a certificate for a different subject or key.
-	if err := verifyIssuedCertificate(certPEM, key); err != nil {
+	cert, err := verifyIssuedCertificate(certPEM, key, request.CommonName, request.ExpectedChain, time.Now())
+	if err != nil {
 		return fmt.Errorf("issued certificate verification failed: %w", err)
 	}
 
@@ -256,44 +266,39 @@ func EnrollCertificate(ctx context.Context, submitCSR CSRSubmitter, request Enro
 		return fmt.Errorf("failed to write certificate: %w", err)
 	}
 
-	log.Debugf(ctx, "Certificate enrollment complete: key=%s, cert=%s", request.KeyFile, request.CertFile)
+	log.Debugf(ctx, "Certificate enrollment complete: key=%s, cert=%s, fingerprint=%s", request.KeyFile, request.CertFile, certificateFingerprint(cert))
 	return nil
 }
 
-// verifyIssuedCertificate checks that the PEM-encoded certificate's public
-// key matches the PEM-encoded private key. This ensures the CA returned a
-// certificate for the key we generated, not a different key.
-func verifyIssuedCertificate(certPEM string, keyPEM []byte) error {
+// verifyIssuedCertificate binds an issued or reused leaf to its private key,
+// expected machine identity, selected issuing certificate and exact
+// directory-discovered root path.
+func verifyIssuedCertificate(certPEM string, keyPEM []byte, identity string, expectedChain []*x509.Certificate, now time.Time) (*x509.Certificate, error) {
 	certBlock, _ := pem.Decode([]byte(certPEM))
 	if certBlock == nil {
-		return fmt.Errorf("failed to decode issued certificate PEM")
+		return nil, fmt.Errorf("failed to decode issued certificate PEM")
 	}
 	cert, err := x509.ParseCertificate(certBlock.Bytes)
 	if err != nil {
-		return fmt.Errorf("failed to parse issued certificate: %w", err)
+		return nil, fmt.Errorf("failed to parse issued certificate: %w", err)
 	}
-
-	// Reject a certificate that is already expired or not yet valid (allowing
-	// for modest clock skew). Subject, SAN, EKU and chain are intentionally
-	// not enforced here: AD CS templates legitimately control the subject and
-	// key usages, and the issuing CA may be a subordinate of the discovered
-	// root (multi-tier PKI), so a strict chain check would reject valid certs.
-	const skew = 5 * time.Minute
-	now := time.Now()
-	if now.Add(skew).Before(cert.NotBefore) {
-		return fmt.Errorf("issued certificate is not yet valid (NotBefore: %s)", cert.NotBefore)
+	if cert.IsCA {
+		return nil, fmt.Errorf("issued certificate is a CA certificate")
 	}
-	if now.Add(-skew).After(cert.NotAfter) {
-		return fmt.Errorf("issued certificate has already expired (NotAfter: %s)", cert.NotAfter)
+	if now.Before(cert.NotBefore) {
+		return nil, fmt.Errorf("issued certificate is not yet valid (NotBefore: %s)", cert.NotBefore)
+	}
+	if now.After(cert.NotAfter) {
+		return nil, fmt.Errorf("issued certificate has already expired (NotAfter: %s)", cert.NotAfter)
 	}
 
 	keyBlock, _ := pem.Decode(keyPEM)
 	if keyBlock == nil {
-		return fmt.Errorf("failed to decode private key PEM")
+		return nil, fmt.Errorf("failed to decode private key PEM")
 	}
 	key, err := x509.ParsePKCS8PrivateKey(keyBlock.Bytes)
 	if err != nil {
-		return fmt.Errorf("failed to parse private key: %w", err)
+		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
 
 	// Compare public keys based on key type
@@ -301,24 +306,80 @@ func verifyIssuedCertificate(certPEM string, keyPEM []byte) error {
 	case *rsa.PrivateKey:
 		certPubKey, ok := cert.PublicKey.(*rsa.PublicKey)
 		if !ok {
-			return fmt.Errorf("certificate contains %T public key, expected *rsa.PublicKey", cert.PublicKey)
+			return nil, fmt.Errorf("certificate contains %T public key, expected *rsa.PublicKey", cert.PublicKey)
 		}
 		if certPubKey.N.Cmp(privKey.N) != 0 || certPubKey.E != privKey.E {
-			return fmt.Errorf("certificate public key does not match generated private key")
+			return nil, fmt.Errorf("certificate public key does not match generated private key")
 		}
 	case *ecdsa.PrivateKey:
 		certPubKey, ok := cert.PublicKey.(*ecdsa.PublicKey)
 		if !ok {
-			return fmt.Errorf("certificate contains %T public key, expected *ecdsa.PublicKey", cert.PublicKey)
+			return nil, fmt.Errorf("certificate contains %T public key, expected *ecdsa.PublicKey", cert.PublicKey)
 		}
 		if certPubKey.X.Cmp(privKey.X) != 0 || certPubKey.Y.Cmp(privKey.Y) != 0 {
-			return fmt.Errorf("certificate public key does not match generated private key")
+			return nil, fmt.Errorf("certificate public key does not match generated private key")
 		}
 	default:
-		return fmt.Errorf("unsupported private key type: %T", key)
+		return nil, fmt.Errorf("unsupported private key type: %T", key)
 	}
 
-	return nil
+	identity = normalizeMachineIdentity(identity)
+	if identity == "" {
+		return nil, fmt.Errorf("expected machine identity is empty")
+	}
+	if len(cert.DNSNames) > 0 {
+		matched := false
+		for _, dnsName := range cert.DNSNames {
+			if normalizeMachineIdentity(dnsName) == identity {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return nil, fmt.Errorf("issued certificate DNS names do not contain expected machine identity %q", identity)
+		}
+	} else if normalizeMachineIdentity(cert.Subject.CommonName) != identity {
+		return nil, fmt.Errorf("issued certificate common name %q does not match expected machine identity %q", cert.Subject.CommonName, identity)
+	}
+
+	if len(expectedChain) == 0 {
+		return nil, fmt.Errorf("no expected CA chain was provided")
+	}
+	if err := verifyExactCAPath(expectedChain, now); err != nil {
+		return nil, fmt.Errorf("expected CA chain is invalid: %w", err)
+	}
+	issuer := expectedChain[0]
+	if err := cert.CheckSignatureFrom(issuer); err != nil {
+		return nil, fmt.Errorf("issued certificate was not signed by selected issuing CA %s: %w", certificateFingerprint(issuer), err)
+	}
+
+	roots := x509.NewCertPool()
+	roots.AddCert(expectedChain[len(expectedChain)-1])
+	intermediates := x509.NewCertPool()
+	for _, chainCert := range expectedChain[:len(expectedChain)-1] {
+		intermediates.AddCert(chainCert)
+	}
+	chains, err := cert.Verify(x509.VerifyOptions{
+		Roots:         roots,
+		Intermediates: intermediates,
+		CurrentTime:   now,
+		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageAny},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("issued certificate does not chain through the selected CA: %w", err)
+	}
+	matchedIssuer := false
+	for _, chain := range chains {
+		if len(chain) > 1 && certificateFingerprint(chain[1]) == certificateFingerprint(issuer) {
+			matchedIssuer = true
+			break
+		}
+	}
+	if !matchedIssuer {
+		return nil, fmt.Errorf("issued certificate verification did not use selected issuing CA %s", certificateFingerprint(issuer))
+	}
+
+	return cert, nil
 }
 
 // safeWriteFile writes data to dst atomically by first writing to a uniquely
@@ -450,13 +511,6 @@ func decodeUTF16(b []byte) string {
 		u16 = u16[:len(u16)-1]
 	}
 	return string(utf16.Decode(u16))
-}
-
-func certificateCommonName(objectName, domain string) string {
-	if strings.Contains(objectName, ".") {
-		return objectName
-	}
-	return fmt.Sprintf("%s.%s", objectName, domain)
 }
 
 func domainFromServer(server string) string {

@@ -121,6 +121,105 @@ func TestFetchConfigDN(t *testing.T) {
 	}
 }
 
+func TestFetchMachineTokenContext(t *testing.T) {
+	t.Parallel()
+
+	const defaultDN = "DC=example,DC=com"
+	identity, err := deriveMachineDirectoryIdentity("HOST$", "EXAMPLE.COM.", "")
+	require.NoError(t, err)
+	entry := ldap.NewEntry("CN=HOST,CN=Computers,"+defaultDN, map[string][]string{
+		"sAMAccountName": {"HOST$"},
+		"dNSHostName":    {"host.example.com"},
+		"primaryGroupID": {"515"},
+	})
+	entry.Attributes = append(entry.Attributes,
+		&ldap.EntryAttribute{Name: "objectSid", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 1000)}},
+		&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 2200)}},
+		&ldap.EntryAttribute{Name: "sIDHistory", ByteValues: [][]byte{aclSID(5, 21, 9, 8, 7, 1000)}},
+	)
+	conn := &mockLDAPClient{searchResults: map[string]*ldap.SearchResult{
+		defaultDN: {Entries: []*ldap.Entry{entry}},
+	}}
+
+	token, err := fetchMachineTokenContext(context.Background(), conn, defaultDN, identity)
+	require.NoError(t, err)
+	for _, sid := range []string{
+		"S-1-5-21-1-2-3-1000",
+		"S-1-5-21-1-2-3-2200",
+		"S-1-5-21-1-2-3-515",
+		"S-1-5-21-9-8-7-1000",
+		"S-1-1-0", "S-1-5-11", "S-1-5-2",
+	} {
+		assert.Contains(t, token, sid)
+	}
+	assert.NotContains(t, token, "S-1-5-10")
+	require.Len(t, conn.requests, 1)
+	assert.Contains(t, conn.requests[0].Filter, "(sAMAccountName=host$)")
+	assert.Contains(t, conn.requests[0].Filter, "(dNSHostName=host.example.com)")
+}
+
+func TestDeriveMachineDirectoryIdentity(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		objectName    string
+		localHostname string
+		wantSAM       string
+		wantDNS       string
+	}{
+		"Enrollment object name": {
+			objectName: "HOST$", wantSAM: "host$", wantDNS: "host.example.com",
+		},
+		"FQDN object name": {
+			objectName: "Host.Example.Com.", wantSAM: "host$", wantDNS: "host.example.com",
+		},
+		"Kerberos host principal": {
+			objectName: "host/HOST@EXAMPLE.COM", wantSAM: "host$", wantDNS: "host.example.com",
+		},
+		"Local hostname fallback": {
+			localHostname: "HOST", wantSAM: "host$", wantDNS: "host.example.com",
+		},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			identity, err := deriveMachineDirectoryIdentity(tc.objectName, "EXAMPLE.COM.", tc.localHostname)
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantSAM, identity.samAccountName)
+			assert.Equal(t, tc.wantDNS, identity.dnsName)
+		})
+	}
+}
+
+func TestFetchMachineTokenContextFailsClosed(t *testing.T) {
+	t.Parallel()
+
+	identity, err := deriveMachineDirectoryIdentity("host", "example.com", "")
+	require.NoError(t, err)
+	for name, entries := range map[string][]*ldap.Entry{
+		"missing object": nil,
+		"ambiguous object": {
+			ldap.NewEntry("CN=one", nil),
+			ldap.NewEntry("CN=two", nil),
+		},
+		"missing binary SID": {
+			ldap.NewEntry("CN=host", map[string][]string{
+				"sAMAccountName": {"host$"},
+				"primaryGroupID": {"515"},
+			}),
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			conn := &mockLDAPClient{searchResults: map[string]*ldap.SearchResult{
+				"DC=example,DC=com": {Entries: entries},
+			}}
+			_, err := fetchMachineTokenContext(context.Background(), conn, "DC=example,DC=com", identity)
+			require.Error(t, err)
+		})
+	}
+}
+
 func TestFetchCertificationAuthorities(t *testing.T) {
 	t.Parallel()
 
@@ -206,6 +305,57 @@ func TestFetchCertificationAuthorities(t *testing.T) {
 	}
 }
 
+func TestFetchCertificationAuthoritiesPreservesEveryRawCertificate(t *testing.T) {
+	t.Parallel()
+
+	configDN := "CN=Configuration,DC=example,DC=com"
+	baseDN := fmt.Sprintf("CN=Enrollment Services,CN=Public Key Services,CN=Services,%s", configDN)
+	first := []byte{1, 2, 3}
+	second := []byte{4, 5, 6}
+	entry := newCAEntry(baseDN, "TestCA", "ca.example.com", []string{"Machine"}, nil)
+	entry.Attributes = append(entry.Attributes, &ldap.EntryAttribute{
+		Name:       "cACertificate",
+		ByteValues: [][]byte{first, second, first},
+	})
+	conn := &mockLDAPClient{searchResults: map[string]*ldap.SearchResult{
+		baseDN: {Entries: []*ldap.Entry{entry}},
+	}}
+
+	cas, err := fetchCertificationAuthorities(conn, configDN)
+	require.NoError(t, err)
+	require.Len(t, cas, 1)
+	assert.Equal(t, []byte{1, 2, 3}, cas[0].CACertificates[0])
+	assert.Equal(t, []byte{4, 5, 6}, cas[0].CACertificates[1])
+	assert.Equal(t, []byte{1, 2, 3}, cas[0].CACertificates[2])
+
+	first[0] = 9
+	assert.Equal(t, byte(1), cas[0].CACertificates[0][0], "LDAP buffers must not alias discovered state")
+}
+
+func TestFetchDirectoryCACertificatesReadsCAAndAIAContainers(t *testing.T) {
+	t.Parallel()
+
+	configDN := "CN=Configuration,DC=example,DC=com"
+	caBase := fmt.Sprintf("CN=Certification Authorities,CN=Public Key Services,CN=Services,%s", configDN)
+	aiaBase := fmt.Sprintf("CN=AIA,CN=Public Key Services,CN=Services,%s", configDN)
+	entryWithCerts := func(base string, values ...[]byte) *ldap.Entry {
+		entry := ldap.NewEntry("CN=CA,"+base, nil)
+		entry.Attributes = append(entry.Attributes, &ldap.EntryAttribute{Name: "cACertificate", ByteValues: values})
+		return entry
+	}
+	conn := &mockLDAPClient{searchResults: map[string]*ldap.SearchResult{
+		caBase:  {Entries: []*ldap.Entry{entryWithCerts(caBase, []byte{1}, []byte{2})}},
+		aiaBase: {Entries: []*ldap.Entry{entryWithCerts(aiaBase, []byte{3}, []byte{1})}},
+	}}
+
+	certs, err := fetchDirectoryCACertificatesContext(context.Background(), conn, configDN)
+	require.NoError(t, err)
+	assert.Equal(t, [][]byte{{1}, {2}, {3}, {1}}, certs)
+	require.Len(t, conn.requests, 2)
+	assert.Equal(t, caBase, conn.requests[0].BaseDN)
+	assert.Equal(t, aiaBase, conn.requests[1].BaseDN)
+}
+
 func TestFetchTemplateAttrs(t *testing.T) {
 	t.Parallel()
 
@@ -287,11 +437,21 @@ func TestFetchTemplateAttrs(t *testing.T) {
 }
 
 func templateEntry(baseDN, cn, minKeySize string) *ldap.Entry {
-	attrs := map[string][]string{"cn": {cn}}
+	attrs := map[string][]string{
+		"cn":                            {cn},
+		"flags":                         {"64"},
+		"msPKI-Template-Schema-Version": {"2"},
+		"msPKI-Enrollment-Flag":         {"32"},
+	}
 	if minKeySize != "" {
 		attrs["msPKI-Minimal-Key-Size"] = []string{minKeySize}
 	}
-	return ldap.NewEntry(fmt.Sprintf("CN=%s,%s", cn, baseDN), attrs)
+	entry := ldap.NewEntry(fmt.Sprintf("CN=%s,%s", cn, baseDN), attrs)
+	entry.Attributes = append(entry.Attributes, &ldap.EntryAttribute{
+		Name:       "nTSecurityDescriptor",
+		ByteValues: [][]byte{aclNullDACL()},
+	})
+	return entry
 }
 
 func TestFetchTemplateAttrsBulkContext(t *testing.T) {
@@ -317,12 +477,27 @@ func TestFetchTemplateAttrsBulkContext(t *testing.T) {
 		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"Machine", "User", "Missing"})
 		require.NoError(t, err)
 		require.Len(t, conn.requests, 1, "expected exactly one bulk LDAP search, not one per template")
+		require.Len(t, conn.requests[0].Controls, 1)
+		control, ok := conn.requests[0].Controls[0].(*ldap.ControlString)
+		require.True(t, ok)
+		assert.Equal(t, securityDescriptorFlagsControlOID, control.ControlType)
+		assert.True(t, control.Criticality)
+		assert.Equal(t, []byte{0x30, 0x03, 0x02, 0x01, 0x04}, []byte(control.ControlValue))
+		assert.ElementsMatch(t, []string{
+			"cn", "flags", "msPKI-Template-Schema-Version", "msPKI-Enrollment-Flag",
+			"nTSecurityDescriptor", "msPKI-Minimal-Key-Size", "msPKI-Private-Key-Flag",
+			"msPKI-Certificate-Name-Flag", "msPKI-RA-Signature", "pKIDefaultCSPs",
+			"msPKI-CSPs", "pKIKeyUsage",
+		}, conn.requests[0].Attributes)
 
-		assert.Equal(t, templateAttrs{Name: "Machine", MinKeySize: 2048}, got["Machine"])
-		assert.Equal(t, templateAttrs{Name: "User", MinKeySize: 4096}, got["User"])
-		// A template LDAP doesn't return still gets a safe default instead of
-		// the whole call failing and discarding the entries that were found.
-		assert.Equal(t, templateAttrs{Name: "Missing", MinKeySize: 2048}, got["Missing"])
+		assert.Equal(t, 2048, got["Machine"].MinKeySize)
+		assert.Equal(t, "Machine", got["Machine"].Name)
+		assert.Equal(t, 4096, got["User"].MinKeySize)
+		assert.Equal(t, "User", got["User"].Name)
+		// A template LDAP doesn't return retains the compatibility key-size
+		// default but is marked invalid for autoenrollment.
+		assert.Equal(t, 2048, got["Missing"].MinKeySize)
+		assert.NotEmpty(t, got["Missing"].ValidationError)
 	})
 
 	t.Run("Filter escapes special characters and deduplicates names", func(t *testing.T) {
@@ -383,10 +558,10 @@ func TestFetchTemplateAttrsBulkContext(t *testing.T) {
 		// satisfy every originally requested spelling, under its own key, and
 		// none of them should silently fall back to the 2048 default just
 		// because the requested case differs from the returned CN's case.
-		want := templateAttrs{Name: "Machine", MinKeySize: 2048}
-		assert.Equal(t, want, got["machine"])
-		assert.Equal(t, want, got["Machine"])
-		assert.Equal(t, want, got["MACHINE"])
+		assert.Equal(t, 2048, got["machine"].MinKeySize)
+		assert.Equal(t, "Machine", got["machine"].Name)
+		assert.Equal(t, got["machine"], got["Machine"])
+		assert.Equal(t, got["machine"], got["MACHINE"])
 		assert.Len(t, got, 3)
 
 		filter := conn.requests[0].Filter
@@ -412,7 +587,7 @@ func TestFetchTemplateAttrsBulkContext(t *testing.T) {
 
 		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"Machine"})
 		require.NoError(t, err)
-		assert.Equal(t, templateAttrs{Name: "Machine", MinKeySize: 2048}, got["Machine"])
+		assert.Equal(t, 2048, got["Machine"].MinKeySize)
 		_, ok := got["OtherTemplate"]
 		assert.False(t, ok, "unrequested entries must not appear in the returned map")
 		assert.Len(t, got, 1)
@@ -453,7 +628,7 @@ func TestFetchTemplateAttrsBulkContext(t *testing.T) {
 
 		got, err := fetchTemplateAttrsBulkContext(context.Background(), conn, configDN, []string{"machine"})
 		require.NoError(t, err)
-		assert.Equal(t, templateAttrs{Name: "Machine", MinKeySize: 2048}, got["machine"])
+		assert.Equal(t, 2048, got["machine"].MinKeySize)
 	})
 }
 
@@ -513,6 +688,7 @@ func TestDiscoverCAsAndTemplates(t *testing.T) {
 
 	configDN := "CN=Configuration,DC=example,DC=com"
 	enrollBaseDN := fmt.Sprintf("CN=Enrollment Services,CN=Public Key Services,CN=Services,%s", configDN)
+	ca := newChainTestCA(t, "Test CA", nil, time.Now().Add(-time.Hour), time.Now().Add(time.Hour), 1)
 
 	tests := map[string]struct {
 		connErr       bool
@@ -533,7 +709,7 @@ func TestDiscoverCAsAndTemplates(t *testing.T) {
 				},
 				enrollBaseDN: {
 					Entries: []*ldap.Entry{
-						newCAEntry(enrollBaseDN, "TestCA", "ca.example.com", []string{"Machine"}, []byte{1}),
+						newCAEntry(enrollBaseDN, "TestCA", "ca.example.com", []string{"Machine"}, ca.cert.Raw),
 					},
 				},
 			},
@@ -634,6 +810,7 @@ func TestDiscoveryRestartsWholeTransactionOnNextCandidate(t *testing.T) {
 	t.Parallel()
 
 	const configDN = "CN=Configuration,DC=example,DC=com"
+	ca := newChainTestCA(t, "Test CA", nil, time.Now().Add(-time.Hour), time.Now().Add(time.Hour), 1)
 	var connected []string
 	var searchesByDC = map[string][]string{}
 	connector := &candidateLDAPTestConnector{
@@ -654,7 +831,7 @@ func TestDiscoveryRestartsWholeTransactionOnNextCandidate(t *testing.T) {
 					return nil, fmt.Errorf("CA search stalled")
 				}
 				return &ldap.SearchResult{Entries: []*ldap.Entry{
-					newCAEntry(req.BaseDN, "TestCA", "ca.example.com", []string{"Machine"}, []byte{1}),
+					newCAEntry(req.BaseDN, "TestCA", "ca.example.com", []string{"Machine"}, ca.cert.Raw),
 				}}, nil
 			}}, nil
 		},
@@ -665,7 +842,75 @@ func TestDiscoveryRestartsWholeTransactionOnNextCandidate(t *testing.T) {
 	require.Len(t, result, 1)
 	assert.Equal(t, []string{"dc1.example.com", "dc2.example.com"}, connected)
 	assert.Equal(t, []string{"", "CN=Enrollment Services,CN=Public Key Services,CN=Services," + configDN}, searchesByDC["dc1.example.com"])
-	assert.Equal(t, []string{"", "CN=Enrollment Services,CN=Public Key Services,CN=Services," + configDN}, searchesByDC["dc2.example.com"])
+	assert.Equal(t, []string{
+		"",
+		"CN=Enrollment Services,CN=Public Key Services,CN=Services," + configDN,
+		"CN=Certification Authorities,CN=Public Key Services,CN=Services," + configDN,
+		"CN=AIA,CN=Public Key Services,CN=Services," + configDN,
+	}, searchesByDC["dc2.example.com"])
+}
+
+func TestEnrollmentDiscoveryRestartsAuthorizationTransactionOnNextCandidate(t *testing.T) {
+	t.Parallel()
+
+	const (
+		configDN  = "CN=Configuration,DC=example,DC=com"
+		defaultDN = "DC=example,DC=com"
+	)
+	enrollBase := "CN=Enrollment Services,CN=Public Key Services,CN=Services," + configDN
+	templateBase := "CN=Certificate Templates,CN=Public Key Services,CN=Services," + configDN
+	ca := newChainTestCA(t, "Test CA", nil, time.Now().Add(-time.Hour), time.Now().Add(time.Hour), 1)
+	var searchesByDC = map[string][]string{}
+	connector := &candidateLDAPTestConnector{
+		candidates: []ldapServerCandidate{
+			{address: "dc1.example.com:389", host: "dc1.example.com"},
+			{address: "dc2.example.com:389", host: "dc2.example.com"},
+		},
+		connect: func(_ context.Context, candidate ldapServerCandidate) (LDAPClient, error) {
+			return &contextLDAPTestClient{search: func(_ context.Context, req *ldap.SearchRequest) (*ldap.SearchResult, error) {
+				searchesByDC[candidate.host] = append(searchesByDC[candidate.host], req.BaseDN)
+				switch req.BaseDN {
+				case "":
+					return &ldap.SearchResult{Entries: []*ldap.Entry{ldap.NewEntry("", map[string][]string{
+						"configurationNamingContext": {configDN},
+						"defaultNamingContext":       {defaultDN},
+					})}}, nil
+				case enrollBase:
+					return &ldap.SearchResult{Entries: []*ldap.Entry{
+						newCAEntry(enrollBase, "TestCA", "ca.example.com", []string{"Machine"}, ca.cert.Raw),
+					}}, nil
+				case defaultDN:
+					if candidate.host == "dc1.example.com" {
+						return nil, fmt.Errorf("tokenGroups lookup failed")
+					}
+					entry := ldap.NewEntry("CN=host,"+defaultDN, map[string][]string{
+						"sAMAccountName": {"host$"},
+						"dNSHostName":    {"host.example.com"},
+						"primaryGroupID": {"515"},
+					})
+					entry.Attributes = append(entry.Attributes,
+						&ldap.EntryAttribute{Name: "objectSid", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 1000)}},
+						&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{aclSID(5, 21, 1, 2, 3, 515)}},
+					)
+					return &ldap.SearchResult{Entries: []*ldap.Entry{entry}}, nil
+				case templateBase:
+					return &ldap.SearchResult{Entries: []*ldap.Entry{
+						templateEntry(templateBase, "Machine", "2048"),
+					}}, nil
+				default:
+					return &ldap.SearchResult{}, nil
+				}
+			}}, nil
+		},
+	}
+
+	data, err := discoverEnrollmentDirectoryData(context.Background(), connector, "example.com", "host", "example.com")
+	require.NoError(t, err)
+	require.Len(t, data.CAs, 1)
+	assert.Equal(t, "Machine", data.CAs[0].Templates[0])
+	assert.Contains(t, searchesByDC["dc1.example.com"], defaultDN)
+	assert.Equal(t, "", searchesByDC["dc2.example.com"][0], "the second candidate must restart at root DSE")
+	assert.Equal(t, templateBase, searchesByDC["dc2.example.com"][len(searchesByDC["dc2.example.com"])-1])
 }
 
 func TestLDAPTransactionDeadFirstCandidate(t *testing.T) {

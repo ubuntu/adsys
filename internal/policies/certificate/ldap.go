@@ -7,7 +7,6 @@ import (
 	"crypto/sha512"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -15,6 +14,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,17 +30,31 @@ import (
 
 // certAuthority represents a Certificate Authority discovered from AD via LDAP.
 type certAuthority struct {
-	Name             string   // CN of the CA
-	Hostname         string   // DNS hostname of the CA server
-	CACertificate    []byte   // DER-encoded CA certificate
-	CACertificateB64 string   // Base64-encoded CA certificate (for convenience)
-	Templates        []string // Certificate templates the CA is configured to issue
+	Name           string   // CN of the CA
+	Hostname       string   // DNS hostname of the CA server
+	CACertificates [][]byte // every DER value published on the enrollment service
+	CACertificate  []byte   // selected active issuing CA certificate
+	Chain          *expectedCertificateChain
+	Templates      []string // Certificate templates the CA is configured to issue
 }
 
 // templateAttrs represents attributes of a certificate template.
 type templateAttrs struct {
-	Name       string
-	MinKeySize int
+	Name                   string
+	MinKeySize             int
+	Present                bool
+	Flags                  uint32
+	SchemaVersion          int
+	SchemaVersionPresent   bool
+	EnrollmentFlags        uint32
+	EnrollmentFlagsPresent bool
+	PrivateKeyFlags        uint32
+	CertificateNameFlags   uint32
+	RASignatureCount       int
+	SecurityDescriptor     []byte
+	DefaultCSPs            []string
+	KeyUsage               []byte
+	ValidationError        string
 }
 
 // LDAPClient abstracts LDAP operations for testing.
@@ -1066,29 +1080,66 @@ func fetchCertificationAuthoritiesContext(ctx context.Context, conn LDAPClient, 
 	for _, entry := range result.Entries {
 		cn := entry.GetAttributeValue("cn")
 		hostname := entry.GetAttributeValue("dNSHostName")
-		caCertRaw := entry.GetRawAttributeValue("cACertificate")
+		caCertValues := entry.GetRawAttributeValues("cACertificate")
 		templates := entry.GetAttributeValues("certificateTemplates")
 
 		if cn == "" || hostname == "" {
 			continue
 		}
 
-		ca := certAuthority{
-			Name:             cn,
-			Hostname:         hostname,
-			CACertificate:    caCertRaw,
-			CACertificateB64: base64.StdEncoding.EncodeToString(caCertRaw),
-			Templates:        templates,
+		rawCertificates := make([][]byte, 0, len(caCertValues))
+		for _, value := range caCertValues {
+			rawCertificates = append(rawCertificates, append([]byte(nil), value...))
 		}
-		log.Debugf(ctx, "Discovered CA: %s (host: %s, templates: %d)", cn, hostname, len(templates))
+		ca := certAuthority{
+			Name:           cn,
+			Hostname:       hostname,
+			CACertificates: rawCertificates,
+			Templates:      templates,
+		}
+		log.Debugf(ctx, "Discovered CA: %s (host: %s, certificates: %d, templates: %d)", cn, hostname, len(rawCertificates), len(templates))
 		cas = append(cas, ca)
 	}
 
 	return cas, nil
 }
 
+// fetchDirectoryCACertificatesContext retrieves every current and historical
+// cACertificate value published in the Certification Authorities and AIA
+// containers. These values provide the directory-only roots and intermediates
+// needed for subordinate enterprise CA deployments.
+func fetchDirectoryCACertificatesContext(ctx context.Context, conn LDAPClient, configDN string) ([][]byte, error) {
+	containers := []string{
+		fmt.Sprintf("CN=Certification Authorities,CN=Public Key Services,CN=Services,%s", configDN),
+		fmt.Sprintf("CN=AIA,CN=Public Key Services,CN=Services,%s", configDN),
+	}
+
+	var certificates [][]byte
+	for _, baseDN := range containers {
+		searchReq := ldap.NewSearchRequest(
+			baseDN,
+			ldap.ScopeWholeSubtree,
+			ldap.NeverDerefAliases,
+			0, 0, false,
+			"(cACertificate=*)",
+			[]string{"cACertificate"},
+			nil,
+		)
+		result, err := ldapSearchContext(ctx, conn, searchReq)
+		if err != nil {
+			return nil, fmt.Errorf("LDAP search for CA certificates under %s failed: %w", baseDN, err)
+		}
+		for _, entry := range result.Entries {
+			for _, value := range entry.GetRawAttributeValues("cACertificate") {
+				certificates = append(certificates, append([]byte(nil), value...))
+			}
+		}
+	}
+	return certificates, nil
+}
+
 // fetchTemplateAttrs queries LDAP for a specific certificate template's
-// attributes, particularly the minimum key size.
+// minimum key size. Autoenrollment authorization uses the bulk lookup below.
 func fetchTemplateAttrs(conn LDAPClient, configDN, templateName string) (templateAttrs, error) {
 	return fetchTemplateAttrsContext(context.Background(), conn, configDN, templateName)
 }
@@ -1154,8 +1205,9 @@ func fetchTemplateAttrsWithConnector(ctx context.Context, connect LDAPConnector,
 // single slow or timed-out lookup (all of them share the same bounded
 // candidate transaction) discards every key size already fetched for the
 // other templates, forcing every template back to the 2048-bit default.
-// Templates that LDAP does not return get the same safe 2048-bit default as
-// fetchTemplateAttrsContext, without discarding entries that were found.
+// Templates that LDAP does not return retain the 2048-bit compatibility
+// default for non-enrollment consumers but carry a validation error, so the
+// autoenrollment eligibility path skips them rather than falling back.
 //
 // AD's CN matching is case-insensitive, so requested names are deduplicated
 // and matched against returned entries case-insensitively: requesting
@@ -1215,8 +1267,21 @@ func fetchTemplateAttrsBulkContext(ctx context.Context, conn LDAPClient, configD
 		ldap.NeverDerefAliases,
 		0, 0, false,
 		templateNamesFilter(filterNames),
-		[]string{"cn", "msPKI-Minimal-Key-Size"},
-		nil,
+		[]string{
+			"cn",
+			"flags",
+			"msPKI-Template-Schema-Version",
+			"msPKI-Enrollment-Flag",
+			"nTSecurityDescriptor",
+			"msPKI-Minimal-Key-Size",
+			"msPKI-Private-Key-Flag",
+			"msPKI-Certificate-Name-Flag",
+			"msPKI-RA-Signature",
+			"pKIDefaultCSPs",
+			"msPKI-CSPs",
+			"pKIKeyUsage",
+		},
+		[]ldap.Control{securityDescriptorFlagsControl()},
 	)
 
 	result, err := ldapSearchContext(ctx, conn, searchReq)
@@ -1238,18 +1303,11 @@ func fetchTemplateAttrsBulkContext(ctx context.Context, conn LDAPClient, configD
 			continue
 		}
 
-		minKeySize := 2048
-		if v := entry.GetAttributeValue("msPKI-Minimal-Key-Size"); v != "" {
-			if parsed, err := strconv.Atoi(v); err == nil {
-				minKeySize = parsed
-			}
-		}
-		attrs := templateAttrs{Name: cn, MinKeySize: minKeySize}
+		attrs := parseTemplateLDAPEntry(entry)
 
 		if existing, ok := foundByFold[folded]; ok {
-			if existing != attrs {
-				return nil, fmt.Errorf("ambiguous certificate template %q: LDAP returned conflicting entries %q (key size %d) and %q (key size %d)",
-					folded, existing.Name, existing.MinKeySize, attrs.Name, attrs.MinKeySize)
+			if !templateAttrsEquivalent(existing, attrs) {
+				return nil, fmt.Errorf("ambiguous certificate template %q: LDAP returned conflicting entries %q and %q", folded, existing.Name, attrs.Name)
 			}
 			continue
 		}
@@ -1266,12 +1324,149 @@ func fetchTemplateAttrsBulkContext(ctx context.Context, conn LDAPClient, configD
 			if ok {
 				attrsByName[name] = attrs
 			} else {
-				attrsByName[name] = templateAttrs{Name: name, MinKeySize: 2048}
+				attrsByName[name] = templateAttrs{
+					Name:            name,
+					MinKeySize:      2048,
+					ValidationError: "template was not returned by LDAP",
+				}
 			}
 		}
 	}
 
 	return attrsByName, nil
+}
+
+const securityDescriptorFlagsControlOID = "1.2.840.113556.1.4.801"
+
+func securityDescriptorFlagsControl() ldap.Control {
+	// SDFlagsRequestValue ::= SEQUENCE { Flags INTEGER }. DACL_SECURITY_INFORMATION
+	// is 0x4, so its complete minimal BER encoding is 30 03 02 01 04.
+	return ldap.NewControlString(securityDescriptorFlagsControlOID, true, string([]byte{0x30, 0x03, 0x02, 0x01, 0x04}))
+}
+
+func parseTemplateLDAPEntry(entry *ldap.Entry) templateAttrs {
+	attrs := templateAttrs{
+		Name:       entry.GetAttributeValue("cn"),
+		MinKeySize: 2048,
+		Present:    true,
+	}
+	addError := func(format string, args ...any) {
+		message := fmt.Sprintf(format, args...)
+		if attrs.ValidationError == "" {
+			attrs.ValidationError = message
+		} else {
+			attrs.ValidationError += "; " + message
+		}
+	}
+
+	var err error
+	var present bool
+	attrs.Flags, present, err = ldapUint32Attribute(entry, "flags")
+	if err != nil {
+		addError("%v", err)
+	} else if !present {
+		addError("flags is missing")
+	}
+	schema, schemaPresent, schemaErr := ldapUint32Attribute(entry, "msPKI-Template-Schema-Version")
+	if schemaErr != nil {
+		addError("%v", schemaErr)
+	} else if schemaPresent {
+		attrs.SchemaVersion = int(schema)
+		attrs.SchemaVersionPresent = true
+	}
+	attrs.EnrollmentFlags, attrs.EnrollmentFlagsPresent, err = ldapUint32Attribute(entry, "msPKI-Enrollment-Flag")
+	if err != nil {
+		addError("%v", err)
+	}
+	attrs.PrivateKeyFlags, _, err = ldapUint32Attribute(entry, "msPKI-Private-Key-Flag")
+	if err != nil {
+		addError("%v", err)
+	}
+	attrs.CertificateNameFlags, _, err = ldapUint32Attribute(entry, "msPKI-Certificate-Name-Flag")
+	if err != nil {
+		addError("%v", err)
+	}
+	raSignature, raPresent, raErr := ldapUint32Attribute(entry, "msPKI-RA-Signature")
+	if raErr != nil {
+		addError("%v", raErr)
+	} else if raPresent {
+		attrs.RASignatureCount = int(raSignature)
+	}
+	minKeySize, minKeyPresent, minKeyErr := ldapUint32Attribute(entry, "msPKI-Minimal-Key-Size")
+	if minKeyErr != nil {
+		addError("%v", minKeyErr)
+	} else if minKeyPresent {
+		if minKeySize == 0 || minKeySize > 16384 {
+			addError("msPKI-Minimal-Key-Size %d is outside the supported range", minKeySize)
+		} else {
+			attrs.MinKeySize = max(2048, int(minKeySize))
+		}
+	}
+
+	descriptors := entry.GetRawAttributeValues("nTSecurityDescriptor")
+	if len(descriptors) != 1 || len(descriptors[0]) == 0 {
+		addError("nTSecurityDescriptor must have exactly one non-empty binary value")
+	} else {
+		attrs.SecurityDescriptor = append([]byte(nil), descriptors[0]...)
+	}
+	attrs.DefaultCSPs = append(attrs.DefaultCSPs, entry.GetAttributeValues("pKIDefaultCSPs")...)
+	attrs.DefaultCSPs = append(attrs.DefaultCSPs, entry.GetAttributeValues("msPKI-CSPs")...)
+	for _, provider := range attrs.DefaultCSPs {
+		if strings.TrimSpace(provider) == "" {
+			addError("CSP/KSP list contains an empty provider")
+			break
+		}
+	}
+	keyUsages := entry.GetRawAttributeValues("pKIKeyUsage")
+	if len(keyUsages) > 1 {
+		addError("pKIKeyUsage has multiple values")
+	} else if len(keyUsages) == 1 {
+		if len(keyUsages[0]) == 0 || len(keyUsages[0]) > 8 {
+			addError("pKIKeyUsage has invalid length %d", len(keyUsages[0]))
+		} else {
+			attrs.KeyUsage = append([]byte(nil), keyUsages[0]...)
+		}
+	}
+	return attrs
+}
+
+func ldapUint32Attribute(entry *ldap.Entry, name string) (uint32, bool, error) {
+	values := entry.GetAttributeValues(name)
+	if len(values) == 0 {
+		return 0, false, nil
+	}
+	if len(values) != 1 {
+		return 0, true, fmt.Errorf("%s has %d values, want one", name, len(values))
+	}
+	value := strings.TrimSpace(values[0])
+	if value == "" {
+		return 0, true, fmt.Errorf("%s is empty", name)
+	}
+	parsed, err := strconv.ParseUint(value, 10, 32)
+	if err != nil {
+		return 0, true, fmt.Errorf("%s value %q is malformed: %w", name, value, err)
+	}
+	return uint32(parsed), true, nil
+}
+
+func templateAttrsEquivalent(a, b templateAttrs) bool {
+	a.Name = strings.ToLower(a.Name)
+	b.Name = strings.ToLower(b.Name)
+	return a.Name == b.Name &&
+		a.MinKeySize == b.MinKeySize &&
+		a.Present == b.Present &&
+		a.Flags == b.Flags &&
+		a.SchemaVersion == b.SchemaVersion &&
+		a.SchemaVersionPresent == b.SchemaVersionPresent &&
+		a.EnrollmentFlags == b.EnrollmentFlags &&
+		a.EnrollmentFlagsPresent == b.EnrollmentFlagsPresent &&
+		a.PrivateKeyFlags == b.PrivateKeyFlags &&
+		a.CertificateNameFlags == b.CertificateNameFlags &&
+		a.RASignatureCount == b.RASignatureCount &&
+		a.ValidationError == b.ValidationError &&
+		slices.Equal(a.SecurityDescriptor, b.SecurityDescriptor) &&
+		slices.Equal(a.DefaultCSPs, b.DefaultCSPs) &&
+		slices.Equal(a.KeyUsage, b.KeyUsage)
 }
 
 // templateNamesFilter builds an LDAP OR filter matching the given,
@@ -1351,8 +1546,82 @@ func discoverCAsAndTemplates(ctx context.Context, connect LDAPConnector, server 
 		if err != nil {
 			return nil, err
 		}
+		directoryCertificates, err := fetchDirectoryCACertificatesContext(candidateCtx, conn, configDN)
+		if err != nil {
+			return nil, err
+		}
+		cas, err = resolveCAChains(cas, directoryCertificates, time.Now())
+		if err != nil {
+			return nil, err
+		}
 		log.Debugf(candidateCtx, "Discovery complete: found %d CAs on %s", len(cas), server)
 		return cas, nil
+	})
+}
+
+type enrollmentDirectoryData struct {
+	CAs             []certAuthority
+	TemplateAttrs   map[string]templateAttrs
+	MachineIdentity machineDirectoryIdentity
+	PublishedCAs    int
+}
+
+// discoverEnrollmentDirectoryData performs CA, chain, machine-token and
+// template authorization discovery as one bounded LDAP transaction. If a
+// candidate DC fails at any step, runLDAPTransaction restarts the whole
+// sequence on the next candidate instead of combining security data from
+// different directory snapshots.
+func discoverEnrollmentDirectoryData(ctx context.Context, connect LDAPConnector, server, objectName, domain string) (enrollmentDirectoryData, error) {
+	identity, err := enrollmentMachineIdentity(objectName, domain)
+	if err != nil {
+		return enrollmentDirectoryData{}, err
+	}
+	return runLDAPTransaction(ctx, connect, server, func(candidateCtx context.Context, conn LDAPClient) (enrollmentDirectoryData, error) {
+		contexts, err := fetchNamingContextsContext(candidateCtx, conn)
+		if err != nil {
+			return enrollmentDirectoryData{}, err
+		}
+		cas, err := fetchCertificationAuthoritiesContext(candidateCtx, conn, contexts.configuration)
+		if err != nil {
+			return enrollmentDirectoryData{}, err
+		}
+		directoryCertificates, err := fetchDirectoryCACertificatesContext(candidateCtx, conn, contexts.configuration)
+		if err != nil {
+			return enrollmentDirectoryData{}, err
+		}
+		cas, err = resolveCAChains(cas, directoryCertificates, time.Now())
+		if err != nil {
+			return enrollmentDirectoryData{}, err
+		}
+		if len(cas) == 0 {
+			return enrollmentDirectoryData{
+				CAs:             []certAuthority{},
+				TemplateAttrs:   map[string]templateAttrs{},
+				MachineIdentity: identity,
+				PublishedCAs:    0,
+			}, nil
+		}
+
+		token, err := fetchMachineTokenContext(candidateCtx, conn, contexts.defaultDomain, identity)
+		if err != nil {
+			return enrollmentDirectoryData{}, err
+		}
+		var templateNames []string
+		for _, ca := range cas {
+			templateNames = append(templateNames, ca.Templates...)
+		}
+		attrsByName, err := fetchTemplateAttrsBulkContext(candidateCtx, conn, contexts.configuration, templateNames)
+		if err != nil {
+			return enrollmentDirectoryData{}, err
+		}
+		publishedCAs := len(cas)
+		cas = filterMachineAutoEnrollmentTemplates(candidateCtx, cas, attrsByName, token)
+		return enrollmentDirectoryData{
+			CAs:             cas,
+			TemplateAttrs:   attrsByName,
+			MachineIdentity: identity,
+			PublishedCAs:    publishedCAs,
+		}, nil
 	})
 }
 

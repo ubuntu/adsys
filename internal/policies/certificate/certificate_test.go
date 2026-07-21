@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/binary"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -74,14 +75,21 @@ func mockLDAPConnectorErr() certificate.LDAPConnector {
 	})
 }
 
+type testCAFixture struct {
+	cert *x509.Certificate
+	key  *ecdsa.PrivateKey
+}
+
 // newMockLDAPWithCA creates a mock LDAP connection with a single CA and templates.
-func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string) *mockLDAPConn {
+func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string, ca *testCAFixture) *mockLDAPConn {
 	t.Helper()
 
-	// Generate a self-signed CA certificate for testing
-	caCert := generateTestCACert(t)
+	if ca == nil {
+		ca = generateTestCA(t)
+	}
 
 	configDN := "CN=Configuration,DC=example,DC=com"
+	defaultDN := "DC=example,DC=com"
 	enrollBaseDN := fmt.Sprintf("CN=Enrollment Services,CN=Public Key Services,CN=Services,%s", configDN)
 	templateBaseDN := fmt.Sprintf("CN=Certificate Templates,CN=Public Key Services,CN=Services,%s", configDN)
 
@@ -96,20 +104,38 @@ func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string
 	)
 	enrollEntry.Attributes = append(enrollEntry.Attributes, &ldap.EntryAttribute{
 		Name:       "cACertificate",
-		ByteValues: [][]byte{caCert},
+		ByteValues: [][]byte{ca.cert.Raw},
 	})
 
 	// Build template search results
 	templateEntries := make([]*ldap.Entry, 0, len(templates))
 	for _, tmpl := range templates {
-		templateEntries = append(templateEntries, ldap.NewEntry(
+		templateEntry := ldap.NewEntry(
 			fmt.Sprintf("CN=%s,%s", tmpl, templateBaseDN),
 			map[string][]string{
-				"cn":                     {tmpl},
-				"msPKI-Minimal-Key-Size": {"2048"},
+				"cn":                            {tmpl},
+				"flags":                         {"64"},
+				"msPKI-Template-Schema-Version": {"2"},
+				"msPKI-Enrollment-Flag":         {"32"},
+				"msPKI-Minimal-Key-Size":        {"2048"},
 			},
-		))
+		)
+		templateEntry.Attributes = append(templateEntry.Attributes, &ldap.EntryAttribute{
+			Name:       "nTSecurityDescriptor",
+			ByteValues: [][]byte{nullDACLDescriptor()},
+		})
+		templateEntries = append(templateEntries, templateEntry)
 	}
+
+	computerEntry := ldap.NewEntry("CN=keypress,CN=Computers,"+defaultDN, map[string][]string{
+		"sAMAccountName": {"keypress$"},
+		"dNSHostName":    {"keypress.example.com"},
+		"primaryGroupID": {"515"},
+	})
+	computerEntry.Attributes = append(computerEntry.Attributes,
+		&ldap.EntryAttribute{Name: "objectSid", ByteValues: [][]byte{testSID(1, 5, 21, 1, 2, 3, 1000)}},
+		&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{testSID(1, 5, 21, 1, 2, 3, 515)}},
+	)
 
 	return &mockLDAPConn{
 		searchResults: map[string]*ldap.SearchResult{
@@ -117,6 +143,7 @@ func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string
 				Entries: []*ldap.Entry{
 					ldap.NewEntry("", map[string][]string{
 						"configurationNamingContext": {configDN},
+						"defaultNamingContext":       {defaultDN},
 					}),
 				},
 			},
@@ -126,12 +153,12 @@ func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string
 			templateBaseDN: {
 				Entries: templateEntries,
 			},
+			defaultDN: {Entries: []*ldap.Entry{computerEntry}},
 		},
 	}
 }
 
-// generateTestCACert generates a DER-encoded self-signed CA certificate for testing.
-func generateTestCACert(t *testing.T) []byte {
+func generateTestCA(t *testing.T) *testCAFixture {
 	t.Helper()
 
 	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
@@ -154,7 +181,31 @@ func generateTestCACert(t *testing.T) []byte {
 	_, err = x509.ParseCertificate(certDER)
 	require.NoError(t, err)
 
-	return certDER
+	cert, err := x509.ParseCertificate(certDER)
+	require.NoError(t, err)
+	return &testCAFixture{cert: cert, key: key}
+}
+
+func nullDACLDescriptor() []byte {
+	descriptor := make([]byte, 20)
+	descriptor[0] = 1
+	descriptor[2] = 0x04
+	descriptor[3] = 0x80
+	return descriptor
+}
+
+func testSID(revision byte, authority uint64, subAuthorities ...uint32) []byte {
+	sid := make([]byte, 8+4*len(subAuthorities))
+	sid[0] = revision
+	sid[1] = byte(len(subAuthorities)) //nolint:gosec // Test SIDs are bounded well below the protocol maximum.
+	for i := 0; i < 6; i++ {
+		sid[7-i] = byte(authority)
+		authority >>= 8
+	}
+	for i, value := range subAuthorities {
+		binary.LittleEndian.PutUint32(sid[8+i*4:], value)
+	}
+	return sid
 }
 
 func TestApplyPolicy(t *testing.T) {
@@ -207,6 +258,7 @@ func TestApplyPolicy(t *testing.T) {
 			tmpdir := t.TempDir()
 			stateDir := filepath.Join(tmpdir, "statedir")
 			globalTrustDir := filepath.Join(tmpdir, "trustdir")
+			caFixture := generateTestCA(t)
 
 			// Create samba cache dir if needed
 			if tc.sambaDirExists {
@@ -240,20 +292,21 @@ func TestApplyPolicy(t *testing.T) {
 							Entries: []*ldap.Entry{
 								ldap.NewEntry("", map[string][]string{
 									"configurationNamingContext": {"CN=Configuration,DC=example,DC=com"},
+									"defaultNamingContext":       {"DC=example,DC=com"},
 								}),
 							},
 						},
 					},
 				})
 			default:
-				ldapConnect = mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}))
+				ldapConnect = mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))
 			}
 
 			submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 				if tc.submitErr {
 					return "", fmt.Errorf("mock submit error")
 				}
-				return testIssuedCertificateFromCSR(t, csrPEM), nil
+				return issueCertFromCSR(t, csrPEM, time.Now().Add(24*time.Hour), caFixture, "keypress.example.com"), nil
 			}
 
 			m := certificate.New(
@@ -290,16 +343,7 @@ func TestApplyPolicy(t *testing.T) {
 	}
 }
 
-func testIssuedCertificateFromCSR(t *testing.T, csrPEM string) string {
-	t.Helper()
-	return issueCertFromCSR(t, csrPEM, time.Now().Add(24*time.Hour))
-}
-
-// issueCertFromCSR signs the public key carried in csrPEM with a throwaway test
-// CA, producing a leaf certificate valid until notAfter. Only the leaf's public
-// key (matched against the enrolled private key) and validity window are
-// meaningful to the code under test.
-func issueCertFromCSR(t *testing.T, csrPEM string, notAfter time.Time) string {
+func issueCertFromCSR(t *testing.T, csrPEM string, notAfter time.Time, ca *testCAFixture, identity string) string {
 	t.Helper()
 
 	block, _ := pem.Decode([]byte(csrPEM))
@@ -308,33 +352,16 @@ func issueCertFromCSR(t *testing.T, csrPEM string, notAfter time.Time) string {
 	csr, err := x509.ParseCertificateRequest(block.Bytes)
 	require.NoError(t, err, "failed to parse CSR")
 
-	caKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	require.NoError(t, err)
-
-	caTemplate := x509.Certificate{
-		SerialNumber:          big.NewInt(1),
-		Subject:               pkix.Name{CommonName: "Test CA"},
-		IsCA:                  true,
-		BasicConstraintsValid: true,
-		KeyUsage:              x509.KeyUsageCertSign,
-		NotBefore:             time.Now().Add(-time.Hour),
-		NotAfter:              time.Now().Add(24 * time.Hour),
-	}
-	caCertDER, err := x509.CreateCertificate(rand.Reader, &caTemplate, &caTemplate, &caKey.PublicKey, caKey)
-	require.NoError(t, err)
-	caCert, err := x509.ParseCertificate(caCertDER)
-	require.NoError(t, err)
-
 	serialNumber, err := rand.Int(rand.Reader, big.NewInt(1<<62))
 	require.NoError(t, err)
 
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
-		Subject:      pkix.Name{CommonName: "issued"},
+		Subject:      pkix.Name{CommonName: identity},
 		NotBefore:    time.Now().Add(-time.Hour),
 		NotAfter:     notAfter,
 	}
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, caCert, csr.PublicKey, caKey)
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, ca.cert, csr.PublicKey, ca.key)
 	require.NoError(t, err)
 
 	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER}))
@@ -350,9 +377,10 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 
 	var submitCount int
 	leafValidity := 365 * 24 * time.Hour
+	caFixture := generateTestCA(t)
 	var submitter certificate.CSRSubmitter = func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 		submitCount++
-		return issueCertFromCSR(t, csrPEM, time.Now().Add(leafValidity)), nil
+		return issueCertFromCSR(t, csrPEM, time.Now().Add(leafValidity), caFixture, "keypress.example.com"), nil
 	}
 
 	apply := func() error {
@@ -363,7 +391,7 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 			certificate.WithShareDir(filepath.Join(tmpdir, "sharedir")),
 			certificate.WithGlobalTrustDir(globalTrustDir),
 			certificate.WithEnrollmentMethod("ldap"),
-			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}))),
+			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
 			certificate.WithCSRSubmitter(submitter),
 		)
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
@@ -387,21 +415,21 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 	require.Equal(t, 2, submitCount, "near-expiry certificate should be re-enrolled")
 }
 
-// TestRenewalFailureKeepsValidCert ensures that when a near-expiry certificate
-// fails to renew but is still valid, it is retained rather than being deleted
-// by orphan cleanup (which would otherwise happen once another template on the
-// CA enrolls successfully).
-func TestRenewalFailureKeepsValidCert(t *testing.T) {
+// TestRenewalFailureRejectsUnexpectedStoredCert ensures an otherwise
+// time-valid certificate is not retained when it is not bound to the selected
+// CA and private key.
+func TestRenewalFailureRejectsUnexpectedStoredCert(t *testing.T) {
 	tmpdir := t.TempDir()
 	stateDir := filepath.Join(tmpdir, "statedir")
 	globalTrustDir := filepath.Join(tmpdir, "trustdir")
+	caFixture := generateTestCA(t)
 
 	var fail bool
 	var submitter certificate.CSRSubmitter = func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 		if fail {
 			return "", fmt.Errorf("mock transient submit failure")
 		}
-		return issueCertFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour)), nil
+		return issueCertFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caFixture, "keypress.example.com"), nil
 	}
 
 	apply := func() error {
@@ -412,7 +440,7 @@ func TestRenewalFailureKeepsValidCert(t *testing.T) {
 			certificate.WithShareDir(filepath.Join(tmpdir, "sharedir")),
 			certificate.WithGlobalTrustDir(globalTrustDir),
 			certificate.WithEnrollmentMethod("ldap"),
-			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine", "WebServer"}))),
+			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine", "WebServer"}, caFixture))),
 			certificate.WithCSRSubmitter(submitter),
 		)
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
@@ -432,9 +460,10 @@ func TestRenewalFailureKeepsValidCert(t *testing.T) {
 	fail = true
 	require.NoError(t, apply())
 
-	// The still-valid Machine cert and key must survive the failed renewal.
-	require.FileExists(t, machineCert, "valid cert must be retained after a failed renewal")
-	require.FileExists(t, machineKey, "private key must be retained after a failed renewal")
+	// The self-signed replacement is not from the expected CA and does not
+	// match the stored key, so a failed renewal must not preserve it.
+	require.NoFileExists(t, machineCert)
+	require.NoFileExists(t, machineKey)
 }
 
 // selfSignedCertPEM returns a PEM self-signed certificate valid for validFor,
