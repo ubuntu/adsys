@@ -880,7 +880,8 @@ func certInfoFor(ca enrolledCA, tmpl enrolledTemplate, updatedAt time.Time) Cert
 
 // deriveHealth returns the health of a certificate following the documented
 // precedence: missing, unparseable, key mismatch, expired, due for renewal,
-// then healthy.
+// then healthy. The renewal window is bounded by the certificate's own
+// lifetime so freshly issued short-lived certificates report healthy.
 func deriveHealth(info CertInfo, cert *x509.Certificate, now time.Time) CertHealth {
 	switch {
 	case !info.OnDisk:
@@ -891,7 +892,7 @@ func deriveHealth(info CertInfo, cert *x509.Certificate, now time.Time) CertHeal
 		return CertKeyMismatch
 	case now.After(cert.NotAfter):
 		return CertExpired
-	case now.Add(certRenewalWindow).After(cert.NotAfter):
+	case now.Add(renewalWindowFor(cert)).After(cert.NotAfter):
 		return CertDueRenewal
 	default:
 		return CertHealthy

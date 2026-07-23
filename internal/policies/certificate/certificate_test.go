@@ -448,9 +448,56 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 
 	// Once the stored certificate falls inside the renewal window it is
 	// re-enrolled on the next policy refresh.
-	require.NoError(t, os.WriteFile(certFile, selfSignedCertPEM(t, 10*24*time.Hour), 0600))
+	require.NoError(t, os.WriteFile(certFile, renewalDueCertPEM(t), 0600))
 	require.NoError(t, apply())
 	require.Equal(t, 2, submitCount, "near-expiry certificate should be re-enrolled")
+}
+
+// TestLDAPEnrollmentRenewalShortLived verifies that short-lived certificates
+// are not considered due for renewal right after issuance: the renewal window
+// is bounded by a fraction of the certificate's own lifetime, so a 6-day
+// certificate is reused until its last days.
+func TestLDAPEnrollmentRenewalShortLived(t *testing.T) {
+	tmpdir := t.TempDir()
+	stateDir := filepath.Join(tmpdir, "statedir")
+	globalTrustDir := filepath.Join(tmpdir, "trustdir")
+
+	var submitCount int
+	caFixture := generateTestCA(t)
+	//nolint:unparam // The error result is required by IssuedCertificateRequester.
+	submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+		submitCount++
+		return issueCertFromCSR(t, csrPEM, time.Now().Add(6*24*time.Hour), caFixture, "keypress.example.com"), nil
+	}
+
+	apply := func() error {
+		m := certificate.New(
+			"example.com",
+			certificate.WithStateDir(stateDir),
+			certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
+			certificate.WithShareDir(filepath.Join(tmpdir, "sharedir")),
+			certificate.WithGlobalTrustDir(globalTrustDir),
+			certificate.WithEnrollmentMethod("ldap"),
+			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
+			certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
+		)
+		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
+	}
+
+	// Initial enrollment issues a 6-day certificate.
+	require.NoError(t, apply())
+	require.Equal(t, 1, submitCount, "first apply should enroll once")
+	certFile := singleGlobMatch(t, filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*", "current", "certificate.crt"))
+
+	// A freshly issued short-lived certificate is reused: with a fixed 30-day
+	// window it would instead re-enroll on every policy refresh.
+	require.NoError(t, apply())
+	require.Equal(t, 1, submitCount, "fresh short-lived certificate should be reused, not re-enrolled")
+
+	// Once inside its bounded renewal window it is re-enrolled.
+	require.NoError(t, os.WriteFile(certFile, selfSignedCertPEMWithValidity(t, time.Now().Add(-5*24*time.Hour), time.Now().Add(24*time.Hour)), 0600))
+	require.NoError(t, apply())
+	require.Equal(t, 2, submitCount, "short-lived certificate inside its renewal window should be re-enrolled")
 }
 
 // TestRenewalFailureRejectsUnexpectedStoredCert ensures an otherwise
@@ -494,7 +541,7 @@ func TestRenewalFailureRejectsUnexpectedStoredCert(t *testing.T) {
 	// Push the Machine cert into the renewal window, then make enrollment fail.
 	// WebServer remains long-lived and is reused, while the transient Machine
 	// failure is still surfaced to the caller.
-	require.NoError(t, os.WriteFile(machineCert, selfSignedCertPEM(t, 10*24*time.Hour), 0600))
+	require.NoError(t, os.WriteFile(machineCert, renewalDueCertPEM(t), 0600))
 	fail = true
 	require.ErrorContains(t, apply(), "mock transient submit failure")
 
@@ -726,17 +773,25 @@ func TestMockMigrationScript(t *testing.T) {
 	}
 }
 
-// selfSignedCertPEM returns a PEM self-signed certificate valid for validFor,
-// used to simulate a stored certificate close to expiry.
-func selfSignedCertPEM(t *testing.T, validFor time.Duration) []byte {
+// renewalDueCertPEM returns a PEM self-signed certificate that is inside its
+// bounded renewal window: issued 26 days ago with 5 days left, a third of its
+// lifetime exceeds the remaining validity.
+func renewalDueCertPEM(t *testing.T) []byte {
+	t.Helper()
+	return selfSignedCertPEMWithValidity(t, time.Now().Add(-26*24*time.Hour), time.Now().Add(5*24*time.Hour))
+}
+
+// selfSignedCertPEMWithValidity returns a PEM self-signed certificate with the
+// given validity window.
+func selfSignedCertPEMWithValidity(t *testing.T, notBefore, notAfter time.Time) []byte {
 	t.Helper()
 	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	require.NoError(t, err)
 	template := x509.Certificate{
 		SerialNumber: big.NewInt(2),
 		Subject:      pkix.Name{CommonName: "issued"},
-		NotBefore:    time.Now().Add(-time.Hour),
-		NotAfter:     time.Now().Add(validFor),
+		NotBefore:    notBefore,
+		NotAfter:     notAfter,
 	}
 	der, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
 	require.NoError(t, err)

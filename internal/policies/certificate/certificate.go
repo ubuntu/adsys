@@ -1155,6 +1155,18 @@ func filesExist(paths ...string) bool {
 // re-enrolled on the next policy refresh instead of being reused.
 const certRenewalWindow = 30 * 24 * time.Hour
 
+// renewalWindowFor returns how long before expiry cert is due for renewal: the
+// fixed certRenewalWindow, bounded to a third of the certificate's own
+// lifetime so short-lived certificates are not already due for renewal right
+// after issuance.
+func renewalWindowFor(cert *x509.Certificate) time.Duration {
+	window := certRenewalWindow
+	if fraction := cert.NotAfter.Sub(cert.NotBefore) / 3; fraction < window {
+		window = fraction
+	}
+	return window
+}
+
 // parseCertFile reads and parses the PEM certificate at path, returning nil if
 // it is missing, unreadable, or malformed.
 func parseCertFile(path string) *x509.Certificate {
@@ -1183,7 +1195,7 @@ func parseTemplateCert(tmpl enrolledTemplate) *x509.Certificate {
 
 // certNeedsRenewal reports whether the certificate for tmpl should be
 // re-enrolled rather than reused: it returns true if the file is missing,
-// unreadable, unparseable, or within certRenewalWindow of (or past) its
+// unreadable, unparseable, or within its renewal window of (or past) its
 // expiry. Because adsys does not register issued certificates with certmonger,
 // this expiry-driven re-enrollment on each policy refresh is what keeps
 // machine certificates current.
@@ -1193,7 +1205,7 @@ func certNeedsRenewal(ctx context.Context, tmpl enrolledTemplate) bool {
 		log.Warningf(ctx, "Could not load existing certificate %s, re-enrolling", tmpl.CertFile)
 		return true
 	}
-	if time.Now().Add(certRenewalWindow).After(cert.NotAfter) {
+	if time.Now().Add(renewalWindowFor(cert)).After(cert.NotAfter) {
 		log.Infof(ctx, "Certificate %s expires at %s (within renewal window), re-enrolling", tmpl.CertFile, cert.NotAfter)
 		return true
 	}

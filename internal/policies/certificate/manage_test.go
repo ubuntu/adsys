@@ -40,10 +40,17 @@ func TestListCertificates(t *testing.T) {
 	healthyCertPEM := mgrSelfSigned(t, healthyKey, "healthy", now.Add(-time.Hour), now.Add(365*24*time.Hour))
 	templates = append(templates, mgrWritePair(t, stateDir, "healthy", "Machine", healthyKeyPEM, healthyCertPEM))
 
-	// due_renewal: still valid but within certRenewalWindow of expiry.
+	// due_renewal: still valid, but a third of its lifetime exceeds the
+	// remaining validity, so it sits inside its bounded renewal window.
 	dueKey, dueKeyPEM := mgrKeyPEM(t)
-	dueCertPEM := mgrSelfSigned(t, dueKey, "due", now.Add(-time.Hour), now.Add(10*24*time.Hour))
+	dueCertPEM := mgrSelfSigned(t, dueKey, "due", now.Add(-26*24*time.Hour), now.Add(5*24*time.Hour))
 	templates = append(templates, mgrWritePair(t, stateDir, "due", "Machine", dueKeyPEM, dueCertPEM))
+
+	// short-lived healthy: a freshly issued 6-day certificate is well outside
+	// its bounded renewal window and must not report due_renewal.
+	shortKey, shortKeyPEM := mgrKeyPEM(t)
+	shortCertPEM := mgrSelfSigned(t, shortKey, "short", now.Add(-time.Hour), now.Add(6*24*time.Hour))
+	templates = append(templates, mgrWritePair(t, stateDir, "short", "Machine", shortKeyPEM, shortCertPEM))
 
 	// expired: NotAfter in the past, key matches.
 	expiredKey, expiredKeyPEM := mgrKeyPEM(t)
@@ -86,6 +93,7 @@ func TestListCertificates(t *testing.T) {
 	wantHealth := map[string]CertHealth{
 		"healthy":     CertHealthy,
 		"due":         CertDueRenewal,
+		"short":       CertHealthy,
 		"expired":     CertExpired,
 		"mismatch":    CertKeyMismatch,
 		"unparseable": CertUnparseable,
