@@ -174,10 +174,69 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 	// Assert policies only available in newer adsys releases
 	if !slices.Contains([]string{"focal", "jammy"}, cmd.Inventory.Codename) {
 		/// Certificates
-		// Enrollment takes a few seconds, so no better way to do this than an arbitrary sleep :)
-		time.Sleep(5 * time.Second)
-		if err := rootClient.RequireContains(ctx, "getcert list -i warthogs-CA.Machine", "status: MONITORING"); err != nil {
+		// A fresh package installation defaults to the native LDAP enrollment
+		// method. Pin the selection anyway so the assertions do not depend on
+		// whether the base image already carried an adsys configuration.
+		if err := setCertificateEnrollment(ctx, rootClient, "ldap"); err != nil {
 			return err
+		}
+		if _, err := rootClient.Run(ctx, "systemctl restart adsys-gpo-refresh"); err != nil {
+			return err
+		}
+
+		// First native enrollment. Validate it through the management CLI:
+		// health, certificate/key correspondence, chain and system trust.
+		if err := requireEventuallyContains(ctx, rootClient, "adsysctl certificate list", "status: healthy"); err != nil {
+			return err
+		}
+		if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "template: Machine"); err != nil {
+			return err
+		}
+		if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "key matches certificate: yes"); err != nil {
+			return err
+		}
+		if err := rootClient.RequireContains(ctx, "adsysctl certificate cas", "installed in trust store: yes"); err != nil {
+			return err
+		}
+		if err := rootClient.RequireContains(ctx, "adsysctl certificate verify", "PASS"); err != nil {
+			return err
+		}
+
+		// Renewal re-enrolls against the live CA.
+		if _, err := rootClient.Run(ctx, "adsysctl certificate renew --all"); err != nil {
+			return fmt.Errorf("certificate renewal failed: %w", err)
+		}
+		if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "status: healthy"); err != nil {
+			return err
+		}
+
+		// The legacy CEPCES backend remains supported when selected explicitly.
+		if _, err := rootClient.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y certmonger python3-cepces"); err != nil {
+			return err
+		}
+		if err := setCertificateEnrollment(ctx, rootClient, "cepces"); err != nil {
+			return err
+		}
+		if _, err := rootClient.Run(ctx, "systemctl restart adsys-gpo-refresh"); err != nil {
+			return err
+		}
+		if err := requireEventuallyContains(ctx, rootClient, "getcert list -i warthogs-CA.Machine", "status: MONITORING"); err != nil {
+			return err
+		}
+
+		// Switching back to the native method must retire the certmonger
+		// requests instead of leaving certmonger managing the same files.
+		if err := setCertificateEnrollment(ctx, rootClient, "ldap"); err != nil {
+			return err
+		}
+		if _, err := rootClient.Run(ctx, "systemctl restart adsys-gpo-refresh"); err != nil {
+			return err
+		}
+		if err := requireEventuallyContains(ctx, rootClient, "adsysctl certificate list", "status: healthy"); err != nil {
+			return err
+		}
+		if _, err := rootClient.Run(ctx, "! getcert list -i warthogs-CA.Machine 2>/dev/null | grep -q 'status: MONITORING'"); err != nil {
+			return fmt.Errorf("certmonger still tracks warthogs-CA.Machine after switching to LDAP enrollment: %w", err)
 		}
 
 		/// Proxy
@@ -274,5 +333,39 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	}
 	////// End policies for $HOST-ADM@WARTHOGS.BIZ
 
+	return nil
+}
+
+// requireEventuallyContains polls cmd until its output contains expected or the
+// timeout elapses, returning the last error on timeout. Certificate enrollment
+// and backend switches complete asynchronously, so assertions on their results
+// must tolerate a delay.
+func requireEventuallyContains(ctx context.Context, client remote.Client, cmd, expected string) error {
+	deadline := time.Now().Add(2 * time.Minute)
+	var err error
+	for {
+		if err = client.RequireContains(ctx, cmd, expected); err == nil {
+			return nil
+		}
+		if time.Now().After(deadline) {
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(5 * time.Second):
+		}
+	}
+}
+
+// setCertificateEnrollment pins the certificate enrollment method in
+// /etc/adsys.yaml, replacing the key when present and appending it otherwise.
+func setCertificateEnrollment(ctx context.Context, client remote.Client, method string) error {
+	_, err := client.Run(ctx, fmt.Sprintf(
+		"sed -i -e 's/^certificate_enrollment:.*/certificate_enrollment: %s/' /etc/adsys.yaml && (grep -q '^certificate_enrollment:' /etc/adsys.yaml || echo 'certificate_enrollment: %s' >> /etc/adsys.yaml)",
+		method, method))
+	if err != nil {
+		return fmt.Errorf("failed to set certificate enrollment method to %q: %w", method, err)
+	}
 	return nil
 }
