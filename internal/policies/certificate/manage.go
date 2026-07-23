@@ -8,6 +8,7 @@ package certificate
 // "ldap".
 
 import (
+	"bytes"
 	"context"
 	"crypto/ecdsa"
 	"crypto/rsa"
@@ -973,15 +974,23 @@ func verifyCertificate(ctx context.Context, ca enrolledCA, tmpl enrolledTemplate
 	}
 
 	if online {
-		checkRevocation(ctx, cert, &res)
+		checkRevocation(ctx, cert, chain, &res)
 	}
 	return res
 }
 
+// crlClockSkew bounds the tolerance applied to CRL validity times when
+// comparing them against the local clock.
+const crlClockSkew = 5 * time.Minute
+
 // checkRevocation attempts a best-effort CRL revocation check against the
-// certificate's first CRL distribution point. Any failure leaves
-// RevocationChecked false and records a message; it never fails verification.
-func checkRevocation(ctx context.Context, cert *x509.Certificate, res *VerifyResult) {
+// certificate's first CRL distribution point. The CRL is only trusted when it
+// is signed by an issuer in the certificate's persisted chain and is inside
+// its validity window; any failure — fetch, parse, untrusted issuer, bad
+// signature, or staleness — leaves RevocationChecked false and records a
+// message, so untrusted or unavailable results are indeterminate rather than a
+// clean "not revoked".
+func checkRevocation(ctx context.Context, cert *x509.Certificate, chain []*x509.Certificate, res *VerifyResult) {
 	if len(cert.CRLDistributionPoints) == 0 {
 		res.Messages = append(res.Messages, gotext.Get("no CRL distribution point in certificate, skipping revocation check"))
 		return
@@ -1000,6 +1009,10 @@ func checkRevocation(ctx context.Context, cert *x509.Certificate, res *VerifyRes
 		return
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		res.Messages = append(res.Messages, gotext.Get("could not fetch CRL from %s: %s", url, resp.Status))
+		return
+	}
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, maxIssuedCertBytes))
 	if err != nil {
@@ -1017,6 +1030,25 @@ func checkRevocation(ctx context.Context, cert *x509.Certificate, res *VerifyRes
 		return
 	}
 
+	issuer := crlIssuer(crl, chain)
+	if issuer == nil {
+		res.Messages = append(res.Messages, gotext.Get("CRL from %s is not issued by the certificate's issuer chain, skipping revocation check", url))
+		return
+	}
+	if err := crl.CheckSignatureFrom(issuer); err != nil {
+		res.Messages = append(res.Messages, gotext.Get("CRL from %s has an invalid signature, skipping revocation check", url))
+		return
+	}
+	now := time.Now()
+	if now.Add(crlClockSkew).Before(crl.ThisUpdate) {
+		res.Messages = append(res.Messages, gotext.Get("CRL from %s is not yet valid (ThisUpdate: %s), skipping revocation check", url, crl.ThisUpdate.Format(time.RFC3339)))
+		return
+	}
+	if !crl.NextUpdate.IsZero() && now.Add(-crlClockSkew).After(crl.NextUpdate) {
+		res.Messages = append(res.Messages, gotext.Get("CRL from %s is stale (NextUpdate: %s), skipping revocation check", url, crl.NextUpdate.Format(time.RFC3339)))
+		return
+	}
+
 	res.RevocationChecked = true
 	for _, entry := range crl.RevokedCertificateEntries {
 		if entry.SerialNumber != nil && entry.SerialNumber.Cmp(cert.SerialNumber) == 0 {
@@ -1025,6 +1057,17 @@ func checkRevocation(ctx context.Context, cert *x509.Certificate, res *VerifyRes
 			return
 		}
 	}
+}
+
+// crlIssuer returns the chain certificate whose subject matches the CRL
+// issuer, or nil if the CRL was not issued by the persisted chain.
+func crlIssuer(crl *x509.RevocationList, chain []*x509.Certificate) *x509.Certificate {
+	for _, candidate := range chain {
+		if bytes.Equal(candidate.RawSubject, crl.RawIssuer) {
+			return candidate
+		}
+	}
+	return nil
 }
 
 // publicKeysMatch reports whether the certificate's public key matches the

@@ -108,7 +108,7 @@ The command returns a process exit code suitable for monitoring and scripts:
 
 ## Verify a certificate
 
-Use `verify` to validate the certificate chain, validity window, and private key match. Add `--online` to also perform a best-effort CRL revocation check.
+Use `verify` to validate the certificate chain, validity window, and private key match. Add `--online` to also perform a best-effort CRL revocation check. The check only trusts a CRL that is signed by the certificate's issuer chain and is inside its validity window; an untrusted, stale, or unreachable CRL makes the revocation state indeterminate rather than clean.
 
 ```output
 > sudo adsysctl certificate verify galacticcafe-CA.Machine.a1b2c3d4e5f6 --online

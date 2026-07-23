@@ -10,6 +10,8 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -821,6 +823,163 @@ func TestRemoveCertificates(t *testing.T) {
 		assert.NoFileExists(t, stateFilePath(stateDir, mgrTestObject))
 		assert.Contains(t, strings.Join(msgs, "\n"), "Removed all certificates")
 	})
+}
+
+// TestVerifyCertificatesRevocation ensures online revocation checking only
+// trusts CRLs signed by the certificate's issuer chain and inside their
+// validity window; anything else is indeterminate (RevocationChecked false)
+// rather than a clean "not revoked".
+func TestVerifyCertificatesRevocation(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	leafSerial := big.NewInt(4242)
+
+	validCRL := &x509.RevocationList{
+		Number:     big.NewInt(1),
+		ThisUpdate: now.Add(-time.Hour),
+		NextUpdate: now.Add(24 * time.Hour),
+	}
+
+	tests := map[string]struct {
+		crl        func(t *testing.T, issuer *x509.Certificate, key *ecdsa.PrivateKey) []byte
+		foreignKey bool
+		notFound   bool
+
+		wantChecked bool
+		wantRevoked bool
+	}{
+		"not revoked with a valid CRL": {
+			crl: func(t *testing.T, issuer *x509.Certificate, key *ecdsa.PrivateKey) []byte {
+				t.Helper()
+				return mgrCreateCRL(t, validCRL, issuer, key)
+			},
+			wantChecked: true,
+		},
+		"revoked when listed in a valid CRL": {
+			crl: func(t *testing.T, issuer *x509.Certificate, key *ecdsa.PrivateKey) []byte {
+				t.Helper()
+				revoking := *validCRL
+				revoking.RevokedCertificateEntries = []x509.RevocationListEntry{{SerialNumber: leafSerial, RevocationTime: now.Add(-time.Hour)}}
+				return mgrCreateCRL(t, &revoking, issuer, key)
+			},
+			wantChecked: true,
+			wantRevoked: true,
+		},
+		"foreign-signed CRL is indeterminate": {
+			crl: func(t *testing.T, _ *x509.Certificate, _ *ecdsa.PrivateKey) []byte {
+				t.Helper()
+				foreignCert, foreignKey, _ := mgrTestCA(t)
+				return mgrCreateCRL(t, validCRL, foreignCert, foreignKey)
+			},
+		},
+		"stale CRL is indeterminate": {
+			crl: func(t *testing.T, issuer *x509.Certificate, key *ecdsa.PrivateKey) []byte {
+				t.Helper()
+				stale := *validCRL
+				stale.ThisUpdate = now.Add(-72 * time.Hour)
+				stale.NextUpdate = now.Add(-24 * time.Hour)
+				return mgrCreateCRL(t, &stale, issuer, key)
+			},
+		},
+		"not-yet-valid CRL is indeterminate": {
+			crl: func(t *testing.T, issuer *x509.Certificate, key *ecdsa.PrivateKey) []byte {
+				t.Helper()
+				future := *validCRL
+				future.ThisUpdate = now.Add(24 * time.Hour)
+				future.NextUpdate = now.Add(48 * time.Hour)
+				return mgrCreateCRL(t, &future, issuer, key)
+			},
+		},
+		"unparseable CRL is indeterminate": {
+			crl: func(t *testing.T, _ *x509.Certificate, _ *ecdsa.PrivateKey) []byte {
+				t.Helper()
+				return []byte("not a CRL")
+			},
+		},
+		"unavailable CRL is indeterminate": {
+			notFound: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			caCert, caKey, caDER := mgrTestCA(t)
+			var body []byte
+			if !tc.notFound {
+				body = tc.crl(t, caCert, caKey)
+			}
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				if tc.notFound {
+					w.WriteHeader(http.StatusNotFound)
+					return
+				}
+				_, _ = w.Write(body)
+			}))
+			t.Cleanup(server.Close)
+
+			tmpdir := t.TempDir()
+			stateDir := filepath.Join(tmpdir, "state")
+			globalTrustDir := filepath.Join(tmpdir, "trust")
+
+			caPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: caDER})
+			rootPath := filepath.Join(stateDir, "certs", "TestCA.crt")
+			require.NoError(t, os.MkdirAll(filepath.Dir(rootPath), 0750))
+			require.NoError(t, os.WriteFile(rootPath, caPEM, 0600))
+
+			key, keyPEM := mgrKeyPEM(t)
+			certPEM := mgrLeafWithCRLDP(t, caCert, caKey, &key.PublicKey, server.URL, leafSerial, now.Add(-time.Hour), now.Add(365*24*time.Hour))
+			tmpl := mgrWritePair(t, stateDir, "TestCA.Machine", "Machine", keyPEM, certPEM)
+			tmpl = mgrBindTemplate(t, tmpl, certPEM, caDER, rootPath)
+
+			caFingerprint := rawCertificateFingerprint(caDER)
+			mgrWriteState(t, stateDir, []enrolledCA{{
+				Name:              "TestCA",
+				Hostname:          "ca.example.com",
+				IssuerFingerprint: caFingerprint,
+				ChainFingerprints: []string{caFingerprint},
+				RootCerts:         []string{rootPath},
+				Templates:         []enrolledTemplate{tmpl},
+			}})
+
+			m := mgrManager(t, stateDir, globalTrustDir)
+			results, err := m.VerifyCertificates(context.Background(), mgrTestObject, "", true)
+			require.NoError(t, err)
+			require.Len(t, results, 1)
+
+			res := results[0]
+			assert.Equal(t, tc.wantChecked, res.RevocationChecked, "unexpected RevocationChecked: %v", res.Messages)
+			assert.Equal(t, tc.wantRevoked, res.Revoked, "unexpected Revoked: %v", res.Messages)
+		})
+	}
+}
+
+// mgrCreateCRL signs a CRL for the given issuer.
+func mgrCreateCRL(t *testing.T, template *x509.RevocationList, issuer *x509.Certificate, key *ecdsa.PrivateKey) []byte {
+	t.Helper()
+	der, err := x509.CreateRevocationList(rand.Reader, template, issuer, key)
+	require.NoError(t, err)
+	return der
+}
+
+// mgrLeafWithCRLDP issues a CA-signed leaf carrying the given CRL distribution
+// point URL and serial number.
+func mgrLeafWithCRLDP(t *testing.T, caCert *x509.Certificate, caKey *ecdsa.PrivateKey, leafPub any, dp string, serial *big.Int, notBefore, notAfter time.Time) []byte {
+	t.Helper()
+	template := x509.Certificate{
+		SerialNumber:          serial,
+		Subject:               pkix.Name{CommonName: "keypress.example.com"},
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		KeyUsage:              x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+		CRLDistributionPoints: []string{dp},
+	}
+	der, err := x509.CreateCertificate(rand.Reader, &template, caCert, leafPub, caKey)
+	require.NoError(t, err)
+	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 }
 
 func TestVerifyCertificates(t *testing.T) {
