@@ -93,6 +93,8 @@ type testCAFixture struct {
 }
 
 // newMockLDAPWithCA creates a mock LDAP connection with a single CA and templates.
+//
+//nolint:unparam // caName is kept generic so new fixtures can use other CAs.
 func newMockLDAPWithCA(t *testing.T, caName, hostname string, templates []string, ca *testCAFixture) *mockLDAPConn {
 	t.Helper()
 
@@ -370,6 +372,7 @@ func TestApplyPolicy(t *testing.T) {
 	}
 }
 
+//nolint:unparam // identity is kept generic so new fixtures can enroll other names.
 func issueCertFromCSR(t *testing.T, csrPEM string, notAfter time.Time, ca *testCAFixture, identity string) string {
 	t.Helper()
 
@@ -676,6 +679,7 @@ func TestApplyPolicyLDAPMigratesCEPCESRetried(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(sambaCacheDir, "cert_gpo_state_keypress.tdb"), []byte("dummy"), 0600))
 
 	scriptLog := filepath.Join(tmpdir, "script-log")
+	//nolint:unparam // The error result is required by IssuedCertificateRequester.
 	submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
 		return issueCertFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caFixture, "keypress.example.com"), nil
 	}
@@ -731,7 +735,7 @@ func mockMigrationScript(t *testing.T, outputFile string, fail, keepDir bool) []
 }
 
 // TestMockMigrationScript is the helper process run by mockMigrationScript.
-func TestMockMigrationScript(t *testing.T) {
+func TestMockMigrationScript(_ *testing.T) {
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
 		return
 	}
@@ -758,6 +762,7 @@ func TestMockMigrationScript(t *testing.T) {
 	}
 
 	record := strings.Join(args, " ") + "\n" + "native_published=" + strconv.FormatBool(nativePublished) + "\n"
+	//#nosec G703 -- This is a test controlled environment
 	f, err := os.OpenFile(outputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err == nil {
 		_, _ = f.WriteString(record)
@@ -769,6 +774,7 @@ func TestMockMigrationScript(t *testing.T) {
 		os.Exit(1)
 	}
 	if os.Getenv("ADSYS_MOCK_MIGRATION_KEEP_CACHE") != "1" {
+		//#nosec G703 -- This is a test controlled environment
 		_ = os.RemoveAll(filepath.Join(stateDir, "samba"))
 	}
 }

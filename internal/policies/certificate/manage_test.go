@@ -575,7 +575,7 @@ func TestPolicyReconciliationPreservesPreviousStateOnTrustInstallFailure(t *test
 func TestEnrollmentTimestamps(t *testing.T) {
 	t.Parallel()
 
-	enroll := func(t *testing.T, templates []string, enrolledAt map[string]time.Time) (*Manager, string, *x509.Certificate, *ecdsa.PrivateKey, []byte) {
+	enroll := func(t *testing.T, templates []string, enrolledAt map[string]time.Time) (string, *x509.Certificate, *ecdsa.PrivateKey, []byte) {
 		t.Helper()
 		tmpdir := t.TempDir()
 		stateDir := filepath.Join(tmpdir, "state")
@@ -603,7 +603,7 @@ func TestEnrollmentTimestamps(t *testing.T) {
 			Templates:         enrolled,
 		}})
 
-		return nil, stateDir, caCert, caKey, caDER
+		return stateDir, caCert, caKey, caDER
 	}
 
 	newManager := func(t *testing.T, stateDir string, caCert *x509.Certificate, caKey *ecdsa.PrivateKey, caDER []byte, templates []string, submitFail bool) *Manager {
@@ -623,7 +623,7 @@ func TestEnrollmentTimestamps(t *testing.T) {
 	t.Run("failed renewal keeps the original enrollment time", func(t *testing.T) {
 		t.Parallel()
 		t0 := time.Now().Add(-48 * time.Hour).Truncate(time.Second)
-		_, stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine", "WebServer"}, map[string]time.Time{"Machine": t0, "WebServer": t0})
+		stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine", "WebServer"}, map[string]time.Time{"Machine": t0, "WebServer": t0})
 		m := newManager(t, stateDir, caCert, caKey, caDER, []string{"Machine", "WebServer"}, true)
 
 		err := m.RenewCertificates(context.Background(), mgrTestObject, "", true, nil)
@@ -640,7 +640,7 @@ func TestEnrollmentTimestamps(t *testing.T) {
 		t.Parallel()
 		t0 := time.Now().Add(-72 * time.Hour).Truncate(time.Second)
 		t1 := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
-		_, stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine", "WebServer"}, map[string]time.Time{"Machine": t0, "WebServer": t1})
+		stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine", "WebServer"}, map[string]time.Time{"Machine": t0, "WebServer": t1})
 		m := newManager(t, stateDir, caCert, caKey, caDER, []string{"Machine", "WebServer"}, false)
 
 		err := m.RemoveCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, true, nil)
@@ -661,7 +661,7 @@ func TestEnrollmentTimestamps(t *testing.T) {
 	t.Run("successful renewal refreshes the enrollment time", func(t *testing.T) {
 		t.Parallel()
 		t0 := time.Now().Add(-48 * time.Hour).Truncate(time.Second)
-		_, stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine"}, map[string]time.Time{"Machine": t0})
+		stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine"}, map[string]time.Time{"Machine": t0})
 		m := newManager(t, stateDir, caCert, caKey, caDER, []string{"Machine"}, false)
 
 		require.NoError(t, m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil))
@@ -675,7 +675,7 @@ func TestEnrollmentTimestamps(t *testing.T) {
 	t.Run("legacy state falls back to UpdatedAt", func(t *testing.T) {
 		t.Parallel()
 		updatedAt := time.Now().Add(-96 * time.Hour).Truncate(time.Second)
-		_, stateDir, caCert, _, _ := enroll(t, []string{"Machine"}, map[string]time.Time{"Machine": {}})
+		stateDir, caCert, _, _ := enroll(t, []string{"Machine"}, map[string]time.Time{"Machine": {}})
 
 		// Rewrite state with a deterministic UpdatedAt and no enrolled_at, as
 		// written before per-template timestamps existed.
@@ -1334,7 +1334,7 @@ func TestSupportedTemplates(t *testing.T) {
 			server:        "CA.Example.COM",
 			wantTemplates: []string{"Machine", "WebServer"},
 		},
-		"unknown server is rejected":    {server: "rogue.example.com", wantErr: true},
+		"unknown server is rejected":     {server: "rogue.example.com", wantErr: true},
 		"arbitrary endpoint is rejected": {server: "localhost:4444", wantErr: true},
 	}
 
