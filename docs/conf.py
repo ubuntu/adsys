@@ -305,7 +305,7 @@ extensions = [
 
 # Excludes files or directories from processing
 
-exclude_patterns = ["diagrams/readme.md"]
+exclude_patterns = ["AGENTS.md", "diagrams/readme.md"]
 
 # Adds custom CSS files, located under 'html_static_path'
 
