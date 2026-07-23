@@ -48,6 +48,11 @@ No additional client package is required beyond ADSys.
 
 On the Windows side, the `Certification Authority` role is required, and domain controllers must accept LDAP StartTLS. The domain controller's StartTLS certificate does not need to be trusted by the Ubuntu client in advance: on the first enrollment ADSys bootstraps trust through the mutually authenticated Kerberos channel and then installs the discovered CA, so subsequent refreshes verify the certificate chain normally.
 
+The client must be able to reach, through any intermediate firewall:
+
+* the domain controllers on TCP port 389 (LDAP with StartTLS), in addition to the Kerberos ports already required for domain membership,
+* the certificate authority on TCP port 135 and its dynamic RPC ports (MS-ICPR enrollment endpoint).
+
 #### CEPCES enrollment
 
 The following packages must be installed on the client:

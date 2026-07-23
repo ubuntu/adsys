@@ -94,8 +94,8 @@ galacticcafe-CA.Workstation.<artifact-id>/current/certificate.crt
 
 From this truncated output, we can see that two certificates were enrolled:
 
-- `galactic-CA.Machine`
-- `galactic-CA.Workstation`
+- `galacticcafe-CA.Machine`
+- `galacticcafe-CA.Workstation`
 
 These correspond to certificate templates that are configured on the certificate authority.
 

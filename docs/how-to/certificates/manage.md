@@ -35,7 +35,7 @@ Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6':
   subject: CN=keypress.galacticcafe.com
   issuer: CN=galacticcafe-CA,DC=galacticcafe,DC=com
   serial: 5f7a
-  expires: 2024-08-17T18:44:27+03:00 (210 days)
+  expires: 2027-08-17T18:44:27+03:00 (210 days)
   SANs: keypress.galacticcafe.com
   EKU: id-kp-clientAuth, id-kp-serverAuth
   key: RSA 2048 bits
@@ -43,7 +43,7 @@ Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6':
   certificate: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.0123456789abcdef/current/certificate.crt
   on disk: yes
   key matches certificate: yes
-  last enrolled: 2024-01-20T11:22:03+03:00
+  last enrolled: 2027-01-20T11:22:03+03:00
 ```
 
 ```output
@@ -57,8 +57,8 @@ Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6':
     "subject": "CN=keypress.galacticcafe.com",
     "issuer": "CN=galacticcafe-CA,DC=galacticcafe,DC=com",
     "serial": "5f7a",
-    "not_before": "2023-08-18T18:44:27+03:00",
-    "not_after": "2024-08-17T18:44:27+03:00",
+    "not_before": "2026-08-18T18:44:27+03:00",
+    "not_after": "2027-08-17T18:44:27+03:00",
     "days_until_expiry": 210,
     "sans": ["keypress.galacticcafe.com"],
     "eku": ["id-kp-clientAuth", "id-kp-serverAuth"],
@@ -71,7 +71,7 @@ Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6':
     "on_disk": true,
     "key_matches_cert": true,
     "health": "healthy",
-    "last_enrolled": "2024-01-20T11:22:03+03:00"
+    "last_enrolled": "2027-01-20T11:22:03+03:00"
   }
 ]
 ```
@@ -88,7 +88,7 @@ Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6':
   CA: galacticcafe-CA (ca01.galacticcafe.com)
   subject: CN=keypress.galacticcafe.com
   issuer: CN=galacticcafe-CA,DC=galacticcafe,DC=com
-  expires: 2024-08-17T18:44:27+03:00 (210 days)
+  expires: 2027-08-17T18:44:27+03:00 (210 days)
   key: RSA 2048 bits
   on disk: yes
   key matches certificate: yes
