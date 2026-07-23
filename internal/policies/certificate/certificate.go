@@ -213,6 +213,12 @@ func New(domain string, opts ...Option) *Manager {
 		removePending:       removePendingMaterial,
 	}
 
+	// The CEPCES helper is wired for both backends: the legacy backend runs it
+	// directly, and the LDAP backend needs it to retire a pre-existing CEPCES
+	// enrollment before publishing natively managed files.
+	m.vendorPythonDir = filepath.Join(args.shareDir, "python")
+	m.certEnrollCmd = args.certAutoenrollCmd
+
 	switch m.enrollmentMethod {
 	case consts.CertEnrollmentLDAP:
 		// Use the provided LDAP connector, or create the default one that
@@ -235,10 +241,6 @@ func New(domain string, opts ...Option) *Manager {
 
 		m.ldapConnect = ldapConnect
 		m.requestCertificate = requester
-	default:
-		// CEPCES (legacy) enrollment method
-		m.vendorPythonDir = filepath.Join(args.shareDir, "python")
-		m.certEnrollCmd = args.certAutoenrollCmd
 	}
 
 	return m
@@ -308,7 +310,7 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 		}
 
 		log.Debug(ctx, "Certificate autoenrollment is not configured, unenrolling machine")
-		return m.unenrollLocked(ctx, objectName)
+		return m.unenrollAfterMigration(ctx, objectName)
 	}
 
 	log.Debug(ctx, "ApplyPolicy certificate policy")
@@ -327,7 +329,7 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 	log.Debugf(ctx, "Certificate policy value: %d", value)
 
 	if value&enrollFlag != enrollFlag {
-		return m.unenrollLocked(ctx, objectName)
+		return m.unenrollAfterMigration(ctx, objectName)
 	}
 
 	allowed, err := ldapPolicyAllowsEnrollment(entries)
@@ -339,7 +341,64 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 		return nil
 	}
 
+	if err := m.migrateCEPCESToLDAP(ctx, objectName); err != nil {
+		return err
+	}
+
 	return m.enrollLocked(ctx, objectName)
+}
+
+// unenrollAfterMigration retires any legacy CEPCES enrollment before removing
+// the native enrollment state, so certmonger is never left tracking requests
+// whose files adsys is about to delete.
+func (m *Manager) unenrollAfterMigration(ctx context.Context, objectName string) error {
+	if err := m.migrateCEPCESToLDAP(ctx, objectName); err != nil {
+		return err
+	}
+	return m.unenrollLocked(ctx, objectName)
+}
+
+// migrateCEPCESToLDAP retires a legacy CEPCES enrollment before the native
+// LDAP backend publishes files it owns.
+//
+// The CEPCES backend registers certmonger requests and CAs for
+// <stateDir>/private/certs/<CA>.<template>.key and
+// <stateDir>/certs/<CA>.<template>.crt, recording them in the Samba cache TDB.
+// Switching backends without retiring them leaves certmonger as an active
+// writer of certificate files adsys now manages. The legacy unenroll action
+// stops the tracking (getcert remove-ca/stop-tracking), deletes the legacy
+// files and removes the Samba cache, including its TDB, only after the
+// cleanup ran.
+//
+// The switch is transactional: any cleanup failure aborts the native
+// enrollment and keeps the legacy state so the next policy refresh retries.
+// If the script succeeds but leaves the cache behind, certmonger is not
+// installed (the only non-error early return of the unenroll action), so it
+// cannot be an active writer and the leftover cache is removed directly.
+func (m *Manager) migrateCEPCESToLDAP(ctx context.Context, objectName string) error {
+	sambaDir := filepath.Join(m.stateDir, "samba")
+	if _, err := os.Stat(sambaDir); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("inspecting legacy Samba cache before enrollment migration: %w", err)
+	}
+
+	log.Info(ctx, gotext.Get("Retiring legacy CEPCES certificate enrollment before switching to the native LDAP backend"))
+	if err := m.runScript(ctx, "unenroll", objectName); err != nil {
+		return fmt.Errorf("retiring legacy CEPCES enrollment: %w", err)
+	}
+
+	if _, err := os.Stat(sambaDir); err == nil {
+		log.Debugf(ctx, "certmonger is not installed; removing leftover legacy Samba cache: %s", sambaDir)
+		if err := os.RemoveAll(sambaDir); err != nil {
+			return fmt.Errorf("removing legacy Samba cache after enrollment migration: %w", err)
+		}
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("inspecting legacy Samba cache after enrollment migration: %w", err)
+	}
+
+	return nil
 }
 
 // applyPolicyCEPCES implements the legacy CEPCES/Python enrollment path.

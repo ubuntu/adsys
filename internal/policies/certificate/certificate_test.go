@@ -14,6 +14,8 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -21,6 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/adsys/internal/policies/entry"
+	"github.com/ubuntu/adsys/internal/testutils"
 )
 
 const (
@@ -30,6 +33,15 @@ const (
 )
 
 var enrollEntry = entry.Entry{Key: "autoenroll", Value: enrollValue}
+var advancedConfigurationEntries = []entry.Entry{
+	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/AuthFlags", Value: "2"},
+	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Cost", Value: "2147483645"},
+	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Flags", Value: "20"},
+	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/FriendlyName", Value: "ActiveDirectoryEnrollmentPolicy"},
+	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/PolicyID", Value: "{A5E9BF57-71C6-443A-B7FC-79EFA6F73EBD}"},
+	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/URL", Value: "LDAP:"},
+	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/Flags", Value: "0"},
+}
 var advancedLDAPEndpointEntries = []entry.Entry{
 	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/URL", Value: "LDAP:"},
 	{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Flags", Value: "20"},
@@ -328,6 +340,8 @@ func TestApplyPolicy(t *testing.T) {
 				certificate.WithEnrollmentMethod("ldap"),
 				certificate.WithLDAPConnector(ldapConnect),
 				certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
+				// Only invoked when a legacy Samba cache exists, to retire it.
+				certificate.WithCertAutoenrollCmd(mockMigrationScript(t, filepath.Join(tmpdir, "script-log"), false, false)),
 			)
 
 			err := m.ApplyPolicy(context.Background(), "keypress", !tc.isUser, !tc.isOffline, tc.entries)
@@ -490,6 +504,228 @@ func TestRenewalFailureRejectsUnexpectedStoredCert(t *testing.T) {
 	require.NoFileExists(t, machineKey)
 }
 
+// TestApplyPolicyLDAPMigratesCEPCES verifies the transactional retirement of a
+// legacy CEPCES enrollment when the native LDAP backend takes over: certmonger
+// tracking is stopped and the Samba cache removed before any natively managed
+// file is published, cleanup failures block the switch, and a missing
+// certmonger lets the leftover cache be removed directly.
+func TestApplyPolicyLDAPMigratesCEPCES(t *testing.T) {
+	tests := map[string]struct {
+		entries []entry.Entry
+
+		noSambaCache   bool
+		scriptFails    bool
+		scriptKeepsDir bool
+
+		wantErr          bool
+		wantScriptRuns   int
+		wantSambaCache   bool
+		wantNativeEnroll bool
+	}{
+		"Fresh install never runs the legacy script": {
+			entries:          []entry.Entry{enrollEntry},
+			noSambaCache:     true,
+			wantNativeEnroll: true,
+		},
+		"Backend switch retires CEPCES before enrolling natively": {
+			entries:          []entry.Entry{enrollEntry},
+			wantScriptRuns:   1,
+			wantNativeEnroll: true,
+		},
+		"Failed legacy cleanup blocks the native enrollment": {
+			entries:        []entry.Entry{enrollEntry},
+			scriptFails:    true,
+			wantErr:        true,
+			wantScriptRuns: 1,
+			wantSambaCache: true,
+		},
+		"Unenroll retires the legacy enrollment": {
+			entries:        nil,
+			wantScriptRuns: 1,
+		},
+		"Leftover cache without certmonger is removed directly": {
+			entries:          []entry.Entry{enrollEntry},
+			scriptKeepsDir:   true,
+			wantScriptRuns:   1,
+			wantNativeEnroll: true,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			tmpdir := t.TempDir()
+			stateDir := filepath.Join(tmpdir, "statedir")
+			globalTrustDir := filepath.Join(tmpdir, "trustdir")
+			caFixture := generateTestCA(t)
+
+			sambaCacheDir := filepath.Join(stateDir, "samba")
+			if !tc.noSambaCache {
+				require.NoError(t, os.MkdirAll(sambaCacheDir, 0750))
+				require.NoError(t, os.WriteFile(filepath.Join(sambaCacheDir, "cert_gpo_state_keypress.tdb"), []byte("dummy"), 0600))
+			}
+
+			scriptLog := filepath.Join(tmpdir, "script-log")
+			scriptCmd := mockMigrationScript(t, scriptLog, tc.scriptFails, tc.scriptKeepsDir)
+
+			submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+				return issueCertFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caFixture, "keypress.example.com"), nil
+			}
+
+			m := certificate.New(
+				"example.com",
+				certificate.WithStateDir(stateDir),
+				certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
+				certificate.WithShareDir(filepath.Join(tmpdir, "sharedir")),
+				certificate.WithGlobalTrustDir(globalTrustDir),
+				certificate.WithEnrollmentMethod("ldap"),
+				certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
+				certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
+				certificate.WithCertAutoenrollCmd(scriptCmd),
+			)
+
+			err := m.ApplyPolicy(context.Background(), "keypress", true, true, tc.entries)
+			if tc.wantErr {
+				require.Error(t, err, "ApplyPolicy should fail")
+			} else {
+				require.NoError(t, err, "ApplyPolicy should succeed")
+			}
+
+			scriptRuns := 0
+			if data, readErr := os.ReadFile(scriptLog); readErr == nil {
+				content := string(data)
+				require.Contains(t, content, "unenroll keypress example.com", "legacy script must run the unenroll action")
+				require.Contains(t, content, "native_published=false", "legacy cleanup must run before any native file is published")
+				scriptRuns = strings.Count(content, "unenroll keypress example.com")
+			}
+			require.Equal(t, tc.wantScriptRuns, scriptRuns, "unexpected number of legacy script runs")
+
+			if tc.wantSambaCache {
+				require.DirExists(t, sambaCacheDir, "legacy cache must be retained for retry when cleanup failed")
+			} else {
+				require.NoDirExists(t, sambaCacheDir, "legacy cache should have been retired")
+			}
+
+			nativeCerts, globErr := filepath.Glob(filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*", "current", "certificate.crt"))
+			require.NoError(t, globErr)
+			if tc.wantNativeEnroll {
+				require.Len(t, nativeCerts, 1, "expected the native enrollment to publish a certificate")
+			} else {
+				require.Empty(t, nativeCerts, "no native certificate should be published")
+			}
+		})
+	}
+}
+
+// TestApplyPolicyLDAPMigratesCEPCESRetried ensures a failed legacy cleanup is
+// retried on the next policy refresh and the switch completes afterwards.
+func TestApplyPolicyLDAPMigratesCEPCESRetried(t *testing.T) {
+	tmpdir := t.TempDir()
+	stateDir := filepath.Join(tmpdir, "statedir")
+	globalTrustDir := filepath.Join(tmpdir, "trustdir")
+	caFixture := generateTestCA(t)
+
+	sambaCacheDir := filepath.Join(stateDir, "samba")
+	require.NoError(t, os.MkdirAll(sambaCacheDir, 0750))
+	require.NoError(t, os.WriteFile(filepath.Join(sambaCacheDir, "cert_gpo_state_keypress.tdb"), []byte("dummy"), 0600))
+
+	scriptLog := filepath.Join(tmpdir, "script-log")
+	submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+		return issueCertFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caFixture, "keypress.example.com"), nil
+	}
+
+	apply := func(scriptFails bool) error {
+		m := certificate.New(
+			"example.com",
+			certificate.WithStateDir(stateDir),
+			certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
+			certificate.WithShareDir(filepath.Join(tmpdir, "sharedir")),
+			certificate.WithGlobalTrustDir(globalTrustDir),
+			certificate.WithEnrollmentMethod("ldap"),
+			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
+			certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
+			certificate.WithCertAutoenrollCmd(mockMigrationScript(t, scriptLog, scriptFails, false)),
+		)
+		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
+	}
+
+	require.Error(t, apply(true), "first apply should fail during legacy cleanup")
+	require.DirExists(t, sambaCacheDir, "legacy cache must survive a failed cleanup")
+
+	require.NoError(t, apply(false), "retry with a working script should succeed")
+	require.NoDirExists(t, sambaCacheDir, "legacy cache should be retired after the retry")
+	singleGlobMatch(t, filepath.Join(stateDir, "private", "certs", "TestCA.Machine.*", "current", "certificate.crt"))
+
+	// A later refresh must not run the legacy script again.
+	runsBefore := 0
+	if data, err := os.ReadFile(scriptLog); err == nil {
+		runsBefore = strings.Count(string(data), "unenroll keypress example.com")
+	}
+	require.NoError(t, apply(false))
+	data, err := os.ReadFile(scriptLog)
+	require.NoError(t, err)
+	require.Equal(t, runsBefore, strings.Count(string(data), "unenroll keypress example.com"), "migration must not run once the legacy cache is gone")
+}
+
+// mockMigrationScript returns a command simulating the legacy CEPCES
+// autoenroll script for migration tests. The helper process records its
+// arguments and whether native files exist yet in outputFile, removes the
+// Samba cache on success unless keepDir is set, and exits 1 when fail is set.
+func mockMigrationScript(t *testing.T, outputFile string, fail, keepDir bool) []string {
+	t.Helper()
+
+	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", "ADSYS_MOCK_MIGRATION_OUTPUT=" + outputFile}
+	if fail {
+		cmdArgs = append(cmdArgs, "ADSYS_MOCK_MIGRATION_FAIL=1")
+	}
+	if keepDir {
+		cmdArgs = append(cmdArgs, "ADSYS_MOCK_MIGRATION_KEEP_CACHE=1")
+	}
+	return append(cmdArgs, os.Args[0], "-test.run=TestMockMigrationScript", "--")
+}
+
+// TestMockMigrationScript is the helper process run by mockMigrationScript.
+func TestMockMigrationScript(t *testing.T) {
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		return
+	}
+	defer os.Exit(0)
+
+	outputFile := os.Getenv("ADSYS_MOCK_MIGRATION_OUTPUT")
+
+	args := os.Args
+	for len(args) > 0 && args[0] != "--" {
+		args = args[1:]
+	}
+	args = args[1:]
+
+	var stateDir string
+	for i, arg := range args {
+		if arg == "--state_dir" && i+1 < len(args) {
+			stateDir = args[i+1]
+		}
+	}
+
+	nativePublished := false
+	if matches, err := filepath.Glob(filepath.Join(stateDir, "private", "certs", "*", "current", "certificate.crt")); err == nil && len(matches) > 0 {
+		nativePublished = true
+	}
+
+	record := strings.Join(args, " ") + "\n" + "native_published=" + strconv.FormatBool(nativePublished) + "\n"
+	f, err := os.OpenFile(outputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	if err == nil {
+		_, _ = f.WriteString(record)
+		_ = f.Close()
+	}
+
+	if os.Getenv("ADSYS_MOCK_MIGRATION_FAIL") == "1" {
+		fmt.Fprintln(os.Stderr, "EXIT 1 requested in mock")
+		os.Exit(1)
+	}
+	if os.Getenv("ADSYS_MOCK_MIGRATION_KEEP_CACHE") != "1" {
+		_ = os.RemoveAll(filepath.Join(stateDir, "samba"))
+	}
+}
+
 // selfSignedCertPEM returns a PEM self-signed certificate valid for validFor,
 // used to simulate a stored certificate close to expiry.
 func selfSignedCertPEM(t *testing.T, validFor time.Duration) []byte {
@@ -505,6 +741,148 @@ func selfSignedCertPEM(t *testing.T, validFor time.Duration) []byte {
 	der, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
 	require.NoError(t, err)
 	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+}
+
+// TestApplyPolicyCEPCES covers the legacy CEPCES enrollment backend, which
+// shells out to the cert-autoenroll helper script for both enroll and
+// unenroll actions.
+func TestApplyPolicyCEPCES(t *testing.T) {
+	tests := map[string]struct {
+		entries []entry.Entry
+
+		isUser    bool
+		isOffline bool
+
+		autoenrollScriptError bool
+		runScript             bool
+		sambaDirExists        bool
+
+		wantErr bool
+	}{
+		// No-op cases
+		"Computer, no entries":          {},
+		"Computer, autoenroll disabled": {entries: []entry.Entry{{Key: "autoenroll", Value: disabledValue}}},
+		"Computer, domain is offline":   {entries: []entry.Entry{enrollEntry}, isOffline: true},
+
+		// Enroll cases
+		"Computer, configured to enroll":                         {entries: []entry.Entry{enrollEntry}, runScript: true},
+		"Computer, configured to enroll, advanced configuration": {entries: append(advancedConfigurationEntries, enrollEntry), runScript: true},
+
+		// Unenroll cases
+		"Computer, configured to unenroll":          {entries: []entry.Entry{{Key: "autoenroll", Value: unenrollValue}}, runScript: true},
+		"Computer, no entries, Samba cache present": {sambaDirExists: true, runScript: true},
+
+		"User, autoenroll not supported": {isUser: true, entries: []entry.Entry{enrollEntry}},
+
+		// Error cases
+		"Error on autoenroll script failure": {autoenrollScriptError: true, entries: []entry.Entry{enrollEntry}, wantErr: true},
+		"Error on invalid autoenroll value":  {entries: []entry.Entry{{Key: "autoenroll", Value: "notanumber"}}, wantErr: true},
+		"Error on invalid advanced configuration value": {
+			entries: []entry.Entry{
+				enrollEntry,
+				{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Flags", Value: "NotANumber"},
+			}, wantErr: true},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			// Test with a clean PYTHONPATH to avoid differences in the golden file output
+			origPythonPath, existed := os.LookupEnv("PYTHONPATH")
+			err := os.Unsetenv("PYTHONPATH")
+			require.NoError(t, err, "Setup: Unable to unset PYTHONPATH")
+			defer func() {
+				if !existed {
+					return
+				}
+				err := os.Setenv("PYTHONPATH", origPythonPath)
+				require.NoError(t, err, "Teardown: Unable to restore PYTHONPATH")
+			}()
+
+			tmpdir := t.TempDir()
+			sambaCacheDir := filepath.Join(tmpdir, "statedir", "samba")
+			if tc.sambaDirExists {
+				require.NoError(t, os.MkdirAll(sambaCacheDir, 0750), "Setup: Samba cache dir should be created")
+			}
+
+			autoenrollCmdOutputFile := filepath.Join(tmpdir, "autoenroll-output")
+			autoenrollCmd := mockAutoenrollScript(t, autoenrollCmdOutputFile, tc.autoenrollScriptError)
+
+			m := certificate.New(
+				"example.com",
+				certificate.WithStateDir(filepath.Join(tmpdir, "statedir")),
+				certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
+				certificate.WithShareDir(filepath.Join(tmpdir, "sharedir")),
+				certificate.WithCertAutoenrollCmd(autoenrollCmd),
+				certificate.WithEnrollmentMethod("cepces"),
+			)
+
+			err = m.ApplyPolicy(context.Background(), "keypress", !tc.isUser, !tc.isOffline, tc.entries)
+			if tc.wantErr {
+				require.Error(t, err, "ApplyPolicy should fail")
+				return
+			}
+			require.NoError(t, err, "ApplyPolicy should succeed")
+
+			// Check that the autoenroll script was called with the expected arguments
+			// and that the output file was created
+			if !tc.runScript {
+				return
+			}
+
+			got, err := os.ReadFile(autoenrollCmdOutputFile)
+			require.NoError(t, err, "Setup: Autoenroll mock output should be readable")
+
+			want := testutils.LoadWithUpdateFromGolden(t, string(got))
+			require.Equal(t, want, string(got), "Unexpected output from autoenroll mock")
+		})
+	}
+}
+
+func mockAutoenrollScript(t *testing.T, scriptOutputFile string, autoenrollScriptError bool) []string {
+	t.Helper()
+
+	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockAutoenrollScript", "--", scriptOutputFile}
+	if autoenrollScriptError {
+		cmdArgs = append(cmdArgs, "-Exit1-")
+	}
+
+	return cmdArgs
+}
+
+func TestMockAutoenrollScript(t *testing.T) {
+	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
+		return
+	}
+	defer os.Exit(0)
+
+	var outputFile string
+
+	args := os.Args
+	for len(args) > 0 {
+		if args[0] == "--" {
+			outputFile = args[1]
+			args = args[2:]
+			break
+		}
+		args = args[1:]
+	}
+
+	if args[0] == "-Exit1-" {
+		fmt.Fprintf(os.Stderr, "EXIT 1 requested in mock")
+		os.Exit(1)
+	}
+
+	dataToWrite := strings.Join(args, " ") + "\n"
+	dataToWrite += "KRB5CCNAME=" + os.Getenv("KRB5CCNAME") + "\n"
+	dataToWrite += "PYTHONPATH=" + os.Getenv("PYTHONPATH") + "\n"
+
+	// Replace tmpdir with a placeholder to avoid non-deterministic test failures
+	tmpdir := filepath.Dir(outputFile)
+	dataToWrite = strings.ReplaceAll(dataToWrite, tmpdir, "#TMPDIR#")
+
+	//#nosec G703 -- This a test controlled environment
+	err := os.WriteFile(outputFile, []byte(dataToWrite), 0600)
+	require.NoError(t, err, "Setup: Can't write script args to output file")
 }
 
 func TestMain(m *testing.M) {

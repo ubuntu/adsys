@@ -96,6 +96,12 @@ func TestCertAutoenrollScript(t *testing.T) {
 		"Enroll with certmonger not installed": {args: []string{"enroll", "keypress", "example.com"}, missingCertmonger: true},
 		"Enroll with cepces not installed":     {args: []string{"enroll", "keypress", "example.com"}, missingCepces: true},
 
+		// Unenrolling only talks to certmonger, so it must run without cepces
+		// (this is what retires legacy requests when switching backends), but
+		// it is skipped entirely without certmonger, keeping the cache.
+		"Unenroll with cepces not installed":     {args: []string{"unenroll", "keypress", "example.com"}, missingCepces: true},
+		"Unenroll with certmonger not installed": {args: []string{"unenroll", "keypress", "example.com"}, missingCertmonger: true},
+
 		// Error cases
 		"Error on missing arguments": {args: []string{"enroll"}, wantErr: true},
 		"Error on invalid flags":     {args: []string{"enroll", "keypress", "example.com", "--invalid_flag"}, wantErr: true},
@@ -155,8 +161,11 @@ func TestCertAutoenrollScript(t *testing.T) {
 			want := testutils.LoadWithUpdateFromGolden(t, got)
 			require.Equal(t, want, got, "Unexpected output from cert-autoenroll script")
 
-			if slices.Contains(tc.args, "unenroll") {
+			if slices.Contains(tc.args, "unenroll") && !tc.missingCertmonger {
 				require.NoDirExists(t, sambaCacheDir, "Samba cache directory should have been removed on unenroll")
+			}
+			if slices.Contains(tc.args, "unenroll") && tc.missingCertmonger {
+				require.DirExists(t, sambaCacheDir, "Samba cache directory should be kept when certmonger is missing")
 			}
 		})
 	}

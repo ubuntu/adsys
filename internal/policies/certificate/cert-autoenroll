@@ -66,8 +66,14 @@ def main():
         # Set up logging
         logger_init('cert-autoenroll', lp.log_level())
 
-        if not cepces_submit() or not certmonger():
-            log.warning('certmonger and/or cepces not found, skipping certificate enrollment')
+        if args.action == 'enroll':
+            if not cepces_submit() or not certmonger():
+                log.warning('certmonger and/or cepces not found, skipping certificate enrollment')
+                return
+        elif not certmonger():
+            # Unenrolling only talks to certmonger (remove-ca/stop-tracking),
+            # so it must run even when cepces-submit is no longer installed.
+            log.warning('certmonger not found, skipping certificate unenrollment')
             return
 
         # Create needed directories if they don't exist
