@@ -59,6 +59,11 @@ type enrolledTemplate struct {
 	ChainFingerprints  []string `json:"chain_fingerprints,omitempty"`
 	ChainFiles         []string `json:"chain_files,omitempty"` // ordered issuer-to-root certificate files
 	TrustAnchorSymlink string   `json:"trust_anchor_symlink,omitempty"`
+	// EnrolledAt records when this template's certificate was last issued
+	// successfully. It only changes on successful issuance, unlike the
+	// state-wide UpdatedAt, which also moves on failed renewals or when an
+	// unrelated certificate is removed. Zero for legacy state.
+	EnrolledAt time.Time `json:"enrolled_at,omitempty"`
 }
 
 // pendingEnrollment contains everything required to poll and finish a request

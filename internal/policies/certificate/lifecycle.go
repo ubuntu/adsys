@@ -112,6 +112,7 @@ func (m *Manager) finishIssuedResponse(target enrollmentTarget, keyPEM []byte, e
 		GenerationPointer: publication.Pointer,
 		GenerationDir:     publication.Directory,
 		LeafFingerprint:   certificateFingerprint(cert),
+		EnrolledAt:        time.Now(),
 	}
 	bindTemplateToChain(&enrolled, target.Binding)
 	return enrollmentAttemptResult{

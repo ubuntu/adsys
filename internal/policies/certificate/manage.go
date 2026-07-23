@@ -840,8 +840,14 @@ func (m *Manager) SupportedTemplates(ctx context.Context, server string) ([]stri
 }
 
 // certInfoFor builds a CertInfo from a persisted CA/template pair, parsing the
-// on-disk certificate and deriving its health.
+// on-disk certificate and deriving its health. The enrollment time comes from
+// the template's own issuance timestamp, falling back to the state-wide
+// UpdatedAt for legacy state written before per-template timestamps existed.
 func certInfoFor(ca enrolledCA, tmpl enrolledTemplate, updatedAt time.Time) CertInfo {
+	lastEnrolled := tmpl.EnrolledAt
+	if lastEnrolled.IsZero() {
+		lastEnrolled = updatedAt
+	}
 	info := CertInfo{
 		Nickname:      tmpl.Nickname,
 		Template:      tmpl.Template,
@@ -851,7 +857,7 @@ func certInfoFor(ca enrolledCA, tmpl enrolledTemplate, updatedAt time.Time) Cert
 		CertFile:      tmpl.CertFile,
 		RootCertFiles: ca.RootCerts,
 		TrustSymlinks: ca.Symlinks,
-		LastEnrolled:  updatedAt,
+		LastEnrolled:  lastEnrolled,
 	}
 	keyPath, certPath, generationErr := templateGenerationReadPaths(tmpl)
 	info.OnDisk = generationErr == nil && filesExist(keyPath, certPath)

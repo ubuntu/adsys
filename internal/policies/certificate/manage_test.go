@@ -566,6 +566,130 @@ func TestPolicyReconciliationPreservesPreviousStateOnTrustInstallFailure(t *test
 	assert.Equal(t, []string{oldRootPath}, state.CAs[0].Templates[0].ChainFiles)
 }
 
+// TestEnrollmentTimestamps verifies that last_enrolled is a per-template
+// issuance timestamp: it only changes after successful issuance, never on a
+// failed renewal or when an unrelated certificate is removed, and legacy
+// state falls back to the state-wide UpdatedAt.
+func TestEnrollmentTimestamps(t *testing.T) {
+	t.Parallel()
+
+	enroll := func(t *testing.T, templates []string, enrolledAt map[string]time.Time) (*Manager, string, *x509.Certificate, *ecdsa.PrivateKey, []byte) {
+		t.Helper()
+		tmpdir := t.TempDir()
+		stateDir := filepath.Join(tmpdir, "state")
+
+		caCert, caKey, caDER := mgrTestCA(t)
+		rootPath := mgrWriteCACertificate(t, stateDir, "TestCA.root.crt", caDER)
+
+		var enrolled []enrolledTemplate
+		for _, tmpl := range templates {
+			nick := "TestCA." + tmpl
+			key, keyPEM := mgrKeyPEM(t)
+			certPEM := mgrCASignedLeaf(t, caCert, caKey, &key.PublicKey, time.Now().Add(-time.Hour), time.Now().Add(365*24*time.Hour))
+			et := mgrWritePair(t, stateDir, nick, tmpl, keyPEM, certPEM)
+			et = mgrBindTemplate(t, et, certPEM, caDER, rootPath)
+			et.EnrolledAt = enrolledAt[tmpl]
+			enrolled = append(enrolled, et)
+		}
+		caFingerprint := rawCertificateFingerprint(caDER)
+		mgrWriteState(t, stateDir, []enrolledCA{{
+			Name:              "TestCA",
+			Hostname:          "ca.example.com",
+			IssuerFingerprint: caFingerprint,
+			ChainFingerprints: []string{caFingerprint},
+			RootCerts:         []string{rootPath},
+			Templates:         enrolled,
+		}})
+
+		return nil, stateDir, caCert, caKey, caDER
+	}
+
+	newManager := func(t *testing.T, stateDir string, caCert *x509.Certificate, caKey *ecdsa.PrivateKey, caDER []byte, templates []string, submitFail bool) *Manager {
+		t.Helper()
+		submitter := func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+			if submitFail {
+				return "", fmt.Errorf("mock submit failure")
+			}
+			return mgrIssueFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caCert, caKey), nil
+		}
+		return mgrManager(t, stateDir, filepath.Join(t.TempDir(), "trust"),
+			WithLDAPConnector(mgrConnector("CN=Configuration,DC=example,DC=com", templates, caDER)),
+			WithCertificateRequester(IssuedCertificateRequester(submitter)),
+		)
+	}
+
+	t.Run("failed renewal keeps the original enrollment time", func(t *testing.T) {
+		t.Parallel()
+		t0 := time.Now().Add(-48 * time.Hour).Truncate(time.Second)
+		_, stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine", "WebServer"}, map[string]time.Time{"Machine": t0, "WebServer": t0})
+		m := newManager(t, stateDir, caCert, caKey, caDER, []string{"Machine", "WebServer"}, true)
+
+		err := m.RenewCertificates(context.Background(), mgrTestObject, "", true, nil)
+		require.Error(t, err)
+
+		state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+		require.NoError(t, err)
+		for _, tmpl := range state.CAs[0].Templates {
+			assert.True(t, tmpl.EnrolledAt.Equal(t0), "template %s enrollment time moved after failed renewal: %s", tmpl.Template, tmpl.EnrolledAt)
+		}
+	})
+
+	t.Run("removing one certificate keeps the others' enrollment time", func(t *testing.T) {
+		t.Parallel()
+		t0 := time.Now().Add(-72 * time.Hour).Truncate(time.Second)
+		t1 := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
+		_, stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine", "WebServer"}, map[string]time.Time{"Machine": t0, "WebServer": t1})
+		m := newManager(t, stateDir, caCert, caKey, caDER, []string{"Machine", "WebServer"}, false)
+
+		err := m.RemoveCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, true, nil)
+		require.NoError(t, err)
+
+		state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+		require.NoError(t, err)
+		require.Len(t, state.CAs[0].Templates, 1)
+		assert.Equal(t, "WebServer", state.CAs[0].Templates[0].Template)
+		assert.True(t, state.CAs[0].Templates[0].EnrolledAt.Equal(t1), "remaining certificate enrollment time changed: %s", state.CAs[0].Templates[0].EnrolledAt)
+
+		certs, err := m.ListCertificates(context.Background(), mgrTestObject)
+		require.NoError(t, err)
+		require.Len(t, certs, 1)
+		assert.True(t, certs[0].LastEnrolled.Equal(t1), "last_enrolled changed after unrelated removal: %s", certs[0].LastEnrolled)
+	})
+
+	t.Run("successful renewal refreshes the enrollment time", func(t *testing.T) {
+		t.Parallel()
+		t0 := time.Now().Add(-48 * time.Hour).Truncate(time.Second)
+		_, stateDir, caCert, caKey, caDER := enroll(t, []string{"Machine"}, map[string]time.Time{"Machine": t0})
+		m := newManager(t, stateDir, caCert, caKey, caDER, []string{"Machine"}, false)
+
+		require.NoError(t, m.RenewCertificates(context.Background(), mgrTestObject, "TestCA.Machine", false, nil))
+
+		state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+		require.NoError(t, err)
+		require.Len(t, state.CAs[0].Templates, 1)
+		assert.True(t, state.CAs[0].Templates[0].EnrolledAt.After(t0), "successful renewal must refresh the enrollment time")
+	})
+
+	t.Run("legacy state falls back to UpdatedAt", func(t *testing.T) {
+		t.Parallel()
+		updatedAt := time.Now().Add(-96 * time.Hour).Truncate(time.Second)
+		_, stateDir, caCert, _, _ := enroll(t, []string{"Machine"}, map[string]time.Time{"Machine": {}})
+
+		// Rewrite state with a deterministic UpdatedAt and no enrolled_at, as
+		// written before per-template timestamps existed.
+		state, err := loadState(stateDir, mgrTestObject, mgrTestDomain)
+		require.NoError(t, err)
+		state.UpdatedAt = updatedAt
+		require.NoError(t, writeStateFile(stateFilePath(stateDir, mgrTestObject), state))
+
+		m := newManager(t, stateDir, caCert, nil, nil, []string{"Machine"}, false)
+		certs, err := m.ListCertificates(context.Background(), mgrTestObject)
+		require.NoError(t, err)
+		require.Len(t, certs, 1)
+		assert.True(t, certs[0].LastEnrolled.Equal(updatedAt), "legacy state must report the state-wide UpdatedAt, got %s", certs[0].LastEnrolled)
+	})
+}
+
 func TestRemoveCertificates(t *testing.T) {
 	t.Parallel()
 
