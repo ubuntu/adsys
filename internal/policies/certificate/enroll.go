@@ -232,26 +232,12 @@ func safeWriteFile(dst string, data []byte, mode os.FileMode) (err error) {
 	return syncDirectory(filepath.Dir(dst))
 }
 
-// GetSupportedTemplates discovers templates for the CA server via LDAP.
-// It uses the KRB5CCNAME environment variable for Kerberos authentication.
-func GetSupportedTemplates(server string) ([]string, error) {
-	return GetSupportedTemplatesContext(context.Background(), server)
-}
-
-// GetSupportedTemplatesContext discovers templates while honoring caller cancellation.
-func GetSupportedTemplatesContext(ctx context.Context, server string) ([]string, error) {
-	// allowBootstrap: the DC certificate may not chain to an installed CA on a
-	// freshly joined machine; GSSAPI protects LDAP with Kerberos confidentiality.
-	connector := newKerberosLDAPConnector("", "", true)
-	return GetSupportedTemplatesWithConnector(ctx, connector, server)
-}
-
-// GetSupportedTemplatesWithConnector discovers templates for the CA server via LDAP.
-func GetSupportedTemplatesWithConnector(ctx context.Context, connect LDAPConnector, server string) ([]string, error) {
-	discoveryServer := server
-	if strings.Contains(server, ".") {
-		discoveryServer = dcHostnameFromDomain(domainFromServer(server))
-	}
+// GetSupportedTemplatesWithConnector discovers templates for the given CA
+// server via LDAP. Discovery runs against the domain controllers of
+// discoveryDomain; server only selects among the discovered CAs and is never
+// dialed, so its value cannot steer the caller toward arbitrary endpoints.
+func GetSupportedTemplatesWithConnector(ctx context.Context, connect LDAPConnector, discoveryDomain, server string) ([]string, error) {
+	discoveryServer := dcHostnameFromDomain(discoveryDomain)
 
 	log.Debugf(ctx, "Discovering supported templates for server %s (discovery server: %s)", server, discoveryServer)
 	cas, err := discoverCAsAndTemplates(ctx, connect, discoveryServer)
@@ -333,12 +319,4 @@ func decodeUTF16(b []byte) string {
 		u16 = u16[:len(u16)-1]
 	}
 	return string(utf16.Decode(u16))
-}
-
-func domainFromServer(server string) string {
-	parts := strings.SplitN(server, ".", 2)
-	if len(parts) != 2 {
-		return server
-	}
-	return parts[1]
 }

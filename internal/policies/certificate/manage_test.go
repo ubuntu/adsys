@@ -1013,6 +1013,130 @@ func TestManagementMethodsRequireLDAPMethod(t *testing.T) {
 	assert.ErrorIs(t, err, ErrNotLDAPMethod)
 }
 
+func TestSupportedTemplates(t *testing.T) {
+	t.Parallel()
+
+	identity := machineDirectoryIdentity{shortName: "keypress", samAccountName: "keypress$", dnsName: "keypress.example.com"}
+	_, _, testCADER := mgrTestCA(t)
+	_, _, otherCADER := mgrTestCA(t)
+	cas := []mgrDirectoryCA{
+		{name: "TestCA", hostname: "ca.example.com", templates: []string{"Machine", "WebServer"}, der: testCADER},
+		{name: "OtherCA", hostname: "other-ca.example.com", templates: []string{"User"}, der: otherCADER},
+	}
+
+	tests := map[string]struct {
+		server string
+
+		wantTemplates []string
+		wantErr       bool
+	}{
+		"templates for the requested CA only": {server: "ca.example.com", wantTemplates: []string{"Machine", "WebServer"}},
+		"requested CA matched by name":        {server: "OtherCA", wantTemplates: []string{"User"}},
+		"requested CA matched case-insensitively": {
+			server:        "CA.Example.COM",
+			wantTemplates: []string{"Machine", "WebServer"},
+		},
+		"unknown server is rejected":    {server: "rogue.example.com", wantErr: true},
+		"arbitrary endpoint is rejected": {server: "localhost:4444", wantErr: true},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			var dialed []string
+			connector := LDAPConnectorFunc(func(ctx context.Context, address string) (LDAPClient, error) {
+				dialed = append(dialed, address)
+				return mgrConnectorForIdentity(identity, cas).Connect(ctx, address)
+			})
+
+			m := New(mgrTestDomain,
+				WithStateDir(t.TempDir()),
+				WithRunDir(t.TempDir()),
+				WithShareDir(t.TempDir()),
+				WithGlobalTrustDir(t.TempDir()),
+				WithEnrollmentMethod("ldap"),
+				WithLDAPConnector(connector),
+			)
+
+			templates, err := m.SupportedTemplates(context.Background(), tc.server)
+			if tc.wantErr {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tc.server)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tc.wantTemplates, templates)
+			}
+
+			// The requested server only selects among discovered CAs: discovery
+			// must always target domain controllers of the configured domain,
+			// never the caller-provided address.
+			for _, address := range dialed {
+				assert.NotContains(t, address, "localhost", "caller-provided endpoint must never be dialed")
+				assert.NotContains(t, address, "rogue.example.com", "caller-provided endpoint must never be dialed")
+			}
+		})
+	}
+}
+
+// TestSupportedTemplatesDoesNotBlockPolicyOperations ensures a stalled
+// directory endpoint does not hold the manager or trust lifecycle locks, so
+// concurrent certificate operations keep working.
+func TestSupportedTemplatesDoesNotBlockPolicyOperations(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	started := make(chan struct{})
+	connector := LDAPConnectorFunc(func(ctx context.Context, _ string) (LDAPClient, error) {
+		close(started)
+		<-ctx.Done()
+		return nil, ctx.Err()
+	})
+
+	m := New(mgrTestDomain,
+		WithStateDir(t.TempDir()),
+		WithRunDir(t.TempDir()),
+		WithShareDir(t.TempDir()),
+		WithGlobalTrustDir(t.TempDir()),
+		WithEnrollmentMethod("ldap"),
+		WithLDAPConnector(connector),
+	)
+
+	templatesDone := make(chan error, 1)
+	go func() {
+		_, err := m.SupportedTemplates(ctx, "ca.example.com")
+		templatesDone <- err
+	}()
+
+	// Wait for the stalled query to be in flight, then run an operation that
+	// takes both the manager and trust lifecycle locks: it must complete
+	// without waiting for the stalled query.
+	<-started
+	listDone := make(chan error, 1)
+	go func() {
+		_, err := m.ListCertificates(context.Background(), mgrTestObject)
+		listDone <- err
+	}()
+
+	select {
+	case err := <-listDone:
+		require.NoError(t, err)
+	case <-time.After(30 * time.Second):
+		t.Fatal("ListCertificates blocked behind a stalled SupportedTemplates query")
+	}
+
+	// Cancelling the caller context must release the stalled query promptly.
+	cancel()
+	select {
+	case err := <-templatesDone:
+		require.ErrorIs(t, err, context.Canceled)
+	case <-time.After(30 * time.Second):
+		t.Fatal("SupportedTemplates did not honor caller cancellation")
+	}
+}
+
 func TestRenewCertificatesReplacesInvalidTargets(t *testing.T) {
 	t.Parallel()
 

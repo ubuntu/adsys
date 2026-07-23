@@ -820,18 +820,21 @@ func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]CAI
 
 // SupportedTemplates returns the certificate templates the given CA server is
 // configured to issue, discovered via LDAP.
+//
+// The query is stateless: it never touches enrollment state and only reads the
+// immutable connector configuration, so it deliberately takes neither m.mu nor
+// trustLifecycleMu — a stalled directory endpoint must not block enrollment or
+// other certificate management operations. The requested server is only used
+// to select among the CAs discovered in the configured domain and is never
+// dialed, and all network operations run under the caller's context with
+// per-candidate deadlines.
 func (m *Manager) SupportedTemplates(ctx context.Context, server string) ([]string, error) {
 	if m.enrollmentMethod != consts.CertEnrollmentLDAP {
 		return nil, ErrNotLDAPMethod
 	}
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	trustLifecycleMu.RLock()
-	defer trustLifecycleMu.RUnlock()
 
 	log.Debugf(ctx, "Discovering supported templates for server %s", server)
-	connector := newKerberosLDAPConnector(m.krb5CacheDir, m.globalTrustDir, true)
-	return GetSupportedTemplatesWithConnector(ctx, connector, server)
+	return GetSupportedTemplatesWithConnector(ctx, m.ldapConnect, m.domain, server)
 }
 
 // certInfoFor builds a CertInfo from a persisted CA/template pair, parsing the
