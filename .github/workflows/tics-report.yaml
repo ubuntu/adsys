@@ -1,0 +1,80 @@
+name: TIOBE TiCS Framework - Report
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # Runs every Monday at midnight
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  apt_dependencies: >-
+    ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
+    libkrb5-dev libwbclient-dev pkg-config python3-coverage pylint samba sudo
+    libglib2.0-dev gvfs libpam0g-dev
+
+jobs:
+  tics:
+    name: TIOBE TiCS Framework
+    runs-on: ${{ vars.RUNNER }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Merge coverage reports
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+
+          # Download, combine and move coverage to the right place so TiCS can parse it.
+          # The Go coverage from the QA workflow is always expected to be available.
+          RUN_ID=$(gh run list --workflow 'QA & sanity checks' --limit 1 --status success --json databaseId -b main --jq '.[].databaseId')
+          if [ -z "$RUN_ID" ]; then
+            echo "::error::No successful 'QA & sanity checks' run found on main"
+            exit 1
+          fi
+          gh run download "$RUN_ID" -n coverage.zip -D /tmp/coverage
+
+          # PAM coverage comes from the E2E workflow, which may not always have a recent
+          # successful run. Treat it as best-effort so the scan still runs without it.
+          E2E_RUN_ID=$(gh run list --workflow 'E2E - Run tests' --limit 1 --status success --json databaseId -b main --jq '.[].databaseId')
+          if [ -n "$E2E_RUN_ID" ]; then
+            gh run download "$E2E_RUN_ID" -n pam-coverage.zip -D /tmp/coverage || echo "::warning::pam-coverage.zip not found in run $E2E_RUN_ID; skipping PAM coverage"
+          else
+            echo "::warning::No successful 'E2E - Run tests' run found on main; skipping PAM coverage"
+          fi
+
+          reportgenerator "-reports:/tmp/coverage/*.xml" "-targetdir:.coverage" -reporttypes:Cobertura
+          mv .coverage/Cobertura.xml .coverage/coverage.xml
+
+      - name: Set up temporary directory for TiCS
+        run: |
+          mkdir -p /tmp/tics-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: TICS Analysis
+        env:
+          TMPDIR: /tmp/tics-${{ github.run_id }}-${{ github.run_attempt }}
+        uses: tiobe/tics-github-action@v3
+        with:
+          mode: qserver
+          project: adsys
+          branchdir: .
+          viewerUrl: https://canonical.tiobe.com/tiobeweb/TICS/api/cfg?name=GoProjects
+          ticsAuthToken: ${{ secrets.TICSAUTHTOKEN }}
+          installTics: true
+          # Persist TiCS debug information (including the run log) to a known
+          # location. Setting this input makes the action upload that directory
+          # as an artifact, so failing analyses can be inspected.
+          tmpdir: /tmp/tics-${{ github.run_id }}-${{ github.run_attempt }}
