@@ -55,7 +55,8 @@ func (a *App) installCertificate() {
 		Short: gotext.Get("Show the health of an enrolled certificate"),
 		Long: gotext.Get(`Show the health of an enrolled certificate.
 The process exit code reflects the certificate health: 0 healthy, 2 missing,
-3 expired, 4 due for renewal, 5 key mismatch or unparseable, 1 on error.`),
+3 expired, 4 due for renewal, 5 key mismatch or unparseable, 6 not yet valid,
+1 on error.`),
 		Args:              cmdhandler.ZeroOrNArgs(1),
 		ValidArgsFunction: cmdhandler.NoValidArgs,
 		RunE: func(_ *cobra.Command, args []string) error {
@@ -431,6 +432,8 @@ func exitCodeForHealth(h adsys.CertHealth) int {
 		return 2
 	case adsys.CertHealth_CERT_HEALTH_EXPIRED:
 		return 3
+	case adsys.CertHealth_CERT_HEALTH_NOT_YET_VALID:
+		return 6
 	case adsys.CertHealth_CERT_HEALTH_DUE_RENEWAL:
 		return 4
 	case adsys.CertHealth_CERT_HEALTH_KEY_MISMATCH, adsys.CertHealth_CERT_HEALTH_UNPARSEABLE:
@@ -448,6 +451,8 @@ func healthString(h adsys.CertHealth) string {
 		return "due_renewal"
 	case adsys.CertHealth_CERT_HEALTH_EXPIRED:
 		return "expired"
+	case adsys.CertHealth_CERT_HEALTH_NOT_YET_VALID:
+		return "not_yet_valid"
 	case adsys.CertHealth_CERT_HEALTH_MISSING:
 		return "missing"
 	case adsys.CertHealth_CERT_HEALTH_KEY_MISMATCH:

@@ -52,6 +52,12 @@ func TestListCertificates(t *testing.T) {
 	shortCertPEM := mgrSelfSigned(t, shortKey, "short", now.Add(-time.Hour), now.Add(6*24*time.Hour))
 	templates = append(templates, mgrWritePair(t, stateDir, "short", "Machine", shortKeyPEM, shortCertPEM))
 
+	// not yet valid: issuance clock skew produced a certificate whose validity
+	// window starts tomorrow; it must not report healthy.
+	futureKey, futureKeyPEM := mgrKeyPEM(t)
+	futureCertPEM := mgrSelfSigned(t, futureKey, "future", now.Add(24*time.Hour), now.Add(30*24*time.Hour))
+	templates = append(templates, mgrWritePair(t, stateDir, "future", "Machine", futureKeyPEM, futureCertPEM))
+
 	// expired: NotAfter in the past, key matches.
 	expiredKey, expiredKeyPEM := mgrKeyPEM(t)
 	expiredCertPEM := mgrSelfSigned(t, expiredKey, "expired", now.Add(-48*time.Hour), now.Add(-time.Hour))
@@ -94,6 +100,7 @@ func TestListCertificates(t *testing.T) {
 		"healthy":     CertHealthy,
 		"due":         CertDueRenewal,
 		"short":       CertHealthy,
+		"future":      CertNotYetValid,
 		"expired":     CertExpired,
 		"mismatch":    CertKeyMismatch,
 		"unparseable": CertUnparseable,

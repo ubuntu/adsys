@@ -197,6 +197,8 @@ func certHealthToProto(h certificate.CertHealth) adsys.CertHealth {
 		return adsys.CertHealth_CERT_HEALTH_DUE_RENEWAL
 	case certificate.CertExpired:
 		return adsys.CertHealth_CERT_HEALTH_EXPIRED
+	case certificate.CertNotYetValid:
+		return adsys.CertHealth_CERT_HEALTH_NOT_YET_VALID
 	case certificate.CertMissing:
 		return adsys.CertHealth_CERT_HEALTH_MISSING
 	case certificate.CertKeyMismatch:

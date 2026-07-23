@@ -18,6 +18,7 @@ func TestExitCodeForHealth(t *testing.T) {
 		"Due for renewal is 4":     {adsys.CertHealth_CERT_HEALTH_DUE_RENEWAL, 4},
 		"Key mismatch is 5":        {adsys.CertHealth_CERT_HEALTH_KEY_MISMATCH, 5},
 		"Unparseable is 5":         {adsys.CertHealth_CERT_HEALTH_UNPARSEABLE, 5},
+		"Not yet valid is 6":       {adsys.CertHealth_CERT_HEALTH_NOT_YET_VALID, 6},
 		"Unspecified is generic 1": {adsys.CertHealth_CERT_HEALTH_UNSPECIFIED, 1},
 	}
 	for name, tc := range tests {
@@ -31,6 +32,7 @@ func TestHealthString(t *testing.T) {
 	assert.Equal(t, "healthy", healthString(adsys.CertHealth_CERT_HEALTH_HEALTHY))
 	assert.Equal(t, "due_renewal", healthString(adsys.CertHealth_CERT_HEALTH_DUE_RENEWAL))
 	assert.Equal(t, "key_mismatch", healthString(adsys.CertHealth_CERT_HEALTH_KEY_MISMATCH))
+	assert.Equal(t, "not_yet_valid", healthString(adsys.CertHealth_CERT_HEALTH_NOT_YET_VALID))
 	assert.Equal(t, "unknown", healthString(adsys.CertHealth(99)), "out-of-range health should be unknown")
 }
 

@@ -102,7 +102,8 @@ The command returns a process exit code suitable for monitoring and scripts:
 | 2 | missing |
 | 3 | expired |
 | 4 | due for renewal |
-| 5 | key mismatch |
+| 5 | key mismatch or unparseable |
+| 6 | not yet valid |
 | 1 | error |
 
 ## Verify a certificate
@@ -120,7 +121,7 @@ Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6': PASS
 
 ## Renew a certificate
 
-Use `renew` to force re-enrollment immediately, bypassing the normal 30-day renewal window. Renewal generates a fresh private key, so this is also a rekey operation. Use `--all` to renew every enrolled certificate.
+Use `renew` to force re-enrollment immediately, bypassing the normal renewal window (30 days before expiry, bounded to a third of the certificate lifetime). Renewal generates a fresh private key, so this is also a rekey operation. Use `--all` to renew every enrolled certificate.
 
 If AD CS requires approval, ADSys securely retains the request ID, CSR, and private key and polls that same CA on later policy refreshes or renewals. The currently installed generation remains active until issuance; repeated renewals do not create duplicate requests.
 
@@ -175,8 +176,9 @@ The health state reports whether ADSys can use and renew an enrolled certificate
 | State | Meaning |
 | --- | --- |
 | `healthy` | The certificate, private key, and state are valid. |
-| `due_renewal` | The certificate expires in less than 30 days. |
+| `due_renewal` | The certificate is inside its renewal window (30 days before expiry, bounded to a third of its lifetime). |
 | `expired` | The certificate is past its validity window. |
+| `not_yet_valid` | The certificate's validity window has not started yet. |
 | `missing` | The certificate, private key, or state entry is missing. |
 | `key_mismatch` | The private key does not match the certificate. |
 | `unparseable` | ADSys cannot parse the certificate, key, or state data. |

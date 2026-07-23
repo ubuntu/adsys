@@ -183,7 +183,8 @@ Show the health of an enrolled certificate
 
 Show the health of an enrolled certificate.
 The process exit code reflects the certificate health: 0 healthy, 2 missing,
-3 expired, 4 due for renewal, 5 key mismatch or unparseable, 1 on error.
+3 expired, 4 due for renewal, 5 key mismatch or unparseable, 6 not yet valid,
+1 on error.
 
 ```
 adsysctl certificate status [NICKNAME] [flags]

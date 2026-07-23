@@ -24,13 +24,14 @@ const (
 type CertHealth int32
 
 const (
-	CertHealth_CERT_HEALTH_UNSPECIFIED  CertHealth = 0
-	CertHealth_CERT_HEALTH_HEALTHY      CertHealth = 1
-	CertHealth_CERT_HEALTH_DUE_RENEWAL  CertHealth = 2 // within the renewal window of expiry
-	CertHealth_CERT_HEALTH_EXPIRED      CertHealth = 3
-	CertHealth_CERT_HEALTH_MISSING      CertHealth = 4 // referenced by state but absent on disk
-	CertHealth_CERT_HEALTH_KEY_MISMATCH CertHealth = 5
-	CertHealth_CERT_HEALTH_UNPARSEABLE  CertHealth = 6
+	CertHealth_CERT_HEALTH_UNSPECIFIED   CertHealth = 0
+	CertHealth_CERT_HEALTH_HEALTHY       CertHealth = 1
+	CertHealth_CERT_HEALTH_DUE_RENEWAL   CertHealth = 2 // within the renewal window of expiry
+	CertHealth_CERT_HEALTH_EXPIRED       CertHealth = 3
+	CertHealth_CERT_HEALTH_MISSING       CertHealth = 4 // referenced by state but absent on disk
+	CertHealth_CERT_HEALTH_KEY_MISMATCH  CertHealth = 5
+	CertHealth_CERT_HEALTH_UNPARSEABLE   CertHealth = 6
+	CertHealth_CERT_HEALTH_NOT_YET_VALID CertHealth = 7 // before its NotBefore
 )
 
 // Enum value maps for CertHealth.
@@ -43,15 +44,17 @@ var (
 		4: "CERT_HEALTH_MISSING",
 		5: "CERT_HEALTH_KEY_MISMATCH",
 		6: "CERT_HEALTH_UNPARSEABLE",
+		7: "CERT_HEALTH_NOT_YET_VALID",
 	}
 	CertHealth_value = map[string]int32{
-		"CERT_HEALTH_UNSPECIFIED":  0,
-		"CERT_HEALTH_HEALTHY":      1,
-		"CERT_HEALTH_DUE_RENEWAL":  2,
-		"CERT_HEALTH_EXPIRED":      3,
-		"CERT_HEALTH_MISSING":      4,
-		"CERT_HEALTH_KEY_MISMATCH": 5,
-		"CERT_HEALTH_UNPARSEABLE":  6,
+		"CERT_HEALTH_UNSPECIFIED":   0,
+		"CERT_HEALTH_HEALTHY":       1,
+		"CERT_HEALTH_DUE_RENEWAL":   2,
+		"CERT_HEALTH_EXPIRED":       3,
+		"CERT_HEALTH_MISSING":       4,
+		"CERT_HEALTH_KEY_MISMATCH":  5,
+		"CERT_HEALTH_UNPARSEABLE":   6,
+		"CERT_HEALTH_NOT_YET_VALID": 7,
 	}
 )
 
@@ -1227,7 +1230,7 @@ const file_adsys_proto_rawDesc = "" +
 	"keyMatchOk\x12-\n" +
 	"\x12revocation_checked\x18\x05 \x01(\bR\x11revocationChecked\x12\x18\n" +
 	"\arevoked\x18\x06 \x01(\bR\arevoked\x12\x1a\n" +
-	"\bmessages\x18\a \x03(\tR\bmessages*\xcc\x01\n" +
+	"\bmessages\x18\a \x03(\tR\bmessages*\xeb\x01\n" +
 	"\n" +
 	"CertHealth\x12\x1b\n" +
 	"\x17CERT_HEALTH_UNSPECIFIED\x10\x00\x12\x17\n" +
@@ -1236,7 +1239,8 @@ const file_adsys_proto_rawDesc = "" +
 	"\x13CERT_HEALTH_EXPIRED\x10\x03\x12\x17\n" +
 	"\x13CERT_HEALTH_MISSING\x10\x04\x12\x1c\n" +
 	"\x18CERT_HEALTH_KEY_MISMATCH\x10\x05\x12\x1b\n" +
-	"\x17CERT_HEALTH_UNPARSEABLE\x10\x062\x9d\a\n" +
+	"\x17CERT_HEALTH_UNPARSEABLE\x10\x06\x12\x1d\n" +
+	"\x19CERT_HEALTH_NOT_YET_VALID\x10\a2\x9d\a\n" +
 	"\aservice\x12 \n" +
 	"\x03Cat\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x12$\n" +
 	"\aVersion\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x12#\n" +

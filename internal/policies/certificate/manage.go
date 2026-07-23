@@ -35,10 +35,12 @@ type CertHealth string
 const (
 	// CertHealthy indicates the certificate is present, valid and not near expiry.
 	CertHealthy CertHealth = "healthy"
-	// CertDueRenewal indicates the certificate is within certRenewalWindow of expiry.
+	// CertDueRenewal indicates the certificate is within its renewal window of expiry.
 	CertDueRenewal CertHealth = "due_renewal"
 	// CertExpired indicates the certificate is past its NotAfter.
 	CertExpired CertHealth = "expired"
+	// CertNotYetValid indicates the certificate is before its NotBefore.
+	CertNotYetValid CertHealth = "not_yet_valid"
 	// CertMissing indicates the certificate is referenced by state but its key/cert is absent on disk.
 	CertMissing CertHealth = "missing"
 	// CertKeyMismatch indicates the on-disk private key does not match the certificate.
@@ -879,9 +881,10 @@ func certInfoFor(ca enrolledCA, tmpl enrolledTemplate, updatedAt time.Time) Cert
 }
 
 // deriveHealth returns the health of a certificate following the documented
-// precedence: missing, unparseable, key mismatch, expired, due for renewal,
-// then healthy. The renewal window is bounded by the certificate's own
-// lifetime so freshly issued short-lived certificates report healthy.
+// precedence: missing, unparseable, key mismatch, expired, not yet valid,
+// due for renewal, then healthy. The renewal window is bounded by the
+// certificate's own lifetime so freshly issued short-lived certificates
+// report healthy.
 func deriveHealth(info CertInfo, cert *x509.Certificate, now time.Time) CertHealth {
 	switch {
 	case !info.OnDisk:
@@ -892,6 +895,8 @@ func deriveHealth(info CertInfo, cert *x509.Certificate, now time.Time) CertHeal
 		return CertKeyMismatch
 	case now.After(cert.NotAfter):
 		return CertExpired
+	case now.Before(cert.NotBefore):
+		return CertNotYetValid
 	case now.Add(renewalWindowFor(cert)).After(cert.NotAfter):
 		return CertDueRenewal
 	default:

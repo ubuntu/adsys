@@ -97,6 +97,7 @@ enum CertHealth {
   CERT_HEALTH_MISSING = 4;       // referenced by state but absent on disk
   CERT_HEALTH_KEY_MISMATCH = 5;
   CERT_HEALTH_UNPARSEABLE = 6;
+  CERT_HEALTH_NOT_YET_VALID = 7; // before its NotBefore
 }
 
 message CertInfo {
