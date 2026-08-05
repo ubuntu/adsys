@@ -119,7 +119,7 @@ jobs:
       - name: Build base VM
         if: steps.check-vm-template.outputs.image-version != ''
         run: |
-          go run ./e2e/cmd/build_base_image/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }}
+          go run ./e2e/cmd/build_base_image/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }} --keep
       - name: Create template version
         if: steps.check-vm-template.outputs.image-version != ''
         run: |
