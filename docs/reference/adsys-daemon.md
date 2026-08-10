@@ -116,8 +116,6 @@ It will gracefully shutdown after idling for a short period of time (default: 12
 
 ## Configuration
 
-`ADSys` doesn’t ship a configuration file by default. 
-
 System-wide or user-specific configuration files can be created to modify the behavior of the daemon and the client:
 
 * System-wide: defined in `/etc/adsys.yaml` and applies to both daemon and client.
@@ -148,6 +146,11 @@ run_dir: /tmp/adsysd/run
 # Backend selection: sssd (default) or winbind
 ad_backend: sssd
 
+# Certificate enrollment method: cepces (default) or ldap
+# If unset, defaults to cepces for backwards compatibility.
+# New installations default to ldap.
+certificate_enrollment: ldap
+
 # SSSD configuration
 sssd:
   config: /etc/sssd.conf
@@ -170,6 +173,11 @@ Increase the verbosity of the daemon or client. By default, only warnings and er
 
 * **socket**
 Path the Unix socket for communication between clients and daemon. This can be overridden by the `--socket` option. Defaults to `/run/adsysd.sock` (monitored by systemd for socket activation).
+
+* **certificate_enrollment**
+
+Method used for certificate enrollment. Can be either `cepces` (default) or `ldap`. This can be overridden by the `--certificate-enrollment` option.
+New installations will be auto-configured to use `ldap`. If unset, defaults to `cepces` for backwards compatibility.
 
 ### Service only configuration
 

@@ -18,7 +18,8 @@ global_trust_dir: /usr/local/share/ca-certificates
 #ad_backend: sssd
 
 # Certificate enrollment method: ldap (native Go, LDAP/RPC) or cepces (legacy Python/CEPCES).
-# Defaults to cepces for backward compatibility with existing installations.
+# If unset, defaults to cepces for backwards compatibility.
+# New installations default to ldap.
 #certificate_enrollment: cepces
 
 # SSSd configuration

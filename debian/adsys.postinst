@@ -1,11 +1,29 @@
 #!/bin/sh
 set -e
 
+CONFFILE=/etc/adsys.yaml
+
 case "$1" in
     configure)
-        pam-auth-update --package adsys
+        DEBIAN_FRONTEND=noninteractive pam-auth-update --package adsys
+
+        # For new installations (no previous version), set the LDAP-only
+        # certificate enrollment as default. Existing installations, and
+        # any file already present (e.g. hand-created by the admin before
+        # the first install, or left behind by a previous "remove"), are
+        # left untouched: existing installations keep the code default
+        # (cepces) for backward compatibility. The file is only ever
+        # removed on "dpkg --purge" (see postrm); a plain "remove" leaves
+        # it in place.
+        if [ -z "$2" ]; then
+            if [ ! -e "$CONFFILE" ] && [ ! -L "$CONFFILE" ]; then
+                cat > "$CONFFILE" << 'EOF'
+# Certificate enrollment method: ldap (native Go, LDAP/RPC) or cepces (legacy Python/CEPCES).
+certificate_enrollment: ldap
+EOF
+            fi
+        fi
     ;;
 esac
 
 #DEBHELPER#
-

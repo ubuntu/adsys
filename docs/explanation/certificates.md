@@ -37,7 +37,14 @@ The **`cepces`** method is the legacy implementation that delegates certificate 
 
 ### Configuration
 
-The default method is `cepces` for backward compatibility; new installations should opt into the native `ldap` enrollment. For the configuration steps and the package requirements of each method, see {ref}`howto::certificates-configure`.
+Set the enrollment method in `/etc/adsys.yaml`:
+
+```yaml
+certificate_enrollment: ldap    # or "cepces"
+```
+
+* **New installations**: The package creates `/etc/adsys.yaml` with `certificate_enrollment: ldap` when no configuration file exists yet.
+* **Existing installations**: The default is `cepces` for backward compatibility. To switch to the native LDAP enrollment, add the setting above to your configuration file.
 
 To ensure idempotency when applying the policy, enrollment state is persisted as a JSON file at `/var/lib/adsys/certs/state_$(hostname).<object-id>.json`, which contains information pertaining to the enrolled certificate(s).
 

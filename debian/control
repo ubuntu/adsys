@@ -32,6 +32,7 @@ Architecture: any
 Built-Using: ${misc:Built-Using},
 Depends: ${shlibs:Depends},
          ${misc:Depends},
+         ca-certificates,
          python3,
          python3-samba,
          samba-dsdb-modules,
@@ -45,8 +46,8 @@ Depends: ${shlibs:Depends},
 Recommends: ${misc:Recommends},
             ubuntu-advantage-desktop-daemon,
 Suggests: curlftpfs,
-          ubuntu-proxy-manager,
           python3-cepces,
+          ubuntu-proxy-manager,
 Description: ${source:Synopsis}
  ${source:Extended-Description}
 
