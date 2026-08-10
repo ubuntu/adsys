@@ -1,5 +1,5 @@
 diff --git a/debian/control b/debian/control
-index ccf213e0..2d34a328 100644
+index f11b86fe..48220d7d 100644
 --- a/debian/control
 +++ b/debian/control
 @@ -5,7 +5,7 @@ Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
@@ -12,23 +12,15 @@ index ccf213e0..2d34a328 100644
                 dbus,
                 libdbus-1-dev,
 diff --git a/debian/rules b/debian/rules
-index f9705a3d..3bf891b4 100755
+index f9705a3d..d7dc0b1c 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -29,6 +29,9 @@ export ADSYS_SKIP_INTEGRATION_TESTS=1
- # as long as it matches the go.mod go stenza which is the language requirement.
- export GOTOOLCHAIN := local
+@@ -31,2 +31,5 @@ export GOTOOLCHAIN := local
 
 +# Run with Go 1.25
 +export PATH := /usr/lib/go-1.25/bin/:$(PATH)
 +
  %:
-        dh $@ --buildsystem=golang --with=golang,apport
-
-@@ -87,3 +90,5 @@ endif
-        ln -s adsysd debian/tmp/sbin/adsysctl
-        # Run go generate to install assets, but don’t regenerate them
-        GENERATE_ONLY_INSTALL_TO_DESTDIR=$(CURDIR)/debian/tmp go generate -x $(GOFLAGS),tools ./...
+@@ -89,0 +90,2 @@ endif
 +
 +override_dh_dwz:
-
