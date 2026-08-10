@@ -1,0 +1,5 @@
+Loading smb.conf
+[global]
+realm = example.com
+
+WARNING: certmonger not found, skipping certificate unenrollment

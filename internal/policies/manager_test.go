@@ -3,15 +3,24 @@ package policies_test
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/binary"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
+	"math/big"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/go-ldap/ldap/v3"
 	"github.com/godbus/dbus/v5"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +28,7 @@ import (
 	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/consts"
 	"github.com/ubuntu/adsys/internal/policies"
+	"github.com/ubuntu/adsys/internal/policies/certificate"
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
@@ -92,6 +102,8 @@ func TestApplyPolicies(t *testing.T) {
 			stateDir := filepath.Join(fakeRootDir, "var", "lib", "adsys")
 			shareDir := filepath.Join(fakeRootDir, "usr", "share", "adsys")
 			loadedPoliciesFile := filepath.Join(fakeRootDir, "sys", "kernel", "security", "apparmor", "profiles")
+			certRootDir := t.TempDir()
+			testCA := newPoliciesTestCA(t)
 
 			err = os.MkdirAll(filepath.Dir(loadedPoliciesFile), 0700)
 			require.NoError(t, err, "Setup: can not create loadedPoliciesFile dir")
@@ -118,8 +130,20 @@ func TestApplyPolicies(t *testing.T) {
 				policies.WithApparmorDir(apparmorDir),
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
-				policies.WithCertAutoenrollCmd([]string{"/bin/true"}),
 				policies.WithSystemUnitDir(systemUnitDir),
+				policies.WithCertificateManager(certificate.New("example.com",
+					certificate.WithStateDir(filepath.Join(certRootDir, "state")),
+					certificate.WithRunDir(filepath.Join(certRootDir, "run")),
+					certificate.WithShareDir(filepath.Join(certRootDir, "share")),
+					certificate.WithGlobalTrustDir(filepath.Join(certRootDir, "trust")),
+					certificate.WithEnrollmentMethod("ldap"),
+					certificate.WithLDAPConnector(certificate.LDAPConnectorFunc(func(context.Context, string) (certificate.LDAPClient, error) {
+						return &policiesTestLDAPConn{ca: testCA}, nil
+					})),
+					certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+						return dummyIssuedCertificateFromCSR(t, csrPEM, testCA), nil
+					})),
+				)),
 				policies.WithProxyApplier(&mockProxyApplier{wantApplyError: tc.noUbuntuProxyManager}),
 				policies.WithSystemdCaller(&testutils.MockSystemdCaller{}),
 			)
@@ -186,6 +210,156 @@ func TestApplyPolicies(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, fakeRootDir, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
+}
+
+type policiesTestCA struct {
+	cert *x509.Certificate
+	key  *ecdsa.PrivateKey
+}
+
+type policiesTestLDAPConn struct {
+	ca *policiesTestCA
+}
+
+func (p *policiesTestLDAPConn) Search(req *ldap.SearchRequest) (*ldap.SearchResult, error) {
+	switch req.BaseDN {
+	case "":
+		return &ldap.SearchResult{Entries: []*ldap.Entry{
+			ldap.NewEntry("", map[string][]string{
+				"configurationNamingContext": {"CN=Configuration,DC=example,DC=com"},
+				"defaultNamingContext":       {"DC=example,DC=com"},
+			}),
+		}}, nil
+	case "CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com":
+		entry := ldap.NewEntry("CN=TestCA,CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com", map[string][]string{
+			"cn":                   {"TestCA"},
+			"dNSHostName":          {"ca.example.com"},
+			"certificateTemplates": {"Machine"},
+		})
+		entry.Attributes = append(entry.Attributes, &ldap.EntryAttribute{
+			Name:       "cACertificate",
+			ByteValues: [][]byte{p.ca.cert.Raw},
+		})
+		return &ldap.SearchResult{Entries: []*ldap.Entry{entry}}, nil
+	case "CN=Certification Authorities,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com":
+		entry := ldap.NewEntry("CN=TestCA,CN=Certification Authorities,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com", nil)
+		entry.Attributes = append(entry.Attributes, &ldap.EntryAttribute{
+			Name:       "cACertificate",
+			ByteValues: [][]byte{p.ca.cert.Raw},
+		})
+		return &ldap.SearchResult{Entries: []*ldap.Entry{entry}}, nil
+	case "CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com":
+		entry := ldap.NewEntry("CN=Machine,CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,DC=example,DC=com", map[string][]string{
+			"cn":                            {"Machine"},
+			"flags":                         {"64"},
+			"msPKI-Template-Schema-Version": {"2"},
+			"msPKI-Enrollment-Flag":         {"32"},
+			"msPKI-Minimal-Key-Size":        {"2048"},
+		})
+		entry.Attributes = append(entry.Attributes, &ldap.EntryAttribute{
+			Name:       "nTSecurityDescriptor",
+			ByteValues: [][]byte{policiesNullDACL()},
+		})
+		return &ldap.SearchResult{Entries: []*ldap.Entry{entry}}, nil
+	case "DC=example,DC=com":
+		return &ldap.SearchResult{Entries: []*ldap.Entry{
+			ldap.NewEntry("CN=hostname,CN=Computers,DC=example,DC=com", map[string][]string{
+				"sAMAccountName": {"hostname$"},
+				"dNSHostName":    {"hostname.example.com"},
+			}),
+		}}, nil
+	case "CN=hostname,CN=Computers,DC=example,DC=com":
+		entry := ldap.NewEntry("CN=hostname,CN=Computers,DC=example,DC=com", map[string][]string{
+			"sAMAccountName": {"hostname$"},
+			"dNSHostName":    {"hostname.example.com"},
+			"primaryGroupID": {"515"},
+		})
+		entry.Attributes = append(entry.Attributes,
+			&ldap.EntryAttribute{Name: "objectSid", ByteValues: [][]byte{policiesSID(5, 21, 1, 2, 3, 1000)}},
+			&ldap.EntryAttribute{Name: "tokenGroups", ByteValues: [][]byte{policiesSID(5, 21, 1, 2, 3, 515)}},
+		)
+		return &ldap.SearchResult{Entries: []*ldap.Entry{entry}}, nil
+	default:
+		return &ldap.SearchResult{}, nil
+	}
+}
+
+func (p *policiesTestLDAPConn) Close() error { return nil }
+
+func newPoliciesTestCA(t *testing.T) *policiesTestCA {
+	t.Helper()
+	caKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+	caTemplate := x509.Certificate{
+		SerialNumber:          big.NewInt(1),
+		Subject:               pkix.Name{CommonName: "Test CA"},
+		IsCA:                  true,
+		BasicConstraintsValid: true,
+		KeyUsage:              x509.KeyUsageCertSign,
+		NotBefore:             time.Now().Add(-time.Hour),
+		NotAfter:              time.Now().Add(24 * time.Hour),
+	}
+
+	caCertDER, err := x509.CreateCertificate(rand.Reader, &caTemplate, &caTemplate, &caKey.PublicKey, caKey)
+	require.NoError(t, err)
+	caCert, err := x509.ParseCertificate(caCertDER)
+	require.NoError(t, err)
+	return &policiesTestCA{cert: caCert, key: caKey}
+}
+
+func dummyIssuedCertificateFromCSR(t *testing.T, csrPEM string, ca *policiesTestCA) string {
+	t.Helper()
+
+	block, _ := pem.Decode([]byte(csrPEM))
+	require.NotNil(t, block, "failed to decode CSR PEM")
+
+	csr, err := x509.ParseCertificateRequest(block.Bytes)
+	require.NoError(t, err, "failed to parse CSR")
+
+	serialNumber, err := rand.Int(rand.Reader, big.NewInt(1<<62))
+	require.NoError(t, err)
+
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
+		Subject:      pkix.Name{CommonName: "hostname.example.com"},
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(24 * time.Hour),
+	}
+
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, ca.cert, csr.PublicKey, ca.key)
+	require.NoError(t, err)
+
+	return string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER}))
+}
+
+func policiesNullDACL() []byte {
+	descriptor := make([]byte, 20)
+	descriptor[0] = 1
+	binary.LittleEndian.PutUint16(descriptor[2:4], 0x8004)
+	return descriptor
+}
+
+func policiesSID(authority uint64, subAuthorities ...uint32) []byte {
+	sid := make([]byte, 8+4*len(subAuthorities))
+	sid[0] = 1
+	sid[1] = byte(len(subAuthorities)) //nolint:gosec // Test SIDs contain a fixed, small number of sub-authorities.
+	for i := 0; i < 6; i++ {
+		sid[7-i] = byte(authority)
+		authority >>= 8
+	}
+	for i, value := range subAuthorities {
+		binary.LittleEndian.PutUint32(sid[8+i*4:], value)
+	}
+	return sid
+}
+
+func TestNewManagerRejectsInvalidCertificateEnrollment(t *testing.T) {
+	t.Parallel()
+
+	bus := testutils.NewDbusConn(t)
+	_, err := policies.NewManager(bus, "hostname", mockBackend{}, policies.WithCertificateEnrollment("typo"))
+	require.Error(t, err)
+	require.ErrorContains(t, err, "unsupported certificate enrollment method")
 }
 
 func TestDumpPolicies(t *testing.T) {
