@@ -5,4 +5,3 @@
 "alice@domain.com"	ALL=(ALL:ALL) ALL
 "bob@domain"	ALL=(ALL:ALL) ALL
 "carole cosmic@otherdomain.com"	ALL=(ALL:ALL) ALL
-

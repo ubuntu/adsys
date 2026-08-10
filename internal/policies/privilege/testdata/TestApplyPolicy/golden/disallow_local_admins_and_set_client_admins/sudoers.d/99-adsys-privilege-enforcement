@@ -6,4 +6,3 @@
 %sudo	ALL=(ALL:ALL) !ALL
 
 "alice@domain.com"	ALL=(ALL:ALL) ALL
-

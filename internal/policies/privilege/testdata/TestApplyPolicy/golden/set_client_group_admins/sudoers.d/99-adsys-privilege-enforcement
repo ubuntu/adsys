@@ -3,4 +3,3 @@
 # Any changes will be overwritten.
 
 "%group@domain.com"	ALL=(ALL:ALL) ALL
-
