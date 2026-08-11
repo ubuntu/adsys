@@ -98,9 +98,15 @@ func TestTemplateAutoEnrollRights(t *testing.T) {
 			descriptor: aclDescriptor(machineSID),
 			token:      token,
 		},
-		"GenericAll is not CR": {
-			descriptor: aclDescriptor(nil, aclSimpleACE(accessAllowedACE, 0, 0x10000000, machineSID)),
-			token:      token,
+		"GenericAll maps to CR": {
+			descriptor: aclDescriptor(nil, aclSimpleACE(accessAllowedACE, 0, rightGenericAll, machineSID)),
+			token:      token, wantEnroll: true, wantAuto: true,
+		},
+		"GenericAll deny maps to CR": {
+			descriptor: aclDescriptor(nil,
+				aclSimpleACE(accessDeniedACE, 0, rightGenericAll, machineSID),
+				aclSimpleACE(accessAllowedACE, 0, rightDSControlAccess, groupSID)),
+			token: token,
 		},
 		"Unrelated object GUID ignored": {
 			descriptor: aclDescriptor(nil, aclObjectACE(accessAllowedObjectACE, unrelatedRight, machineSID)),

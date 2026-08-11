@@ -12,6 +12,13 @@ import (
 const (
 	rightDSControlAccess uint32 = 0x00000100
 
+	// Generic rights are expanded through the directory service generic
+	// mapping before an access check ([MS-ADTS] 5.1.3.1). Only the bits that
+	// matter for the Enroll/AutoEnroll extended rights are modelled here:
+	// GENERIC_ALL is the only generic right whose mapping contains
+	// ADS_RIGHT_DS_CONTROL_ACCESS.
+	rightGenericAll uint32 = 0x10000000
+
 	securityDescriptorDACLPresent  uint16 = 0x0004
 	securityDescriptorSACLPresent  uint16 = 0x0010
 	securityDescriptorSelfRelative uint16 = 0x8000
@@ -403,7 +410,7 @@ func checkControlAccess(aces []parsedACE, token machineToken, right uuid.UUID) (
 		if _, matches := token[ace.sid]; !matches {
 			continue
 		}
-		if ace.mask&rightDSControlAccess == 0 {
+		if mapGenericRights(ace.mask)&rightDSControlAccess == 0 {
 			continue
 		}
 		if ace.objectType != nil && *ace.objectType != right {
@@ -422,4 +429,17 @@ func checkControlAccess(aces []parsedACE, token machineToken, right uuid.UUID) (
 		}
 	}
 	return false, nil
+}
+
+// mapGenericRights expands the generic bits of an access mask the way a
+// directory object's generic mapping does, so an ACE granting (or denying)
+// GENERIC_ALL is evaluated as granting (or denying) ADS_RIGHT_DS_CONTROL_ACCESS
+// like Windows does. Checking the literal control-access bit alone would make
+// adsys disagree with AD's effective Enroll/AutoEnroll decision on templates
+// whose applicable ACE carries GenericAll.
+func mapGenericRights(mask uint32) uint32 {
+	if mask&rightGenericAll != 0 {
+		mask |= rightDSControlAccess
+	}
+	return mask
 }

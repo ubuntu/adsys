@@ -14,7 +14,7 @@ const (
 	templateFlagCA         uint32 = 0x00000080
 	templateFlagCrossCA    uint32 = 0x00000800
 
-	enrollmentFlagPending         uint32 = 0x00000002
+	enrollmentFlagPendAllRequests uint32 = 0x00000002
 	enrollmentFlagAutoEnroll      uint32 = 0x00000020
 	enrollmentFlagUserInteraction uint32 = 0x00000100
 
@@ -62,9 +62,9 @@ func machineTemplateEligible(attrs templateAttrs, token machineToken) (bool, str
 		return false, fmt.Sprintf("template schema version %d is unsupported", attrs.SchemaVersion)
 	}
 
-	if attrs.EnrollmentFlags&enrollmentFlagPending != 0 {
-		return false, "pending certificate requests are not supported"
-	}
+	// CT_FLAG_PEND_ALL_REQUESTS is the ordinary manager-approval configuration:
+	// the CA answers the submission with a pending disposition and the request
+	// is persisted and polled until an operator approves or denies it.
 	if attrs.EnrollmentFlags&enrollmentFlagUserInteraction != 0 {
 		return false, "template requires user interaction"
 	}

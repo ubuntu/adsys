@@ -43,8 +43,9 @@ func TestMachineTemplateEligibilityGates(t *testing.T) {
 		"Cross CA template": {
 			mutate: func(attrs *templateAttrs) { attrs.Flags |= templateFlagCrossCA },
 		},
-		"Pending request": {
-			mutate: func(attrs *templateAttrs) { attrs.EnrollmentFlags |= enrollmentFlagPending },
+		"Manager approval required": {
+			mutate: func(attrs *templateAttrs) { attrs.EnrollmentFlags |= enrollmentFlagPendAllRequests },
+			want:   true,
 		},
 		"Interaction required": {
 			mutate: func(attrs *templateAttrs) { attrs.EnrollmentFlags |= enrollmentFlagUserInteraction },
