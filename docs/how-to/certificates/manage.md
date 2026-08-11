@@ -78,7 +78,7 @@ Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6':
 
 ## Check certificate status
 
-Use `status` to check the health of one certificate or, without a nickname, the overall health of all enrolled certificates. Use `--format json` when integrating with monitoring tools.
+Use `status` to check the health of one certificate. The nickname can be omitted only when a single certificate is enrolled; with several enrolled, the command lists their nicknames and asks for one. Use `--format json` when integrating with monitoring tools.
 
 ```output
 > sudo adsysctl certificate status galacticcafe-CA.Machine.a1b2c3d4e5f6
@@ -108,7 +108,7 @@ The command returns a process exit code suitable for monitoring and scripts:
 
 ## Verify a certificate
 
-Use `verify` to validate the certificate chain, validity window, and private key match. Add `--online` to also perform a best-effort CRL revocation check. The check only trusts a CRL that is signed by the certificate's issuer chain and is inside its validity window; an untrusted, stale, or unreachable CRL makes the revocation state indeterminate rather than clean.
+Use `verify` to validate the certificate chain, validity window, and private key match, and add `--online` to perform a best-effort CRL revocation check.
 
 ```output
 > sudo adsysctl certificate verify galacticcafe-CA.Machine.a1b2c3d4e5f6 --online
@@ -119,11 +119,23 @@ Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6': PASS
   revoked: no
 ```
 
+The check only trusts a CRL that is signed by the certificate's issuer chain and is inside its validity window; an untrusted, stale, or unreachable CRL makes the revocation state indeterminate rather than clean.
+
+With `--online`, a revocation check that did not complete is reported as `UNKNOWN`, and the command exits nonzero:
+
+```output
+> sudo adsysctl certificate verify galacticcafe-CA.Machine.a1b2c3d4e5f6 --online
+Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6': UNKNOWN
+  chain: yes
+  validity: yes
+  key matches certificate: yes
+  revoked: unknown
+  - could not fetch CRL from http://ca01.galacticcafe.com/crl/galacticcafe-CA.crl: connection refused
+```
+
 ## Renew a certificate
 
-Use `renew` to force re-enrollment immediately, bypassing the normal renewal window (30 days before expiry, bounded to a third of the certificate lifetime). Renewal generates a fresh private key, so this is also a rekey operation. Use `--all` to renew every enrolled certificate.
-
-If AD CS requires approval, ADSys securely retains the request ID, CSR, and private key and polls that same CA on later policy refreshes or renewals. The currently installed generation remains active until issuance; repeated renewals do not create duplicate requests.
+Use `renew` to force re-enrollment immediately, bypassing the normal renewal window (30 days before expiry, bounded to a third of the certificate lifetime):
 
 ```output
 > sudo adsysctl certificate renew galacticcafe-CA.Machine.a1b2c3d4e5f6
@@ -131,9 +143,13 @@ Renewing galacticcafe-CA.Machine.a1b2c3d4e5f6…
 Renewed galacticcafe-CA.Machine.a1b2c3d4e5f6
 ```
 
+Renewal generates a fresh private key. Use `--all` to renew every enrolled certificate.
+
+If AD CS requires approval, ADSys securely retains the request ID, CSR, and private key and polls that same CA on later policy refreshes or renewals. The currently installed generation remains active until issuance; repeated renewals do not create duplicate requests.
+
 ## Remove a certificate
 
-Use `remove --force` to cleanly delete enrolled certificates, private keys, root-CA trust symlinks, and ADSys state. Use `--all --force` to remove every enrolled certificate.
+Use `remove --force` to cleanly delete enrolled certificates, private keys, root-CA trust symlinks, and ADSys state.
 
 ```output
 > sudo adsysctl certificate remove galacticcafe-CA.Machine.a1b2c3d4e5f6 --force
@@ -142,13 +158,15 @@ Removing root CA galacticcafe-CA from the trust store
 Removed certificate galacticcafe-CA.Machine.a1b2c3d4e5f6
 ```
 
+Use `--all` to remove every enrolled certificate.
+
 ```{note}
 If the certificate GPO remains enabled, a later policy refresh re-enrolls removed certificates. Disable the GPO first when the removal should be permanent.
 ```
 
 ## Show discovered CAs
 
-Use `cas` to show certificate authorities and templates discovered in Active Directory, including whether each CA is installed in the trust store and whether a certificate is enrolled from each template.
+Use `cas` to show certificate authorities and templates discovered in Active Directory, including whether each CA is installed in the trust store and whether a certificate is enrolled from each template:
 
 ```output
 > sudo adsysctl certificate cas
@@ -161,7 +179,7 @@ CA 'galacticcafe-CA':
 
 ## Show templates from a CA server
 
-Use `templates SERVER` to list the certificate templates a CA server offers.
+Use `templates SERVER` to list the certificate templates a CA server offers:
 
 ```output
 > sudo adsysctl certificate templates ca01.galacticcafe.com

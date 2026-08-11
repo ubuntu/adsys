@@ -32,6 +32,16 @@ With the native LDAP method, certificates enrolled by ADSys are machine-scoped a
 
 The enrollment state at `/var/lib/adsys/certs/state_$(hostname).<object-id>.json` records the CA, template and file paths of every enrolled certificate, and `openssl x509 -noout -text -in <certificate>` inspects the certificate itself.
 
+`adsysctl certificate` reports the same information without reading those files by hand; see {ref}`howto::certificates-manage`. `list`, `status` and `verify` diagnose an enrollment, and `verify --online` additionally attempts a CRL revocation check:
+
+```output
+> sudo adsysctl certificate verify galacticcafe-CA.Machine.a1b2c3d4e5f6
+Certificate 'galacticcafe-CA.Machine.a1b2c3d4e5f6': PASS
+  chain: yes
+  validity: yes
+  key matches certificate: yes
+```
+
 With the legacy CEPCES method, certificates are managed by `certmonger`. While not encouraged, they can be manipulated with the same tool. This could be helpful for debugging purposes.
 
 ```output
