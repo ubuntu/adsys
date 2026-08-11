@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sync/atomic"
 	"time"
 
@@ -257,6 +258,18 @@ func trustArtifactFileName(ca certAuthority, cert *x509.Certificate, role string
 	h.Write([]byte(certificateFingerprint(cert)))
 	digest := hex.EncodeToString(h.Sum(nil))
 	return fmt.Sprintf("%s.%s.%s.crt", sanitizeName(ca.Name), role, digest)
+}
+
+// adsysTrustArtifactPattern matches the on-disk names produced by
+// trustArtifactFileName, which is how an entry of the shared global trust
+// directory is recognized as adsys-managed. The directory is shared with the
+// administrator, so nothing else in it may be attributed to adsys.
+var adsysTrustArtifactPattern = regexp.MustCompile(`\.(issuer|root|intermediate-[0-9]+)\.[0-9a-f]{64}\.crt$`)
+
+// isAdsysTrustArtifact reports whether an entry of a trust directory was
+// installed by adsys.
+func isAdsysTrustArtifact(name string) bool {
+	return adsysTrustArtifactPattern.MatchString(name)
 }
 
 // withRollback rolls back a partial installation and joins any rollback failure

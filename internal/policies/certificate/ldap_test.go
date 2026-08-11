@@ -1557,12 +1557,24 @@ func TestVerifyPeerCertificate(t *testing.T) {
 			allowBootstrap: true,
 			wantErr:        true,
 		},
-		"bootstrap rejects unknown authority once managed trust exists": {
+		"bootstrap ignores an unrelated local CA in the shared trust directory": {
 			setup: func(t *testing.T) ([][]byte, string, string) {
 				t.Helper()
 				trustDir := t.TempDir()
 				unrelatedCA, _ := generateTestCAAndLeaf(t, "unrelated.example.com", nil, now.Add(-time.Hour), now.Add(time.Hour))
 				require.NoError(t, os.WriteFile(filepath.Join(trustDir, "configured-root.crt"), unrelatedCA, 0600))
+				return [][]byte{generateTestCertWithNames(t, host, nil).Raw}, trustDir, host
+			},
+			allowBootstrap: true,
+			wantBootstrap:  true,
+		},
+		"bootstrap rejects unknown authority once managed trust exists": {
+			setup: func(t *testing.T) ([][]byte, string, string) {
+				t.Helper()
+				trustDir := t.TempDir()
+				installedCA, _ := generateTestCAAndLeaf(t, "adcs.example.com", nil, now.Add(-time.Hour), now.Add(time.Hour))
+				name := fmt.Sprintf("TestCA.root.%s.crt", strings.Repeat("ab", 32))
+				require.NoError(t, os.WriteFile(filepath.Join(trustDir, name), installedCA, 0600))
 				return [][]byte{generateTestCertWithNames(t, host, nil).Raw}, trustDir, host
 			},
 			allowBootstrap: true,

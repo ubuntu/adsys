@@ -248,6 +248,38 @@ func TestInstallCAChainDistinctIdentitiesAvoidCollision(t *testing.T) {
 	assert.NoFileExists(t, instB.SymlinkFiles[0], "the rolled-back CA left its own symlink behind")
 }
 
+// TestIsAdsysTrustArtifact ensures only the names installCAChain generates are
+// attributed to adsys: the global trust directory is shared with the
+// administrator, and an unrelated local CA in it must not stand in for an
+// adsys-installed one.
+func TestIsAdsysTrustArtifact(t *testing.T) {
+	t.Parallel()
+
+	now := time.Now()
+	root := newChainTestCA(t, "Corp CA", nil, now.Add(-time.Hour), now.Add(365*24*time.Hour), 1)
+	ca := certAuthority{Name: "Corp CA", Hostname: "ca.example.com"}
+
+	tests := map[string]struct {
+		name string
+		want bool
+	}{
+		"Installed root":                  {name: trustArtifactFileName(ca, root.cert, "root"), want: true},
+		"Installed issuer":                {name: trustArtifactFileName(ca, root.cert, "issuer"), want: true},
+		"Installed intermediate":          {name: trustArtifactFileName(ca, root.cert, "intermediate-2"), want: true},
+		"Administrator installed CA":      {name: "local-ca.crt"},
+		"Lookalike without a full digest": {name: "Corp-CA.root.0123456789abcdef.crt"},
+		"Lookalike with another suffix":   {name: strings.TrimSuffix(trustArtifactFileName(ca, root.cert, "root"), ".crt") + ".pem"},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			assert.Equal(t, tc.want, isAdsysTrustArtifact(tc.name), "unexpected ownership for %s", tc.name)
+		})
+	}
+}
+
 func TestInstallationRollbackAggregatesFailures(t *testing.T) {
 	t.Parallel()
 

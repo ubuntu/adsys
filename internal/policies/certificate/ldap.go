@@ -851,9 +851,14 @@ func matchHostname(pattern, host string) bool {
 // adsys (but not necessarily rebuilt into the system bundle yet) are trusted.
 // The default global trust directory is always included; any additional dirs
 // (e.g. a non-default configured directory) are merged in and de-duplicated.
+//
+// It reports whether any adsys-installed CA was found. The trust directory is
+// shared with the administrator, so a local CA that adsys did not install is
+// added to the pool but never attributed to adsys: it must not stand in for the
+// AD CS root and suppress the first-enrollment bootstrap.
 func addAdsysCAsToPool(pool *x509.CertPool, dirs ...string) bool {
 	seen := make(map[string]bool, len(dirs)+1)
-	added := false
+	managed := false
 	for _, dir := range append([]string{consts.DefaultGlobalTrustDir}, dirs...) {
 		if dir == "" || seen[dir] {
 			continue
@@ -874,10 +879,13 @@ func addAdsysCAsToPool(pool *x509.CertPool, dirs ...string) bool {
 			if err != nil {
 				continue
 			}
-			added = pool.AppendCertsFromPEM(data) || added
+			if !pool.AppendCertsFromPEM(data) {
+				continue
+			}
+			managed = managed || isAdsysTrustArtifact(entry.Name())
 		}
 	}
-	return added
+	return managed
 }
 
 func tlsServerName(server string) string {
