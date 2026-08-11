@@ -736,10 +736,35 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 // every certificate is verified, otherwise only the matching one. When online
 // is true a best-effort CRL revocation check is attempted; revocation errors
 // never fail the call.
+//
+// State and on-disk material are read under the enrollment locks, which are
+// released before any revocation check: a CRL fetch can take seconds per
+// certificate and this operation is available to every local caller, so it must
+// never hold enrollment off for the duration of the network sequence.
 func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname string, online bool) ([]VerifyResult, error) {
 	if m.enrollmentMethod != consts.CertEnrollmentLDAP {
 		return nil, ErrNotLDAPMethod
 	}
+
+	results, targets, err := m.verifyCertificatesLocally(objectName, nickname)
+	if err != nil {
+		return nil, err
+	}
+	if !online {
+		return results, nil
+	}
+	for i := range results {
+		if targets[i].cert == nil {
+			continue
+		}
+		checkRevocation(ctx, targets[i].cert, targets[i].chain, &results[i])
+	}
+	return results, nil
+}
+
+// verifyCertificatesLocally performs the offline part of the verification and
+// returns, for each result, the material a revocation check needs.
+func (m *Manager) verifyCertificatesLocally(objectName, nickname string) ([]VerifyResult, []revocationTarget, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	trustLifecycleMu.Lock()
@@ -747,20 +772,20 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 
 	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load enrollment state: %w", err)
+		return nil, nil, fmt.Errorf("failed to load enrollment state: %w", err)
 	}
 	if state == nil || len(state.CAs) == 0 {
 		if nickname != "" {
-			return nil, errors.New(gotext.Get("no enrolled certificates found for %q", objectName))
+			return nil, nil, errors.New(gotext.Get("no enrolled certificates found for %q", objectName))
 		}
-		return []VerifyResult{}, nil
+		return []VerifyResult{}, nil, nil
 	}
 
 	// The verification identity is always derived from the request. loadState
 	// has already proved that the state envelope belongs to this object/domain.
 	requested, err := enrollmentMachineIdentity(objectName, m.domain)
 	if err != nil {
-		return nil, fmt.Errorf("could not determine requested machine identity: %w", err)
+		return nil, nil, fmt.Errorf("could not determine requested machine identity: %w", err)
 	}
 	identity := requested.dnsName
 
@@ -768,27 +793,41 @@ func (m *Manager) VerifyCertificates(ctx context.Context, objectName, nickname s
 	if nickname != "" {
 		target, err = resolveNickname(state, nickname)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 	results := make([]VerifyResult, 0)
+	targets := make([]revocationTarget, 0)
 	for ci, ca := range state.CAs {
 		for ti, tmpl := range ca.Templates {
 			if nickname != "" && target != (templateStateRef{ca: ci, template: ti}) {
 				continue
 			}
-			results = append(results, verifyCertificate(ctx, ca, tmpl, identity, online))
+			result, revocation := verifyCertificate(ca, tmpl, identity)
+			results = append(results, result)
+			targets = append(targets, revocation)
 		}
 	}
-	return results, nil
+	return results, targets, nil
 }
 
 // DiscoverCAsInfo discovers the CAs and templates available in AD via LDAP and
 // cross-references them against the local enrollment state.
+//
+// Discovery runs before the enrollment locks are taken: it dials the domain
+// controllers, and this operation is available to every local caller, so it
+// must not be able to hold enrollment off for the duration of the LDAP
+// sequence.
 func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]CAInfo, error) {
 	if m.enrollmentMethod != consts.CertEnrollmentLDAP {
 		return nil, ErrNotLDAPMethod
 	}
+
+	cas, err := discoverCAsAndTemplates(ctx, m.ldapConnect, dcHostnameFromDomain(m.domain))
+	if err != nil {
+		return nil, fmt.Errorf("failed to discover certificate authorities: %w", err)
+	}
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	trustLifecycleMu.Lock()
@@ -797,10 +836,6 @@ func (m *Manager) DiscoverCAsInfo(ctx context.Context, objectName string) ([]CAI
 	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load enrollment state for cross-reference: %w", err)
-	}
-	cas, err := discoverCAsAndTemplates(ctx, m.ldapConnect, dcHostnameFromDomain(m.domain))
-	if err != nil {
-		return nil, fmt.Errorf("failed to discover certificate authorities: %w", err)
 	}
 
 	trustDir := filepath.Join(m.stateDir, "certs")
@@ -911,20 +946,27 @@ func deriveHealth(info CertInfo, cert *x509.Certificate, now time.Time) CertHeal
 	}
 }
 
-// verifyCertificate performs the chain, validity, key-match and (optionally)
-// revocation checks for a single enrolled template.
-func verifyCertificate(ctx context.Context, ca enrolledCA, tmpl enrolledTemplate, identity string, online bool) VerifyResult {
+// revocationTarget carries the material an online revocation check needs, so
+// the check can run after the enrollment locks have been released.
+type revocationTarget struct {
+	cert  *x509.Certificate
+	chain []*x509.Certificate
+}
+
+// verifyCertificate performs the chain, validity and key-match checks for a
+// single enrolled template, and returns what a revocation check would need.
+func verifyCertificate(ca enrolledCA, tmpl enrolledTemplate, identity string) (VerifyResult, revocationTarget) {
 	res := VerifyResult{Nickname: tmpl.Nickname}
 
 	_, certPath, generationErr := templateGenerationReadPaths(tmpl)
 	if generationErr != nil {
 		res.Messages = append(res.Messages, gotext.Get("certificate generation is invalid: %v", generationErr))
-		return res
+		return res, revocationTarget{}
 	}
 	cert := parseCertFile(certPath)
 	if cert == nil {
 		res.Messages = append(res.Messages, gotext.Get("certificate file is missing or unparseable: %s", tmpl.CertFile))
-		return res
+		return res, revocationTarget{}
 	}
 
 	now := time.Now()
@@ -973,10 +1015,7 @@ func verifyCertificate(ctx context.Context, ca enrolledCA, tmpl enrolledTemplate
 		}
 	}
 
-	if online {
-		checkRevocation(ctx, cert, chain, &res)
-	}
-	return res
+	return res, revocationTarget{cert: cert, chain: chain}
 }
 
 // crlClockSkew bounds the tolerance applied to CRL validity times when
