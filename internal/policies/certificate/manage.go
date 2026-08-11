@@ -558,8 +558,8 @@ func (m *Manager) RenewCertificates(ctx context.Context, objectName, nickname st
 		}
 	}
 	if trustChanged {
-		if err := updateCATrustStore(); err != nil {
-			log.Warningf(ctx, "Failed to update CA trust store after renewal: %v", err)
+		if err := m.updateTrustStore(); err != nil {
+			rollbackErrs = append(rollbackErrs, fmt.Errorf("refreshing the system trust store after renewal: %w", err))
 		}
 	}
 
@@ -725,8 +725,8 @@ func (m *Manager) RemoveCertificates(ctx context.Context, objectName, nickname s
 		pendingPathErrs = append(pendingPathErrs, fmt.Errorf("failed to prune unreferenced CA chain paths after removal: %w", err))
 	}
 
-	if err := updateCATrustStore(); err != nil {
-		log.Warningf(ctx, "Failed to update CA trust store after removal: %v", err)
+	if err := m.updateTrustStore(); err != nil {
+		pendingPathErrs = append(pendingPathErrs, fmt.Errorf("refreshing the system trust store after removal: %w", err))
 	}
 	report(progress, gotext.Get("Removed certificate %s", nickname))
 	return errors.Join(pendingPathErrs...)

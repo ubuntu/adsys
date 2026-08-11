@@ -333,7 +333,7 @@ func TestApplyPolicy(t *testing.T) {
 				return issueCertFromCSR(t, csrPEM, time.Now().Add(24*time.Hour), caFixture, "keypress.example.com"), nil
 			}
 
-			m := certificate.New(
+			m, err := certificate.New(
 				"example.com",
 				certificate.WithStateDir(stateDir),
 				certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
@@ -344,9 +344,12 @@ func TestApplyPolicy(t *testing.T) {
 				certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
 				// Only invoked when a legacy Samba cache exists, to retire it.
 				certificate.WithCertAutoenrollCmd(mockMigrationScript(t, filepath.Join(tmpdir, "script-log"), false, false)),
+				// Refreshing the system trust store needs root and is not what this test exercises.
+				certificate.WithTrustStoreUpdater(func() error { return nil }),
 			)
+			require.NoError(t, err)
 
-			err := m.ApplyPolicy(context.Background(), "keypress", !tc.isUser, !tc.isOffline, tc.entries)
+			err = m.ApplyPolicy(context.Background(), "keypress", !tc.isUser, !tc.isOffline, tc.entries)
 			if tc.wantErr {
 				require.Error(t, err, "ApplyPolicy should fail")
 				if tc.submitErr {
@@ -426,7 +429,7 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 	}
 
 	apply := func() error {
-		m := certificate.New(
+		m, err := certificate.New(
 			"example.com",
 			certificate.WithStateDir(stateDir),
 			certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
@@ -435,7 +438,10 @@ func TestLDAPEnrollmentRenewal(t *testing.T) {
 			certificate.WithEnrollmentMethod("ldap"),
 			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
 			certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
+			// Refreshing the system trust store needs root and is not what this test exercises.
+			certificate.WithTrustStoreUpdater(func() error { return nil }),
 		)
+		require.NoError(t, err)
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
 	}
 
@@ -474,7 +480,7 @@ func TestLDAPEnrollmentRenewalShortLived(t *testing.T) {
 	}
 
 	apply := func() error {
-		m := certificate.New(
+		m, err := certificate.New(
 			"example.com",
 			certificate.WithStateDir(stateDir),
 			certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
@@ -483,7 +489,10 @@ func TestLDAPEnrollmentRenewalShortLived(t *testing.T) {
 			certificate.WithEnrollmentMethod("ldap"),
 			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
 			certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
+			// Refreshing the system trust store needs root and is not what this test exercises.
+			certificate.WithTrustStoreUpdater(func() error { return nil }),
 		)
+		require.NoError(t, err)
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
 	}
 
@@ -521,7 +530,7 @@ func TestRenewalFailureRejectsUnexpectedStoredCert(t *testing.T) {
 	}
 
 	apply := func() error {
-		m := certificate.New(
+		m, err := certificate.New(
 			"example.com",
 			certificate.WithStateDir(stateDir),
 			certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
@@ -530,7 +539,10 @@ func TestRenewalFailureRejectsUnexpectedStoredCert(t *testing.T) {
 			certificate.WithEnrollmentMethod("ldap"),
 			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine", "WebServer"}, caFixture))),
 			certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
+			// Refreshing the system trust store needs root and is not what this test exercises.
+			certificate.WithTrustStoreUpdater(func() error { return nil }),
 		)
+		require.NoError(t, err)
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
 	}
 
@@ -593,10 +605,11 @@ func TestApplyPolicyLDAPMigratesCEPCES(t *testing.T) {
 			entries:        nil,
 			wantScriptRuns: 1,
 		},
-		"Leftover cache without certmonger is removed directly": {
+		"Leftover cache without certmonger is kept for a later retry": {
 			entries:          []entry.Entry{enrollEntry},
 			scriptKeepsDir:   true,
 			wantScriptRuns:   1,
+			wantSambaCache:   true,
 			wantNativeEnroll: true,
 		},
 	}
@@ -621,7 +634,7 @@ func TestApplyPolicyLDAPMigratesCEPCES(t *testing.T) {
 				return issueCertFromCSR(t, csrPEM, time.Now().Add(365*24*time.Hour), caFixture, "keypress.example.com"), nil
 			}
 
-			m := certificate.New(
+			m, err := certificate.New(
 				"example.com",
 				certificate.WithStateDir(stateDir),
 				certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
@@ -631,9 +644,12 @@ func TestApplyPolicyLDAPMigratesCEPCES(t *testing.T) {
 				certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
 				certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
 				certificate.WithCertAutoenrollCmd(scriptCmd),
+				// Refreshing the system trust store needs root and is not what this test exercises.
+				certificate.WithTrustStoreUpdater(func() error { return nil }),
 			)
+			require.NoError(t, err)
 
-			err := m.ApplyPolicy(context.Background(), "keypress", true, true, tc.entries)
+			err = m.ApplyPolicy(context.Background(), "keypress", true, true, tc.entries)
 			if tc.wantErr {
 				require.Error(t, err, "ApplyPolicy should fail")
 			} else {
@@ -650,7 +666,7 @@ func TestApplyPolicyLDAPMigratesCEPCES(t *testing.T) {
 			require.Equal(t, tc.wantScriptRuns, scriptRuns, "unexpected number of legacy script runs")
 
 			if tc.wantSambaCache {
-				require.DirExists(t, sambaCacheDir, "legacy cache must be retained for retry when cleanup failed")
+				require.DirExists(t, sambaCacheDir, "legacy cache must be retained while the CEPCES artifacts it records are not retired")
 			} else {
 				require.NoDirExists(t, sambaCacheDir, "legacy cache should have been retired")
 			}
@@ -685,7 +701,7 @@ func TestApplyPolicyLDAPMigratesCEPCESRetried(t *testing.T) {
 	}
 
 	apply := func(scriptFails bool) error {
-		m := certificate.New(
+		m, err := certificate.New(
 			"example.com",
 			certificate.WithStateDir(stateDir),
 			certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
@@ -695,7 +711,10 @@ func TestApplyPolicyLDAPMigratesCEPCESRetried(t *testing.T) {
 			certificate.WithLDAPConnector(mockLDAPConnector(newMockLDAPWithCA(t, "TestCA", "ca.example.com", []string{"Machine"}, caFixture))),
 			certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(submitter)),
 			certificate.WithCertAutoenrollCmd(mockMigrationScript(t, scriptLog, scriptFails, false)),
+			// Refreshing the system trust store needs root and is not what this test exercises.
+			certificate.WithTrustStoreUpdater(func() error { return nil }),
 		)
+		require.NoError(t, err)
 		return m.ApplyPolicy(context.Background(), "keypress", true, true, []entry.Entry{enrollEntry})
 	}
 
@@ -868,7 +887,7 @@ func TestApplyPolicyCEPCES(t *testing.T) {
 			autoenrollCmdOutputFile := filepath.Join(tmpdir, "autoenroll-output")
 			autoenrollCmd := mockAutoenrollScript(t, autoenrollCmdOutputFile, tc.autoenrollScriptError)
 
-			m := certificate.New(
+			m, err := certificate.New(
 				"example.com",
 				certificate.WithStateDir(filepath.Join(tmpdir, "statedir")),
 				certificate.WithRunDir(filepath.Join(tmpdir, "rundir")),
@@ -876,6 +895,7 @@ func TestApplyPolicyCEPCES(t *testing.T) {
 				certificate.WithCertAutoenrollCmd(autoenrollCmd),
 				certificate.WithEnrollmentMethod("cepces"),
 			)
+			require.NoError(t, err)
 
 			err = m.ApplyPolicy(context.Background(), "keypress", !tc.isUser, !tc.isOffline, tc.entries)
 			if tc.wantErr {

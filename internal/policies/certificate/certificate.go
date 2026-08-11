@@ -100,6 +100,7 @@ type Manager struct {
 	saveEnrollmentState func(string, *enrollmentState) error
 	generationOps       generationPublishOps
 	removePending       func(string, pendingEnrollment) error
+	updateTrustStore    func() error
 
 	// Fields used by "cepces" enrollment method.
 	vendorPythonDir string
@@ -117,6 +118,11 @@ type options struct {
 	ldapConnect        LDAPConnector
 	requestCertificate Requester
 	certAutoenrollCmd  []string
+	updateTrustStore   func() error
+
+	// errs collects the validation failures of the applied options so New can
+	// reject them instead of silently falling back to a default.
+	errs []error
 }
 
 // Option represents an optional function to change the certificate manager.
@@ -164,13 +170,24 @@ func WithCertificateRequester(requester Requester) func(*options) {
 	}
 }
 
+// WithTrustStoreUpdater overrides the command refreshing the system trust
+// store after the adsys-managed CA artifacts changed (for testing).
+func WithTrustStoreUpdater(update func() error) func(*options) {
+	return func(a *options) {
+		a.updateTrustStore = update
+	}
+}
+
 // WithEnrollmentMethod overrides the certificate enrollment method.
 // Valid values are "ldap" and "cepces".
 func WithEnrollmentMethod(method string) func(*options) {
 	return func(a *options) {
-		if normalized, ok := normalizeEnrollmentMethod(method); ok {
-			a.enrollmentMethod = normalized
+		normalized, ok := normalizeEnrollmentMethod(method)
+		if !ok {
+			a.errs = append(a.errs, errors.New(gotext.Get("invalid certificate enrollment method %q, expected %q or %q", method, consts.CertEnrollmentLDAP, consts.CertEnrollmentCEPCES)))
+			return
 		}
+		a.enrollmentMethod = normalized
 	}
 }
 
@@ -183,7 +200,7 @@ func WithCertAutoenrollCmd(cmd []string) func(*options) {
 }
 
 // New returns a new manager for the certificate policy.
-func New(domain string, opts ...Option) *Manager {
+func New(domain string, opts ...Option) (*Manager, error) {
 	// defaults
 	args := options{
 		stateDir:          consts.DefaultStateDir,
@@ -192,10 +209,17 @@ func New(domain string, opts ...Option) *Manager {
 		globalTrustDir:    consts.DefaultGlobalTrustDir,
 		enrollmentMethod:  consts.DefaultCertificateEnrollment,
 		certAutoenrollCmd: []string{"python3", "-c", CertEnrollCode},
+		updateTrustStore:  updateCATrustStore,
 	}
 	// applied options
 	for _, o := range opts {
 		o(&args)
+	}
+	if err := errors.Join(args.errs...); err != nil {
+		return nil, err
+	}
+	if args.updateTrustStore == nil {
+		args.updateTrustStore = updateCATrustStore
 	}
 
 	krb5CacheDir := filepath.Join(args.runDir, "krb5cc")
@@ -211,6 +235,7 @@ func New(domain string, opts ...Option) *Manager {
 		saveEnrollmentState: saveState,
 		generationOps:       defaultGenerationPublishOps(),
 		removePending:       removePendingMaterial,
+		updateTrustStore:    args.updateTrustStore,
 	}
 
 	// The CEPCES helper is wired for both backends: the legacy backend runs it
@@ -243,7 +268,7 @@ func New(domain string, opts ...Option) *Manager {
 		m.requestCertificate = requester
 	}
 
-	return m
+	return m, nil
 }
 
 func (m *Manager) loadEnrollmentState(objectName string) (*enrollmentState, error) {
@@ -310,7 +335,7 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 		}
 
 		log.Debug(ctx, "Certificate autoenrollment is not configured, unenrolling machine")
-		return m.unenrollAfterMigration(ctx, objectName)
+		return m.unenrollLocked(ctx, objectName)
 	}
 
 	log.Debug(ctx, "ApplyPolicy certificate policy")
@@ -329,7 +354,7 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 	log.Debugf(ctx, "Certificate policy value: %d", value)
 
 	if value&enrollFlag != enrollFlag {
-		return m.unenrollAfterMigration(ctx, objectName)
+		return m.unenrollLocked(ctx, objectName)
 	}
 
 	allowed, err := ldapPolicyAllowsEnrollment(entries)
@@ -341,25 +366,17 @@ func (m *Manager) applyPolicyLDAP(ctx context.Context, objectName string, entrie
 		return nil
 	}
 
-	if err := m.migrateCEPCESToLDAP(ctx, objectName); err != nil {
+	// A leftover legacy enrollment is retired before publishing natively
+	// managed files.
+	if err := m.retireLegacyCEPCES(ctx, objectName); err != nil {
 		return err
 	}
 
 	return m.enrollLocked(ctx, objectName)
 }
 
-// unenrollAfterMigration retires any legacy CEPCES enrollment before removing
-// the native enrollment state, so certmonger is never left tracking requests
-// whose files adsys is about to delete.
-func (m *Manager) unenrollAfterMigration(ctx context.Context, objectName string) error {
-	if err := m.migrateCEPCESToLDAP(ctx, objectName); err != nil {
-		return err
-	}
-	return m.unenrollLocked(ctx, objectName)
-}
-
-// migrateCEPCESToLDAP retires a legacy CEPCES enrollment before the native
-// LDAP backend publishes files it owns.
+// retireLegacyCEPCES retires a legacy CEPCES enrollment before the native
+// LDAP backend publishes or removes files it owns.
 //
 // The CEPCES backend registers certmonger requests and CAs for
 // <stateDir>/private/certs/<CA>.<template>.key and
@@ -373,9 +390,12 @@ func (m *Manager) unenrollAfterMigration(ctx context.Context, objectName string)
 // The switch is transactional: any cleanup failure aborts the native
 // enrollment and keeps the legacy state so the next policy refresh retries.
 // If the script succeeds but leaves the cache behind, certmonger is not
-// installed (the only non-error early return of the unenroll action), so it
-// cannot be an active writer and the leftover cache is removed directly.
-func (m *Manager) migrateCEPCESToLDAP(ctx context.Context, objectName string) error {
+// installed (the only non-error early return of the unenroll action) and
+// nothing was cleaned up. The cache is the only record of the legacy
+// certificates, keys and trust store entries, so it is kept for a later retry
+// rather than deleted, which would strand those artifacts forever. certmonger
+// cannot be an active writer in that state, so the caller carries on.
+func (m *Manager) retireLegacyCEPCES(ctx context.Context, objectName string) error {
 	sambaDir := filepath.Join(m.stateDir, "samba")
 	if _, err := os.Stat(sambaDir); err != nil {
 		if os.IsNotExist(err) {
@@ -390,10 +410,8 @@ func (m *Manager) migrateCEPCESToLDAP(ctx context.Context, objectName string) er
 	}
 
 	if _, err := os.Stat(sambaDir); err == nil {
-		log.Debugf(ctx, "certmonger is not installed; removing leftover legacy Samba cache: %s", sambaDir)
-		if err := os.RemoveAll(sambaDir); err != nil {
-			return fmt.Errorf("removing legacy Samba cache after enrollment migration: %w", err)
-		}
+		log.Warningf(ctx, "certmonger is not installed, so the legacy CEPCES certificates could not be retired; keeping %s to retry once it is available", sambaDir)
+		return nil
 	} else if !os.IsNotExist(err) {
 		return fmt.Errorf("inspecting legacy Samba cache after enrollment migration: %w", err)
 	}
@@ -838,8 +856,11 @@ func (m *Manager) enrollLocked(ctx context.Context, objectName string) (err erro
 			terminalErrs = append(terminalErrs, fmt.Errorf("cleaning up obsolete enrollment artifacts: %w", err))
 		}
 	}
-	if err := updateCATrustStore(); err != nil {
-		log.Warningf(ctx, "Failed to update CA trust store after enrollment: %v", err)
+	if err := m.updateTrustStore(); err != nil {
+		// The enrollment itself is committed: the certificates and their CA
+		// chain are on disk and recorded in the state. Report the stale system
+		// bundle instead of discarding a valid enrollment over it.
+		terminalErrs = append(terminalErrs, fmt.Errorf("refreshing the system trust store after enrollment: %w", err))
 	}
 
 	caNames := make([]string, 0, len(enrolledCAs))
@@ -854,9 +875,18 @@ func (m *Manager) enrollLocked(ctx context.Context, objectName string) (err erro
 	return errors.Join(terminalErrs...)
 }
 
-// unenrollLocked removes all certificate enrollments and cleans up state. The
-// caller must hold m.mu and trustLifecycleMu for writing.
+// unenrollLocked removes all certificate enrollments and cleans up state,
+// retiring a legacy CEPCES enrollment first so certmonger is never left
+// tracking requests whose files adsys is about to delete. The caller must hold
+// m.mu and trustLifecycleMu for writing.
 func (m *Manager) unenrollLocked(ctx context.Context, objectName string) error {
+	// Retiring the legacy enrollment is what removes the Samba cache: it is
+	// kept when certmonger is missing, as it is the only record of the legacy
+	// artifacts still to clean up.
+	if err := m.retireLegacyCEPCES(ctx, objectName); err != nil {
+		return err
+	}
+
 	state, err := m.loadEnrollmentState(objectName)
 	if err != nil {
 		return fmt.Errorf("failed to load enrollment state: %w", err)
@@ -893,17 +923,6 @@ func (m *Manager) unenrollLocked(ctx context.Context, objectName string) error {
 		}
 	}
 
-	// Clean up legacy Samba cache if present.
-	sambaDir := filepath.Join(m.stateDir, "samba")
-	if _, err := os.Stat(sambaDir); err == nil {
-		log.Debugf(ctx, "Removing legacy Samba cache directory: %s", sambaDir)
-		if err := os.RemoveAll(sambaDir); err != nil {
-			cleanupErrs = append(cleanupErrs, fmt.Errorf("removing legacy Samba cache: %w", err))
-		}
-	} else if !os.IsNotExist(err) {
-		cleanupErrs = append(cleanupErrs, fmt.Errorf("inspecting legacy Samba cache: %w", err))
-	}
-
 	if err := removeState(m.stateDir, objectName, m.domain); err != nil {
 		cleanupErrs = append(cleanupErrs, fmt.Errorf("removing enrollment state: %w", err))
 	} else {
@@ -912,8 +931,8 @@ func (m *Manager) unenrollLocked(ctx context.Context, objectName string) error {
 		}
 	}
 	if state != nil {
-		if err := updateCATrustStore(); err != nil {
-			log.Warningf(ctx, "Failed to update CA trust store after unenrollment: %v", err)
+		if err := m.updateTrustStore(); err != nil {
+			cleanupErrs = append(cleanupErrs, fmt.Errorf("refreshing the system trust store after unenrollment: %w", err))
 		}
 	}
 

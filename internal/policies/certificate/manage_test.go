@@ -1279,17 +1279,18 @@ func TestManagementMethodsRequireLDAPMethod(t *testing.T) {
 	t.Parallel()
 
 	tmpdir := t.TempDir()
-	m := New(mgrTestDomain,
+	m, err := New(mgrTestDomain,
 		WithStateDir(filepath.Join(tmpdir, "state")),
 		WithRunDir(filepath.Join(tmpdir, "run")),
 		WithShareDir(filepath.Join(tmpdir, "share")),
 		WithGlobalTrustDir(filepath.Join(tmpdir, "trust")),
 		WithEnrollmentMethod("cepces"),
 	)
+	require.NoError(t, err)
 
 	ctx := context.Background()
 
-	_, err := m.ListCertificates(ctx, mgrTestObject)
+	_, err = m.ListCertificates(ctx, mgrTestObject)
 	assert.ErrorIs(t, err, ErrNotLDAPMethod)
 
 	_, err = m.CertificateStatus(ctx, mgrTestObject, "")
@@ -1348,7 +1349,7 @@ func TestSupportedTemplates(t *testing.T) {
 				return mgrConnectorForIdentity(identity, cas).Connect(ctx, address)
 			})
 
-			m := New(mgrTestDomain,
+			m, err := New(mgrTestDomain,
 				WithStateDir(t.TempDir()),
 				WithRunDir(t.TempDir()),
 				WithShareDir(t.TempDir()),
@@ -1356,6 +1357,7 @@ func TestSupportedTemplates(t *testing.T) {
 				WithEnrollmentMethod("ldap"),
 				WithLDAPConnector(connector),
 			)
+			require.NoError(t, err)
 
 			templates, err := m.SupportedTemplates(context.Background(), tc.server)
 			if tc.wantErr {
@@ -1393,7 +1395,7 @@ func TestSupportedTemplatesDoesNotBlockPolicyOperations(t *testing.T) {
 		return nil, ctx.Err()
 	})
 
-	m := New(mgrTestDomain,
+	m, err := New(mgrTestDomain,
 		WithStateDir(t.TempDir()),
 		WithRunDir(t.TempDir()),
 		WithShareDir(t.TempDir()),
@@ -1401,6 +1403,7 @@ func TestSupportedTemplatesDoesNotBlockPolicyOperations(t *testing.T) {
 		WithEnrollmentMethod("ldap"),
 		WithLDAPConnector(connector),
 	)
+	require.NoError(t, err)
 
 	templatesDone := make(chan error, 1)
 	go func() {
@@ -2378,8 +2381,13 @@ func mgrManager(t *testing.T, stateDir, globalTrustDir string, opts ...Option) *
 		WithShareDir(filepath.Join(t.TempDir(), "share")),
 		WithGlobalTrustDir(globalTrustDir),
 		WithEnrollmentMethod("ldap"),
+		// The system trust store refresh needs root and is not what these
+		// tests exercise.
+		WithTrustStoreUpdater(func() error { return nil }),
 	}
-	return New(mgrTestDomain, append(base, opts...)...)
+	m, err := New(mgrTestDomain, append(base, opts...)...)
+	require.NoError(t, err)
+	return m
 }
 
 func mgrKeyPEM(t *testing.T) (*ecdsa.PrivateKey, []byte) {

@@ -342,7 +342,9 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 	}
 	certificateManager := args.certificateManager
 	if certificateManager == nil {
-		certificateManager = certificate.New(backend.Domain(), certificateOpts...)
+		if certificateManager, err = certificate.New(backend.Domain(), certificateOpts...); err != nil {
+			return nil, err
+		}
 	}
 
 	// inject applied dconf mangager if we need to build a gdm manager

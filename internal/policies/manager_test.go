@@ -116,6 +116,23 @@ func TestApplyPolicies(t *testing.T) {
 				require.NoError(t, subscriptionDbus.SetProperty(consts.SubscriptionDbusInterface+".Attached", false), "Teardown: can not restore subscription status")
 			}()
 
+			certificateManager, err := certificate.New("example.com",
+				certificate.WithStateDir(filepath.Join(certRootDir, "state")),
+				certificate.WithRunDir(filepath.Join(certRootDir, "run")),
+				certificate.WithShareDir(filepath.Join(certRootDir, "share")),
+				certificate.WithGlobalTrustDir(filepath.Join(certRootDir, "trust")),
+				certificate.WithEnrollmentMethod("ldap"),
+				certificate.WithLDAPConnector(certificate.LDAPConnectorFunc(func(context.Context, string) (certificate.LDAPClient, error) {
+					return &policiesTestLDAPConn{ca: testCA}, nil
+				})),
+				certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
+					return dummyIssuedCertificateFromCSR(t, csrPEM, testCA), nil
+				})),
+				// Refreshing the system trust store needs root and is not what these tests exercise.
+				certificate.WithTrustStoreUpdater(func() error { return nil }),
+			)
+			require.NoError(t, err, "Setup: couldn’t get a new certificate manager")
+
 			m, err := policies.NewManager(bus,
 				hostname,
 				mockBackend{},
@@ -131,19 +148,7 @@ func TestApplyPolicies(t *testing.T) {
 				policies.WithApparmorFsDir(filepath.Dir(loadedPoliciesFile)),
 				policies.WithApparmorParserCmd([]string{"/bin/true"}),
 				policies.WithSystemUnitDir(systemUnitDir),
-				policies.WithCertificateManager(certificate.New("example.com",
-					certificate.WithStateDir(filepath.Join(certRootDir, "state")),
-					certificate.WithRunDir(filepath.Join(certRootDir, "run")),
-					certificate.WithShareDir(filepath.Join(certRootDir, "share")),
-					certificate.WithGlobalTrustDir(filepath.Join(certRootDir, "trust")),
-					certificate.WithEnrollmentMethod("ldap"),
-					certificate.WithLDAPConnector(certificate.LDAPConnectorFunc(func(context.Context, string) (certificate.LDAPClient, error) {
-						return &policiesTestLDAPConn{ca: testCA}, nil
-					})),
-					certificate.WithCertificateRequester(certificate.IssuedCertificateRequester(func(_ context.Context, _, _, _, csrPEM string) (string, error) {
-						return dummyIssuedCertificateFromCSR(t, csrPEM, testCA), nil
-					})),
-				)),
+				policies.WithCertificateManager(certificateManager),
 				policies.WithProxyApplier(&mockProxyApplier{wantApplyError: tc.noUbuntuProxyManager}),
 				policies.WithSystemdCaller(&testutils.MockSystemdCaller{}),
 			)
