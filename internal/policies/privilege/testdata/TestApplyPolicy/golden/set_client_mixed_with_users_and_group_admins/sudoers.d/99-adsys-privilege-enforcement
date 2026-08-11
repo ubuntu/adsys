@@ -4,4 +4,3 @@
 
 "alice@domain.com"	ALL=(ALL:ALL) ALL
 "%group@domain.com"	ALL=(ALL:ALL) ALL
-

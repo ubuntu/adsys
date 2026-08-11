@@ -4,4 +4,3 @@
 
 %admin	ALL=(ALL) !ALL
 %sudo	ALL=(ALL:ALL) !ALL
-
