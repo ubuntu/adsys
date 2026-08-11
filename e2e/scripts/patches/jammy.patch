@@ -6,8 +6,8 @@ index ccf213e0..2d34a328 100644
  Build-Depends: debhelper-compat (= 13),
                 dh-apport,
                 dh-golang,
--               golang-go (>= 2:1.24~),
-+               golang-1.24-go,
+-               golang-go (>= 2:1.25~),
++               golang-1.25-go,
                 apparmor,
                 dbus,
                 libdbus-1-dev,
@@ -19,8 +19,8 @@ index f9705a3d..3bf891b4 100755
  # as long as it matches the go.mod go stenza which is the language requirement.
  export GOTOOLCHAIN := local
 
-+# Run with Go 1.24
-+export PATH := /usr/lib/go-1.24/bin/:$(PATH)
++# Run with Go 1.25
++export PATH := /usr/lib/go-1.25/bin/:$(PATH)
 +
  %:
         dh $@ --buildsystem=golang --with=golang,apport
