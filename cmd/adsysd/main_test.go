@@ -18,6 +18,7 @@ type myApp struct {
 	runError         bool
 	usageErrorReturn bool
 	hupReturn        bool
+	codeErrorReturn  int
 }
 
 func (a *myApp) Run() error {
@@ -25,8 +26,21 @@ func (a *myApp) Run() error {
 	if a.runError {
 		return errors.New("Error requested")
 	}
+	if a.codeErrorReturn != 0 {
+		return codeError{code: a.codeErrorReturn}
+	}
 	return nil
 }
+
+// codeError is a test error carrying an explicit exit code.
+type codeError struct {
+	code int
+}
+
+func (e codeError) Error() string { return "" }
+
+// ExitCode returns the associated process exit code.
+func (e codeError) ExitCode() int { return e.code }
 
 func (a myApp) UsageError() bool {
 	return a.usageErrorReturn
@@ -45,6 +59,7 @@ func TestRun(t *testing.T) {
 		runError         bool
 		usageErrorReturn bool
 		hupReturn        bool
+		codeErrorReturn  int
 		sendSig          syscall.Signal
 
 		wantReturnCode int
@@ -53,6 +68,7 @@ func TestRun(t *testing.T) {
 		"Run and return error":                   {runError: true, wantReturnCode: 1},
 		"Run and return usage error":             {usageErrorReturn: true, runError: true, wantReturnCode: 2},
 		"Run and usage error only does not fail": {usageErrorReturn: true, runError: false, wantReturnCode: 0},
+		"Run and return specific exit code":      {codeErrorReturn: 3, wantReturnCode: 3},
 
 		// Signals handling
 		"Send SIGINT exits":           {sendSig: syscall.SIGINT},
@@ -69,6 +85,7 @@ func TestRun(t *testing.T) {
 				runError:         tc.runError,
 				usageErrorReturn: tc.usageErrorReturn,
 				hupReturn:        tc.hupReturn,
+				codeErrorReturn:  tc.codeErrorReturn,
 			}
 
 			var rc int

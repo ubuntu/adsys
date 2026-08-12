@@ -225,6 +225,12 @@ func confDetectCachedTicket(detectCachedTicket bool) confOption {
 	}
 }
 
+func confWithCertEnrollment(method string) confOption {
+	return func(o *confOptions) {
+		o.certEnrollment = method
+	}
+}
+
 // createConf generates an adsys configuration in a temporary directory
 // It will use adsysDir for socket, cache and run dir if provided.
 func createConf(t *testing.T, opts ...confOption) (conf string) {
