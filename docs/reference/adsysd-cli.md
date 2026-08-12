@@ -17,16 +17,18 @@ adsysd COMMAND [flags]
 #### Options
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-  -h, --help                    help for adsysd
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+  -h, --help                            help for adsysd
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### adsysd completion
@@ -48,15 +50,17 @@ See each sub-command's help for details on how to use the generated script.
 #### Options inherited from parent commands
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### adsysd completion bash
@@ -101,15 +105,17 @@ adsysd completion bash
 #### Options inherited from parent commands
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### adsysd completion fish
@@ -145,15 +151,17 @@ adsysd completion fish [flags]
 #### Options inherited from parent commands
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### adsysd completion powershell
@@ -186,15 +194,17 @@ adsysd completion powershell [flags]
 #### Options inherited from parent commands
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### adsysd completion zsh
@@ -241,15 +251,17 @@ adsysd completion zsh [flags]
 #### Options inherited from parent commands
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### adsysd version
@@ -269,15 +281,17 @@ adsysd version [flags]
 #### Options inherited from parent commands
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ## Hidden commands
@@ -301,15 +315,17 @@ adsysd mount MOUNTS_FILE [flags]
 #### Options inherited from parent commands
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
 ### adsysd runscripts
@@ -330,14 +346,16 @@ adsysd runscripts ORDER_FILE [flags]
 #### Options inherited from parent commands
 
 ```
-      --ad-backend string       Active Directory authentication backend (default "sssd")
-      --cache-dir string        directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
-  -c, --config string           use a specific configuration file
-      --run-dir string          directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
-  -s, --socket string           socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
-      --sssd.cache-dir string   SSSd cache directory (default "/var/lib/sss/db")
-      --sssd.config string      SSSd config file path (default "/etc/sssd/sssd.conf")
-  -t, --timeout int             time in seconds without activity before the service exists. 0 for no timeout. (default 120)
-  -v, --verbose count           issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
+      --ad-backend string               Active Directory authentication backend (default "sssd")
+      --cache-dir string                directory where ADSys caches GPOs downloads and policies. (default "/var/cache/adsys")
+      --certificate-enrollment string   Certificate enrollment method (ldap or cepces) (default "cepces")
+  -c, --config string                   use a specific configuration file
+      --gpo-list-timeout int            time in seconds for the GPO list. 0 for no timeout. (default 10)
+      --run-dir string                  directory where ADSys stores transient information erased on reboot. (default "/run/adsys")
+  -s, --socket string                   socket path to use between daemon and client. Can be overridden by systemd socket activation. (default "/run/adsysd.sock")
+      --sssd.cache-dir string           SSSd cache directory (default "/var/lib/sss/db")
+      --sssd.config string              SSSd config file path (default "/etc/sssd/sssd.conf")
+  -t, --timeout int                     time in seconds without activity before the service exists. 0 for no timeout. (default 120)
+  -v, --verbose count                   issue INFO (-v), DEBUG (-vv) or DEBUG with caller (-vvv) output
 ```
 
