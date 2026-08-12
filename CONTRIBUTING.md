@@ -57,8 +57,7 @@ In general, we follow the ["fork-and-pull" Git workflow](https://github.com/susa
 
 > PRs will trigger unit and integration tests with and without race detection, linting and formatting validations, static and security checks, freshness of generated files verification. All the tests must pass before merging in main branch.
 
-Once merged to the main branch, `po` files, `README.md` with the command line reference and any documentation change will be automatically updated. Those are thus not necessary in the pull request itself to minimize diff review.
-
+Policy definitions and their reference documentation are refreshed automatically once merged to the main branch, so you don't need to include updates to `policies/` and `docs/reference/policies/` in your pull request.
 ## Contributing to the documentation
 
 You can also contribute to the documentation. It uses [GitHub Markdown Format](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github).
@@ -71,7 +70,7 @@ an edit button for making small changes, such as fixing typos.
 > Much of the reference documentation in `/docs/reference/` is auto-generated.
 > Editing the content of these files requires modifying `.go` and `.yaml` files found elsewhere in the repo.
 > Some references are generated using `dconf` keys from upstream packages and cannot be edited.
-> Changes made directly to reference files will be overwritten in the automation process.
+> Changes made directly to reference files will be overwritten the next time the file is generated.
 > If you want to propose a change to a reference page please make your edits in the relevant source files 
 > or contact someone on the ADSys team if you are uncertain how to do so.
 
