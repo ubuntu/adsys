@@ -93,9 +93,12 @@ go generate -x -tags=tools ./pam      # PAM module in generated/lib/security/
 Other packages contain targeted `go:generate` directives. Do not hand-edit
 generated protobuf files or artifacts under `generated/`. Do not directly edit
 generated reference documentation; change its Go or YAML source instead.
-`CONTRIBUTING.md` documents which generated documentation is refreshed after
-merge. In particular, do not include post-merge updates to `po/`, `README.md`,
-or generated documentation in a routine pull request.
+Only policy definitions are refreshed automatically after merge, so do not include
+changes to `policies/` and `docs/reference/policies/` in routine pull requests. Every
+other generated file must be regenerated and committed after any change that
+invalidates it: in particular, a change to a command or a flag has to include
+the regenerated `docs/reference/*-cli.md`. The freshness check ignores these
+files and no post-merge job updates them.
 
 When changing dependencies, update `go.mod` and `go.sum` (for example with
 `go mod tidy`). Do not create or commit a `vendor/` directory: it is
