@@ -24,6 +24,7 @@ backends
 boolean
 CAs
 CEP
+CEPCES
 cepces
 certmonger
 CES
@@ -32,15 +33,19 @@ CIFS
 compinit
 config
 constructiveCAs
+CRL
 CSR
 dac
 dconf
 dialogs
 dir
 DNS
+DCOM
 Dropdown
 dropdownList
 DSRM
+due_renewal
+EKU
 erroring
 ESM
 executables
@@ -51,6 +56,7 @@ gapped
 GC
 GDM
 gdm
+galacticcafe
 GeneralUbuntuDesktopPolicy
 getcert
 GPL
@@ -60,6 +66,7 @@ gpolist
 GPOs
 GPT
 GSettings
+GSSAPI
 GVfs
 gvfs
 HOMEDIRS
@@ -67,7 +74,10 @@ html
 http
 https
 idempotency
+idempotent
 IIS
+ICertPassage
+ICPR
 incrementation
 incrementing
 infos
@@ -75,10 +85,15 @@ ini
 interprocess
 ip
 Jira
+JSON
+json
 kerberos
 Kerberos
+key_mismatch
+keypress
 krb
 LDAP
+ldap
 libkrb
 lifecycle
 linux
@@ -94,6 +109,7 @@ manpages
 multiline
 multiText
 nameservice
+NICKNAME
 nfs
 NTP
 OpenLDAP
@@ -108,8 +124,11 @@ PowerShell
 Px
 rb
 readthedocs
+RPC
 realmd
+rekey
 runscripts
+SANs
 schema
 schemas
 setgid
@@ -122,6 +141,7 @@ sss
 sssd
 SSSD
 SSTP
+StartTLS
 subcommands
 subdirectory
 subprofile
@@ -132,6 +152,7 @@ syntaxes
 systemd
 systemd's
 sysvol
+symlinks
 tc
 TDB
 TODO
@@ -149,6 +170,8 @@ unmount
 unmounting
 Unmounting
 unescaped
+unparseable
+untrusted
 uri
 URI
 URIs

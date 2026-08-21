@@ -109,9 +109,10 @@ type options struct {
 	proxyApplier       proxy.Caller
 	systemdCaller      systemdCaller
 	gdm                *gdm.Manager
+	certificateManager *certificate.Manager
 
-	apparmorParserCmd []string
-	certAutoenrollCmd []string
+	certificateEnrollment string
+	apparmorParserCmd     []string
 }
 
 // Option reprents an optional function to change Policies behavior.
@@ -239,11 +240,27 @@ func WithSystemdCaller(p systemdCaller) Option {
 	}
 }
 
-// WithCertAutoenrollCmd specifies a personalized certificate autoenroll command.
-func WithCertAutoenrollCmd(cmd []string) Option {
+// WithCertificateManager specifies a personalized certificate manager.
+func WithCertificateManager(m *certificate.Manager) Option {
 	return func(o *options) error {
-		o.certAutoenrollCmd = cmd
+		o.certificateManager = m
 		return nil
+	}
+}
+
+// WithCertificateEnrollment specifies the certificate enrollment method (ldap or cepces).
+func WithCertificateEnrollment(method string) Option {
+	return func(o *options) error {
+		method = strings.ToLower(strings.TrimSpace(method))
+		switch method {
+		case "":
+			return nil
+		case consts.CertEnrollmentLDAP, consts.CertEnrollmentCEPCES:
+			o.certificateEnrollment = method
+			return nil
+		default:
+			return errors.New(gotext.Get("unsupported certificate enrollment method %q", method))
+		}
 	}
 }
 
@@ -320,10 +337,15 @@ func NewManager(bus *dbus.Conn, hostname string, backend backends.Backend, opts 
 		certificate.WithShareDir(args.shareDir),
 		certificate.WithGlobalTrustDir(args.globalTrustDir),
 	}
-	if args.certAutoenrollCmd != nil {
-		certificateOpts = append(certificateOpts, certificate.WithCertAutoenrollCmd(args.certAutoenrollCmd))
+	if args.certificateEnrollment != "" {
+		certificateOpts = append(certificateOpts, certificate.WithEnrollmentMethod(args.certificateEnrollment))
 	}
-	certificateManager := certificate.New(backend.Domain(), certificateOpts...)
+	certificateManager := args.certificateManager
+	if certificateManager == nil {
+		if certificateManager, err = certificate.New(backend.Domain(), certificateOpts...); err != nil {
+			return nil, err
+		}
+	}
 
 	// inject applied dconf mangager if we need to build a gdm manager
 	if args.gdm == nil {

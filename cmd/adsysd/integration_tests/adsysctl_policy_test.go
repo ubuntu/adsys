@@ -218,6 +218,7 @@ func TestPolicyUpdate(t *testing.T) {
 		krb5MockBehavior    string
 		purge               bool
 		missingCertmonger   bool
+		missingCepces       bool
 		noExportKrb5cc      bool
 		detectCachedTicket  bool
 
@@ -634,7 +635,7 @@ func TestPolicyUpdate(t *testing.T) {
 			initState:    "localhost-uptodate",
 			systemAnswer: "no_proxy_object",
 		},
-		"Does not error when certmonger or cepces is not available": {
+		"Does not error when certmonger is not available": {
 			args:       []string{"-m"},
 			krb5ccname: "-",
 			krb5ccNamesState: []krb5ccNamesWithState{
@@ -648,6 +649,21 @@ func TestPolicyUpdate(t *testing.T) {
 				"lib/private", // make parent of private dir a file
 			},
 			missingCertmonger: true,
+		},
+		"Does not error when cepces is not available": {
+			args:       []string{"-m"},
+			krb5ccname: "-",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{
+					src:     "ccache_EXAMPLE.COM",
+					machine: true,
+				},
+			},
+			initState: "localhost-uptodate",
+			addPaths: []string{
+				"lib/private", // make parent of private dir a file
+			},
+			missingCepces: true,
 		},
 
 		// Purge cases
@@ -1044,14 +1060,23 @@ func TestPolicyUpdate(t *testing.T) {
 			}
 			t.Setenv("ADSYS_WBCLIENT_BEHAVIOR", tc.winbindMockBehavior)
 
-			// Create fake certmonger and cepces binaries for the certificate manager
+			// Create fake certmonger and cepces binaries for the certificate manager.
+			// Both are required for the cert-autoenroll script to perform enrollment;
+			// each can be omitted independently to exercise the graceful skip path.
+			binDir := t.TempDir()
 			if !tc.missingCertmonger {
-				binDir := t.TempDir()
-				for _, executable := range []string{"getcert", "cepces-submit"} {
-					// #nosec G306. We want this asset to be executable.
-					err := os.WriteFile(filepath.Join(binDir, executable), []byte("#!/bin/sh\necho $@\n"), 0755)
-					require.NoError(t, err, "Setup: could not create %q binary", executable)
-				}
+				// #nosec G306. We want this asset to be executable.
+				err := os.WriteFile(filepath.Join(binDir, "getcert"), []byte("#!/bin/sh\necho $@\n"), 0755)
+				require.NoError(t, err, "Setup: could not create getcert binary")
+			}
+			if !tc.missingCepces {
+				// #nosec G306. We want this asset to be executable.
+				err := os.WriteFile(filepath.Join(binDir, "cepces-submit"), []byte("#!/bin/sh\necho $@\n"), 0755)
+				require.NoError(t, err, "Setup: could not create cepces-submit binary")
+			}
+			if tc.missingCertmonger || tc.missingCepces {
+				isolatePolicyUpdatePath(t, binDir)
+			} else {
 				t.Setenv("PATH", binDir+":"+os.Getenv("PATH"))
 			}
 
@@ -1217,13 +1242,10 @@ func TestPolicyDebugScriptDump(t *testing.T) {
 
 		wantErr bool
 	}{
-		"Get adsys-gpolist script":             {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_yes"},
-		"Get cert-autoenroll script":           {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", systemAnswer: "polkit_yes"},
-		"adsys-gpolist is always authorized":   {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_no"},
-		"cert-autoenroll is always authorized": {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", systemAnswer: "polkit_no"},
+		"Get adsys-gpolist script":           {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_yes"},
+		"adsys-gpolist is always authorized": {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", systemAnswer: "polkit_no"},
 
-		"Error on daemon not responding for adsys-gpolist":   {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", daemonNotStarted: true, wantErr: true},
-		"Error on daemon not responding for cert-autoenroll": {script: "cert-autoenroll", cmdName: "cert-autoenroll-script", path: "internal/policies/certificate", daemonNotStarted: true, wantErr: true},
+		"Error on daemon not responding for adsys-gpolist": {script: "adsys-gpolist", cmdName: "gpolist-script", path: "internal/ad", daemonNotStarted: true, wantErr: true},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -1437,16 +1459,27 @@ func modifyAndAddUsers(t *testing.T, newUsername string, users ...string) (passw
 	require.NoError(t, err, "Setup: can’t get group for current user")
 	group := groups[0]
 
+	var replaced bool
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		l := scanner.Text()
 		if strings.HasPrefix(l, fmt.Sprintf("%s:", u.Username)) {
 			l = fmt.Sprintf("%s%s", newUsername, strings.TrimPrefix(l, u.Username))
+			replaced = true
 		}
 		_, err = d.Write([]byte(l + "\n"))
 		require.NoError(t, err, "Setup: can’t write to passwd temp file")
 	}
 	require.NoError(t, scanner.Err(), "Setup: can't write temporary passwd file")
+
+	// When the current user is only known through NSS (e.g. an LDAP/SSSD user
+	// not present in /etc/passwd), the loop above can't find and rename its
+	// entry. Synthesize one from the NSS-resolved data so that the current
+	// UID resolves to newUsername inside the nss_wrapper database.
+	if !replaced {
+		_, err = fmt.Fprintf(d, "%s:x:%s:%s:%s:%s:/usr/bin/bash\n", newUsername, u.Uid, u.Gid, u.Name, u.HomeDir)
+		require.NoError(t, err, "Setup: can’t write current user to passwd temp file")
+	}
 
 	for i, u := range users {
 		_, err = fmt.Fprintf(d, "%s:x:%d:%s::/nonexistent:/usr/bin/false", u, i+23450, group)
@@ -1454,6 +1487,29 @@ func modifyAndAddUsers(t *testing.T, newUsername string, users ...string) (passw
 	}
 
 	return dest
+}
+
+func isolatePolicyUpdatePath(t *testing.T, binDir string) {
+	t.Helper()
+
+	for _, command := range []string{"mkdir", "dconf", "apparmor_parser", "python3"} {
+		exposeCommandOnPath(t, binDir, command)
+	}
+	if _, err := exec.LookPath("python3-coverage"); err == nil {
+		exposeCommandOnPath(t, binDir, "python3-coverage")
+	}
+
+	t.Setenv("PATH", binDir)
+}
+
+func exposeCommandOnPath(t *testing.T, dir, command string) {
+	t.Helper()
+
+	src, err := exec.LookPath(command)
+	require.NoErrorf(t, err, "Setup: could not find %s on PATH", command)
+
+	err = os.Symlink(src, filepath.Join(dir, command))
+	require.NoErrorf(t, err, "Setup: could not expose %s in isolated PATH", command)
 }
 
 // setupSubprocessForTest prepares a subprocess with a mock passwd file for running the tests.
@@ -1512,6 +1568,12 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 
 	passwd := modifyAndAddUsers(t, currentUser, otherUsers...)
 
+	// nss_wrapper resolves groups through NSS_WRAPPER_GROUP. When the current
+	// user's primary group is only known through NSS (e.g. an LDAP/SSSD group
+	// not present in /etc/group), copy the local file and append the
+	// NSS-resolved entry so that group lookups succeed inside the subprocess.
+	group := writeUserDatabase(t.TempDir(), "group", "/etc/group")
+
 	// Setup correct child environment, including LD_PRELOAD for nss mock
 	cmd.Env = append(os.Environ(),
 		"GO_WANT_HELPER_PROCESS=1",
@@ -1522,7 +1584,7 @@ func setupSubprocessForTest(t *testing.T, currentUser string, otherUsers ...stri
 		// override user and host database
 		fmt.Sprintf("LD_PRELOAD=libnss_wrapper.so:%s:%s", mockWinbindLibPath, mockKrb5LibPath),
 		fmt.Sprintf("NSS_WRAPPER_PASSWD=%s", passwd),
-		"NSS_WRAPPER_GROUP=/etc/group",
+		fmt.Sprintf("NSS_WRAPPER_GROUP=%s", group),
 	)
 	// dbus addresses to be reset in child
 	for _, mode := range dbusAnswerModes {

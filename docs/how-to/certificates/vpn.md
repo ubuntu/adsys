@@ -65,55 +65,41 @@ sudo adsysctl update -m -v
 This command also typically runs on a fixed schedule and during system reboots.
 ```
 
-ADSys downloads certificates from the domain controller.
-You can query information about the certificates with:
+ADSys enrolls certificates from Active Directory Certificate Services.
+With the native LDAP method, CA certificates and state are stored under `/var/lib/adsys/certs`. Issued leaf/private-key pairs use atomic generations under `/var/lib/adsys/private/certs`:
 
 ```text
-sudo getcert list
+sudo ls -l /var/lib/adsys/certs /var/lib/adsys/private/certs
 ```
 
 ```{note}
-The `getcert list` command is provided by the `certmonger` utility, which is being used to manage the lifecycle of the certificates, ensuring — for example — that they are automatically renewed.
+With the legacy CEPCES method, certificates are tracked by `certmonger`; use `sudo getcert list` instead.
 ```
 
-The output of the command should look something like this:
+The output should look something like this:
 
 ```{terminal}
 :dir: 
 
-getcert list
+/var/lib/adsys/certs:
+galacticcafe-CA.root.<certificate-id>.crt
+state_keypress.<object-id>.json
 
-Number of certificates and requests being tracked: 2
-Request ID 'galacticcafe-CA.Machine':
-    status: MONITORING
-    stuck: no
-    key pair storage: type=FILE,location='/var/lib/adsys/private/certs/galacticcafe-CA.Machine.key'
-    certificate: type=FILE,location='/var/lib/adsys/certs/galacticcafe-CA.Machine.crt'
-    CA: galacticcafe-CA
-    issuer: CN=galacticcafe-CA,DC=galacticcafe,DC=com
-...
-...
-Request ID 'galacticcafe-CA.Workstation':
-    status: MONITORING
-    stuck: no
-    key pair storage: type=FILE,location='/var/lib/adsys/private/certs/galacticcafe-CA.Workstation.key'
-    certificate: type=FILE,location='/var/lib/adsys/certs/galacticcafe-CA.Workstation.crt'
-    CA: galacticcafe-CA
-    issuer: CN=galacticcafe-CA,DC=galacticcafe,DC=com
-...
-...
-...
-
+/var/lib/adsys/private/certs:
+galacticcafe-CA.Machine.<artifact-id>/current/private.key
+galacticcafe-CA.Machine.<artifact-id>/current/certificate.crt
+galacticcafe-CA.Workstation.<artifact-id>/current/private.key
+galacticcafe-CA.Workstation.<artifact-id>/current/certificate.crt
 ```
 
-From this truncated output, we can see that there are two certificates being monitored:
+From this truncated output, we can see that two certificates were enrolled:
 
-- `galactic-CA.Machine`
-- `galactic-CA.Workstation`
+- `galacticcafe-CA.Machine`
+- `galacticcafe-CA.Workstation`
 
 These correspond to certificate templates that are configured on the certificate authority.
 
-The paths to the private key and certificate are included in the `getcert list` output.
+Use each artifact's stable `current/private.key` and `current/certificate.crt` paths.
 Everything should now be in place for the use of corporate services like VPNs and WiFi.
 
 ## Connect to VPN server using certificates
@@ -141,9 +127,9 @@ name        keypress.galacticcafe.com
 plugin      sstp-pppd-plugin.so
 ...
 ...
-ca: /var/lib/adsys/certs/galacticcafe-CA.2.crt
-cert: /var/lib/adsys/certs/galacticcafe-CA.Machine.crt
-key: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.crt
+ca: /var/lib/adsys/certs/galacticcafe-CA.root.<certificate-id>.crt
+cert: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.<artifact-id>/current/certificate.crt
+key: /var/lib/adsys/private/certs/galacticcafe-CA.Machine.<artifact-id>/current/private.key
 ...
 ...
 
