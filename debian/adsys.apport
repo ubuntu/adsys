@@ -4,9 +4,21 @@
 '''
 
 import apport.hookutils
+import apport.packaging
 import re
 
 def add_info(report):
-    apport.hookutils.attach_related_packages(report, ["sssd", "python3-samba"])
+    related_packages = ["sssd", "python3-samba"]
+
+    # python3-cepces is only Suggested (it lives in universe), so only
+    # attach it when it is actually installed on this system.
+    try:
+        apport.packaging.get_version("python3-cepces")
+    except ValueError:
+        pass
+    else:
+        related_packages.append("python3-cepces")
+
+    apport.hookutils.attach_related_packages(report, related_packages)
     apport.hookutils.attach_journal_errors(report, 600)
     report['Syslog'] = apport.hookutils.recent_syslog(re.compile("adsys"))

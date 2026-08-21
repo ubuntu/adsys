@@ -14,10 +14,29 @@ ARG CODENAME=latest
 
 # Keep the codename list easy to maintain, keeping in mind that we might need to
 # add more as the need to backport various packages arises.
-RUN if echo "focal" | grep -q "$CODENAME"; then \
+#
+# focal and noble don't ship a new enough golang-go for adsys (noble notably
+# lacks golang-1.25-go, required by debian/rules - see e2e/scripts/patches -
+# to satisfy the go.mod go 1.25 requirement without forcing an older
+# toolchain with GOTOOLCHAIN=local). ppa:ubuntu-enterprise-desktop/golang
+# publishes golang-1.25-go for noble (confirmed via the Launchpad API), so
+# reuse that existing, already-trusted Canonical PPA rather than adding a new
+# supply-chain dependency.
+RUN if [ "$CODENAME" = "focal" ] || [ "$CODENAME" = "noble" ]; then \
         set -ex \
         && apt-get install -y software-properties-common \
         && add-apt-repository -y ppa:ubuntu-enterprise-desktop/golang; \
+    fi
+
+# jammy doesn't have golang-1.25-go published in
+# ppa:ubuntu-enterprise-desktop/golang (confirmed via the Launchpad API), nor
+# in its archive/security/updates pockets. Fall back to the actively
+# maintained community backports PPA referenced by upstream Go
+# (https://github.com/golang/go/wiki/Ubuntu) for jammy only.
+RUN if [ "$CODENAME" = "jammy" ]; then \
+        set -ex \
+        && apt-get install -y software-properties-common \
+        && add-apt-repository -y ppa:longsleep/golang-backports; \
     fi
 
 RUN set -ex \
