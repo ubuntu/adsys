@@ -60,21 +60,22 @@ type state struct {
 }
 
 type options struct {
-	cacheDir       string
-	stateDir       string
-	runDir         string
-	dconfDir       string
-	sudoersDir     string
-	policyKitDir   string
-	apparmorDir    string
-	apparmorFsDir  string
-	systemUnitDir  string
-	globalTrustDir string
-	adBackend      string
-	gpoListTimeout time.Duration
-	sssConfig      sss.Config
-	winbindConfig  winbind.Config
-	authorizer     authorizerer
+	cacheDir              string
+	stateDir              string
+	runDir                string
+	dconfDir              string
+	sudoersDir            string
+	policyKitDir          string
+	apparmorDir           string
+	apparmorFsDir         string
+	systemUnitDir         string
+	globalTrustDir        string
+	adBackend             string
+	certificateEnrollment string
+	gpoListTimeout        time.Duration
+	sssConfig             sss.Config
+	winbindConfig         winbind.Config
+	authorizer            authorizerer
 }
 type option func(*options) error
 
@@ -168,6 +169,20 @@ func WithGlobalTrustDir(p string) func(o *options) error {
 func WithADBackend(backend string) func(o *options) error {
 	return func(o *options) error {
 		o.adBackend = backend
+		return nil
+	}
+}
+
+// WithCertificateEnrollment specifies the certificate enrollment method (ldap or cepces).
+// An empty value keeps the default; unknown values are rejected with an error.
+func WithCertificateEnrollment(method string) func(o *options) error {
+	return func(o *options) error {
+		switch strings.ToLower(strings.TrimSpace(method)) {
+		case "", consts.CertEnrollmentLDAP, consts.CertEnrollmentCEPCES:
+			o.certificateEnrollment = strings.ToLower(strings.TrimSpace(method))
+		default:
+			return fmt.Errorf("unsupported certificate enrollment method %q", method)
+		}
 		return nil
 	}
 }
@@ -320,6 +335,9 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	}
 	if args.globalTrustDir != "" {
 		policyOptions = append(policyOptions, policies.WithGlobalTrustDir(args.globalTrustDir))
+	}
+	if args.certificateEnrollment != "" {
+		policyOptions = append(policyOptions, policies.WithCertificateEnrollment(args.certificateEnrollment))
 	}
 	m, err := policies.NewManager(bus, hostname, adBackend, policyOptions...)
 	if err != nil {

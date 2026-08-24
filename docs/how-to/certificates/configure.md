@@ -12,8 +12,22 @@ myst:
     :end-before: <!-- Include end pro -->
 ```
 
-Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support. 
+Certificate auto-enrollment is a key component of Ubuntu’s Active Directory GPO support.
 This feature enables clients to seamlessly enroll for certificates from Active Directory Certificate Services.
+
+## Enrollment method
+
+ADSys supports two certificate enrollment methods. Set the method in `/etc/adsys.yaml`:
+
+```yaml
+# LDAP/RPC enrollment - recommended
+certificate_enrollment: ldap
+
+# Legacy CEPCES enrollment — kept for backwards compatibility; used as default if the certificate_enrollment setting is empty or missing
+# certificate_enrollment: cepces
+```
+
+See {ref}`howto::certificates-setup` for the package requirements of each method.
 
 ## Rules precedence
 
@@ -27,8 +41,8 @@ Certificate auto-enrollment is configured by setting the **Configuration Model**
 
 The policy can be disabled by performing _any_ of the following:
 
-* unticking the **Update certificates that use certificate templates** checkbox
-* setting the **Configuration Model** to **Disabled** or **Not configured**
+* Unticking the **Update certificates that use certificate templates** checkbox
+* Setting the **Configuration Model** to **Disabled** or **Not configured**
 
 The other settings in this GPO entry do not affect ADSys in any way.
 
@@ -42,11 +56,13 @@ For more advanced configuration, a list of policy servers can be specified in th
 
 On the client system, a successful auto-enrollment will place certificate data in the following paths:
 
-* `/var/lib/adsys/certs` - certificate data
-* `/var/lib/adsys/private/certs` - private key data
+* `/var/lib/adsys/certs` - CA certificates and enrollment state
+* `/var/lib/adsys/private/certs` - native LDAP matched leaf/private-key generations
 * `/usr/local/share/ca-certificates` - root certificate data (symbolic link pointing to `/var/lib/adsys/certs`)
 
-For detailed information on the tracked certificates, `certmonger` can be directly interacted with:
+With the native LDAP method, ADSys tracks the files it created in `/var/lib/adsys/certs/state_*.json`. Certificates are not registered with `certmonger`. Use `adsysctl certificate` to manage them; see {ref}`howto::certificates-manage`.
+
+With the legacy CEPCES method, `certmonger` tracks certificates and can be queried directly:
 
 ```output
 # Query monitored certificates
@@ -78,5 +94,5 @@ Request ID 'galacticcafe-CA.Machine':
 CA 'galacticcafe-CA':
  is-default: no
  ca-type: EXTERNAL
- helper-location: /usr/libexec/certmonger/cepces-submit --server=win-mk85nrq26nu.galacticcafe.com --auth=Kerberos
+ helper-location: /usr/lib/certmonger/cepces-submit
 ```

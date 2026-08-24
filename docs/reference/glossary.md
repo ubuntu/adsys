@@ -20,6 +20,15 @@ You can [edit this glossary](https://github.com/ubuntu/adsys/edit/main/docs/refe
 active directory
   A directory service developed by Microsoft that provides centralized authentication, authorization, and management of users, computers, and resources in a networked environment.
 
+AD CS
+  Active Directory Certificate Services. A Microsoft server role that issues and manages public key certificates within an Active Directory environment.
+
+MS-ICPR
+  The Microsoft ICertPassage Remote Protocol. An RPC-based protocol used to submit certificate signing requests directly to an Active Directory Certificate Services certification authority.
+
+CEPCES
+  The legacy, certmonger-based mechanism ADSys uses to enroll certificates through the Windows Certificate Enrollment Policy (CEP) and Certificate Enrollment Service (CES) web services. It relies on the `python3-cepces`, `python3-samba`, and `certmonger` packages.
+
 [administrative templates](template-generations)
   A set of policy settings that allow administrators to configure user and computer settings in a Windows-based Active Directory environment, often managed via Group Policy Objects (GPOs).
 

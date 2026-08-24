@@ -47,6 +47,30 @@ Files: vendor/charm.land/*
 Copyright: 2020-2026 Charmbracelet, Inc.
 License: Expat
 
+Files: vendor/github.com/Azure/*
+Copyright: 2016 Microsoft
+License: Expat
+
+Files: vendor/github.com/Azure/go-ntlmssp/.golangci.yml
+       vendor/github.com/Azure/go-ntlmssp/authenticate_message.go
+       vendor/github.com/Azure/go-ntlmssp/authheader.go
+       vendor/github.com/Azure/go-ntlmssp/avids.go
+       vendor/github.com/Azure/go-ntlmssp/challenge_message.go
+       vendor/github.com/Azure/go-ntlmssp/messageheader.go
+       vendor/github.com/Azure/go-ntlmssp/negotiate_flags.go
+       vendor/github.com/Azure/go-ntlmssp/negotiate_message.go
+       vendor/github.com/Azure/go-ntlmssp/negotiator.go
+       vendor/github.com/Azure/go-ntlmssp/nlmp.go
+       vendor/github.com/Azure/go-ntlmssp/unicode.go
+       vendor/github.com/Azure/go-ntlmssp/varfield.go
+       vendor/github.com/Azure/go-ntlmssp/version.go
+Copyright: Microsoft Corporation.
+License: Expat
+
+Files: vendor/github.com/Azure/go-ntlmssp/internal/*
+Copyright: 2009 The Go Authors.
+License: Expat
+
 Files: vendor/github.com/alecthomas/*
 Copyright: 2017 Alec Thomas
 License: Expat
@@ -130,6 +154,20 @@ Copyright: 2012 The Go Authors.
            fsnotify Authors.
 License: BSD-3-clause
 
+Files: vendor/github.com/geoffgarside/*
+Copyright: 2009 The Go Authors.
+License: BSD-3-clause
+
+Files: vendor/github.com/go-asn1-ber/*
+Copyright: 2011-2015 Michael Mitton () <mmitton@gmail.com>
+           2015-2016 go-asn1-ber Authors
+License: Expat
+
+Files: vendor/github.com/go-ldap/*
+Copyright: 2011-2015 Michael Mitton () <mmitton@gmail.com>
+           2015-2024 go-ldap Authors
+License: Expat
+
 Files: vendor/github.com/go-viper/*
 Copyright: 2013 Mitchell Hashimoto
 License: Expat
@@ -154,8 +192,27 @@ Files: vendor/github.com/gorilla/*
 Copyright: 2012-2023 The Gorilla Authors.
 License: BSD-3-clause
 
+Files: vendor/github.com/hashicorp/*
+Copyright: 2015-2022 HashiCorp, Inc.
+License: UNKNOWN
+
 Files: vendor/github.com/inconshreveable/*
 License: Apache-2.0
+
+Files: vendor/github.com/indece-official/*
+Copyright: 2019 indece
+License: Expat
+
+Files: vendor/github.com/indece-official/go-ebcdic/ebcdic.go
+Copyright: 2019 indece UG (haftungsbeschränkt)
+License: Expat
+
+Files: vendor/github.com/jcmturner/*
+License: Apache-2.0
+
+Files: vendor/github.com/jcmturner/gofork/*
+Copyright: 2009-2012 The Go Authors.
+License: BSD-3-clause
 
 Files: vendor/github.com/kardianos/*
 Copyright: 2015-2019 Daniel Theophanes.
@@ -227,6 +284,29 @@ Files: vendor/github.com/mvo5/*
 Copyright: 2013-2019 Michael Vogt
 License: UNKNOWN
 
+Files: vendor/github.com/oiweiwei/*
+Copyright: 2026 oiweiwei
+License: Expat
+
+Files: vendor/github.com/oiweiwei/go-smb2.fork/*
+Copyright: 2016 Hiroshi Ioka.
+License: BSD-2-clause
+
+Files: vendor/github.com/oiweiwei/go-smb2.fork/all.go
+       vendor/github.com/oiweiwei/go-smb2.fork/filepath.go
+Copyright: 2009 The Go Authors.
+           2016 Hiroshi Ioka.
+License: BSD-3-clause
+
+Files: vendor/github.com/oiweiwei/go-smb2.fork/internal/*
+Copyright: 2009-2016 The Go Authors.
+           2016 Hiroshi Ioka.
+License: BSD-3-clause
+
+Files: vendor/github.com/oiweiwei/gokrb5.fork/*
+Copyright: 2026 oiweiwei
+License: Apache-2.0
+
 Files: vendor/github.com/pelletier/*
 Copyright: 2021-2023 Thomas Pelletier
 License: Expat
@@ -241,6 +321,10 @@ License: BSD-3-clause
 
 Files: vendor/github.com/rivo/*
 Copyright: 2019 Oliver Kuederle
+License: Expat
+
+Files: vendor/github.com/rs/*
+Copyright: 2017 Olivier Poitrey
 License: Expat
 
 Files: vendor/github.com/russross/*
@@ -365,7 +449,6 @@ Files: vendor/go.yaml.in/yaml/v3/decode.go
        vendor/go.yaml.in/yaml/v3/resolve.go
        vendor/go.yaml.in/yaml/v3/sorter.go
        vendor/go.yaml.in/yaml/v3/yaml.go
-       vendor/go.yaml.in/yaml/v3/NOTICE
 Copyright: 2011-2019 Canonical Ltd
 License: Apache-2.0
 
@@ -436,7 +519,6 @@ Files: vendor/gopkg.in/yaml.v3/decode.go
        vendor/gopkg.in/yaml.v3/resolve.go
        vendor/gopkg.in/yaml.v3/sorter.go
        vendor/gopkg.in/yaml.v3/yaml.go
-       vendor/gopkg.in/yaml.v3/NOTICE
 Copyright: 2011-2019 Canonical Ltd
 License: Apache-2.0
 
