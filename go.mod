@@ -23,7 +23,7 @@ require (
 	github.com/maruel/natural v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
-	github.com/oiweiwei/go-msrpc v1.4.3
+	github.com/oiweiwei/go-msrpc v1.5.2
 	github.com/oiweiwei/gokrb5.fork/v9 v9.0.6
 	github.com/pkg/sftp v1.13.11
 	github.com/sirupsen/logrus v1.10.0
@@ -87,7 +87,7 @@ require (
 	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/oiweiwei/go-math v1.0.0 // indirect
 	github.com/oiweiwei/go-oem v1.0.0 // indirect
-	github.com/oiweiwei/go-smb2.fork v1.0.1 // indirect
+	github.com/oiweiwei/go-smb2.fork v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rs/zerolog v1.35.1 // indirect
