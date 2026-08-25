@@ -1174,6 +1174,132 @@ func TestReadBERElementRejectsTruncation(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestCandidateTransportMatchesCertificateTrust(t *testing.T) {
+	tests := map[string]struct {
+		bootstrap bool
+	}{
+		"untrusted certificate uses plain LDAP with GSSAPI confidentiality": {
+			bootstrap: true,
+		},
+		"trusted certificate keeps StartTLS and channel binding": {},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			serverCertificate := generateLDAPServerCertificate(t)
+			trustDir := t.TempDir()
+			if !tc.bootstrap {
+				certificatePEM := pem.EncodeToMemory(&pem.Block{
+					Type:  "CERTIFICATE",
+					Bytes: serverCertificate.Certificate[0],
+				})
+				require.NoError(t, os.WriteFile(filepath.Join(trustDir, "root.crt"), certificatePEM, 0600))
+			}
+			address, serverErr := runLDAPTransportServer(t, serverCertificate, tc.bootstrap)
+			host, _, err := net.SplitHostPort(address)
+			require.NoError(t, err)
+
+			var (
+				gotChannelBinding         []byte
+				gotRequireConfidentiality bool
+				gotTLS                    bool
+			)
+			connector := &kerberosLDAPConnector{
+				globalTrustDir: trustDir,
+				allowBootstrap: true,
+				bind: func(_ context.Context, _ *ldap.Conn, _, _ string, channelBinding []byte, requireConfidentiality bool, transport *saslSecurityConn) error {
+					gotChannelBinding = append([]byte(nil), channelBinding...)
+					gotRequireConfidentiality = requireConfidentiality
+					_, gotTLS = transport.Conn.(*tls.Conn)
+					if !requireConfidentiality {
+						return nil
+					}
+					layer, err := newSASLSecurityLayer(testKey(), false, saslReceiveBufferSize, 0, 0)
+					if err != nil {
+						return err
+					}
+					if err := transport.armSecurityLayer(layer); err != nil {
+						layer.Close()
+						return err
+					}
+					transport.observeRawBindResponse([]byte{0x30, 0x00})
+					return nil
+				},
+			}
+			client, err := connector.connectCandidate(context.Background(), ldapServerCandidate{address: address, host: host})
+			require.NoError(t, err)
+
+			assert.Equal(t, tc.bootstrap, gotRequireConfidentiality)
+			assert.Equal(t, !tc.bootstrap, gotTLS)
+			if tc.bootstrap {
+				assert.Empty(t, gotChannelBinding)
+			} else {
+				assert.NotEmpty(t, gotChannelBinding)
+			}
+			require.NoError(t, client.Close())
+			require.NoError(t, <-serverErr)
+		})
+	}
+}
+
+func runLDAPTransportServer(t *testing.T, certificate tls.Certificate, expectBootstrap bool) (address string, result <-chan error) {
+	t.Helper()
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = listener.Close() })
+
+	serverResult := make(chan error, 1)
+	go func() {
+		rawConn, err := listener.Accept()
+		if err != nil {
+			serverResult <- err
+			return
+		}
+		defer rawConn.Close()
+		tag, _, err := readBERElement(rawConn)
+		if err != nil {
+			serverResult <- err
+			return
+		}
+		if tag != 0x30 {
+			serverResult <- fmt.Errorf("unexpected StartTLS request tag 0x%02x", tag)
+			return
+		}
+		if err := writeAll(rawConn, []byte{0x30, 0x0c, 0x02, 0x01, 0x01, 0x78, 0x07, 0x0a, 0x01, 0x00, 0x04, 0x00, 0x04, 0x00}); err != nil {
+			serverResult <- err
+			return
+		}
+		tlsConn := tls.Server(rawConn, &tls.Config{
+			MinVersion:   tls.VersionTLS12,
+			Certificates: []tls.Certificate{certificate},
+		})
+		if err := tlsConn.Handshake(); err != nil {
+			serverResult <- err
+			return
+		}
+		if _, err := io.Copy(io.Discard, tlsConn); err != nil {
+			serverResult <- err
+			return
+		}
+		if !expectBootstrap {
+			serverResult <- nil
+			return
+		}
+
+		bootstrapConn, err := listener.Accept()
+		if err != nil {
+			serverResult <- err
+			return
+		}
+		defer bootstrapConn.Close()
+		if _, err := io.Copy(io.Discard, bootstrapConn); err != nil {
+			serverResult <- err
+			return
+		}
+		serverResult <- nil
+	}()
+	return listener.Addr().String(), serverResult
+}
+
 func TestCandidateSetupCancellation(t *testing.T) {
 	tests := map[string]bool{
 		"stalled StartTLS response": true,
