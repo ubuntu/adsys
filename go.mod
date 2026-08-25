@@ -6,7 +6,7 @@ toolchain go1.25.13
 
 require (
 	charm.land/bubbles/v2 v2.2.0
-	charm.land/bubbletea/v2 v2.0.8
+	charm.land/bubbletea/v2 v2.0.9
 	charm.land/lipgloss/v2 v2.0.6
 	github.com/charmbracelet/glamour v1.0.0
 	github.com/coreos/go-systemd/v22 v22.7.0
