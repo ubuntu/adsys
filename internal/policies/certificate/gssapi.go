@@ -225,12 +225,13 @@ func (g *gssapiClient) processAPREP(token []byte) ([]byte, bool, error) {
 //  1. Unwrap the server's GSSAPI wrap token to extract the 4-byte SASL payload
 //     describing supported security layers and max buffer size.
 //  2. Build a response selecting auth-only on a verified TLS connection, or
-//     confidentiality during first-use bootstrap.
+//     confidentiality during first-use bootstrap over plain LDAP.
 //  3. Wrap the response as an integrity-only GSSAPI wrap token.
 //
-// The confidentiality layer is mandatory when StartTLS could not be chained
-// to a configured trust anchor. This prevents a CBT-disabled DC from being
-// used as a GSSAPI relay during first-use CA discovery.
+// The confidentiality layer is mandatory when the DC certificate could not be
+// chained to a configured trust anchor. The bootstrap connection is made
+// without TLS so Active Directory applies the negotiated SASL layer, preventing
+// a GSSAPI relay during first-use CA discovery.
 func (g *gssapiClient) NegotiateSaslAuth(token []byte, authzid string) ([]byte, error) {
 	if !g.sequenceReady {
 		return nil, fmt.Errorf("GSSAPI sequence state was not established by AP-REQ/AP-REP")

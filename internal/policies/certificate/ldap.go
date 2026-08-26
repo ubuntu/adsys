@@ -121,9 +121,10 @@ type kerberosLDAPBindFunc func(context.Context, *ldap.Conn, string, string, []by
 // addition to the system trust store) when verifying the DC's StartTLS cert.
 //
 // During first use, when the DC certificate cannot yet be chained to a
-// configured root, LDAP protocol data is additionally protected by the
-// Kerberos GSSAPI confidentiality layer. Unknown issuers are never accepted
-// after adsys-managed trust has been configured.
+// configured root, the connector uses StartTLS only to inspect the certificate,
+// then reconnects without TLS and protects LDAP protocol data with the Kerberos
+// GSSAPI confidentiality layer. Unknown issuers are never accepted after
+// adsys-managed trust has been configured.
 func newKerberosLDAPConnector(krb5CacheDir, globalTrustDir string, allowBootstrap bool) LDAPConnector {
 	return &kerberosLDAPConnector{
 		krb5CacheDir:   krb5CacheDir,
@@ -255,26 +256,36 @@ func (c *deadlineLDAPClient) Close() error {
 	return c.conn.Close()
 }
 
+func dialLDAPCandidate(ctx context.Context, address string) (net.Conn, func(), error) {
+	dialer := &net.Dialer{}
+	conn, err := dialer.DialContext(ctx, "tcp", address)
+	if err != nil {
+		return nil, nil, err
+	}
+	stopContextInterrupt := interruptConnectionOnDone(ctx, conn)
+	if deadline, ok := ctx.Deadline(); ok {
+		if err := conn.SetDeadline(deadline); err != nil {
+			stopContextInterrupt()
+			_ = conn.Close()
+			return nil, nil, fmt.Errorf("setting LDAP candidate deadline: %w", err)
+		}
+	}
+	return conn, stopContextInterrupt, nil
+}
+
 func (c kerberosLDAPConnector) connectCandidate(ctx context.Context, candidate ldapServerCandidate) (LDAPClient, error) {
 	log.Debugf(ctx, "Connecting to LDAP server: %s", candidate.address)
-	dialer := &net.Dialer{}
-	rawConn, err := dialer.DialContext(ctx, "tcp", candidate.address)
+	rawConn, stopContextInterrupt, err := dialLDAPCandidate(ctx, candidate.address)
 	if err != nil {
 		return nil, fmt.Errorf("connecting to LDAP server %s: %w", candidate.address, err)
 	}
 	closeOnError := true
 	defer func() {
+		stopContextInterrupt()
 		if closeOnError {
 			_ = rawConn.Close()
 		}
 	}()
-	stopContextInterrupt := interruptConnectionOnDone(ctx, rawConn)
-	defer stopContextInterrupt()
-	if deadline, ok := ctx.Deadline(); ok {
-		if err := rawConn.SetDeadline(deadline); err != nil {
-			return nil, fmt.Errorf("setting LDAP candidate deadline: %w", err)
-		}
-	}
 
 	if err := requestStartTLS(rawConn); err != nil {
 		if ctx.Err() != nil {
@@ -292,19 +303,41 @@ func (c kerberosLDAPConnector) connectCandidate(ctx context.Context, candidate l
 		return nil, fmt.Errorf("TLS handshake with LDAP server %s: %w", candidate.host, err)
 	}
 
-	transport := newSASLSecurityConn(tlsConn)
-	conn := ldap.NewConn(transport, true)
-	conn.SetTimeout(ldapCandidateTimeout)
-	conn.Start()
-	closeOnError = false
-
 	tlsState := tlsConn.ConnectionState()
 	if len(tlsState.PeerCertificates) == 0 {
-		_ = conn.Close()
 		return nil, fmt.Errorf("LDAP TLS server %s presented no certificate", candidate.host)
 	}
-	channelBinding := tlsServerEndPointChannelBinding(tlsState.PeerCertificates[0])
 	requireConfidentiality := trustState.bootstrap.Load()
+	var (
+		channelBinding []byte
+		transportConn  net.Conn = tlsConn
+		isTLS                   = true
+	)
+	if requireConfidentiality {
+		// Active Directory does not apply a negotiated SASL security layer to
+		// a connection already protected by TLS. Reconnect to the same DC and
+		// let Kerberos mutual authentication and confidentiality protect the
+		// bootstrap LDAP exchange.
+		stopContextInterrupt()
+		_ = tlsConn.Close()
+		bootstrapConn, stopBootstrapInterrupt, err := dialLDAPCandidate(ctx, candidate.address)
+		if err != nil {
+			return nil, fmt.Errorf("reconnecting to LDAP server %s for GSSAPI bootstrap: %w", candidate.address, err)
+		}
+		rawConn = bootstrapConn
+		stopContextInterrupt = stopBootstrapInterrupt
+		transportConn = rawConn
+		isTLS = false
+		log.Debugf(ctx, "Using GSSAPI confidentiality without TLS for LDAP bootstrap to %s", candidate.host)
+	} else {
+		channelBinding = tlsServerEndPointChannelBinding(tlsState.PeerCertificates[0])
+	}
+
+	transport := newSASLSecurityConn(transportConn)
+	conn := ldap.NewConn(transport, isTLS)
+	conn.SetTimeout(ldapCandidateTimeout)
+	conn.Start()
+
 	bind := c.bind
 	if bind == nil {
 		bind = gssapiBindWithOptions
@@ -332,6 +365,7 @@ func (c kerberosLDAPConnector) connectCandidate(ctx context.Context, candidate l
 		_ = conn.Close()
 		return nil, fmt.Errorf("clearing LDAP candidate deadline: %w", err)
 	}
+	closeOnError = false
 	log.Debugf(ctx, "LDAP connection established and authenticated to %s", candidate.host)
 	return &deadlineLDAPClient{conn: conn, transport: transport, timeout: ldapCandidateTimeout}, nil
 }
@@ -768,9 +802,9 @@ func verifyPeerCertificateWithTrustState(server, globalTrustDir string, allowBoo
 			// store yet (adsys installs it later in this same run), so the DC
 			// certificate cannot chain to a trusted root. When bootstrapping is
 			// allowed and no managed trust exists, tolerate only this "unknown
-			// authority" case. The connector requires GSSAPI confidentiality
-			// for every subsequent LDAP message on this connection. Any other
-			// failure remains fatal.
+			// authority" case. The connector then reconnects without TLS and
+			// requires GSSAPI confidentiality for the bootstrap LDAP exchange.
+			// Any other failure remains fatal.
 			var unknownAuthority x509.UnknownAuthorityError
 			if !allowBootstrap || managedTrustExists || !errors.As(err, &unknownAuthority) {
 				return fmt.Errorf("server certificate verification failed: %w", err)
@@ -779,7 +813,7 @@ func verifyPeerCertificateWithTrustState(server, globalTrustDir string, allowBoo
 				return fmt.Errorf("server certificate verification failed: %w", hostErr)
 			}
 			log.Warningf(context.Background(),
-				"Server certificate for %q is not signed by an installed CA yet; requiring GSSAPI confidentiality for bootstrap enrollment: %v",
+				"Server certificate for %q is not signed by an installed CA yet; using GSSAPI confidentiality for bootstrap enrollment: %v",
 				tlsServerName(server), err)
 			if state != nil {
 				state.bootstrap.Store(true)
