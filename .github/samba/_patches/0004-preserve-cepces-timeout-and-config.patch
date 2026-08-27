@@ -1,0 +1,79 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: denisonbarbosa <denison.barbosa@canonical.com>
+Date: Thu, 10 Sep 2026 06:30:00 -0400
+Subject: [PATCH] Preserve CEPCES configuration and template timeout
+
+Keep the CEPCES configuration override and bound template discovery while
+refreshing the vendored Samba source.
+---
+ python/samba/gp/gp_cert_auto_enroll_ext.py | 30 ++++++++++++++++++++++++++++--
+ 1 file changed, 26 insertions(+), 4 deletions(-)
+
+diff --git a/python/samba/gp/gp_cert_auto_enroll_ext.py b/python/samba/gp/gp_cert_auto_enroll_ext.py
+index 1c1fc4bac310..7da1a88c7340 100644
+--- a/python/samba/gp/gp_cert_auto_enroll_ext.py
++++ b/python/samba/gp/gp_cert_auto_enroll_ext.py
+@@ -14,5 +14,6 @@
+ # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
++import configparser
+ import os
+ import operator
+ import requests
+@@ -23,7 +24,7 @@ from samba.auth import system_session
+ from vendor_samba.gp.gpclass import get_dc_hostname
+ import base64
+ from shutil import which
+-from subprocess import Popen, PIPE
++from subprocess import Popen, PIPE, TimeoutExpired
+ import re
+ import json
+ from vendor_samba.gp.util.logging import log
+@@ -51,6 +52,8 @@ global_trust_dirs = ['/etc/pki/trust/anchors',           # SUSE
+                      '/etc/pki/ca-trust/source/anchors', # RHEL/Fedora
+                      '/usr/local/share/ca-certificates'] # Debian/Ubuntu
+ 
++CEPCES_CONFIG_PATH = '/etc/cepces/cepces.conf'
++
+ def octet_string_to_objectGUID(data):
+     """Convert an octet string to an objectGUID."""
+     return '%s-%s-%s-%s-%s' % ('%02x' % struct.unpack('<L', data[0:4])[0],
+@@ -189,14 +192,33 @@ def get_supported_templates(server):
+         log.error('Failed to find cepces-submit')
+         return []
+ 
++    cepces_config = configparser.ConfigParser()
++    cepces_config.read(CEPCES_CONFIG_PATH)
++    # If the config file was overriden, then we let cepces-submit use the values defined there.
++    cepces_args = [cepces_submit, '--server=%s' % server, '--auth=Kerberos']
++    if cepces_config['global'] and cepces_config['global']['server'] != 'ca':
++        log.debug(f'Changes detected in "{CEPCES_CONFIG_PATH}". Using the values defined there.')
++        cepces_args = [cepces_submit]
++
+     env = os.environ
+     env['CERTMONGER_OPERATION'] = 'GET-SUPPORTED-TEMPLATES'
+-    p = Popen([cepces_submit, '--server=%s' % server, '--auth=Kerberos'],
+-              env=env, stdout=PIPE, stderr=PIPE)
+-    out, err = p.communicate()
++    p = Popen(cepces_args, env=env, stdout=PIPE, stderr=PIPE)
++    out, err = bytes(), bytes()
++    try:
++        # Server calls could hang if the provider is slow or too busy.
++        # A timeout is set to avoid this.
++        out, err = p.communicate(timeout=30)
++    except TimeoutExpired as te:
++        log.warn(f'GET-SUPPORTED-TEMPLATES expired. {server} is probably not a CEPCES server: {te}')
++        p.kill()
++    except Exception as e:
++        log.error(f'Failed to fetch supported templates with command "{cepces_args}": {e}')
++        p.kill()
++
+     if p.returncode != 0:
+         data = {'Error': err.decode()}
+         log.error('Failed to fetch the list of supported templates.', data)
++        raise Exception(f'Failed to fetch the list of supported templates: {data}')
+     return out.strip().split()
+ 
+ 
+-- 
+2.45.2

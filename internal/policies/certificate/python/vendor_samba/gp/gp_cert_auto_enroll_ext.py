@@ -210,7 +210,7 @@ def get_supported_templates(server):
     try:
         # Server calls could hang if the provider is slow or too busy.
         # A timeout is set to avoid this.
-        out, err = p.communicate(timeout=3)
+        out, err = p.communicate(timeout=30)
     except TimeoutExpired as te:
         log.warn(f'GET-SUPPORTED-TEMPLATES expired. {server} is probably not a CEPCES server: {te}')
         p.kill()
