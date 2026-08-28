@@ -20,10 +20,16 @@ sed -iE 's/^#\?KbdInteractiveAuthentication.*/KbdInteractiveAuthentication yes/'
 echo "Installing additional required packages..."
 # Work around an issue where the cifs kernel module is not available on some kernel versions
 # ref: https://www.mail-archive.com/kernel-packages@lists.launchpad.net/msg514627.html
-if [[ ! "$(lsmod)" =~ cifs ]]; then
+#
+# lsmod would only tell us which modules are already loaded, and cifs is not
+# loaded until something mounts a share, so ask whether the module exists at
+# all instead. From 26.04 the extra modules are folded into the main kernel
+# modules package, which leaves no -extra counterpart to install and no reason
+# to look for one.
+if ! modinfo cifs > /dev/null 2>&1; then
     DEBIAN_FRONTEND=noninteractive apt-get install -y linux-modules-extra-azure
-    echo "cifs" >> /etc/modules
 fi
+echo "cifs" >> /etc/modules
 
 echo "Disabling unattended-upgrades to avoid unexpected dpkg frontend locks..."
 systemctl disable --now unattended-upgrades
@@ -35,10 +41,8 @@ systemctl restart systemd-resolved
 # Work around an issue on newer Ubuntu versions (starting with Jammy) where
 # systemd-networkd times out due to eth0 losing connectivity shortly after boot,
 # even though network works fine as reported by Azure.
-if [ ! "$(lsb_release -cs)" = "focal" ]; then
-    echo "Disabling misbehaving systemd-networkd-wait-online.service..."
-    systemctl mask systemd-networkd-wait-online.service
-fi
+echo "Disabling misbehaving systemd-networkd-wait-online.service..."
+systemctl mask systemd-networkd-wait-online.service
 
 rm -f /usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf
 ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf

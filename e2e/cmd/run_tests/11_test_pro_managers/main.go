@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -111,24 +110,16 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 
 	// Start timer-triggered service to update policies
 	if _, err := rootClient.Run(ctx, "systemctl restart adsys-gpo-refresh"); err != nil {
-		// cifs mount on focal asks for a password via systemd-ask-password,
-		// which we cannot interact with in the context of a script...
-		// Assume everything went fine since we don't care about system mounts
-		// on focal anyway, and other failures will be caught by the assertions below.
-		if cmd.Inventory.Codename != "focal" {
-			return err
-		}
+		return err
 	}
 
 	// Assert machine policies were applied
 	/// Mounts
-	if cmd.Inventory.Codename != "focal" { // mount behavior is spotty on focal so avoid asserting it
-		if err := rootClient.RequireEqual(ctx, "cat /adsys/nfs/warthogs.biz/system-mount-nfs/file.txt", expectedMountedFileContents); err != nil {
-			return err
-		}
-		if err := rootClient.RequireEqual(ctx, "cat /adsys/cifs/warthogs.biz/system-mount-smb/file.txt", expectedMountedFileContents); err != nil {
-			return err
-		}
+	if err := rootClient.RequireEqual(ctx, "cat /adsys/nfs/warthogs.biz/system-mount-nfs/file.txt", expectedMountedFileContents); err != nil {
+		return err
+	}
+	if err := rootClient.RequireEqual(ctx, "cat /adsys/cifs/warthogs.biz/system-mount-smb/file.txt", expectedMountedFileContents); err != nil {
+		return err
 	}
 
 	/// Privilege escalation
@@ -140,22 +131,14 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		return err
 	}
 
-	// Due to differences in polkit versions between Ubuntu versions, the file path is different
-	polkitFilePath := "/etc/polkit-1/rules.d/00-adsys-privilege-enforcement.rules"
-	if cmd.Inventory.Codename == "focal" || cmd.Inventory.Codename == "jammy" {
-		polkitFilePath = "/etc/polkit-1/localauthority.conf.d/99-adsys-privilege-enforcement.conf"
-	}
-
 	// Only partly assert the polkit file contents as there are differences in polkit configurations between Ubuntu versions
-	if err := rootClient.RequireContains(ctx, fmt.Sprintf("cat %s", polkitFilePath), "unix-user:adminuser@warthogs.biz"); err != nil {
+	if err := rootClient.RequireContains(ctx, "cat /etc/polkit-1/rules.d/00-adsys-privilege-enforcement.rules", "unix-user:adminuser@warthogs.biz"); err != nil {
 		return err
 	}
 
 	/// AppArmor
-	if cmd.Inventory.Codename != "focal" { // aa-status raises a Python exception on focal
-		if err := rootClient.RequireContains(ctx, "aa-status", "/usr/bin/foo=(complain)"); err != nil {
-			return err
-		}
+	if err := rootClient.RequireContains(ctx, "aa-status", "/usr/bin/foo=(complain)"); err != nil {
+		return err
 	}
 
 	/// Scripts
@@ -171,84 +154,81 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		return err
 	}
 
-	// Assert policies only available in newer adsys releases
-	if !slices.Contains([]string{"focal", "jammy"}, cmd.Inventory.Codename) {
-		/// Certificates
-		// A fresh package installation defaults to the native LDAP enrollment
-		// method. Pin the selection anyway so the assertions do not depend on
-		// whether the base image already carried an adsys configuration.
-		if err := applyCertificateEnrollment(ctx, rootClient, "ldap"); err != nil {
-			return err
-		}
+	/// Certificates
+	// A fresh package installation defaults to the native LDAP enrollment
+	// method. Pin the selection anyway so the assertions do not depend on
+	// whether the base image already carried an adsys configuration.
+	if err := applyCertificateEnrollment(ctx, rootClient, "ldap"); err != nil {
+		return err
+	}
 
-		// First native enrollment. Validate it through the management CLI:
-		// health, certificate/key correspondence, chain and system trust.
-		if err := requireEventuallyContains(ctx, rootClient, "adsysctl certificate list", "status: healthy"); err != nil {
-			return err
-		}
-		if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "template: Machine"); err != nil {
-			return err
-		}
-		if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "key matches certificate: yes"); err != nil {
-			return err
-		}
-		if err := rootClient.RequireContains(ctx, "adsysctl certificate cas", "installed in trust store: yes"); err != nil {
-			return err
-		}
-		if err := rootClient.RequireContains(ctx, "adsysctl certificate verify", "PASS"); err != nil {
-			return err
-		}
+	// First native enrollment. Validate it through the management CLI:
+	// health, certificate/key correspondence, chain and system trust.
+	if err := requireEventuallyContains(ctx, rootClient, "adsysctl certificate list", "status: healthy"); err != nil {
+		return err
+	}
+	if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "template: Machine"); err != nil {
+		return err
+	}
+	if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "key matches certificate: yes"); err != nil {
+		return err
+	}
+	if err := rootClient.RequireContains(ctx, "adsysctl certificate cas", "installed in trust store: yes"); err != nil {
+		return err
+	}
+	if err := rootClient.RequireContains(ctx, "adsysctl certificate verify", "PASS"); err != nil {
+		return err
+	}
 
-		// Renewal re-enrolls against the live CA.
-		if _, err := rootClient.Run(ctx, "adsysctl certificate renew --all"); err != nil {
-			return fmt.Errorf("certificate renewal failed: %w", err)
-		}
-		if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "status: healthy"); err != nil {
-			return err
-		}
+	// Renewal re-enrolls against the live CA.
+	if _, err := rootClient.Run(ctx, "adsysctl certificate renew --all"); err != nil {
+		return fmt.Errorf("certificate renewal failed: %w", err)
+	}
+	if err := rootClient.RequireContains(ctx, "adsysctl certificate list", "status: healthy"); err != nil {
+		return err
+	}
 
-		// The legacy CEPCES backend remains supported when selected explicitly.
-		if _, err := rootClient.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y certmonger python3-cepces"); err != nil {
-			return err
-		}
-		if err := applyCertificateEnrollment(ctx, rootClient, "cepces"); err != nil {
-			return err
-		}
-		if err := requireEventuallyContains(ctx, rootClient, "getcert list -i warthogs-CA.Machine", "status: MONITORING"); err != nil {
-			return err
-		}
+	// The legacy CEPCES backend remains supported when selected explicitly.
+	if _, err := rootClient.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y certmonger python3-cepces"); err != nil {
+		return err
+	}
+	if err := applyCertificateEnrollment(ctx, rootClient, "cepces"); err != nil {
+		return err
+	}
+	if err := requireEventuallyContains(ctx, rootClient, "getcert list -i warthogs-CA.Machine", "status: MONITORING"); err != nil {
+		return err
+	}
 
-		// Switching back to the native method must retire the certmonger
-		// requests instead of leaving certmonger managing the same files.
-		if err := applyCertificateEnrollment(ctx, rootClient, "ldap"); err != nil {
-			return err
-		}
-		if err := requireEventuallyContains(ctx, rootClient, "adsysctl certificate list", "status: healthy"); err != nil {
-			return err
-		}
-		// The request must be gone entirely: a request left in an error or
-		// transitional state still means certmonger owns the same files.
-		if _, err := rootClient.Run(ctx, "! getcert list -i warthogs-CA.Machine 2>/dev/null | grep -q 'Request ID'"); err != nil {
-			return fmt.Errorf("certmonger still tracks warthogs-CA.Machine after switching to LDAP enrollment: %w", err)
-		}
+	// Switching back to the native method must retire the certmonger
+	// requests instead of leaving certmonger managing the same files.
+	if err := applyCertificateEnrollment(ctx, rootClient, "ldap"); err != nil {
+		return err
+	}
+	if err := requireEventuallyContains(ctx, rootClient, "adsysctl certificate list", "status: healthy"); err != nil {
+		return err
+	}
+	// The request must be gone entirely: a request left in an error or
+	// transitional state still means certmonger owns the same files.
+	if _, err := rootClient.Run(ctx, "! getcert list -i warthogs-CA.Machine 2>/dev/null | grep -q 'Request ID'"); err != nil {
+		return fmt.Errorf("certmonger still tracks warthogs-CA.Machine after switching to LDAP enrollment: %w", err)
+	}
 
-		/// Proxy
-		if err := rootClient.RequireEqual(ctx, "cat /etc/apt/apt.conf.d/99ubuntu-proxy-manager", `### This file was generated by ubuntu-proxy-manager - manual changes will be overwritten
+	/// Proxy
+	if err := rootClient.RequireEqual(ctx, "cat /etc/apt/apt.conf.d/99ubuntu-proxy-manager", `### This file was generated by ubuntu-proxy-manager - manual changes will be overwritten
 Acquire::ftp::Proxy "http://127.0.0.1:8080";`); err != nil {
-			return err
-		}
-		if err := rootClient.RequireEqual(ctx, "cat /etc/environment.d/99ubuntu-proxy-manager.conf", `### This file was generated by ubuntu-proxy-manager - manual changes will be overwritten
+		return err
+	}
+	if err := rootClient.RequireEqual(ctx, "cat /etc/environment.d/99ubuntu-proxy-manager.conf", `### This file was generated by ubuntu-proxy-manager - manual changes will be overwritten
 FTP_PROXY="http://127.0.0.1:8080"
 ftp_proxy="http://127.0.0.1:8080"`); err != nil {
-			return err
-		}
-		if err := rootClient.RequireEqual(ctx, "gsettings get org.gnome.system.proxy.ftp host", "'127.0.0.1'"); err != nil {
-			return err
-		}
+		return err
+	}
+	if err := rootClient.RequireEqual(ctx, "gsettings get org.gnome.system.proxy.ftp host", "'127.0.0.1'"); err != nil {
+		return err
+	}
 
-		if err := rootClient.RequireEqual(ctx, "gsettings get org.gnome.system.proxy.ftp port", "8080"); err != nil {
-			return err
-		}
+	if err := rootClient.RequireEqual(ctx, "gsettings get org.gnome.system.proxy.ftp port", "8080"); err != nil {
+		return err
 	}
 
 	// Reboot and check machine scripts
