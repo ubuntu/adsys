@@ -26,13 +26,19 @@ func run() int {
 	cmd := command.New(action,
 		command.WithValidateFunc(validate),
 		command.WithStateTransition(inventory.ClientProvisioned, inventory.ADProvisioned, inventory.Deprovisioned),
+		// This runs unconditionally at the end of a job, including after runs
+		// that failed before provisioning anything, where there is simply
+		// nothing to tear down.
+		command.WithNoopOnUnmetState(),
 	)
 	cmd.Usage = fmt.Sprintf(`go run ./%s [options]
 
 Deprovision and destroy previously created resources.
 
 This will leave the realm, delete the computer object from the domain, and
-destroy the Azure client VM.`, filepath.Base(os.Args[0]))
+destroy the Azure client VM.
+
+If no resources were provisioned, this reports success and does nothing.`, filepath.Base(os.Args[0]))
 
 	return cmd.Execute(context.Background())
 }

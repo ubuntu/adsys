@@ -164,11 +164,4 @@ jobs:
           sudo journalctl -b 0 -t pppd -t sstpc --no-pager -n 100 || true
       - name: Deprovision resources
         if: ${{ always() }}
-        run: |
-          # Check inventory status to see if we need to deprovision
-          if [ ! -f inventory.yaml ] || grep -q 'vmid: ""' inventory.yaml; then
-              echo "Inventory file not found, skipping deprovision"
-              exit 0
-          fi
-
-          go run ./e2e/cmd/run_tests/99_deprovision
+        run: go run ./e2e/cmd/run_tests/99_deprovision
