@@ -151,6 +151,17 @@ jobs:
         with:
           name: e2e-logs-${{ matrix.codename }}
           path: logs/
+      - name: Collect VPN diagnostics on failure
+        if: ${{ failure() }}
+        run: |
+          echo "=== ppp0 ==="
+          ip -4 addr show ppp0 || echo "ppp0 is gone"
+          echo "=== routing rules ==="
+          ip rule show || true
+          echo "=== VPN routing table ==="
+          ip route show table 42 || true
+          echo "=== pppd and sstpc log ==="
+          sudo journalctl -b 0 -t pppd -t sstpc --no-pager -n 100 || true
       - name: Deprovision resources
         if: ${{ always() }}
         run: |
