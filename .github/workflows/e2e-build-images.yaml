@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       codenames:
-        description: 'Comma-separated list of codenames to build for (e.g. "mantic", "focal") - will build for all supported releases if not specified'
+        description: 'Comma-separated list of codenames to build for (e.g. "noble", "resolute") - will build for all supported releases if not specified'
         type: string
         required: false
       force:
@@ -45,8 +45,9 @@ jobs:
           releases=""
           versions=""
           while IFS=$'\t' read -r version codename; do
-              # Filter out unsupported LTS releases
-              if [[ "${codename}" =~ xenial|bionic|focal ]]; then
+              # Filter out unsupported LTS releases. Keep this list in sync
+              # with the one in e2e-tests.yaml.
+              if [[ "${codename}" =~ xenial|bionic|focal|jammy ]]; then
                   continue
               fi
 
