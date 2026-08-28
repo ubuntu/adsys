@@ -160,6 +160,10 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	defer client.Close()
 
+	if err := client.CheckLink(ctx); err != nil {
+		return err
+	}
+
 	out, err = client.Run(ctx, "hostname")
 	if err != nil {
 		return fmt.Errorf("failed to get hostname of VM: %w", err)

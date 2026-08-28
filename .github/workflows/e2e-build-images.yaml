@@ -124,6 +124,17 @@ jobs:
         if: steps.check-vm-template.outputs.image-version != ''
         run: |
           go run ./e2e/cmd/build_base_image/02_create_vm_template
+      - name: Collect VPN diagnostics on failure
+        if: ${{ failure() }}
+        run: |
+          echo "=== ppp0 ==="
+          ip -4 addr show ppp0 || echo "ppp0 is gone"
+          echo "=== routing rules ==="
+          ip rule show || true
+          echo "=== VPN routing table ==="
+          ip route show table 42 || true
+          echo "=== pppd and sstpc log ==="
+          sudo journalctl -b 0 -t pppd -t sstpc --no-pager -n 100 || true
       - name: Purge old template versions
         run: |
           go run ./e2e/cmd/build_base_image/99_destroy_previous_versions --codename ${{ matrix.codename }}

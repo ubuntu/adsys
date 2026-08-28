@@ -138,6 +138,10 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	defer client.Close()
 
+	if err := client.CheckLink(ctx); err != nil {
+		return err
+	}
+
 	// Install required dependencies
 	log.Infof("Installing eatmydata to speed up package installation...")
 	if _, err := client.Run(ctx, `echo force-unsafe-io | sudo tee /etc/dpkg/dpkg.cfg.d/force-unsafe-io && \
