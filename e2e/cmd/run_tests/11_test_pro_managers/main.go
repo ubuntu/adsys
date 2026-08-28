@@ -100,6 +100,14 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		}
 	}()
 
+	// Enable debug logging on the daemon so that certificate template
+	// eligibility rejections (logged at Debug level) are captured in the
+	// journal artifact on failure. The Pro token stays in the environment
+	// and is masked in logs; /etc/adsys.yaml only stores the verbosity level.
+	if err := setDaemonVerbose(ctx, rootClient, 2); err != nil {
+		return fmt.Errorf("failed to enable daemon debug logging: %w", err)
+	}
+
 	// Attach client to Ubuntu Pro
 	if _, err := rootClient.Run(ctx, fmt.Sprintf("pro attach %s --no-auto-enable", proToken)); err != nil {
 		return fmt.Errorf("failed to attach client to Ubuntu Pro: %w", err)
@@ -362,6 +370,20 @@ func setCertificateEnrollment(ctx context.Context, client remote.Client, method 
 		method, method))
 	if err != nil {
 		return fmt.Errorf("failed to set certificate enrollment method to %q: %w", method, err)
+	}
+	return nil
+}
+
+// setDaemonVerbose pins the daemon verbosity in /etc/adsys.yaml and restarts
+// adsysd so the new level takes effect immediately. The file is created first:
+// an upgraded or base image may not ship one, and sed would fail on the
+// missing file.
+func setDaemonVerbose(ctx context.Context, client remote.Client, level int) error {
+	_, err := client.Run(ctx, fmt.Sprintf(
+		"touch /etc/adsys.yaml && sed -i -e 's/^verbose:.*/verbose: %d/' /etc/adsys.yaml && (grep -q '^verbose:' /etc/adsys.yaml || echo 'verbose: %d' >> /etc/adsys.yaml) && systemctl restart adsysd.service",
+		level, level))
+	if err != nil {
+		return fmt.Errorf("failed to set daemon verbose level to %d: %w", level, err)
 	}
 	return nil
 }
