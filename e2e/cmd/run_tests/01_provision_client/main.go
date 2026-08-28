@@ -71,7 +71,11 @@ func validate(_ context.Context, _ *command.Command) (err error) {
 	return nil
 }
 
-func action(ctx context.Context, cmd *command.Command) error {
+// action provisions the client VM. The error is named so that the cleanup
+// deferred below observes what the function actually returns: failure paths
+// that bind their own err inside an if statement would otherwise leave the
+// error the cleanup inspects untouched.
+func action(ctx context.Context, cmd *command.Command) (err error) {
 	adsysRootDir, err := scripts.RootDir()
 	if err != nil {
 		return err

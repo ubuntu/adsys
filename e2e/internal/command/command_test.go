@@ -42,8 +42,11 @@ func TestInventory(t *testing.T) {
 
 		existingInventory string
 
+		noopOnUnmetState bool
+
 		wantErr    bool
 		wantNoFile bool
+		wantNoop   bool
 	}{
 		"From null state doesn't require existing data": {toState: inventory.BaseVMCreated},
 		"From existing state requires existing data":    {fromState: inventory.BaseVMCreated, toState: inventory.TemplateCreated, existingInventory: "inventory_from_template_created"},
@@ -53,6 +56,10 @@ func TestInventory(t *testing.T) {
 		"Error if inventory file is required and doesn't exist":      {fromState: inventory.TemplateCreated, wantErr: true},
 		"Error if inventory state does not match expected state":     {fromState: inventory.TemplateCreated, existingInventory: "inventory_from_template_created", wantErr: true},
 		"Error if inventory state does not match any expected state": {fromState: inventory.TemplateCreated, additionalFromState: inventory.Null, existingInventory: "inventory_from_template_created", wantErr: true},
+
+		"No-op on unmet state does nothing if inventory file doesn't exist": {fromState: inventory.TemplateCreated, noopOnUnmetState: true, wantNoop: true},
+		"No-op on unmet state does nothing if state does not match":         {fromState: inventory.TemplateCreated, existingInventory: "inventory_from_template_created", noopOnUnmetState: true, wantNoop: true},
+		"No-op on unmet state still runs if state matches":                  {fromState: inventory.BaseVMCreated, toState: inventory.TemplateCreated, existingInventory: "inventory_from_template_created", noopOnUnmetState: true},
 	}
 
 	for name, tc := range tests {
@@ -80,13 +87,31 @@ func TestInventory(t *testing.T) {
 			states = append(states, tc.additionalFromState)
 			states = append(states, tc.toState)
 
-			cmd := command.New(mockAction, command.WithStateTransition(states...))
+			opts := []command.Option{command.WithStateTransition(states...)}
+			if tc.noopOnUnmetState {
+				opts = append(opts, command.WithNoopOnUnmetState())
+			}
+
+			var actionRan bool
+			recordingAction := func(ctx context.Context, cmd *command.Command) error {
+				actionRan = true
+				return mockAction(ctx, cmd)
+			}
+
+			cmd := command.New(recordingAction, opts...)
 			ret := cmd.Execute(context.Background())
 
 			if tc.wantErr {
 				require.NotZero(t, ret, "Execute should have returned an error but it didn't")
 				return
 			}
+
+			if tc.wantNoop {
+				require.Zero(t, ret, "Execute should have reported success without acting")
+				require.False(t, actionRan, "Action should not have run on an unmet state")
+				return
+			}
+			require.True(t, actionRan, "Action should have run")
 
 			if tc.wantNoFile {
 				require.NoFileExists(t, inventoryPath, "Inventory file should not exist on the disk")

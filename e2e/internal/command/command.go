@@ -40,8 +40,9 @@ type Command struct {
 
 	fSet *flag.FlagSet
 
-	fromStates []inventory.State
-	toState    inventory.State
+	fromStates       []inventory.State
+	toState          inventory.State
+	noopOnUnmetState bool
 }
 
 // WithStateTransition sets the expected state transition for the command,
@@ -70,6 +71,20 @@ func WithRequiredState(state inventory.State) func(*options) error {
 	}
 }
 
+// WithNoopOnUnmetState reports success, without running the action, when the
+// inventory is missing or holds a state the command was not meant to act on.
+//
+// Cleanup commands are run unconditionally, including after a run that failed
+// before it had anything to clean up, so for them an unmet precondition means
+// there is nothing to do rather than that something went wrong.
+func WithNoopOnUnmetState() func(*options) error {
+	return func(a *options) error {
+		a.noopOnUnmetState = true
+
+		return nil
+	}
+}
+
 // WithValidateFunc sets the validation function for the command.
 func WithValidateFunc(validate cmdFunc) func(*options) error {
 	return func(a *options) error {
@@ -80,9 +95,10 @@ func WithValidateFunc(validate cmdFunc) func(*options) error {
 }
 
 type options struct {
-	validate   cmdFunc
-	fromStates []inventory.State
-	toState    inventory.State
+	validate         cmdFunc
+	fromStates       []inventory.State
+	toState          inventory.State
+	noopOnUnmetState bool
 }
 
 // Option is a function that configures the command.
@@ -106,9 +122,10 @@ func New(action cmdFunc, args ...Option) *Command {
 		action:   action,
 		validate: opts.validate,
 
-		fSet:       flag.NewFlagSet("", flag.ContinueOnError),
-		fromStates: opts.fromStates,
-		toState:    opts.toState,
+		fSet:             flag.NewFlagSet("", flag.ContinueOnError),
+		fromStates:       opts.fromStates,
+		toState:          opts.toState,
+		noopOnUnmetState: opts.noopOnUnmetState,
 	}
 }
 
@@ -209,6 +226,10 @@ func (c *Command) Execute(ctx context.Context) int {
 		c.Inventory, err = inventory.Read(c.GlobalFlags.InventoryFile)
 		log.Debugf("Inventory: %+v", c.Inventory)
 		if err != nil {
+			if c.noopOnUnmetState {
+				log.Infof("No inventory to act on: %s. Nothing to do", err)
+				return 0
+			}
 			log.Errorf("Failed to read inventory file required by the current script: %s. Please refer to the previous script in the series", err)
 			return 1
 		}
@@ -222,6 +243,10 @@ func (c *Command) Execute(ctx context.Context) int {
 			}
 		}
 		if !found {
+			if c.noopOnUnmetState {
+				log.Infof("Inventory is in state %q, which none of %v act on. Nothing to do", c.Inventory.State, c.fromStates)
+				return 0
+			}
 			log.Errorf("Inventory file is not in any of the expected initial states: %v", c.fromStates)
 			return 1
 		}
