@@ -203,6 +203,15 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		log.Warningf("Some packages failed to install: %v", err)
 	}
 
+	// Work around a stale mutter schema override on newer Ubuntu releases where
+	// the "experimental-features" key was removed from the org.gnome.mutter
+	// schema. ubuntu-proxy-manager runs glib-compile-schemas --strict, which
+	// fails if the override references a non-existent key, blocking proxy
+	// policy application. Remove the stale line if present.
+	if _, err := client.Run(ctx, "sed -i '/experimental-features/d' /usr/share/glib-2.0/schemas/10_mutter-common.gschema.override 2>/dev/null || true"); err != nil {
+		log.Warningf("Failed to clean stale mutter schema override: %v", err)
+	}
+
 	log.Infof("Joining VM to domain...")
 	_, err = client.Run(ctx, fmt.Sprintf("realm join warthogs.biz -U localadmin -v --unattended <<<'%s'", adPassword))
 	if err != nil {
