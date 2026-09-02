@@ -1,8 +1,8 @@
 module github.com/ubuntu/adsys
 
-go 1.25.0
+go 1.26.0
 
-toolchain go1.25.13
+toolchain go1.26.7
 
 require (
 	charm.land/bubbles/v2 v2.2.1

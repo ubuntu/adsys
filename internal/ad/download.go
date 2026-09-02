@@ -316,7 +316,7 @@ func downloadRecursive(ctx context.Context, client *libsmbclient.Client, url, de
 				return err
 			}
 		default:
-			return fmt.Errorf("unsupported type %q for entry %s", dirent.Type, dirent.Name)
+			return fmt.Errorf("unsupported type %d for entry %s", dirent.Type, dirent.Name)
 		}
 	}
 	return nil
