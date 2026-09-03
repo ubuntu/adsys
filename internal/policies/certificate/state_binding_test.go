@@ -363,13 +363,15 @@ func writeStateBindingCA(t *testing.T, ca *chainTestCA) (enrolledCA, templateCha
 		Bytes: ca.cert.Raw,
 	}), 0600))
 	fp := certificateFingerprint(ca.cert)
-	return enrolledCA{
-			IssuerFingerprint: fp,
-			ChainFingerprints: []string{fp},
-			RootCerts:         []string{rootPath},
-		}, templateChainBinding{
-			IssuerFingerprint: fp,
-			Fingerprints:      []string{fp},
-			Files:             []string{rootPath},
-		}
+	enrolled := enrolledCA{
+		IssuerFingerprint: fp,
+		ChainFingerprints: []string{fp},
+		RootCerts:         []string{rootPath},
+	}
+	template := templateChainBinding{
+		IssuerFingerprint: fp,
+		Fingerprints:      []string{fp},
+		Files:             []string{rootPath},
+	}
+	return enrolled, template
 }
