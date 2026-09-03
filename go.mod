@@ -1,8 +1,8 @@
 module github.com/ubuntu/adsys
 
-go 1.25.0
+go 1.26.0
 
-toolchain go1.25.13
+toolchain go1.26.7
 
 require (
 	charm.land/bubbles/v2 v2.2.1
@@ -33,7 +33,7 @@ require (
 	github.com/termie/go-shutil v0.0.0-20140729215957-bcacb06fecae
 	github.com/ubuntu/decorate v0.0.0-20240820145549-b76bb81d1209
 	github.com/ubuntu/go-i18n v0.0.0-20231113092927-594c1754ca47
-	golang.org/x/crypto v0.55.0
+	golang.org/x/crypto v0.56.0
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	golang.org/x/sync v0.22.0
 	golang.org/x/sys v0.47.0

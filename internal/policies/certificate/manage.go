@@ -1142,7 +1142,7 @@ func publicKeysMatch(cert *x509.Certificate, tmpl enrolledTemplate) (bool, error
 		if !ok {
 			return false, nil
 		}
-		return certPubKey.X.Cmp(privKey.X) == 0 && certPubKey.Y.Cmp(privKey.Y) == 0, nil
+		return certPubKey.Equal(&privKey.PublicKey), nil
 	default:
 		return false, fmt.Errorf("unsupported private key type: %T", key)
 	}

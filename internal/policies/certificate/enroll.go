@@ -105,7 +105,7 @@ func verifyIssuedCertificate(certPEM string, keyPEM []byte, identity string, exp
 		if !ok {
 			return nil, fmt.Errorf("certificate contains %T public key, expected *ecdsa.PublicKey", cert.PublicKey)
 		}
-		if certPubKey.X.Cmp(privKey.X) != 0 || certPubKey.Y.Cmp(privKey.Y) != 0 {
+		if !certPubKey.Equal(&privKey.PublicKey) {
 			return nil, fmt.Errorf("certificate public key does not match generated private key")
 		}
 	default:
