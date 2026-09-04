@@ -18,6 +18,14 @@ inputs:
     description: Routes to add after connecting
     required: false
     default: 10.1.0.0/16
+  mtu:
+    description: |
+      MTU to use for the tunnel. The default leaves enough room for the SSTP,
+      TLS and PPP headers wrapping each packet: at the interface default of
+      1500 the resulting packets are silently dropped, which strands any
+      transfer larger than about a kilobyte while leaving small ones working.
+    required: false
+    default: '1400'
 
 runs:
   using: 'composite'
@@ -26,7 +34,28 @@ runs:
     - name: Install required packages from PPA
       shell: bash
       run: |
-        sudo add-apt-repository -y ppa:ubuntu-enterprise-desktop/ppp
+        # Launchpad intermittently answers with a 500, or reports the PPA's
+        # signing key as temporarily missing. A single such answer would
+        # otherwise abort the job before it has done anything, and a matrix
+        # adds an opportunity for it per release. Back off rather than retry
+        # at a fixed interval: these episodes have lasted minutes, well past
+        # what a handful of immediate attempts covers.
+        delay=15
+        for i in {1..6}; do
+            if sudo add-apt-repository -y ppa:ubuntu-enterprise-desktop/ppp; then
+                break
+            fi
+            if [ "${i}" = 6 ]; then
+                echo "::error::Could not add the ppp PPA after 6 attempts"
+                exit 1
+            fi
+            echo "Adding the ppp PPA failed, retrying in ${delay}s (attempt ${i}/6)"
+            sleep "${delay}"
+            delay=$((delay * 2))
+            if [ "${delay}" -gt 120 ]; then
+                delay=120
+            fi
+        done
         sudo apt-get update
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -y sstp-client
     - name: Write certificate data to disk
@@ -45,8 +74,26 @@ runs:
       shell: bash
       env:
         GATEWAY: ${{ inputs.gateway }}
+        MTU: ${{ inputs.mtu }}
       run: |
+        # The identity pppd announces must be the common name of the *client*
+        # certificate: the gateway matches it against the certificate that is
+        # presented, and rejects the connection with a TLS "access denied"
+        # alert on mismatch.
         CN=$(sudo openssl x509 -noout -subject -nameopt multiline -in /vpn-certificates/cert.pem | sed -n 's/ *commonName *= //p')
+        if [ -z "${CN}" ]; then
+            echo "::error::Could not determine the common name of the client certificate"
+            exit 1
+        fi
+
+        # The plugin lives in a directory named after the exact pppd version,
+        # so resolve it instead of hardcoding a version that breaks whenever
+        # the PPA ships a new one.
+        plugin="$(ls /usr/lib/pppd/*/sstp-pppd-plugin.so 2>/dev/null | head -1)"
+        if [ -z "${plugin}" ]; then
+            echo "::error::Could not find sstp-pppd-plugin.so under /usr/lib/pppd"
+            exit 1
+        fi
 
         sudo tee /etc/ppp/peers/azure-vpn > /dev/null << EOF
         remotename      azure-vpn
@@ -54,7 +101,9 @@ runs:
         ipparam         azure-vpn
         pty             "sstpc --cert-warn --log-stderr --ipparam azure-vpn --nolaunchpppd --ca-cert /vpn-certificates/ca.pem ${GATEWAY}"
         name            ${CN}
-        plugin          /usr/lib/pppd/2.5.0/sstp-pppd-plugin.so
+        plugin          ${plugin}
+        mtu             ${MTU}
+        mru             ${MTU}
         sstp-sock       /run/sstpc/sstpc-azure-vpn
         require-eap
         refuse-mschap-v2
@@ -77,16 +126,79 @@ runs:
         sudo pon azure-vpn
     - name: Wait for VPN connection to be up
       shell: bash
+      env:
+        MTU: ${{ inputs.mtu }}
       run: |
-        timeout 30 bash -c 'while ! ip a | grep ppp0 | grep -q ,UP; do sleep 5; done'
+        # pppd creates ppp0 and flags it UP as soon as the PPP link starts,
+        # which happens before EAP-TLS authentication and IPCP negotiation.
+        # Checking for the interface alone therefore reports success for a
+        # tunnel the peer is about to tear down, and the failure only
+        # resurfaces later as unreachable hosts. An IPv4 address is only
+        # assigned once IPCP completes, so wait for that instead.
+        if ! timeout 60 bash -c 'until ip -4 addr show ppp0 2>/dev/null | grep -q "inet "; do sleep 2; done'; then
+            echo "::error::VPN tunnel did not come up: ppp0 has no IPv4 address"
+            sudo journalctl -b 0 -t pppd -t sstpc --no-pager -n 50 || true
+            exit 1
+        fi
+
+        # The peer has the final say during negotiation, so enforce the MTU
+        # rather than assume the value requested above was honoured.
+        sudo ip link set ppp0 mtu "${MTU}"
+
+        ip -4 addr show ppp0
     - name: Add routes if requested
       shell: bash
-      if: ${{ inputs.routes }} != ''
+      if: ${{ inputs.routes != '' }}
       env:
         ROUTES: ${{ inputs.routes }}
       run: |
+        # The runner is itself attached to a private network that overlaps the
+        # one we are trying to reach: its eth0 currently sits on a /20 carved
+        # out of the same 10.1.0.0/16 the Azure VMs live in. A plain route is
+        # therefore useless here, as the more specific on-link subnet keeps
+        # winning the longest-prefix match and traffic never enters the
+        # tunnel.
+        #
+        # Use policy routing instead, which is consulted before any prefix is
+        # matched, and keep the diverted destinations in a table of their own
+        # so the routes the runner needs for its own connectivity stay
+        # untouched.
+        table=42
+
+        # The default gateway sits inside the range we are about to divert,
+        # so exempt it first, at a higher priority, to leave the runner's own
+        # egress working.
+        gateway="$(ip route show default | awk '/^default/ {print $3; exit}')"
+        if [ -n "${gateway}" ]; then
+            sudo ip rule add to "${gateway}/32" lookup main priority 999
+        fi
+
         # split routes by comma
-        IFS=',' read -ra ADDR <<< "${{ env.ROUTES }}"
+        IFS=',' read -ra ADDR <<< "${ROUTES}"
         for i in "${ADDR[@]}"; do
-            sudo ip route add $i dev ppp0
+            sudo ip route add "$i" dev ppp0 table "${table}"
+            sudo ip rule add to "$i" lookup "${table}" priority 1000
+        done
+
+        # Confirm the destinations actually resolve to the tunnel, so that a
+        # routing conflict is reported here instead of much later as an
+        # unexplained connection timeout. The gateway and the runner's own
+        # addresses are deliberately reachable off-tunnel, so they say nothing
+        # about whether the diversion works and must not be sampled.
+        localaddrs="$(ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | paste -sd, -)"
+        for i in "${ADDR[@]}"; do
+            sample="$(python3 -c 'import ipaddress,sys; excluded=set(sys.argv[2].split(",")); print(next(str(h) for h in ipaddress.ip_network(sys.argv[1]).hosts() if str(h) not in excluded))' "$i" "${gateway},${localaddrs}")"
+            if ! ip route get "${sample}" | grep -q 'dev ppp0'; then
+                echo "::error::Route to ${i} does not go through the VPN"
+                echo "Route lookup for ${sample}:"
+                ip route get "${sample}" || true
+                echo "Rules:"
+                ip rule show || true
+                echo "Table ${table}:"
+                ip route show table "${table}" || true
+                echo "Runner addresses:"
+                ip -4 addr show
+                exit 1
+            fi
+            echo "Route to ${i} verified through the VPN using ${sample}"
         done

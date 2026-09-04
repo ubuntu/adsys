@@ -51,7 +51,11 @@ The machine must be authenticated to Azure via the Azure CLI.`, filepath.Base(os
 	return cmd.Execute(context.Background())
 }
 
-func action(ctx context.Context, cmd *command.Command) error {
+// action creates the image version from the base VM. The error is named so
+// that the cleanup deferred below observes what the function actually returns:
+// failure paths that bind their own err inside an if statement would otherwise
+// leave the error the cleanup inspects untouched.
+func action(ctx context.Context, cmd *command.Command) (err error) {
 	inv := cmd.Inventory
 
 	imageDefinition := az.ImageDefinitionName(inv.Codename)
@@ -65,8 +69,9 @@ func action(ctx context.Context, cmd *command.Command) error {
 	nextImageVersion := constructNewVersion(latestImageVersion, buildNumber, isDevelopmentVersion)
 
 	// Destroy VM if template creation fails
+	var vmDeleted bool
 	defer func() {
-		if err == nil {
+		if err == nil || vmDeleted {
 			return
 		}
 		log.Error(err)
@@ -128,6 +133,9 @@ func action(ctx context.Context, cmd *command.Command) error {
 		log.Infof("Preserving resource %q as requested", inv.VMID)
 		return nil
 	}
+	// Claim the deletion so that failing it does not have the cleanup above
+	// immediately attempt the very same call again.
+	vmDeleted = true
 	if err := az.DeleteVM(ctx, cmd.Inventory.VMName); err != nil {
 		return err
 	}

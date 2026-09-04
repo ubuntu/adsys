@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       codenames:
-        description: 'Comma-separated list of codenames to run tests on (e.g. "mantic", "focal") - will test all supported releases if not specified'
+        description: 'Comma-separated list of codenames to run tests on (e.g. "noble", "resolute") - will test all supported releases if not specified'
         type: string
         required: false
       repository:
@@ -54,21 +54,22 @@ jobs:
           set -eu
 
           codenames="$(distro-info --supported-esm)\n$(distro-info --supported)\n"
-          versions="$(distro-info --supported-esm --release)\n$(distro-info --supported --release)\n"
-
-          # Paste the codenames and versions together, sort them, and remove duplicates
-          codenames_with_versions="$(paste <(printf "$versions" | cut -d' ' -f1) <(printf "$codenames") | sort -u)"
 
           releases=""
-          while IFS=$'\t' read -r version codename; do
-              # Filter out unsupported LTS releases
-              if [[ "${codename}" =~ trusty|xenial|bionic ]]; then
+          while read -r codename; do
+              # Filter out unsupported LTS releases. Keep this list in sync
+              # with the one in e2e-build-images.yaml: testing a release we
+              # never build a template for can only ever fail.
+              if [[ "${codename}" =~ xenial|bionic|focal|jammy ]]; then
                   continue
               fi
 
-              # Filter out releases with no corresponding Azure images
-              latestImageVersion="$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${codename} --version ${version} --force)"
-              if [ -z "${latestImageVersion}" ]; then
+              # Filter out releases with no VM template in our image gallery,
+              # as there is nothing to provision the client VM from.
+              # Assign first so that a failing lookup fails the job instead of
+              # being silently treated as a missing template.
+              templateVersion="$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${codename} --check-template)"
+              if [ -z "${templateVersion}" ]; then
                   continue
               fi
 
@@ -76,7 +77,12 @@ jobs:
                   releases="${releases}, "
               fi
               releases="${releases}'${codename}'"
-          done <<< "$codenames_with_versions"
+          done <<< "$(printf "$codenames" | sort -u)"
+
+          if [ -z "${releases}" ]; then
+              echo "::error::No supported release has a VM template available, check the \"E2E - Build image templates\" workflow"
+              exit 1
+          fi
 
           echo matrix="${releases}" >> $GITHUB_OUTPUT
 
@@ -151,13 +157,17 @@ jobs:
         with:
           name: e2e-logs-${{ matrix.codename }}
           path: logs/
+      - name: Collect VPN diagnostics on failure
+        if: ${{ failure() }}
+        run: |
+          echo "=== ppp0 ==="
+          ip -4 addr show ppp0 || echo "ppp0 is gone"
+          echo "=== routing rules ==="
+          ip rule show || true
+          echo "=== VPN routing table ==="
+          ip route show table 42 || true
+          echo "=== pppd and sstpc log ==="
+          sudo journalctl -b 0 -t pppd -t sstpc --no-pager -n 100 || true
       - name: Deprovision resources
         if: ${{ always() }}
-        run: |
-          # Check inventory status to see if we need to deprovision
-          if [ ! -f inventory.yaml ] || grep -q 'vmid: ""' inventory.yaml; then
-              echo "Inventory file not found, skipping deprovision"
-              exit 0
-          fi
-
-          go run ./e2e/cmd/run_tests/99_deprovision
+        run: go run ./e2e/cmd/run_tests/99_deprovision

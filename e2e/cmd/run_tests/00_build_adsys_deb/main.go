@@ -66,15 +66,13 @@ func action(ctx context.Context, cmd *command.Command) error {
 
 	log.Infof("Preparing build container %q", dockerTag)
 	// #nosec G204: this is only for tests, under controlled args
-	out, err := exec.CommandContext(ctx,
+	if err := runStreaming(ctx,
 		"docker", "build", "-t", dockerTag,
 		"--build-arg", fmt.Sprintf("CODENAME=%s", codename),
 		"--file", filepath.Join(scriptsDir, "Dockerfile.build"), ".",
-	).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to build container: %w: %s", err, string(out))
+	); err != nil {
+		return fmt.Errorf("failed to build container: %w", err)
 	}
-	log.Debugf("docker build output: %s", string(out))
 
 	// Run the container
 	dockerArgs := []string{"run"}
@@ -102,13 +100,27 @@ func action(ctx context.Context, cmd *command.Command) error {
 
 	log.Info("Building adsys package")
 	log.Debugf("Running docker with args: %v", dockerArgs)
-	out, err = exec.CommandContext(ctx, "docker", dockerArgs...).CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to run container: %w: %s", err, string(out))
+	if err := runStreaming(ctx, "docker", dockerArgs...); err != nil {
+		return fmt.Errorf("failed to run container: %w", err)
 	}
-	log.Debugf("docker run output: %s", string(out))
 
 	cmd.Inventory.Codename = codename
 
 	return nil
+}
+
+// runStreaming runs the given command, forwarding its output to our own as it
+// is produced.
+//
+// Buffering the output and attaching it to the returned error instead loses it
+// exactly when it is needed: a container build emits far more than a log
+// backend will accept on a single line, so a failure ends up reported as an
+// entry too large to be recorded, leaving no trace of what went wrong.
+func runStreaming(ctx context.Context, name string, args ...string) error {
+	// #nosec G204: this is only for tests, under controlled args
+	c := exec.CommandContext(ctx, name, args...)
+	c.Stdout = os.Stderr
+	c.Stderr = os.Stderr
+
+	return c.Run()
 }

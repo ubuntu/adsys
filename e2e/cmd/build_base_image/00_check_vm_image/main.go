@@ -17,7 +17,7 @@ import (
 )
 
 var codename, version string
-var force bool
+var force, checkTemplate bool
 
 func main() {
 	os.Exit(run())
@@ -39,29 +39,63 @@ not output anything to stdout and will exit with 0.
 If the --force flag is set, the script will return the latest image URN
 regardless of custom image availability.
 
+If the --check-template flag is set, the script ignores the Marketplace
+entirely and instead prints the version of the custom image template that
+already exists for the given codename, printing nothing if no template was
+ever built. This tells consumers whether a release can be provisioned at all.
+
 Options:
  --codename              Required: codename of the Ubuntu release (e.g. noble)
- --version               Required: version of the Ubuntu release (e.g. 24.04)
+ --version               Required: version of the Ubuntu release (e.g. 24.04),
+                         except with --check-template
  -f, --force             Force the script to return the latest image URN
                          regardless of whether we have a custom image or not
+ --check-template        Print the version of the existing custom image
+                         template, if any, and exit
 `, filepath.Base(os.Args[0]))
 	cmd.AddStringFlag(&codename, "codename", "", "")
 	cmd.AddStringFlag(&version, "version", "", "")
 	cmd.AddBoolFlag(&force, "force", false, "")
 	cmd.AddBoolFlag(&force, "f", false, "")
+	cmd.AddBoolFlag(&checkTemplate, "check-template", false, "")
 
 	return cmd.Execute(context.Background())
 }
 
 func validate(_ context.Context, _ *command.Command) error {
-	if codename == "" || version == "" {
-		return errors.New("codename and version must be specified")
+	if codename == "" {
+		return errors.New("codename must be specified")
+	}
+
+	if checkTemplate {
+		if force {
+			return errors.New("--check-template and --force are mutually exclusive")
+		}
+		return nil
+	}
+
+	if version == "" {
+		return errors.New("version must be specified")
 	}
 
 	return nil
 }
 
 func action(ctx context.Context, _ *command.Command) error {
+	if checkTemplate {
+		latestCustomImageVersion, err := az.LatestImageVersion(ctx, az.ImageDefinitionName(codename))
+		if err != nil {
+			return fmt.Errorf("failed to get latest image version: %w", err)
+		}
+		if latestCustomImageVersion == az.NullImageVersion {
+			log.Warningf("no custom image template found for codename %q", codename)
+			return nil
+		}
+
+		fmt.Println(latestCustomImageVersion)
+		return nil
+	}
+
 	var noStable, noDaily bool
 
 	availableImages, err := az.ImageList(ctx, codename, version)

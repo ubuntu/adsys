@@ -71,7 +71,11 @@ func validate(_ context.Context, _ *command.Command) (err error) {
 	return nil
 }
 
-func action(ctx context.Context, cmd *command.Command) error {
+// action provisions the client VM. The error is named so that the cleanup
+// deferred below observes what the function actually returns: failure paths
+// that bind their own err inside an if statement would otherwise leave the
+// error the cleanup inspects untouched.
+func action(ctx context.Context, cmd *command.Command) (err error) {
 	adsysRootDir, err := scripts.RootDir()
 	if err != nil {
 		return err
@@ -160,6 +164,10 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	defer client.Close()
 
+	if err := client.CheckLink(ctx); err != nil {
+		return err
+	}
+
 	out, err = client.Run(ctx, "hostname")
 	if err != nil {
 		return fmt.Errorf("failed to get hostname of VM: %w", err)
@@ -193,6 +201,15 @@ func action(ctx context.Context, cmd *command.Command) error {
 	log.Infof("Installing universe packages required for some policy managers...")
 	if _, err := client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y ubuntu-proxy-manager"); err != nil {
 		log.Warningf("Some packages failed to install: %v", err)
+	}
+
+	// Work around a stale mutter schema override on newer Ubuntu releases where
+	// the "experimental-features" key was removed from the org.gnome.mutter
+	// schema. ubuntu-proxy-manager runs glib-compile-schemas --strict, which
+	// fails if the override references a non-existent key, blocking proxy
+	// policy application. Remove the stale line if present.
+	if _, err := client.Run(ctx, "sed -i '/experimental-features/d' /usr/share/glib-2.0/schemas/10_mutter-common.gschema.override 2>/dev/null || true"); err != nil {
+		log.Warningf("Failed to clean stale mutter schema override: %v", err)
 	}
 
 	log.Infof("Joining VM to domain...")
