@@ -15,28 +15,25 @@ ARG CODENAME=latest
 # Keep the codename list easy to maintain, keeping in mind that we might need to
 # add more as the need to backport various packages arises.
 #
-# focal and noble don't ship a new enough golang-go for adsys (noble notably
-# lacks golang-1.25-go, required by debian/rules - see e2e/scripts/patches -
-# to satisfy the go.mod go 1.25 requirement without forcing an older
-# toolchain with GOTOOLCHAIN=local). ppa:ubuntu-enterprise-desktop/golang
-# publishes golang-1.25-go for noble (confirmed via the Launchpad API), so
-# reuse that existing, already-trusted Canonical PPA rather than adding a new
-# supply-chain dependency.
-RUN if [ "$CODENAME" = "focal" ] || [ "$CODENAME" = "noble" ]; then \
+# noble ships golang-go 1.22, which does not satisfy the go.mod requirement,
+# and carries no golang-1.25-go of its own.
+# ppa:ubuntu-enterprise-desktop/golang publishes one for it, letting
+# debian/rules build against 1.25 without falling back to an older toolchain
+# (see e2e/scripts/patches). Releases newer than noble already ship a
+# golang-go that satisfies the requirement and need nothing here.
+RUN if [ "$CODENAME" = "noble" ]; then \
         set -ex \
         && apt-get install -y software-properties-common \
-        && add-apt-repository -y ppa:ubuntu-enterprise-desktop/golang; \
-    fi
-
-# jammy doesn't have golang-1.25-go published in
-# ppa:ubuntu-enterprise-desktop/golang (confirmed via the Launchpad API), nor
-# in its archive/security/updates pockets. Fall back to the actively
-# maintained community backports PPA referenced by upstream Go
-# (https://github.com/golang/go/wiki/Ubuntu) for jammy only.
-RUN if [ "$CODENAME" = "jammy" ]; then \
-        set -ex \
-        && apt-get install -y software-properties-common \
-        && add-apt-repository -y ppa:longsleep/golang-backports; \
+        && ok=0 \
+        && delay=15 \
+        && for i in 1 2 3 4 5 6; do \
+               if add-apt-repository -y ppa:ubuntu-enterprise-desktop/golang; then ok=1; break; fi; \
+               echo "Adding the golang PPA failed, retrying in ${delay}s (attempt $i/6)"; \
+               sleep "$delay"; \
+               delay=$((delay * 2)); \
+               if [ "$delay" -gt 120 ]; then delay=120; fi; \
+           done \
+        && [ "$ok" = 1 ]; \
     fi
 
 RUN set -ex \

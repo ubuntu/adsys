@@ -21,6 +21,25 @@ import (
 // commandTimeout is the maximum time a command can run before being cancelled.
 const commandTimeout = 90 * time.Minute
 
+// keepAliveInterval is how often we poke the server to keep the connection
+// from being considered idle. Commands such as a distribution upgrade can go
+// for minutes without writing anything, and the connection crosses a VPN and
+// the stateful equipment along with it, which drops silent flows well before
+// the command itself has had a chance to finish.
+const keepAliveInterval = 30 * time.Second
+
+const (
+	// linkProbeSize is how much output CheckLink asks the host to produce. It
+	// only needs to be large enough to require a long run of full-size TCP
+	// segments, which is what a link that only carries small packets fails to
+	// deliver.
+	linkProbeSize = 64 * 1024
+
+	// linkProbeTimeout bounds the probe. A healthy link answers in well under
+	// a second; one that drops full-size packets never answers at all.
+	linkProbeTimeout = 30 * time.Second
+)
+
 const (
 	// DomainUserPassword is the password to login as domain users.
 	DomainUserPassword = "supersecretpassword"
@@ -34,6 +53,9 @@ type Client struct {
 	client *ssh.Client
 	config *ssh.ClientConfig
 	host   string
+
+	done      chan struct{}
+	closeOnce *sync.Once
 }
 
 // NewClient creates a new SSH client.
@@ -80,16 +102,95 @@ func NewClient(host string, username string, secret string) (Client, error) {
 		return Client{}, fmt.Errorf("failed to connect to %q: %w", host, err)
 	}
 
-	return Client{
-		client: client,
-		config: config,
-		host:   host,
-	}, nil
+	c := Client{
+		client:    client,
+		config:    config,
+		host:      host,
+		done:      make(chan struct{}),
+		closeOnce: &sync.Once{},
+	}
+	go c.keepAlive(client)
+
+	return c, nil
+}
+
+// keepAlive periodically sends a request over the given connection so that it
+// keeps carrying traffic even while a command produces no output.
+//
+// The connection is passed explicitly rather than read from the client, as a
+// reboot replaces it and each goroutine must keep polling the one it was
+// started for.
+func (c Client) keepAlive(client *ssh.Client) {
+	ticker := time.NewTicker(keepAliveInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-c.done:
+			return
+		case <-ticker.C:
+			if _, _, err := client.SendRequest("keepalive@openssh.com", true, nil); err != nil {
+				// The connection is gone; whatever was running on it reports
+				// the failure with far more context than we could here.
+				return
+			}
+		}
+	}
 }
 
 // Close closes the SSH connection.
 func (c *Client) Close() error {
+	c.closeOnce.Do(func() { close(c.done) })
+
 	return c.client.Close()
+}
+
+// CheckLink verifies that the connection can carry a sustained transfer, not
+// just the short exchanges that establishing it consists of.
+//
+// A link whose packets are capped below what the interface advertises still
+// completes a handshake, answers pings and returns short commands, so it looks
+// healthy right up until something produces real output and the connection
+// stalls with no indication of why. Provoke that here instead, where it can be
+// reported against the connection rather than against whichever command
+// happened to be running.
+//
+// The output is deliberately read without logging it.
+func (c Client) CheckLink(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, linkProbeTimeout)
+	defer cancel()
+
+	session, err := c.client.NewSession()
+	if err != nil {
+		return fmt.Errorf("failed to create session: %w", err)
+	}
+	defer session.Close()
+
+	log.Infof("Checking link to %q can carry a sustained transfer", c.host)
+
+	type outcome struct {
+		out []byte
+		err error
+	}
+	done := make(chan outcome, 1)
+	go func() {
+		out, err := session.Output(fmt.Sprintf("head -c %d /dev/zero | tr '\\0' 'a'", linkProbeSize))
+		done <- outcome{out: out, err: err}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("link to %q stalled after transferring less than %d bytes: the connection carries small packets but not large ones, which points at an MTU too large for the tunnel it crosses", c.host, linkProbeSize)
+	case res := <-done:
+		if res.err != nil {
+			return fmt.Errorf("link check against %q failed: %w", c.host, res.err)
+		}
+		if len(res.out) != linkProbeSize {
+			return fmt.Errorf("link to %q delivered %d bytes out of %d", c.host, len(res.out), linkProbeSize)
+		}
+	}
+
+	return nil
 }
 
 // Run runs the given command on the remote host and returns the combined output
@@ -135,7 +236,11 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	go func() {
 		for stdoutScanner.Scan() {
 			line := stdoutScanner.Text()
-			log.Debug("\t", line)
+			// Report at info level: these commands run for minutes at a time
+			// against a remote machine, and when one stops making progress or
+			// the connection drops mid-way, this output is the only record of
+			// how far it got.
+			log.Info("\t", line)
 			mu.Lock()
 			combinedOutput = append(combinedOutput, line)
 			mu.Unlock()
@@ -300,6 +405,7 @@ func (c *Client) Reboot() error {
 				log.Infof("Host has rebooted successfully")
 				c.client.Close()
 				c.client = newClient
+				go c.keepAlive(newClient)
 
 				return nil
 			}

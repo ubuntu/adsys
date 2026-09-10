@@ -27,12 +27,21 @@ func RunCommand(ctx context.Context, args ...string) ([]byte, []byte, error) {
 	c.Stderr = &errb
 	err := c.Run()
 
+	// Report the output at a level that reflects the outcome. The CLI writes
+	// advisories to stderr on calls that went perfectly well, so warning about
+	// those unconditionally trains readers to disregard warnings, while a call
+	// that failed is unreadable without the output explaining why.
+	logOutput := log.Debugf
+	if err != nil {
+		logOutput = log.Warningf
+	}
 	if outb.Len() > 0 {
-		log.Debugf("\tSTDOUT: %s", outb.String())
+		logOutput("\tSTDOUT: %s", outb.String())
 	}
 	if errb.Len() > 0 {
-		log.Warningf("\tSTDERR: %s", errb.String())
+		logOutput("\tSTDERR: %s", errb.String())
 	}
+
 	return outb.Bytes(), errb.Bytes(), err
 }
 

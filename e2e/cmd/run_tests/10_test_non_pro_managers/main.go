@@ -96,11 +96,7 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		return err
 	}
 
-	expectedPictureURIDark := "'file:///usr/share/backgrounds/warty-final-ubuntu.png'"
-	if cmd.Inventory.Codename == "jammy" {
-		expectedPictureURIDark = "'file:///usr/share/backgrounds/ubuntu-default-greyscale-wallpaper.png'"
-	}
-	if err := client.RequireEqual(ctx, "dconf read /org/gnome/desktop/background/picture-uri-dark", expectedPictureURIDark); err != nil {
+	if err := client.RequireEqual(ctx, "dconf read /org/gnome/desktop/background/picture-uri-dark", "'file:///usr/share/backgrounds/warty-final-ubuntu.png'"); err != nil {
 		return err
 	}
 	if err := client.RequireEqual(ctx, "dconf read /org/gnome/shell/favorite-apps", "['firefox.desktop', 'thunderbird.desktop', 'org.gnome.Nautilus.desktop']"); err != nil {

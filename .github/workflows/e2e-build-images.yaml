@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       codenames:
-        description: 'Comma-separated list of codenames to build for (e.g. "mantic", "focal") - will build for all supported releases if not specified'
+        description: 'Comma-separated list of codenames to build for (e.g. "noble", "resolute") - will build for all supported releases if not specified'
         type: string
         required: false
       force:
@@ -45,8 +45,9 @@ jobs:
           releases=""
           versions=""
           while IFS=$'\t' read -r version codename; do
-              # Filter out unsupported LTS releases
-              if [[ "${codename}" =~ xenial|bionic|focal ]]; then
+              # Filter out unsupported LTS releases. Keep this list in sync
+              # with the one in e2e-tests.yaml.
+              if [[ "${codename}" =~ xenial|bionic|focal|jammy ]]; then
                   continue
               fi
 
@@ -124,6 +125,17 @@ jobs:
         if: steps.check-vm-template.outputs.image-version != ''
         run: |
           go run ./e2e/cmd/build_base_image/02_create_vm_template
+      - name: Collect VPN diagnostics on failure
+        if: ${{ failure() }}
+        run: |
+          echo "=== ppp0 ==="
+          ip -4 addr show ppp0 || echo "ppp0 is gone"
+          echo "=== routing rules ==="
+          ip rule show || true
+          echo "=== VPN routing table ==="
+          ip route show table 42 || true
+          echo "=== pppd and sstpc log ==="
+          sudo journalctl -b 0 -t pppd -t sstpc --no-pager -n 100 || true
       - name: Purge old template versions
         run: |
           go run ./e2e/cmd/build_base_image/99_destroy_previous_versions --codename ${{ matrix.codename }}
