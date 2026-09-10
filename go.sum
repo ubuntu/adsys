@@ -154,8 +154,8 @@ github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e h1:fD57ERR4JtEqsWb
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/oiweiwei/go-math v1.0.0 h1:eBxtydohwi0RTfSX8EPQRO7Xt8j4Ck5v7PVv8Hvp7jg=
 github.com/oiweiwei/go-math v1.0.0/go.mod h1:rWG2PIZRYIjovChTlCcssArtO/s2pVj38c1h2QfH1UM=
-github.com/oiweiwei/go-msrpc v1.5.2 h1:+BO7tmTbvHv6w27n+C7os5G1j8BiyIJkQzLOvJW857M=
-github.com/oiweiwei/go-msrpc v1.5.2/go.mod h1:P55lCM4xEZ+R9Z2fvXM+prKCSiVt+NhzE3/HpD89e4s=
+github.com/oiweiwei/go-msrpc v1.5.3 h1:J1969gE+MaTuanuWIggl/fxE41hi90zTHiiR3yOXT5k=
+github.com/oiweiwei/go-msrpc v1.5.3/go.mod h1:z3uYZ4AdooFX27OEUQ6y7IV1HjRELyOa+TKq0ju8ilI=
 github.com/oiweiwei/go-oem v1.0.0 h1:77MJnres0RkNadz7oPEfsbUmZxw1XfYtl8yaxfm8bMM=
 github.com/oiweiwei/go-oem v1.0.0/go.mod h1:+QzsBHKmIIYsYk6Cx+vmjBNSymazlroCVurNRzsgyIg=
 github.com/oiweiwei/go-smb2.fork v1.0.2 h1:rHCaJhX37yNg7U/R7WeoSqlZQxudu/rSxFbA4xtpK2M=
