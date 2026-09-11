@@ -6,8 +6,8 @@ index f11b86fe..48220d7d 100644
  Build-Depends: debhelper-compat (= 13),
                 dh-apport,
                 dh-golang,
--               golang-go (>= 2:1.25~),
-+               golang-1.25-go,
+-               golang-go (>= 2:1.26~),
++               golang-1.26-go,
                 apparmor,
                 dbus,
                 libdbus-1-dev,
@@ -17,8 +17,8 @@ index f9705a3d..d7dc0b1c 100755
 +++ b/debian/rules
 @@ -31,2 +31,5 @@ export GOTOOLCHAIN := local
 
-+# Run with Go 1.25
-+export PATH := /usr/lib/go-1.25/bin/:$(PATH)
++# Run with Go 1.26
++export PATH := /usr/lib/go-1.26/bin/:$(PATH)
 +
  %:
 @@ -89,0 +90,2 @@ endif

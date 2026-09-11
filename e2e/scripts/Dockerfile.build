@@ -16,9 +16,9 @@ ARG CODENAME=latest
 # add more as the need to backport various packages arises.
 #
 # noble ships golang-go 1.22, which does not satisfy the go.mod requirement,
-# and carries no golang-1.25-go of its own.
+# and carries no golang-1.26-go of its own.
 # ppa:ubuntu-enterprise-desktop/golang publishes one for it, letting
-# debian/rules build against 1.25 without falling back to an older toolchain
+# debian/rules build against 1.26 without falling back to an older toolchain
 # (see e2e/scripts/patches). Releases newer than noble already ship a
 # golang-go that satisfies the requirement and need nothing here.
 RUN if [ "$CODENAME" = "noble" ]; then \
@@ -49,4 +49,3 @@ RUN set -ex \
 RUN rm /etc/apt/apt.conf.d/docker-clean
 RUN rm -rf /tmp/* /var/tmp/
 RUN ln -s /tmp /var/tmp
-
