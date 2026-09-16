@@ -35,6 +35,7 @@ type Watcher struct {
 	cmdErr chan error
 
 	refreshDuration time.Duration
+	eventProcessed  func(string, time.Time)
 }
 
 type command struct {
@@ -46,6 +47,7 @@ type command struct {
 // options are the configurable functional options for the watcher.
 type options struct {
 	refreshDuration time.Duration
+	eventProcessed  func(string, time.Time)
 }
 type option func(*options) error
 
@@ -77,6 +79,7 @@ func New(ctx context.Context, initialDirs []string, opts ...option) (*Watcher, e
 		cmdErr: cmdErr,
 
 		refreshDuration: args.refreshDuration,
+		eventProcessed:  args.eventProcessed,
 	}
 
 	go func() {
@@ -284,7 +287,14 @@ func (w *Watcher) watch(ctx context.Context, dirs []string, initError chan<- err
 			}
 
 			// We got a change, so reset the timer to the grace period.
+			var timerResetStarted time.Time
+			if w.eventProcessed != nil {
+				timerResetStarted = time.Now()
+			}
 			refreshTimer.Reset(w.refreshDuration)
+			if w.eventProcessed != nil {
+				w.eventProcessed(event.Name, timerResetStarted)
+			}
 
 		case err, ok := <-fsWatcher.Errors:
 			if ok {
