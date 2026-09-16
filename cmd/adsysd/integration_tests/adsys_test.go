@@ -13,12 +13,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
@@ -29,6 +31,11 @@ import (
 )
 
 const dockerSystemDaemonsImage = "ghcr.io/ubuntu/adsys/systemdaemons:0.1"
+
+// daemonsStartupTimeout is how long we wait for the mock containers to expose
+// their buses. It is deliberately generous: the containers are started in
+// parallel and a loaded CI runner can take a while to get them all up.
+const daemonsStartupTimeout = 90 * time.Second
 
 var (
 	rootProjectDir string
@@ -437,6 +444,20 @@ func runDaemons() (teardown func()) {
 	groupFile := writeUserDatabase(dir, "group", "/etc/group")
 
 	var errsDocker error
+	var errsDockerMu sync.Mutex
+	// The container goroutines outlive this function, so reads and writes of
+	// errsDocker must be synchronized.
+	addDockerErr := func(err error) {
+		errsDockerMu.Lock()
+		defer errsDockerMu.Unlock()
+		errsDocker = errors.Join(errsDocker, err)
+	}
+	dockerErr := func() error {
+		errsDockerMu.Lock()
+		defer errsDockerMu.Unlock()
+		return errsDocker
+	}
+
 	var wg sync.WaitGroup
 	for answer, socketDir := range answers {
 		wg.Add(1)
@@ -465,7 +486,7 @@ func runDaemons() (teardown func()) {
 			out, _ := cmd.CombinedOutput()
 			// Docker stop -t 0 will kill it anyway the container with exit code 143 or 137 in mantic (-t 0 does not work there)
 			if cmd.ProcessState.ExitCode() > 0 && cmd.ProcessState.ExitCode() != 137 && cmd.ProcessState.ExitCode() != 143 {
-				errsDocker = errors.Join(errsDocker, fmt.Errorf("Error running system daemons container named %q:\nExit code: %d\n%v", answer, cmd.ProcessState.ExitCode(), string(out)))
+				addDockerErr(fmt.Errorf("Error running system daemons container named %q:\nExit code: %d\n%v", answer, cmd.ProcessState.ExitCode(), string(out)))
 			}
 		}()
 	}
@@ -474,13 +495,11 @@ func runDaemons() (teardown func()) {
 		dbusSockets[a] = fmt.Sprintf("unix:path=%s", s)
 	}
 
-	// give time for polkit containers to start
-	// TODO: wait for polkit containers to be ready
-	time.Sleep(5 * time.Second)
-
-	// Check if we got startup docker error
-	if errsDocker != nil {
-		log.Fatalf("Setup: docker errors (some may still be ALIVE): %v", errsDocker)
+	// Wait for the polkit containers to be ready instead of hoping a fixed delay
+	// is enough: a loaded machine may need much longer, and connecting to a bus
+	// that is not listening yet fails the tests using it.
+	if err := waitForDaemons(answers, dockerErr); err != nil {
+		log.Fatalf("Setup: %v (some containers may still be ALIVE)", err)
 	}
 
 	return func() {
@@ -496,16 +515,73 @@ func runDaemons() (teardown func()) {
 				// #nosec G204: we control the args in tests
 				out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
 				if err != nil {
-					errsDocker = errors.Join(errsDocker, fmt.Errorf("Teardown: can't stop system daemons container: %v", string(out)))
+					addDockerErr(fmt.Errorf("Teardown: can't stop system daemons container: %v", string(out)))
 				}
 			}()
 		}
 
 		wg.Wait()
-		if errsDocker != nil {
-			log.Fatalf("Teardown: docker errors: %v", errsDocker)
+		if err := dockerErr(); err != nil {
+			log.Fatalf("Teardown: docker errors: %v", err)
 		}
 	}
+}
+
+// waitForDaemons blocks until every mock container is ready to serve requests,
+// or until daemonsStartupTimeout elapses. It fails early if a container reported
+// a startup error in the meantime.
+func waitForDaemons(answers map[string]string, dockerErr func() error) error {
+	deadline := time.Now().Add(daemonsStartupTimeout)
+
+	for answer, socketDir := range answers {
+		for {
+			err := daemonsReady(socketDir)
+			if err == nil {
+				break
+			}
+
+			if dockerErrs := dockerErr(); dockerErrs != nil {
+				return fmt.Errorf("docker errors while waiting for the %q daemons: %w", answer, dockerErrs)
+			}
+			if time.Now().After(deadline) {
+				return fmt.Errorf("%q daemons not ready after %s: %w", answer, daemonsStartupTimeout, err)
+			}
+
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+
+	return nil
+}
+
+// daemonsReady reports whether the mock daemons exposed in socketDir can serve
+// requests: both buses must accept connections and polkitd must have claimed its
+// name on the system bus, as it is started after them.
+func daemonsReady(socketDir string) error {
+	systemSocket := filepath.Join(socketDir, "system_bus_socket")
+	for _, socket := range []string{systemSocket, filepath.Join(socketDir, "session_bus_socket")} {
+		conn, err := net.Dial("unix", socket)
+		if err != nil {
+			return err
+		}
+		_ = conn.Close()
+	}
+
+	conn, err := dbus.Connect("unix:path=" + systemSocket)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = conn.Close() }()
+
+	var names []string
+	if err := conn.BusObject().Call("org.freedesktop.DBus.ListNames", 0).Store(&names); err != nil {
+		return err
+	}
+	if !slices.Contains(names, "org.freedesktop.PolicyKit1") {
+		return errors.New("polkitd has not claimed its name on the system bus yet")
+	}
+
+	return nil
 }
 
 // writeUserDatabase copies the host NSS database file (/etc/passwd or /etc/group)
