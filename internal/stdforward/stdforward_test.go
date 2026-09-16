@@ -346,6 +346,82 @@ func TestAddStdoutForwarderOneWithFailingForwarder(t *testing.T) {
 	assert.Equal(t, commonText+commonText+commonText, myWriter.String(), "Both messages are on the custom writer")
 }
 
+// TestRemoveForwarderWithPendingMessages ensures that disconnecting the last
+// writer while io.Copy still has buffered messages to forward neither deadlocks
+// nor drops those messages.
+func TestRemoveForwarderWithPendingMessages(t *testing.T) {
+	commonText := "content on stdout and writer"
+
+	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
+
+	// 1. Hook up the writer
+	var myWriter concurrentStringsBuilder
+	restore, err := stdforward.AddStdoutWriter(&myWriter)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter")
+
+	// 2. Write and immediately disconnect, without letting io.Copy drain the pipe.
+	fmt.Print(commonText)
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		restore()
+	}()
+	select {
+	case <-done:
+	case <-time.After(30 * time.Second):
+		// Don’t call restoreStdout() here: the forwarder is wedged and the test
+		// binary is about to fail anyway.
+		t.Fatal("Disconnecting the writer should not block on pending messages")
+	}
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStdout()
+
+	// Check content
+	assert.Equal(t, commonText, stringFromReader(t, stdoutReader), "Message is on stdout")
+	assert.Equal(t, commonText, myWriter.String(), "Pending message is still forwarded to the custom writer")
+}
+
+// TestReAddForwarderAfterDisconnectByOtherWriter ensures the forwarder can be
+// reinitialized after being torn down by a writer that did not initialize it.
+func TestReAddForwarderAfterDisconnectByOtherWriter(t *testing.T) {
+	text1 := "content 1"
+	text2 := "|content 2"
+
+	_, restoreStdout := fileToReader(t, &os.Stdout)
+
+	// 1. Hook up two writers: the second one does not initialize the forwarder.
+	var myWriter1, myWriter2 concurrentStringsBuilder
+	restore1, err := stdforward.AddStdoutWriter(&myWriter1)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter1")
+	restore2, err := stdforward.AddStdoutWriter(&myWriter2)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter2")
+
+	// 2. Disconnect them in order, so the last teardown is done by myWriter2.
+	restore1()
+	restore2()
+
+	// 3. Reinitializing must attach a brand new forwarder, with no leftover
+	// io.Copy goroutine forwarding to the previous writers.
+	var myWriter3 concurrentStringsBuilder
+	restore3, err := stdforward.AddStdoutWriter(&myWriter3)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter3")
+	fmt.Print(text1)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+	restore3()
+
+	fmt.Print(text2)
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStdout()
+
+	// Check content
+	assert.Equal(t, text1, myWriter3.String(), "Writer3 gets the message sent while it was connected")
+	assert.Empty(t, myWriter1.String(), "Writer1 doesn’t get messages after being disconnected")
+	assert.Empty(t, myWriter2.String(), "Writer2 doesn’t get messages after being disconnected")
+}
+
 // fileToReader redirects file to a reader.
 // It returns a restore function if you don’t want to wait for the end of the test to restore the output.
 func fileToReader(t *testing.T, f **os.File) (r io.Reader, restore func()) {
