@@ -239,6 +239,10 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) error
 }
 
 func runScripts(ctx context.Context, order string, allowOrderMissing bool, onBusyScriptRetry func()) (err error) {
+	return runScriptsWithBusyScriptRetrySettings(ctx, order, allowOrderMissing, busyScriptRetries, busyScriptDelay, onBusyScriptRetry)
+}
+
+func runScriptsWithBusyScriptRetrySettings(ctx context.Context, order string, allowOrderMissing bool, retries int, delay time.Duration, onBusyScriptRetry func()) (err error) {
 	defer decorate.OnError(&err, gotext.Get("can't run scripts listed in %s", order))
 
 	log.Infof(ctx, "Calling RunScripts on %q", order)
@@ -298,7 +302,7 @@ func runScripts(ctx context.Context, order string, allowOrderMissing bool, onBus
 		}
 		script := filepath.Join(baseDir, scriptPath)
 		log.Debugf(ctx, "Running script %q", script)
-		if err := runScript(ctx, script, onBusyScriptRetry); err != nil {
+		if err := runScript(ctx, script, retries, delay, onBusyScriptRetry); err != nil {
 			log.Warningf(ctx, "%q failed to run\n%v", script, err)
 		}
 	}
@@ -308,7 +312,7 @@ func runScripts(ctx context.Context, order string, allowOrderMissing bool, onBus
 
 // runScript executes a single script, retrying while the kernel reports it as
 // still being open for writing (ETXTBSY).
-func runScript(ctx context.Context, script string, onBusyScriptRetry func()) error {
+func runScript(ctx context.Context, script string, retries int, delay time.Duration, onBusyScriptRetry func()) error {
 	for i := 0; ; i++ {
 		// #nosec G204 - this variable is coming from concatenation of an order file.
 		// Permissions are restricted to the owner of the order file, which is the one executing
@@ -318,7 +322,7 @@ func runScript(ctx context.Context, script string, onBusyScriptRetry func()) err
 		cmd.Stderr = os.Stderr
 
 		err := cmd.Run()
-		if !errors.Is(err, syscall.ETXTBSY) || i == busyScriptRetries {
+		if !errors.Is(err, syscall.ETXTBSY) || i == retries {
 			return err
 		}
 
@@ -329,7 +333,7 @@ func runScript(ctx context.Context, script string, onBusyScriptRetry func()) err
 		select {
 		case <-ctx.Done():
 			return err
-		case <-time.After(busyScriptDelay):
+		case <-time.After(delay):
 		}
 	}
 }

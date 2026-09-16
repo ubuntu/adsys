@@ -44,6 +44,42 @@ type forwarder struct {
 	once sync.Once
 }
 
+func (f *forwarder) setBeforeWriteHook(hook func()) {
+	f.testHooksMu.Lock()
+	f.beforeWrite = hook
+	f.testHooksMu.Unlock()
+}
+
+func (f *forwarder) setBeforeSetupLockHook(hook func()) {
+	f.testHooksMu.Lock()
+	f.beforeSetupLock = hook
+	f.testHooksMu.Unlock()
+}
+
+func (f *forwarder) setBeforeTeardownHook(hook func()) {
+	f.testHooksMu.Lock()
+	f.beforeTeardown = hook
+	f.testHooksMu.Unlock()
+}
+
+func (f *forwarder) beforeWriteHook() func() {
+	f.testHooksMu.RLock()
+	defer f.testHooksMu.RUnlock()
+	return f.beforeWrite
+}
+
+func (f *forwarder) beforeSetupLockHook() func() {
+	f.testHooksMu.RLock()
+	defer f.testHooksMu.RUnlock()
+	return f.beforeSetupLock
+}
+
+func (f *forwarder) beforeTeardownHook() func() {
+	f.testHooksMu.RLock()
+	defer f.testHooksMu.RUnlock()
+	return f.beforeTeardown
+}
+
 func (f *forwarder) Write(p []byte) (int, error) {
 	// Write to regular output first
 	if _, err := f.out.Write(p); err != nil {
@@ -51,9 +87,7 @@ func (f *forwarder) Write(p []byte) (int, error) {
 	}
 
 	// Now, forward to any registered writers
-	f.testHooksMu.RLock()
-	beforeWrite := f.beforeWrite
-	f.testHooksMu.RUnlock()
+	beforeWrite := f.beforeWriteHook()
 	if beforeWrite != nil {
 		beforeWrite()
 	}
@@ -95,9 +129,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 	// Initialization and teardown must not interleave, otherwise a writer
 	// subscribing while the last one tears the forwarder down would attach to a
 	// forwarder that is being dismantled.
-	dest.testHooksMu.RLock()
-	beforeSetupLock := dest.beforeSetupLock
-	dest.testHooksMu.RUnlock()
+	beforeSetupLock := dest.beforeSetupLockHook()
 	if beforeSetupLock != nil {
 		beforeSetupLock()
 	}
@@ -139,9 +171,7 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 
 	return func() {
 		dest.setupMu.Lock()
-		dest.testHooksMu.RLock()
-		beforeTeardown := dest.beforeTeardown
-		dest.testHooksMu.RUnlock()
+		beforeTeardown := dest.beforeTeardownHook()
 		if beforeTeardown != nil {
 			beforeTeardown()
 		}

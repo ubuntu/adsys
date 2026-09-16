@@ -3,6 +3,7 @@ package scripts
 import (
 	"context"
 	"os/user"
+	"time"
 )
 
 const (
@@ -20,4 +21,10 @@ func WithUserLookup(userLookup func(string) (*user.User, error)) Option {
 // script execution fails with ETXTBSY and will be retried.
 func RunScriptsWithBusyScriptRetryHook(ctx context.Context, order string, allowOrderMissing bool, hook func()) error {
 	return runScripts(ctx, order, allowOrderMissing, hook)
+}
+
+// RunScriptsWithBusyScriptRetrySettings executes scripts with explicit ETXTBSY
+// retry-loop settings and calls hook when a retry is about to happen.
+func RunScriptsWithBusyScriptRetrySettings(ctx context.Context, order string, allowOrderMissing bool, retries int, delay time.Duration, hook func()) error {
+	return runScriptsWithBusyScriptRetrySettings(ctx, order, allowOrderMissing, retries, delay, hook)
 }
