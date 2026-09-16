@@ -171,7 +171,7 @@ and authentication ({term}`SSSD`, {term}`kerberos`):
 
 ```{code-block} text
 :caption: Ubuntu client
-sudo apt install realmd sssd sssd-tools adcli samba-common samba-common-bin krb5-user packagekit-tools -y
+sudo apt install realmd sssd sssd-tools adcli samba-common samba-common-bin krb5-user -y
 ```
 
 ### Configure DNS
