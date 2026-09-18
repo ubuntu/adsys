@@ -23,8 +23,8 @@ require (
 	github.com/maruel/natural v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
-	github.com/oiweiwei/go-msrpc v1.5.4
-	github.com/oiweiwei/gokrb5.fork/v9 v9.0.7
+	github.com/oiweiwei/go-msrpc v1.5.5
+	github.com/oiweiwei/gokrb5.fork/v9 v9.0.8
 	github.com/pkg/sftp v1.13.11
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
