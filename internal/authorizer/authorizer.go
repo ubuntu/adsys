@@ -1,4 +1,4 @@
-// Package authorizer deals client authorization based on a definite set of polkit actions.
+// Package authorizer deals with client authorization based on a definite set of polkit actions.
 // The client uid and pid are obtained via the unix socket (SO_PEERCRED) information,
 // that are attached to the grpc request by the server.
 package authorizer
@@ -115,11 +115,11 @@ func (a Authorizer) IsAllowedFromContext(ctx context.Context, action Action) (er
 
 	p, ok := peer.FromContext(ctx)
 	if !ok {
-		return errors.New(gotext.Get("context request doesn't have grpc peer creds informations."))
+		return errors.New(gotext.Get("context request doesn't have grpc peer creds information."))
 	}
 	pci, ok := p.AuthInfo.(peerCredsInfo)
 	if !ok {
-		return errors.New(gotext.Get("context request grpc peer creeds information is not a peerCredsInfo."))
+		return errors.New(gotext.Get("context request grpc peer creds information is not a peerCredsInfo."))
 	}
 
 	// Is it an action needing user checking?

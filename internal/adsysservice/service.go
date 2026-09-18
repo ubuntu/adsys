@@ -199,7 +199,7 @@ func (s *Service) ListUsers(r *adsys.ListUsersRequest, stream adsys.Service_List
 	if err := stream.Send(&adsys.StringResponse{
 		Msg: strings.Join(users, " "),
 	}); err != nil {
-		log.Warningf(stream.Context(), "couldn't send service version to client: %v", err)
+		log.Warningf(stream.Context(), "couldn't send list of users to client: %v", err)
 	}
 	return nil
 }
