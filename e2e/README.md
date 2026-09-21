@@ -44,7 +44,7 @@ The end-to-end scenarios are just sequences of Go executables which makes them e
 
 ### Setting up the VPN
 
-The most painful part of a local setup is configuring the VPN connection required to interact with resources from Azure. The VPN is a SSTP VPN with certificate authentication which is sort of a novelty for Linux-based systems, as support for it was only recently added. We have a bespoke [GitHub action](https://github.com/ubuntu/adsys/blob/main/.github/actions/azure-sstpc-vpn/action.yaml) responsible for setting up the VPN connection, using more recent `sstp-client` and `ppp` packages from a PPA. However, with the release of Ubuntu Noble this might no longer be necessary.
+The most painful part of a local setup is configuring the VPN connection required to interact with resources from Azure. The VPN is a SSTP VPN with certificate authentication which is sort of a novelty for Linux-based systems, as support for it was only recently added. We have a bespoke [GitHub action](https://github.com/ubuntu/adsys/blob/main/.github/actions/azure-sstpc-vpn/action.yaml) responsible for setting up the VPN connection by installing `sstp-client` and configuring the certificate-based tunnel.
 
 To set up the VPN connection locally refer to the steps in the action linked above, replacing any secret inputs with our own credentials from the Enterprise Desktop LastPass vault.
 
