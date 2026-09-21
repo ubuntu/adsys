@@ -2,6 +2,8 @@ package scripts_test
 
 import (
 	"bytes"
+	"errors"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -24,17 +26,33 @@ import (
 // or Go toolchain change) without the patches being refreshed, this test
 // fails instead of only surfacing the problem later inside a Docker-based
 // e2e build.
+//
+// It is skipped when there is no debian/ tree next to the sources, which is
+// the case while building the Debian package itself.
 func TestReleasePatchesApplyCleanly(t *testing.T) {
+	rootDir, err := scripts.RootDir()
+	require.NoError(t, err, "Setup: could not determine repository root directory")
+
+	// dh-golang assembles a GOPATH tree under the build directory and
+	// deliberately omits debian/ from it, so there is no packaging tree to
+	// patch when the package itself is being built (e.g. on a PPA builder).
+	// Skip rather than fail there: upstream CI and developer checkouts run
+	// against a full source tree, which is where stale patch context must be
+	// caught.
+	debianDir := filepath.Join(rootDir, "debian")
+	_, err = os.Stat(debianDir)
+	if errors.Is(err, fs.ErrNotExist) {
+		t.Skipf("No packaging tree at %s, skipping: this is expected when building the Debian package", debianDir)
+	}
+	require.NoError(t, err, "Setup: could not stat %s", debianDir)
+
 	// patch is part of the normal Ubuntu/build-essential environment already
 	// relied upon by this repository (e.g. build-deb.sh itself requires it).
 	// Fail loudly rather than skipping if it is missing, since silently
 	// skipping would defeat the purpose of this check as a CI guard against
 	// stale patch context.
-	_, err := exec.LookPath("patch")
+	_, err = exec.LookPath("patch")
 	require.NoError(t, err, "Setup: patch command not available")
-
-	rootDir, err := scripts.RootDir()
-	require.NoError(t, err, "Setup: could not determine repository root directory")
 
 	patchesDir := filepath.Join(rootDir, "e2e", "scripts", "patches")
 	entries, err := os.ReadDir(patchesDir)
