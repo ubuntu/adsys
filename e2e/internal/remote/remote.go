@@ -432,6 +432,25 @@ func (c *Client) Reboot() error {
 	}
 }
 
+// apportReportCmd produces the apport report for adsys on the remote host.
+//
+// The Ubuntu general apport hook asks whether the contents of each modified
+// conffile belong in the report, and adsys rewrites its own sudoers conffile
+// as soon as the privilege manager applies a policy, so the question comes up
+// on every machine the suite has exercised. apport reads the answer straight
+// from the terminal, which a command started over SSH does not have, and the
+// report died on the resulting ioctl error before writing anything:
+//
+//	termios.error: (25, 'Inappropriate ioctl for device')
+//
+// Give it a terminal and decline the questions, as the report sits next to the
+// journal and the /var/log archive and is not worth an interactive collection.
+// The answers are a short fixed stream rather than an endless one so a prompt
+// they do not satisfy runs out of input instead of spinning on an answer it
+// keeps rejecting, and the timeout bounds that case as well.
+const apportReportCmd = `printf 'NNNNNNNNNNNNNNNN' | timeout 300 script --quiet --return ` +
+	`--command 'APPORT_DISABLE_DISTRO_CHECK=1 ubuntu-bug --save=/root/bug adsys' /dev/null`
+
 // CollectLogs collects logs from the remote host and writes them to disk under
 // a relative logs directory named after the client host.
 func (c *Client) CollectLogs(ctx context.Context, hostname string) (err error) {
@@ -457,34 +476,36 @@ func (c *Client) CollectLogs(ctx context.Context, hostname string) (err error) {
 		}
 	}
 
-	// Run ubuntu-bug to collect logs
-	_, err = c.Run(ctx, "APPORT_DISABLE_DISTRO_CHECK=1 ubuntu-bug --save=/root/bug adsys")
-	if err != nil {
-		return fmt.Errorf("failed to collect logs: %w", err)
-	}
-	// Save journalctl logs
-	_, err = c.Run(ctx, "journalctl --no-pager --output=short-precise --no-hostname > /root/journal")
-	if err != nil {
-		return fmt.Errorf("failed to read logs: %w", err)
-	}
-
-	// Archive and download /var/log
-	if _, err := c.Run(ctx, "tar --exclude=/var/log/journal -czf /root/varlog.tar.gz /var/log"); err != nil {
-		return fmt.Errorf("failed to archive logs: %w", err)
+	artifacts := []struct {
+		name       string
+		command    string
+		remotePath string
+		localName  string
+	}{
+		{"apport report", apportReportCmd, "/root/bug", "apport.log"},
+		{"journal", "journalctl --no-pager --output=short-precise --no-hostname > /root/journal", "/root/journal", "journal.log"},
+		{"/var/log archive", "tar --exclude=/var/log/journal -czf /root/varlog.tar.gz /var/log", "/root/varlog.tar.gz", "varlog.tar.gz"},
 	}
 
-	// Download remote logs
-	if err := c.Download("/root/varlog.tar.gz", filepath.Join(logDir, "varlog.tar.gz")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-	if err := c.Download("/root/bug", filepath.Join(logDir, "apport.log")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-	if err := c.Download("/root/journal", filepath.Join(logDir, "journal.log")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
+	// These artifacts are only gathered because something already went wrong,
+	// so collect each one independently and report the failures together at
+	// the end. Giving up on the first one used to leave the run with no
+	// artifacts at all, hiding the journal and /var/log behind an unrelated
+	// failure of the apport report.
+	var errs []error
+	for _, artifact := range artifacts {
+		if _, err := c.Run(ctx, artifact.command); err != nil {
+			errs = append(errs, fmt.Errorf("failed to collect %s: %w", artifact.name, err))
+		}
+
+		// Download whatever the command managed to produce: a truncated
+		// artifact still carries more than a missing one.
+		if err := c.Download(artifact.remotePath, filepath.Join(logDir, artifact.localName)); err != nil {
+			errs = append(errs, fmt.Errorf("failed to download %s: %w", artifact.name, err))
+		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 // CollectLogsOnFailure collects logs from the remote host and writes them to disk if passed a non-nil error.
