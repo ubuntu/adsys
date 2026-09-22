@@ -5,6 +5,7 @@ package remote
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"os"
@@ -432,6 +433,51 @@ func (c *Client) Reboot() error {
 	}
 }
 
+// apportReportScript collects the apport report through the apport Python API
+// rather than through ubuntu-bug.
+//
+// The Ubuntu general apport hook asks whether the contents of each modified
+// conffile belong in the report, and adsys rewrites its own sudoers conffile
+// as soon as the privilege manager applies a policy, so the question comes up
+// on every machine the suite has exercised. ubuntu-bug reads the answer
+// straight from the terminal, which a command started over SSH does not have,
+// and the report died on the resulting ioctl error before writing anything:
+//
+//	termios.error: (25, 'Inappropriate ioctl for device')
+//
+// Driving the hooks with apport's NoninteractiveHookUI declines those
+// questions without ever looking at a terminal, which also keeps the report
+// free of the hooks' interactive extras that a log artifact has no use for.
+//
+//go:embed apport_package_report.py
+var apportReportScript string
+
+const (
+	// apportReportScriptPath is where apportReportScript is staged on the
+	// remote host.
+	apportReportScriptPath = "/root/apport_package_report.py"
+
+	// apportReportPath is where the collected report is written on the remote
+	// host.
+	apportReportPath = "/root/bug"
+
+	// apportReportTimeout bounds the collection, in seconds. The hooks shell
+	// out to commands of their own, and this report is only ever collected
+	// from a machine that is already misbehaving.
+	apportReportTimeout = 300
+)
+
+// apportReportCmd returns the command producing the apport report for adsys on
+// the remote host.
+func apportReportCmd() string {
+	return fmt.Sprintf(`set -eu
+cat > %[1]s <<'ADSYS_APPORT_REPORT_EOF'
+%[2]s
+ADSYS_APPORT_REPORT_EOF
+timeout %[3]d python3 %[1]s adsys %[4]s`,
+		apportReportScriptPath, apportReportScript, apportReportTimeout, apportReportPath)
+}
+
 // CollectLogs collects logs from the remote host and writes them to disk under
 // a relative logs directory named after the client host.
 func (c *Client) CollectLogs(ctx context.Context, hostname string) (err error) {
@@ -457,34 +503,36 @@ func (c *Client) CollectLogs(ctx context.Context, hostname string) (err error) {
 		}
 	}
 
-	// Run ubuntu-bug to collect logs
-	_, err = c.Run(ctx, "APPORT_DISABLE_DISTRO_CHECK=1 ubuntu-bug --save=/root/bug adsys")
-	if err != nil {
-		return fmt.Errorf("failed to collect logs: %w", err)
-	}
-	// Save journalctl logs
-	_, err = c.Run(ctx, "journalctl --no-pager --output=short-precise --no-hostname > /root/journal")
-	if err != nil {
-		return fmt.Errorf("failed to read logs: %w", err)
-	}
-
-	// Archive and download /var/log
-	if _, err := c.Run(ctx, "tar --exclude=/var/log/journal -czf /root/varlog.tar.gz /var/log"); err != nil {
-		return fmt.Errorf("failed to archive logs: %w", err)
+	artifacts := []struct {
+		name       string
+		command    string
+		remotePath string
+		localName  string
+	}{
+		{"apport report", apportReportCmd(), apportReportPath, "apport.log"},
+		{"journal", "journalctl --no-pager --output=short-precise --no-hostname > /root/journal", "/root/journal", "journal.log"},
+		{"/var/log archive", "tar --exclude=/var/log/journal -czf /root/varlog.tar.gz /var/log", "/root/varlog.tar.gz", "varlog.tar.gz"},
 	}
 
-	// Download remote logs
-	if err := c.Download("/root/varlog.tar.gz", filepath.Join(logDir, "varlog.tar.gz")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-	if err := c.Download("/root/bug", filepath.Join(logDir, "apport.log")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-	if err := c.Download("/root/journal", filepath.Join(logDir, "journal.log")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
+	// These artifacts are only gathered because something already went wrong,
+	// so collect each one independently and report the failures together at
+	// the end. Giving up on the first one used to leave the run with no
+	// artifacts at all, hiding the journal and /var/log behind an unrelated
+	// failure of the apport report.
+	var errs []error
+	for _, artifact := range artifacts {
+		if _, err := c.Run(ctx, artifact.command); err != nil {
+			errs = append(errs, fmt.Errorf("failed to collect %s: %w", artifact.name, err))
+		}
+
+		// Download whatever the command managed to produce: a truncated
+		// artifact still carries more than a missing one.
+		if err := c.Download(artifact.remotePath, filepath.Join(logDir, artifact.localName)); err != nil {
+			errs = append(errs, fmt.Errorf("failed to download %s: %w", artifact.name, err))
+		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 // CollectLogsOnFailure collects logs from the remote host and writes them to disk if passed a non-nil error.
