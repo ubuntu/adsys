@@ -27,22 +27,17 @@ func run() int {
 	cmd := command.New(action, command.WithValidateFunc(validate))
 	cmd.Usage = fmt.Sprintf(`go run ./%s [options]
 
-Checks if the given Ubuntu codename is available as an Azure VM image.
-Prioritizes stable image releases as opposed to daily builds, but allows daily
-images if no stable image is available.
-
-Prints the Azure URN of the image to use for the given codename. If a custom
-image template already exists for the given codename, and the custom image
-version is newer than the latest available Marketplace image, the script will
-not output anything to stdout and will exit with 0.
+Prints the Marketplace image URN when a new Azure template is needed.
+Prefers stable images and keeps an existing stable template if only a daily
+image is available. Within the same offer and SKU, an older build does not
+replace a template with a known source.
 
 If the --force flag is set, the script will return the latest image URN
 regardless of custom image availability.
 
 If the --check-template flag is set, the script ignores the Marketplace
-entirely and instead prints the version of the custom image template that
-already exists for the given codename, printing nothing if no template was
-ever built. This tells consumers whether a release can be provisioned at all.
+entirely and prints the latest deployable custom template version for the
+given codename, or nothing if none is available.
 
 Options:
  --codename              Required: codename of the Ubuntu release (e.g. noble)
@@ -82,92 +77,66 @@ func validate(_ context.Context, _ *command.Command) error {
 }
 
 func action(ctx context.Context, _ *command.Command) error {
+	imageDefinition := az.ImageDefinitionName(codename)
 	if checkTemplate {
-		latestCustomImageVersion, err := az.LatestImageVersion(ctx, az.ImageDefinitionName(codename))
+		custom, err := az.LatestDeployableImage(ctx, imageDefinition)
 		if err != nil {
-			return fmt.Errorf("failed to get latest image version: %w", err)
+			return fmt.Errorf("failed to get latest deployable image: %w", err)
 		}
-		if latestCustomImageVersion == az.NullImageVersion {
-			log.Warningf("no custom image template found for codename %q", codename)
+		if custom.Version == "" {
+			log.Warningf("no deployable image template found for codename %q", codename)
 			return nil
 		}
-
-		fmt.Println(latestCustomImageVersion)
+		fmt.Println(custom.Version)
 		return nil
 	}
-
-	var noStable, noDaily bool
 
 	availableImages, err := az.ImageList(ctx, codename, version)
 	if err != nil {
 		return err
 	}
-	latestStable, err := availableImages.LatestStable()
+	latest, err := availableImages.LatestStable()
 	if err != nil {
-		noStable = true
-		log.Warning(err)
-	}
-
-	latestDaily, err := availableImages.LatestDaily()
-	if err != nil {
-		noDaily = true
-		log.Warning(err)
-	}
-
-	if noStable && noDaily {
-		log.Errorf("couldn't find any marketplace images for codename %q", codename)
-		return nil
-	}
-
-	latest := latestStable
-	if noStable {
-		latest = latestDaily
-	}
-
-	customImageDefinition := az.ImageDefinitionName(codename)
-	latestCustomImageVersion, err := az.LatestImageVersion(ctx, customImageDefinition)
-	if err != nil {
-		return fmt.Errorf("failed to get latest image version: %w", err)
-	}
-
-	// Marketplace version includes the Ubuntu version as well (e.g.
-	// 23.10.202310110).
-	// As we store the Ubuntu version in the codename, we only need the patch
-	// version to differentiate betweeen custom image builds.
-	latestMarketplaceBuild := az.ImageBuildNumber(latest.Version)
-	customVersionParts := strings.Split(latestCustomImageVersion, ".")
-	latestCustomBuild := customVersionParts[1] // minor version is the build number
-
-	// The release is still in development and we already have a daily image built, nothing to do
-	// Version scheme is X.Y.Z where:
-	// - X: major version, 0 for development releases, 1 for stable releases
-	// - Y: minor version, replicates version of the Marketplace VM, e.g. 202310110
-	// - Z: patch version, incremented for consecutive builds of the same minor version, starts at 0
-
-	// Handle case where we have no custom image at all
-	if latestCustomImageVersion == az.NullImageVersion || force {
-		fmt.Println(latest.URN)
-		return nil
-	}
-
-	// Handle cases where we only have custom images for development builds
-	if natural.Less(latestCustomImageVersion, "1.0.0") {
-		// Allow development -> stable transitions with the same version
-		if latestCustomBuild >= latestMarketplaceBuild && noStable {
-			log.Warningf("custom image for codename %q (%s) is equal or newer than the latest marketplace image (%s)", codename, latestCustomBuild, latestMarketplaceBuild)
+		latest, err = availableImages.LatestDaily()
+		if err != nil {
+			log.Errorf("couldn't find any marketplace images for codename %q", codename)
 			return nil
 		}
+	}
+
+	if force {
 		fmt.Println(latest.URN)
 		return nil
 	}
-
-	// Handle cases where have custom images for stable builds
-	if latestCustomBuild >= latestMarketplaceBuild {
-		log.Warningf("custom image for codename %q (%s) is equal or newer than the latest marketplace image (%s)", codename, latestCustomBuild, latestMarketplaceBuild)
-		return nil
+	custom, err := az.LatestDeployableImage(ctx, imageDefinition)
+	if err != nil {
+		return fmt.Errorf("failed to get latest deployable image: %w", err)
 	}
-
-	fmt.Println(latest.URN)
-
+	if shouldRebuild(custom, latest) {
+		fmt.Println(latest.URN)
+	} else {
+		log.Infof("keeping custom image %q for %q (Marketplace candidate: %q)", custom.Version, codename, latest.URN)
+	}
 	return nil
+}
+
+func shouldRebuild(custom az.ImageVersion, latest az.Image) bool {
+	if custom.Version == "" {
+		return true
+	}
+	source := az.ParseMarketplaceURN(custom.Tags[az.SourceURNTag])
+	if latest.IsDaily() {
+		// For untagged templates, major 0 was reserved for daily builds.
+		if source.Offer != "" && !source.IsDaily() ||
+			source.Offer == "" && !natural.Less(custom.Version, "1.0.0") {
+			return false
+		}
+	}
+	// A source from another SKU can be the right replacement even if it is older.
+	return source.Version == "" ||
+		!strings.EqualFold(source.Publisher, latest.Publisher) ||
+		!strings.EqualFold(source.Offer, latest.Offer) ||
+		!strings.EqualFold(source.SKU, latest.SKU) ||
+		strings.EqualFold(source.Version, "latest") ||
+		natural.Less(source.Version, latest.Version)
 }

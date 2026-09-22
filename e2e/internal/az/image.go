@@ -2,7 +2,6 @@ package az
 
 import (
 	"bytes"
-	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -11,11 +10,7 @@ import (
 	"strings"
 
 	"github.com/maruel/natural"
-	log "github.com/sirupsen/logrus"
 )
-
-// NullImageVersion is the version returned when no image version is found.
-const NullImageVersion = "0.0.0"
 
 // oldImageVersionCodenames is a list of Ubuntu codenames for which Azure images
 // are built using the previous image versioning format.
@@ -31,11 +26,32 @@ type Image struct {
 	Version      string `json:"version"`
 }
 
+// ParseMarketplaceURN splits a publisher:offer:sku:version reference.
+// A Marketplace alias or gallery image ID returns an empty Image.
+func ParseMarketplaceURN(urn string) Image {
+	publisher, rest, _ := strings.Cut(urn, ":")
+	offer, rest, _ := strings.Cut(rest, ":")
+	sku, version, _ := strings.Cut(rest, ":")
+	if publisher == "" || offer == "" || sku == "" || version == "" || strings.Contains(version, ":") {
+		return Image{}
+	}
+	return Image{Publisher: publisher, Offer: offer, SKU: sku, Version: version, URN: urn}
+}
+
 // Images represents a list of Azure images.
 type Images []Image
 
-type imageVersion struct {
-	Version string `json:"name"`
+// SourceURNTag is the image version tag recording the full Marketplace image
+// identity a template was created from.
+const SourceURNTag = "sourceURN"
+
+// ImageVersion is a version of one of our own image definitions.
+type ImageVersion struct {
+	Version           string            `json:"name"`
+	Tags              map[string]string `json:"tags"`
+	PublishingProfile struct {
+		ExcludeFromLatest bool `json:"excludeFromLatest"`
+	} `json:"publishingProfile"`
 }
 
 // ImageDefinitionName returns the name of the image definition for the given
@@ -87,72 +103,47 @@ func ImageList(ctx context.Context, codename, version string) (Images, error) {
 
 // LatestDaily returns the latest daily image for the given codename.
 func (images Images) LatestDaily() (Image, error) {
-	// Prepare list of eligible images
-	dailyImages := []Image{}
-	for _, image := range images {
-		if image.Architecture == "x64" && image.isGen2Image() && !image.isProImage() && image.isDailyImage() {
-			dailyImages = append(dailyImages, image)
-		}
-	}
-
-	if len(dailyImages) == 0 {
-		return Image{}, fmt.Errorf("no daily image found")
-	}
-
-	// Reverse sort images by version
-	slices.SortFunc(dailyImages, func(i, j Image) int {
-		// Version format is: 23.04.20231029
-		return cmp.Compare(j.Version, i.Version)
-	})
-
-	return dailyImages[0], nil
+	return images.latest(true)
 }
 
 // LatestStable returns the latest stable image for the given codename.
 func (images Images) LatestStable() (Image, error) {
-	// Prepare list of eligible images
-	stableImages := []Image{}
+	return images.latest(false)
+}
+
+func (images Images) latest(daily bool) (Image, error) {
+	var latest Image
 	for _, image := range images {
-		if image.Architecture == "x64" && image.isGen2Image() && !image.isProImage() && !image.isDailyImage() {
-			stableImages = append(stableImages, image)
+		if image.Architecture == "x64" && image.IsDaily() == daily && image.isGen2Image() &&
+			!image.isProImage() && natural.Less(latest.Version, image.Version) {
+			latest = image
 		}
 	}
-
-	if len(stableImages) == 0 {
+	if latest.Version == "" {
+		if daily {
+			return Image{}, fmt.Errorf("no daily image found")
+		}
 		return Image{}, fmt.Errorf("no stable image found")
 	}
-
-	// Reverse sort images by version
-	slices.SortFunc(stableImages, func(i, j Image) int {
-		// Version format is: 23.04.20231029
-		return cmp.Compare(j.Version, i.Version)
-	})
-
-	return stableImages[0], nil
+	return latest, nil
 }
 
-func (i Image) isDailyImage() bool {
-	return strings.Contains(i.Offer, "daily")
+// IsDaily reports whether the Marketplace offer is a daily build.
+func (i Image) IsDaily() bool {
+	return strings.Contains(strings.ToLower(i.Offer), "daily")
 }
 
-// isProImage reports whether the image is an Ubuntu Pro one.
-//
-// The SKU filter is passed to the CLI, which matches it as a substring, so
-// asking for "minimal" also returns the Pro variants. Those images carry
-// Ubuntu Pro preconfigured, which is exactly the state the tests set up and
-// assert on themselves: one scenario checks that Pro-only policy managers are
-// filtered out on a machine that is not subscribed, and the other attaches a
-// subscription of its own.
-//
-// The two versioning schemes spell Pro differently: the current one keeps the
-// release in the offer and names the SKU "ubuntu-pro-minimal", while the older
-// one puts the release in the SKU and names it "pro-minimal-20_04-lts-gen2"
-// under a separate "0001-com-ubuntu-pro-minimal-focal" offer. Match "pro" as a
-// hyphen-separated component of either field, as anchoring on a prefix only
-// ever recognised the older spelling.
+// Azure's "minimal" filter also matches Pro variants. Older offers put "pro"
+// at the start of the SKU; newer SKUs include it after "ubuntu-".
 func (i Image) isProImage() bool {
-	return slices.Contains(strings.Split(i.SKU, "-"), "pro") ||
-		slices.Contains(strings.Split(i.Offer, "-"), "pro")
+	for _, name := range [2]string{i.SKU, i.Offer} {
+		for part := range strings.SplitSeq(name, "-") {
+			if part == "pro" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (i Image) isGen2Image() bool {
@@ -164,53 +155,57 @@ func (i Image) isGen2Image() bool {
 	return !strings.Contains(i.SKU, "gen1")
 }
 
-// LatestImageVersion returns the latest image version for the given image definition.
-// If the image definition does not exist, or exists but has no version yet,
-// "0.0.0" is returned.
+// LatestImageVersion returns the highest gallery version, including versions
+// excluded from deployment as latest. An empty result means no version exists.
 func LatestImageVersion(ctx context.Context, imageDefinition string) (string, error) {
-	latestVersion := NullImageVersion
+	latest, err := latestImage(ctx, imageDefinition, false)
+	return latest.Version, err
+}
 
+// LatestDeployableImage returns the highest gallery version not excluded from
+// latest. An empty result means no such version exists.
+func LatestDeployableImage(ctx context.Context, imageDefinition string) (ImageVersion, error) {
+	return latestImage(ctx, imageDefinition, true)
+}
+
+func latestImage(ctx context.Context, imageDefinition string, deployableOnly bool) (ImageVersion, error) {
+	versions, err := ListImageVersions(ctx, imageDefinition)
+	if err != nil {
+		return ImageVersion{}, err
+	}
+
+	var latest ImageVersion
+	for _, version := range versions {
+		if deployableOnly && version.PublishingProfile.ExcludeFromLatest {
+			continue
+		}
+		if natural.Less(latest.Version, version.Version) {
+			latest = version
+		}
+	}
+	return latest, nil
+}
+
+// ListImageVersions returns the gallery versions and their publishing profiles.
+// A missing image definition has no versions.
+func ListImageVersions(ctx context.Context, imageDefinition string) ([]ImageVersion, error) {
 	out, stderr, err := RunCommand(ctx, "sig", "image-version", "list",
 		"--resource-group", "AD",
 		"--gallery-name", "AD",
 		"--gallery-image-definition", imageDefinition,
+		"--output", "json",
 	)
 	if err != nil {
-		// A release we never built a template for has no image definition at
-		// all, which is not an error condition for callers: it is
-		// indistinguishable from a definition without any version.
 		if bytes.Contains(stderr, []byte("ResourceNotFound")) {
-			return NullImageVersion, nil
+			return nil, nil
 		}
-		return latestVersion, err
+		return nil, err
 	}
 
-	var versions []imageVersion
+	var versions []ImageVersion
 	if err := json.Unmarshal(out, &versions); err != nil {
-		return latestVersion, err
-	}
-	if len(versions) == 0 {
-		return latestVersion, nil
+		return nil, fmt.Errorf("failed to read gallery versions: %w", err)
 	}
 
-	log.Debugf("Found %d image versions: %s", len(versions), versions)
-
-	for _, v := range versions {
-		if natural.Less(latestVersion, v.Version) {
-			latestVersion = v.Version
-		}
-	}
-
-	return latestVersion, nil
-}
-
-// ImageBuildNumber returns the build number of the image given a version in the following format
-// Canonical:0001-com-ubuntu-minimal-mantic:minimal-23_10-gen2:23.10.202310110 (202310110).
-func ImageBuildNumber(baseVMImage string) string {
-	urnParts := strings.Split(baseVMImage, ":")
-	version := urnParts[len(urnParts)-1]
-	versionParts := strings.Split(version, ".")
-	buildNumber := versionParts[len(versionParts)-1]
-
-	return buildNumber
+	return versions, nil
 }

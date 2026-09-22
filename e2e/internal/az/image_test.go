@@ -1,6 +1,9 @@
 package az_test
 
 import (
+	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -17,6 +20,13 @@ func TestLatestStable(t *testing.T) {
 		"Picks the newest image": {
 			images: az.Images{
 				minimal("ubuntu-26_04-lts", "minimal", "26.04.202607120"),
+				minimal("ubuntu-26_04-lts", "minimal", "26.04.202607150"),
+			},
+			wantVersion: "26.04.202607150",
+		},
+		"Picks the newest numeric build across different lengths": {
+			images: az.Images{
+				minimal("ubuntu-26_04-lts", "minimal", "26.04.20260715"),
 				minimal("ubuntu-26_04-lts", "minimal", "26.04.202607150"),
 			},
 			wantVersion: "26.04.202607150",
@@ -95,7 +105,7 @@ func TestLatestDaily(t *testing.T) {
 		},
 		"Ignores stable images": {images: az.Images{minimal("ubuntu-26_10", "minimal", "26.10.202608060"), minimal("ubuntu-26_10-daily", "minimal", "26.10.202607260")}, wantVersion: "26.10.202607260"},
 
-		"Error when no daily image is available": {images: az.Images{minimal("ubuntu-26_10", "minimal", "26.10.202608060")}, wantErr: true},
+		"Error when no daily image is available": {images: az.Images{minimal("ubuntu-26_10", "minimal", "26.10.202607260")}, wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -114,4 +124,37 @@ func TestLatestDaily(t *testing.T) {
 // minimal returns an x64 image, the only architecture the tests provision.
 func minimal(offer, sku, version string) az.Image {
 	return az.Image{Architecture: "x64", Offer: offer, SKU: sku, Version: version}
+}
+
+func TestGalleryImageVersionSelection(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("requires a POSIX shell")
+	}
+	bin := t.TempDir()
+	// #nosec G306 -- The private CLI fixture must be executable.
+	require.NoError(t, os.WriteFile(filepath.Join(bin, "az"), []byte(`#!/bin/sh
+[ "$1 $2 $3" = "sig image-version list" ] || exit 1
+printf '%s\n' "$ADSYS_TEST_GALLERY"
+`), 0700))
+	t.Setenv("PATH", bin)
+	const excluded = `{"name":"1.202609110.11","publishingProfile":{"excludeFromLatest":true}}`
+	t.Setenv("ADSYS_TEST_GALLERY", `[
+		{"name":"1.202609110.10","tags":{"sourceURN":"Canonical:ubuntu-24_04-lts:minimal:24.04.202609100"}},
+		`+excluded+`,
+		{"name":"1.202609110.2"}
+	]`)
+
+	deployable, err := az.LatestDeployableImage(t.Context(), "ubuntu-desktop-noble")
+	require.NoError(t, err)
+	require.Equal(t, "1.202609110.10", deployable.Version)
+	require.Equal(t, "Canonical:ubuntu-24_04-lts:minimal:24.04.202609100", deployable.Tags[az.SourceURNTag])
+
+	highest, err := az.LatestImageVersion(t.Context(), "ubuntu-desktop-noble")
+	require.NoError(t, err)
+	require.Equal(t, "1.202609110.11", highest)
+
+	t.Setenv("ADSYS_TEST_GALLERY", "["+excluded+"]")
+	deployable, err = az.LatestDeployableImage(t.Context(), "ubuntu-desktop-noble")
+	require.NoError(t, err)
+	require.Empty(t, deployable.Version, "a gallery with only excluded versions cannot provision clients")
 }

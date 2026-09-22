@@ -4,7 +4,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -30,8 +32,8 @@ func run() int {
 Generalize an Azure VM to use as a template for E2E tests.
 
 Options:
- --version          override the template version number (default behavior is to
-                    auto-increment the latest version by 0.0.1)
+ --version          override the template version number (by default the new
+                    version sorts above every existing version)
  -k, --keep         don't destroy base VM after creating image version (default: false)
 
 This script will:
@@ -40,7 +42,7 @@ This script will:
  - destroy the base VM unless otherwise specified
 
 The script requires an inventory file to be present in the current directory,
-created by the 00_prepare_base_vm script.
+created by the 01_prepare_base_vm script.
 
 The machine must be authenticated to Azure via the Azure CLI.`, filepath.Base(os.Args[0]))
 
@@ -64,10 +66,6 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		return err
 	}
 
-	isDevelopmentVersion := strings.Contains(cmd.Inventory.BaseVMImage, "daily")
-	buildNumber := az.ImageBuildNumber(cmd.Inventory.BaseVMImage)
-	nextImageVersion := constructNewVersion(latestImageVersion, buildNumber, isDevelopmentVersion)
-
 	// Destroy VM if template creation fails
 	var vmDeleted bool
 	defer func() {
@@ -86,8 +84,21 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		}
 	}()
 
+	source, err := sourceImage(ctx, inv.VMID, inv.BaseVMImage)
+	if err != nil {
+		return err
+	}
+	nextImageVersion := version
+	if nextImageVersion == "" {
+		build := source.Version[strings.LastIndexByte(source.Version, '.')+1:]
+		nextImageVersion, err = constructNewVersion(latestImageVersion, build, source.IsDaily())
+		if err != nil {
+			return err
+		}
+	}
+
 	// If the version is empty, we need to create the image definition
-	if latestImageVersion == az.NullImageVersion {
+	if latestImageVersion == "" {
 		log.Infof("Creating image definition %q", imageDefinition)
 		_, _, err := az.RunCommand(ctx, "sig", "image-definition", "create",
 			"--resource-group", "AD",
@@ -107,14 +118,9 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		}
 	}
 
-	// User has specified a version, use it instead
-	if version != "" {
-		nextImageVersion = version
-	}
-
 	// Create the image version
 	log.Infof("Creating image version %q for image definition %q", nextImageVersion, imageDefinition)
-	_, _, err = az.RunCommand(ctx, "sig", "image-version", "create",
+	args := []string{"sig", "image-version", "create",
 		"--resource-group", "AD",
 		"--gallery-name", "AD",
 		"--gallery-image-definition", imageDefinition,
@@ -123,7 +129,11 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		"--replica-count", "2",
 		"--virtual-machine", inv.VMID,
 		"--tags", "project=AD", "subproject=adsys-e2e-tests",
-	)
+	}
+	if source.URN != "" {
+		args = append(args, az.SourceURNTag+"="+source.URN)
+	}
+	_, _, err = az.RunCommand(ctx, args...)
 	if err != nil {
 		return fmt.Errorf("failed to create image version: %w", err)
 	}
@@ -142,30 +152,77 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 	return nil
 }
 
-// constructNewVersion builds a new version number for the image definition.
-// If the major and minor versions are identical, the patch version is incremented.
-// Otherwise, the patch version is reset to 0.
-func constructNewVersion(prevVersion, buildNumber string, dev bool) string {
-	newMajor := "1"
-	if dev {
-		newMajor = "0"
+// Read the VM's image reference when --vm-image was a floating URN or alias.
+func sourceImage(ctx context.Context, vmID, requested string) (az.Image, error) {
+	image := az.ParseMarketplaceURN(requested)
+	if image.Version != "" && !strings.EqualFold(image.Version, "latest") {
+		return image, nil
 	}
-	newMinor := buildNumber
 
-	parts := strings.Split(prevVersion, ".")
-	prevMajor := parts[0]
-	prevMinor := parts[1]
-	prevPatch, err := strconv.Atoi(parts[2])
+	out, _, err := az.RunCommand(ctx, "vm", "show", "--ids", vmID,
+		"--query", "storageProfile.imageReference", "--output", "json")
 	if err != nil {
-		return fmt.Sprintf("%s.%s.0", newMajor, newMinor)
+		return az.Image{}, fmt.Errorf("failed to read base VM image reference: %w", err)
+	}
+	var ref struct {
+		az.Image
+		ExactVersion string `json:"exactVersion"`
+	}
+	if err := json.Unmarshal(out, &ref); err != nil {
+		return az.Image{}, fmt.Errorf("failed to decode base VM image reference: %w", err)
+	}
+	if ref.Publisher == "" {
+		// A managed image or gallery version has no Marketplace source to tag.
+		return az.Image{}, nil
+	}
+	if ref.ExactVersion != "" {
+		ref.Version = ref.ExactVersion
+	}
+	if ref.Offer == "" || ref.SKU == "" || ref.Version == "" || strings.EqualFold(ref.Version, "latest") {
+		return az.Image{}, fmt.Errorf("base VM %q has no exact Marketplace image reference", vmID)
+	}
+	ref.URN = ref.Publisher + ":" + ref.Offer + ":" + ref.SKU + ":" + ref.Version
+	return ref.Image, nil
+}
+
+// Automatic versions must move forward even when the new source build is older.
+func constructNewVersion(previous, buildNumber string, daily bool) (string, error) {
+	var major, build uint64 = 1, 0
+	if daily {
+		major = 0
+	}
+	if buildNumber != "" {
+		var err error
+		build, err = strconv.ParseUint(buildNumber, 10, 31)
+		if err != nil {
+			return "", fmt.Errorf("invalid Marketplace build number %q: %w", buildNumber, err)
+		}
+	}
+	if previous == "" {
+		return fmt.Sprintf("%d.%d.0", major, build), nil
 	}
 
-	newPatch := prevPatch
-	newPatch++
-	// Reset patch version if major or minor version changed
-	if prevMajor != newMajor || prevMinor != buildNumber {
-		newPatch = 0
+	prevMajor, rest, _ := strings.Cut(previous, ".")
+	prevMinor, prevPatch, _ := strings.Cut(rest, ".")
+	oldMajor, majorErr := strconv.ParseUint(prevMajor, 10, 31)
+	oldMinor, minorErr := strconv.ParseUint(prevMinor, 10, 31)
+	oldPatch, patchErr := strconv.ParseUint(prevPatch, 10, 31)
+	if majorErr != nil || minorErr != nil || patchErr != nil {
+		return "", fmt.Errorf("invalid gallery image version %q", previous)
 	}
 
-	return fmt.Sprintf("%s.%s.%d", newMajor, buildNumber, newPatch)
+	switch {
+	case major > oldMajor:
+		return fmt.Sprintf("%d.%d.0", major, build), nil
+	case build > oldMinor:
+		return fmt.Sprintf("%d.%d.0", oldMajor, build), nil
+	case oldPatch < math.MaxInt32:
+		return fmt.Sprintf("%d.%d.%d", oldMajor, oldMinor, oldPatch+1), nil
+	case oldMinor < math.MaxInt32:
+		return fmt.Sprintf("%d.%d.0", oldMajor, oldMinor+1), nil
+	case oldMajor < math.MaxInt32:
+		return fmt.Sprintf("%d.0.0", oldMajor+1), nil
+	default:
+		return "", fmt.Errorf("gallery image version %q cannot be incremented", previous)
+	}
 }

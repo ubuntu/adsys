@@ -22,6 +22,8 @@ Before powering off the VM, we stage a [first run](https://github.com/ubuntu/ads
 
 The process described above is automated and runs weekly on the [E2E - Build image templates](https://github.com/ubuntu/adsys/actions/workflows/e2e-build-images.yaml) workflow.
 
+Automatic builds skip Ubuntu Pro images and keep an existing stable template if only a daily image is available. Within the same Marketplace offer and SKU, only a newer source replaces the current template. A template without a recorded source is rebuilt once when a suitable Marketplace image is available. Cleanup keeps the highest version eligible for deployment even if newer versions are excluded.
+
 ### Running the tests
 
 The actual testing workflow consists of the following steps:
