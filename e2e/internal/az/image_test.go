@@ -23,16 +23,30 @@ func TestLatestStable(t *testing.T) {
 		},
 
 		// The SKU filter is applied by the CLI as a substring, so a request
-		// for "minimal" also returns "pro-minimal". Ubuntu Pro images are not
-		// interchangeable with the plain ones here: the scenarios decide for
-		// themselves whether the machine is subscribed. Reproduce the case
+		// for "minimal" also returns the Ubuntu Pro variants. Those images are
+		// not interchangeable with the plain ones here: the scenarios decide
+		// for themselves whether the machine is subscribed. Reproduce the case
 		// that made this visible, where the Pro image was the newer build.
 		"Ignores Ubuntu Pro images even when they are newer": {
 			images: az.Images{
 				minimal("ubuntu-26_04-lts", "minimal", "26.04.202607150"),
-				minimal("ubuntu-26_04-lts", "pro-minimal", "26.04.202607220"),
+				minimal("ubuntu-26_04-lts", "ubuntu-pro-minimal", "26.04.202607220"),
 			},
 			wantVersion: "26.04.202607150",
+		},
+		"Ignores gen1 Ubuntu Pro images": {
+			images: az.Images{
+				minimal("ubuntu-26_04-lts", "minimal", "26.04.202607150"),
+				minimal("ubuntu-26_04-lts", "ubuntu-pro-minimal-gen1", "26.04.202607220"),
+			},
+			wantVersion: "26.04.202607150",
+		},
+		"Ignores Ubuntu Pro images in the old versioning scheme": {
+			images: az.Images{
+				minimal("0001-com-ubuntu-minimal-jammy", "minimal-22_04-lts-gen2", "22.04.202607150"),
+				minimal("0001-com-ubuntu-pro-minimal-jammy", "pro-minimal-22_04-lts-gen2", "22.04.202607220"),
+			},
+			wantVersion: "22.04.202607150",
 		},
 		"Ignores gen1 images":  {images: az.Images{minimal("ubuntu-26_04-lts", "minimal-gen1", "26.04.202608060"), minimal("ubuntu-26_04-lts", "minimal", "26.04.202607150")}, wantVersion: "26.04.202607150"},
 		"Ignores daily images": {images: az.Images{minimal("ubuntu-26_04-lts-daily", "minimal", "26.04.202608060"), minimal("ubuntu-26_04-lts", "minimal", "26.04.202607150")}, wantVersion: "26.04.202607150"},
@@ -41,7 +55,7 @@ func TestLatestStable(t *testing.T) {
 			minimal("ubuntu-26_04-lts", "minimal", "26.04.202607150"),
 		}, wantVersion: "26.04.202607150"},
 
-		"Error when only Ubuntu Pro images are available": {images: az.Images{minimal("ubuntu-26_04-lts", "pro-minimal", "26.04.202607220")}, wantErr: true},
+		"Error when only Ubuntu Pro images are available": {images: az.Images{minimal("ubuntu-26_04-lts", "ubuntu-pro-minimal", "26.04.202607220")}, wantErr: true},
 		"Error when no image is available":                {images: az.Images{}, wantErr: true},
 	}
 
@@ -75,7 +89,7 @@ func TestLatestDaily(t *testing.T) {
 		"Ignores Ubuntu Pro images even when they are newer": {
 			images: az.Images{
 				minimal("ubuntu-26_10-daily", "minimal", "26.10.202607260"),
-				minimal("ubuntu-26_10-daily", "pro-minimal", "26.10.202607270"),
+				minimal("ubuntu-26_10-daily", "ubuntu-pro-minimal", "26.10.202607270"),
 			},
 			wantVersion: "26.10.202607260",
 		},
