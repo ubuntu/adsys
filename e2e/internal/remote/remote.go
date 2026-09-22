@@ -372,9 +372,24 @@ func (c Client) Download(remotePath string, localPath string) error {
 // reestablishes the SSH connection.
 // It first waits for the host to go offline, then returns an error if the host
 // does not come back online within 3 minutes.
+//
+// The reboot is requested with -i so that inhibitor locks cannot deny it.
+// Services that run during provisioning, snapd among them, hold a block
+// inhibitor while they are busy, and logind refuses a plain reboot for as long
+// as one is held:
+//
+//	Call to Reboot failed: Operation denied due to active block inhibitor
+//
+// The host is a disposable VM that the scenario has just asked to restart, so
+// there is nothing worth deferring the reboot for, and honouring the lock only
+// left the machine running until the wait below gave up.
 func (c *Client) Reboot() error {
 	log.Infof("Rebooting host %q", c.client.RemoteAddr().String())
-	_, _ = c.Run(context.Background(), "reboot")
+
+	// The connection drops as the host goes down, so a failure here is
+	// expected and not conclusive on its own. Keep the error to report it if
+	// the host turns out to still be up, which is the case it explains.
+	_, rebootErr := c.Run(context.Background(), "systemctl reboot -i")
 
 	waitDone := make(chan error, 1)
 	go func() {
@@ -388,7 +403,10 @@ func (c *Client) Reboot() error {
 	select {
 	case <-waitDone:
 	case <-time.After(30 * time.Second):
-		return fmt.Errorf("host did not go offline in time")
+		if rebootErr != nil {
+			return fmt.Errorf("host did not go offline in time, reboot was refused: %w", rebootErr)
+		}
+		return errors.New("host did not go offline in time")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
