@@ -5,6 +5,7 @@ package remote
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"os"
@@ -504,59 +505,96 @@ func (c *Client) Reboot() error {
 	}
 }
 
-// CollectLogs collects logs from the remote host and writes them to disk under
-// a relative logs directory named after the client host.
-func (c *Client) CollectLogs(ctx context.Context, hostname string) (err error) {
+// Apport's Ubuntu hook asks about modified conffiles, which fails over SSH
+// without a terminal. The embedded script runs the hooks without prompts.
+//
+//go:embed apport_package_report.py
+var apportReportScript string
+
+// Leave time to save the journal and archive before Apport's own timeout.
+const logCollectionTimeout = 10 * time.Minute
+
+func apportReportCmd(reportPath string) string {
+	return fmt.Sprintf(`timeout 300 python3 - adsys %s <<'ADSYS_APPORT_REPORT_EOF'
+%s
+ADSYS_APPORT_REPORT_EOF`, reportPath, apportReportScript)
+}
+
+// CollectLogs saves diagnostics under logs/hostname within ten minutes.
+func (c *Client) CollectLogs(ctx context.Context, hostname string) error {
+	return c.collectLogs(ctx, hostname, logCollectionTimeout)
+}
+
+func (c *Client) collectLogs(ctx context.Context, hostname string, timeout time.Duration) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	defer func() {
 		if err != nil {
 			log.Errorf("Failed to collect logs from host %q: %v", hostname, err)
 		}
 	}()
 
-	log.Infof("Collecting logs from host %q", c.client.RemoteAddr().String())
+	hostDir := filepath.Join("logs", hostname)
+	if err := os.MkdirAll(hostDir, 0700); err != nil {
+		return fmt.Errorf("failed to create host log directory: %w", err)
+	}
+	logDir, err := os.MkdirTemp(hostDir, "failure-")
+	if err != nil {
+		return fmt.Errorf("failed to create log collection directory: %w", err)
+	}
+	log.Infof("Collecting logs from host %q in %q", hostname, logDir)
 
-	// Create local directory to store logs
-	logDir := filepath.Join("logs", hostname)
-	if err := os.MkdirAll(logDir, 0700); err != nil {
-		return fmt.Errorf("failed to create log directory: %w", err)
+	client := c.client
+	// Closing the transport unblocks both SSH commands and SFTP transfers.
+	stop := context.AfterFunc(ctx, func() { _ = client.Close() })
+	defer stop()
+
+	remoteDir := ".adsys-e2e-" + filepath.Base(logDir)
+	if _, err := c.Run(ctx, "mkdir -m 700 -- "+remoteDir); err != nil {
+		return fmt.Errorf("failed to create remote log directory: %w", errors.Join(err, ctx.Err()))
+	}
+	defer func() {
+		if ctx.Err() == nil {
+			if _, err := c.Run(ctx, "rm -rf -- "+remoteDir); err != nil {
+				log.Warningf("Failed to remove remote log directory %q: %v", remoteDir, err)
+			}
+		}
+	}()
+
+	apportLog := remoteDir + "/apport.log"
+	journal := remoteDir + "/journal.log"
+	varLog := remoteDir + "/varlog.tar.gz"
+	artifacts := []struct {
+		path    string
+		command string
+	}{
+		{journal, "journalctl --no-pager --output=short-precise --no-hostname > " + journal},
+		{varLog, "tar --exclude=/var/log/journal -czf " + varLog + " /var/log"},
+		{apportLog, apportReportCmd(apportLog)},
 	}
 
-	// Check if we are still connected to remote server, attempt to reconnect if not
-	if c.client == nil {
-		c.client, err = ssh.Dial("tcp", c.host+":22", c.config)
-		if err != nil {
-			return fmt.Errorf("failed to reconnect to %q: %w", c.host, err)
+	var errs []error
+	for _, artifact := range artifacts {
+		if ctx.Err() != nil {
+			break
+		}
+		name := filepath.Base(artifact.path)
+		if _, err := c.Run(ctx, artifact.command); err != nil {
+			errs = append(errs, fmt.Errorf("failed to collect %s: %w", name, err))
+		}
+		if ctx.Err() != nil {
+			break
+		}
+		// A failed command can still have written useful partial output.
+		if err := c.Download(artifact.path, filepath.Join(logDir, name)); err != nil {
+			errs = append(errs, fmt.Errorf("failed to download %s: %w", name, err))
 		}
 	}
-
-	// Run ubuntu-bug to collect logs
-	_, err = c.Run(ctx, "APPORT_DISABLE_DISTRO_CHECK=1 ubuntu-bug --save=/root/bug adsys")
-	if err != nil {
-		return fmt.Errorf("failed to collect logs: %w", err)
-	}
-	// Save journalctl logs
-	_, err = c.Run(ctx, "journalctl --no-pager --output=short-precise --no-hostname > /root/journal")
-	if err != nil {
-		return fmt.Errorf("failed to read logs: %w", err)
-	}
-
-	// Archive and download /var/log
-	if _, err := c.Run(ctx, "tar --exclude=/var/log/journal -czf /root/varlog.tar.gz /var/log"); err != nil {
-		return fmt.Errorf("failed to archive logs: %w", err)
-	}
-
-	// Download remote logs
-	if err := c.Download("/root/varlog.tar.gz", filepath.Join(logDir, "varlog.tar.gz")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-	if err := c.Download("/root/bug", filepath.Join(logDir, "apport.log")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-	if err := c.Download("/root/journal", filepath.Join(logDir, "journal.log")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-
-	return nil
+	return errors.Join(append(errs, ctx.Err())...)
 }
 
 // CollectLogsOnFailure collects logs from the remote host and writes them to disk if passed a non-nil error.

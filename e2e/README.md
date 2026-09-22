@@ -38,6 +38,8 @@ The actual testing workflow consists of the following steps:
 - run various test scenarios involving ADSys
 - deprovision client VM and clean up AD resources
 
+The non-Pro, Pro, and PAM scenarios save available failure diagnostics under `logs/<hostname>/failure-*/`. Each collection starts with the journal, uses a fresh directory, and stops after ten minutes so a stalled transfer cannot block the upload step.
+
 Because triggering this on every push would be wasteful, the [E2E - Run tests](https://github.com/ubuntu/adsys/actions/workflows/e2e-tests.yaml) workflow runs on pushes to `main` and tags, on a workflow dispatch basis, and for pull requests carrying the `e2e-tests` label. PR runs use the PR's merge ref, so they include the proposed changes; fork PRs are skipped because the workflow requires repository secrets for Azure and AD access.
 
 To limit a PR run to specific Ubuntu releases, add an `e2e-ubuntu-releases` marker to the PR description, for example:

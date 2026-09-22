@@ -1,9 +1,11 @@
 package remote
 
 import (
+	"bytes"
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
+	"errors"
 	"net"
 	"strings"
 	"testing"
@@ -32,32 +34,8 @@ func TestCheckLink(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			_, key, err := ed25519.GenerateKey(rand.Reader)
-			require.NoError(t, err)
-			signer, err := ssh.NewSignerFromKey(key)
-			require.NoError(t, err)
-			config := &ssh.ServerConfig{NoClientAuth: true}
-			config.AddHostKey(signer)
-
-			listener, err := net.Listen("tcp", "127.0.0.1:0")
-			require.NoError(t, err)
-			t.Cleanup(func() { listener.Close() })
-
-			serverDone := make(chan struct{})
 			stalled := make(chan struct{})
-			go func() {
-				defer close(serverDone)
-				conn, err := listener.Accept()
-				if err != nil {
-					return
-				}
-				defer conn.Close()
-				server, channels, requests, err := ssh.NewServerConn(conn, config)
-				if err != nil {
-					return
-				}
-				defer server.Close()
-				go ssh.DiscardRequests(requests)
+			client, serverDone := newTestSSHClient(t, func(channels <-chan ssh.NewChannel) {
 				for channel := range channels {
 					if tc.stallAt == "session" {
 						close(stalled)
@@ -87,21 +65,6 @@ func TestCheckLink(t *testing.T) {
 						}
 						session.Close()
 					}
-				}
-			}()
-
-			client, err := ssh.Dial("tcp", listener.Addr().String(), &ssh.ClientConfig{
-				// nolint:gosec // The server is created locally for this test.
-				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-				Timeout:         5 * time.Second,
-			})
-			require.NoError(t, err)
-			t.Cleanup(func() {
-				client.Close()
-				select {
-				case <-serverDone:
-				case <-time.After(5 * time.Second):
-					t.Error("SSH server did not stop after closing the connection")
 				}
 			})
 
@@ -138,4 +101,58 @@ func TestCheckLink(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newTestSSHClient(t *testing.T, handle func(<-chan ssh.NewChannel)) (*ssh.Client, <-chan struct{}) {
+	t.Helper()
+	_, key, err := ed25519.GenerateKey(rand.Reader)
+	require.NoError(t, err)
+	signer, err := ssh.NewSignerFromKey(key)
+	require.NoError(t, err)
+	config := &ssh.ServerConfig{
+		PublicKeyCallback: func(_ ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
+			if !bytes.Equal(key.Marshal(), signer.PublicKey().Marshal()) {
+				return nil, errors.New("unexpected SSH test client key")
+			}
+			return nil, nil
+		},
+	}
+	config.AddHostKey(signer)
+
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() { listener.Close() })
+
+	serverDone := make(chan struct{})
+	go func() {
+		defer close(serverDone)
+		conn, err := listener.Accept()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		server, channels, requests, err := ssh.NewServerConn(conn, config)
+		if err != nil {
+			return
+		}
+		defer server.Close()
+		go ssh.DiscardRequests(requests)
+		handle(channels)
+	}()
+
+	client, err := ssh.Dial("tcp", listener.Addr().String(), &ssh.ClientConfig{
+		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		HostKeyCallback: ssh.FixedHostKey(signer.PublicKey()),
+		Timeout:         5 * time.Second,
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		client.Close()
+		select {
+		case <-serverDone:
+		case <-time.After(5 * time.Second):
+			t.Error("SSH server did not stop after closing the connection")
+		}
+	})
+	return client, serverDone
 }
