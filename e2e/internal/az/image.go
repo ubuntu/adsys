@@ -138,13 +138,21 @@ func (i Image) isDailyImage() bool {
 // isProImage reports whether the image is an Ubuntu Pro one.
 //
 // The SKU filter is passed to the CLI, which matches it as a substring, so
-// asking for "minimal" also returns "pro-minimal". Those images carry Ubuntu
-// Pro preconfigured, which is exactly the state the tests set up and assert on
-// themselves: one scenario checks that Pro-only policy managers are filtered
-// out on a machine that is not subscribed, and the other attaches a
+// asking for "minimal" also returns the Pro variants. Those images carry
+// Ubuntu Pro preconfigured, which is exactly the state the tests set up and
+// assert on themselves: one scenario checks that Pro-only policy managers are
+// filtered out on a machine that is not subscribed, and the other attaches a
 // subscription of its own.
+//
+// The two versioning schemes spell Pro differently: the current one keeps the
+// release in the offer and names the SKU "ubuntu-pro-minimal", while the older
+// one puts the release in the SKU and names it "pro-minimal-20_04-lts-gen2"
+// under a separate "0001-com-ubuntu-pro-minimal-focal" offer. Match "pro" as a
+// hyphen-separated component of either field, as anchoring on a prefix only
+// ever recognised the older spelling.
 func (i Image) isProImage() bool {
-	return strings.HasPrefix(i.SKU, "pro-") || i.SKU == "pro"
+	return slices.Contains(strings.Split(i.SKU, "-"), "pro") ||
+		slices.Contains(strings.Split(i.Offer, "-"), "pro")
 }
 
 func (i Image) isGen2Image() bool {
