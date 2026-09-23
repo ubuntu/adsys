@@ -48,6 +48,70 @@ const (
 	PAMModuleDirectory = "/usr/lib/x86_64-linux-gnu/security"
 )
 
+// Stop the timers without interrupting upgrades that already hold dpkg locks.
+const quiesceAPTScript = `set -eu
+%[1]ssystemctl mask --now apt-daily.timer apt-daily-upgrade.timer
+%[1]stee /etc/apt/apt.conf.d/99adsys-e2e >/dev/null <<EOF
+APT::Periodic::Enable "0";
+DPkg::Lock::Timeout "600";
+EOF`
+
+// aptUpdateScript runs apt-get update, retrying while the lists lock is held.
+//
+// DPkg::Lock::Timeout, set by quiesceAPTScript, only makes apt wait for the
+// dpkg locks. The lists lock that apt-get update needs is taken without a
+// timeout and fails immediately, so waiting out a periodic run that was
+// already under way has to happen here.
+const aptUpdateScript = `for attempt in $(seq 1 %[2]d); do
+    %[1]sapt-get -y update && break
+    if [ "${attempt}" = %[2]d ]; then
+        echo "apt-get update still failing after ${attempt} attempts" >&2
+        exit 1
+    fi
+    echo "apt-get update failed, retrying in %[3]ds (attempt ${attempt})"
+    sleep %[3]d
+done`
+
+const (
+	// aptUpdateAttempts is how many times APTUpdate tries before giving up.
+	aptUpdateAttempts = 10
+
+	// aptUpdateInterval is how long APTUpdate waits between attempts. A
+	// periodic run holds the lists lock for as long as it takes to fetch the
+	// indices, so the total wait has to be generous.
+	aptUpdateInterval = 15
+)
+
+// sudoPrefix returns what a command must be prefixed with to run as root, which
+// is nothing at all when we are already connected as root.
+func (c Client) sudoPrefix() string {
+	if c.config.User == "root" {
+		return ""
+	}
+	return "sudo "
+}
+
+// QuiesceAPT disables the periodic apt activity on the remote host so that it
+// cannot take the apt and dpkg locks from underneath the commands we run.
+//
+// It is safe to call on a host where the units are absent, as masking a unit
+// that does not exist succeeds.
+func (c Client) QuiesceAPT(ctx context.Context) error {
+	if _, err := c.Run(ctx, fmt.Sprintf(quiesceAPTScript, c.sudoPrefix())); err != nil {
+		return fmt.Errorf("failed to disable periodic apt activity: %w", err)
+	}
+	return nil
+}
+
+// APTUpdateCmd returns a command refreshing the package indices, retrying for
+// as long as something else holds the lists lock.
+//
+// It is returned rather than run so that callers can chain it with the apt
+// invocation it is refreshing the indices for.
+func (c Client) APTUpdateCmd() string {
+	return fmt.Sprintf(aptUpdateScript, c.sudoPrefix(), aptUpdateAttempts, aptUpdateInterval)
+}
+
 // Client represents a remote SSH client.
 type Client struct {
 	client *ssh.Client
