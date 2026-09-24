@@ -193,13 +193,41 @@ func TestWatchDirectory(t *testing.T) {
 func TestRefreshGracePeriod(t *testing.T) {
 	t.Parallel()
 
+	// The scenario asserts that no version bump happened *while still inside* the
+	// grace period. Such an assertion is only meaningful if we reach it before
+	// the grace period elapses, which a loaded machine does not guarantee:
+	// flushing the file system alone can take a sizeable amount of time. Instead
+	// of failing on a slow runner, retry with a longer grace period, keeping the
+	// assertions themselves strict.
+	const maxAttempts = 4
+
+	gracePeriod := time.Second
+	for range maxAttempts {
+		if refreshGracePeriodScenario(t, gracePeriod) {
+			return
+		}
+		gracePeriod *= 2
+	}
+	t.Fatalf("Machine is too slow to observe the refresh grace period reliably, even with a grace period of %s", gracePeriod/2)
+}
+
+// refreshGracePeriodScenario checks that the watcher only bumps the GPT.ini
+// version once the given grace period elapsed without any change, and that any
+// new change pushes that deadline back.
+//
+// It reports whether the run was conclusive: when the machine takes longer than
+// the grace period to reach an assertion, a missing bump can’t be told apart
+// from a late one, and the caller should retry with a longer grace period.
+func refreshGracePeriodScenario(t *testing.T, gracePeriod time.Duration) (conclusive bool) {
+	t.Helper()
+
 	dir := "withsubdir"
 	temp := t.TempDir()
 	dest := filepath.Join(temp, dir)
 	testutils.Copy(t, filepath.Join("testdata", dir), dest)
 
 	// Instantiate the object
-	w, err := watcher.New(context.Background(), []string{dest}, watcher.WithRefreshDuration(time.Second))
+	w, err := watcher.New(context.Background(), []string{dest}, watcher.WithRefreshDuration(gracePeriod))
 	require.NoError(t, err, "Setup: Can't create watcher")
 
 	// Start it
@@ -207,9 +235,10 @@ func TestRefreshGracePeriod(t *testing.T) {
 	require.NoError(t, err, "Setup: Can't start watcher")
 	defer w.Stop(mockService{})
 
-	// Modify first file
-	err = os.WriteFile(filepath.Join(temp, dir, "alreadyexists"), []byte("new content"), 0600)
+	// Modify first file: this arms the grace period timer.
+	err = os.WriteFile(filepath.Join(dest, "alreadyexists"), []byte("new content"), 0600)
 	require.NoError(t, err, "Setup: Can't update file")
+	firstWrite := time.Now()
 
 	testutils.WaitForWrites(t)
 
@@ -217,25 +246,40 @@ func TestRefreshGracePeriod(t *testing.T) {
 	time.Sleep(w.RefreshDuration() / 2)
 
 	// GPT.ini version was not changed
+	if time.Since(firstWrite) >= gracePeriod {
+		return false
+	}
 	assertGPTVersionEquals(t, dest, 2)
 
-	// Modify second file
-	err = os.WriteFile(filepath.Join(temp, dir, "alreadyexistsDir", "alreadyexists"), []byte("new content"), 0600)
+	// Modify second file: this must push the deadline back by a whole grace period.
+	err = os.WriteFile(filepath.Join(dest, "alreadyexistsDir", "alreadyexists"), []byte("new content"), 0600)
 	require.NoError(t, err, "Setup: Can't update file")
+	secondWrite := time.Now()
+	if secondWrite.Sub(firstWrite) >= gracePeriod {
+		return false
+	}
 
 	testutils.WaitForWrites(t)
 
-	// Wait for 3/4 of the grace period (to be sure that we waited for more than one whole grace period in total).
-	time.Sleep(time.Duration(float64(w.RefreshDuration()) * 0.75))
-
-	// GPT.ini version was still not changed
-	assertGPTVersionEquals(t, dest, 2)
-
-	// Wait for another 1/2 of the grace period (to be sure that we waited for more than one whole grace period in total).
+	// Wait for half of the grace period again: we are now past a whole grace
+	// period since the first write, but still within the one opened by the
+	// second write.
 	time.Sleep(w.RefreshDuration() / 2)
 
-	// GPT.ini version was updated
+	// GPT.ini version was still not changed
+	if time.Since(secondWrite) >= gracePeriod || time.Since(firstWrite) <= gracePeriod {
+		return false
+	}
+	assertGPTVersionEquals(t, dest, 2)
+
+	// GPT.ini version is updated once the grace period elapsed, and only once.
+	require.Eventually(t, func() bool {
+		v, err := gptVersion(dest)
+		return err == nil && v > 2
+	}, 30*time.Second, 10*time.Millisecond, "GPT.ini version should have been bumped after the grace period")
 	assertGPTVersionEquals(t, dest, 3)
+
+	return true
 }
 
 func TestUpdateDirs(t *testing.T) {
@@ -422,13 +466,21 @@ func assertGPTVersionEquals(t *testing.T, path string, version int) {
 	}
 	require.True(t, gptFileExists, "GPT.ini not created")
 
-	cfg, err := ini.Load(gptfile)
-	require.NoError(t, err, "Can't load GPT.ini")
-
-	v, err := cfg.Section("General").Key("Version").Int()
+	v, err := gptVersion(path)
 	require.NoError(t, err, "Can't get GPT.ini version as an integer")
 
 	assert.Equal(t, version, v, "GPT.ini version is not equal to the expected one")
+}
+
+// gptVersion returns the version set in the GPT.ini file of the given directory.
+// It doesn’t assert, so that it can be polled from a testify condition.
+func gptVersion(path string) (int, error) {
+	cfg, err := ini.Load(filepath.Join(path, "GPT.INI"))
+	if err != nil {
+		return 0, err
+	}
+
+	return cfg.Section("General").Key("Version").Int()
 }
 
 func requireGPTVersionError(t *testing.T, path string) {

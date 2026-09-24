@@ -26,6 +26,16 @@ type forwarder struct {
 	writers  map[io.Writer]bool
 	mu       sync.RWMutex
 
+	// setupMu serializes the initialization and the teardown of the forwarder.
+	// Contrary to mu, it is never taken by Write(), so it can be held while
+	// waiting for the io.Copy goroutine to finish.
+	setupMu sync.Mutex
+
+	// wgIOCopy tracks the io.Copy goroutine draining the capturer. It belongs to
+	// the forwarder and not to a given addWriter call, as the writer tearing the
+	// forwarder down is not necessarily the one that initialized it.
+	wgIOCopy sync.WaitGroup
+
 	once sync.Once
 }
 
@@ -71,27 +81,29 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 	// Initialize our forwarder
 	var onceErr error
 
-	// Wait on teardown for io.Copy to finish
-	wgIOCopy := sync.WaitGroup{}
+	// Initialization and teardown must not interleave, otherwise a writer
+	// subscribing while the last one tears the forwarder down would attach to a
+	// forwarder that is being dismantled.
+	dest.setupMu.Lock()
+	defer dest.setupMu.Unlock()
 
 	// we can change the number of children, but also reinitialize the forwarder
 	dest.mu.Lock()
-	defer dest.mu.Unlock()
 	dest.once.Do(func() {
 		dest.out = *std
 		dest.writers = make(map[io.Writer]bool)
 
 		rOut, wOut, err := os.Pipe()
-		dest.capturer = wOut
 		if err != nil {
 			onceErr = err
 			return
 		}
-		wgIOCopy.Add(1)
+		dest.capturer = wOut
+		dest.wgIOCopy.Add(1)
 
 		go func() {
-			defer wgIOCopy.Done()
-			if _, err = io.Copy(dest, rOut); err != nil {
+			defer dest.wgIOCopy.Done()
+			if _, err := io.Copy(dest, rOut); err != nil {
 				log.Warningf("We couldn’t forward all messages: %v", err)
 			}
 		}()
@@ -99,25 +111,57 @@ func addWriter(dest *forwarder, std **os.File, w io.Writer) (f func(), err error
 		*std = dest.capturer
 	})
 	if onceErr != nil {
+		// Let a subsequent call retry the initialization.
+		dest.once = sync.Once{}
+		dest.mu.Unlock()
 		return nil, onceErr
 	}
 
 	dest.writers[w] = true
+	dest.mu.Unlock()
 
 	return func() {
+		dest.setupMu.Lock()
+		defer dest.setupMu.Unlock()
+
+		dest.mu.Lock()
+
+		// Already removed: nothing to unsubscribe nor to tear down.
+		if !dest.writers[w] {
+			dest.mu.Unlock()
+			return
+		}
+
+		// Other writers are still subscribed: only unsubscribe this one and keep
+		// the forwarder running for them.
+		if len(dest.writers) > 1 {
+			delete(dest.writers, w)
+			dest.mu.Unlock()
+			return
+		}
+
+		// Last writer: restore std so that new messages go to the regular output
+		// directly, then close the capturer to make io.Copy drain and return.
+		*std = dest.out
+		capturer := dest.capturer
+		dest.mu.Unlock()
+
+		if capturer != nil {
+			decorate.LogFuncOnError(capturer.Close)
+		}
+
+		// Wait for io.Copy to flush the messages still buffered in the pipe. This
+		// must happen without holding the lock: forwarding them goes through
+		// Write(), which takes the read lock, and would otherwise deadlock.
+		dest.wgIOCopy.Wait()
+
 		dest.mu.Lock()
 		defer dest.mu.Unlock()
 
 		delete(dest.writers, w)
+		dest.capturer = nil
 
-		// restore std and unblock goroutine
-		if len(dest.writers) == 0 {
-			*std = dest.out
-			decorate.LogFuncOnError(dest.capturer.Close)
-			wgIOCopy.Wait()
-
-			// reset std forwarder to be ready for reinitialization
-			dest.once = sync.Once{}
-		}
+		// reset std forwarder to be ready for reinitialization
+		dest.once = sync.Once{}
 	}, nil
 }

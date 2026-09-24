@@ -3,11 +3,13 @@ package scripts_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"os/user"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
@@ -279,6 +281,43 @@ func TestRunScripts(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
+}
+
+// TestRunScriptsRetriesBusyScripts ensures that a script which can’t be executed
+// yet because it is still open for writing is retried instead of being skipped.
+func TestRunScriptsRetriesBusyScripts(t *testing.T) {
+	t.Parallel()
+
+	scriptParentDir := filepath.Join(t.TempDir(), "users", "foo", "scripts")
+	require.NoError(t, os.MkdirAll(filepath.Join(scriptParentDir, "scripts"), 0700), "Setup: can't create script dir")
+
+	marker := filepath.Join(scriptParentDir, "marker")
+	script := filepath.Join(scriptParentDir, "scripts", "script.sh")
+	//nolint:gosec // G306 - the script has to be executable to be run by RunScripts.
+	require.NoError(t,
+		os.WriteFile(script, fmt.Appendf(nil, "#!/bin/sh\ntouch %q\n", marker), 0700),
+		"Setup: can't create script")
+
+	order := filepath.Join(scriptParentDir, "s")
+	require.NoError(t, os.WriteFile(order, []byte("scripts/script.sh\n"), 0600), "Setup: can't create order file")
+	require.NoError(t, os.WriteFile(filepath.Join(scriptParentDir, ".ready"), nil, 0600), "Setup: can't create ready flag")
+
+	// Keep the script open for writing: executing it fails with ETXTBSY until we
+	// close it, which mimics a concurrent fork holding a descriptor on it.
+	f, err := os.OpenFile(script, os.O_WRONLY, 0600)
+	require.NoError(t, err, "Setup: can't open script for writing")
+	t.Cleanup(func() { _ = f.Close() })
+
+	releaseErr := make(chan error, 1)
+	go func() {
+		time.Sleep(250 * time.Millisecond)
+		releaseErr <- f.Close()
+	}()
+
+	require.NoError(t, scripts.RunScripts(context.Background(), order, false), "RunScripts failed but shouldn't have")
+	require.NoError(t, <-releaseErr, "Setup: can't release the script")
+
+	require.FileExists(t, marker, "Script should have been run once it was not busy anymore")
 }
 
 type mockUnitStarter struct {
