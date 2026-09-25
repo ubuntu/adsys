@@ -56,12 +56,27 @@ type Manager struct {
 	// dconfUpdateMu prevents running multiple dconf update processes in parallel.
 	dconfUpdateMu sync.Mutex
 
-	dconfDir string
+	dconfDir        string
+	profileDataDirs []string
 }
 
 // NewWithDconfDir creates a manager with a specific dconf directory.
 func NewWithDconfDir(dir string) *Manager {
-	return &Manager{dconfDir: dir}
+	return newWithDconfDirAndProfileDataDirs(dir, nil)
+}
+
+func newWithDconfDirAndProfileDataDirs(dir string, profileDataDirs []string) *Manager {
+	return &Manager{dconfDir: dir, profileDataDirs: profileDataDirs}
+}
+
+func (m *Manager) profileSearchDirs() []string {
+	if m.profileDataDirs != nil {
+		return m.profileDataDirs
+	}
+	if dataDirs := os.Getenv("XDG_DATA_DIRS"); dataDirs != "" {
+		return filepath.SplitList(dataDirs)
+	}
+	return []string{"/usr/local/share", "/usr/share"}
 }
 
 // ApplyPolicy generates a dconf computer or user policy based on a list of entries.
@@ -107,7 +122,7 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 		if err := os.MkdirAll(profilesPath, 0755); err != nil {
 			return err
 		}
-		if err := writeProfile(ctx, objectName, profilesPath); err != nil {
+		if err := writeProfile(ctx, objectName, profilesPath, m.profileSearchDirs()); err != nil {
 			return err
 		}
 	}
@@ -218,10 +233,11 @@ func writeIfChanged(path string, content string) (done bool, err error) {
 	return true, nil
 }
 
-// writeProfile creates or updates a dconf profile file.
+// writeProfile creates or updates a dconf profile file, seeding new profiles
+// from the system profile they shadow.
 // The adsys system-db should always be the first system-db in the file to enforce their values
 // (upper system-db in the profile wins).
-func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
+func writeProfile(ctx context.Context, user, profilesPath string, dataDirs []string) (err error) {
 	defer decorate.OnError(&err, gotext.Get("can't update user profile %s", profilesPath))
 
 	profilePath := filepath.Join(profilesPath, user)
@@ -232,12 +248,21 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 
 	// Read existing content and create file if doesn’t exists
 	content, err := os.ReadFile(profilePath)
+	profileExists := err == nil
 	if err != nil {
 		if !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
-		// #nosec G306. This asset needs to be world-readable.
-		return os.WriteFile(profilePath, []byte(fmt.Sprintf("user-db:user\n%s\n%s", adsysUserDB, adsysMachineDB)), 0644)
+		var found bool
+		content, found, err = readFallbackProfile(user, dataDirs)
+		if err != nil {
+			return err
+		}
+		// A blank system profile carries no source to preserve, and using it as
+		// is would drop the write database from the generated profile.
+		if !found || len(bytes.TrimSpace(content)) == 0 {
+			content = []byte("user-db:user")
+		}
 	}
 
 	// Read file to insert them at the end, removing duplicates
@@ -254,7 +279,7 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 	newContent := []byte(strings.Join(out, "\n"))
 
 	// Is file already up to date?
-	if string(content) == string(newContent) {
+	if profileExists && string(content) == string(newContent) {
 		return nil
 	}
 
@@ -267,6 +292,23 @@ func writeProfile(ctx context.Context, user, profilesPath string) (err error) {
 		return err
 	}
 	return nil
+}
+
+func readFallbackProfile(user string, dataDirs []string) ([]byte, bool, error) {
+	for _, dataDir := range dataDirs {
+		if dataDir == "" {
+			continue
+		}
+		profilePath := filepath.Join(dataDir, "dconf", "profile", user)
+		content, err := os.ReadFile(profilePath)
+		if err == nil {
+			return content, true, nil
+		}
+		if !errors.Is(err, fs.ErrNotExist) {
+			return nil, false, fmt.Errorf("%s: %w", gotext.Get("can't read fallback dconf profile %s", profilePath), err)
+		}
+	}
+	return nil, false, nil
 }
 
 // dconfNeedsUpdate will notify if we need to run dconf update for that binary database.
