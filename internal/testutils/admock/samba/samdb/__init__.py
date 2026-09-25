@@ -52,6 +52,8 @@ class SamDB:
         # User/Machine search
         if "samAccountName" in expression:
             accountName = str(expression)[len("(&(|(samAccountName="):].split(")")[0]
+            if accountName == "connectionDropDuringAccountLookup":
+                raise Exception(1, "ldap/ldb error: NT_STATUS_CONNECTION_REFUSED")
             # Only the truncated name exists
             if accountName == "nonexistent" or accountName == "hostnameWithTruncatedLongName":
                 return []
@@ -80,6 +82,8 @@ class SamDB:
         # OU search
         elif "gPLink" in attrs:
             ou = ldb.OUs[base.strdn]
+            if getattr(ou, "transport_error", False):
+                raise Exception(1, "ldap/ldb error: NT_STATUS_CONNECTION_DISCONNECTED")
             r = {'gPLink': ou.gPLink}
             if hasattr(ou, 'gPOptions'):
                 r['gPOptions'] = ou.gPOptions
@@ -95,4 +99,3 @@ class SamDB:
 
     def get_default_basedn(self):
         return ldb.OUs["/example"]
-

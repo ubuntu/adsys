@@ -26,13 +26,22 @@ func TestSSSD(t *testing.T) {
 	bus := testutils.NewDbusConn(t)
 
 	tests := map[string]struct {
-		sssdConf     string
-		sssdCacheDir string
+		sssdConf        string
+		sssdCacheDir    string
+		wantServerFQDNs []string
 
 		wantErr bool
 	}{
 		"Regular config":               {sssdConf: "example.com"},
 		"Multiple domains, pick first": {sssdConf: "multiple-domains"},
+		"Multiple servers, pick first": {
+			sssdConf:        "example.com-with-multiple-servers",
+			wantServerFQDNs: []string{"dc1.windows.lan", "dc2.windows.lan"},
+		},
+		"Mixed static and discovered servers preserve order": {
+			sssdConf:        "example.com-with-static-and-discovered-servers",
+			wantServerFQDNs: []string{"dc1.windows.lan", "dynamic_active_server.example.com", "dc3.windows.lan"},
+		},
 
 		// Active server cases
 		"Ad server defined in config has priority over active server": {sssdConf: "example.com-with-server"},
@@ -102,6 +111,12 @@ func TestSSSD(t *testing.T) {
 
 			if tc.sssdConf == "" {
 				return // nothing else we can check on the machine's default sssd conf
+			}
+
+			if tc.wantServerFQDNs != nil {
+				serverFQDNs, err := sssd.ServerFQDNs(context.Background())
+				require.NoError(t, err, "ServerFQDNs should return no error")
+				require.Equal(t, tc.wantServerFQDNs, serverFQDNs, "ServerFQDNs returns configured servers in order")
 			}
 
 			got := testutils.FormatBackendCalls(t, sssd)

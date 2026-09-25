@@ -108,6 +108,7 @@ class OU:
     def __init__(self, strdn):
         self.strdn = strdn
         self.gpos=[]
+        self.transport_error = False
 
         self.gPLink = [b'']
         if path.basename(strdn) == "InvalidGPOLink":
@@ -383,6 +384,10 @@ o.addAccount("UserSessionReferralFallback", token_groups_sids=["S-1-5-21-1111111
 o = OU("/example/PrimaryGroupFallback")
 o.addGPO(GPO("PrimaryGroupFallback GPO"))
 o.addAccount("UserPrimaryGroupFallback", token_groups_sids=[], dc_token_groups_sids=[], crash_user_session=True)
+
+o = OU("/example/TransportErrorDuringGPOQuery")
+o.transport_error = True
+o.addAccount("UserTransportErrorDuringGPOQuery")
 
 # Integration tests OU and GPO
 OU("/example/IntegrationTests")
