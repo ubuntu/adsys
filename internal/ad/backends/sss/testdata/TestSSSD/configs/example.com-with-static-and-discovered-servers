@@ -1,0 +1,7 @@
+[sssd]
+domains = example.com
+
+[domain/example.com]
+id_provider = ad
+ad_domain = example.com
+ad_server = ldap://dc1.windows.lan, _srv_, ldap://dc3.windows.lan

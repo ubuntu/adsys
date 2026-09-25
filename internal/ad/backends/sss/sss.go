@@ -19,15 +19,16 @@ import (
 
 // SSS is the backend object with domain and DC information.
 type SSS struct {
-	domain              string
-	domainDbus          dbus.BusObject
-	serverFQDN          string
-	staticServerFQDN    string
-	hostKrb5CCName      string
-	defaultDomainSuffix string
+	domain                string
+	domainDbus            dbus.BusObject
+	configuredServerFQDNs []string
+	hostKrb5CCName        string
+	defaultDomainSuffix   string
 
 	config Config
 }
+
+const serviceDiscoveryServer = "_srv_"
 
 // Config for sss backend.
 type Config struct {
@@ -76,22 +77,25 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 	domainDbus := bus.Object(consts.SSSDDbusRegisteredName,
 		dbus.ObjectPath(filepath.Join(consts.SSSDDbusBaseObjectPath, domainToObjectPath(domain))))
 
-	// Server FQDN
-	staticServerFQDN := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_server").String()
-	if staticServerFQDN != "" {
-		staticServerFQDN = strings.TrimPrefix(staticServerFQDN, "ldap://")
+	// Server FQDNs
+	configuredServers := cfg.Section(fmt.Sprintf("domain/%s", sssdDomain)).Key("ad_server").String()
+	var configuredServerFQDNs []string
+	for _, serverFQDN := range strings.Split(configuredServers, ",") {
+		serverFQDN = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(serverFQDN), "ldap://"))
+		if serverFQDN != "" {
+			configuredServerFQDNs = append(configuredServerFQDNs, serverFQDN)
+		}
 	}
 
 	// local machine sssd krb5 cache
 	hostKrb5CCName := filepath.Join(c.CacheDir, "ccache_"+strings.ToUpper(domain))
 
 	return SSS{
-		domain:              domain,
-		domainDbus:          domainDbus,
-		serverFQDN:          staticServerFQDN,
-		staticServerFQDN:    staticServerFQDN,
-		hostKrb5CCName:      hostKrb5CCName,
-		defaultDomainSuffix: defaultDomainSuffix,
+		domain:                domain,
+		domainDbus:            domainDbus,
+		configuredServerFQDNs: configuredServerFQDNs,
+		hostKrb5CCName:        hostKrb5CCName,
+		defaultDomainSuffix:   defaultDomainSuffix,
 
 		config: c,
 	}, nil
@@ -103,18 +107,59 @@ func (sss SSS) Domain() string {
 }
 
 // ServerFQDN returns current server FQDN.
-// It returns first any static configuration. If nothing is found, it will fetch the active server from sssd.
+// It returns the first configured candidate from sssd.conf. If none is found,
+// it will fetch the active server from sssd.
 // If the dynamic lookup worked, but there is still no server FQDN found (for instance, backend
 // if offline), the error raised is of type ErrorNoActiveServer.
-func (sss SSS) ServerFQDN(ctx context.Context) (serverFQDN string, err error) {
+func (sss SSS) ServerFQDN(ctx context.Context) (string, error) {
+	serverFQDNs, err := sss.ServerFQDNs(ctx)
+	if err != nil {
+		return "", err
+	}
+	return serverFQDNs[0], nil
+}
+
+// ServerFQDNs returns configured server FQDNs in preference order, expanding
+// any _srv_ entries through SSSD's active-server lookup, or the active server
+// from SSSD when no candidates are configured.
+// If the dynamic lookup worked, but there is still no server FQDN found (for instance, backend
+// if offline), the error raised is of type ErrorNoActiveServer.
+func (sss SSS) ServerFQDNs(ctx context.Context) (serverFQDNs []string, err error) {
 	defer decorate.OnError(&err, gotext.Get("error while trying to look up AD server address on SSSD for %q", sss.domain))
 
-	if sss.staticServerFQDN != "" {
-		return sss.staticServerFQDN, nil
+	if len(sss.configuredServerFQDNs) > 0 {
+		var activeServerFQDN string
+		var activeServerLookupErr error
+		serverFQDNs = make([]string, 0, len(sss.configuredServerFQDNs))
+		for _, serverFQDN := range sss.configuredServerFQDNs {
+			if serverFQDN != serviceDiscoveryServer {
+				serverFQDNs = append(serverFQDNs, serverFQDN)
+				continue
+			}
+			if activeServerFQDN == "" && activeServerLookupErr == nil {
+				activeServerFQDN, activeServerLookupErr = sss.activeServerFQDN(ctx)
+			}
+			if activeServerLookupErr == nil {
+				serverFQDNs = append(serverFQDNs, activeServerFQDN)
+			}
+		}
+		if len(serverFQDNs) > 0 {
+			return serverFQDNs, nil
+		}
+		return nil, activeServerLookupErr
 	}
+
+	serverFQDN, err := sss.activeServerFQDN(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return []string{serverFQDN}, nil
+}
+
+func (sss SSS) activeServerFQDN(ctx context.Context) (string, error) {
 	log.Debugf(ctx, "Triggering autodiscovery of AD server triggered because sssd.conf does not provide an ad_server for %q", sss.domain)
 
-	// Try to update from SSSD the current active AD server
+	var serverFQDN string
 	if err := sss.domainDbus.Call(consts.SSSDDbusInterface+".ActiveServer", 0, "AD").Store(&serverFQDN); err != nil {
 		return "", err
 	}

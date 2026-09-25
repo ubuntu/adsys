@@ -45,6 +45,17 @@ class ReturnCode:
     GPO_FAILED = 3
 
 
+TRANSPORT_ERRORS = (
+    "NT_STATUS_HOST_UNREACHABLE",      # Host does not respond
+    "NT_STATUS_NETWORK_UNREACHABLE",   # Local link is down
+    "NT_STATUS_CONNECTION_REFUSED",    # Service does not respond on the other end
+    "NT_STATUS_CONNECTION_DISCONNECTED", # Connection was dropped
+    "NT_STATUS_CONNECTION_RESET",      # Connection was reset
+    "NT_STATUS_IO_TIMEOUT",            # Connection timed out
+    "NT_STATUS_OBJECT_NAME_NOT_FOUND", # Host does not exist
+)
+
+
 # Port of the Active Directory Global Catalog LDAP service. The Global Catalog
 # holds a partial replica of every object in the forest, which lets it expand a
 # user's complete group membership (universal and foreign-domain groups
@@ -98,6 +109,11 @@ def connectLDAP(url):
     return SamDB(url=url,
                  session_info=system_session(),
                  credentials=c, lp=lp)
+
+
+def is_transport_error(exc):
+    ''' Returns whether an exception reports a transport failure. '''
+    return any(status in " ".join(str(arg) for arg in exc.args) for status in TRANSPORT_ERRORS)
 
 
 def get_entity(samdb, accountname, objectClass):
@@ -274,7 +290,7 @@ def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname, debug
     # which is not an error.
     if dc_failure is not None and gc_failure is not None:
         print("Couldn't resolve the group membership for %s: the domain controller lookup failed (%s) and the Global Catalog lookup failed (%s)" % (accountname, dc_failure, gc_failure), file=sys.stderr)
-        return None, None
+        return None, None, is_transport_error(dc_failure) or is_transport_error(gc_failure)
 
     # tokenGroups omits the primary group (Domain Computers for a machine,
     # Domain Users for a user), which GPO ACLs frequently grant read to. Add it
@@ -285,6 +301,9 @@ def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname, debug
         if debug:
             print("DEBUG: primary group SID: %s" % primary_sid, file=sys.stderr)
     except Exception as exc:
+        if is_transport_error(exc):
+            print("Couldn't resolve the primary group for %s: %s" % (accountname, exc), file=sys.stderr)
+            return None, None, True
         if debug:
             print("DEBUG: could not resolve the primary group: %s" % exc, file=sys.stderr)
 
@@ -293,9 +312,9 @@ def build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname, debug
         token = build_token(object_sid, group_sids)
     except Exception as exc:
         print("Couldn't build the security token for %s: %s" % (accountname, exc), file=sys.stderr)
-        return None, None
+        return None, None, is_transport_error(exc)
 
-    return token, [str(sid) for sid in group_sids]
+    return token, [str(sid) for sid in group_sids], False
 
 
 def get_gpos_for_dn(samdb, dn, token, sids, is_computer, debug=False):
@@ -399,17 +418,9 @@ def main():
     try:
         samdb = connectLDAP("ldap://" + fqdn)
     except Exception as exc:
-        # Could be a private _ldb.Error, check status
-        if len(exc.args) > 1:
-            # TODO: MIRROR sssd behavior (with other ldap, other daemon on same part, network)
-            if exc.args[1].split()[-1] in (
-                  "NT_STATUS_HOST_UNREACHABLE",      # Host does not respond
-                  "NT_STATUS_NETWORK_UNREACHABLE",   # Local link is down
-                  "NT_STATUS_CONNECTION_REFUSED",    # Service does not respond on the other end
-                  "NT_STATUS_OBJECT_NAME_NOT_FOUND"  # Host does not exist
-                  ):
-                # samba/ldb prints the error message on stderr
-                return ReturnCode.CONNECTION_FAILED
+        if is_transport_error(exc):
+            # samba/ldb prints the error message on stderr
+            return ReturnCode.CONNECTION_FAILED
         print("Failed to open session: %s" % exc, file=sys.stderr)
         return ReturnCode.NOT_FOUND
 
@@ -425,6 +436,8 @@ def main():
             break
         except Exception as exc:
             print("Searching for account failed with: %s" % exc, file=sys.stderr)
+            if is_transport_error(exc):
+                return ReturnCode.CONNECTION_FAILED
             # We still have some candidates, don’t error out right away
             if i < len(accountnames):
                 continue
@@ -446,9 +459,14 @@ def main():
         token = get_token(samdb, dn)
         sids = [str(sid) for sid in token.sids]
     except Exception as session_exc:
+        if is_transport_error(session_exc):
+            print("Couldn't build the security token for %s: %s" % (accountname, session_exc), file=sys.stderr)
+            return ReturnCode.CONNECTION_FAILED
         print("WARNING: user_session() could not build the token (%s); falling back to tokenGroups resolved from the domain controller and the Global Catalog" % session_exc, file=sys.stderr)
-        token, sids = build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname, args.debug)
+        token, sids, transport_error = build_token_from_tokengroups(samdb, fqdn, dn, object_sid, accountname, args.debug)
         if token is None:
+            if transport_error:
+                return ReturnCode.CONNECTION_FAILED
             return ReturnCode.GPO_FAILED
 
     sids.append(object_sid)
@@ -467,6 +485,8 @@ def main():
         gpos = get_gpos_for_dn(samdb, dn, token, sids, args.objectclass == ObjectClass.computer, debug=args.debug)
     except Exception as exc:
         print("Couldn't get GPOs: %s" % exc, file=sys.stderr)
+        if is_transport_error(exc):
+            return ReturnCode.CONNECTION_FAILED
         return ReturnCode.GPO_FAILED
 
     for g in gpos:
