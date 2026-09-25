@@ -271,9 +271,50 @@ static char* slash_to_at_username(const char* username) {
 }
 
 /*
+ * GDM uses a static account on older releases and dynamic greeter accounts on
+ * newer releases.
+ */
+static int is_display_manager_user(const char* username) {
+    static const char greeter_username[] = "gdm-greeter";
+    size_t greeter_username_length = sizeof(greeter_username) - 1;
+
+    if (username == NULL) {
+        return 0;
+    }
+    if (strcmp(username, "gdm") == 0 || strcmp(username, "Debian-gdm") == 0) {
+        return 1;
+    }
+    if (strncmp(username, greeter_username, greeter_username_length) != 0) {
+        return 0;
+    }
+
+    const char* suffix = username + greeter_username_length;
+    if (*suffix == '\0') {
+        return 1;
+    }
+    if (*suffix != '-') {
+        return 0;
+    }
+    suffix++;
+    if (*suffix == '\0') {
+        return 0;
+    }
+    for (; *suffix != '\0'; suffix++) {
+        if (!isdigit((unsigned char)*suffix)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/*
  * Set DCONF_PROFILE for current user
  */
 static int set_dconf_profile(pam_handle_t* pamh, const char* username, int debug) {
+    if (is_display_manager_user(username)) {
+        return pam_putenv(pamh, "DCONF_PROFILE=gdm");
+    }
+
     int retval = PAM_SUCCESS;
 
     char* profile_name = slash_to_at_username(username);
@@ -422,11 +463,11 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t* pamh, int flags, int argc, cons
 
     /*
      * We consider that KRB5CCNAME is always set by SSSD for remote users
-     * We do an exception for GDM which is handled by the machine's GPO
-     * and we must set the DCONF_PROFILE environment variable.
+     * Display-manager sessions use the machine's GPO and the fixed GDM
+     * dconf profile.
      */
     const char* krb5ccname = pam_getenv(pamh, "KRB5CCNAME");
-    if (krb5ccname == NULL && strcmp(username, "gdm") != 0) {
+    if (krb5ccname == NULL && !is_display_manager_user(username)) {
         char* ticket_path = NULL;
 
         // An error here means the detect_cached_ticket setting is enabled
@@ -468,7 +509,7 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t* pamh, int flags, int argc, cons
     /*
       update user policy is only for AD users.
     */
-    if (strcmp(username, "gdm") == 0) {
+    if (is_display_manager_user(username)) {
         return PAM_IGNORE;
     }
 
