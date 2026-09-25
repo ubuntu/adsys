@@ -207,7 +207,7 @@ func TestApplyPolicy(t *testing.T) {
 					"Setup: can't create initial dconf directory")
 			}
 
-			m := dconf.NewWithDconfDir(dconfDir)
+			m := dconf.NewWithDconfDirAndProfileDataDirs(dconfDir, []string{})
 			err := m.ApplyPolicy(context.Background(), "ubuntu", tc.isComputer, tc.entries)
 			if tc.wantErr {
 				require.NotNil(t, err, "ApplyPolicy should have failed but didn't")
@@ -216,6 +216,97 @@ func TestApplyPolicy(t *testing.T) {
 			require.NoError(t, err, "ApplyPolicy failed but shouldn't have")
 
 			testutils.CompareTreesWithFiltering(t, dconfDir, testutils.GoldenPath(t), testutils.UpdateEnabled())
+		})
+	}
+}
+
+func TestApplyPolicyPreservesSystemProfile(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		localProfile   string
+		systemProfiles []string
+		wantProfile    string
+	}{
+		{
+			name:        "No system profile uses the default",
+			wantProfile: "user-db:user\nsystem-db:gdm\nsystem-db:machine",
+		},
+		{
+			name: "System profile preserves the greeter file database",
+			systemProfiles: []string{
+				"",
+				"user-db:user\nfile-db:/usr/share/gdm/greeter-dconf-defaults\n",
+			},
+			wantProfile: "user-db:user\nfile-db:/usr/share/gdm/greeter-dconf-defaults\nsystem-db:gdm\nsystem-db:machine",
+		},
+		{
+			name: "First system profile in search order wins",
+			systemProfiles: []string{
+				"user-db:user\nfile-db:/usr/local/share/gdm-defaults\n",
+				"user-db:user\nfile-db:/usr/share/gdm-defaults\n",
+			},
+			wantProfile: "user-db:user\nfile-db:/usr/local/share/gdm-defaults\nsystem-db:gdm\nsystem-db:machine",
+		},
+		{
+			name: "Creates a local profile when fallback already contains ADSys databases",
+			systemProfiles: []string{
+				"user-db:user\nsystem-db:gdm\nsystem-db:machine",
+			},
+			wantProfile: "user-db:user\nsystem-db:gdm\nsystem-db:machine",
+		},
+		{
+			name: "Blank system profile uses the default",
+			systemProfiles: []string{
+				"\n \n",
+			},
+			wantProfile: "user-db:user\nsystem-db:gdm\nsystem-db:machine",
+		},
+		{
+			name:         "Existing local profile takes precedence",
+			localProfile: "user-db:user\nfile-db:/etc/gdm/greeter-dconf-defaults\n",
+			systemProfiles: []string{
+				"user-db:user\nfile-db:/usr/share/gdm/greeter-dconf-defaults\n",
+			},
+			wantProfile: "user-db:user\nfile-db:/etc/gdm/greeter-dconf-defaults\nsystem-db:gdm\nsystem-db:machine",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			dconfDir := t.TempDir()
+			machineLocksDir := filepath.Join(dconfDir, "db", "machine.d", "locks")
+			require.NoError(t, os.MkdirAll(machineLocksDir, 0750))
+			require.NoError(t, os.WriteFile(filepath.Join(machineLocksDir, "adsys"), nil, 0600))
+
+			dataDirs := make([]string, 0, len(tc.systemProfiles))
+			for _, systemProfile := range tc.systemProfiles {
+				dataDir := t.TempDir()
+				dataDirs = append(dataDirs, dataDir)
+				if systemProfile == "" {
+					continue
+				}
+
+				systemProfilePath := filepath.Join(dataDir, "dconf", "profile", "gdm")
+				require.NoError(t, os.MkdirAll(filepath.Dir(systemProfilePath), 0750))
+				require.NoError(t, os.WriteFile(systemProfilePath, []byte(systemProfile), 0600))
+			}
+
+			if tc.localProfile != "" {
+				localProfilePath := filepath.Join(dconfDir, "profile", "gdm")
+				require.NoError(t, os.MkdirAll(filepath.Dir(localProfilePath), 0750))
+				require.NoError(t, os.WriteFile(localProfilePath, []byte(tc.localProfile), 0600))
+			}
+
+			m := dconf.NewWithDconfDirAndProfileDataDirs(dconfDir, dataDirs)
+			require.NoError(t, m.ApplyPolicy(context.Background(), "gdm", false, nil))
+
+			profile, err := os.ReadFile(filepath.Join(dconfDir, "profile", "gdm"))
+			require.NoError(t, err)
+			require.Equal(t, tc.wantProfile, string(profile))
 		})
 	}
 }

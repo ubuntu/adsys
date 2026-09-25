@@ -1039,6 +1039,8 @@ func equalPoliciesToGolden(t *testing.T, got policies.Policies, golden string, u
 }
 
 func TestMain(m *testing.M) {
+	defer testutils.IsolateDconfSystemProfiles()()
+
 	// Don’t setup samba or sssd for mock helpers
 	if !strings.Contains(strings.Join(os.Args, " "), "TestMock") {
 		// Ubuntu Advantage
