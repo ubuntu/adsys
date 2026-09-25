@@ -56,6 +56,8 @@ func TestMain(m *testing.M) {
 		return
 	}
 
+	defer testutils.IsolateDconfSystemProfiles()()
+
 	// get root project directory with go.mod file
 	p, err := os.Getwd()
 	if err != nil {

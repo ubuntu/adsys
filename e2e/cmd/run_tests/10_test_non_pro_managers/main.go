@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ubuntu/adsys/e2e/internal/command"
 	"github.com/ubuntu/adsys/e2e/internal/inventory"
@@ -14,6 +15,13 @@ import (
 )
 
 var sshKey string
+
+// adsysGdmProfile is the dconf profile we generate for the GDM greeter, and
+// systemGdmProfileDirs the data directories it may have been seeded from,
+// searched in the order adsys searches them.
+const adsysGdmProfile = "/etc/dconf/profile/gdm"
+
+var systemGdmProfileDirs = []string{"/usr/local/share", "/usr/share"}
 
 func main() {
 	os.Exit(run())
@@ -79,6 +87,30 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		return err
 	}
 	if err := rootClient.RequireEqual(ctx, "DCONF_PROFILE=gdm dconf read /org/gnome/login-screen/banner-message-text", "'Sample banner text'"); err != nil {
+		return err
+	}
+
+	// The profile we generate for GDM shadows the one the distribution ships,
+	// so it has to carry its sources over: dropping them costs the greeter the
+	// defaults it is shipped with. Look the system profile up the way adsys
+	// does instead of hardcoding a path, as releases do move it and its greeter
+	// database around, and report what went missing rather than just failing.
+	if err := rootClient.RequireEqual(ctx, fmt.Sprintf(`
+profile=""
+for dir in %s; do
+    if [ -f "$dir/dconf/profile/gdm" ]; then profile="$dir/dconf/profile/gdm"; break; fi
+done
+if [ -z "$profile" ]; then echo "no system dconf profile for gdm to preserve"; exit 0; fi
+if [ ! -f %[2]s ]; then echo "adsys generated no profile for gdm"; exit 0; fi
+missing=$(grep -vE '^[[:space:]]*(#|$)' "$profile" | while IFS= read -r source; do grep -qxF "$source" %[2]s || printf '%%s ' "$source"; done)
+if [ -n "$missing" ]; then echo "dropped from $profile: $missing"; exit 0; fi
+echo ok`, strings.Join(systemGdmProfileDirs, " "), adsysGdmProfile), "ok"); err != nil {
+		return err
+	}
+	// Ours are appended after the sources we seeded the profile with, and the
+	// policy is enforced from there through the locks adsys writes.
+	if err := rootClient.RequireEqual(ctx, fmt.Sprintf("tail -n 2 %s", adsysGdmProfile),
+		"system-db:gdm\nsystem-db:machine"); err != nil {
 		return err
 	}
 

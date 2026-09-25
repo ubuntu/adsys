@@ -50,3 +50,9 @@ func TestApplyPolicy(t *testing.T) {
 		})
 	}
 }
+
+func TestMain(m *testing.M) {
+	defer testutils.IsolateDconfSystemProfiles()()
+
+	m.Run()
+}
