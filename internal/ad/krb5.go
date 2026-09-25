@@ -32,6 +32,7 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"unsafe"
@@ -42,9 +43,41 @@ import (
 // ErrTicketNotPresent is returned when the ticket cache is not present or not accessible.
 var ErrTicketNotPresent = errors.New(gotext.Get("ticket not found or not accessible"))
 
+// ErrUnsupportedCCacheType is returned when a Kerberos cache is not file-backed.
+var ErrUnsupportedCCacheType = errors.New(gotext.Get("unsupported Kerberos credential cache type"))
+
+func fileCCachePath(ccacheName string) (string, error) {
+	cacheType, path, hasType := strings.Cut(ccacheName, ":")
+	if hasType && isCCacheTypeName(cacheType) {
+		if !strings.EqualFold(cacheType, "FILE") {
+			return "", fmt.Errorf("%w: %s", ErrUnsupportedCCacheType,
+				gotext.Get("only file-based caches are supported, got %q", cacheType))
+		}
+		ccacheName = path
+	}
+	if ccacheName == "" {
+		return "", errors.New(gotext.Get("path is empty"))
+	}
+
+	return ccacheName, nil
+}
+
+func isCCacheTypeName(name string) bool {
+	for i, r := range name {
+		isLetter := (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z')
+		isDigit := r >= '0' && r <= '9'
+		if !isLetter && (i == 0 || (!isDigit && r != '_' && r != '-')) {
+			return false
+		}
+	}
+
+	return name != ""
+}
+
 // TicketPath returns the path of the default kerberos ticket cache for the
 // current user.
-// It returns an error if the path is empty or does not exist on the disk.
+// It returns an error if the cache is not file-backed, the path is empty, or
+// the file does not exist on disk.
 func TicketPath() (string, error) {
 	cKrb5cc, err := C.get_ticket_path()
 	defer C.free(unsafe.Pointer(cKrb5cc))
@@ -56,7 +89,10 @@ func TicketPath() (string, error) {
 		return "", errors.New(gotext.Get("path is empty"))
 	}
 
-	krb5ccPath := strings.TrimPrefix(krb5cc, "FILE:")
+	krb5ccPath, err := fileCCachePath(krb5cc)
+	if err != nil {
+		return "", err
+	}
 	fileInfo, err := os.Stat(krb5ccPath)
 	if err != nil {
 		return "", errors.Join(ErrTicketNotPresent, err)
