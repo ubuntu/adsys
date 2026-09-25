@@ -23,6 +23,15 @@ import (
 	"github.com/ubuntu/adsys/internal/testutils"
 )
 
+type mockBackendWithServerFQDNs struct {
+	mock.Backend
+	serverFQDNs []string
+}
+
+func (m mockBackendWithServerFQDNs) ServerFQDNs(context.Context) ([]string, error) {
+	return append([]string(nil), m.serverFQDNs...), nil
+}
+
 func TestNew(t *testing.T) {
 	t.Parallel()
 
@@ -113,6 +122,7 @@ func TestGetPolicies(t *testing.T) {
 		userKrb5CCBaseName string
 
 		backend     mock.Backend
+		serverFQDNs []string
 		versionID   string
 		gpoListArgs []string
 
@@ -566,6 +576,23 @@ func TestGetPolicies(t *testing.T) {
 			wantErr:         true,
 			wantErrContains: "could not connect to the Active Directory server",
 		},
+		"Post-connect connection failure retries the next configured server": {
+			serverFQDNs: []string{"dc1.gpoonly.com", "dc2.gpoonly.com"},
+			gpoListArgs: []string{"-Exit2Server=dc1.gpoonly.com", "gpoonly.com", "bob:standard"},
+			want:        policies.Policies{GPOs: []policies.GPO{standardUserGPO("standard")}},
+		},
+		"Connection failure on all configured servers is reported": {
+			serverFQDNs:     []string{"dc1.gpoonly.com", "dc2.gpoonly.com"},
+			gpoListArgs:     []string{"-Exit2-"},
+			wantErr:         true,
+			wantErrContains: "could not connect to any of the configured Active Directory servers",
+		},
+		"Non-connection failure does not retry another server": {
+			serverFQDNs:     []string{"dc1.gpoonly.com", "dc2.gpoonly.com"},
+			gpoListArgs:     []string{"-Exit1Server=dc1.gpoonly.com", "gpoonly.com", "bob:standard"},
+			wantErr:         true,
+			wantErrContains: "was not found in Active Directory",
+		},
 		"Error on GPO computation failure is reported distinctly": {
 			gpoListArgs:     []string{"-Exit3-"},
 			wantErr:         true,
@@ -605,6 +632,15 @@ func TestGetPolicies(t *testing.T) {
 				testutils.CreatePath(t, tc.backend.HostKrb5CCNamePath)
 			}
 
+			var configBackend backends.Backend = tc.backend
+			if len(tc.serverFQDNs) > 0 {
+				tc.backend.ServURL = tc.serverFQDNs[0]
+				configBackend = mockBackendWithServerFQDNs{
+					Backend:     tc.backend,
+					serverFQDNs: tc.serverFQDNs,
+				}
+			}
+
 			var krb5CCName string
 			if tc.objectClass == ad.UserObject {
 				switch tc.userKrb5CCBaseName {
@@ -621,7 +657,7 @@ func TestGetPolicies(t *testing.T) {
 			}
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			adc, err := ad.New(context.Background(), tc.backend, hostname,
+			adc, err := ad.New(context.Background(), configBackend, hostname,
 				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
 				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs...)),
 				ad.WithVersionID(tc.versionID))
@@ -1370,6 +1406,36 @@ func TestMockGPOList(_ *testing.T) {
 
 	// simulating script failures with a requested exit code, e.g. "-Exit2-"
 	// (also used to simulate offline mode).
+	if strings.HasPrefix(args[0], "-Exit") && strings.Contains(args[0], "Server=") {
+		directive := strings.SplitN(strings.TrimPrefix(args[0], "-Exit"), "Server=", 2)
+		if len(directive) != 2 {
+			fmt.Fprintf(os.Stderr, "Invalid server-specific exit directive %q", args[0])
+			os.Exit(1)
+		}
+		code, err := strconv.Atoi(directive[0])
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid requested exit code %q", directive[0])
+			os.Exit(1)
+		}
+
+		serverFQDN := directive[1]
+		args = args[1:]
+		for i, arg := range args {
+			if arg != "--objectclass" {
+				continue
+			}
+			if i+2 >= len(args) {
+				fmt.Fprintln(os.Stderr, "Missing server FQDN in gpo-list arguments")
+				os.Exit(1)
+			}
+			if args[i+2] == serverFQDN {
+				fmt.Fprintf(os.Stderr, "Error during gpo list requested with exit %d", code)
+				os.Exit(code)
+			}
+			break
+		}
+	}
+
 	if strings.HasPrefix(args[0], "-Exit") && strings.HasSuffix(args[0], "-") {
 		code, err := strconv.Atoi(strings.TrimSuffix(strings.TrimPrefix(args[0], "-Exit"), "-"))
 		if err != nil {

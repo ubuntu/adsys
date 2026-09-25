@@ -176,6 +176,15 @@ func (w Winbind) ServerFQDN(ctx context.Context) (serverFQDN string, err error) 
 	return serverFQDN, nil
 }
 
+// ServerFQDNs returns the current server FQDN as the only candidate for winbind.
+func (w Winbind) ServerFQDNs(ctx context.Context) ([]string, error) {
+	serverFQDN, err := w.ServerFQDN(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return []string{serverFQDN}, nil
+}
+
 // Config returns a stringified configuration for Winbind backend.
 func (w Winbind) Config() string {
 	return "Current backend is Winbind"

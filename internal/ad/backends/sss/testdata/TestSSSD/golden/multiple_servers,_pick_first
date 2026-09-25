@@ -1,0 +1,9 @@
+* Domain(): example.com
+* ServerFQDN(): dc1.windows.lan
+* IsOnline(): true
+* HostKrb5CCName(): /var/lib/sss/db/ccache_EXAMPLE.COM
+* DefaultDomainSuffix(): example.com
+* Config():
+Current backend is SSSD
+Configuration: testdata/TestSSSD/configs/example.com-with-multiple-servers
+Cache: /var/lib/sss/db

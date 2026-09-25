@@ -201,6 +201,11 @@ func TestAdsysGPOList(t *testing.T) {
 			wantReturnCode: 1,
 			wantErr:        true,
 		},
+		"Error on account lookup transport failure": {
+			accountName:    "connectionDropDuringAccountLookup@GPOONLY.COM",
+			wantReturnCode: 2,
+			wantErr:        true,
+		},
 		"Error on user requested but found machine": {
 			accountName:    "hostname1",
 			objectClass:    "user",
@@ -216,6 +221,11 @@ func TestAdsysGPOList(t *testing.T) {
 		"Error invalid GPO link": {
 			accountName:    "UserInvalidLink@GPOONLY.COM",
 			wantReturnCode: 3,
+			wantErr:        true,
+		},
+		"Error on post-connect GPO query transport failure": {
+			accountName:    "UserTransportErrorDuringGPOQuery@GPOONLY.COM",
+			wantReturnCode: 2,
 			wantErr:        true,
 		},
 
