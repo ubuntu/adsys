@@ -39,7 +39,9 @@ func TestTicketPath(t *testing.T) {
 		"Error when initializing context":       {krb5Behavior: "error_initializing_context", wantErr: true},
 		"Error on empty ticket path":            {krb5Behavior: "return_empty_ccache", wantErr: true},
 		"Error on NULL ticket path":             {krb5Behavior: "return_null_ccache", wantErr: true},
-		"Error on non-FILE ccache":              {krb5Behavior: "return_memory_ccache", wantErrType: ad.ErrTicketNotPresent},
+		"Error on KCM ccache":                   {krb5Behavior: "return_ccache:KCM:", wantErrType: ad.ErrUnsupportedCCacheType},
+		"Error on single-letter typed ccache":   {krb5Behavior: "return_ccache:X:token", wantErrType: ad.ErrUnsupportedCCacheType},
+		"Error on non-FILE ccache":              {krb5Behavior: "return_memory_ccache", wantErrType: ad.ErrUnsupportedCCacheType},
 	}
 
 	for name, tc := range tests {

@@ -259,6 +259,21 @@ func TestPolicyUpdate(t *testing.T) {
 				},
 			},
 		},
+		"Unsupported default cache type is fatal despite a cached file": {
+			initState:          "localhost-uptodate",
+			detectCachedTicket: true,
+			noExportKrb5cc:     true,
+			krb5MockBehavior:   "return_memory_ccache",
+			krb5ccNamesState: []krb5ccNamesWithState{
+				{src: currentUser + ".krb5", adsysSymlink: currentUser},
+				{
+					src:          "ccache_EXAMPLE.COM",
+					adsysSymlink: hostname,
+					machine:      true,
+				},
+			},
+			wantErr: true,
+		},
 		"Other user, first time": {
 			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
 			initState:  "localhost-uptodate",
