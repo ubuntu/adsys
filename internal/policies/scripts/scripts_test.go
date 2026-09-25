@@ -3,12 +3,17 @@ package scripts_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"os/user"
 	"path/filepath"
+	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/termie/go-shutil"
 	"github.com/ubuntu/adsys/internal/policies/entry"
@@ -279,6 +284,165 @@ func TestRunScripts(t *testing.T) {
 			testutils.CompareTreesWithFiltering(t, src, testutils.GoldenPath(t), testutils.UpdateEnabled())
 		})
 	}
+}
+
+// TestRunScriptsRetriesBusyScripts ensures that a script which can’t be executed
+// yet because it is still open for writing is retried instead of being skipped.
+func TestRunScriptsRetriesBusyScripts(t *testing.T) {
+	t.Parallel()
+
+	scriptParentDir := filepath.Join(t.TempDir(), "users", "foo", "scripts")
+	require.NoError(t, os.MkdirAll(filepath.Join(scriptParentDir, "scripts"), 0700), "Setup: can't create script dir")
+
+	marker := filepath.Join(scriptParentDir, "marker")
+	script := filepath.Join(scriptParentDir, "scripts", "script.sh")
+	//nolint:gosec // G306 - the script has to be executable to be run by RunScripts.
+	require.NoError(t,
+		os.WriteFile(script, fmt.Appendf(nil, "#!/bin/sh\ntouch %q\n", marker), 0700),
+		"Setup: can't create script")
+
+	order := filepath.Join(scriptParentDir, "s")
+	require.NoError(t, os.WriteFile(order, []byte("scripts/script.sh\n"), 0600), "Setup: can't create order file")
+	require.NoError(t, os.WriteFile(filepath.Join(scriptParentDir, ".ready"), nil, 0600), "Setup: can't create ready flag")
+
+	// Keep the script open for writing: executing it fails with ETXTBSY until we
+	// close it, which mimics a concurrent fork holding a descriptor on it.
+	f, err := os.OpenFile(script, os.O_WRONLY, 0600)
+	require.NoError(t, err, "Setup: can't open script for writing")
+
+	retryAttempted := make(chan struct{})
+	releaseRetry := make(chan struct{})
+	var retryOnce sync.Once
+	var releaseOnce sync.Once
+	release := func() {
+		releaseOnce.Do(func() { close(releaseRetry) })
+	}
+	runDone := make(chan error, 1)
+	t.Cleanup(func() {
+		_ = f.Close()
+		release()
+	})
+
+	go func() {
+		runDone <- scripts.RunScriptsWithBusyScriptRetryHook(context.Background(), order, false, func() {
+			retryOnce.Do(func() {
+				close(retryAttempted)
+				<-releaseRetry
+			})
+		})
+	}()
+
+	select {
+	case <-retryAttempted:
+	case err := <-runDone:
+		require.NoError(t, err, "RunScripts failed but shouldn't have")
+		t.Fatal("script should fail with ETXTBSY before it can be retried")
+	case <-time.After(30 * time.Second):
+		t.Fatal("RunScripts should acknowledge an ETXTBSY retry")
+	}
+
+	closeErr := f.Close()
+	release()
+	require.NoError(t, closeErr, "Setup: can't release the script")
+
+	select {
+	case err := <-runDone:
+		require.NoError(t, err, "RunScripts failed but shouldn't have")
+	case <-time.After(30 * time.Second):
+		t.Fatal("RunScripts should complete after the busy script is released")
+	}
+
+	require.FileExists(t, marker, "Script should have been run once it was not busy anymore")
+}
+
+// TestRunScriptsStopsRetryingBusyScripts ensures that a script that remains busy
+// is retried only up to the configured limit.
+func TestRunScriptsStopsRetryingBusyScripts(t *testing.T) {
+	t.Parallel()
+
+	scriptParentDir := filepath.Join(t.TempDir(), "users", "foo", "scripts")
+	require.NoError(t, os.MkdirAll(filepath.Join(scriptParentDir, "scripts"), 0700), "Setup: can't create script dir")
+
+	marker := filepath.Join(scriptParentDir, "marker")
+	script := filepath.Join(scriptParentDir, "scripts", "script.sh")
+	//nolint:gosec // G306 - the script has to be executable to be run by RunScripts.
+	require.NoError(t,
+		os.WriteFile(script, fmt.Appendf(nil, "#!/bin/sh\ntouch %q\n", marker), 0700),
+		"Setup: can't create script")
+
+	order := filepath.Join(scriptParentDir, "s")
+	require.NoError(t, os.WriteFile(order, []byte("scripts/script.sh\n"), 0600), "Setup: can't create order file")
+	require.NoError(t, os.WriteFile(filepath.Join(scriptParentDir, ".ready"), nil, 0600), "Setup: can't create ready flag")
+
+	f, err := os.OpenFile(script, os.O_WRONLY, 0600)
+	require.NoError(t, err, "Setup: can't open script for writing")
+	t.Cleanup(func() { _ = f.Close() })
+
+	var retries atomic.Int32
+	err = scripts.RunScriptsWithBusyScriptRetrySettings(context.Background(), order, false, 2, time.Millisecond, func() {
+		retries.Add(1)
+	})
+	require.NoError(t, err, "RunScripts should keep processing after a busy script exhausts its retries")
+	assert.EqualValues(t, 2, retries.Load(), "RunScripts should retry only the configured number of times")
+	assert.NoFileExists(t, marker, "The busy script should not run after retries are exhausted")
+}
+
+// TestRunScriptsCancelsBusyScriptRetries ensures that context cancellation
+// interrupts the ETXTBSY retry delay instead of waiting for the next retry.
+func TestRunScriptsCancelsBusyScriptRetries(t *testing.T) {
+	t.Parallel()
+
+	scriptParentDir := filepath.Join(t.TempDir(), "users", "foo", "scripts")
+	require.NoError(t, os.MkdirAll(filepath.Join(scriptParentDir, "scripts"), 0700), "Setup: can't create script dir")
+
+	marker := filepath.Join(scriptParentDir, "marker")
+	script := filepath.Join(scriptParentDir, "scripts", "script.sh")
+	//nolint:gosec // G306 - the script has to be executable to be run by RunScripts.
+	require.NoError(t,
+		os.WriteFile(script, fmt.Appendf(nil, "#!/bin/sh\ntouch %q\n", marker), 0700),
+		"Setup: can't create script")
+
+	order := filepath.Join(scriptParentDir, "s")
+	require.NoError(t, os.WriteFile(order, []byte("scripts/script.sh\n"), 0600), "Setup: can't create order file")
+	require.NoError(t, os.WriteFile(filepath.Join(scriptParentDir, ".ready"), nil, 0600), "Setup: can't create ready flag")
+
+	f, err := os.OpenFile(script, os.O_WRONLY, 0600)
+	require.NoError(t, err, "Setup: can't open script for writing")
+	t.Cleanup(func() { _ = f.Close() })
+
+	retryAttempted := make(chan struct{})
+	var retryOnce sync.Once
+	var retries atomic.Int32
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	runDone := make(chan error, 1)
+	go func() {
+		runDone <- scripts.RunScriptsWithBusyScriptRetrySettings(ctx, order, false, 5, time.Minute, func() {
+			retries.Add(1)
+			retryOnce.Do(func() { close(retryAttempted) })
+		})
+	}()
+
+	select {
+	case <-retryAttempted:
+	case err := <-runDone:
+		require.NoError(t, err, "RunScripts failed before entering the busy-script retry path")
+		t.Fatal("script should fail with ETXTBSY before cancellation")
+	case <-time.After(30 * time.Second):
+		t.Fatal("RunScripts should acknowledge an ETXTBSY retry")
+	}
+
+	cancel()
+
+	select {
+	case err := <-runDone:
+		require.NoError(t, err, "RunScripts should stop waiting for the next retry after cancellation")
+	case <-time.After(time.Second):
+		t.Fatal("RunScripts should stop waiting for the next retry after cancellation")
+	}
+	assert.EqualValues(t, 1, retries.Load(), "RunScripts should stop before a second retry after cancellation")
+	assert.NoFileExists(t, marker, "The busy script should not run after cancellation")
 }
 
 type mockUnitStarter struct {

@@ -23,6 +23,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/leonelquinteros/gotext"
 	"github.com/ubuntu/adsys/internal/consts"
@@ -35,6 +37,16 @@ const (
 	inSessionFlag = ".running"
 	readyFlag     = ".ready"
 	executableDir = "scripts"
+)
+
+// Scripts are exported to disk shortly before being executed. A fork() that
+// happens concurrently with that write leaves a writable file descriptor open in
+// the child until it execs, and the kernel refuses to execute a file that is
+// still open for writing. This is transient, so retry a bounded number of times
+// before giving up on the script.
+const (
+	busyScriptRetries = 5
+	busyScriptDelay   = 100 * time.Millisecond
 )
 
 // Manager prevents running multiple scripts update process in parallel while parsing policy in ApplyPolicy.
@@ -222,7 +234,15 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 
 // RunScripts executes all scripts in directory if ready and not already executed.
 // allowOrderMissing will not require order to exists if we are ready to execute.
-func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err error) {
+func RunScripts(ctx context.Context, order string, allowOrderMissing bool) error {
+	return runScripts(ctx, order, allowOrderMissing, nil)
+}
+
+func runScripts(ctx context.Context, order string, allowOrderMissing bool, onBusyScriptRetry func()) (err error) {
+	return runScriptsWithBusyScriptRetrySettings(ctx, order, allowOrderMissing, busyScriptRetries, busyScriptDelay, onBusyScriptRetry)
+}
+
+func runScriptsWithBusyScriptRetrySettings(ctx context.Context, order string, allowOrderMissing bool, retries int, delay time.Duration, onBusyScriptRetry func()) (err error) {
 	defer decorate.OnError(&err, gotext.Get("can't run scripts listed in %s", order))
 
 	log.Infof(ctx, "Calling RunScripts on %q", order)
@@ -282,18 +302,40 @@ func RunScripts(ctx context.Context, order string, allowOrderMissing bool) (err 
 		}
 		script := filepath.Join(baseDir, scriptPath)
 		log.Debugf(ctx, "Running script %q", script)
+		if err := runScript(ctx, script, retries, delay, onBusyScriptRetry); err != nil {
+			log.Warningf(ctx, "%q failed to run\n%v", script, err)
+		}
+	}
+
+	return nil
+}
+
+// runScript executes a single script, retrying while the kernel reports it as
+// still being open for writing (ETXTBSY).
+func runScript(ctx context.Context, script string, retries int, delay time.Duration, onBusyScriptRetry func()) error {
+	for i := 0; ; i++ {
 		// #nosec G204 - this variable is coming from concatenation of an order file.
 		// Permissions are restricted to the owner of the order file, which is the one executing
 		// this script.
 		cmd := exec.CommandContext(ctx, script)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		if err := cmd.Run(); err != nil {
-			log.Warningf(ctx, "%q failed to run\n%v", script, err)
+
+		err := cmd.Run()
+		if !errors.Is(err, syscall.ETXTBSY) || i == retries {
+			return err
+		}
+
+		log.Debugf(ctx, "%q is still open for writing, retrying", script)
+		if onBusyScriptRetry != nil {
+			onBusyScriptRetry()
+		}
+		select {
+		case <-ctx.Done():
+			return err
+		case <-time.After(delay):
 		}
 	}
-
-	return nil
 }
 
 func mkdirAllWithUIDGid(p string, uid, gid int) error {

@@ -346,6 +346,265 @@ func TestAddStdoutForwarderOneWithFailingForwarder(t *testing.T) {
 	assert.Equal(t, commonText+commonText+commonText, myWriter.String(), "Both messages are on the custom writer")
 }
 
+// TestRemoveForwarderWithPendingMessages ensures that disconnecting the last
+// writer while io.Copy still has buffered messages to forward neither deadlocks
+// nor drops those messages.
+func TestRemoveForwarderWithPendingMessages(t *testing.T) {
+	commonText := "content on stdout and writer"
+
+	stdoutReader, restoreStdout := fileToReader(t, &os.Stdout)
+
+	// Pause io.Copy after it has read the message but before it takes the
+	// forwarder's writer lock.
+	copyStarted := make(chan struct{})
+	releaseCopy := make(chan struct{})
+	var releaseCopyOnce sync.Once
+	unblockCopy := func() {
+		releaseCopyOnce.Do(func() { close(releaseCopy) })
+	}
+	var copyOnce sync.Once
+	restoreCopyHook := stdforward.SetStdoutBeforeWriteHook(func() {
+		copyOnce.Do(func() {
+			close(copyStarted)
+			<-releaseCopy
+		})
+	})
+	t.Cleanup(restoreCopyHook)
+
+	teardownStarted := make(chan struct{})
+	var teardownOnce sync.Once
+	restoreTeardownHook := stdforward.SetStdoutBeforeTeardownHook(func() {
+		teardownOnce.Do(func() { close(teardownStarted) })
+	})
+	t.Cleanup(restoreTeardownHook)
+
+	// 1. Hook up the writer after installing the hook, before io.Copy starts.
+	var myWriter concurrentStringsBuilder
+	restore, err := stdforward.AddStdoutWriter(&myWriter)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter")
+	var removeOnce sync.Once
+	remove := func() {
+		removeOnce.Do(restore)
+	}
+	t.Cleanup(func() {
+		unblockCopy()
+		remove()
+	})
+
+	// 2. Write and wait until io.Copy has a pending message.
+	fmt.Print(commonText)
+	select {
+	case <-copyStarted:
+	case <-time.After(30 * time.Second):
+		t.Fatal("io.Copy should have read the pending message")
+	}
+
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		remove()
+	}()
+	select {
+	case <-teardownStarted:
+	case <-time.After(30 * time.Second):
+		t.Fatal("teardown should acquire the setup lock")
+	}
+	select {
+	case <-done:
+		t.Fatal("Disconnecting the writer should wait for the pending message")
+	case <-time.After(100 * time.Millisecond):
+	}
+
+	unblockCopy()
+	select {
+	case <-done:
+	case <-time.After(30 * time.Second):
+		t.Fatal("Disconnecting the writer should not block on a pending message")
+	}
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStdout()
+
+	// Check content
+	assert.Equal(t, commonText, stringFromReader(t, stdoutReader), "Message is on stdout")
+	assert.Equal(t, commonText, myWriter.String(), "Pending message is still forwarded to the custom writer")
+}
+
+// TestAddForwarderWaitsForTeardown ensures a writer added while the last
+// writer is being removed attaches only after the old forwarder has drained.
+func TestAddForwarderWaitsForTeardown(t *testing.T) {
+	oldText := "content before teardown"
+	newText := "|content after teardown"
+
+	_, restoreStdout := fileToReader(t, &os.Stdout)
+
+	copyStarted := make(chan struct{})
+	releaseCopy := make(chan struct{})
+	var releaseCopyOnce sync.Once
+	unblockCopy := func() {
+		releaseCopyOnce.Do(func() { close(releaseCopy) })
+	}
+	var copyOnce sync.Once
+	restoreCopyHook := stdforward.SetStdoutBeforeWriteHook(func() {
+		copyOnce.Do(func() {
+			close(copyStarted)
+			<-releaseCopy
+		})
+	})
+	t.Cleanup(restoreCopyHook)
+
+	teardownStarted := make(chan struct{})
+	releaseTeardown := make(chan struct{})
+	var releaseTeardownOnce sync.Once
+	unblockTeardown := func() {
+		releaseTeardownOnce.Do(func() { close(releaseTeardown) })
+	}
+	var teardownOnce sync.Once
+	restoreTeardownHook := stdforward.SetStdoutBeforeTeardownHook(func() {
+		teardownOnce.Do(func() {
+			close(teardownStarted)
+			<-releaseTeardown
+		})
+	})
+	t.Cleanup(restoreTeardownHook)
+
+	var oldWriter concurrentStringsBuilder
+	restoreOld, err := stdforward.AddStdoutWriter(&oldWriter)
+	require.NoError(t, err, "AddStdoutWriter should add oldWriter")
+
+	removeDone := make(chan struct{})
+	var removeOnce sync.Once
+	removeOld := func() {
+		removeOnce.Do(func() {
+			restoreOld()
+			close(removeDone)
+		})
+	}
+
+	var restoreNew func()
+	var addErr error
+	addDone := make(chan struct{})
+	addStarted := false
+	var restoreSetupHook func()
+	t.Cleanup(func() {
+		unblockTeardown()
+		unblockCopy()
+		removeOld()
+		if addStarted {
+			<-addDone
+			if restoreNew != nil {
+				restoreNew()
+			}
+		}
+		if restoreSetupHook != nil {
+			restoreSetupHook()
+		}
+	})
+
+	fmt.Print(oldText)
+	select {
+	case <-copyStarted:
+	case <-time.After(30 * time.Second):
+		t.Fatal("io.Copy should have read the pending message")
+	}
+
+	go func() {
+		removeOld()
+	}()
+	select {
+	case <-teardownStarted:
+	case <-time.After(30 * time.Second):
+		t.Fatal("teardown should acquire the setup lock")
+	}
+
+	var newWriter concurrentStringsBuilder
+	addAttempted := make(chan struct{})
+	var addAttemptOnce sync.Once
+	restoreSetupHook = stdforward.SetStdoutBeforeSetupLockHook(func() {
+		addAttemptOnce.Do(func() { close(addAttempted) })
+	})
+	addStarted = true
+	go func() {
+		restoreNew, addErr = stdforward.AddStdoutWriter(&newWriter)
+		close(addDone)
+	}()
+	select {
+	case <-addAttempted:
+	case <-time.After(30 * time.Second):
+		t.Fatal("AddStdoutWriter should reach the setup lock")
+	}
+	duringTeardownText := "|during teardown"
+	fmt.Print(duringTeardownText)
+	select {
+	case <-addDone:
+		t.Fatal("AddStdoutWriter should wait for teardown to finish")
+	case <-time.After(100 * time.Millisecond):
+	}
+
+	unblockTeardown()
+	unblockCopy()
+
+	select {
+	case <-removeDone:
+	case <-time.After(30 * time.Second):
+		t.Fatal("teardown should finish after the pending message is released")
+	}
+	select {
+	case <-addDone:
+	case <-time.After(30 * time.Second):
+		t.Fatal("AddStdoutWriter should finish after teardown")
+	}
+	require.NoError(t, addErr, "AddStdoutWriter should add newWriter")
+
+	fmt.Print(newText)
+	restoreNew()
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStdout()
+
+	assert.Equal(t, oldText+duringTeardownText, oldWriter.String(), "Old writer gets messages buffered during teardown")
+	assert.Equal(t, newText, newWriter.String(), "New writer gets messages after teardown")
+}
+
+// TestReAddForwarderAfterDisconnectByOtherWriter ensures the forwarder can be
+// reinitialized after being torn down by a writer that did not initialize it.
+func TestReAddForwarderAfterDisconnectByOtherWriter(t *testing.T) {
+	text1 := "content 1"
+	text2 := "|content 2"
+
+	_, restoreStdout := fileToReader(t, &os.Stdout)
+
+	// 1. Hook up two writers: the second one does not initialize the forwarder.
+	var myWriter1, myWriter2 concurrentStringsBuilder
+	restore1, err := stdforward.AddStdoutWriter(&myWriter1)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter1")
+	restore2, err := stdforward.AddStdoutWriter(&myWriter2)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter2")
+
+	// 2. Disconnect them in order, so the last teardown is done by myWriter2.
+	restore1()
+	restore2()
+
+	// 3. Reinitializing must attach a brand new forwarder, with no leftover
+	// io.Copy goroutine forwarding to the previous writers.
+	var myWriter3 concurrentStringsBuilder
+	restore3, err := stdforward.AddStdoutWriter(&myWriter3)
+	require.NoError(t, err, "AddStdoutWriter should add myWriter3")
+	fmt.Print(text1)
+	time.Sleep(durationForFlushingIoCopy) // Let the copy in io.Copy goroutine to proceed
+	restore3()
+
+	fmt.Print(text2)
+
+	// Restore stdout (and disconnect our Writer) for other tests
+	restoreStdout()
+
+	// Check content
+	assert.Equal(t, text1, myWriter3.String(), "Writer3 gets the message sent while it was connected")
+	assert.Empty(t, myWriter1.String(), "Writer1 doesn’t get messages after being disconnected")
+	assert.Empty(t, myWriter2.String(), "Writer2 doesn’t get messages after being disconnected")
+}
+
 // fileToReader redirects file to a reader.
 // It returns a restore function if you don’t want to wait for the end of the test to restore the output.
 func fileToReader(t *testing.T, f **os.File) (r io.Reader, restore func()) {
