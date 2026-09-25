@@ -20,7 +20,7 @@ import (
 )
 
 // Daemon is a grpc daemon with systemd activation, configuration changes like dynamic
-// socket listening, idling timeout functionality….
+// socket listening, idling timeout functionality.
 type Daemon struct {
 	grpcserver         *grpc.Server
 	registerGRPCServer GRPCServerRegisterer
@@ -121,7 +121,7 @@ func New(registerGRPCServer GRPCServerRegisterer, socket string, opts ...option)
 	return d, nil
 }
 
-// UseSocket listens on new given socket. If we were listening on another socket first, the connection will be teared down.
+// UseSocket listens on new given socket. If we were listening on another socket first, the connection will be torn down.
 // Note that this has no effect if we were using socket activation.
 func (d *Daemon) UseSocket(socket string) (err error) {
 	if d.useSocketActivation {
@@ -195,7 +195,7 @@ func (d *Daemon) Listen() (err error) {
 }
 
 // Quit gracefully quits listening loop and stops the grpc server.
-// It can drops any existing connexion is force is true.
+// It can drop any existing connexion is force is true.
 func (d *Daemon) Quit(force bool) {
 	d.shutdown.Do(func() {
 		close(d.lis)
