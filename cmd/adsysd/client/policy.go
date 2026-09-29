@@ -494,6 +494,9 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 		krb5cc = strings.TrimPrefix(os.Getenv("KRB5CCNAME"), "FILE:")
 		if krb5cc == "" && a.config.DetectCachedTicket {
 			krb5cc, err = ad.TicketPath()
+			if errors.Is(err, ad.ErrUnsupportedCCacheType) {
+				return err
+			}
 			// Don't return an error as we might still have a cached ticket
 			// under /run/adsys/krb5cc
 			if err != nil {

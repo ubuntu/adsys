@@ -62,6 +62,8 @@ They are documented in the [`smb.conf(5)`](https://www.samba.org/samba/docs/curr
 
 ADSys relies on the configured AD backend (e.g. SSSD) to export the `KRB5CCNAME` environment variable, which points to a valid Kerberos ticket cache when a domain user performs authentication.
 
+ADSys supports file-backed caches only: a `FILE:` cache name or a file path without a cache-type prefix. Cache types such as `KCM:`, `KEYRING:`, and `DIR:` are not supported. A policy update using a non-file cache fails, which can block domain login because the ADSys PAM session requires the update to succeed.
+
 If the backend doesn't export the variable but _does_ initialize a ticket cache in the [default path](https://web.mit.edu/kerberos/krb5-1.12/doc/basic/ccache_def.html#default-ccache-name), ADSys can infer the path to the ticket cache and export it as the `KRB5CCNAME` variable during authentication and `adsysctl update` for the current domain user.
 
 To enable this functionality, the following must be added to `/etc/adsys.yaml`:

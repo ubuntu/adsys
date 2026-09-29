@@ -111,6 +111,7 @@ func TestGetPolicies(t *testing.T) {
 		objectName         string
 		objectClass        ad.ObjectClass
 		userKrb5CCBaseName string
+		userKrb5CCName     string
 
 		backend     mock.Backend
 		versionID   string
@@ -123,6 +124,7 @@ func TestGetPolicies(t *testing.T) {
 		wantAssetsEquals string
 		wantErr          bool
 		wantErrContains  string
+		wantNoCCSymlink  bool
 	}{
 		"Standard policy, user object": {
 			gpoListArgs: []string{"gpoonly.com", "bob:standard"},
@@ -485,6 +487,13 @@ func TestGetPolicies(t *testing.T) {
 			userKrb5CCBaseName: "-",
 			wantErr:            true,
 		},
+		"Reject non-FILE ccache type before creating symlink": {
+			userKrb5CCName:  "KEYRING:persistent:123",
+			gpoListArgs:     []string{"gpoonly.com", "bob:standard"},
+			wantErr:         true,
+			wantErrContains: "unsupported Kerberos credential cache type",
+			wantNoCCSymlink: true,
+		},
 		"Unexisting CC original file for user": {
 			gpoListArgs:        []string{"gpoonly.com", "bob:standard"},
 			userKrb5CCBaseName: "dont-exist",
@@ -607,16 +616,20 @@ func TestGetPolicies(t *testing.T) {
 
 			var krb5CCName string
 			if tc.objectClass == ad.UserObject {
-				switch tc.userKrb5CCBaseName {
-				case "":
-					tc.userKrb5CCBaseName = "kbr5cc_adsys_tests_bob"
-				case "-":
-					tc.userKrb5CCBaseName = ""
-				}
-				krb5CCName = tc.userKrb5CCBaseName
-				// only create original cc file when requested
-				if tc.userKrb5CCBaseName != "" && !strings.HasSuffix(tc.userKrb5CCBaseName, "dont-exist") {
-					krb5CCName = setKrb5CC(t, tc.userKrb5CCBaseName)
+				if tc.userKrb5CCName != "" {
+					krb5CCName = tc.userKrb5CCName
+				} else {
+					switch tc.userKrb5CCBaseName {
+					case "":
+						tc.userKrb5CCBaseName = "kbr5cc_adsys_tests_bob"
+					case "-":
+						tc.userKrb5CCBaseName = ""
+					}
+					krb5CCName = tc.userKrb5CCBaseName
+					// only create original cc file when requested
+					if tc.userKrb5CCBaseName != "" && !strings.HasSuffix(tc.userKrb5CCBaseName, "dont-exist") {
+						krb5CCName = setKrb5CC(t, tc.userKrb5CCBaseName)
+					}
 				}
 			}
 
@@ -641,6 +654,10 @@ func TestGetPolicies(t *testing.T) {
 				require.Error(t, err, "GetPolicies should have errored out")
 				if tc.wantErrContains != "" {
 					require.ErrorContains(t, err, tc.wantErrContains, "GetPolicies returned an unexpected error")
+				}
+				if tc.wantNoCCSymlink {
+					_, err := os.Lstat(filepath.Join(adc.Krb5CacheDir(), "tracking", tc.objectName))
+					require.ErrorIs(t, err, fs.ErrNotExist, "unsupported cache type must not create a symlink")
 				}
 				return
 			}

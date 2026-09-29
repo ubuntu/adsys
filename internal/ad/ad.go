@@ -475,7 +475,12 @@ func (ad *AD) ensureKrb5CCSymlink(srcKrb5CCName, dstKrb5CCName string) error {
 	ad.Lock()
 	defer ad.Unlock()
 
-	srcKrb5CCName, err := filepath.Abs(srcKrb5CCName)
+	srcKrb5CCName, err := fileCCachePath(srcKrb5CCName)
+	if err != nil {
+		return err
+	}
+
+	srcKrb5CCName, err = filepath.Abs(srcKrb5CCName)
 	if err != nil {
 		return errors.New(gotext.Get("can't get absolute path of ccname to symlink to: %v", err))
 	}
