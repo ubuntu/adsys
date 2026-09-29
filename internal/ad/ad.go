@@ -272,45 +272,72 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	}
 
 	// We need an AD DC to connect to
-	adServerFQDN, err := ad.configBackend.ServerFQDN(ctx)
+	adServerFQDNs, err := ad.configBackend.ServerFQDNs(ctx)
 	if err != nil {
 		return policies.Policies{}, errors.New(gotext.Get("can't get current Server FQDN: %v", err))
 	}
+	if len(adServerFQDNs) == 0 {
+		return policies.Policies{}, errors.New(gotext.Get("no AD server FQDNs were returned by the backend"))
+	}
 
 	// Otherwise, try fetching the GPO list from LDAP
-	args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
-	scriptArgs := []string{"--objectclass", string(objectClass), adServerFQDN, objectName}
-	if logrus.GetLevel() >= logrus.DebugLevel {
-		scriptArgs = append(scriptArgs, "--debug")
-	}
-	cmdArgs := append(args, scriptArgs...)
+	// Keep the configured timeout as the total budget across all servers.
 	cmdCtx, cancel := context.WithTimeout(ctx, ad.gpoListTimeout)
 	defer cancel()
-	log.Debugf(ctx, "Getting gpo list with arguments: %q", strings.Join(scriptArgs, " "))
-	// #nosec G204 - cmdArgs is under our control (python embedded script or mock for tests)
-	cmd := exec.CommandContext(cmdCtx, cmdArgs[0], cmdArgs[1:]...)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
 	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	var commandErr error
+	var connectionFailures []string
+	for i, adServerFQDN := range adServerFQDNs {
+		args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
+		scriptArgs := []string{"--objectclass", string(objectClass), adServerFQDN, objectName}
+		if logrus.GetLevel() >= logrus.DebugLevel {
+			scriptArgs = append(scriptArgs, "--debug")
+		}
+		cmdArgs := append(args, scriptArgs...)
+		log.Debugf(ctx, "Getting gpo list with arguments: %q", strings.Join(scriptArgs, " "))
+		// #nosec G204 - cmdArgs is under our control (python embedded script or mock for tests)
+		cmd := exec.CommandContext(cmdCtx, cmdArgs[0], cmdArgs[1:]...)
+		cmd.Env = append(os.Environ(), fmt.Sprintf("KRB5CCNAME=%s", krb5CCPath))
+		stdout.Reset()
+		stderr.Reset()
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
 
-	smbsafe.WaitExec()
-	err = cmd.Run()
-	smbsafe.DoneExec()
-	if err != nil {
-		exitCode := cmd.ProcessState.ExitCode()
+		smbsafe.WaitExec()
+		commandErr = cmd.Run()
+		smbsafe.DoneExec()
+		if commandErr == nil {
+			break
+		}
+
+		exitCode := -1
+		var exitErr *exec.ExitError
+		if errors.As(commandErr, &exitErr) {
+			exitCode = exitErr.ExitCode()
+		}
 		var reason string
 		switch exitCode {
 		case gpoListNotFound:
 			reason = gotext.Get("account %q was not found in Active Directory", objectName)
 		case gpoListConnectionFailed:
-			reason = gotext.Get("could not connect to the Active Directory server %q", adServerFQDN)
+			connectionFailures = append(connectionFailures, fmt.Sprintf("%q: %s", adServerFQDN, strings.TrimSpace(stderr.String())))
+			if i < len(adServerFQDNs)-1 {
+				log.Debugf(ctx, "Could not connect to AD server %q; trying next configured server %q", adServerFQDN, adServerFQDNs[i+1])
+				continue
+			}
+			if len(adServerFQDNs) == 1 {
+				reason = gotext.Get("could not connect to the Active Directory server %q", adServerFQDN)
+			} else {
+				reason = gotext.Get("could not connect to any of the configured Active Directory servers: %s", strings.Join(adServerFQDNs, ", "))
+				stderr.Reset()
+				stderr.WriteString(strings.Join(connectionFailures, "\n"))
+			}
 		case gpoListGPOFailed:
 			reason = gotext.Get("could not compute the GPO list for %q", objectName)
 		default:
 			reason = gotext.Get("unexpected error while retrieving the GPO list")
 		}
-		return pols, errors.New(gotext.Get("failed to retrieve the list of GPO: %s (exited with %d): %v\n%s", reason, exitCode, err, stderr.String()))
+		return pols, errors.New(gotext.Get("failed to retrieve the list of GPO: %s (exited with %d): %v\n%s", reason, exitCode, commandErr, stderr.String()))
 	}
 
 	downloadables := make(map[string]string)
