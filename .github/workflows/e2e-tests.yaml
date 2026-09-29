@@ -22,13 +22,42 @@ on:
     tags:
       - "*"
 
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: >-
+    ${{ github.workflow }}-${{ github.ref }}-${{
+      github.event_name == 'pull_request' &&
+      github.event.action == 'labeled' &&
+      github.event.label.name != 'e2e-tests' &&
+      github.run_id || 'active'
+    }}
   cancel-in-progress: true
 
 jobs:
   supported-releases:
     name: Build matrix for supported ADSys and Ubuntu releases
+    permissions:
+      contents: read
+      pull-requests: read
+    if: >-
+      ${{
+        github.event_name != 'pull_request' ||
+        (
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.user.login != 'dependabot[bot]' &&
+          contains(github.event.pull_request.labels.*.name, 'e2e-tests') &&
+          (
+            github.event.action != 'labeled' ||
+            github.event.label.name == 'e2e-tests'
+          )
+        )
+      }}
     runs-on: ${{ vars.RUNNER }}
     outputs:
       matrix: ${{ steps.set-supported-releases.outputs.matrix }}
@@ -50,17 +79,79 @@ jobs:
           go-version-file: go.mod
       - name: Build matrix
         id: set-supported-releases
+        env:
+          CODENAMES_INPUT: ${{ inputs.codenames || '' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_EVENT_BODY: ${{ github.event.pull_request.body || '' }}
         run: |
-          set -eu
+          set -euo pipefail
 
-          codenames="$(distro-info --supported-esm)\n$(distro-info --supported)\n"
+          codenames="$(
+            {
+              distro-info --supported-esm
+              distro-info --supported
+            } | sort -u
+          )"
 
-          releases=""
-          while read -r codename; do
+          requested_codenames="${CODENAMES_INPUT}"
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+              if ! pr_description="$(
+                  gh api "repos/${GH_REPO}/pulls/${PR_NUMBER}" --jq '.body // ""'
+              )"; then
+                  echo "::warning::Could not fetch the current pull request description; falling back to the event body, which may not include later edits."
+                  pr_description="${PR_EVENT_BODY}"
+              fi
+              description_without_comments="$(
+                  printf '%s' "${pr_description}" |
+                      tr -d '\r' |
+                      perl -0pe 's/<!--.*?(?:-->|$)//gs'
+              )"
+              requested_codenames="$(
+                  sed -nE 's/^[[:space:]]*e2e-ubuntu-releases:[[:space:]]*(.*)$/\1/p' \
+                      <<< "${description_without_comments}" |
+                      paste -sd, -
+              )"
+          fi
+
+          declare -A requested_releases=()
+          requested_count=0
+          if [[ -n "${requested_codenames}" ]]; then
+              while IFS= read -r requested_codename; do
+                  [[ -n "${requested_codename}" ]] || continue
+                  if [[ "${requested_codename}" == \"*\" ]]; then
+                      requested_codename="${requested_codename:1:${#requested_codename}-2}"
+                  fi
+                  if [[ ! "${requested_codename}" =~ ^[a-z][a-z0-9-]*$ ]]; then
+                      echo "::error::Invalid value in e2e-ubuntu-releases; use supported Ubuntu codenames separated by commas or spaces."
+                      exit 1
+                  fi
+
+                  if [[ -z "${requested_releases[${requested_codename}]:-}" ]]; then
+                      requested_releases["${requested_codename}"]=1
+                      requested_count=$((requested_count + 1))
+                  fi
+              done < <(printf '%s\n' "${requested_codenames}" | tr -s ' ,\t' '\n')
+
+              if (( requested_count == 0 )); then
+                  echo "::error::e2e-ubuntu-releases must list at least one Ubuntu codename."
+                  exit 1
+              fi
+          fi
+
+          releases=()
+          release_count=0
+          declare -A available_releases=()
+          while IFS= read -r codename; do
               # Filter out unsupported LTS releases. Keep this list in sync
               # with the one in e2e-build-images.yaml: testing a release we
               # never build a template for can only ever fail.
-              if [[ "${codename}" =~ xenial|bionic|focal|jammy ]]; then
+              if [[ "${codename}" =~ ^(xenial|bionic|focal|jammy)$ ]]; then
+                  continue
+              fi
+
+              if (( requested_count > 0 )) && [[ -z "${requested_releases[${codename}]:-}" ]]; then
                   continue
               fi
 
@@ -68,23 +159,32 @@ jobs:
               # as there is nothing to provision the client VM from.
               # Assign first so that a failing lookup fails the job instead of
               # being silently treated as a missing template.
-              templateVersion="$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${codename} --check-template)"
+              templateVersion="$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename "${codename}" --check-template)"
               if [ -z "${templateVersion}" ]; then
                   continue
               fi
 
-              if [ -n "${releases}" ]; then
-                  releases="${releases}, "
-              fi
-              releases="${releases}'${codename}'"
-          done <<< "$(printf "$codenames" | sort -u)"
+              releases+=("${codename}")
+              available_releases["${codename}"]=1
+              release_count=$((release_count + 1))
+          done <<< "${codenames}"
 
-          if [ -z "${releases}" ]; then
+          if (( requested_count > 0 )); then
+              for requested_codename in "${!requested_releases[@]}"; do
+                  if [[ -z "${available_releases[${requested_codename}]:-}" ]]; then
+                      echo "::error::Requested Ubuntu release '${requested_codename}' is unsupported or has no VM template available."
+                      exit 1
+                  fi
+              done
+          fi
+
+          if (( release_count == 0 )); then
               echo "::error::No supported release has a VM template available, check the \"E2E - Build image templates\" workflow"
               exit 1
           fi
 
-          echo matrix="${releases}" >> $GITHUB_OUTPUT
+          matrix="$(printf '%s\n' "${releases[@]}" | jq -R . | jq -cs .)"
+          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
 
   tests:
     name: Tests
@@ -93,7 +193,7 @@ jobs:
       - supported-releases
     strategy:
       matrix:
-        codename: ${{ fromJSON(format('[{0}]', inputs.codenames || needs.supported-releases.outputs.matrix)) }}
+        codename: ${{ fromJSON(needs.supported-releases.outputs.matrix) }}
       fail-fast: false
     env:
       AD_PASSWORD: ${{ secrets.AD_PASSWORD }}

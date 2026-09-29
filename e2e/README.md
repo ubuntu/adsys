@@ -36,7 +36,18 @@ The actual testing workflow consists of the following steps:
 - run various test scenarios involving ADSys
 - deprovision client VM and clean up AD resources
 
-Because triggering this on every push would be wasteful, the [E2E - Run tests](https://github.com/ubuntu/adsys/actions/workflows/e2e-tests.yaml) workflow only runs on pushes to `main` and on a workflow dispatch basis. We rely on the developer to assess when best to trigger a run of the workflow, as a last action before merging a PR (assuming all other automated checks are passing).
+Because triggering this on every push would be wasteful, the [E2E - Run tests](https://github.com/ubuntu/adsys/actions/workflows/e2e-tests.yaml) workflow runs on pushes to `main` and tags, on a workflow dispatch basis, and for pull requests carrying the `e2e-tests` label. PR runs use the PR's merge ref, so they include the proposed changes; fork PRs are skipped because the workflow requires repository secrets for Azure and AD access.
+
+To limit a PR run to specific Ubuntu releases, add an `e2e-ubuntu-releases` marker to the PR description, for example:
+
+```text
+e2e-ubuntu-releases: noble
+```
+
+Multiple codenames can be separated by commas or spaces. If the marker is omitted, the
+workflow runs on every supported release with an available VM template. Description edits
+do not trigger a new run; use **Re-run all jobs** on the existing workflow run to apply an
+updated selection.
 
 ## Developing E2E tests
 
