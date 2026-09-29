@@ -13,10 +13,14 @@ type Backend interface {
 	// Domain returns current server domain.
 	Domain() string
 	// ServerFQDN returns current server FQDN.
-	// It returns first any static configuration and goes dynamic if the backend provides this.
+	// It returns the first server from static configuration if present, and otherwise
+	// uses dynamic lookup when the backend supports it.
 	// If the dynamic lookup worked, but there is still no server URL found (for instance, backend
 	// if offline), the error raised is of type ErrorNoActiveServer.
 	ServerFQDN(context.Context) (string, error)
+	// ServerFQDNs returns available server FQDNs in preference order.
+	// Backends without a configured candidate list return their current server.
+	ServerFQDNs(context.Context) ([]string, error)
 	// HostKrb5CCName computes and returns the absolute path of the machine krb5 ticket.
 	HostKrb5CCName() (string, error)
 	// DefaultDomainSuffix returns current default domain suffix.

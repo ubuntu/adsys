@@ -34,6 +34,15 @@ func (m Backend) ServerFQDN(context.Context) (string, error) {
 	return m.ServURL, nil
 }
 
+// ServerFQDNs returns the mock server as the only candidate.
+func (m Backend) ServerFQDNs(ctx context.Context) ([]string, error) {
+	serverFQDN, err := m.ServerFQDN(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return []string{serverFQDN}, nil
+}
+
 // HostKrb5CCName returns the absolute path of the machine krb5 ticket.
 func (m Backend) HostKrb5CCName() (string, error) {
 	if m.ErrKrb5CCName {
