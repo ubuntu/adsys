@@ -28,7 +28,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
-#include <pwd.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +47,14 @@
 
 #define ADSYS_POLICIES_DIR "/var/cache/adsys/policies/%s"
 #define SSSD_CONF_PATH "/etc/sssd/sssd.conf"
+
+#ifndef ADSYS_GDM_GREETER_GROUP
+#define ADSYS_GDM_GREETER_GROUP "gdm"
+#endif
+
+#ifndef ADSYS_DEBIAN_GDM_GREETER_GROUP
+#define ADSYS_DEBIAN_GDM_GREETER_GROUP "Debian-gdm"
+#endif
 
 /*
  * Refresh the group policies of current user
@@ -271,6 +279,23 @@ static char* slash_to_at_username(const char* username) {
 }
 
 /*
+ * Report whether the session belongs to a GDM greeter account.
+ *
+ * GDM runs its greeter under a dedicated account whose name is not stable: it
+ * is Debian-gdm or gdm depending on the build, and since the switch to dynamic
+ * users it can carry an arbitrary suffix. The account is however always a
+ * member of the greeter group, which is what we match on.
+ */
+static bool is_greeter_user(pam_handle_t* pamh, const char* username) {
+    if (username == NULL) {
+        return false;
+    }
+
+    return pam_modutil_user_in_group_nam_nam(pamh, username, ADSYS_GDM_GREETER_GROUP) == 1 ||
+           pam_modutil_user_in_group_nam_nam(pamh, username, ADSYS_DEBIAN_GDM_GREETER_GROUP) == 1;
+}
+
+/*
  * Set DCONF_PROFILE for current user
  */
 static int set_dconf_profile(pam_handle_t* pamh, const char* username, int debug) {
@@ -421,12 +446,19 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t* pamh, int flags, int argc, cons
     }
 
     /*
+      Greeter sessions are entirely driven by the machine GPO: there is no
+      Kerberos ticket to locate, no user policy to refresh, and GDM exports the
+      dconf profile it was built against on its own.
+    */
+    if (is_greeter_user(pamh, username)) {
+        return PAM_IGNORE;
+    }
+
+    /*
      * We consider that KRB5CCNAME is always set by SSSD for remote users
-     * We do an exception for GDM which is handled by the machine's GPO
-     * and we must set the DCONF_PROFILE environment variable.
      */
     const char* krb5ccname = pam_getenv(pamh, "KRB5CCNAME");
-    if (krb5ccname == NULL && strcmp(username, "gdm") != 0) {
+    if (krb5ccname == NULL) {
         char* ticket_path = NULL;
 
         // An error here means the detect_cached_ticket setting is enabled
@@ -459,18 +491,11 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t* pamh, int flags, int argc, cons
         }
     }
 
-    // set dconf profile for AD and gdm user.
+    // set dconf profile for AD user.
     retval = set_dconf_profile(pamh, username, debug);
     if (retval != PAM_SUCCESS) {
         return retval;
     };
-
-    /*
-      update user policy is only for AD users.
-    */
-    if (strcmp(username, "gdm") == 0) {
-        return PAM_IGNORE;
-    }
 
     /*
       trying to update machine policy first if no machine gpo cache (meaning adsysd boot service failed due to being
