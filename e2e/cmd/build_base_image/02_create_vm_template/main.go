@@ -123,6 +123,8 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		"--replica-count", "2",
 		"--virtual-machine", inv.VMID,
 		"--tags", "project=AD", "subproject=adsys-e2e-tests",
+		fmt.Sprintf("%s=%s", az.SourceBuildTag, buildNumber),
+		fmt.Sprintf("%s=%s", az.SourceURNTag, inv.BaseVMImage),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create image version: %w", err)
@@ -143,29 +145,45 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 }
 
 // constructNewVersion builds a new version number for the image definition.
-// If the major and minor versions are identical, the patch version is incremented.
-// Otherwise, the patch version is reset to 0.
+//
+// Azure resolves an image definition to its highest version, not to the one
+// built most recently, so a template only takes over from the one already
+// published if it sorts above it.
+//
+// The build number of the image we start from usually climbs, but it does not
+// have to: it identifies a publication of a specific SKU, so changing which
+// SKU we build from can move it backwards. That is what happened when noble
+// stopped being built from the Ubuntu Pro SKU, and the correct template that
+// replaced it was never used because it sorted below the one it was meant to
+// replace. Keep the published minor and increment the patch whenever the build
+// number would not move us forward.
 func constructNewVersion(prevVersion, buildNumber string, dev bool) string {
 	newMajor := "1"
 	if dev {
 		newMajor = "0"
 	}
-	newMinor := buildNumber
 
 	parts := strings.Split(prevVersion, ".")
-	prevMajor := parts[0]
-	prevMinor := parts[1]
+	if len(parts) != 3 {
+		return fmt.Sprintf("%s.%s.0", newMajor, buildNumber)
+	}
+	prevMajor, prevMinor := parts[0], parts[1]
 	prevPatch, err := strconv.Atoi(parts[2])
 	if err != nil {
-		return fmt.Sprintf("%s.%s.0", newMajor, newMinor)
+		return fmt.Sprintf("%s.%s.0", newMajor, buildNumber)
 	}
 
-	newPatch := prevPatch
-	newPatch++
-	// Reset patch version if major or minor version changed
-	if prevMajor != newMajor || prevMinor != buildNumber {
-		newPatch = 0
+	// A different major means we are switching between daily and stable
+	// images, which starts a series of its own rather than continuing this one.
+	if prevMajor != newMajor {
+		return fmt.Sprintf("%s.%s.0", newMajor, buildNumber)
 	}
 
-	return fmt.Sprintf("%s.%s.%d", newMajor, buildNumber, newPatch)
+	build, errBuild := strconv.Atoi(buildNumber)
+	prevBuild, errPrev := strconv.Atoi(prevMinor)
+	if errBuild != nil || errPrev != nil || build <= prevBuild {
+		return fmt.Sprintf("%s.%s.%d", newMajor, prevMinor, prevPatch+1)
+	}
+
+	return fmt.Sprintf("%s.%s.0", newMajor, buildNumber)
 }
