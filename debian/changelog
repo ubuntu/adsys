@@ -1,3 +1,103 @@
+adsys (0.17.0) UNRELEASED; urgency=medium
+
+  * New upstream release
+  * Add native certificate enrollment against AD CS over LDAP and MS-ICPR,
+    removing the need for python3-cepces:
+    - Let AD decide which certificate templates the machine may enroll
+    - Bootstrap trust only against CAs adsys installed
+    - Manage enrolled certificates with the new adsysctl certificate
+      commands
+    - Default fresh installs to the native backend, leaving existing
+      installations on their current configuration
+  * Add support for dynamic values in policy entries
+  * Query the Global Catalog when fetching GPOs, fixing policy refresh for
+    users belonging to groups from another domain of the forest
+  * Normalize downloaded assets to Unix format, so scripts and AppArmor
+    profiles authored on Windows are no longer rejected because of CRLF
+    line endings or a UTF-8 BOM
+  * Normalize the end of the generated sudoers file
+  * Fix GDM integration issues:
+    - Stop denying greeter sessions running as a dynamic user, as
+      introduced in GDM 49
+    - Seed generated dconf profiles from the matching system profile, so
+      the greeter no longer loses its vendor defaults
+  * Fix GPO lookup failures when the SSSD ad_server option lists several
+    servers, falling back to the next one if a domain controller is
+    unreachable
+  * Reject unsupported Kerberos credential cache types, such as KCM: or
+    KEYRING:, instead of treating them as file paths or falling back to a
+    stale ticket cache
+  * Retry policy scripts the kernel still reports as busy, so they are no
+    longer occasionally skipped
+  * Fix a deadlock that could hang adsysctl service cat along with the
+    daemon output forwarding
+  * Add missing python3-requests dependency
+  * Migrate the adwatchd TUI to Bubble Tea v2
+  * Bump Go version to 1.26
+  * Refresh policy definition files
+  * Documentation updates:
+    - Added explanation of dynamic policy values
+    - Added meta descriptions to documentation pages
+    - Clarified language on network shares
+    - Documented native certificate enrollment and its commands
+    - Documented that only file-backed Kerberos caches are supported
+    - Dropped packagekit-tools from the getting started tutorial
+    - Fixed broken links and sitemap generation
+    - Implemented new homepage structure
+    - Migrated documentation tooling to Starter Pack v2
+    - Removed in-docs release notes
+    - Restructured certificates documentation
+    - Updated configuration for the documentation URL migration
+  * CI and quality of life changes not impacting package functionality:
+    - Added AGENTS.md instructions
+    - Allowed labeled pull requests to run the end-to-end tests
+    - Got the end-to-end suite running again and made it validate the
+      certificate backend actually under test
+    - Fixed the TICS report action
+    - Fixed d/copyright with helper script
+    - Fixed typos and grammar errors in code comments and messages
+    - Improved test stability on CI
+    - Properly disable Kerberos usage in AD tests
+    - Skipped the patches tests when no debian directory exists
+  * Bump dependencies to latest:
+    - charm.land/bubbles/v2
+    - charm.land/bubbletea/v2
+    - charm.land/lipgloss/v2
+    - github.com/charmbracelet/glamour
+    - github.com/coreos/go-systemd/v22
+    - github.com/fatih/color
+    - github.com/fsnotify/fsnotify
+    - github.com/godbus/dbus/v5
+    - github.com/kardianos/service
+    - github.com/maruel/natural
+    - github.com/oiweiwei/go-msrpc
+    - github.com/oiweiwei/gokrb5.fork/v9
+    - github.com/pkg/sftp
+    - github.com/sirupsen/logrus
+    - github.com/spf13/cobra
+    - github.com/stretchr/testify
+    - golang.org/x/crypto
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc
+    - google.golang.org/grpc/cmd/protoc-gen-go-grpc
+    - google.golang.org/protobuf
+    - gopkg.in/ini.v1
+    - github.com/golangci/golangci-lint/v2
+    - actions/checkout
+    - actions/download-artifact
+    - actions/setup-go
+    - actions/upload-artifact
+    - azure/login
+    - codecov/codecov-action
+    - jidicula/clang-format-action
+    - peter-evans/create-pull-request
+    - softprops/action-gh-release
+    - tiobe/tics-github-action
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Fri, 02 Oct 2026 07:30:27 -0400
+
 adsys (0.16.4) resolute; urgency=medium
 
   * Bump Go version to 1.24
