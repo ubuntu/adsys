@@ -65,7 +65,10 @@ func (s *Service) UpdatePolicy(r *adsys.UpdatePolicyRequest, stream adsys.Servic
 		return err
 	}
 	// Update a single user
-	return s.updatePolicyFor(stream.Context(), r.GetIsComputer(), target, objectClass, r.Krb5Cc, r.GetPurge())
+	if err := s.updatePolicyFor(stream.Context(), r.GetIsComputer(), target, objectClass, r.Krb5Cc, r.GetPurge()); err != nil {
+		return err
+	}
+	return stream.Send(&adsys.UpdatePolicyResponse{Target: target})
 }
 
 // updatePolicyFor updates the policy for a given object.

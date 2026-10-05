@@ -25,13 +25,14 @@
 
 #define _GNU_SOURCE
 
-#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <syslog.h>
@@ -45,8 +46,17 @@
 #include <security/pam_modules.h>
 #include <security/pam_modutil.h>
 
+#ifndef ADSYS_POLICIES_DIR
 #define ADSYS_POLICIES_DIR "/var/cache/adsys/policies/%s"
-#define SSSD_CONF_PATH "/etc/sssd/sssd.conf"
+#endif
+
+#ifndef ADSYS_DCONF_PROFILE_DIR
+#define ADSYS_DCONF_PROFILE_DIR "/etc/dconf/profile"
+#endif
+
+#ifndef ADSYSCTL_PATH
+#define ADSYSCTL_PATH "/sbin/adsysctl"
+#endif
 
 #ifndef ADSYS_GDM_GREETER_GROUP
 #define ADSYS_GDM_GREETER_GROUP "gdm"
@@ -59,40 +69,72 @@
 /*
  * Refresh the group policies of current user
  */
-static int update_policy(pam_handle_t* pamh, const char* username, const char* krb5ccname, int debug) {
-    int retval;
-    retval = pam_info(pamh, "Applying user settings");
+static int update_policy(pam_handle_t* pamh, const char* username, const char* krb5ccname, char** normalized_target,
+                         int debug) {
+    int retval = pam_info(pamh, "Applying user settings");
     if (retval != PAM_SUCCESS) {
         return retval;
     }
 
+    *normalized_target = NULL;
     if (memcmp(krb5ccname, (const char*)"FILE:", 5) == 0) {
         krb5ccname += 5;
     }
 
-    char** arggv;
-    arggv = calloc(6, sizeof(char*));
+    char** arggv = calloc(7, sizeof(char*));
     if (arggv == NULL) {
         return PAM_BUF_ERR;
     }
 
-    arggv[0] = "/sbin/adsysctl";
+    arggv[0] = ADSYSCTL_PATH;
     arggv[1] = "update";
-    arggv[2] = (char*)(username);
-    arggv[3] = (char*)(krb5ccname);
-    arggv[4] = NULL;
+    arggv[2] = "--print-normalized-target";
+    arggv[3] = (char*)(username);
+    arggv[4] = (char*)(krb5ccname);
+    arggv[5] = NULL;
     if (debug) {
-        arggv[4] = "-vv";
-        arggv[5] = NULL;
+        arggv[5] = "-vv";
+        arggv[6] = NULL;
+    }
+
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        pam_syslog(pamh, LOG_ERR, "Failed to create pipe: %m");
+        free(arggv);
+        return PAM_SYSTEM_ERR;
     }
 
     pid_t pid = fork();
     if (pid == -1) {
         pam_syslog(pamh, LOG_ERR, "Failed to fork process");
+        close(pipefd[0]);
+        close(pipefd[1]);
+        free(arggv);
         return PAM_SYSTEM_ERR;
     }
 
     if (pid > 0) { /* parent */
+        close(pipefd[1]);
+        char target_buffer[PATH_MAX];
+        size_t target_length = 0;
+        bool invalid_target = false;
+        ssize_t n = 0;
+        for (;;) {
+            n = read(pipefd[0], target_buffer + target_length, sizeof(target_buffer) - target_length);
+            if (n == -1 && errno == EINTR) {
+                continue;
+            }
+            if (n <= 0) {
+                break;
+            }
+            target_length += (size_t)n;
+            if (target_length == sizeof(target_buffer)) {
+                invalid_target = true;
+                break;
+            }
+        }
+        close(pipefd[0]);
+
         pid_t retval;
         int status = 0;
 
@@ -117,10 +159,43 @@ static int update_policy(pam_handle_t* pamh, const char* username, const char* k
             free(arggv);
             return PAM_CRED_ERR;
         }
+
+        if (n == -1 || invalid_target) {
+            pam_syslog(pamh, LOG_ERR, "Failed to read normalized target from adsysctl");
+            free(arggv);
+            return PAM_SYSTEM_ERR;
+        }
+
+        if (target_length == 0 || target_buffer[target_length - 1] != '\n') {
+            pam_syslog(pamh, LOG_WARNING,
+                       "adsysctl did not return a valid normalized target; leaving DCONF_PROFILE unset");
+            free(arggv);
+            return PAM_SUCCESS;
+        }
+        target_length--;
+        if (target_length == 0 || memchr(target_buffer, '\0', target_length) != NULL ||
+            memchr(target_buffer, '\n', target_length) != NULL) {
+            pam_syslog(pamh, LOG_WARNING,
+                       "adsysctl did not return a valid normalized target; leaving DCONF_PROFILE unset");
+            free(arggv);
+            return PAM_SUCCESS;
+        }
+        *normalized_target = strndup(target_buffer, target_length);
+        if (*normalized_target == NULL) {
+            pam_syslog(pamh, LOG_CRIT, "out of memory");
+            free(arggv);
+            return PAM_BUF_ERR;
+        }
         free(arggv);
         return PAM_SUCCESS;
 
     } else { /* child */
+        close(pipefd[0]);
+        if (dup2(pipefd[1], STDOUT_FILENO) == -1) {
+            pam_syslog(pamh, LOG_ERR, "Failed to redirect adsysctl output: %m");
+            _exit(errno);
+        }
+        close(pipefd[1]);
         if (debug) {
             pam_syslog(pamh, LOG_DEBUG, "Calling %s ...", arggv[0]);
         }
@@ -151,7 +226,7 @@ static int update_machine_policy(pam_handle_t* pamh, int debug) {
         return PAM_BUF_ERR;
     }
 
-    arggv[0] = "/sbin/adsysctl";
+    arggv[0] = ADSYSCTL_PATH;
     arggv[1] = "update";
     arggv[2] = "-m";
     arggv[4] = NULL;
@@ -208,77 +283,6 @@ static int update_machine_policy(pam_handle_t* pamh, int debug) {
 }
 
 /*
- * Get default domain suffix from SSSD_CONF_PATH
- */
-static char* get_default_sss_domain(pam_handle_t* pamh) {
-    FILE* f = fopen(SSSD_CONF_PATH, "r");
-    if (f == NULL) {
-        pam_syslog(pamh, LOG_ERR, "Failed to open sssd.conf");
-        return NULL;
-    }
-
-    size_t buffsize = 256;
-    char* buf = malloc(sizeof(char) * buffsize);
-    char* domain = NULL;
-    while (getline(&buf, &buffsize, f) != -1) {
-        char* line = buf;
-        // ignores whitespaces listed before the config key
-        while (strlen(line) > 0 && (*line == ' ' || *line == '\t')) {
-            line++;
-        }
-        if (strncmp(line, "default_domain_suffix", 21) == 0) {
-            domain = strchr(line, '=');
-            if (domain == NULL) {
-                pam_syslog(pamh, LOG_ERR, "Could not find value for key 'default_domain_suffix' in sssd.conf");
-                break;
-            }
-            // Ignores whitespaces and tabs right after the '='
-            do {
-                domain++;
-            } while (strlen(domain) > 0 && (*domain == ' ' || *domain == '\t'));
-
-            // For cases where sssd.conf has something like "default_domain_suffix =       \n"
-            if (strlen(domain) <= 1) {
-                pam_syslog(pamh, LOG_ERR, "Could not find valid value for 'default_domain_suffix' in sssd.conf");
-                domain = NULL;
-                break;
-            }
-
-            char* newline = strchr(domain, '\n');
-            if (newline != NULL) {
-                *newline = '\0';
-            }
-            break;
-        }
-    }
-    fclose(f);
-
-    if (domain == NULL) {
-        free(buf);
-        return NULL;
-    }
-
-    char* ret = strdup(domain);
-    free(buf);
-    return ret;
-}
-
-/*
- * Converts domain\user to user@domain format
- */
-static char* slash_to_at_username(const char* username) {
-    char* backslash = strchr(username, '\\');
-    if (backslash != NULL) {
-        char* ret = malloc((strlen(username) + 1) * sizeof(char));
-        strcpy(ret, backslash + 1);
-        strcat(ret, "@");
-        strncat(ret, username, backslash - username);
-        return ret;
-    }
-    return strdup(username);
-}
-
-/*
  * Report whether the session belongs to a GDM greeter account.
  *
  * GDM runs its greeter under a dedicated account whose name is not stable: it
@@ -296,41 +300,42 @@ static bool is_greeter_user(pam_handle_t* pamh, const char* username) {
 }
 
 /*
- * Set DCONF_PROFILE for current user
+ * Set DCONF_PROFILE only when ADSys has installed a usable profile for the user.
  */
-static int set_dconf_profile(pam_handle_t* pamh, const char* username, int debug) {
-    int retval = PAM_SUCCESS;
-
-    char* profile_name = slash_to_at_username(username);
-
-    // We need to check if the profile name does not already contain the domain.
-    if (strchr(profile_name, '@') == NULL) {
-        char* domain = get_default_sss_domain(pamh);
-        if (domain != NULL) {
-            free(profile_name);
-            profile_name = (char*)malloc((strlen(username) + strlen(domain) + 2) * sizeof(char));
-            strcpy(profile_name, username);
-            strcat(profile_name, "@");
-            strcat(profile_name, domain);
-            free(domain);
-        }
+static int set_dconf_profile(pam_handle_t* pamh, const char* profile_name) {
+    if (strchr(profile_name, '/') != NULL || strcmp(profile_name, ".") == 0 || strcmp(profile_name, "..") == 0) {
+        pam_syslog(pamh, LOG_WARNING,
+                   "Refusing unsafe ADSys dconf profile name %s; leaving DCONF_PROFILE unset (ADSys dconf policy is "
+                   "not applied)",
+                   profile_name);
+        return PAM_SUCCESS;
     }
-    // We need to lowercase the profile_name, as it can have uppercased letters and we
-    // always normalize it in adsys.
-    for (char* s = profile_name; *s; s++) {
-        *s = tolower(*s);
+
+    char* profile_path = NULL;
+    if (asprintf(&profile_path, "%s/%s", ADSYS_DCONF_PROFILE_DIR, profile_name) < 0) {
+        pam_syslog(pamh, LOG_CRIT, "out of memory");
+        return PAM_BUF_ERR;
     }
+
+    struct stat profile_status;
+    if (stat(profile_path, &profile_status) != 0 || !S_ISREG(profile_status.st_mode)) {
+        pam_syslog(pamh, LOG_WARNING,
+                   "ADSys dconf profile %s was not found as a regular file; leaving DCONF_PROFILE unset (ADSys dconf "
+                   "policy is not applied)",
+                   profile_name);
+        free(profile_path);
+        return PAM_SUCCESS;
+    }
+    free(profile_path);
 
     char* envvar;
     if (asprintf(&envvar, "DCONF_PROFILE=%s", profile_name) < 0) {
         pam_syslog(pamh, LOG_CRIT, "out of memory");
-        free(profile_name);
         return PAM_BUF_ERR;
     }
 
-    retval = pam_putenv(pamh, envvar);
+    int retval = pam_putenv(pamh, envvar);
     _pam_drop(envvar);
-    free(profile_name);
     return retval;
 }
 
@@ -344,7 +349,7 @@ static int get_krb5cc_ticket_path(pam_handle_t* pamh, const char* username, char
         return 1;
     }
 
-    arggv[0] = "/sbin/adsysctl";
+    arggv[0] = ADSYSCTL_PATH;
     arggv[1] = "policy";
     arggv[2] = "debug";
     arggv[3] = "ticket-path";
@@ -491,12 +496,6 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t* pamh, int flags, int argc, cons
         }
     }
 
-    // set dconf profile for AD user.
-    retval = set_dconf_profile(pamh, username, debug);
-    if (retval != PAM_SUCCESS) {
-        return retval;
-    };
-
     /*
       trying to update machine policy first if no machine gpo cache (meaning adsysd boot service failed due to being
       offline for instance)
@@ -519,7 +518,19 @@ PAM_EXTERN int pam_sm_open_session(pam_handle_t* pamh, int flags, int argc, cons
         }
     }
 
-    return update_policy(pamh, username, krb5ccname, debug);
+    char* profile_name = NULL;
+    retval = update_policy(pamh, username, krb5ccname, &profile_name, debug);
+    if (retval != PAM_SUCCESS) {
+        return retval;
+    }
+
+    if (profile_name == NULL) {
+        return PAM_SUCCESS;
+    }
+
+    retval = set_dconf_profile(pamh, profile_name);
+    free(profile_name);
+    return retval;
 }
 
 PAM_EXTERN int pam_sm_close_session(pam_handle_t* pamh, int flags, int argc, const char** argv) { return PAM_SUCCESS; }

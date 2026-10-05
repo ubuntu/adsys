@@ -51,3 +51,20 @@ Policies from user configuration:
 	want := testutils.LoadWithUpdateFromGolden(t, got)
 	require.Equal(t, want, got, "colorizePolicies returned expected formatted output")
 }
+
+func TestUpdatePrintNormalizedTargetIncompatibleOptions(t *testing.T) {
+	tests := map[string]struct {
+		isComputer bool
+		updateAll  bool
+	}{
+		"machine update": {isComputer: true},
+		"all update":     {updateAll: true},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := New().update(tc.isComputer, tc.updateAll, "", "", true)
+			require.ErrorContains(t, err, "--print-normalized-target cannot be used with --machine or --all")
+		})
+	}
+}
