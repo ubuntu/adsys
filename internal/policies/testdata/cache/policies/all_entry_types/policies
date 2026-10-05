@@ -7,10 +7,7 @@ gpos:
       value: ValueOfKey1
       meta: s
     - key: path/to/key2
-      value: |
-        ValueOfKey2
-        On
-        Multilines
+      value: 'ValueOfKey2\nOn\nMultilines'
       meta: s
     privilege:
     - key: allow-local-admins

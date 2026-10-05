@@ -39,6 +39,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/leonelquinteros/gotext"
@@ -80,6 +81,7 @@ type Manager struct {
 
 	dconfDir        string
 	profileDataDirs []string
+	dconfUpdater    func(dbDir string) ([]byte, error)
 }
 
 // NewWithDconfDir creates a manager with a specific dconf directory.
@@ -247,9 +249,12 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	needsRefresh = needsRefresh || changed
 
 	// update if any profile changed, or if any compiled db is missing
-	needsRefresh = needsRefresh || dconfNeedsUpdate(filepath.Join(dbsPath, "machine"))
+	managedDBs := []string{filepath.Join(dbsPath, "machine")}
 	if !isComputer {
-		needsRefresh = needsRefresh || dconfNeedsUpdate(filepath.Join(dbsPath, objectName))
+		managedDBs = append(managedDBs, filepath.Join(dbsPath, objectName))
+	}
+	for _, dbPath := range managedDBs {
+		needsRefresh = needsRefresh || dconfNeedsUpdate(dbPath)
 	}
 	if !needsRefresh {
 		return nil
@@ -259,15 +264,51 @@ func (m *Manager) ApplyPolicy(ctx context.Context, objectName string, isComputer
 	// we will call update multiple times.
 	smbsafe.WaitExec()
 	m.dconfUpdateMu.Lock()
-	// #nosec G204 - we control the input
-	out, errExec := exec.Command("dconf", "update", filepath.Join(dconfDir, "db")).CombinedOutput()
+	// Snapshot current databases so same-tick compiles are still detected.
+	databaseSnapshots := make([]dconfDatabaseSnapshot, len(managedDBs))
+	for i, dbPath := range managedDBs {
+		databaseSnapshots[i] = snapshotDconfDatabase(dbPath)
+	}
+	out, errExec := m.updateDconfDB(dbsPath)
 	m.dconfUpdateMu.Unlock()
 	smbsafe.DoneExec()
 	if errExec != nil {
-		err = errors.New(gotext.Get("dconf update failed: %v", out))
+		updateErr := dconfUpdateError(out, errExec)
+
+		var exitErr *exec.ExitError
+		if !errors.As(errExec, &exitErr) {
+			return updateErr
+		}
+
+		var staleDBs []string
+		for i, dbPath := range managedDBs {
+			if !dconfDatabaseWasRecompiled(dbPath, databaseSnapshots[i]) && !dconfDatabaseIsUpToDate(dbPath) {
+				staleDBs = append(staleDBs, filepath.Base(dbPath))
+			}
+		}
+		if len(staleDBs) > 0 {
+			return fmt.Errorf("%w: %s", updateErr,
+				gotext.Get("ADSys-managed dconf database(s) are missing or stale: %s", strings.Join(staleDBs, ", ")))
+		}
+
+		log.Warning(ctx, gotext.Get("dconf update failed, but ADSys-managed databases were compiled or are up to date (output: %q; error: %v)",
+			string(out), errExec))
 	}
 
 	return nil
+}
+
+func (m *Manager) updateDconfDB(dbDir string) ([]byte, error) {
+	if m.dconfUpdater != nil {
+		return m.dconfUpdater(dbDir)
+	}
+
+	// #nosec G204 - dbDir is controlled by the manager and is not user input.
+	return exec.Command("dconf", "update", dbDir).CombinedOutput()
+}
+
+func dconfUpdateError(output []byte, err error) error {
+	return fmt.Errorf("%s: %w", gotext.Get("dconf update failed (output: %q)", string(output)), err)
 }
 
 // writeIfChanged will only write to path if content is different from current content.
@@ -431,6 +472,99 @@ func dconfNeedsUpdate(path string) bool {
 	}
 
 	return false
+}
+
+// dconfDatabaseIsUpToDate reports whether the compiled database is newer than
+// the keyfile directory and the keyfiles dconf update compiles from it.
+func dconfDatabaseIsUpToDate(path string) bool {
+	database, err := os.Stat(path)
+	if err != nil || !database.Mode().IsRegular() {
+		return false
+	}
+
+	databaseTime := database.ModTime()
+	keyfilesDir := path + ".d"
+	dirInfo, err := os.Stat(keyfilesDir)
+	if err != nil || !dirInfo.IsDir() || !databaseTime.After(dirInfo.ModTime()) {
+		return false
+	}
+
+	keyfiles, err := os.ReadDir(keyfilesDir)
+	if err != nil {
+		return false
+	}
+	for _, keyfile := range keyfiles {
+		keyfilePath := filepath.Join(keyfilesDir, keyfile.Name())
+		if keyfile.Name() == "locks" {
+			if !dconfLocksAreUpToDate(databaseTime, keyfilePath) {
+				return false
+			}
+			continue
+		}
+
+		info, err := os.Stat(keyfilePath)
+		if err != nil {
+			return false
+		}
+		if !info.IsDir() && !databaseTime.After(info.ModTime()) {
+			return false
+		}
+	}
+
+	return true
+}
+
+type dconfDatabaseSnapshot struct {
+	known bool
+	info  os.FileInfo
+}
+
+func snapshotDconfDatabase(path string) dconfDatabaseSnapshot {
+	info, err := os.Stat(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return dconfDatabaseSnapshot{known: true}
+	}
+	if err != nil {
+		return dconfDatabaseSnapshot{}
+	}
+
+	return dconfDatabaseSnapshot{known: true, info: info}
+}
+
+func dconfDatabaseWasRecompiled(path string, before dconfDatabaseSnapshot) bool {
+	if !before.known {
+		return false
+	}
+
+	info, err := os.Stat(path)
+	if err != nil || !info.Mode().IsRegular() {
+		return false
+	}
+
+	return before.info == nil || !os.SameFile(before.info, info) || !info.ModTime().Equal(before.info.ModTime())
+}
+
+func dconfLocksAreUpToDate(databaseTime time.Time, locksDir string) bool {
+	dirInfo, err := os.Stat(locksDir)
+	if errors.Is(err, fs.ErrNotExist) {
+		return true
+	}
+	if err != nil || !dirInfo.IsDir() || !databaseTime.After(dirInfo.ModTime()) {
+		return false
+	}
+
+	lockFiles, err := os.ReadDir(locksDir)
+	if err != nil {
+		return false
+	}
+	for _, lockFile := range lockFiles {
+		info, err := os.Stat(filepath.Join(locksDir, lockFile.Name()))
+		if err != nil || info.IsDir() || !databaseTime.After(info.ModTime()) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // normalizeValue simplify user entry by handling common mistakes on key types.
