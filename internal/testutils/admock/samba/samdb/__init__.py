@@ -24,14 +24,43 @@ class GPOSearch(dict):
 class SamDB:
     def __init__(self, url=None, session_info=None, credentials=None, lp=None):
         self.lp = lp
-        # The Global Catalog is reached on port 3268, the domain controller on
-        # the default LDAP port. We remember which one this connection targets so
-        # tokenGroups can return the Global Catalog view (forest-wide universal
-        # groups) or the domain controller view (domain-local groups), exactly
-        # as the two differ in real AD.
-        self.is_global_catalog = bool(url) and url.endswith(":3268")
-        if url.startswith("ldap://NT_STATUS_"):
-            raise Exception(1, "ldap/ldb error: %s" % url[7:])
+        # The Global Catalog uses 3268 for LDAP and 3269 for LDAPS. Remember
+        # which view this connection targets so tokenGroups reflect the
+        # difference between forest-wide and domain-local memberships.
+        self.is_global_catalog = bool(url) and (url.endswith(":3268") or url.endswith(":3269"))
+        scheme = ""
+        host = ""
+        if url and "://" in url:
+            scheme, host = url.split("://", 1)
+
+        expected_transport = os.getenv("ADSYS_TESTS_EXPECT_LDAP_TRANSPORT")
+        if expected_transport:
+            expected_scheme = "ldaps" if expected_transport == "ldaps" else "ldap"
+            if scheme != expected_scheme:
+                raise Exception("Expected %s URL, got %s" % (expected_scheme, url))
+            expected_gc_port = "3269" if expected_transport == "ldaps" else "3268"
+            if self.is_global_catalog and not url.endswith(":" + expected_gc_port):
+                raise Exception("Expected Global Catalog port %s, got %s" % (expected_gc_port, url))
+            if expected_transport == "starttls" and lp.values.get("client ldap sasl wrapping") != "starttls":
+                raise Exception("StartTLS was not configured in LoadParm")
+            if expected_transport == "ldap" and lp.values:
+                raise Exception("Plain LDAP must not set LoadParm options")
+            if expected_transport in ("ldaps", "starttls"):
+                if not lp.values.get("tls cafile") or not lp.values.get("tls verify peer"):
+                    raise Exception("LDAP TLS trust was not configured in LoadParm")
+                if "tls crlfile" in lp.values and lp.values.get("tls verify peer") != "as_strict_as_possible":
+                    raise Exception("CRL verification did not use strict TLS peer verification")
+                if "tls crlfile" not in lp.values and lp.values.get("tls verify peer") != "ca_and_name":
+                    raise Exception("TLS without a CRL must use CA-and-name verification")
+
+        if scheme in ("ldap", "ldaps") and host.startswith("NT_STATUS_"):
+            raise Exception(1, "ldap/ldb error: %s" % host)
+
+        simulated_status = os.getenv("ADSYS_TESTS_SAMDB_STATUS")
+        if self.is_global_catalog:
+            simulated_status = os.getenv("ADSYS_TESTS_GC_STATUS", simulated_status)
+        if simulated_status:
+            raise Exception(1, "ldap/ldb error: %s" % simulated_status)
 
         krb5ccname = os.getenv("KRB5CCNAME")
         if not krb5ccname:

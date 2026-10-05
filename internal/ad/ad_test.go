@@ -2,6 +2,8 @@ package ad_test
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -30,6 +32,64 @@ type mockBackendWithServerFQDNs struct {
 
 func (m mockBackendWithServerFQDNs) ServerFQDNs(context.Context) ([]string, error) {
 	return append([]string(nil), m.serverFQDNs...), nil
+}
+
+func TestNormalizeLDAPConfig(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		config         ad.LDAPConfig
+		wantTransport  ad.LDAPTransport
+		wantTLSCACert  string
+		wantTLSCRLFile string
+		wantErr        string
+	}{
+		"empty transport defaults to LDAP": {
+			wantTransport:  ad.LDAPTransportLDAP,
+			wantTLSCACert:  ad.DefaultLDAPTLSCACert,
+			wantTLSCRLFile: "",
+		},
+		"auto remains an explicit option": {
+			config:         ad.LDAPConfig{Transport: ad.LDAPTransportAuto},
+			wantTransport:  ad.LDAPTransportAuto,
+			wantTLSCACert:  ad.DefaultLDAPTLSCACert,
+			wantTLSCRLFile: "",
+		},
+		"transport and trust paths are trimmed": {
+			config: ad.LDAPConfig{
+				Transport:  " LDAPS ",
+				TLSCACert:  " /etc/ssl/ad-ca.pem ",
+				TLSCRLFile: " /etc/ssl/ad-crl.pem ",
+			},
+			wantTransport:  ad.LDAPTransportLDAPS,
+			wantTLSCACert:  "/etc/ssl/ad-ca.pem",
+			wantTLSCRLFile: "/etc/ssl/ad-crl.pem",
+		},
+		"relative CA path is rejected": {
+			config:  ad.LDAPConfig{TLSCACert: "ad-ca.pem"},
+			wantErr: "ldap_tls_cacert must be an absolute path",
+		},
+		"relative CRL path is rejected": {
+			config:  ad.LDAPConfig{TLSCRLFile: "ad-crl.pem"},
+			wantErr: "ldap_tls_crlfile must be an absolute path",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := ad.NormalizeLDAPConfig(tc.config)
+			if tc.wantErr != "" {
+				require.ErrorContains(t, err, tc.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			assert.Equal(t, tc.wantTransport, got.Transport)
+			assert.Equal(t, tc.wantTLSCACert, got.TLSCACert)
+			assert.Equal(t, tc.wantTLSCRLFile, got.TLSCRLFile)
+		})
+	}
 }
 
 func TestNew(t *testing.T) {
@@ -122,10 +182,14 @@ func TestGetPolicies(t *testing.T) {
 		userKrb5CCBaseName string
 		userKrb5CCName     string
 
-		backend     mock.Backend
-		serverFQDNs []string
-		versionID   string
-		gpoListArgs []string
+		backend         mock.Backend
+		serverFQDNs     []string
+		ldapConfig      ad.LDAPConfig
+		wantScriptArgs  []string
+		checkScriptArgs bool
+		skipLDAPConfig  bool
+		versionID       string
+		gpoListArgs     []string
 
 		turnKrb5CCCacheRO bool
 		existing          map[string]string
@@ -585,12 +649,18 @@ func TestGetPolicies(t *testing.T) {
 			wantErr:         true,
 			wantErrContains: "could not connect to the Active Directory server",
 		},
-		"Post-connect connection failure retries the next configured server": {
+		"Connection failure retries the next configured server": {
 			serverFQDNs: []string{"dc1.gpoonly.com", "dc2.gpoonly.com"},
 			gpoListArgs: []string{"-Exit2Server=dc1.gpoonly.com", "gpoonly.com", "bob:standard"},
 			want:        policies.Policies{GPOs: []policies.GPO{standardUserGPO("standard")}},
 		},
-		"Connection failure on all configured servers is reported": {
+		"LDAP configuration failure does not retry another server": {
+			serverFQDNs:     []string{"dc1.gpoonly.com", "dc2.gpoonly.com"},
+			gpoListArgs:     []string{"-Exit4Server=dc1.gpoonly.com", "gpoonly.com", "bob:standard"},
+			wantErr:         true,
+			wantErrContains: "invalid LDAP transport configuration",
+		},
+		"Catch-all session-open failure tries all configured servers": {
 			serverFQDNs:     []string{"dc1.gpoonly.com", "dc2.gpoonly.com"},
 			gpoListArgs:     []string{"-Exit2-"},
 			wantErr:         true,
@@ -606,6 +676,59 @@ func TestGetPolicies(t *testing.T) {
 			gpoListArgs:     []string{"-Exit3-"},
 			wantErr:         true,
 			wantErrContains: "could not compute the GPO list",
+		},
+		"SSSD auto transport follows ad_use_ldaps": {
+			backend: mock.Backend{
+				Dom:        "gpoonly.com",
+				Online:     true,
+				ADUseLDAPS: true,
+			},
+			gpoListArgs: []string{"-Exit4-"},
+			ldapConfig:  ad.LDAPConfig{Transport: ad.LDAPTransportAuto},
+			wantScriptArgs: []string{
+				"--transport", "ldaps", "--tls-cafile", ad.DefaultLDAPTLSCACert,
+			},
+			checkScriptArgs: true,
+			wantErr:         true,
+			wantErrContains: "invalid LDAP transport configuration",
+		},
+		"SSSD auto transport defaults to LDAP": {
+			backend: mock.Backend{
+				Dom:    "gpoonly.com",
+				Online: true,
+			},
+			gpoListArgs:     []string{"-Exit4-"},
+			ldapConfig:      ad.LDAPConfig{Transport: ad.LDAPTransportAuto},
+			checkScriptArgs: true,
+			wantErr:         true,
+			wantErrContains: "invalid LDAP transport configuration",
+		},
+		"StartTLS passes TLS CA and CRL arguments": {
+			gpoListArgs: []string{"-Exit4-"},
+			ldapConfig: ad.LDAPConfig{
+				Transport:  ad.LDAPTransportStartTLS,
+				TLSCACert:  "/etc/ssl/custom-ca.pem",
+				TLSCRLFile: "/etc/ssl/custom-crl.pem",
+			},
+			wantScriptArgs: []string{
+				"--transport", "starttls", "--tls-cafile", "/etc/ssl/custom-ca.pem",
+				"--tls-crlfile", "/etc/ssl/custom-crl.pem",
+			},
+			checkScriptArgs: true,
+			wantErr:         true,
+			wantErrContains: "invalid LDAP transport configuration",
+		},
+		"Unspecified transport stays LDAP despite ad_use_ldaps": {
+			backend: mock.Backend{
+				Dom:        "gpoonly.com",
+				Online:     true,
+				ADUseLDAPS: true,
+			},
+			gpoListArgs:     []string{"-Exit4-"},
+			checkScriptArgs: true,
+			skipLDAPConfig:  true,
+			wantErr:         true,
+			wantErrContains: "invalid LDAP transport configuration",
 		},
 		"Empty value for unfiltered entry": {
 			gpoListArgs: []string{"gpoonly.com", "bob:empty-value"},
@@ -670,10 +793,23 @@ func TestGetPolicies(t *testing.T) {
 			}
 
 			cachedir, rundir := t.TempDir(), t.TempDir()
-			adc, err := ad.New(context.Background(), configBackend, hostname,
-				ad.WithCacheDir(cachedir), ad.WithRunDir(rundir), ad.WithoutKerberos(),
-				ad.WithGPOListCmd(mockGPOListCmd(t, tc.gpoListArgs...)),
-				ad.WithVersionID(tc.versionID))
+			var gpoListCmd []string
+			if tc.checkScriptArgs {
+				gpoListCmd = mockGPOListCmdWithExpectedScriptArgs(t, tc.wantScriptArgs, tc.gpoListArgs...)
+			} else {
+				gpoListCmd = mockGPOListCmd(t, tc.gpoListArgs...)
+			}
+			adOptions := []ad.Option{
+				ad.WithCacheDir(cachedir),
+				ad.WithRunDir(rundir),
+				ad.WithoutKerberos(),
+				ad.WithGPOListCmd(gpoListCmd),
+				ad.WithVersionID(tc.versionID),
+			}
+			if !tc.skipLDAPConfig {
+				adOptions = append(adOptions, ad.WithLDAPConfig(tc.ldapConfig))
+			}
+			adc, err := ad.New(context.Background(), configBackend, hostname, adOptions...)
 			require.NoError(t, err, "Setup: cannot create ad object")
 
 			if tc.turnKrb5CCCacheRO {
@@ -1421,6 +1557,60 @@ func TestMockGPOList(_ *testing.T) {
 		break
 	}
 
+	if len(args) > 0 && strings.HasPrefix(args[0], "-ExpectScriptArgs=") {
+		encoded := strings.TrimPrefix(args[0], "-ExpectScriptArgs=")
+		data, err := base64.RawURLEncoding.DecodeString(encoded)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid expected script arguments %q: %v", encoded, err)
+			os.Exit(1)
+		}
+		var expected []string
+		if err := json.Unmarshal(data, &expected); err != nil {
+			fmt.Fprintf(os.Stderr, "Invalid expected script arguments: %v", err)
+			os.Exit(1)
+		}
+		args = args[1:]
+
+		var scriptArgs []string
+		for i, arg := range args {
+			if arg == "--objectclass" {
+				scriptArgs = args[i:]
+				break
+			}
+		}
+		if len(scriptArgs) == 0 {
+			fmt.Fprintln(os.Stderr, "Missing GPO-list script arguments")
+			os.Exit(1)
+		}
+		if len(expected) == 0 {
+			for _, arg := range scriptArgs {
+				if arg == "--transport" || arg == "--tls-cafile" || arg == "--tls-crlfile" {
+					fmt.Fprintf(os.Stderr, "Unexpected LDAP transport argument %q", arg)
+					os.Exit(1)
+				}
+			}
+		} else {
+			found := false
+			for i := 0; i+len(expected) <= len(scriptArgs); i++ {
+				match := true
+				for j, arg := range expected {
+					if scriptArgs[i+j] != arg {
+						match = false
+						break
+					}
+				}
+				if match {
+					found = true
+					break
+				}
+			}
+			if !found {
+				fmt.Fprintf(os.Stderr, "Expected script arguments %q were not found in %q", expected, scriptArgs)
+				os.Exit(1)
+			}
+		}
+	}
+
 	// simulating script failures with a requested exit code, e.g. "-Exit2-"
 	// (also used to simulate offline mode).
 	if strings.HasPrefix(args[0], "-Exit") && strings.Contains(args[0], "Server=") {
@@ -1492,6 +1682,15 @@ func mockGPOListCmd(t *testing.T, args ...string) []string {
 	cmdArgs := []string{"env", "GO_WANT_HELPER_PROCESS=1", os.Args[0], "-test.run=TestMockGPOList", "--"}
 	cmdArgs = append(cmdArgs, args...)
 	return cmdArgs
+}
+
+func mockGPOListCmdWithExpectedScriptArgs(t *testing.T, expected []string, args ...string) []string {
+	t.Helper()
+
+	data, err := json.Marshal(expected)
+	require.NoError(t, err, "Setup: failed to encode expected GPO-list script arguments")
+	marker := "-ExpectScriptArgs=" + base64.RawURLEncoding.EncodeToString(data)
+	return mockGPOListCmd(t, append([]string{marker}, args...)...)
 }
 
 // setKrb5CC create a temporary file for a KRB5 ticket.
