@@ -45,6 +45,10 @@ class ReturnCode:
     GPO_FAILED = 3
 
 
+class AccountNotFoundError(Exception):
+    ''' The requested account was not found in the directory. '''
+
+
 TRANSPORT_ERRORS = (
     "NT_STATUS_HOST_UNREACHABLE",      # Host does not respond
     "NT_STATUS_NETWORK_UNREACHABLE",   # Local link is down
@@ -134,14 +138,14 @@ def get_entity(samdb, accountname, objectClass):
                            attrs=['objectClass', 'objectSid'])
 
     if len(msg) == 0:
-        raise Exception("Failed to find account %s" % accountname)
+        raise AccountNotFoundError("Failed to find account %s" % accountname)
     current = msg[0]
 
     # Check that the object is really a computer or user if requested as such
     if objectClass == ObjectClass.computer and b'computer' not in current['objectClass']:
-        raise Exception("Failed to find computer account %s" % accountname)
+        raise AccountNotFoundError("Failed to find computer account %s" % accountname)
     elif objectClass == ObjectClass.user and b'computer' in current['objectClass']:
-        raise Exception("Failed to find user account %s" % accountname)
+        raise AccountNotFoundError("Failed to find user account %s" % accountname)
 
     return current.dn, str(ndr_unpack(security.dom_sid, current["objectSid"][0]))
 
@@ -422,7 +426,7 @@ def main():
             # samba/ldb prints the error message on stderr
             return ReturnCode.CONNECTION_FAILED
         print("Failed to open session: %s" % exc, file=sys.stderr)
-        return ReturnCode.NOT_FOUND
+        return ReturnCode.CONNECTION_FAILED
 
     accountnames = [accountname]
     # Some AD limits computer names to 15 characters
@@ -434,14 +438,15 @@ def main():
         try:
             dn, object_sid = get_entity(samdb, accountname, args.objectclass)
             break
-        except Exception as exc:
+        except AccountNotFoundError as exc:
             print("Searching for account failed with: %s" % exc, file=sys.stderr)
-            if is_transport_error(exc):
-                return ReturnCode.CONNECTION_FAILED
             # We still have some candidates, don’t error out right away
             if i < len(accountnames):
                 continue
             return ReturnCode.NOT_FOUND
+        except Exception as exc:
+            print("Searching for account failed with: %s" % exc, file=sys.stderr)
+            return ReturnCode.CONNECTION_FAILED
 
     # Build the security token the same way AD itself does. user_session() is
     # authoritative: it reproduces the primary group, the default well-known

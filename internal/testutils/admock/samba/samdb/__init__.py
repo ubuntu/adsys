@@ -64,6 +64,9 @@ class SamDB:
 
             return [AccountSearch(accountName, objectClass, ["S-1-5-21-16178157-162784614-155579044-1103"])]
 
+        elif "userPrincipalName" in expression:
+            return []
+
         # Group search
         elif "objectClass=group" in expression:
             return [{"objectSid": ["SidGroup1"]},{"objectSid": ["SidGroup2"]}]

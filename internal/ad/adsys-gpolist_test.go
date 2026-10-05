@@ -195,6 +195,12 @@ func TestAdsysGPOList(t *testing.T) {
 			wantReturnCode: 2,
 			wantErr:        true,
 		},
+		"Unknown session-open status is a connection failure": {
+			url:            "NT_STATUS_INVALID_PARAMETER",
+			accountName:    "UserAtRoot@GPOONLY.COM",
+			wantReturnCode: 2,
+			wantErr:        true,
+		},
 
 		"Error on non existent account": {
 			accountName:    "nonexistent@GPOONLY.COM",
@@ -232,19 +238,19 @@ func TestAdsysGPOList(t *testing.T) {
 		"Error on KRB5CCNAME unset": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "unset",
-			wantReturnCode:  1,
+			wantReturnCode:  2,
 			wantErr:         true,
 		},
 		"Error on invalid ticket": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "invalid",
-			wantReturnCode:  1,
+			wantReturnCode:  2,
 			wantErr:         true,
 		},
 		"Error on dangling ticket symlink": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "dangling",
-			wantReturnCode:  1,
+			wantReturnCode:  2,
 			wantErr:         true,
 		},
 	}
@@ -258,8 +264,11 @@ func TestAdsysGPOList(t *testing.T) {
 			}
 
 			// Ticket creation for mock
-			if tc.krb5ccNameState != "unset" {
-				krb5dir := t.TempDir()
+			if tc.krb5ccNameState == "unset" {
+				t.Setenv("KRB5CCNAME", "")
+			} else {
+				krb5dir, tempErr := filepath.Abs(t.TempDir())
+				require.NoError(t, tempErr, "Setup: could not resolve the temporary Kerberos directory")
 				krb5file := filepath.Join(krb5dir, "krb5file")
 				krb5symlink := filepath.Join(krb5dir, "krb5symlink")
 				content := "Some data for the mock"
@@ -287,6 +296,7 @@ func TestAdsysGPOList(t *testing.T) {
 			got, err := cmd.CombinedOutput()
 			if tc.wantErr {
 				require.Error(t, err, "adsys-gpostlist should have failed but didn’t")
+				assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpolist returns expected exit code")
 				return
 			}
 			require.NoErrorf(t, err, "adsys-gpostlist should exit successfully: %v", string(got))
