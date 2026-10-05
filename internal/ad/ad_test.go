@@ -116,6 +116,28 @@ func TestGetPolicies(t *testing.T) {
 					  is modified for the host, it'll defeat the strategy to set default values.
 	*/
 
+	certificateAutoEnrollmentGPO := func(id, policyServerID string) policies.GPO {
+		policyServerPrefix := "Software/Policies/Microsoft/Cryptography/PolicyServers/"
+		policyServerKey := policyServerPrefix + policyServerID + "/"
+
+		return policies.GPO{
+			ID:   id,
+			Name: id + "-name",
+			Rules: map[string][]entry.Entry{
+				"certificate": {
+					{Key: "autoenroll", Value: "1"},
+					{Key: policyServerPrefix + "Flags", Value: "0"},
+					{Key: policyServerKey + "URL", Value: "LDAP:"},
+					{Key: policyServerKey + "PolicyID", Value: "{A5E9BF57-71C6-443A-B7FC-79EFA6F73EBD}"},
+					{Key: policyServerKey + "FriendlyName", Value: "Active Directory Enrollment Policy"},
+					{Key: policyServerKey + "Flags", Value: "20"},
+					{Key: policyServerKey + "AuthFlags", Value: "2"},
+					{Key: policyServerKey + "Cost", Value: "2147483645"},
+				},
+			},
+		}
+	}
+
 	tests := map[string]struct {
 		objectName         string
 		objectClass        ad.ObjectClass
@@ -414,17 +436,31 @@ func TestGetPolicies(t *testing.T) {
 			objectClass: ad.ComputerObject,
 			gpoListArgs: []string{"gpoonly.com", hostname + ":filtered-with-certificate-autoenrollment"},
 			want: policies.Policies{GPOs: []policies.GPO{
-				{ID: "filtered-with-certificate-autoenrollment", Name: "filtered-with-certificate-autoenrollment-name", Rules: map[string][]entry.Entry{
-					"certificate": {
-						{Key: "autoenroll", Value: "1"},
-						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/Flags", Value: "0"},
-						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/URL", Value: "LDAP:"},
-						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/PolicyID", Value: "{A5E9BF57-71C6-443A-B7FC-79EFA6F73EBD}"},
-						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/FriendlyName", Value: "Active Directory Enrollment Policy"},
-						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Flags", Value: "20"},
-						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/AuthFlags", Value: "2"},
-						{Key: "Software/Policies/Microsoft/Cryptography/PolicyServers/37c9dc30f207f27f61a2f7c3aed598a6e2920b54/Cost", Value: "2147483645"},
-					}}},
+				certificateAutoEnrollmentGPO("filtered-with-certificate-autoenrollment", "37c9dc30f207f27f61a2f7c3aed598a6e2920b54"),
+			}},
+		},
+		"Include certificate autoenrollment keys with uppercase SOFTWARE": {
+			objectName:  hostname,
+			objectClass: ad.ComputerObject,
+			gpoListArgs: []string{"gpoonly.com", hostname + ":filtered-with-certificate-autoenrollment-uppercase"},
+			want: policies.Policies{GPOs: []policies.GPO{
+				certificateAutoEnrollmentGPO("filtered-with-certificate-autoenrollment-uppercase", "37c9dc30f207f27f61a2f7c3aed598a6e2920b54"),
+			}},
+		},
+		"Include certificate autoenrollment keys with fully uppercase paths": {
+			objectName:  hostname,
+			objectClass: ad.ComputerObject,
+			gpoListArgs: []string{"gpoonly.com", hostname + ":filtered-with-certificate-autoenrollment-uppercase-path"},
+			want: policies.Policies{GPOs: []policies.GPO{
+				certificateAutoEnrollmentGPO("filtered-with-certificate-autoenrollment-uppercase-path", "37c9dc30f207f27f61a2f7c3aed598a6e2920b54"),
+			}},
+		},
+		"Include certificate autoenrollment keys with lowercase paths": {
+			objectName:  hostname,
+			objectClass: ad.ComputerObject,
+			gpoListArgs: []string{"gpoonly.com", hostname + ":filtered-with-certificate-autoenrollment-lowercase-path"},
+			want: policies.Policies{GPOs: []policies.GPO{
+				certificateAutoEnrollmentGPO("filtered-with-certificate-autoenrollment-lowercase-path", "37c9dc30f207f27f61a2f7c3aed598a6e2920b54"),
 			}},
 		},
 		"Ignore errors on non Ubuntu keys": {
@@ -715,6 +751,55 @@ func TestGetPolicies(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetPoliciesCertificateAutoEnrollmentGPOPrecedence(t *testing.T) {
+	t.Parallel()
+
+	hostname, err := os.Hostname()
+	require.NoError(t, err, "Setup: failed to get hostname")
+
+	backend := mock.Backend{
+		Dom:                "gpoonly.com",
+		Online:             true,
+		ServURL:            "myserver.gpoonly.com",
+		HostKrb5CCNamePath: filepath.Join(t.TempDir(), "host_ccache"),
+	}
+	testutils.CreatePath(t, backend.HostKrb5CCNamePath)
+
+	adc, err := ad.New(context.Background(), backend, hostname,
+		ad.WithCacheDir(t.TempDir()), ad.WithRunDir(t.TempDir()), ad.WithoutKerberos(),
+		ad.WithGPOListCmd(mockGPOListCmd(t,
+			"gpoonly.com",
+			hostname+":filtered-with-certificate-autoenrollment-uppercase-path::"+
+				hostname+":filtered-with-certificate-autoenrollment-lowercase-path",
+		)))
+	require.NoError(t, err, "Setup: cannot create ad object")
+
+	got, err := adc.GetPolicies(context.Background(), hostname, ad.ComputerObject, "")
+	require.NoError(t, err, "GetPolicies should return no error")
+	require.Len(t, got.GPOs, 2)
+
+	const serverID = "37c9dc30f207f27f61a2f7c3aed598a6e2920b54"
+	for gpoIndex, flags := range []string{"4", "20"} {
+		for i := range got.GPOs[gpoIndex].Rules["certificate"] {
+			rule := &got.GPOs[gpoIndex].Rules["certificate"][i]
+			if strings.EqualFold(rule.Key, "Software/Policies/Microsoft/Cryptography/PolicyServers/"+serverID+"/Flags") {
+				rule.Value = flags
+			}
+		}
+	}
+
+	var serverFlags []entry.Entry
+	for _, rule := range got.GetUniqueRules()["certificate"] {
+		if strings.HasSuffix(rule.Key, "/"+serverID+"/Flags") {
+			serverFlags = append(serverFlags, rule)
+		}
+	}
+	require.Equal(t, []entry.Entry{{
+		Key:   "Software/Policies/Microsoft/Cryptography/PolicyServers/" + serverID + "/Flags",
+		Value: "4",
+	}}, serverFlags, "the closest GPO's flags should win for the case-insensitive policy server ID")
 }
 
 func TestGetPoliciesOffline(t *testing.T) {

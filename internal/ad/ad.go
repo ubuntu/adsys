@@ -678,11 +678,20 @@ classLoop:
 	for _, pol := range pols {
 		// Rewrite the certificate autoenrollment key so we can easily
 		// use it in the policy manager
-		if pol.Key == certAutoEnrollKey {
+		if strings.EqualFold(pol.Key, certAutoEnrollKey) {
 			pol.Key = fmt.Sprintf("%scertificate/autoenroll/all", keyFilterPrefix)
 		}
 
-		if strings.HasPrefix(pol.Key, policyServersPrefix) {
+		if len(pol.Key) >= len(policyServersPrefix) &&
+			strings.EqualFold(pol.Key[:len(policyServersPrefix)], policyServersPrefix) {
+			// Registry paths are case-insensitive, but the certificate manager and
+			// Samba helper compare them literally.
+			serverID, valuePath, hasValue := strings.Cut(pol.Key[len(policyServersPrefix):], "/")
+			if hasValue {
+				pol.Key = policyServersPrefix + strings.ToLower(serverID) + "/" + valuePath
+			} else {
+				pol.Key = policyServersPrefix + pol.Key[len(policyServersPrefix):]
+			}
 			pol.Key = fmt.Sprintf("%scertificate/%s/all", keyFilterPrefix, pol.Key)
 		}
 
