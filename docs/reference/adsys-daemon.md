@@ -96,7 +96,7 @@ Administrators can get more details about the timer status:
 sudo systemctl status adsys-gpo-refresh.timer
 
 ● adsys-gpo-refresh.timer - Refresh ADSys GPO for machine and users
-     Loaded: loaded (/lib/systemd/system/adsys-gpo-refresh.timer; enabled; vendor preset: enabled)
+     Loaded: loaded (/usr/lib/systemd/system/adsys-gpo-refresh.timer; enabled; vendor preset: enabled)
      Active: active (waiting) since Tue 2021-05-18 08:35:48 CEST; 1h 23min ago
     Trigger: Tue 2021-05-18 10:05:49 CEST; 6min left
    Triggers: ● adsys-gpo-refresh.service

@@ -1,5 +1,4 @@
-sbin/adsys*
-lib/
+usr/sbin/adsys*
 usr/lib
 usr/share/bash-completion
 usr/share/locale

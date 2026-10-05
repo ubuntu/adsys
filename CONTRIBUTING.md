@@ -114,7 +114,8 @@ $ cd pam/
 $ go generate .
 ```
 
-The PAM module will be built and copied in `<project_root>/generated/lib/security/`.
+The PAM module will be built and copied in
+`<project_root>/generated/usr/lib/security/`.
 
 ### About the testsuite
 

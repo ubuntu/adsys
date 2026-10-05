@@ -6,7 +6,7 @@ ConditionPathExists=/run/adsys/users/%U/mounts
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/sbin/adsysd mount /run/adsys/users/%U/mounts
+ExecStart=/usr/sbin/adsysd mount /run/adsys/users/%U/mounts
 
 [Install]
 WantedBy=graphical-session.target

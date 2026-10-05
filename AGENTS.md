@@ -87,7 +87,7 @@ Run generation for the affected surface and inspect the resulting diff:
 ```bash
 go generate .                         # Root protobuf API
 go generate ./cmd/adsysd              # Completions, manpages, and CLI docs
-go generate -x -tags=tools ./pam      # PAM module in generated/lib/security/
+go generate -x -tags=tools ./pam      # PAM module in generated/usr/lib/security/
 ```
 
 Other packages contain targeted `go:generate` directives. Do not hand-edit

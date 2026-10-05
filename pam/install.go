@@ -23,7 +23,7 @@ func main() {
 	}
 
 	mode := os.Args[1]
-	destDir := filepath.Join(generators.DestDirectory(os.Args[2]), "lib", os.Getenv("DEB_HOST_GNU_TYPE"), "security")
+	destDir := filepath.Join(generators.DestDirectory(os.Args[2]), "usr", "lib", os.Getenv("DEB_HOST_GNU_TYPE"), "security")
 	switch mode {
 
 	case "install":
