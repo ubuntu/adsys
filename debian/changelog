@@ -1,3 +1,24 @@
+adsys (0.16.4ubuntu2) stonking; urgency=medium
+
+  * SECURITY UPDATE: Panic in typeFrameParser.
+    - 19f580fd686a6bb31d4af15febe789827169bc26: Add a nil check before
+      indexing into frameParsers in vendor/golang.org/x/net/http2/frame.go
+    - Author: Konnyaku <beifengxuanxiao@126.com>
+    - CVE-2026-27141
+  * SECURITY UPDATE: Hang in Transport.
+    - 1e71bd86e4a302b4e731bc06da6eb51679c7bd49: Prevent hanging Transport from
+      bad SETTINGS frame in vendor/golang.org/x/net/http2/transport.go
+    - Author: Nicholas S. Husin <nsh@golang.org>
+    - CVE-2026-33814
+
+ -- Kyle Kernick <kyle.kernick@canonical.com>  Fri, 12 Jun 2026 10:12:03 -0600
+
+adsys (0.16.4ubuntu1) resolute; urgency=medium
+
+  * Properly disable Kerberos usage in the tests (LP: #2144012)
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Fri, 13 Mar 2026 14:47:15 -0400
+
 adsys (0.16.4) resolute; urgency=medium
 
   * Bump Go version to 1.24
