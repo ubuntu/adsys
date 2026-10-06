@@ -1,9 +1,17 @@
 package dconf
 
 import (
+	"bytes"
+	"context"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNormalize(t *testing.T) {
@@ -111,4 +119,308 @@ func TestNormalize(t *testing.T) {
 			assert.Equal(t, tc.want, got, "normalizeValue returned expected value")
 		})
 	}
+}
+
+func TestDconfDatabaseIsUpToDate(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name            string
+		newerSourcePath string
+		equalSourcePath string
+		removeDatabase  bool
+		wantUpToDate    bool
+	}{
+		{name: "Fresh database", wantUpToDate: true},
+		{name: "Missing database", removeDatabase: true},
+		{name: "Keyfile directory newer", newerSourcePath: ".d"},
+		{name: "Keyfile newer", newerSourcePath: ".d/adsys"},
+		{name: "Locks directory newer", newerSourcePath: ".d/locks"},
+		{name: "Lock file newer", newerSourcePath: ".d/locks/adsys"},
+		{name: "Keyfile directory has compiled timestamp", equalSourcePath: ".d"},
+		{name: "Keyfile has compiled timestamp", equalSourcePath: ".d/adsys"},
+		{name: "Locks directory has compiled timestamp", equalSourcePath: ".d/locks"},
+		{name: "Lock file has compiled timestamp", equalSourcePath: ".d/locks/adsys"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			dbPath := filepath.Join(t.TempDir(), "db", "machine")
+			createDconfDatabaseFiles(t, dbPath)
+
+			baseTime := time.Unix(1_700_000_000, 0)
+			setDconfDatabaseTimes(t, dbPath, baseTime.Add(time.Second), baseTime, baseTime, baseTime, baseTime)
+			if tc.removeDatabase {
+				require.NoError(t, os.Remove(dbPath))
+			}
+			if tc.newerSourcePath != "" {
+				setDconfTestMtime(t, dbPath+tc.newerSourcePath, baseTime.Add(2*time.Second))
+			}
+			if tc.equalSourcePath != "" {
+				setDconfTestMtime(t, dbPath+tc.equalSourcePath, baseTime.Add(time.Second))
+			}
+
+			assert.Equal(t, tc.wantUpToDate, dconfDatabaseIsUpToDate(dbPath))
+		})
+	}
+}
+
+func TestApplyPolicyDconfUpdateFailure(t *testing.T) {
+	var logs bytes.Buffer
+	logger := logrus.StandardLogger()
+	originalOutput := logger.Out
+	logger.SetOutput(&logs)
+	t.Cleanup(func() { logger.SetOutput(originalOutput) })
+
+	tests := []struct {
+		name                     string
+		isComputer               bool
+		setup                    func(t *testing.T, dconfDir string)
+		updater                  func(dbDir string) ([]byte, error)
+		wantErrorContains        []string
+		wantExitError            bool
+		wantExecError            bool
+		wantWarningContain       []string
+		wantFreshDatabases       []string
+		wantNotUpToDateDatabases []string
+	}{
+		{
+			name:              "Missing machine database after failed update",
+			isComputer:        true,
+			updater:           failedDconfUpdate,
+			wantErrorContains: []string{"dconf update failed", "simulated dconf update failure", "exit status 1", "machine"},
+			wantExitError:     true,
+		},
+		{
+			name:       "Stale machine database after failed update",
+			isComputer: true,
+			setup: func(t *testing.T, dconfDir string) {
+				t.Helper()
+
+				dbPath := filepath.Join(dconfDir, "db", "machine")
+				createDconfDatabaseFiles(t, dbPath)
+				require.NoError(t, os.Chtimes(dbPath, time.Unix(1, 0), time.Unix(1, 0)))
+			},
+			updater:           failedDconfUpdate,
+			wantErrorContains: []string{"dconf update failed", "simulated dconf update failure", "exit status 1", "machine"},
+			wantExitError:     true,
+		},
+		{
+			name: "Missing user database after failed update",
+			setup: func(t *testing.T, dconfDir string) {
+				t.Helper()
+
+				dbPath := filepath.Join(dconfDir, "db", "machine")
+				createDconfDatabaseFiles(t, dbPath)
+				baseTime := time.Unix(1_700_000_000, 0)
+				setDconfDatabaseTimes(t, dbPath, baseTime.Add(time.Second), baseTime, baseTime, baseTime, baseTime)
+			},
+			updater:           failedDconfUpdate,
+			wantErrorContains: []string{"dconf update failed", "simulated dconf update failure", "exit status 1", "ubuntu"},
+			wantExitError:     true,
+		},
+		{
+			name:       "New machine database with equal source timestamp is accepted",
+			isComputer: true,
+			updater:    recompiledMachineDconfUpdateWithEqualTimestamp,
+			wantWarningContain: []string{
+				"dconf update failed, but ADSys-managed databases were compiled or are up to date",
+				"simulated dconf update failure",
+			},
+			wantNotUpToDateDatabases: []string{"machine"},
+		},
+		{
+			name:       "Recompiled machine database with equal source timestamp is accepted",
+			isComputer: true,
+			setup: func(t *testing.T, dconfDir string) {
+				t.Helper()
+
+				dbPath := filepath.Join(dconfDir, "db", "machine")
+				require.NoError(t, os.MkdirAll(filepath.Dir(dbPath), 0750))
+				require.NoError(t, os.WriteFile(dbPath, []byte("old compiled database"), 0600))
+				require.NoError(t, os.Chtimes(dbPath, time.Unix(1, 0), time.Unix(1, 0)))
+			},
+			updater: recompiledMachineDconfUpdateWithEqualTimestamp,
+			wantWarningContain: []string{
+				"dconf update failed, but ADSys-managed databases were compiled or are up to date",
+				"simulated dconf update failure",
+			},
+			wantNotUpToDateDatabases: []string{"machine"},
+		},
+		{
+			name:       "Replaced machine database with unchanged timestamp is accepted",
+			isComputer: true,
+			setup: func(t *testing.T, dconfDir string) {
+				t.Helper()
+
+				dbPath := filepath.Join(dconfDir, "db", "machine")
+				require.NoError(t, os.MkdirAll(filepath.Dir(dbPath), 0750))
+				require.NoError(t, os.WriteFile(dbPath, []byte("old compiled database"), 0600))
+				require.NoError(t, os.Chtimes(dbPath, time.Unix(1, 0), time.Unix(1, 0)))
+			},
+			updater: recompiledMachineDconfUpdateWithUnchangedTimestamp,
+			wantWarningContain: []string{
+				"dconf update failed, but ADSys-managed databases were compiled or are up to date",
+				"simulated dconf update failure",
+			},
+			wantNotUpToDateDatabases: []string{"machine"},
+		},
+		{
+			name: "Unrelated invalid database does not block compiled ADSys databases",
+			setup: func(t *testing.T, dconfDir string) {
+				t.Helper()
+
+				machineLocks := filepath.Join(dconfDir, "db", "machine.d", "locks")
+				require.NoError(t, os.MkdirAll(machineLocks, 0750))
+				require.NoError(t, os.WriteFile(filepath.Join(machineLocks, "adsys"), nil, 0600))
+
+				unrelatedDB := filepath.Join(dconfDir, "db", "local.d")
+				require.NoError(t, os.MkdirAll(unrelatedDB, 0750))
+				require.NoError(t, os.WriteFile(filepath.Join(unrelatedDB, "broken"), []byte("not a valid keyfile\n"), 0600))
+			},
+			wantWarningContain: []string{
+				"dconf update failed, but ADSys-managed databases were compiled or are up to date",
+				"local.d: broken",
+			},
+			wantFreshDatabases: []string{"machine", "ubuntu"},
+		},
+		{
+			name:          "Missing dconf executable returns an error",
+			isComputer:    true,
+			updater:       unavailableDconfUpdate,
+			wantExecError: true,
+			wantErrorContains: []string{
+				"dconf update failed",
+				"executable file not found",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			logs.Reset()
+			dconfDir := t.TempDir()
+			if tc.setup != nil {
+				tc.setup(t, dconfDir)
+			}
+
+			manager := newWithDconfDirAndProfileDataDirs(dconfDir, []string{})
+			manager.dconfUpdater = tc.updater
+			err := manager.ApplyPolicy(context.Background(), "ubuntu", tc.isComputer, nil)
+
+			if len(tc.wantErrorContains) > 0 {
+				require.Error(t, err)
+				for _, want := range tc.wantErrorContains {
+					assert.Contains(t, err.Error(), want)
+				}
+				if tc.wantExitError {
+					var exitErr *exec.ExitError
+					require.ErrorAs(t, err, &exitErr)
+				}
+				if tc.wantExecError {
+					var execErr *exec.Error
+					require.ErrorAs(t, err, &execErr)
+					require.Equal(t, "dconf", execErr.Name)
+				}
+				return
+			}
+
+			require.NoError(t, err)
+			for _, want := range tc.wantWarningContain {
+				assert.Contains(t, logs.String(), want)
+			}
+			for _, dbName := range tc.wantFreshDatabases {
+				assert.True(t, dconfDatabaseIsUpToDate(filepath.Join(dconfDir, "db", dbName)),
+					"%s database should have been compiled and current", dbName)
+			}
+			for _, dbName := range tc.wantNotUpToDateDatabases {
+				assert.False(t, dconfDatabaseIsUpToDate(filepath.Join(dconfDir, "db", dbName)),
+					"%s database should have an equal source timestamp", dbName)
+			}
+		})
+	}
+}
+
+func failedDconfUpdate(string) ([]byte, error) {
+	return exec.Command("/bin/sh", "-c", "printf 'simulated dconf update failure'; exit 1").CombinedOutput()
+}
+
+func recompiledMachineDconfUpdateWithEqualTimestamp(dbDir string) ([]byte, error) {
+	dbPath := filepath.Join(dbDir, "machine")
+	keyfilePath := filepath.Join(dbDir, "machine.d", "adsys")
+	keyfileInfo, err := os.Stat(keyfilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	temporaryDBPath := dbPath + ".new"
+	if err := os.WriteFile(temporaryDBPath, []byte("compiled during update"), 0600); err != nil {
+		return nil, err
+	}
+	if err := os.Chtimes(temporaryDBPath, keyfileInfo.ModTime(), keyfileInfo.ModTime()); err != nil {
+		return nil, err
+	}
+	if err := os.Rename(temporaryDBPath, dbPath); err != nil {
+		return nil, err
+	}
+
+	return failedDconfUpdate(dbDir)
+}
+
+func recompiledMachineDconfUpdateWithUnchangedTimestamp(dbDir string) ([]byte, error) {
+	dbPath := filepath.Join(dbDir, "machine")
+	dbInfo, err := os.Stat(dbPath)
+	if err != nil {
+		return nil, err
+	}
+
+	keyfilePath := filepath.Join(dbDir, "machine.d", "adsys")
+	if err := os.Chtimes(keyfilePath, dbInfo.ModTime(), dbInfo.ModTime()); err != nil {
+		return nil, err
+	}
+
+	temporaryDBPath := dbPath + ".new"
+	if err := os.WriteFile(temporaryDBPath, []byte("compiled during update"), 0600); err != nil {
+		return nil, err
+	}
+	if err := os.Chtimes(temporaryDBPath, dbInfo.ModTime(), dbInfo.ModTime()); err != nil {
+		return nil, err
+	}
+	if err := os.Rename(temporaryDBPath, dbPath); err != nil {
+		return nil, err
+	}
+
+	return failedDconfUpdate(dbDir)
+}
+
+func unavailableDconfUpdate(string) ([]byte, error) {
+	return nil, &exec.Error{Name: "dconf", Err: exec.ErrNotFound}
+}
+
+func createDconfDatabaseFiles(t *testing.T, dbPath string) {
+	t.Helper()
+
+	keyfilesDir := dbPath + ".d"
+	require.NoError(t, os.MkdirAll(filepath.Join(keyfilesDir, "locks"), 0750))
+	require.NoError(t, os.MkdirAll(filepath.Dir(dbPath), 0750))
+	require.NoError(t, os.WriteFile(dbPath, []byte("compiled"), 0600))
+	require.NoError(t, os.WriteFile(filepath.Join(keyfilesDir, "adsys"), []byte("[org/example]\nkey='value'\n"), 0600))
+	require.NoError(t, os.WriteFile(filepath.Join(keyfilesDir, "locks", "adsys"), []byte("/org/example/key\n"), 0600))
+}
+
+func setDconfDatabaseTimes(t *testing.T, dbPath string, databaseTime, keyfilesDirTime, keyfileTime, locksDirTime, lockFileTime time.Time) {
+	t.Helper()
+
+	setDconfTestMtime(t, dbPath, databaseTime)
+	setDconfTestMtime(t, dbPath+".d", keyfilesDirTime)
+	setDconfTestMtime(t, filepath.Join(dbPath+".d", "adsys"), keyfileTime)
+	setDconfTestMtime(t, filepath.Join(dbPath+".d", "locks"), locksDirTime)
+	setDconfTestMtime(t, filepath.Join(dbPath+".d", "locks", "adsys"), lockFileTime)
+}
+
+func setDconfTestMtime(t *testing.T, path string, modified time.Time) {
+	t.Helper()
+	require.NoError(t, os.Chtimes(path, modified, modified))
 }

@@ -19,10 +19,7 @@ gpos:
               disabled: false
               meta: s
             - key: path/to/key2
-              value: |
-                ValueOfKey2
-                On
-                Multilines
+              value: ValueOfKey2\nOn\nMultilines
               disabled: false
               meta: s
         mount:
