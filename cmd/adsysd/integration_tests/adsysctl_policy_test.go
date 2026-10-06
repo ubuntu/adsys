@@ -221,6 +221,7 @@ func TestPolicyUpdate(t *testing.T) {
 		missingCepces       bool
 		noExportKrb5cc      bool
 		detectCachedTicket  bool
+		wantTarget          string
 
 		wantErr bool
 	}{
@@ -275,9 +276,10 @@ func TestPolicyUpdate(t *testing.T) {
 			wantErr: true,
 		},
 		"Other user, first time": {
-			args:       []string{"userintegrationtest@example.com", "userintegrationtest@example.com.krb5"},
+			args:       []string{"userintegrationtest", "userintegrationtest@example.com.krb5", "--print-normalized-target"},
 			initState:  "localhost-uptodate",
 			krb5ccname: "-",
+			wantTarget: "userintegrationtest@example.com",
 			krb5ccNamesState: []krb5ccNamesWithState{
 				{src: "userintegrationtest@example.com.krb5"},
 				{
@@ -1215,13 +1217,16 @@ func TestPolicyUpdate(t *testing.T) {
 				}
 				args = append(args, arg)
 			}
-			_, err = runClient(t, conf, args...)
+			got, err := runClient(t, conf, args...)
 			if tc.wantErr {
 				require.Error(t, err, "client should exit with an error")
 				// Client version is still printed
 				return
 			}
 			require.NoError(t, err, "client should exit with no error")
+			if tc.wantTarget != "" {
+				require.Equal(t, tc.wantTarget, strings.TrimSpace(got), "client should print the daemon-normalized target")
+			}
 
 			goldenPath := testutils.GoldenPath(t)
 			update := testutils.UpdateEnabled()

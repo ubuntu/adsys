@@ -115,7 +115,7 @@ The command is a no-op if the ticket is not present on disk or the detect_cached
 	}
 	debugCmd.AddCommand(ticketPathCmd)
 
-	var updateMachine, updateAll *bool
+	var updateMachine, updateAll, showNormalizedTarget *bool
 	updateCmd := &cobra.Command{
 		Use:   "update [USER_NAME KERBEROS_TICKET_PATH]",
 		Short: gotext.Get("Updates/Create a policy for current user or given user with its kerberos ticket"),
@@ -142,11 +142,13 @@ The command is a no-op if the ticket is not present on disk or the detect_cached
 			if len(args) > 0 {
 				user, krb5cc = args[0], args[1]
 			}
-			return a.update(*updateMachine, *updateAll, user, krb5cc)
+			return a.update(*updateMachine, *updateAll, user, krb5cc, *showNormalizedTarget)
 		},
 	}
 	updateMachine = updateCmd.Flags().BoolP("machine", "m", false, gotext.Get("machine updates the policy of the computer."))
 	updateAll = updateCmd.Flags().BoolP("all", "a", false, gotext.Get("all updates the policy of the computer and all the logged in users. -m or USER_NAME/TICKET cannot be used with this option."))
+	showNormalizedTarget = updateCmd.Flags().Bool("print-normalized-target", false, gotext.Get("print the daemon-normalized target name"))
+	_ = updateCmd.Flags().MarkHidden("print-normalized-target")
 	policyCmd.AddCommand(updateCmd)
 	cmdhandler.RegisterAlias(updateCmd, &a.rootCmd)
 
@@ -459,8 +461,11 @@ func (s *stringsBuilderWithError) Println(l string) {
 	_, s.err = s.WriteString(l)
 }
 
-func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
+func (a *App) update(isComputer, updateAll bool, target, krb5cc string, showNormalizedTarget bool) error {
 	// incompatible options
+	if showNormalizedTarget && (isComputer || updateAll) {
+		return errors.New(gotext.Get("--print-normalized-target cannot be used with --machine or --all"))
+	}
 	if updateAll && (isComputer || target != "" || krb5cc != "") {
 		return errors.New(gotext.Get("machine or user arguments cannot be used with update all"))
 	}
@@ -514,8 +519,15 @@ func (a *App) update(isComputer, updateAll bool, target, krb5cc string) error {
 		return err
 	}
 
-	if _, err := stream.Recv(); err != nil && !errors.Is(err, io.EOF) {
+	response, err := stream.Recv()
+	if err != nil && !errors.Is(err, io.EOF) {
 		return err
+	}
+	if showNormalizedTarget {
+		if response == nil || response.GetTarget() == "" {
+			return errors.New(gotext.Get("daemon did not return the normalized target name"))
+		}
+		fmt.Println(response.GetTarget())
 	}
 
 	return nil

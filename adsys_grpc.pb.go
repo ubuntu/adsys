@@ -48,7 +48,7 @@ type ServiceClient interface {
 	Version(ctx context.Context, in *Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
 	Status(ctx context.Context, in *Empty, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
 	Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Empty], error)
-	UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Empty], error)
+	UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[UpdatePolicyResponse], error)
 	DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
 	DumpPoliciesDefinitions(ctx context.Context, in *DumpPolicyDefinitionsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[DumpPolicyDefinitionsResponse], error)
 	GetDoc(ctx context.Context, in *GetDocRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error)
@@ -149,13 +149,13 @@ func (c *serviceClient) Stop(ctx context.Context, in *StopRequest, opts ...grpc.
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type Service_StopClient = grpc.ServerStreamingClient[Empty]
 
-func (c *serviceClient) UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Empty], error) {
+func (c *serviceClient) UpdatePolicy(ctx context.Context, in *UpdatePolicyRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[UpdatePolicyResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &Service_ServiceDesc.Streams[4], Service_UpdatePolicy_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[UpdatePolicyRequest, Empty]{ClientStream: stream}
+	x := &grpc.GenericClientStream[UpdatePolicyRequest, UpdatePolicyResponse]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (c *serviceClient) UpdatePolicy(ctx context.Context, in *UpdatePolicyReques
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Service_UpdatePolicyClient = grpc.ServerStreamingClient[Empty]
+type Service_UpdatePolicyClient = grpc.ServerStreamingClient[UpdatePolicyResponse]
 
 func (c *serviceClient) DumpPolicies(ctx context.Context, in *DumpPoliciesRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StringResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
@@ -442,7 +442,7 @@ type ServiceServer interface {
 	Version(*Empty, grpc.ServerStreamingServer[StringResponse]) error
 	Status(*Empty, grpc.ServerStreamingServer[StringResponse]) error
 	Stop(*StopRequest, grpc.ServerStreamingServer[Empty]) error
-	UpdatePolicy(*UpdatePolicyRequest, grpc.ServerStreamingServer[Empty]) error
+	UpdatePolicy(*UpdatePolicyRequest, grpc.ServerStreamingServer[UpdatePolicyResponse]) error
 	DumpPolicies(*DumpPoliciesRequest, grpc.ServerStreamingServer[StringResponse]) error
 	DumpPoliciesDefinitions(*DumpPolicyDefinitionsRequest, grpc.ServerStreamingServer[DumpPolicyDefinitionsResponse]) error
 	GetDoc(*GetDocRequest, grpc.ServerStreamingServer[StringResponse]) error
@@ -479,7 +479,7 @@ func (UnimplementedServiceServer) Status(*Empty, grpc.ServerStreamingServer[Stri
 func (UnimplementedServiceServer) Stop(*StopRequest, grpc.ServerStreamingServer[Empty]) error {
 	return status.Error(codes.Unimplemented, "method Stop not implemented")
 }
-func (UnimplementedServiceServer) UpdatePolicy(*UpdatePolicyRequest, grpc.ServerStreamingServer[Empty]) error {
+func (UnimplementedServiceServer) UpdatePolicy(*UpdatePolicyRequest, grpc.ServerStreamingServer[UpdatePolicyResponse]) error {
 	return status.Error(codes.Unimplemented, "method UpdatePolicy not implemented")
 }
 func (UnimplementedServiceServer) DumpPolicies(*DumpPoliciesRequest, grpc.ServerStreamingServer[StringResponse]) error {
@@ -594,11 +594,11 @@ func _Service_UpdatePolicy_Handler(srv interface{}, stream grpc.ServerStream) er
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(ServiceServer).UpdatePolicy(m, &grpc.GenericServerStream[UpdatePolicyRequest, Empty]{ServerStream: stream})
+	return srv.(ServiceServer).UpdatePolicy(m, &grpc.GenericServerStream[UpdatePolicyRequest, UpdatePolicyResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type Service_UpdatePolicyServer = grpc.ServerStreamingServer[Empty]
+type Service_UpdatePolicyServer = grpc.ServerStreamingServer[UpdatePolicyResponse]
 
 func _Service_DumpPolicies_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(DumpPoliciesRequest)

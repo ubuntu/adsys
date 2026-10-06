@@ -7,7 +7,7 @@ service service {
   rpc Version(Empty) returns (stream StringResponse);
   rpc Status(Empty) returns (stream StringResponse);
   rpc Stop(StopRequest) returns (stream Empty);
-  rpc UpdatePolicy(UpdatePolicyRequest) returns (stream Empty);
+  rpc UpdatePolicy(UpdatePolicyRequest) returns (stream UpdatePolicyResponse);
   rpc DumpPolicies(DumpPoliciesRequest) returns (stream StringResponse);
   rpc DumpPoliciesDefinitions(DumpPolicyDefinitionsRequest) returns (stream DumpPolicyDefinitionsResponse);
   rpc GetDoc(GetDocRequest) returns (stream StringResponse);
@@ -142,4 +142,8 @@ message CertVerifyResult {
   bool revocation_checked = 5;
   bool revoked = 6;
   repeated string messages = 7;
+}
+
+message UpdatePolicyResponse {
+  string target = 15; // Avoid collision with the log stream's field 1.
 }

@@ -1141,6 +1141,50 @@ func (x *CertVerifyResult) GetMessages() []string {
 	return nil
 }
 
+type UpdatePolicyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Target        string                 `protobuf:"bytes,15,opt,name=target,proto3" json:"target,omitempty"` // Avoid collision with the log stream's field 1.
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdatePolicyResponse) Reset() {
+	*x = UpdatePolicyResponse{}
+	mi := &file_adsys_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdatePolicyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdatePolicyResponse) ProtoMessage() {}
+
+func (x *UpdatePolicyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_adsys_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdatePolicyResponse.ProtoReflect.Descriptor instead.
+func (*UpdatePolicyResponse) Descriptor() ([]byte, []int) {
+	return file_adsys_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *UpdatePolicyResponse) GetTarget() string {
+	if x != nil {
+		return x.Target
+	}
+	return ""
+}
+
 var File_adsys_proto protoreflect.FileDescriptor
 
 const file_adsys_proto_rawDesc = "" +
@@ -1230,7 +1274,9 @@ const file_adsys_proto_rawDesc = "" +
 	"keyMatchOk\x12-\n" +
 	"\x12revocation_checked\x18\x05 \x01(\bR\x11revocationChecked\x12\x18\n" +
 	"\arevoked\x18\x06 \x01(\bR\arevoked\x12\x1a\n" +
-	"\bmessages\x18\a \x03(\tR\bmessages*\xeb\x01\n" +
+	"\bmessages\x18\a \x03(\tR\bmessages\".\n" +
+	"\x14UpdatePolicyResponse\x12\x16\n" +
+	"\x06target\x18\x0f \x01(\tR\x06target*\xeb\x01\n" +
 	"\n" +
 	"CertHealth\x12\x1b\n" +
 	"\x17CERT_HEALTH_UNSPECIFIED\x10\x00\x12\x17\n" +
@@ -1240,13 +1286,13 @@ const file_adsys_proto_rawDesc = "" +
 	"\x13CERT_HEALTH_MISSING\x10\x04\x12\x1c\n" +
 	"\x18CERT_HEALTH_KEY_MISMATCH\x10\x05\x12\x1b\n" +
 	"\x17CERT_HEALTH_UNPARSEABLE\x10\x06\x12\x1d\n" +
-	"\x19CERT_HEALTH_NOT_YET_VALID\x10\a2\x9d\a\n" +
+	"\x19CERT_HEALTH_NOT_YET_VALID\x10\a2\xac\a\n" +
 	"\aservice\x12 \n" +
 	"\x03Cat\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x12$\n" +
 	"\aVersion\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x12#\n" +
 	"\x06Status\x12\x06.Empty\x1a\x0f.StringResponse0\x01\x12\x1e\n" +
-	"\x04Stop\x12\f.StopRequest\x1a\x06.Empty0\x01\x12.\n" +
-	"\fUpdatePolicy\x12\x14.UpdatePolicyRequest\x1a\x06.Empty0\x01\x127\n" +
+	"\x04Stop\x12\f.StopRequest\x1a\x06.Empty0\x01\x12=\n" +
+	"\fUpdatePolicy\x12\x14.UpdatePolicyRequest\x1a\x15.UpdatePolicyResponse0\x01\x127\n" +
 	"\fDumpPolicies\x12\x14.DumpPoliciesRequest\x1a\x0f.StringResponse0\x01\x12Z\n" +
 	"\x17DumpPoliciesDefinitions\x12\x1d.DumpPolicyDefinitionsRequest\x1a\x1e.DumpPolicyDefinitionsResponse0\x01\x12+\n" +
 	"\x06GetDoc\x12\x0e.GetDocRequest\x1a\x0f.StringResponse0\x01\x12$\n" +
@@ -1278,7 +1324,7 @@ func file_adsys_proto_rawDescGZIP() []byte {
 }
 
 var file_adsys_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_adsys_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_adsys_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_adsys_proto_goTypes = []any{
 	(CertHealth)(0),                       // 0: CertHealth
 	(*Empty)(nil),                         // 1: Empty
@@ -1297,6 +1343,7 @@ var file_adsys_proto_goTypes = []any{
 	(*CertInfo)(nil),                      // 14: CertInfo
 	(*CAInfo)(nil),                        // 15: CAInfo
 	(*CertVerifyResult)(nil),              // 16: CertVerifyResult
+	(*UpdatePolicyResponse)(nil),          // 17: UpdatePolicyResponse
 }
 var file_adsys_proto_depIdxs = []int32{
 	0,  // 0: CertInfo.health:type_name -> CertHealth
@@ -1323,7 +1370,7 @@ var file_adsys_proto_depIdxs = []int32{
 	4,  // 21: service.Version:output_type -> StringResponse
 	4,  // 22: service.Status:output_type -> StringResponse
 	1,  // 23: service.Stop:output_type -> Empty
-	1,  // 24: service.UpdatePolicy:output_type -> Empty
+	17, // 24: service.UpdatePolicy:output_type -> UpdatePolicyResponse
 	4,  // 25: service.DumpPolicies:output_type -> StringResponse
 	8,  // 26: service.DumpPoliciesDefinitions:output_type -> DumpPolicyDefinitionsResponse
 	4,  // 27: service.GetDoc:output_type -> StringResponse
@@ -1356,7 +1403,7 @@ func file_adsys_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_adsys_proto_rawDesc), len(file_adsys_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   16,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
