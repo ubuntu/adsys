@@ -9,8 +9,8 @@ Restrictions: allow-stderr, needs-root, skippable
 Depends: @builddeps@
 
 # Exercise packaging-level guarantees on the built binary package: the
-# ca-certificates runtime dependency (M11) and the /etc/adsys.yaml
-# lifecycle across fresh install, reinstall, remove and purge (M12).
+# ca-certificates runtime dependency (M11), /etc/adsys.yaml lifecycle (M12),
+# and absence of files in usr-merged aliased locations (M13).
 Test-Command: ./debian/tests/packaging-smoke
 Restrictions: allow-stderr, needs-root, skippable
 Depends: @, ca-certificates

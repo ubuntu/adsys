@@ -5,7 +5,7 @@ PartOf=adsysd.socket
 
 [Service]
 Type=notify
-ExecStart=/sbin/adsysd
+ExecStart=/usr/sbin/adsysd
 
 # Some daemon restrictions
 NoNewPrivileges=true

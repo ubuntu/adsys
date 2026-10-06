@@ -10,6 +10,7 @@
 #    purge, never on a plain remove. So an administrator's edits, or any
 #    file already present before the very first install, always survive
 #    upgrades, reinstalls and remove.
+#  - M13: the package does not ship files in usr-merged aliased locations.
 set -e
 
 CONFFILE=/etc/adsys.yaml
@@ -107,5 +108,10 @@ apt_install
 [ -e "$CONFFILE" ] || fail "$CONFFILE is missing after the final reinstall"
 grep -q '^certificate_enrollment: ldap$' "$CONFFILE" \
     || fail "$CONFFILE does not contain the expected default after the final reinstall"
+
+echo "== M13: no files in aliased locations =="
+ALIASED_PATHS=$(dpkg -L "$PKG" | grep -E '^/(bin|sbin|lib|lib32|lib64|libx32)(/|$)' || true)
+[ -z "$ALIASED_PATHS" ] \
+    || fail "$PKG ships files in aliased locations: $(printf '%s' "$ALIASED_PATHS" | tr '\n' ' ')"
 
 echo "OK"
