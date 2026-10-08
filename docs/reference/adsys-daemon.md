@@ -205,7 +205,7 @@ The option `ad_domain` in that section is used for the list of domains list of t
 
 Finally `default_domain_suffix` is used too, and falls back to the domain name if missing.
 
-Default lookup path is `/etc/sssd/sssd.conf`. This can be overridden by the `--sssd.config` option.
+Default lookup path is `/etc/sssd/sssd.conf`. This can be overridden by the `--sssd.config` option. The snippets from the `conf.d` directory next to that file are merged in the same way SSSD does: files ending with `.conf`, in alphabetical order, later ones overriding earlier values.
 
 * **cache_dir**
 
