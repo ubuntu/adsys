@@ -34,8 +34,44 @@ type Image struct {
 // Images represents a list of Azure images.
 type Images []Image
 
-type imageVersion struct {
-	Version string `json:"name"`
+// SourceBuildTag is the image version tag recording the Marketplace build a
+// template was created from.
+//
+// The version number cannot be relied on for this: it has to increase for
+// Azure to serve a new template, whereas the Marketplace build can move
+// backwards when we change which SKU we build from.
+const SourceBuildTag = "sourceBuild"
+
+// SourceURNTag is the image version tag recording the full Marketplace image
+// identity a template was created from.
+const SourceURNTag = "sourceURN"
+
+// ImageVersion is a version of one of our own image definitions.
+type ImageVersion struct {
+	Version string            `json:"name"`
+	Tags    map[string]string `json:"tags"`
+}
+
+// SourceBuild returns the Marketplace build the template was created from.
+//
+// Versions published before the tag existed fall back to the minor component,
+// which is what that component used to mean.
+func (v ImageVersion) SourceBuild() string {
+	if build := v.Tags[SourceBuildTag]; build != "" {
+		return build
+	}
+
+	parts := strings.Split(v.Version, ".")
+	if len(parts) != 3 {
+		return ""
+	}
+	return parts[1]
+}
+
+// SourceURN returns the full Marketplace image identity the template was
+// created from.
+func (v ImageVersion) SourceURN() string {
+	return v.Tags[SourceURNTag]
 }
 
 // ImageDefinitionName returns the name of the image definition for the given
@@ -138,13 +174,21 @@ func (i Image) isDailyImage() bool {
 // isProImage reports whether the image is an Ubuntu Pro one.
 //
 // The SKU filter is passed to the CLI, which matches it as a substring, so
-// asking for "minimal" also returns "pro-minimal". Those images carry Ubuntu
-// Pro preconfigured, which is exactly the state the tests set up and assert on
-// themselves: one scenario checks that Pro-only policy managers are filtered
-// out on a machine that is not subscribed, and the other attaches a
+// asking for "minimal" also returns the Pro variants. Those images carry
+// Ubuntu Pro preconfigured, which is exactly the state the tests set up and
+// assert on themselves: one scenario checks that Pro-only policy managers are
+// filtered out on a machine that is not subscribed, and the other attaches a
 // subscription of its own.
+//
+// The two versioning schemes spell Pro differently: the current one keeps the
+// release in the offer and names the SKU "ubuntu-pro-minimal", while the older
+// one puts the release in the SKU and names it "pro-minimal-20_04-lts-gen2"
+// under a separate "0001-com-ubuntu-pro-minimal-focal" offer. Match "pro" as a
+// hyphen-separated component of either field, as anchoring on a prefix only
+// ever recognised the older spelling.
 func (i Image) isProImage() bool {
-	return strings.HasPrefix(i.SKU, "pro-") || i.SKU == "pro"
+	return slices.Contains(strings.Split(i.SKU, "-"), "pro") ||
+		slices.Contains(strings.Split(i.Offer, "-"), "pro")
 }
 
 func (i Image) isGen2Image() bool {
@@ -160,7 +204,16 @@ func (i Image) isGen2Image() bool {
 // If the image definition does not exist, or exists but has no version yet,
 // "0.0.0" is returned.
 func LatestImageVersion(ctx context.Context, imageDefinition string) (string, error) {
-	latestVersion := NullImageVersion
+	latest, err := LatestImage(ctx, imageDefinition)
+	return latest.Version, err
+}
+
+// LatestImage returns the latest version of the given image definition along
+// with the metadata recorded on it.
+// If the image definition does not exist, or exists but has no version yet,
+// a version of "0.0.0" is returned.
+func LatestImage(ctx context.Context, imageDefinition string) (ImageVersion, error) {
+	latest := ImageVersion{Version: NullImageVersion}
 
 	out, stderr, err := RunCommand(ctx, "sig", "image-version", "list",
 		"--resource-group", "AD",
@@ -172,28 +225,28 @@ func LatestImageVersion(ctx context.Context, imageDefinition string) (string, er
 		// all, which is not an error condition for callers: it is
 		// indistinguishable from a definition without any version.
 		if bytes.Contains(stderr, []byte("ResourceNotFound")) {
-			return NullImageVersion, nil
+			return ImageVersion{Version: NullImageVersion}, nil
 		}
-		return latestVersion, err
+		return latest, err
 	}
 
-	var versions []imageVersion
+	var versions []ImageVersion
 	if err := json.Unmarshal(out, &versions); err != nil {
-		return latestVersion, err
+		return latest, err
 	}
 	if len(versions) == 0 {
-		return latestVersion, nil
+		return latest, nil
 	}
 
 	log.Debugf("Found %d image versions: %s", len(versions), versions)
 
 	for _, v := range versions {
-		if natural.Less(latestVersion, v.Version) {
-			latestVersion = v.Version
+		if natural.Less(latest.Version, v.Version) {
+			latest = v
 		}
 	}
 
-	return latestVersion, nil
+	return latest, nil
 }
 
 // ImageBuildNumber returns the build number of the image given a version in the following format
