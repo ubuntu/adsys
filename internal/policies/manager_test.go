@@ -56,14 +56,14 @@ func TestApplyPolicies(t *testing.T) {
 		wantErr bool
 	}{
 		"Succeed": {policiesDir: "all_entry_types"},
-		"Succeed if checking for backend online status returns an error":         {backendOfflineError: true, policiesDir: "all_entry_types"},
-		"Second call with no rules deletes everything":                           {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: true},
-		"Second call with no rules don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: false},
+		"Succeed if checking for backend online status returns an error":             {backendOfflineError: true, policiesDir: "all_entry_types"},
+		"Second call with no rules deletes everything":                               {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: true},
+		"Second call with no rules does not remove scripts if session has not ended": {policiesDir: "all_entry_types", secondCallWithNoRules: true, scriptSessionEndedForSecondCall: false},
 
 		// no subscription filterings
-		"No subscription is only dconf content":                                         {policiesDir: "all_entry_types", isNotSubscribed: true},
-		"Second call with no subscription should remove everything but dconf content":   {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: true},
-		"Second call with no subscription don't remove scripts if session hasn’t ended": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: false},
+		"No subscription is only dconf content":                                             {policiesDir: "all_entry_types", isNotSubscribed: true},
+		"Second call with no subscription should remove everything but dconf content":       {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: true},
+		"Second call with no subscription does not remove scripts if session has not ended": {policiesDir: "all_entry_types", secondCallWithNoSubscription: true, scriptSessionEndedForSecondCall: false},
 
 		// dynamic values
 		"Dynamic values are expanded before applying": {policiesDir: "dynamic_values"},
