@@ -41,6 +41,7 @@ dialogs
 dir
 DNS
 DCOM
+DER
 Dropdown
 dropdownList
 DSRM
@@ -93,6 +94,7 @@ key_mismatch
 keypress
 krb
 LDAP
+LDAPS
 ldap
 libkrb
 lifecycle
@@ -128,6 +130,8 @@ RPC
 realmd
 rekey
 runscripts
+SASL
+sasl
 SANs
 schema
 schemas

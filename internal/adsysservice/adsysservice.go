@@ -73,6 +73,7 @@ type options struct {
 	adBackend             string
 	certificateEnrollment string
 	gpoListTimeout        time.Duration
+	ldapConfig            ad.LDAPConfig
 	sssConfig             sss.Config
 	winbindConfig         winbind.Config
 	authorizer            authorizerer
@@ -211,6 +212,18 @@ func WithGpoListTimeout(t time.Duration) func(o *options) error {
 	}
 }
 
+// WithLDAPConfig specifies the LDAP transport and TLS settings for GPO listing.
+func WithLDAPConfig(config ad.LDAPConfig) func(o *options) error {
+	return func(o *options) error {
+		normalized, err := ad.NormalizeLDAPConfig(config)
+		if err != nil {
+			return err
+		}
+		o.ldapConfig = normalized
+		return nil
+	}
+}
+
 // New returns a new instance of an AD service.
 // If url or domain is empty, we load the missing parameters from sssd.conf, taking first
 // domain in the list if not provided.
@@ -267,6 +280,7 @@ func New(ctx context.Context, opts ...option) (s *Service, err error) {
 	}
 
 	adOptions = append(adOptions, ad.WithGpoListTimeout(args.gpoListTimeout))
+	adOptions = append(adOptions, ad.WithLDAPConfig(args.ldapConfig))
 
 	hostname, err := os.Hostname()
 	if err != nil {
