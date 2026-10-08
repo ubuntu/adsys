@@ -141,7 +141,7 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 	var err error
 	var gotContent map[string]treeAttrs
 	if _, err := os.Stat(p); err == nil {
-		gotContent, err = treeContentAndAttrs(t, p, []byte("GVariant"))
+		gotContent, err = treeContentAndAttrs(t, p, true)
 		if err != nil {
 			t.Fatalf("No generated content: %v", err)
 		}
@@ -149,7 +149,7 @@ func CompareTreesWithFiltering(t *testing.T, p, goldPath string, update bool) {
 
 	var goldContent map[string]treeAttrs
 	if _, err := os.Stat(goldPath); err == nil {
-		goldContent, err = treeContentAndAttrs(t, goldPath, nil)
+		goldContent, err = treeContentAndAttrs(t, goldPath, false)
 		if err != nil {
 			t.Fatalf("No golden directory found: %v", err)
 		}
@@ -240,8 +240,8 @@ type treeAttrs struct {
 }
 
 // treeContentAndAttrs builds a recursive file list of dir with their content and other attributes.
-// It can ignore files starting with ignoreHeaders.
-func treeContentAndAttrs(t *testing.T, dir string, ignoreHeaders []byte) (map[string]treeAttrs, error) {
+// It can ignore binary dconf databases.
+func treeContentAndAttrs(t *testing.T, dir string, ignoreDconfDBs bool) (map[string]treeAttrs, error) {
 	t.Helper()
 
 	r := make(map[string]treeAttrs)
@@ -265,8 +265,7 @@ func treeContentAndAttrs(t *testing.T, dir string, ignoreHeaders []byte) (map[st
 			if err != nil {
 				return err
 			}
-			// ignore given header
-			if ignoreHeaders != nil && bytes.HasPrefix(d, ignoreHeaders) {
+			if ignoreDconfDBs && isDconfDB(d) {
 				return nil
 			}
 			content = string(d)
@@ -294,9 +293,24 @@ func ignoreDconfDB(src string, entries []os.FileInfo) []string {
 			continue
 		}
 
-		if bytes.HasPrefix(d, []byte("GVariant")) {
+		if isDconfDB(d) {
 			r = append(r, e.Name())
 		}
 	}
 	return r
+}
+
+// dconfDBSignatures are the headers of binary dconf databases. dconf update
+// writes them in native byte order, so big-endian architectures like s390x get
+// the byte-swapped signature.
+var dconfDBSignatures = [][]byte{[]byte("GVariant"), []byte("raVGtnai")}
+
+// isDconfDB reports whether content is a binary dconf database.
+func isDconfDB(content []byte) bool {
+	for _, signature := range dconfDBSignatures {
+		if bytes.HasPrefix(content, signature) {
+			return true
+		}
+	}
+	return false
 }

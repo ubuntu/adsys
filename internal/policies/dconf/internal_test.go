@@ -183,7 +183,7 @@ func TestApplyPolicyDconfUpdateFailure(t *testing.T) {
 		wantExitError            bool
 		wantExecError            bool
 		wantWarningContain       []string
-		wantFreshDatabases       []string
+		wantCompiledDatabases    []string
 		wantNotUpToDateDatabases []string
 	}{
 		{
@@ -284,7 +284,7 @@ func TestApplyPolicyDconfUpdateFailure(t *testing.T) {
 				"dconf update failed, but ADSys-managed databases were compiled or are up to date",
 				"local.d: broken",
 			},
-			wantFreshDatabases: []string{"machine", "ubuntu"},
+			wantCompiledDatabases: []string{"machine", "ubuntu"},
 		},
 		{
 			name:          "Missing dconf executable returns an error",
@@ -331,9 +331,10 @@ func TestApplyPolicyDconfUpdateFailure(t *testing.T) {
 			for _, want := range tc.wantWarningContain {
 				assert.Contains(t, logs.String(), want)
 			}
-			for _, dbName := range tc.wantFreshDatabases {
-				assert.True(t, dconfDatabaseIsUpToDate(filepath.Join(dconfDir, "db", dbName)),
-					"%s database should have been compiled and current", dbName)
+			for _, dbName := range tc.wantCompiledDatabases {
+				// The databases don't exist before the update, so their presence shows dconf compiled them.
+				// Don't require them to be newer than their sources: coarse timestamps can make both equal.
+				assert.FileExists(t, filepath.Join(dconfDir, "db", dbName), "%s database should have been compiled", dbName)
 			}
 			for _, dbName := range tc.wantNotUpToDateDatabases {
 				assert.False(t, dconfDatabaseIsUpToDate(filepath.Join(dconfDir, "db", dbName)),
