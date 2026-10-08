@@ -151,11 +151,10 @@ def fetch_certification_authorities(ldb):
     [MS-CAESO] 4.4.5.3.1.2
     """
     result = []
-    configdn = ldb.get_config_basedn()
+    basedn = ldb.get_default_basedn()
     # Autoenrollment MUST do an LDAP search for the CA information
     # (pKIEnrollmentService) objects under the following container:
-    dn = 'CN=Enrollment Services,CN=Public Key Services,CN=Services,%s' % configdn
-
+    dn = 'CN=Enrollment Services,CN=Public Key Services,CN=Services,CN=Configuration,%s' % basedn
     attrs = ['cACertificate', 'cn', 'dNSHostName']
     expr = '(objectClass=pKIEnrollmentService)'
     res = ldb.search(dn, SCOPE_SUBTREE, expr, attrs)
@@ -172,8 +171,8 @@ def fetch_certification_authorities(ldb):
 def fetch_template_attrs(ldb, name, attrs=None):
     if attrs is None:
         attrs = ['msPKI-Minimal-Key-Size']
-    configdn = ldb.get_config_basedn()
-    dn = 'CN=Certificate Templates,CN=Public Key Services,CN=Services,%s' % configdn
+    basedn = ldb.get_default_basedn()
+    dn = 'CN=Certificate Templates,CN=Public Key Services,CN=Services,CN=Configuration,%s' % basedn
     expr = '(cn=%s)' % name
     res = ldb.search(dn, SCOPE_SUBTREE, expr, attrs)
     if len(res) == 1 and 'msPKI-Minimal-Key-Size' in res[0]:
@@ -296,11 +295,11 @@ def changed(new_data, old_data):
 def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
     """Install the root certificate chain."""
     data = dict({'files': [], 'templates': []}, **ca)
+    url = 'http://%s/CertSrv/mscep/mscep.dll/pkiclient.exe?' % ca['hostname']
 
     log.info("Try to get root or server certificates")
-    url = 'https://%s/CertSrv/mscep/mscep.dll/pkiclient.exe?' % ca['hostname']
-    root_certs = getca(ca, url, trust_dir)
 
+    root_certs = getca(ca, url, trust_dir)
     data['files'].extend(root_certs)
     global_trust_dir = find_global_trust_dir()
     for src in root_certs:
@@ -348,7 +347,6 @@ def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
                 log.error('Failed to add Certificate Authority', data)
 
         supported_templates = get_supported_templates(ca['hostname'])
-        log.debug(f"Supported templates for CA \"{ca['name']}\": {supported_templates}")
         for template in supported_templates:
             attrs = fetch_template_attrs(ldb, template)
             nickname = '%s.%s' % (ca['name'], template.decode())
@@ -368,11 +366,8 @@ def cert_enroll(ca, ldb, trust_dir, private_dir, auth='Kerberos'):
                     data = {'Error': err.decode(), 'Certificate': nickname}
                     log.error('Failed to request certificate', data)
 
-            if data.get('files') is not None:
-                data['files'].extend([keyfile, certfile])
-
-            if data.get('templates') is not None:
-                data['templates'].append(nickname)
+            data['files'].extend([keyfile, certfile])
+            data['templates'].append(nickname)
         if update is not None:
             ret = Popen([update]).wait()
             if ret != 0:
@@ -405,19 +400,8 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
         # If the policy has changed, unapply, then apply new policy
         old_val = self.cache_get_attribute_value(guid, attribute)
         old_data = json.loads(old_val) if old_val is not None else {}
-
-        templates = []
-        if old_val is not None:
-            supported_templates = []
-            try:
-                supported_templates = get_supported_templates(ca['hostname'])
-            except Exception as e:
-                raise e
-            log.debug(f"Supported templates for CA \"{ca['name']}\": {supported_templates}")
-            for template in supported_templates:
-                formatted = '%s.%s' % (ca['name'], template.decode())
-                templates.append(formatted)
-
+        templates = ['%s.%s' % (ca['name'], t.decode()) for t in get_supported_templates(ca['hostname'])] \
+            if old_val is not None else []
         new_data = { 'templates': templates, **ca }
         if changed(new_data, old_data) or self.cache_get_apply_state() == GPOSTATE.ENFORCE:
             self.unapply(guid, attribute, old_val)
@@ -501,17 +485,15 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
             # If the current group contains a
             # CertificateEnrollmentPolicyEndPoint instance with EndPoint.URI
             # equal to "LDAP":
-            for e in end_point_group:
-                if e['URL'] != 'LDAP:':
-                    continue
+            if any([e['URL'] == 'LDAP:' for e in end_point_group]):
                 # Perform an LDAP search to read the value of the objectGuid
                 # attribute of the root object of the forest root domain NC. If
                 # any errors are encountered, continue with the next group.
                 res = ldb.search('', SCOPE_BASE, '(objectClass=*)',
-                                 ['defaultNamingContext'])
+                                 ['rootDomainNamingContext'])
                 if len(res) != 1:
                     continue
-                res2 = ldb.search(res[0]['defaultNamingContext'][0],
+                res2 = ldb.search(res[0]['rootDomainNamingContext'][0],
                                   SCOPE_BASE, '(objectClass=*)',
                                   ['objectGUID'])
                 if len(res2) != 1:
@@ -534,13 +516,9 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
                 if ca['URL'] == 'LDAP:':
                     # This is a basic configuration.
                     cas = fetch_certification_authorities(ldb)
-                    log.debug(f'Fetched the following CAs: {cas}')
                     for _ca in cas:
-                        try:
-                            self.apply(guid, _ca, cert_enroll, _ca, ldb, trust_dir, private_dir)
-                        except Exception as e:
-                            log.warn(f"Could not enroll to CA {_ca['name']}: {e}")
-                            continue
+                        self.apply(guid, _ca, cert_enroll, _ca, ldb, trust_dir,
+                                   private_dir)
                         ca_names.append(_ca['name'])
                 # If EndPoint.URI starts with "HTTPS//":
                 elif ca['URL'].lower().startswith('https://'):
@@ -560,19 +538,15 @@ class gp_cert_auto_enroll_ext(gp_pol_ext, gp_applier):
         ca_names = []
         end_point_information = obtain_end_point_information(entries)
         if len(end_point_information) > 0:
-            cep_data = self.__read_cep_data(guid, ldb, end_point_information, trust_dir, private_dir)
-            if cep_data:
-                ca_names.extend(cep_data)
+            ca_names.extend(self.__read_cep_data(guid, ldb,
+                                                 end_point_information,
+                                                 trust_dir, private_dir))
         else:
             cas = fetch_certification_authorities(ldb)
             for ca in cas:
-                try:
-                    self.apply(guid, ca, cert_enroll, ca, ldb, trust_dir, private_dir)
-                except Exception as e:
-                    log.warn(f"Could not enroll to CA {ca['name']}: {e}")
-                    continue
+                self.apply(guid, ca, cert_enroll, ca, ldb, trust_dir,
+                           private_dir)
                 ca_names.append(ca['name'])
-        log.debug(f'Enrolled to the following CAs: {ca_names}')
         return ca_names
 
     def rsop(self, gpo):
