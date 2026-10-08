@@ -51,7 +51,7 @@ Users and groups in the directory can be granted administrator privileges of the
 
 Several users or groups or a set of both can be assigned.
 
-The form is a list of users and group, one per line, `user@domain` for a user and `%group@domain` for a group.
+The form is a list of users and groups, one per line, prefixed with `%` for a group. The names must match the account names as they appear on the client: `user@domain` and `%group@domain` when SSSD uses fully qualified names (the default), `user` and `%group` when `use_fully_qualified_names` is set to `False` in `sssd.conf`.
 
 ### Not Configured or disabled
 
