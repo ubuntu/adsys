@@ -43,6 +43,24 @@ func TestSSSD(t *testing.T) {
 			wantServerFQDNs: []string{"dc1.windows.lan", "dynamic_active_server.example.com", "dc3.windows.lan"},
 		},
 
+		// conf.d snippets
+		"Snippets in conf.d override values from sssd.conf": {
+			sssdConf:        "example.com-with-conf.d-override",
+			wantServerFQDNs: []string{"dc1.windows.lan", "dc2.windows.lan"},
+		},
+		"Snippets in conf.d are applied in alphabetical order": {
+			sssdConf:        "example.com-with-conf.d-order",
+			wantServerFQDNs: []string{"dc2.windows.lan"},
+		},
+		"Snippets in conf.d can define the domain section": {
+			sssdConf:        "example.com-with-conf.d-adding-section",
+			wantServerFQDNs: []string{"dc1.windows.lan"},
+		},
+		"Files in conf.d not ending with .conf or starting with a dot are ignored": {
+			sssdConf:        "example.com-with-conf.d-ignored-files",
+			wantServerFQDNs: []string{"dc0.windows.lan"},
+		},
+
 		// Active server cases
 		"Ad server defined in config has priority over active server": {sssdConf: "example.com-with-server"},
 		"Ad server defined in config does not need active server":     {sssdConf: "no-active-server-example.com-with-server"},
@@ -91,6 +109,10 @@ func TestSSSD(t *testing.T) {
 			config := sss.Config{}
 			if tc.sssdConf != "" {
 				config.Conf = filepath.Join(testutils.TestFamilyPath(t), "configs", tc.sssdConf)
+				// A directory holds sssd.conf next to its conf.d snippets.
+				if fi, err := os.Stat(config.Conf); err == nil && fi.IsDir() {
+					config.Conf = filepath.Join(config.Conf, "sssd.conf")
+				}
 			} else {
 				// We are using the default, depending on the machine, this can fails if it doesn't exist
 				if _, err := os.Stat(consts.DefaultSSSConf); errors.Is(err, os.ErrNotExist) {
