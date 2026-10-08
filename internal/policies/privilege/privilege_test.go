@@ -75,7 +75,7 @@ func TestApplyPolicy(t *testing.T) {
 		"Overwrite existing sudoers file":                 {existingFS: "existing-files", entries: defaultLocalAdminDisabledRule},
 		"Overwrite existing polkit file":                  {existingFS: "existing-files", entries: defaultLocalAdminDisabledRule},
 		"No rules still overwrite those files":            {existingFS: "existing-files"},
-		"Don't overwrite other existing files":            {existingFS: "existing-other-files", entries: defaultLocalAdminDisabledRule},
+		"Does not overwrite other existing files":         {existingFS: "existing-other-files", entries: defaultLocalAdminDisabledRule},
 
 		// Migration
 		"Create on new polkit version and remove old file":    {existingFS: "existing-old-adsys-conf", entries: []entry.Entry{{Key: "client-admins", Value: "alice@domain.com"}}},
