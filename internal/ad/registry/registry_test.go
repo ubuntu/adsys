@@ -224,7 +224,7 @@ func TestDecodePolicy(t *testing.T) {
 				},
 			}},
 
-		"one container with 2 children don’t mix their default values": {
+		"one container with 2 children do not mix their default values": {
 			want: []entry.Entry{
 				{
 					Key:   `Software/Container1/Child1`,
@@ -235,7 +235,7 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "container1DefaultValueForChild2",
 				},
 			}},
-		"two containers don’t mix their default values when redefined": {
+		"two containers do not mix their default values when redefined": {
 			want: []entry.Entry{
 				{
 					Key:   `Software/Container1/Child1`,
@@ -255,7 +255,7 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "",
 				},
 			}},
-		"two containers don’t mix their default values even when second has none": {
+		"two containers do not mix their default values even when second has none": {
 			want: []entry.Entry{
 				{
 					Key:   `Software/Container1/Child1`,
@@ -276,7 +276,7 @@ func TestDecodePolicy(t *testing.T) {
 					Value: "",
 				},
 			}},
-		"one container with 2 children don’t mix their meta values": {
+		"one container with 2 children do not mix their meta values": {
 			want: []entry.Entry{
 				{
 					Key:  `Software/Container1/Child1`,
@@ -287,7 +287,7 @@ func TestDecodePolicy(t *testing.T) {
 					Meta: "container1MetaValueForChild2",
 				},
 			}},
-		"two containers don’t mix their meta values, even if second has none": {
+		"two containers do not mix their meta values, even if second has none": {
 			want: []entry.Entry{
 				{
 					Key:  `Software/Container1/Child1`,
