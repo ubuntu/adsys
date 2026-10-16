@@ -1,3 +1,138 @@
+adsys (0.17.0) UNRELEASED; urgency=medium
+
+  * New upstream release
+  * Add native certificate enrollment against AD CS over LDAP and MS-ICPR,
+    removing the need for python3-cepces:
+    - Let AD decide which certificate templates the machine may enroll
+    - Bootstrap trust only against CAs adsys installed
+    - Manage enrolled certificates with the new adsysctl certificate
+      commands
+    - Default fresh installs to the native backend, leaving existing
+      installations on their current configuration
+  * Add support for dynamic values in policy entries
+  * Query the Global Catalog when fetching GPOs, fixing policy refresh for
+    users belonging to groups from another domain of the forest
+  * Normalize downloaded assets to Unix format, so scripts and AppArmor
+    profiles authored on Windows are no longer rejected because of CRLF
+    line endings or a UTF-8 BOM
+  * Normalize the end of the generated sudoers file
+  * Fix GDM integration issues:
+    - Stop denying greeter sessions running as a dynamic user, as
+      introduced in GDM 49
+    - Seed generated dconf profiles from the matching system profile, so
+      the greeter no longer loses its vendor defaults
+  * Fix dconf policies not being applied, and user settings not being
+    saved, for users logging in with their short name: the PAM module now
+    uses the dconf profile name normalized by adsysd, and no longer points
+    DCONF_PROFILE to a profile that does not exist (LP: #2107971)
+  * Report dconf update failures leaving the ADSys databases missing or
+    stale instead of treating the policies as applied, and only warn when
+    unrelated databases fail so they cannot block logins
+  * Match certificate auto-enrollment registry keys case-insensitively, so
+    settings from GPOs storing them with a different casing are no longer
+    silently ignored (LP: #2169074)
+  * Fix GPO lookup failures when the SSSD ad_server option lists several
+    servers, falling back to the next one if a domain controller is
+    unreachable
+  * Reject unsupported Kerberos credential cache types, such as KCM: or
+    KEYRING:, instead of treating them as file paths or falling back to a
+    stale ticket cache
+  * Retry policy scripts the kernel still reports as busy, so they are no
+    longer occasionally skipped
+  * Fix a deadlock that could hang adsysctl service cat along with the
+    daemon output forwarding
+  * Add missing python3-requests dependency
+  * Install binaries, systemd units and the PAM module in their canonical
+    /usr locations instead of the aliased /sbin and /lib directories, as
+    required by DEP-17 (LP: #2139162)
+  * Migrate the adwatchd TUI to Bubble Tea v2
+  * Bump Go version to 1.26
+  * Refresh policy definition files
+  * Documentation updates:
+    - Added explanation of dynamic policy values
+    - Added meta descriptions to documentation pages
+    - Clarified language on network shares
+    - Documented native certificate enrollment and its commands
+    - Documented that only file-backed Kerberos caches are supported
+    - Dropped packagekit-tools from the getting started tutorial
+    - Fixed broken links and sitemap generation
+    - Implemented new homepage structure
+    - Migrated documentation tooling to Starter Pack v2
+    - Removed in-docs release notes
+    - Restructured certificates documentation
+    - Updated configuration for the documentation URL migration
+  * CI and quality of life changes not impacting package functionality:
+    - Added AGENTS.md instructions
+    - Allowed labeled pull requests to run the end-to-end tests
+    - Got the end-to-end suite running again and made it validate the
+      certificate backend actually under test
+    - Fixed the TICS report action
+    - Fixed d/copyright with helper script
+    - Fixed typos and grammar errors in code comments and messages
+    - Improved test stability on CI
+    - Properly disable Kerberos usage in AD tests
+    - Skipped the patches tests when no debian directory exists
+  * Bump dependencies to latest:
+    - charm.land/bubbles/v2 v2.2.1
+    - charm.land/bubbletea/v2 v2.0.10
+    - charm.land/lipgloss/v2 v2.0.6
+    - github.com/charmbracelet/glamour v1.0.0
+    - github.com/coreos/go-systemd/v22 v22.7.0
+    - github.com/fatih/color v1.19.0
+    - github.com/fsnotify/fsnotify v1.10.1
+    - github.com/godbus/dbus/v5 v5.2.2
+    - github.com/kardianos/service v1.3.0
+    - github.com/maruel/natural v1.3.0
+    - github.com/oiweiwei/go-msrpc v1.6.4
+    - github.com/oiweiwei/gokrb5.fork/v9 v9.0.8
+    - github.com/pkg/sftp v1.13.11
+    - github.com/sirupsen/logrus v1.10.2
+    - github.com/spf13/cobra v1.10.2
+    - github.com/stretchr/testify v1.12.1
+    - golang.org/x/crypto v0.57.0
+    - golang.org/x/exp v0.0.0-20231006140011-7918f672742d
+    - golang.org/x/sync v0.23.0
+    - golang.org/x/sys v0.48.0
+    - golang.org/x/text v0.42.0
+    - google.golang.org/grpc v1.83.2
+    - google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.2
+    - google.golang.org/protobuf v1.36.12
+    - gopkg.in/ini.v1 v1.67.3
+    - github.com/golangci/golangci-lint/v2 v2.14.0
+    - actions/checkout v7
+    - actions/download-artifact v8
+    - actions/setup-go v7
+    - actions/upload-artifact v7
+    - azure/login v3
+    - codecov/codecov-action v7
+    - jidicula/clang-format-action v4.18.0
+    - peter-evans/create-pull-request v8
+    - softprops/action-gh-release v3
+    - tiobe/tics-github-action v4
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Tue, 06 Oct 2026 11:19:20 -0400
+
+adsys (0.16.4ubuntu2) stonking; urgency=medium
+
+  * SECURITY UPDATE: Panic in typeFrameParser.
+    - 19f580fd686a6bb31d4af15febe789827169bc26: Add a nil check before
+      indexing into frameParsers in vendor/golang.org/x/net/http2/frame.go
+    - Author: Konnyaku <beifengxuanxiao@126.com>
+    - CVE-2026-27141
+  * SECURITY UPDATE: Hang in Transport.
+    - 1e71bd86e4a302b4e731bc06da6eb51679c7bd49: Prevent hanging Transport from
+      bad SETTINGS frame in vendor/golang.org/x/net/http2/transport.go
+    - Author: Nicholas S. Husin <nsh@golang.org>
+    - CVE-2026-33814
+
+ -- Kyle Kernick <kyle.kernick@canonical.com>  Fri, 12 Jun 2026 10:12:03 -0600
+
+adsys (0.16.4ubuntu1) resolute; urgency=medium
+
+  * Properly disable Kerberos usage in the tests (LP: #2144012)
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Fri, 13 Mar 2026 14:47:15 -0400
+
 adsys (0.16.4) resolute; urgency=medium
 
   * Bump Go version to 1.24
