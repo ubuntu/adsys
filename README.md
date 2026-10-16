@@ -10,7 +10,7 @@ Active Directory GPO support.
 
 ## Documentation and Usage
 
-The documentation and the command line reference is available on [Read The Docs](https://canonical-adsys.readthedocs-hosted.com/en/stable/) as well as the [documentation for the current development release](https://canonical-adsys.readthedocs-hosted.com/en/latest/).
+The documentation and command line reference are available for the [stable release](https://ubuntu.com/docs/adsys/stable/) and the [current development release](https://ubuntu.com/docs/adsys/latest/).
 
 ## Installing development versions
 
