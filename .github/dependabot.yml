@@ -6,7 +6,9 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
     groups:
       minor-updates:
         update-types: ["minor", "patch"]
@@ -16,7 +18,9 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/tools"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
     groups:
       minor-updates:
         update-types: ["minor", "patch"]
@@ -28,7 +32,9 @@ updates:
     # default location of `.github/workflows`
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
     groups:
       gh-actions:
         patterns: ["*"]

@@ -2,7 +2,7 @@ name: Patch vendored Samba code
 
 on:
   schedule:
-    - cron: '0 9 * * 1' # run on a weekly cadence
+    - cron: '0 2 * * 1' # Monday at 02:00 UTC, aligned with Dependabot
   workflow_dispatch:
 
 concurrency:
