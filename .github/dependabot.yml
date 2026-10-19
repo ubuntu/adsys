@@ -7,6 +7,9 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    groups:
+      minor-updates:
+        update-types: ["minor", "patch"]
     commit-message:
       prefix: "deps(go)"
 
@@ -14,6 +17,9 @@ updates:
     directory: "/tools"
     schedule:
       interval: "daily"
+    groups:
+      minor-updates:
+        update-types: ["minor", "patch"]
     commit-message:
       prefix: "deps(go-tools)"
 
@@ -23,5 +29,8 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      gh-actions:
+        patterns: ["*"]
     commit-message:
       prefix: "deps(ci)"
