@@ -1,7 +1,7 @@
 # Client administrators
 
 Define users and groups from AD allowed to administer client machines.
-It must be of the form user@domain or %group@domain. One per line.
+One entry per line, prefixed with % for a group. Use the account names as they appear on the client: user@domain and %group@domain when SSSD uses fully qualified names (the default), user and %group when use_fully_qualified_names is set to False in sssd.conf.
 
 
 - Type: privilege
