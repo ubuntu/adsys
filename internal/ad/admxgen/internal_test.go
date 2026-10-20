@@ -80,8 +80,8 @@ func TestGenerateExpandedCategories(t *testing.T) {
 		"error on policy not attached to any releases":                               {wantErr: true},
 		"error on key independent of any release key but with one release specified": {wantErr: true},
 
-		"policy directory doesn't exist":    {wantErrLoadDefinitions: true},
-		"category definition doesn't exist": {wantErrLoadDefinitions: true},
+		"policy directory does not exist":    {wantErrLoadDefinitions: true},
+		"category definition does not exist": {wantErrLoadDefinitions: true},
 	}
 	for name, tc := range tests {
 		categoryDefinition := name
