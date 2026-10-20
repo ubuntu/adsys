@@ -31,31 +31,9 @@ runs:
   using: 'composite'
   steps:
     - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
-    - name: Install required packages from PPA
+    - name: Install dependencies
       shell: bash
       run: |
-        # Launchpad intermittently answers with a 500, or reports the PPA's
-        # signing key as temporarily missing. A single such answer would
-        # otherwise abort the job before it has done anything, and a matrix
-        # adds an opportunity for it per release. Back off rather than retry
-        # at a fixed interval: these episodes have lasted minutes, well past
-        # what a handful of immediate attempts covers.
-        delay=15
-        for i in {1..6}; do
-            if sudo add-apt-repository -y ppa:ubuntu-enterprise-desktop/ppp; then
-                break
-            fi
-            if [ "${i}" = 6 ]; then
-                echo "::error::Could not add the ppp PPA after 6 attempts"
-                exit 1
-            fi
-            echo "Adding the ppp PPA failed, retrying in ${delay}s (attempt ${i}/6)"
-            sleep "${delay}"
-            delay=$((delay * 2))
-            if [ "${delay}" -gt 120 ]; then
-                delay=120
-            fi
-        done
         sudo apt-get update
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -y sstp-client
     - name: Write certificate data to disk
@@ -88,7 +66,7 @@ runs:
 
         # The plugin lives in a directory named after the exact pppd version,
         # so resolve it instead of hardcoding a version that breaks whenever
-        # the PPA ships a new one.
+        # the installed package version changes.
         plugin="$(ls /usr/lib/pppd/*/sstp-pppd-plugin.so 2>/dev/null | head -1)"
         if [ -z "${plugin}" ]; then
             echo "::error::Could not find sstp-pppd-plugin.so under /usr/lib/pppd"
