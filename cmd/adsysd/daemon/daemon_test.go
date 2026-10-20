@@ -245,6 +245,52 @@ func TestConfigLoad(t *testing.T) {
 	require.Equal(t, 1, a.Verbosity(), "Verbosity is set from config")
 }
 
+func TestConfigRejectsUnknownLDAPTransport(t *testing.T) {
+	configFile := filepath.Join(t.TempDir(), "adsys.yaml")
+	err := os.WriteFile(configFile, []byte("ldap_transport: tls-only\n"), 0600)
+	require.NoError(t, err, "Setup: could not write daemon config")
+
+	a := daemon.New()
+	a.SetArgs("--config", configFile)
+	err = a.Run()
+	require.ErrorContains(t, err, "unsupported LDAP transport")
+	require.False(t, a.UsageError(), "invalid transport is a configuration error, not a usage error")
+}
+
+func TestConfigRejectsRelativeLDAPTrustPaths(t *testing.T) {
+	t.Parallel()
+
+	tests := map[string]struct {
+		config  string
+		wantErr string
+	}{
+		"relative CA path": {
+			config:  "ldap_tls_cacert: ad-ca.pem\n",
+			wantErr: "ldap_tls_cacert must be an absolute path",
+		},
+		"relative CRL path": {
+			config:  "ldap_tls_crlfile: ad-crl.pem\n",
+			wantErr: "ldap_tls_crlfile must be an absolute path",
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			configFile := filepath.Join(t.TempDir(), "adsys.yaml")
+			err := os.WriteFile(configFile, []byte(tc.config), 0600)
+			require.NoError(t, err, "Setup: could not write daemon config")
+
+			a := daemon.New()
+			a.SetArgs("--config", configFile)
+			err = a.Run()
+			require.ErrorContains(t, err, tc.wantErr)
+			require.False(t, a.UsageError(), "invalid TLS trust paths are configuration errors")
+		})
+	}
+}
+
 func TestConfigChange(t *testing.T) {
 	dir := t.TempDir()
 	configFile := writeConfig(t, dir, "adsys.socket", 1, 10)

@@ -16,6 +16,7 @@ type Backend struct {
 	ErrIsOnline   bool
 	ErrKrb5CCName bool
 	ErrServerFQDN error
+	ADUseLDAPS    bool
 }
 
 // Domain returns current server domain.
@@ -54,6 +55,11 @@ func (m Backend) HostKrb5CCName() (string, error) {
 // DefaultDomainSuffix returns current default domain suffix.
 func (m Backend) DefaultDomainSuffix() string {
 	return m.Dom
+}
+
+// UseLDAPS reports whether this mock backend requests LDAPS.
+func (m Backend) UseLDAPS() bool {
+	return m.ADUseLDAPS
 }
 
 // IsOnline refresh and returns if we are online.

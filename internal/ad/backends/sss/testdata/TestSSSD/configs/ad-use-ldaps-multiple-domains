@@ -1,0 +1,10 @@
+[sssd]
+domains = example.com, other.com
+
+[domain/example.com]
+ad_domain = example.com
+ad_use_ldaps = true
+
+[domain/other.com]
+ad_domain = other.com
+ad_use_ldaps = false

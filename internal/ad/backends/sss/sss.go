@@ -24,6 +24,7 @@ type SSS struct {
 	configuredServerFQDNs []string
 	hostKrb5CCName        string
 	defaultDomainSuffix   string
+	adUseLDAPS            bool
 
 	config Config
 }
@@ -70,6 +71,11 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 		domain = sssdDomain
 	}
 
+	adUseLDAPS, err := parseSSSDBool(domainSection.Key("ad_use_ldaps").String())
+	if err != nil {
+		return SSS{}, fmt.Errorf("%s: %w", gotext.Get("could not parse ad_use_ldaps in SSSD domain section %q", sssdDomain), err)
+	}
+
 	if defaultDomainSuffix == "" {
 		defaultDomainSuffix = domain
 	}
@@ -96,6 +102,7 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 		configuredServerFQDNs: configuredServerFQDNs,
 		hostKrb5CCName:        hostKrb5CCName,
 		defaultDomainSuffix:   defaultDomainSuffix,
+		adUseLDAPS:            adUseLDAPS,
 
 		config: c,
 	}, nil
@@ -180,6 +187,11 @@ func (sss SSS) DefaultDomainSuffix() string {
 	return sss.defaultDomainSuffix
 }
 
+// UseLDAPS reports whether the selected SSSD domain enables LDAPS.
+func (sss SSS) UseLDAPS() bool {
+	return sss.adUseLDAPS
+}
+
 // IsOnline refresh and returns if we are online.
 func (sss SSS) IsOnline() (bool, error) {
 	var online bool
@@ -194,6 +206,17 @@ func (sss SSS) Config() string {
 	return fmt.Sprintf(`Current backend is SSSD
 Configuration: %s
 Cache: %s`, sss.config.Conf, sss.config.CacheDir)
+}
+
+func parseSSSDBool(value string) (bool, error) {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "", "false", "no", "off", "0", "f", "n":
+		return false, nil
+	case "true", "yes", "on", "1", "t", "y":
+		return true, nil
+	default:
+		return false, errors.New(gotext.Get("invalid boolean value %q", value))
+	}
 }
 
 // domainToObjectPath converts a potential dbus object path string to valid hexadecimal-based equivalent as encoded

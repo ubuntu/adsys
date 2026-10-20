@@ -156,6 +156,12 @@ sssd:
   config: /etc/sssd.conf
   cache_dir: /var/lib/sss/db
 
+# LDAP transport used to retrieve GPOs (default: ldap)
+#ldap_transport: ldap
+ldap_tls_cacert: /etc/ssl/certs/ca-certificates.crt
+# Optional CRL for strict TLS verification
+#ldap_tls_crlfile: /path/to/ca-crl.pem
+
 # Winbind configuration
 # (if ad_backend is set to winbind)
 winbind:
@@ -226,6 +232,64 @@ A custom domain controller can be used to override the C API call that ADSys exe
 * **gpo_list_timeout**
 
 Maximum time in seconds for the GPO list to finish otherwise the GPO list is aborted. This can be overridden by the `--gpo-list-timeout` option. Defaults to 10 seconds. 
+
+* **ldap_transport**
+
+LDAP transport used to retrieve Group Policy Objects (GPOs). Valid values are
+`ldap` (default), `ldaps`, `starttls`, and `auto`. The default preserves the
+existing LDAP transport during upgrades (normally Kerberos-sealed LDAP on
+port 389 unless Samba client settings enable TLS wrapping). ADSys uses
+Kerberos SASL, which signs and seals LDAP operations after authentication;
+the TLS transports support sites that block port 389 or require TLS-only LDAP.
+
+`auto` is opt-in. It uses `ldaps` when `ad_use_ldaps = true` in the first
+configured SSSD domain and `ldap` otherwise. With the winbind backend, `auto`
+uses `ldap`; configure `ldap_transport` explicitly if the site requires LDAPS
+or StartTLS.
+
+`ldaps` connects to the domain controller on port 636 and to the Global Catalog
+on port 3269. `starttls` upgrades LDAP connections on ports 389 and 3268.
+Neither transport falls back to LDAP. Client-side LDAPS channel bindings were
+added in Samba 4.20.3 (bug 15621). Earlier Samba versions can use explicit
+`ldaps://` URLs, but do not send channel bindings; this can fail when a domain
+controller requires channel binding. The `starttls` and `ldaps` values for
+Samba's `client ldap sasl wrapping` option require Samba 4.21 or later.
+
+The domain controller's issuing CA must already be trusted before the first
+GPO retrieval. ADSys fetches GPOs before applying certificate policies, so a
+certificate policy cannot bootstrap trust for the initial connection. The
+default CA bundle is `/etc/ssl/certs/ca-certificates.crt`; configure
+`ldap_tls_cacert` when the domain controller's CA is not in that bundle.
+ADSys does not read SSSD's `ldap_tls_cacert` or `ldap_tls_cacertdir`; set
+`ldap_tls_cacert` to the same CA file if SSSD uses a CA that is not in the
+system bundle. Trust-file paths must be absolute.
+
+Samba client settings from `/etc/samba/smb.conf` also apply. Samba's
+`system_session()` loads that file into its process-global configuration
+before the LDAP session is opened. In `ldaps` and `starttls` modes, ADSys sets
+`tls cafile` and `tls verify peer`, sets `tls crlfile` when configured, and
+sets `client ldap sasl wrapping = starttls` for StartTLS; these values
+override the corresponding `smb.conf` settings. Other Samba TLS settings,
+including `tls trust system cas`, `tls ca directories`, and `tls priority`,
+still apply. In `ldap` mode ADSys does not set a wrapping option, so on Samba
+4.21 or later an `smb.conf` setting of
+`client ldap sasl wrapping = ldaps` or `starttls` can upgrade the connection
+using Samba's `smb.conf` TLS trust.
+
+* **ldap_tls_cacert**
+
+Path to the PEM CA bundle used to verify the domain controller certificate
+when `ldap_transport` is `ldaps` or `starttls`. Defaults to
+`/etc/ssl/certs/ca-certificates.crt`. The path must be absolute. This option
+is independent of the SSSD `ldap_tls_cacert` and `ldap_tls_cacertdir` options.
+
+* **ldap_tls_crlfile**
+
+Optional path to a PEM certificate revocation list. When set, Samba uses
+`as_strict_as_possible` peer verification with this CRL. Without a CRL,
+verification uses `ca_and_name`. The path must be absolute and the file must
+be PEM encoded. Active Directory Certificate Services commonly publishes
+DER-encoded `.crl` files; convert them to PEM before configuring this option.
 
 ### Client only configuration
 

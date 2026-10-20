@@ -44,3 +44,15 @@ client_timeout: 60
 
 # GPO List timeout
 gpo_list_timeout: 10
+
+# LDAP transport for GPO retrieval: ldap (upgrade-safe default), ldaps,
+# starttls, or auto. auto opts into following ad_use_ldaps in the first SSSD
+# domain; with winbind, auto selects ldap. Samba's smb.conf client settings
+# still apply to the connection.
+#ldap_transport: ldap
+
+# CA bundle used to verify the domain controller for ldaps or starttls.
+ldap_tls_cacert: /etc/ssl/certs/ca-certificates.crt
+
+# Optional CRL; when configured, Samba uses strict TLS peer verification.
+#ldap_tls_crlfile: /path/to/ca-crl.pem
