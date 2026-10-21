@@ -59,11 +59,11 @@ msgstr ""
 
 #: cmd/adsysd/client/client.go:45
 msgid "AD integration client"
-msgstr ""
+msgstr "Client d'intégration AD"
 
 #: cmd/adsysd/client/client.go:46
 msgid "Active Directory integration bridging toolset command line tool."
-msgstr ""
+msgstr "Outil en ligne de commande de la suite d'intégration avec Active Directory."
 
 #: cmd/adsysd/client/client.go:93
 msgid "time in seconds before cancelling the client request when the server gives no result. 0 for no timeout."
@@ -203,11 +203,11 @@ msgstr "%s		%s"
 
 #: cmd/adsysd/daemon/daemon.go:66
 msgid "AD integration daemon"
-msgstr ""
+msgstr "Démon d'intégration AD"
 
 #: cmd/adsysd/daemon/daemon.go:67
 msgid "Active Directory integration bridging toolset daemon."
-msgstr ""
+msgstr "Démon de la suite d'intégration avec Active Directory."
 
 #: cmd/adsysd/daemon/daemon.go:155
 msgid "directory where ADsys caches GPOs downloads and policies."

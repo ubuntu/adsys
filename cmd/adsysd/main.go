@@ -23,6 +23,10 @@ import (
 //go:generate go run ../generate_completion_documentation.go update-doc-cli-ref
 
 func main() {
+	// Translations must be loaded before the commands are built, as their
+	// descriptions are translated when they are constructed.
+	i18n.InitI18nDomain(consts.TEXTDOMAIN, po.Files)
+
 	var a app
 	switch filepath.Base(os.Args[0]) {
 	case client.CmdName:
@@ -41,7 +45,6 @@ type app interface {
 }
 
 func run(a app) int {
-	i18n.InitI18nDomain(consts.TEXTDOMAIN, po.Files)
 	defer installSignalHandler(a)()
 
 	log.SetFormatter(&log.TextFormatter{
