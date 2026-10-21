@@ -159,6 +159,12 @@ local validation step. See `e2e/README.md`.
   operations where callers need streamed logs.
 - Wrap user-facing strings with the repository's `gotext` localization pattern.
 
+## Prose Style
+
+Write prose in plain, simple English. This includes code comments, commit
+messages, and documentation. Use short sentences and everyday words without
+omitting technical details.
+
 ## Project-Specific Guidance
 
 ### Privileged and security-sensitive behavior
@@ -212,9 +218,19 @@ unrelated changes, and do not combine functional work with broad formatting.
 Do not update `debian/changelog` unless the task is specifically release or
 packaging work.
 
+## Code Review
+
+Assess changes against existing installations as well as clean installs. For
+new or stricter validation, verify that configurations and file modes accepted
+or tolerated by previous releases still work, including legacy layouts or
+settings that were previously ignored. Flag upgrade paths that could prevent
+the service from starting or users from authenticating. Require backward-
+compatible handling or a clear migration path and upgrade notice for
+intentional incompatibilities.
+
 ## Git Usage
 
-Always disable pagers for Git commands that may invoke one:
+Always pass `--no-pager` to git commands that may invoke a pager, to prevent them from hanging:
 
 ```bash
 git --no-pager diff
@@ -222,14 +238,29 @@ git --no-pager show
 git --no-pager log
 ```
 
-Leave agent-authored changes uncommitted unless the user explicitly asks for a
-commit. Never discard or overwrite unrelated worktree changes.
+Agent-authored changes should generally be committed once complete.
+Do not leave finished agent-created changes uncommitted unless the user
+explicitly asks for no commit.
+Never discard or overwrite unrelated worktree changes.
 
-When asked to commit, make each commit one coherent, self-contained logical
-change. Explain why rather than narrating the diff:
+When creating commits for agent-authored changes, use atomic commits:
+each commit must contain one coherent, self-contained logical change.
 
-- For bug fixes, describe the observable symptom before the root cause.
-- Document non-obvious decisions and rejected alternatives.
-- Keep the subject at 72 characters or fewer and wrap body lines at 72
-  characters, except for indivisible URLs.
-- Use `git commit -F -` for multiline messages so wrapping is explicit.
+## Commit messages
+
+Explain why, not what — the diff shows what changed.
+
+- For bug fixes, describe the observable symptom before the root cause
+- Document non-obvious decisions and rejected alternatives
+- One-liners are fine for mechanical changes; anything behavioral needs a body
+- Try to keep the subject line at 72 characters or less; wrap body lines at 72 characters
+  (URLs that cannot be split are the only accepted exception)
+
+Don't narrate your activity ("Fixed X as requested") or describe the diff
+("Add null check before calling Process()").
+
+### How to commit with correct wrapping
+
+Use `git commit -F -` with a heredoc and insert explicit newlines at
+word boundaries before reaching 72 characters. Do not use
+`git commit -m "..."` for multi-line messages — it will not wrap.

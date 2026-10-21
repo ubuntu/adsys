@@ -946,7 +946,7 @@ Supported on Ubuntu 20.04, 22.04, 24.04, 26.04.</string>
       <string id="UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize2">cover</string>
       <string id="UbuntuItemMachine2004GdmDconfComUbuntuLoginScreenBackgroundSize3">contain</string>
       <string id="UbuntuExplainTextMachinePrivilegeClientAdmins">Define users and groups from AD allowed to administer client machines.
-It must be of the form user@domain or %group@domain. One per line.
+One entry per line, prefixed with % for a group. Use the account names as they appear on the client: user@domain and %group@domain when SSSD uses fully qualified names (the default), user and %group when use_fully_qualified_names is set to False in sssd.conf.
 
 
 - Type: privilege
