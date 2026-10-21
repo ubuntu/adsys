@@ -386,7 +386,10 @@ func (c *Client) Reboot() error {
 
 	// Wait for the host to go offline
 	select {
-	case <-waitDone:
+	case err := <-waitDone:
+		if err != nil {
+			log.Debugf("SSH connection to host %q closed while waiting for it to go offline: %v", c.host, err)
+		}
 	case <-time.After(30 * time.Second):
 		return fmt.Errorf("host did not go offline in time")
 	}

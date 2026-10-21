@@ -6,14 +6,24 @@ updates:
   - package-ecosystem: "gomod"
     directory: "/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
+    groups:
+      minor-updates:
+        update-types: ["minor", "patch"]
     commit-message:
       prefix: "deps(go)"
 
   - package-ecosystem: "gomod"
     directory: "/tools"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
+    groups:
+      minor-updates:
+        update-types: ["minor", "patch"]
     commit-message:
       prefix: "deps(go-tools)"
 
@@ -22,6 +32,11 @@ updates:
     # default location of `.github/workflows`
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"
+    groups:
+      gh-actions:
+        patterns: ["*"]
     commit-message:
       prefix: "deps(ci)"

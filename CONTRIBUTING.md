@@ -63,7 +63,7 @@ Policy definitions and their reference documentation are refreshed automatically
 You can also contribute to the documentation. It uses [GitHub Markdown Format](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github).
 
 To contribute to the documentation edit the files in the `/docs/` directory after forking and cloning the repo.
-Each page on the [documentation website](https://canonical-adsys.readthedocs-hosted.com/en/stable/) also includes
+Each page on the [documentation website](https://ubuntu.com/docs/adsys/stable/) also includes
 an edit button for making small changes, such as fixing typos.
 
 > [!WARNING]
