@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -49,7 +50,8 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 		c.CacheDir = consts.DefaultSSSCacheDir
 	}
 
-	cfg, err := ini.InsensitiveLoad(c.Conf)
+	sources := configSources(ctx, c.Conf)
+	cfg, err := ini.InsensitiveLoad(sources[0], sources[1:]...)
 	if err != nil {
 		return SSS{}, err
 	}
@@ -99,6 +101,34 @@ func New(ctx context.Context, c Config, bus *dbus.Conn) (s SSS, err error) {
 
 		config: c,
 	}, nil
+}
+
+// configSources returns the sssd.conf path followed by the snippets found in the
+// conf.d directory next to it, in the order SSSD reads them: alphabetically, only
+// considering files ending with .conf and not starting with a dot. Values from
+// later sources override earlier ones.
+func configSources(ctx context.Context, conf string) []any {
+	sources := []any{conf}
+
+	snippetsDir := filepath.Join(filepath.Dir(conf), "conf.d")
+	entries, err := os.ReadDir(snippetsDir)
+	if err != nil {
+		// Having no snippets directory is the common case.
+		return sources
+	}
+
+	// os.ReadDir returns entries sorted by filename.
+	for _, e := range entries {
+		name := e.Name()
+		if e.IsDir() || !strings.HasSuffix(name, ".conf") || strings.HasPrefix(name, ".") {
+			continue
+		}
+		snippet := filepath.Join(snippetsDir, name)
+		log.Debugf(ctx, "Loading SSSD configuration snippet %q", snippet)
+		sources = append(sources, snippet)
+	}
+
+	return sources
 }
 
 // Domain returns current server domain.
