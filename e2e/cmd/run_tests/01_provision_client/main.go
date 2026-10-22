@@ -168,6 +168,11 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		return err
 	}
 
+	log.Infof("Disabling periodic apt activity...")
+	if err := client.QuiesceAPT(ctx); err != nil {
+		return err
+	}
+
 	out, err = client.Run(ctx, "hostname")
 	if err != nil {
 		return fmt.Errorf("failed to get hostname of VM: %w", err)
@@ -185,7 +190,7 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 	}
 
 	log.Infof("Upgrading packages...")
-	_, err = client.Run(ctx, "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade")
+	_, err = client.Run(ctx, client.APTUpdateCmd()+" && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade")
 	if err != nil {
 		return fmt.Errorf("failed to update package list: %w", err)
 	}
