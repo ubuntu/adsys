@@ -23,6 +23,10 @@ import (
 var keep bool
 var sshKey, adPassword string
 
+// Keep the image's local configuration, including AD DNS, when packages change
+// their conffiles. DEBIAN_FRONTEND alone does not suppress dpkg's prompts.
+const upgradePackagesCommand = "DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold upgrade"
+
 func main() {
 	os.Exit(run())
 }
@@ -186,9 +190,9 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	log.Infof("Upgrading packages...")
-	_, err = client.Run(ctx, client.APTUpdateCmd()+" && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade")
+	_, err = client.Run(ctx, client.APTUpdateCmd()+" && "+upgradePackagesCommand)
 	if err != nil {
-		return fmt.Errorf("failed to update package list: %w", err)
+		return fmt.Errorf("failed to update or upgrade packages: %w", err)
 	}
 
 	log.Infof("Installing adsys package...")
