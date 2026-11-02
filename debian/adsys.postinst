@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        pam-auth-update --package adsys
+    ;;
+esac
+
+#DEBHELPER#
+

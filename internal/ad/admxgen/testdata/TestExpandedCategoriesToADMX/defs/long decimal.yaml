@@ -1,0 +1,29 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-long-decimal
+    explaintext: |-
+      description
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-long-decimal
+      - Default: 42
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04
+    metaenabled: '{"20.04":{"empty":"0","meta":"u"},"all":{"empty":"0","meta":"u"}}'
+    metadisabled: '{"20.04":{"meta":"u"},"all":{"meta":"u"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-long-decimal
+        displayname: summary
+        explaintext: description
+        elementtype: longDecimal
+        meta:
+          empty: "0"
+          meta: u
+        default: "42"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf

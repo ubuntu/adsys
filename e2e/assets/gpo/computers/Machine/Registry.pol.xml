@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PolFile num_entries="125" signature="PReg" version="1">
+	<Entry type="4" type_name="REG_DWORD">
+		<Key>Software\Policies\Microsoft\Cryptography\AutoEnrollment</Key>
+		<ValueName>AEPolicy</ValueName>
+		<Value>1</Value>
+	</Entry>
+	<Entry type="4" type_name="REG_DWORD">
+		<Key>Software\Policies\Microsoft\Cryptography\AutoEnrollment</Key>
+		<ValueName>OfflineExpirationPercent</ValueName>
+		<Value>10</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Microsoft\Cryptography\AutoEnrollment</Key>
+		<ValueName>OfflineExpirationStoreNames</ValueName>
+		<Value>MY</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\ACRS\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\ACRS\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\ACRS\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\CA\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\CA\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\CA\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Disallowed\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Disallowed\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Disallowed\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\DPNGRA\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\DPNGRA\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\DPNGRA\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\FVE\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\FVE\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\FVE\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\FVE_NKP\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\FVE_NKP\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\FVE_NKP\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Root\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Root\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Root\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Trust\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Trust\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\Trust\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\TrustedPeople\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\TrustedPeople\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\TrustedPeople\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\TrustedPublisher\Certificates</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\TrustedPublisher\CRLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="0" type_name="REG_NONE">
+		<Key>Software\Policies\Microsoft\SystemCertificates\TrustedPublisher\CTLs</Key>
+		<ValueName/>
+		<Value>None</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>all</ValueName>
+		<Value>usr.bin.foo</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\apparmor\apparmor-machine</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;22.04&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;23.04&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;23.10&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;all&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;}}</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>all</ValueName>
+		<Value>12h</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>23.10</ValueName>
+		<Value>24h</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>23.04</ValueName>
+		<Value>24h</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>22.04</ValueName>
+		<Value>24h</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-format</Key>
+		<ValueName>20.04</ValueName>
+		<Value>24h</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;meta&quot;:&quot;b&quot;},&quot;22.04&quot;:{&quot;meta&quot;:&quot;b&quot;},&quot;23.04&quot;:{&quot;meta&quot;:&quot;b&quot;},&quot;23.10&quot;:{&quot;meta&quot;:&quot;b&quot;},&quot;all&quot;:{&quot;meta&quot;:&quot;b&quot;}}</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>all</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\desktop\interface\clock-show-weekday</Key>
+		<ValueName>20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;},&quot;22.04&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;},&quot;23.04&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;},&quot;23.10&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;},&quot;all&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;}}</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>all</ValueName>
+		<Value>true</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-enable</Key>
+		<ValueName>20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;22.04&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;23.04&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;23.10&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;all&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;}}</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>all</ValueName>
+		<Value>Sample banner text</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>23.10</ValueName>
+		<Value>''</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>23.04</ValueName>
+		<Value>''</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>22.04</ValueName>
+		<Value>''</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\gdm\dconf\org\gnome\login-screen\banner-message-text</Key>
+		<ValueName>20.04</ValueName>
+		<Value>''</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>all</ValueName>
+		<Value>smb://warthogs.biz/system-mount-smb</Value>
+		<Value>nfs://warthogs.biz/system-mount-nfs</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\system-mounts</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\privilege\client-admins</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;all&quot;:{}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\privilege\client-admins</Key>
+		<ValueName>all</ValueName>
+		<Value>adminuser@warthogs.biz</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{},&quot;22.04&quot;:{},&quot;23.04&quot;:{},&quot;23.10&quot;:{},&quot;all&quot;:{}}</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>all</ValueName>
+		<Value>http://127.0.0.1:8080</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\proxy\proxy\ftp</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>all</ValueName>
+		<Value>shutdown-machine-script.sh</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\shutdown</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>all</ValueName>
+		<Value>startup-machine-script.sh</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\startup</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+</PolFile>

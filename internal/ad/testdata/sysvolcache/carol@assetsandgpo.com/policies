@@ -1,0 +1,8 @@
+gpos:
+    - id: one-value
+      name: one-value-name
+      rules:
+        dconf:
+            - key: C
+              value: oneValueC
+              disabled: false

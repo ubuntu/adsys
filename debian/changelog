@@ -1,0 +1,940 @@
+adsys (0.16.4ubuntu1.1) resolute-security; urgency=medium
+
+  * SECURITY UPDATE: Panic in typeFrameParser.
+    - 19f580fd686a6bb31d4af15febe789827169bc26: Add a nil check before
+      indexing into frameParsers in vendor/golang.org/x/net/http2/frame.go
+    - Author: Konnyaku <beifengxuanxiao@126.com>
+    - CVE-2026-27141
+  * SECURITY UPDATE: Hang in Transport.
+    - 1e71bd86e4a302b4e731bc06da6eb51679c7bd49: Prevent hanging Transport from
+      bad SETTINGS frame in vendor/golang.org/x/net/http2/transport.go
+    - Author: Nicholas S. Husin <nsh@golang.org>
+    - CVE-2026-33814
+
+ -- Kyle Kernick <kyle.kernick@canonical.com>  Thu, 11 Jun 2026 15:33:18 -0600
+
+adsys (0.16.4ubuntu1) resolute; urgency=medium
+
+  * Properly disable Kerberos usage in the tests (LP: #2144012)
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Fri, 13 Mar 2026 14:47:15 -0400
+
+adsys (0.16.4) resolute; urgency=medium
+
+  * Bump Go version to 1.24
+  * Allow searching GPO list by userPrincipalName
+  * Fix invalid header for newer polkit versions 
+  * Refresh policy definition files
+  * Documentation updates:
+    - Added Getting Started ADSys tutorial
+    - Added Google analytics to docs
+    - Added release notes
+    - Added security overview explanation
+    - Built sitemap for ADSys docs
+    - Improved presentation of Pro features
+    - Migrated to Starter Pack extension
+    - Moved certs tutorial to howto section
+    - Added periodic audit
+  * Bump dependencies to latest:
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/glamour
+    - github.com/coreos/go-systemd/v22
+    - github.com/fsnotify/fsnotify
+    - github.com/godbus/dbus/v5
+    - github.com/kardianos/service
+    - github.com/leonelquinteros/gotext
+    - github.com/maruel/natural
+    - github.com/pkg/sftp
+    - github.com/spf13/cobra
+    - github.com/spf13/viper
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+    - github.com/golangci/golangci-lint/v2
+    - actions/checkout
+    - actions/download-artifact
+    - actions/setup-go
+    - actions/upload-artifact
+    - jidicula/clang-format-action
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Wed, 19 Nov 2025 06:19:21 -0400
+
+adsys (0.16.3) plucky; urgency=medium
+
+  * New upstream release
+  * Bump Go toolchain version to 1.23.6
+  * Fix URL for certificate enrollment and some bad references in the
+    enrollment code
+  * Resize buffer to parse very large GPOs
+  * Add corpus to fuzz tests to increase their precision
+  * Improvements to docs
+    - Add ref glossary
+    - Change spelling to US
+    - Home and landing pages refresh
+  * Bump dependencies to latest:
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/glamour
+    - github.com/charmbracelet/lipgloss
+    - github.com/pkg/sftp
+    - github.com/spf13/cobra
+    - golang.org/x/net
+    - golang.org/x/text
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+    - github.com/golangci/golangci-lint
+    - canonical/has-signed-canonical-cla
+    - jidicula/clang-format-action
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Thu, 27 Mar 2025 07:00:42 -0400
+
+adsys (0.16.2) plucky; urgency=medium
+
+  * Fixes and improvements to certificate autoenrollment
+    - Improve log messages to help understand issues and failures
+    - Fix LDAP queries on multiple domains environments
+    - Allow default behavior to get supported certificate templates
+      to be overriden through cepces configuration
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Mon, 03 Feb 2025 10:08:09 -0400
+
+adsys (0.16.1) plucky; urgency=medium
+
+  * Bump Go version to 1.23
+  * Add architecture diagrams to documentation
+  * Bump dependencies to latest:
+    - golang.org/x/crypto (0.31.0)
+    - golang.org/x/net (0.34.0)
+      + Fixes CVE-2024-45338
+    - golang.org/x/sys (0.29.0)
+    - google.golang.org/grpc (1.70.0)
+    - google.golang.org/protobuf (1.36.4)
+    - github.com/golangci/golangci-lint (1.63.4)
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Wed, 29 Jan 2025 06:36:01 -0400
+
+adsys (0.16.0) plucky; urgency=medium
+
+  * Bump minimum Go version to 1.22
+  * Run certificates auto enroll script with debug enabled based on daemon
+    verbosity
+  * Add support for Polkit >= 124
+  * Refresh policy definition files to support latest Ubuntu releases
+  * CI and quality of life changes not impacting package functionality:
+    - Enable CI to run on pull requests from adsys forks
+    - Update links to new server documentation
+  * Bump dependencies to latest:
+    - github.com/charmbracelet/bubbles
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/lipgloss
+    - github.com/fatih/color
+    - github.com/leonelquinteros/gotext
+    - github.com/pkg/sftp
+    - github.com/stretchr/testify
+    - golang.org/x/net
+    - golang.org/x/sys
+    - golang.org/x/text
+    - golang.org/x/crypto
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+    - github.com/golang/protobuf
+    - github.com/golangci/golangci-lint
+    - codecov/codecov-action
+    - jidicula/clang-format-action
+    - peter-evans/create-pull-request
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Fri, 06 Dec 2024 08:18:44 -0400
+
+adsys (0.15.2) oracular; urgency=medium
+
+  [ Davi Henrique ]
+  * Ignore casing when fetching Registry.pol (LP: #2080390)
+  * Add configurable timeout for listing GPOs (LP: #2081966)
+
+  [ Felipe Alencastro ]
+  * Add support for DCONF usb settings (LP: #2081968)
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Wed, 25 Sep 2024 08:06:40 -0400
+
+adsys (0.15.1) oracular; urgency=medium
+
+  * Fix version based tests on released version
+
+ -- Didier Roche-Tolomelli <didrocks@ubuntu.com>  Mon, 02 Sep 2024 14:05:22 +0200
+
+adsys (0.15) oracular; urgency=medium
+
+  * Fix DCONF policy manager removing user DB on empty policy (LP: #2078245)
+  * Ignore casing in domain/ section of sssd.conf (LP: #2078246)
+  * Fix parsing of slash usernames (i.e. domain\user) (LP: #2078247)
+  * Fix errno in get_ticket_path(LP: #2078473)
+  * Remove XML declaration from glib schemas
+  * Bump Go version to 1.23
+  * CI and quality of life changes not impacting package functionality:
+    - Integrate repo with TiCS quality assessment
+    - Switch documentation spellchecking to en-GB
+    - Add text version of certificates tutorial
+    - Additional code coverage through more testing
+    - Improvements to the e2e test environment
+  * Bump dependencies to latest:
+    - jidicula/clang-format-action
+    - github.com/charmbracelet/bubbles
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/glamour
+    - github.com/charmbracelet/lipgloss
+    - github.com/fatih/color
+    - github.com/leonelquinteros/gotext
+    - github.com/spf13/cobra
+    - github.com/spf13/viper
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc/cmd/protoc-gen-go-grpc
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+    - github.com/golangci/golangci-lint
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Thu, 29 Aug 2024 07:47:16 -0400
+
+adsys (0.14.1) noble; urgency=medium
+
+  * Pin Go toolchain to 1.22.1 to fix the following security vulnerabilities:
+    - GO-2024-2598
+    - GO-2024-2599
+  * Update apport hook to include journal errors and package logs
+  * CI and quality of life changes not impacting package functionality:
+    - Enable end-to-end tests in GitHub Actions
+    - Remove stale AD resources on test finish
+    - Add developer documentation for running end-to-end tests
+    - Collect and upload end-to-end test logs on failure
+    - Report test coverage in Cobertura XML format
+    - Silence gosec warnings using nolint and remove deprecated ifshort linter
+    - Use an environment variable to update golden files
+    - Bump github actions to latest:
+      - azure/login
+      - softprops/action-gh-release
+  * Update dependencies to latest:
+    - github.com/charmbracelet/lipgloss
+    - github.com/golangci/golangci-lint
+    - github.com/golang/protobuf
+    - github.com/stretchr/testify
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Thu, 21 Mar 2024 12:27:01 +0200
+
+adsys (0.14.0) noble; urgency=medium
+
+  * Infer user KRB5CCNAME path via the libkrb5 API (LP: #2049061)
+    - This functionality is opt-in and activated if the detect_cached_ticket
+      setting is set to true
+    - If the AD backend (e.g. sssd) doesn't export the KRB5CCNAME variable, adsys
+      will now determine the path to the default ticket cache and use it during
+      authentication (when adsys is executed through the PAM module) and runs of
+      adsysctl update for the current user.
+  * Allow sssd backend to work without ad_domain being set (LP: #2054445)
+  * Upgrade to Go 1.22
+  * CI and quality of life changes not impacting package functionality:
+    - Pass token explicitly to Codecov action
+    - Fix require outside of main goroutine
+    - Mark function arguments as unused where applicable
+      Thanks to Edu Gómez Escandell
+    - End to end test VM template creation updates
+    - Bump github actions to latest:
+      - codecov/codecov-action
+      - peter-evans/create-pull-request
+  * Update dependencies to latest:
+    - github.com/charmbracelet/bubbles
+    - github.com/golangci/golangci-lint
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - google.golang.org/grpc
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Tue, 27 Feb 2024 11:58:57 +0200
+
+adsys (0.13.3) noble; urgency=medium
+
+  * Fix cert auto-enroll without NDES (LP: #2051363)
+  * Refresh policy definition files (remove Lunar support)
+  * CI and quality of life changes not impacting package functionality:
+    - Bump github actions to latest:
+      - actions/download-artifact
+      - actions/setup-go
+      - actions/upload-artifact
+  * Update dependencies to latest:
+    - github.com/charmbracelet/bubbles
+    - github.com/charmbracelet/bubbletea
+    - github.com/google/uuid
+    - github.com/spf13/viper
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Fri, 26 Jan 2024 13:57:46 +0200
+
+adsys (0.13.2) noble; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  [ Jean-Baptiste Lallement ]
+  * Ensure GPO URLs contain the FQDN of the domain controller (LP: #2024377)
+  * Add runtime dependency on nfs-common (LP: #2044112)
+  * Documentation changes:
+    - Switch to Read the Docs for project documentation
+    - Generate documentation from policy definitions
+    - Fix installation path of adwatchd
+  * CI and quality of life changes not impacting package functionality:
+    - Bump go version to 1.21.4
+    - Fix docker stop behavior on integration tests
+    - Add e2e tests provisioning workflow
+    - Reduce the amount of workflows to be run
+    - Remove scopes from dependabot config
+  * Update dependencies to latest:
+    - github.com/charmbracelet/lipgloss
+    - github.com/fatih/color
+    - github.com/fsnotify/fsnotify
+    - github.com/golangci/golangci-lint
+    - github.com/google/uuid
+    - github.com/maruel/natural
+    - github.com/pkg/sftp
+    - github.com/spf13/cobra
+    - github.com/spf13/viper
+    - golang.org/x/crypto
+    - golang.org/x/net
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Tue, 21 Nov 2023 12:53:10 +0200
+
+adsys (0.13.1) mantic; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  * Fix pam_adsys build (LP: #2037270)
+  * Switch to upstream gotext version and align go-i18n (LP: #2037271)
+  * Add documentation for certificate policy manager
+  * CI and quality of life changes not impacting package functionality:
+    - Workflow to auto-patch vendored Samba code
+    - Fix typo on build command for the admxgen package
+    - Switch to reusable code quality action in CI
+    - Apply issue template changes
+    - Open issue when ADMX/L builds fail
+  * Update dependencies to latest:
+    - github.com/charmbracelet/lipgloss
+    - github.com/golangci/golangci-lint
+    - github.com/gomarkdown/markdown
+    - golang.org/x/net
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Mon, 25 Sep 2023 14:55:32 +0300
+
+adsys (0.13.0) mantic; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  * Add certificate policy manager for machines
+    - a new Pro-only policy manager that leverages Samba functionality in order
+      to enroll the machine for certificates from AD Certificate Services
+  * Migrate translation support to native approach using go-i18n + gotext
+  * Update policy definitions to include dconf key for dark mode background
+  * Update dependencies to latest:
+    - github.com/charmbracelet/bubbles
+    - github.com/charmbracelet/bubbletea
+    - github.com/golangci/golangci-lint
+    - github.com/muesli/termenv
+    - github.com/sirupsen/logrus
+    - golang.org/x/net
+    - golang.org/x/sync
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc
+    - google.golang.org/protobuf
+  * CI and quality of life changes not impacting package functionality:
+    - Address a few issues in smbsafe_test.go
+    - Fix typo on build command for the admxgen package
+    - Switch to reusable code quality action in CI
+    - Apply issue template changes
+    - Open issue when ADMX/L builds fail
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Thu, 10 Aug 2023 11:34:46 +0300
+
+adsys (0.12.0) mantic; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  [ Jean-Baptiste Lallement ]
+  * Release 0.12.0 (LP: #2020682)
+    - Fix DCONF_PROFILE not considering default_domain_suffix on sssd.conf
+    - Go implementation for the user mount handler
+    - Remove Rust source code from adsys
+    - Rework Kerberos ticket handling logic:
+      - to satisfy the Heimdal implementation of Kerberos, we now store and use
+        a root-owned copy of the cached ticket
+      - the ticket lifetime is still handled via a symlink, and the copy is
+        kept up to date based on the original ticket timestamp
+    - Ensure empty state for dconf policy
+    - Handle case mismatches in GPT.INI file name
+    - Refactor ListActiveUsers gRPC function
+    - Add adsysctl policy purge command to purge applied policies
+    - Rework policy application sync strategy
+    - Print logs when policies are up to date
+    - Bump Go version to 1.20
+    - Update dependencies to latest:
+      - github.com/charmbracelet/bubbles
+      - github.com/charmbracelet/bubbletea
+      - github.com/sirupsen/logrus
+      - github.com/spf13/cobra
+      - github.com/stretchr/testify
+      - golang.org/x/net
+      - golang.org/x/sync
+      - golang.org/x/sys
+      - google.golang.org/grpc
+    - CI and quality of life changes not affecting package functionality:
+      - peter-evans/create-pull-request
+      - Apply clang-format to C source files
+      - Remove Rust related code from CI and tests
+      - Improve test consistency
+      - Fix documentation example images
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Fri, 26 May 2023 07:11:55 -0400
+
+adsys (0.11.0) lunar; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Gabriel Nagy ]
+  * List Pro policy types in service status output
+  * Warn when Pro-only rules are configured
+  * Use systemd via D-Bus instead of systemctl commands
+  * Add placeholder notes for entry types
+  * Add guideline docs to the policy managers
+  * Change Ubuntu Advantage to Ubuntu Pro in docs
+  * Add system proxy policy manager (LP: #2012371)
+  * Update dependencies to latest:
+    - github.com/charmbracelet/lipgloss
+    - github.com/coreos/go-systemd/v22
+    - github.com/fatih/color
+    - github.com/golangci/golangci-lint
+    - github.com/golang/protobuf
+    - golang.org/x/net
+    - google.golang.org/grpc
+    - google.golang.org/grpc/cmd/protoc-gen-go-grpc
+    - google.golang.org/protobuf
+  * CI and quality of life changes not impacting package functionality:
+    - Bump github actions to latest:
+      - actions/setup-go
+    - Update Rust related auto update jobs
+    - Replace testutils.Setenv with t.Setenv
+    - Set up more tests to run in parallel
+    - Various test refactors and improvements
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Tue, 04 Apr 2023 19:40:35 +0300
+
+adsys (0.10.1) lunar; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Jean-Baptiste Lallement ]
+  [ Gabriel Nagy ]
+  [ Didier Roche ]
+  * Fix erroneous non alternative dependency on package krb5-user
+  * Fix a bug in internal/config tests that was causing the autopkgtests to fail
+  * Update internal/config to also trigger a reload when config file is
+    overwritten
+  * Update dependencies to latest:
+    - github.com/golangci/golangci-lint
+    - github.com/stretchr/testify
+  * CI and quality of life changes not impacting package functionality:
+    - Bump github actions to latest:
+      - peter-evans/create-pull-request
+      - actions/download-artifact
+    - Addressing some linter issues pointed out by new golangci-lint version
+
+ -- Denison Barbosa <denison.barbosa@canonical.com>  Thu, 02 Mar 2023 09:43:33 -0400
+
+adsys (0.10.0) lunar; urgency=medium
+
+  [ Denison Barbosa ]
+  [ Jean-Baptiste Lallement ]
+  [ Gabriel Nagy ]
+  [ Didier Roche ]
+  * Add mount / network shares policy manager
+    - this is an Ubuntu Pro feature that allows mounting network shares at a
+      user or machine level
+    - supported mount types: smb, nfs, and ftp (after installing curlftpfs)
+    - supported authentication: anonymous (default), krb5
+    - user mounts are handled at login by a Rust binary now shipped with adsys
+      Thanks to schopin for the packaging guidance and contributions
+    - computer mounts are handled by systemd mount units requiring root
+      privileges
+  * Add AppArmor policy manager
+    - this is an Ubuntu Pro feature that allows enforcing application
+      confinement at a user or machine level using AppArmor
+    - user policies rely on the libpam-apparmor package which must be
+      installed manually
+  * Support multiple AD backends and implement Winbind support
+    - sssd is still the default backend, but winbind can be opted into through
+      the adsys.yaml configuration file
+  * Add a --machine / -m flag to adsysctl applied, indicating the policies
+    applied to the current machine
+  * Expose Ubuntu Pro status in the "status" command
+    - status is now fetched dynamically instead of relying on a possibly
+      outdated state when updating policies
+  * Update scripts manager creation
+    - scripts manager now creates both an users and machine directory on
+      initialization
+  * Fix policy update failing when GPT.INI contains no version key
+  * Fix object lookup for users having a FQDN as their hostname
+  * Support special characters in domains when parsing sssd configuration
+  * Reduce dependencies by excluding CI tools from go.mod
+    - tooling-related packages are now vendored in a separate go.mod file,
+      allowing for a smaller source package
+  * Replace gopkg.in/yaml.v2 with gopkg.in/yaml.v3
+    Thanks to Juneezee for the contribution
+  * Clean-up packaging scripts related to the user mount handler
+    Thanks to liushuyu for the contribution
+  * CI and quality of life changes not impacting package functionality:
+    - Add golden functionality to testutils
+    - Switch to new fsnotify event check syntax
+    - Move adsysgpotests to golden generated by testutils
+    - Fix test helper permission when making directory RO
+    - Rework skipping integration tests
+    - Compare golden tree executable permissions
+    - Allow running mount_handler tests as part of go test
+    - Fix python coverage in integration tests
+    - Factorize some coverage testutils functions
+    - Refactor tracking and generating coverage files
+    - Implement session dbus mock
+    - Stabilize integration test coverage
+    - Fix set-output GitHub Actions deprecation warning
+    - Reuse our utility function for comparing trees
+    - Install missing packages for auto-updates workflow
+    - Update d/copyright to account for the new Rust dependencies
+    - Fix FTBFS on Launchpad introduced by the latest unreleased work
+    - Standardize on test case naming and use the previously added testutils
+      functions for golden file comparison
+  * Update dependencies to latest:
+    - github.com/charmbracelet/bubbles
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/glamour
+    - github.com/charmbracelet/lipgloss
+    - github.com/fatih/color
+    - github.com/fsnotify/fsnotify
+    - github.com/golangci/golangci-lint
+    - github.com/kardianos/service
+    - github.com/muesli/termenv
+    - github.com/spf13/cobra
+    - github.com/spf13/viper
+    - github.com/stretchr/testify
+    - golang.org/x/net
+    - golang.org/x/sys
+    - golang.org/x/text
+    - google.golang.org/grpc
+    - gopkg.in/ini.v1
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Thu, 22 Feb 2023 18:16:25 +0200
+
+adsys (0.9.2) kinetic; urgency=medium
+
+  * Update generators to fix FTBFS
+    - shell out to mkdir instead of go's os.Mkdir which can bypass fakeroot's
+      filesystem hijacking and cause unexpected behavior
+  * Update dependencies to latest:
+    - github.com/golangci/golangci-lint
+    - google.golang.org/protobuf
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Wed, 03 Aug 2022 11:00:39 +0300
+
+adsys (0.9.1) kinetic; urgency=medium
+
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  * Fix loading policy content from uppercase folders (LP: #1982330)
+  * Add GSettings power management keys (LP: #1982349)
+  * Allow parsing policy entries with empty values (LP: #1982342)
+  * Allow parsing policies with unsupported types (LP: #1982343)
+  * Allow parsing policy entries with no data (LP: #1982345)
+  * Lowercase target name when normalizing (LP: #1982347)
+  * Annotate policies that require Ubuntu Pro (LP: #1982348)
+  * Update dependencies to latest:
+    - github.com/spf13/cobra
+    - github.com/spf13/viper
+    - github.com/stretchr/testify
+    - github.com/charmbracelet/bubbletea
+    - github.com/charmbracelet/bubbles
+    - google.golang.org/grpc
+    - github.com/golangci/golangci-lint
+    - github.com/sirupsen/logrus
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Thu, 21 Jul 2022 11:44:30 +0300
+
+adsys (0.9.0) kinetic; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  [ Gabriel Nagy ]
+  * Add Active Directory Watch Daemon - adwatchd: (LP: #1982351)
+    - Implement a Windows daemon that watches a list of configured directories
+      for changes and bumps the relevant GPT.INI files.
+    - Add adsys-windows binary package which includes the Windows daemon
+      executable and the admx/adml policies.
+  * Config detection now includes current executable directory
+  * Fixes in generator build race
+  * Update dependencies to latest:
+    - github.com/spf13/cobra
+    - github.com/stretchr/testify
+  * CI updates:
+    - switch to Go setup v3
+    - bump to really build with Golang 1.18
+
+ -- Gabriel Nagy <gabriel.nagy@canonical.com>  Mon, 04 Jul 2022 16:36:52 +0300
+
+adsys (0.8.6) kinetic; urgency=medium
+
+  * Fix new build failures on 32 bits due to libsmbclient-dev no longer sets
+    the large file support cflags in libsmbclient.h.
+    Update to latest libsmbclient-go.
+  * Update dependencies to latest:
+    - google.golang.org/grpc
+    - gopkg.in/ini.v1
+    - github.com/golangci/golangci-lint
+    - github.com/spf13/viper
+    - github.com/stretchr/testify
+
+ -- Didier Roche <didrocks@ubuntu.com>  Tue, 07 Jun 2022 16:17:12 +0200
+
+adsys (0.8.5) kinetic; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Rename chapters to be in correct ascii order when viewed online.
+    Thanks to Anton Drastrup-Fjordbak.
+  * Include 22.04 in admx/adml for lts only releases. (LP: #1973745)
+  * Bump embedeed dependencies minor versions for both bug fixes and minor
+    security enhancements.
+  * Fix dconf keys not being readable by user after applying policy.
+    (LP: #1973748)
+  * Ensure we can execute machine and user scripts:
+    /run is now noexec on Ubuntu. Ensure that we can execute the scripts in
+    /run/adsys subdirectories. The scripts mechanism has been reviewed by the
+    security team, so we can reset them as executable. (LP: #1973751)
+  * Move integration tests under cmd/adsysd and admxgen binary to cmd/admxgen
+    to prepare future adwatchd daemon under cmd/ which will be SRUed with an
+    exception in next update. This is a no-op in the finale deploy binaries,
+    apart from admxgen which is now using Cobra. This binary though is not
+    shipped in any package and only used in CI.
+  * Fix privilege permission which can not be set to disabled. (LP: #1973752)
+  * Adaptation or new tests for all above changes.
+  * Add fuzz tests and include new potential crash fixes on invalid files
+    generated by Windows AD.
+  * CI fixes and changes (not impacting finale package):
+    - Move CI to Go 1.18 (package is already building with 1.18 in jammy).
+    - Fixes due to new github.
+    - Fix to generate all LTS releases in admx/adml (see above).
+
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 16 May 2022 14:09:36 +0200
+
+adsys (0.8.4) jammy; urgency=medium
+
+  * Sync refresh timer with Windows
+  * Some lint fixes due to Go 1.18
+  * Fix image reference in documentation
+
+ -- Didier Roche <didrocks@ubuntu.com>  Wed, 06 Apr 2022 15:37:58 +0200
+
+adsys (0.8.3) jammy; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Use ua attached instead of a specific ua feature to gate optional
+    features.
+  * Added and updated documentation for privilege escalation and scripts
+    support.
+  * New linter version trigger fix.
+  * Dependencies update for latest bug fixes:
+    - github.com/golangci/golangci-lint
+    - github.com/spf13/cobra-1.4.0
+    - github.com/stretchr/testify-1.7.1
+    - google.golang.org/protobuf-1.28.0
+    - google.golang.org/grpc-1.45.0
+
+ -- Didier Roche <didrocks@ubuntu.com>  Wed, 23 Mar 2022 13:39:27 +0100
+
+adsys (0.8.2) jammy; urgency=medium
+
+  * Fix flaky "pick up config changes" tests on armhf and arm64
+
+ -- Didier Roche <didrocks@ubuntu.com>  Thu, 10 Mar 2022 11:00:27 +0100
+
+adsys (0.8.1) jammy; urgency=medium
+
+  * Change chown logic on script directory and parents to avoid potential
+    vulnerability. (LP: #1961458)
+  * Separate readiness from session running to avoid unrefreshed user script
+    directories after a logout without any new logins.
+  * pam_adsys: Fix memory leak and identation. (LP: #1961459)
+  * Adapt to newer samba, while keeping backward compatilibity for CI.
+    Thanks Michael. (LP: #1962170)
+  * Try to stabilize configuration detection change test by calling sync() to
+    sync FHS to disk, and then, hoping we get the inotify update. Seems to fix
+    flakyness on armhf. (LP: #1962510)
+  * Enforce closing stderr on ppcel64 in tests with new samba to avoid hangs
+    in race.
+  * Fix linting issues discovered by new golangci-lint.
+  * Misc syntax polish.
+  * Dependencies update:
+    - github.com/godbus/dbus/v5
+    - github.com/golangci/golangci-lint
+    - gopkg.in/ini.v1
+
+ -- Didier Roche <didrocks@ubuntu.com>  Tue, 08 Mar 2022 09:49:08 +0100
+
+adsys (0.8) jammy; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Add new types of GPOs support, with ubuntu advantage subscription
+    integration. Recommends ubuntu-advantage-desktop-daemon.
+  * Privilege escalation: support for privilege escalation and gives
+    administrator access to users and groups registered in Active Directory.
+    The administrator can also prevent any kind of local administrator on
+    the machine.
+  * Scripts integration: support for scripts in GPO when the computer boots and
+    shuts down, and when the user logs on or off.
+    - The computer scripts are ran as root, on startup (or first AD user login
+      if we couldn’t fetch GPOs and had no cache)
+    - The user scripts are ran with systemd user session, as the user.
+    - A transactional state is handled: New versions of scripts or list of
+      scripts are only updated when a given session is not opened.
+      Said differently, the shutdown scripts for the machine will be the ones
+      downloaded and enabled when the start scripts were ran.
+      Similarly, the user logoff scripts will be the ones corresponding to
+      the time when the log on scripts were executed.
+    - Any failing scripts won’t stop the boot or log on. Similarly to Windows
+      script support, this is not a security feature.
+  * Support downloading assets from the Active Directory server. Those assets
+    are located in the <Distribution> named directory at SYSVOL root.
+    Those needs a GPT.INI, similarly to GPO, to control cache update.
+  * Internal changes on how policies and cached are handled. Those changes are
+    needed to enhance the model of caching with assets, while keeping
+    a transactional behaviour.
+  * Many new tests covering all the new and existing changes.
+  * General cleanups:
+    - More debugging and info messages.
+    - In templates, policies define personalized notes and descriptions.
+      Those are now used to generate the description of the policy.
+    - Modernize, fix bugs and workarounds now that we are on at min Go 1.16,
+      and prepare for 1.17 and new vendored dependencies versions.
+    - Add more linting support and fix discovered issues.
+    - Rewrite integration tests containers mimicking system services in python
+      for better reliability and support via dbus-mock. Upgraded to a newer
+      version.
+    - Adapt to new GitHub infrastructure changes with new container repository,
+      and change workflows adjustements by new linting rules.
+    - Discare deprecated dconf keys for those releases.
+  * Updated vendored go dependencies:
+    - bluemonday
+    - cobra
+    - color
+    - glamour
+    - go-dbus
+    - golangci-lint
+    - grpc
+    - ini
+    - viper
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 07 Feb 2022 09:37:45 +0100
+
+adsys (0.7.1) impish; urgency=medium
+
+  * Fix user login name when being prefixed by domain (domain\user) or using
+    default domain suffix.
+  * Relax commands to always normalize to user@domain even if a previous form
+    of entry is given
+  * Fix pam module to always be loaded for those.
+  * All users and machine update should not provide a target
+  * Relax rule for hostname length when > 15 characters. Try first real name
+    in AD and then fallback to 15 for NETBIOS compatibility if AD is configured
+    in such a way.
+  * Pull sss connection state dynamically, to switch between online and offline
+    mode.
+  * Misc smaller fixes in namings and entry permissive mode.
+  * Add and adapt unit and integration tests for all the above, including
+    docker test container.
+  * Fixes for incoming Golang 1.17 tests Name() behaviour change
+  * Make some integration tests more stable
+  * Refresh policy definition file
+  * Update vendored dependency via DEPENDABOT:
+    - github.com/fsnotify/fsnotify
+    - github.com/godbus/dbus
+    - golang.org/x/text
+    - google.golang.org/grpc
+    - gopkg.in/ini.v1
+    - honnef.co/go/tools
+  * CI:
+    - switch back to hirsute for QA code check, as impish docker images have
+      a broken libc.
+  * Packaging fixes:
+    - Ensure we always build with PIE
+    - Fix autopkgtests by not running them as root
+    - Ship NOTICE from a vendor dependency as being Apache2 licensed
+    - Modernize gbp.conf
+
+ -- Didier Roche <didrocks@ubuntu.com>  Wed, 15 Sep 2021 10:30:27 +0200
+
+adsys (0.7) impish; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Depends on sssd offline status to try fetching the GPOs
+    - request to sssd in what status we are in
+    - if we are online, do the samba/ldap requests as we used to do, but
+      with a contextual timeout.
+  * Allow empty ad_server in sssd.conf.
+  * Fix dependencies between service and relax adsys-boot retrials.
+  * Pam to request machine update if no machine cache is available.a
+  * Print N/A when no Active Server was found.
+  * Refresh policy definition files
+  * Updates to latest release of viper, cobra, protobuf, grpc.
+  * Use cobra 2.0 completion.
+  * Adapt and add new tests to previous changes
+  * Reenable LTO optimization.
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 19 Jul 2021 13:01:07 +0200
+
+adsys (0.6) impish; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Add a new status command, returning current user connected, mode, last
+    refresh time and applied configuration
+  * Add a new doc command, which allows listing the documentation or write a
+    specific chapter on the terminal or disk.
+  * Add a new debus hidden (system) command, which allows dumping
+    adsys-gpolist and (in the future) various multiple debugging tools for a
+    specific AD setup
+  * Advance CI completion for users, machines and other contextual strings
+    (requesting the service for available valid items, based on context).
+  * Hook up CI to update online documentation (on github) and local offline
+    one in two ways (updating the local doc will update the online one and
+    vice-versa)
+  * Write the whole documentation for setting up and using adsys
+  * Refactor configuration handling and const location
+  * Only start machine GPO download on boot (blocking) if we have AD configured
+  * Fix pam integration by setting correct linker property
+  * Fallback to sssd discovery active AD server
+  * Fix GDM dconf keys to use for screen customization
+  * New adsysservice to properly shutdown authorizer and move service dbus
+    handling
+  * Integrate gosec to CI and multiple fixes
+  * Serialize adsys-gpolist and admx/adml in binary
+  * Misc fixes in listing Active Directory GPO, multiple error cases
+    graceful handling and fix some Windows requirements like spec names.
+  * Small fixes and error message reformulation
+  * Update all dependencies to latest version and hook up Dependabot in CI
+  * Multiple CI enhancements
+  * Fix for admx generation, allowing pointing at keys not present in a
+    release if filtered out
+  * Tighten build and package depdencies.
+  * Tests:
+    - add more configuration for integration tests
+    - fix protobuf namespace conflicts
+    - multiple refactoring
+    - ensure local dbus are properly shutdown
+    - fix some racy tests but being more relax on times
+    - allow coverage for python code and subprocesses
+    - add many new tests, including integration tests
+    - replace wharthogs.biz domain by example.com. Thanks Paul Mars
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 21 Jun 2021 14:16:16 +0200
+
+adsys (0.5) hirsute; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Add integration tests to cover (all but policy update command):
+    - command line parsing and handling
+    - interaction between daemon and client
+  * Add tests and coverage support for python embedded code to interact with
+    samba (ldap AD connection).
+  * Create a samba mock to test adsys-gpolist.
+  * Add a container to control and tests polkitd with our uninstalled,
+    current version in branch .policy file on its own couple of system dbus.
+  * Abstract many test helpers in their own function to be more reusable.
+  * Code cleanup (races, shutdown handling and other fixes) detected
+    via the new tests.
+  * CI coverage integration.
+  * Various CI fixes on tagged version.
+
+ -- Didier Roche <didrocks@ubuntu.com>  Fri, 16 Apr 2021 09:53:07 +0200
+
+adsys (0.4) hirsute; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Disable LTO to fix FTBFS
+  * Fix Version test on released package
+  * Fix timeout idler race
+  * Add tests for logstreamer
+  * Misc cleanups
+
+ -- Didier Roche <didrocks@ubuntu.com>  Thu, 01 Apr 2021 10:23:52 +0200
+
+adsys (0.3) hirsute; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Fix namespace in admx files to avoid conflict with Windows one.
+  * Special case GDM user as a machine to support login screen configuration
+    in both admx and policy daemon side.
+  * CI fixes and additions for admx generation and tests. Enable devel (hirsute) series.
+  * Multiple gosec fixes.
+  * Add missing samba dependencies to packaging
+  * Graceful stop handling fixes.
+  * Lot of new tests
+  * Multiple fixes/races discovered by tests
+
+ -- Didier Roche <didrocks@ubuntu.com>  Thu, 25 Mar 2021 10:58:58 +0100
+
+adsys (0.2) hirsute; urgency=medium
+
+  [ Jean-Baptiste Lallement ]
+  [ Didier Roche ]
+  * Fix FTBFS due to race:
+    - workaround amd64 mkdirall while creating directory for pam module
+      integration
+    - fix sigchild flag capture, including additional flags on non amd64,
+      before restoring them after each samba call to workaround libsamba
+      signals override.
+  * Fix utf-16 and memory management when .pol windows file are more than 4106
+    size long (-8 header bytes > 4096).
+  * Fix GPO list order when a policy is enforced
+  * Embed GPO list python helper inside the go binary
+  * Fix emptying a GPO after setting value doesn’t reset the applied policy
+  * Fix multi-lines support while dumping applied policies
+  * Internal: rename "default" dconf metadata to "empty" for clarity
+
+ -- Didier Roche <didrocks@ubuntu.com>  Thu, 25 Feb 2021 10:11:13 +0100
+
+adsys (0.1) hirsute; urgency=medium
+
+  * Initial release
+
+ -- Didier Roche <didrocks@ubuntu.com>  Fri, 08 Jan 2021 16:35:16 +0100

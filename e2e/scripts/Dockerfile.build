@@ -1,0 +1,36 @@
+ARG CODENAME=latest
+FROM ubuntu:$CODENAME
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN sed -i -- 's/# deb-src/deb-src/g' /etc/apt/sources.list
+RUN echo 'man-db man-db/auto-update boolean false' | debconf-set-selections
+
+RUN set -ex \
+    && apt-get update \
+    && apt-get upgrade -y --no-install-recommends
+
+ARG CODENAME=latest
+
+# Keep the codename list easy to maintain, keeping in mind that we might need to
+# add more as the need to backport various packages arises.
+RUN if echo "focal" | grep -q "$CODENAME"; then \
+        set -ex \
+        && apt-get install -y software-properties-common \
+        && add-apt-repository -y ppa:ubuntu-enterprise-desktop/golang; \
+    fi
+
+RUN set -ex \
+    && apt-get install -y --no-install-recommends \
+               build-essential \
+               cdbs \
+               devscripts \
+               equivs \
+               fakeroot \
+    && apt-mark minimize-manual -y \
+    && apt-get autopurge -y \
+    && apt-get clean
+RUN rm /etc/apt/apt.conf.d/docker-clean
+RUN rm -rf /tmp/* /var/tmp/
+RUN ln -s /tmp /var/tmp
+

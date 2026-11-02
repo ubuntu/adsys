@@ -1,0 +1,29 @@
+User only / dconf: favorite-apps / no release override
+{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}/User/Registry.pol
+
+-----------------------------
+GDM / dconf: clock-format / no release override
+{75545F76-DEC2-4ADA-B7B8-D5209FD48727}/Machine/Registry.pol
+
+User / dconf background picture-options & uri; favorite-apps / background override 21.04
+{75545F76-DEC2-4ADA-B7B8-D5209FD48727}/User/Registry.pol
+
+-----------------------------
+GDM / dconf: clock-format, clock-show-date, clock-show-weekday / override clock-format 20.04
+privilege: allow-local-admins disabled, client-admins
+{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}/Machine/Registry.pol
+
+User / dconf: favorite-apps / no override
+{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}/User/Registry.pol
+
+-----------------------------
+Machine Only / GDM show-banner / disabled
+{B8D10A86-0B78-4899-91AF-6F0124ECEB48}
+
+-----------------------------
+User only / media-handling/automount / disabled
+{073AA7FC-5C1A-4A12-9AFC-42EC9C5CAF04}
+
+-----------------------------
+Default Domain Policy / No Registry.pol
+{31B2F340-016D-11D2-945F-00C04FB984F9}

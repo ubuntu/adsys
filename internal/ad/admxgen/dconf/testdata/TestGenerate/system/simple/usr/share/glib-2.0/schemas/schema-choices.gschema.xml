@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
+    <enum id="com.ubuntu.choices.enum-inline">
+        <value value="50" nick="LOW" />
+        <value value="75" nick="MEDIUM" />
+        <value value="90" nick="HIGH" />
+        <value value="100" nick="MAXIMUM" />
+    </enum>
+    <schema path="/com/ubuntu/choices/" id="com.ubuntu.choices">
+        <key type="s" name="choices-property">
+            <default>'choice 2'</default>
+            <summary>choices-property summary</summary>
+            <description>choices-property description</description>
+            <choices>
+                <choice value="choice 1"/>
+                <choice value="choice 2"/>
+                <choice value="choice 3"/>
+            </choices>
+        </key>
+        <key name="enum-inline-property" enum="com.ubuntu.choices.enum-inline">
+            <default>'HIGH'</default>
+            <summary>enum-inline-property summary</summary>
+            <description>enum-inline-property description</description>
+        </key>
+        <key name="enum-otherfile-property" enum="com.ubuntu.choices.enum-otherfile">
+            <default>'up'</default>
+            <summary>enum-otherfile-property summary</summary>
+            <description>enum-otherfile-property description</description>
+        </key>
+    </schema>
+</schemalist>

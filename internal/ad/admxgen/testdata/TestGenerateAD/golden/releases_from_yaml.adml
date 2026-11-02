@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Ubuntu policy</displayName>
+  <description>This is the Ubuntu policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
+      <string id="UbuntuExplainTextMachineDconfComUbuntuSimpleSimpleTextProperty">simple-text-property description
+
+- Type: dconf
+- Key: /com/ubuntu/simple/simple-text-property
+- Default: simple-text-property Default Value
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 21.10.</string>
+      <string id="UbuntuDisplayMachineAllDconfComUbuntuSimpleSimpleTextProperty">simple-text-property summary</string>
+      <string id="UbuntuDisplayMachine2110DconfComUbuntuSimpleSimpleTextProperty">simple-text-property summary</string>
+      <string id="UbuntuDisplayMachine2004DconfComUbuntuSimpleSimpleTextProperty">simple-text-property summary</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="UbuntuPresentationMachineDconfComUbuntuSimpleSimpleTextProperty">
+        <textBox refId="UbuntuElemMachineAllDconfComUbuntuSimpleSimpleTextProperty">
+          <label>simple-text-property summary</label>
+          <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2110DconfComUbuntuSimpleSimpleTextProperty" defaultChecked="false">Override value for 21.10:</checkBox>
+        <textBox refId="UbuntuElemMachine2110DconfComUbuntuSimpleSimpleTextProperty">
+          <label></label>
+          <defaultValue>simple-text-property Default Value</defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfComUbuntuSimpleSimpleTextProperty" defaultChecked="false">Override value for 20.04:</checkBox>
+        <textBox refId="UbuntuElemMachine2004DconfComUbuntuSimpleSimpleTextProperty">
+          <label></label>
+          <defaultValue>simple-text-property Default Value</defaultValue>
+        </textBox>
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>

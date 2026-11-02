@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuParentCategoryDisplayName" displayName="$(string.UbuntuDisplayParentCategoryDisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+    <category name="UbuntuChildCategoryDisplayName" displayName="$(string.UbuntuDisplayChildCategoryDisplayName)">
+      <parentCategory ref="UbuntuParentCategoryDisplayName" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyFirst" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyFirst)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyFirst)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyFirst)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-first" valueName="metaValues">
+      <parentCategory ref="UbuntuParentCategoryDisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyFirst" valueName="all" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicySecond" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySecond)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySecond)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySecond)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second" valueName="metaValues">
+      <parentCategory ref="UbuntuChildCategoryDisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySecond" valueName="all" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

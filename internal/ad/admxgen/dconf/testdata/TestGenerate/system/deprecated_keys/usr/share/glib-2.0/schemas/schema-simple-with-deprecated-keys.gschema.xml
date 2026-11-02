@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-unity-schemas">
+    <schema path="/com/ubuntu/with-deprecated/" id="com.ubuntu.with.deprecated">
+        <key type="s" name="simple-text-property">
+            <default>'simple-text-property Default Value'</default>
+            <summary>simple-text-property summary</summary>
+            <description>simple-text-property description</description>
+        </key>
+        <key type="s" name="deprecated">
+            <default>'deprecated Default Value'</default>
+            <summary>deprecated: this key is not in used anymore</summary>
+            <description>deprecated description</description>
+        </key>
+        <key type="s" name="deprecated-different-cases">
+            <default>'deprecated-different-cases Default Value'</default>
+            <summary>DePRecATED: summary</summary>
+            <description>deprecated-different-cases description</description>
+        </key>
+        <key type="s" name="deprecated-in-middle">
+            <default>'deprecated-in-middle Default Value'</default>
+            <summary>Summary for deprecated content</summary>
+            <description>deprecated-in-middle description</description>
+        </key>
+        <key type="s" name="obsolete">
+            <default>'obsolete Default Value'</default>
+            <summary>obsolete: summary</summary>
+            <description>obsolete description</description>
+        </key>
+    </schema>
+</schemalist>

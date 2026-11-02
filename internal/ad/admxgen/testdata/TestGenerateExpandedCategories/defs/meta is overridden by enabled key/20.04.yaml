@@ -1,0 +1,14 @@
+- key: /org/gnome/desktop/meta-cases
+  displayname: summary
+  explaintext: description
+  meta:
+    meta: "i"
+    empty: '0'
+    other: foo
+  metaenabled:
+    meta: "s"
+  class: ""
+  default: '''Default Value'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: "dconf"

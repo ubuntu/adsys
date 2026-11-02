@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+    <category name="UbuntuCategory2DisplayName" displayName="$(string.UbuntuDisplayCategory2DisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyMultiple1" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyMultiple1)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple1)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple1)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-multiple1" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyMultiple1" valueName="all" />
+      </elements>
+    </policy>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyMultiple2" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyMultiple2)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple2)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple2)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-multiple2" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory2DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyMultiple2" valueName="all" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

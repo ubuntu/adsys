@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Ubuntu policy</displayName>
+  <description>This is the Ubuntu policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
+      <string id="UbuntuDisplayCategory2DisplayName">Category2 Display Name</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple1">description 1
+
+- Type: dconf
+- Key: org/gnome/desktop/policy-multiple1
+- Default: &#39;Default Value 1&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyMultiple1">summary 1</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyMultiple2">description 2
+
+- Type: dconf
+- Key: org/gnome/desktop/policy-multiple2
+- Default: &#39;Default Value 2&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyMultiple2">summary 2</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple1">
+        <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyMultiple1">
+          <label>summary 1</label>
+          <defaultValue></defaultValue>
+        </textBox>
+      </presentation>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyMultiple2">
+        <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyMultiple2">
+          <label>summary 2</label>
+          <defaultValue></defaultValue>
+        </textBox>
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>

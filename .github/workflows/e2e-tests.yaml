@@ -1,0 +1,163 @@
+name: E2E - Run tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      codenames:
+        description: 'Comma-separated list of codenames to run tests on (e.g. "mantic", "focal") - will test all supported releases if not specified'
+        type: string
+        required: false
+      repository:
+        description: 'Run tests with adsys from a fork (e.g. "username/adsys", defaults to the current repository if not specified)'
+        type: string
+        required: false
+      branch:
+        description: 'Run tests with adsys from a branch (defaults to main if not specified)'
+        type: string
+        required: false
+
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  supported-releases:
+    name: Build matrix for supported ADSys and Ubuntu releases
+    runs-on: ${{ vars.RUNNER }}
+    outputs:
+      matrix: ${{ steps.set-supported-releases.outputs.matrix }}
+    steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install needed binaries
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info jq
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: actions/checkout@v5
+        with:
+          repository: ${{ inputs.repository || github.repository }}
+          ref: ${{ inputs.branch || github.ref }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Build matrix
+        id: set-supported-releases
+        run: |
+          set -eu
+
+          codenames="$(distro-info --supported-esm)\n$(distro-info --supported)\n"
+          versions="$(distro-info --supported-esm --release)\n$(distro-info --supported --release)\n"
+
+          # Paste the codenames and versions together, sort them, and remove duplicates
+          codenames_with_versions="$(paste <(printf "$versions" | cut -d' ' -f1) <(printf "$codenames") | sort -u)"
+
+          releases=""
+          while IFS=$'\t' read -r version codename; do
+              # Filter out unsupported LTS releases
+              if [[ "${codename}" =~ trusty|xenial|bionic ]]; then
+                  continue
+              fi
+
+              # Filter out releases with no corresponding Azure images
+              latestImageVersion="$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${codename} --version ${version} --force)"
+              if [ -z "${latestImageVersion}" ]; then
+                  continue
+              fi
+
+              if [ -n "${releases}" ]; then
+                  releases="${releases}, "
+              fi
+              releases="${releases}'${codename}'"
+          done <<< "$codenames_with_versions"
+
+          echo matrix="${releases}" >> $GITHUB_OUTPUT
+
+  tests:
+    name: Tests
+    runs-on: ${{ vars.RUNNER }}
+    needs:
+      - supported-releases
+    strategy:
+      matrix:
+        codename: ${{ fromJSON(format('[{0}]', inputs.codenames || needs.supported-releases.outputs.matrix)) }}
+      fail-fast: false
+    env:
+      AD_PASSWORD: ${{ secrets.AD_PASSWORD }}
+      ADSYS_PRO_TOKEN: ${{ secrets.ADSYS_PRO_TOKEN }}
+    steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install required dependencies
+        run: |
+          sudo apt-get update
+          # Required for the XML to POL conversion
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-samba
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: actions/checkout@v5
+        with:
+          repository: ${{ inputs.repository || github.repository }}
+          ref: ${{ inputs.branch || github.ref }}
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/adsys-e2e.pem
+          chmod 600 ~/.ssh/adsys-e2e.pem
+      - name: Build adsys deb
+        run: go run ./e2e/cmd/run_tests/00_build_adsys_deb --codename ${{ matrix.codename }}
+      - name: Set up VPN connection
+        uses: ./.github/actions/azure-sstpc-vpn
+        with:
+          gateway: ${{ secrets.VPN_GATEWAY }}
+          ca: ${{ secrets.VPN_CA }}
+          cert: ${{ secrets.VPN_CERT }}
+          key: ${{ secrets.VPN_KEY }}
+      - name: Provision client VM
+        run: go run ./e2e/cmd/run_tests/01_provision_client
+      - name: Provision AD server
+        run: go run ./e2e/cmd/run_tests/02_provision_ad
+      - name: Recompile PAM module with coverage support
+        run: go run ./e2e/cmd/run_tests/03_pam_coverage_support
+        if: ${{ matrix.codename == 'noble' }}
+      - name: 'Test: non-Pro managers'
+        run: go run ./e2e/cmd/run_tests/10_test_non_pro_managers
+      - name: 'Test: Pro managers'
+        run: go run ./e2e/cmd/run_tests/11_test_pro_managers
+      - name: 'Test: PAM and Kerberos ticket cache'
+        run: go run ./e2e/cmd/run_tests/12_test_pam_krb5cc
+      - name: Collect PAM module coverage
+        run: go run ./e2e/cmd/run_tests/98_collect_pam_coverage
+        if: ${{ matrix.codename == 'noble' }}
+      - name: Upload PAM coverage as artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: pam-coverage.zip
+          path: ./output/pam-cobertura.xml
+        if: ${{ matrix.codename == 'noble' }}
+      - name: Collect logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: e2e-logs-${{ matrix.codename }}
+          path: logs/
+      - name: Deprovision resources
+        if: ${{ always() }}
+        run: |
+          # Check inventory status to see if we need to deprovision
+          if [ ! -f inventory.yaml ] || grep -q 'vmid: ""' inventory.yaml; then
+              echo "Inventory file not found, skipping deprovision"
+              exit 0
+          fi
+
+          go run ./e2e/cmd/run_tests/99_deprovision

@@ -1,0 +1,24 @@
+Machine, updated on DDD MON D HH:MM
+Connected users:
+  user1@example.com, updated on DDD MON D HH:MM
+  user2@example.com, updated on DDD MON D HH:MM
+Next Refresh: unknown
+
+Ubuntu Pro subscription active.
+
+Active Directory:
+  Current backend is SSSD
+  Configuration: testdata/sssd-configs/sssd.conf-example.com
+  Cache: /tmp/sss_cache
+  Domain: example.com
+  Server FQDN: localhost:1446
+
+Daemon:
+  Timeout after 30s
+  Listening on: /tmp/socket
+  Cache path: /tmp/cache
+  Run path: /tmp/run
+  Dconf path: /tmp/dconf
+  Sudoers path: /tmp/sudoers.d
+  PolicyKit path: /tmp/polkit-1
+  Apparmor path: /tmp/adsys

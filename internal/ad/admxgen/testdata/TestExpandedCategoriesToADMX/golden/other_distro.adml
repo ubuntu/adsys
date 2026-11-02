@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Debian policy</displayName>
+  <description>This is the Debian policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="DebianDisplayCategory1DisplayName">Category1 Display Name</string>
+      <string id="DebianExplainTextMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple">description
+
+- Type: dconf
+- Key: org/gnome/desktop/policy-simple
+- Default: &#39;Default Value&#39;
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Debian sid</string>
+      <string id="DebianDisplayMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple">summary</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="DebianPresentationMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple">
+        <textBox refId="DebianElemMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple">
+          <label>summary</label>
+          <defaultValue></defaultValue>
+        </textBox>
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>

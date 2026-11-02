@@ -1,0 +1,41 @@
+# Service and client configuration
+verbose: 2
+socket: /tmp/adsysd/socket
+
+# Service only configuration
+service_timeout: 3600
+cache_dir: /tmp/adsysd/cache
+state_dir: /tmp/adsysd/lib
+run_dir: /tmp/adsysd/run
+dconf_dir: /etc/dconf
+sudoers_dir: /etc/sudoers.d
+policykit_dir: /etc/polkit-1
+apparmor_dir: /etc/apparmor.d/adsys
+apparmorfs_dir: /sys/kernel/security/apparmor
+global_trust_dir: /usr/local/share/ca-certificates
+
+# Backend selection: sssd (default) or winbind
+#ad_backend: sssd
+
+# SSSd configuration
+sssd:
+  config: /etc/sssd.conf
+  cache_dir: /var/lib/sss/db
+
+# Winbind configuration
+# (if ad_backend is set to winbind)
+winbind:
+  ad_domain: domain.com
+  ad_server: adc.domain.com
+
+# Whether to attempt to determine the krb5 ccache path and export it as the
+# KRB5CCNAME variable if it exists.
+# Only enable this if the authentication stack issues a cached ticket but
+# doesn't export the environment variable.
+detect_cached_ticket: false
+
+# Client only configuration
+client_timeout: 60
+
+# GPO List timeout
+gpo_list_timeout: 10

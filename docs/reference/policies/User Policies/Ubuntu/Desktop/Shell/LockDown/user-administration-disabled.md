@@ -1,0 +1,22 @@
+# Disable user administration
+
+Stop the user from modifying user accounts. By default, we allow adding and removing users, as well as changing other users settings.
+
+- Type: dconf
+- Key: /org/gnome/desktop/lockdown/user-administration-disabled
+- Default: false
+
+Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+Supported on Ubuntu 22.04, 24.04, 25.04, 25.10.
+
+
+
+<span style="font-size: larger;">**Metadata**</span>
+
+| Element      | Value            |
+| ---          | ---              |
+| Location     | User Policies -> Ubuntu -> Desktop -> Shell -> LockDown -> Disable user administration    |
+| Registry Key | Software\Policies\Ubuntu\dconf\org\gnome\desktop\lockdown\user-administration-disabled         |
+| Element type | boolean |
+| Class:       | User       |

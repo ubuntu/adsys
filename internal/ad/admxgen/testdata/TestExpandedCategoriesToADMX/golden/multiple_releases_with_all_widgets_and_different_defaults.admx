@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"textrelease":{"meta": "s", "empty": "''"}, "multitextrelease":{"meta": "as", "empty": "[]"}, "longdecimalrelease":{"meta": "u", "empty": "0"}, "dropdownlistrelease":{"meta": "s", "empty": "''"}, "decimalrelease":{"meta": "i", "empty": "0"}, "booleanrelease":{"meta": "b", "empty": "false"}, "all":{"meta": "s", "empty": "''"}}</string></enabledValue>
+      <disabledValue><string>{"textrelease":{"meta": "s"}, "multitextrelease":{"meta": "as"}, "longdecimalrelease":{"meta": "u"}, "dropdownlistrelease":{"meta": "s"}, "decimalrelease":{"meta": "i"}, "booleanrelease":{"meta": "b"}, "all":{"meta": "s"}}</string></disabledValue>
+      <elements>
+        <text id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" valueName="all" />
+        <boolean id="UbuntuOverrideElemMachineTextreleaseDconfOrgGnomeDesktopPolicySimple" valueName="Overridetextrelease">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <text id="UbuntuElemMachineTextreleaseDconfOrgGnomeDesktopPolicySimple" valueName="textrelease" />
+        <boolean id="UbuntuOverrideElemMachineMultitextreleaseDconfOrgGnomeDesktopPolicySimple" valueName="Overridemultitextrelease">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <multiText id="UbuntuElemMachineMultitextreleaseDconfOrgGnomeDesktopPolicySimple" valueName="multitextrelease" />
+        <boolean id="UbuntuOverrideElemMachineLongdecimalreleaseDconfOrgGnomeDesktopPolicySimple" valueName="Overridelongdecimalrelease">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <longDecimal id="UbuntuElemMachineLongdecimalreleaseDconfOrgGnomeDesktopPolicySimple" valueName="longdecimalrelease" />
+        <boolean id="UbuntuOverrideElemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple" valueName="Overridedropdownlistrelease">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple" valueName="dropdownlistrelease">
+          <item displayName="$(string.UbuntuItemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple0)">
+            <value>
+              <string>Choice 1</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple1)">
+            <value>
+              <string>Choice 2</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple2)">
+            <value>
+              <string>Choice 3</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple3)">
+            <value>
+              <string>Choice 4</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachineDecimalreleaseDconfOrgGnomeDesktopPolicySimple" valueName="Overridedecimalrelease">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <decimal id="UbuntuElemMachineDecimalreleaseDconfOrgGnomeDesktopPolicySimple" valueName="decimalrelease" />
+        <boolean id="UbuntuOverrideElemMachineBooleanreleaseDconfOrgGnomeDesktopPolicySimple" valueName="Overridebooleanrelease">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <boolean id="UbuntuElemMachineBooleanreleaseDconfOrgGnomeDesktopPolicySimple" valueName="booleanrelease">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

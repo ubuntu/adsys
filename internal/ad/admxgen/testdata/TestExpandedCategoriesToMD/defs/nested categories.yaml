@@ -1,0 +1,58 @@
+- displayname: Parent Category Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-first
+    explaintext: |-
+      description first
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-first
+      - Default: 'Default Value first'
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04
+    metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+    metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-first
+        displayname: summary first
+        explaintext: description first
+        elementtype: text
+        meta:
+          empty: ''''''
+          meta: "s"
+        default: '''Default Value first'''
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf
+  children:
+  - displayname: Child Category Display Name
+    parent: ""
+    policies:
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-second
+      explaintext: |-
+        description second
+
+        - Type: dconf
+        - Key: org/gnome/desktop/policy-second
+        - Default: 'Default Value second'
+          Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+        Supported on Ubuntu 20.04
+      metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+      metadisabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+      class: Machine
+      releaseselements:
+        all:
+          key: /org/gnome/desktop/policy-second
+          displayname: summary second
+          explaintext: description second
+          elementtype: text
+          meta:
+            default: ''''''
+            meta: "s"
+          empty: '''Default Value second'''
+          release: "20.04"
+          type: dconf

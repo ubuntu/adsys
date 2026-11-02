@@ -1,0 +1,174 @@
+distroid: "Ubuntu"
+supportedreleases:
+  - 20.04
+  - 22.04
+categories:
+  - displayname: "Ubuntu"
+    parent: "ubuntu:Desktop"
+    defaultpolicyclass: "User"
+    children:
+    - displayname: "Desktop"
+      defaultpolicyclass: "User"
+      children:
+      - displayname: "Accessibility"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/desktop/interface/toolkit-accessibility"
+          - "/org/gnome/desktop/a11y/applications/screen-keyboard-enabled"
+          - "/org/gnome/desktop/a11y/applications/screen-magnifier-enabled"
+          - "/org/gnome/desktop/a11y/applications/screen-reader-enabled"
+      - displayname: "Background"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/desktop/background/picture-uri"
+          - "/org/gnome/desktop/background/picture-uri-dark"
+          - "/org/gnome/desktop/background/picture-options"
+      - displayname: "Shell"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/shell/favorite-apps"
+          - "/org/gnome/desktop/background/show-desktop-icons"
+          - "/org/gnome/shell/extensions/dash-to-dock/show-show-apps-button"
+        children:
+          - displayname: "Clock"
+            defaultpolicyclass: "User"
+            policies:
+              - "/org/gnome/desktop/interface/clock-format"
+              - "/org/gnome/desktop/interface/clock-show-date"
+              - "/org/gnome/desktop/interface/clock-show-weekday"
+          - displayname: "Notifications"
+            defaultpolicyclass: "User"
+            policies:
+              - "/org/gnome/desktop/notifications/show-banners"
+          - displayname: "LockDown"
+            defaultpolicyclass: "User"
+            policies:
+              - "/org/gnome/desktop/lockdown/disable-command-line"
+              - "/org/gnome/desktop/lockdown/disable-log-out"
+              - "/org/gnome/desktop/lockdown/disable-user-switching"
+              - "/org/gnome/desktop/lockdown/disable-printing"
+              - "/org/gnome/desktop/lockdown/disable-print-setup"
+              - "/org/gnome/desktop/lockdown/disable-save-to-disk"
+              - "/org/gnome/desktop/lockdown/mount-removable-storage-devices-as-read-only"
+              - "/org/gnome/desktop/lockdown/user-administration-disabled"
+          - displayname: "Privacy"
+            defaultpolicyclass: "User"
+            policies:
+              - "/org/gnome/desktop/privacy/usb-protection"
+              - "/org/gnome/desktop/privacy/usb-protection-level"
+      - displayname: "Keyboard shortcuts"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/settings-daemon/plugins/media-keys/control-center"
+          - "/org/gnome/settings-daemon/plugins/media-keys/terminal"
+          - "/org/gnome/shell/keybindings/toggle-overview"
+          - "/org/gnome/shell/keybindings/toggle-application-view"
+          - "/org/gnome/mutter/overlay-key"
+      - displayname: "Screensaver"
+        defaultpolicyclass: "User"
+        policies:
+          - "/org/gnome/desktop/screensaver/picture-uri"
+          - "/org/gnome/desktop/screensaver/picture-options"
+          - "/org/gnome/desktop/notifications/show-in-lock-screen"
+          - "/org/gnome/desktop/lockdown/disable-lock-screen"
+    - displayname: "Peripherals"
+      defaultpolicyclass: "User"
+      policies:
+        - "/org/gnome/desktop/media-handling/automount"
+
+
+    - displayname: "Login Screen"
+      defaultpolicyclass: "Machine"
+      prefix: "gdm"
+      policies:
+        - "/org/gnome/login-screen/disable-restart-buttons"
+        - "/org/gnome/desktop/notifications/show-in-lock-screen"
+        - "/org/gnome/desktop/notifications/show-banners"
+        - "/org/gnome/desktop/interface/toolkit-accessibility"
+        - "/org/gnome/login-screen/disable-user-list"
+      children:
+        - displayname: "Authentication"
+          defaultpolicyclass: "Machine"
+          prefix: "gdm"
+          policies:
+            - "/org/gnome/login-screen/enable-password-authentication"
+            - "/org/gnome/login-screen/enable-fingerprint-authentication"
+            - "/org/gnome/login-screen/enable-smartcard-authentication"
+            - "/org/gnome/login-screen/allowed-failures"
+        - displayname: "Interface"
+          defaultpolicyclass: "Machine"
+          prefix: "gdm"
+          policies:
+            - "/org/gnome/desktop/interface/clock-format"
+            - "/org/gnome/desktop/interface/clock-show-date"
+            - "/org/gnome/desktop/interface/clock-show-weekday"
+            - "/org/gnome/login-screen/banner-message-enable"
+            - "/org/gnome/login-screen/banner-message-text"
+            - "/org/gnome/login-screen/logo"
+            - "/com/ubuntu/login-screen/background-color"
+            - "/com/ubuntu/login-screen/background-picture-uri"
+            - "/com/ubuntu/login-screen/background-repeat"
+            - "/com/ubuntu/login-screen/background-size"
+
+    - displayname: "Client management"
+      defaultpolicyclass: "Machine"
+      children:
+      - displayname: "Privilege Authorization"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/client-admins"
+          - "/allow-local-admins"
+      - displayname: "Computer Scripts"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/startup"
+          - "/shutdown"
+      - displayname: "System-wide application confinement"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/apparmor-machine"
+      - displayname: "Power Management"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/org/gnome/settings-daemon/plugins/power/ambient-enabled"
+          - "/org/gnome/settings-daemon/plugins/power/idle-brightness"
+          - "/org/gnome/settings-daemon/plugins/power/idle-dim"
+          - "/org/gnome/settings-daemon/plugins/power/lid-close-ac-action"
+          - "/org/gnome/settings-daemon/plugins/power/lid-close-battery-action"
+          - "/org/gnome/settings-daemon/plugins/power/lid-close-suspend-with-external-monitor"
+          - "/org/gnome/settings-daemon/plugins/power/power-button-action"
+          - "/org/gnome/settings-daemon/plugins/power/power-saver-profile-on-low-battery"
+          - "/org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-timeout"
+          - "/org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-type"
+          - "/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-timeout"
+          - "/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-type"
+      - displayname: "System Drive Mapping"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/system-mounts"
+      - displayname: "System proxy configuration"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/proxy/http"
+          - "/proxy/https"
+          - "/proxy/ftp"
+          - "/proxy/socks"
+          - "/proxy/no-proxy"
+          - "/proxy/auto"
+
+    - displayname: "Session management"
+      defaultpolicyclass: "User"
+      children:
+      - displayname: "User Scripts"
+        defaultpolicyclass: "User"
+        policies:
+          - "/logon"
+          - "/logoff"
+      - displayname: "User application confinement"
+        defaultpolicyclass: "User"
+        policies:
+          - "/apparmor-users"
+      - displayname: "User Drive Mapping"
+        defaultpolicyclass: "User"
+        policies:
+          - "/user-mounts"

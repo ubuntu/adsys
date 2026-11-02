@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -x
+
+if [ -z "${COVERAGE_FILE}" ]; then
+  echo "COVERAGE_FILE should be set to use this python mock should be -c" >&2
+  exit 42
+fi
+
+if [ "${1}" != "-c" ]; then
+  echo "First argument supported by this python mock should be -c" >&2
+  exit 42
+fi
+shift
+
+echo -E "${1}">"#SCRIPTFILE#"
+shift
+
+exec python3-coverage run -a "#SCRIPTFILE#" $@

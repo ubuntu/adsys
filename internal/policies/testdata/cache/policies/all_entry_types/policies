@@ -1,0 +1,62 @@
+gpos:
+- id: '{GPOId}'
+  name: GPOName
+  rules:
+    dconf:
+    - key: path/to/key1
+      value: ValueOfKey1
+      meta: s
+    - key: path/to/key2
+      value: |
+        ValueOfKey2
+        On
+        Multilines
+      meta: s
+    privilege:
+    - key: allow-local-admins
+      disabled: false
+    - key: client-admins
+      value: |
+        alice@domain
+        bob@domain2
+        %mygroup@domain
+        cosmic carole@domain
+    scripts:
+    - key: startup
+      value: |
+          script-machine-startup
+          subfolder/other-script
+          final-machine-script.sh
+    - key: shutdown
+      value: |
+          script-machine-shutdown
+    - key: logon
+      value: |
+          script-user-logon
+    - key: logoff
+      value: |
+          otherfolder/script-user-logoff
+    apparmor:
+    - key: apparmor-machine
+      value: |
+          usr.bin.foo
+          usr.bin.bar
+          nested/usr.bin.baz
+    mount:
+    - key: system-mounts
+      value: |
+          nfs://example.com/nfs_share
+          smb://example.com/smb_share
+          ftp://example.com/ftp_share
+    proxy:
+    - key: proxy/auto
+      value: http://example.com/proxy.pac
+    - key: proxy/http
+      value: ""
+      disabled: true
+    - key: proxy/no-proxy
+      value: localhost,127.0.0.1,::1
+    certificate:
+    - key: autoenroll
+      value: "7"
+      disabled: false

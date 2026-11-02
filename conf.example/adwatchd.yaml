@@ -1,0 +1,4 @@
+verbose: 0     # 0 = warning, 1 = info, 2 = debug, 3 = debug with caller output
+dirs:          # list of directories to watch
+  - C:\Windows\SYSVOL\sysvol\testdomain.com\Ubuntu     # traditional path
+  - \\testdomain.com\SYSVOL\testdomain.com\Ubuntu      # UNC path

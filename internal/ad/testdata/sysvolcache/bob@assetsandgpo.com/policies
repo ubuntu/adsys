@@ -1,0 +1,14 @@
+gpos:
+    - id: standard
+      name: standard-name
+      rules:
+        dconf:
+            - key: A
+              value: standardA
+              disabled: false
+            - key: B
+              value: standardB
+              disabled: false
+            - key: C
+              value: standardC
+              disabled: false

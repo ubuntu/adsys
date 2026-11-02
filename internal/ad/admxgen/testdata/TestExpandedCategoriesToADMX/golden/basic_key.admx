@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyNoOptions" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyNoOptions)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyNoOptions)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyNoOptions)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-no-options" valueName="basic">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"all":{"meta":"some enabled value"}}</string></enabledValue>
+      <disabledValue><string>{"all":{"meta":"some disabled value"}}</string></disabledValue>
+    </policy>
+  </policies>
+
+</policyDefinitions>

@@ -1,0 +1,13 @@
+- key: /com/ubuntu/types/boolean-property
+  displayname: boolean-property summary
+  explaintext: boolean-property description
+  elementtype: boolean
+  metaenabled:
+    empty: "false"
+    meta: b
+  metadisabled:
+    meta: b
+  default: "true"
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: dconf

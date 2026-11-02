@@ -1,0 +1,4 @@
+[org/gnome/desktop/interface]
+clock-format='24h'
+clock-show-date=false
+clock-show-weekday=true

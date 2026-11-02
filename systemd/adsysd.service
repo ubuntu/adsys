@@ -1,0 +1,11 @@
+[Unit]
+Description=ADSys daemon service
+After=adsysd.socket
+PartOf=adsysd.socket
+
+[Service]
+Type=notify
+ExecStart=/sbin/adsysd
+
+# Some daemon restrictions
+NoNewPrivileges=true

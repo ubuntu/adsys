@@ -1,0 +1,19 @@
+- key: /org/gnome/desktop/policy-choices
+  displayname: summary
+  explaintext: description
+  elementtype: dropdownList
+  metaenabled:
+    meta: "s"
+    empty: ''''''
+  metadisabled:
+    meta: "s"
+  class: ""
+  default: 'unmatched default'
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  choices:
+    - choice 1
+    - choice 2
+    - choice 3
+    - choice 4
+  release: "20.04"
+  type: "dconf"

@@ -1,0 +1,13 @@
+- key: /com/ubuntu/simple-overridden/simple-text-property-overridden-by-multiple-files
+  displayname: simple-text-property-overridden-by-multiple-files summary
+  explaintext: simple-text-property-overridden-by-multiple-files description
+  elementtype: text
+  metaenabled:
+    empty: ''''''
+    meta: s
+  metadisabled:
+    meta: s
+  default: '''This is the simple-text-property-overridden-by-multiple-files overridden Value'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: dconf

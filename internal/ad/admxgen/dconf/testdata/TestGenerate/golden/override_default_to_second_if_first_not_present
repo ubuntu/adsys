@@ -1,0 +1,13 @@
+- key: /com/ubuntu/simple-overridden/simple-text-property-overridden-gnome
+  displayname: simple-text-property-overridden-gnome summary
+  explaintext: simple-text-property-overridden-gnome description
+  elementtype: text
+  metaenabled:
+    empty: ''''''
+    meta: s
+  metadisabled:
+    meta: s
+  default: '''Overridden simple-text-property-overridden-gnome Value For GNOME Session'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: dconf

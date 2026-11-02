@@ -1,0 +1,18 @@
+- key: /com/ubuntu/choices/enum-otherfile-property
+  displayname: enum-otherfile-property summary
+  explaintext: enum-otherfile-property description
+  elementtype: dropdownList
+  metaenabled:
+    empty: ''''''
+    meta: s
+  metadisabled:
+    meta: s
+  default: '''up'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  choices:
+    - left
+    - right
+    - up
+    - down
+  release: "20.04"
+  type: dconf

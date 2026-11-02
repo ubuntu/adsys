@@ -1,0 +1,5 @@
+Loading smb.conf
+[global]
+realm = example.com
+
+WARNING: certmonger and/or cepces not found, skipping certificate enrollment

@@ -1,0 +1,15 @@
+- key: /com/ubuntu/types/long-decimal-property
+  displayname: decimal-property summary
+  explaintext: decimal-property description
+  elementtype: longDecimal
+  metaenabled:
+    empty: "0"
+    meta: u
+  metadisabled:
+    meta: u
+  default: "42"
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  rangevalues:
+    min: "0"
+  release: "20.04"
+  type: dconf

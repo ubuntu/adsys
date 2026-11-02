@@ -1,0 +1,274 @@
+name: Update supported policies to ADMX/L and docs
+on:
+  push:
+    branches:
+      - '**' # Ignore tag push, but take any branch
+    paths:
+      - 'cmd/admxgen/**'
+      - 'internal/ad/admxgen/**'
+      - '.github/workflows/policy-builds.yaml'
+  schedule:
+    - cron: '42 0 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-admxgen:
+    name: Build admxgen static binary
+    runs-on: ${{ vars.RUNNER }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: |
+          mkdir /tmp/adsys
+          CGO_ENABLED=0 go build ./cmd/admxgen/
+      - name: Upload admxgen
+        uses: actions/upload-artifact@v5
+        with:
+          name: admxgen
+          path: |
+            admxgen
+            ./cmd/admxgen/defs/*
+          if-no-files-found: error
+
+  supported-releases:
+    name: Build matrix for supported ADSys, Ubuntu, and docker releases
+    runs-on: ${{ vars.RUNNER }}
+    outputs:
+      matrix: ${{ steps.set-supported-releases.outputs.matrix }}
+    needs: build-admxgen
+    steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install needed binaries
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info jq
+      - name: Build matrix for supported ADSys, Ubuntu, and docker releases
+        id: set-supported-releases
+        run: |
+          set -eu
+
+          function releaseDockerExists() {
+              if [ ! -f "docker_tags.list" ]; then
+                TOKEN=$(curl "https://auth.docker.io/token?service=registry.docker.io&scope=repository:library/ubuntu:pull" |\
+                  jq -r .token)
+                curl -H "Authorization: Bearer $TOKEN" \
+                  https://registry-1.docker.io/v2/library/ubuntu/tags/list 2>/dev/null |\
+                  jq -r '.tags[]' > docker_tags.list
+              fi
+
+              local codename="${1}"
+              exists=1
+
+              grep -q "${codename}" docker_tags.list && exists=0
+              echo "${exists}"
+          }
+
+          all="$(distro-info --supported-esm) $(distro-info --supported)"
+          all="$(echo $all | tr ' ' '\n' | sort -u)"
+
+          releases=""
+
+          for r in ${all}; do
+              # Filter out unsupported LTS releases
+              if [ "${r}" = "trusty" -o "${r}" = "xenial" -o "${r}" = "bionic" ]; then
+                  continue
+              fi
+
+              exists=$(releaseDockerExists ${r})
+              if [ ${exists} != 0 ]; then
+                  continue
+              fi
+              if [ -n "${releases}" ]; then
+                  releases="${releases}, "
+              fi
+              releases="${releases}'ubuntu:${r}'"
+          done
+
+          echo "matrix={\"releases\":[${releases}]}" >> $GITHUB_OUTPUT
+
+  collect-releases:
+    name: Collect supported keys on each releases
+    runs-on: ${{ vars.RUNNER }}
+    needs:
+      - build-admxgen
+      - supported-releases
+    strategy:
+      matrix: ${{fromJson(needs.supported-releases.outputs.matrix)}}
+    container:
+      image: ${{ matrix.releases }}
+    steps:
+      - name: Download admxgen and definition files
+        uses: actions/download-artifact@v6
+        with:
+          name: admxgen
+      - name: Install desktop with all default package in container
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get -y install ubuntu-desktop
+      - name: Collect support keys
+        run: |
+          chmod 755 ./admxgen
+          ./admxgen expand --current-session ubuntu ./cmd/admxgen/defs/ ./out/
+      - name: Prepare artefact name variable
+        shell: bash
+        run: |
+          set -eu
+
+          artifacts_name=${{ matrix.releases }}
+          artifacts_name=${artifacts_name/:/-}
+          echo "artifacts_name=${artifacts_name}" >> $GITHUB_ENV
+      - name: Generated definition files
+        uses: actions/upload-artifact@v5
+        with:
+          name: policies-${{ env.artifacts_name }}
+          path: out/*
+          if-no-files-found: error
+
+  generate-ad:
+    name: Merge keys to generated admx/adml
+    runs-on: ${{ vars.RUNNER }}
+    needs: collect-releases
+    strategy:
+      matrix:
+        releases: ['LTS', 'ALL']
+    steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install needed binaries
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
+      - name: Download all available artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts
+      - name: Display structure of downloaded files
+        run: |
+          set -eu
+
+          allowflag="--allow-missing-keys"
+          target=$(ubuntu-distro-info -r --supported-esm | cut -d" " -f1)
+          if [ ${{ matrix.releases }} = "ALL" ]; then
+            target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
+            allowflag=""
+          fi
+
+          mkdir wanted/
+          for f in $(find artifacts/policies-*/ -type f); do
+            for wanted in ${target}; do
+              if [ $(basename $f) != ${wanted}.yaml ]; then
+                continue
+              fi
+              cp $f wanted/
+            done
+          done
+          chmod +x artifacts/admxgen/admxgen
+          artifacts/admxgen/admxgen admx --auto-detect-releases ${allowflag} artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ .
+          ls -R
+      - name: Upload adm template files
+        uses: actions/upload-artifact@v5
+        with:
+          name: adm-${{ matrix.releases }}
+          path: Ubuntu.adm*
+          if-no-files-found: error
+
+  generate-doc:
+    name: Merge keys to generated documentation
+    runs-on: ${{ vars.RUNNER }}
+    needs: collect-releases
+    steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install needed binaries
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
+      - name: Download all available artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts
+      - name: Display structure of downloaded files
+        run: |
+          set -eu
+
+          target=$(ubuntu-distro-info -r --supported | cut -d" " -f1)
+          mkdir wanted/
+          for f in $(find artifacts/policies-*/ -type f); do
+            for wanted in ${target}; do
+              if [ $(basename $f) != ${wanted}.yaml ]; then
+                continue
+              fi
+              cp $f wanted/
+            done
+          done
+          chmod +x artifacts/admxgen/admxgen
+          artifacts/admxgen/admxgen doc artifacts/admxgen/cmd/admxgen/defs/categories.yaml wanted/ generated-docs/
+          ls -R
+      - name: Upload adm template files
+        uses: actions/upload-artifact@v5
+        with:
+          name: generated-docs
+          path: generated-docs/*
+          if-no-files-found: error
+
+  integrate:
+    name: Integrate policy changes in current git tree
+    runs-on: ${{ vars.RUNNER }}
+    needs:
+      - generate-ad
+      - generate-doc
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download adm template files for "all"
+        uses: actions/download-artifact@v6
+        with:
+          name: adm-ALL
+          path: policies/Ubuntu/all
+      - name: Download adm template files for lts only
+        uses: actions/download-artifact@v6
+        with:
+          name: adm-LTS
+          path: policies/Ubuntu/lts-only
+      - name: Download generated documentation
+        uses: actions/download-artifact@v6
+        with:
+          name: generated-docs
+          path: docs/reference/policies/
+      - name: Add generated files to git
+        run: |
+          git add policies/ docs/reference/policies/
+      - name: Get output branch for branch name
+        id: get-branch-name
+        shell: bash
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: Refresh policy definition files
+          title: Refresh policy definition files
+          labels: policies, automated pr
+          body: "[Auto-generated pull request](https://github.com/ubuntu/adsys/actions/workflows/policy-builds.yaml) by GitHub Action"
+          branch: auto-update-policydefinitions-${{ steps.get-branch-name.outputs.branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          delete-branch: true
+
+  open-issue-on-fail:
+    name: Open issue on failure
+    runs-on: ${{ vars.RUNNER }}
+    needs: integrate
+    if: ${{ failure() }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Create issue if build failed
+        uses: JasonEtco/create-an-issue@v2
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          filename: .github/workflows/policy-builds-fail.md
+          search_existing: open
+          update_existing: true

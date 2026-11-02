@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},{"18.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},{"18.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicySimple0)">
+            <value>
+              <string>Choice 11</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicySimple1)">
+            <value>
+              <string>Choice 12</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicySimple2)">
+            <value>
+              <string>Choice 13</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicySimple3)">
+            <value>
+              <string>Choice 14</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine2004DconfOrgGnomeDesktopPolicySimple" valueName="Override20.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine2004DconfOrgGnomeDesktopPolicySimple" valueName="20.04">
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeDesktopPolicySimple0)">
+            <value>
+              <string>Choice 11</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeDesktopPolicySimple1)">
+            <value>
+              <string>Choice 12</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeDesktopPolicySimple2)">
+            <value>
+              <string>Choice 13</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine2004DconfOrgGnomeDesktopPolicySimple3)">
+            <value>
+              <string>Choice 14</string>
+            </value>
+          </item>
+        </enum>
+        <boolean id="UbuntuOverrideElemMachine1804DconfOrgGnomeDesktopPolicySimple" valueName="Override18.04">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+        <enum id="UbuntuElemMachine1804DconfOrgGnomeDesktopPolicySimple" valueName="18.04">
+          <item displayName="$(string.UbuntuItemMachine1804DconfOrgGnomeDesktopPolicySimple0)">
+            <value>
+              <string>Choice 21</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine1804DconfOrgGnomeDesktopPolicySimple1)">
+            <value>
+              <string>Choice 22</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine1804DconfOrgGnomeDesktopPolicySimple2)">
+            <value>
+              <string>Choice 23</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachine1804DconfOrgGnomeDesktopPolicySimple3)">
+            <value>
+              <string>Choice 24</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

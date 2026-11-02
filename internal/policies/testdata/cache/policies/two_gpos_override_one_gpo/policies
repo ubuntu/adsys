@@ -1,0 +1,21 @@
+gpos:
+- id: '{GPOId1}'
+  name: GPOName1
+  rules:
+    dconf:
+    - key: path/to/key1
+      value: MachineValueOfKey1
+      meta: s
+    - key: path/to/other1
+      value: ValueOfOtherKey1
+      meta: s
+- id: '{GPOId2}'
+  name: GPOName2
+  rules:
+    dconf:
+    - key: path/to/other2
+      value: ValueOfOtherKey2
+      meta: s
+    - key: path/to/key2
+      value: MachineValueOfKey2
+      meta: s

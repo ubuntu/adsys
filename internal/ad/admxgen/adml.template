@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>{{.DistroID}} policy</displayName>
+  <description>This is the {{.DistroID}} policy</description>
+  <resources>
+
+    <stringTable>
+    {{- range .Categories}}
+      <string id="{{toID .DisplayName "Display"}}">{{.DisplayName}}</string>
+    {{- end}}
+    {{- range .Policies}}
+      <string id="{{toID .Key "ExplainText" .Class}}">{{html .ExplainText}}</string>
+      {{- $policy := .}}
+      {{- range .GetOrderedPolicyElements}}
+      <string id="{{toID $policy.Key "Display" $policy.Class .Release}}">{{.DisplayName}}</string>
+        {{- $elem := .}}
+        {{- range $i, $c := .Choices}}
+      <string id="{{toID $policy.Key "Item" $policy.Class $elem.Release}}{{ $i }}">{{ $c }}</string>
+        {{- end}}
+      {{- end}}
+    {{- end}}
+    </stringTable>
+
+    <presentationTable>
+    {{- range .Policies}}
+      {{- $policy := .}}
+      <presentation id="{{toID .Key "Presentation" .Class}}">
+     {{- range .GetOrderedPolicyElements}}
+      {{- $default := ""}}
+      {{- if ne .Release "all"}}
+        <text/>
+        <checkBox refId="{{toID $policy.Key "OverrideElem" $policy.Class .Release}}" defaultChecked="false">Override value for {{.Release}}:</checkBox>
+        {{- $default = .GetDefaultForADM}}
+      {{- end}}
+      {{- if eq .ElementType "text"}}
+        <textBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}">
+          <label>{{if eq .Release "all"}}{{.DisplayName}}{{end}}</label>
+          <defaultValue>{{$default}}</defaultValue>
+        </textBox>
+      {{- else if eq .ElementType "multiText"}}
+        {{if eq .Release "all"}}<text>{{.DisplayName}}</text>{{end}}
+        <multiTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultHeight="5" />
+      {{- else if eq .ElementType "boolean"}}
+        {{- if eq $default ""}}
+          {{- $default = "false"}}
+        {{- end}}
+        <checkBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultChecked="{{$default}}">{{.DisplayName}}</checkBox>
+      {{- else if eq .ElementType "decimal"}}
+        <decimalTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultValue="{{$default}}">{{.DisplayName}}</decimalTextBox>
+      {{- else if eq .ElementType "longDecimal"}}
+        <longDecimalTextBox refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" defaultValue="{{$default}}">{{.DisplayName}}</longDecimalTextBox>
+      {{- else if eq .ElementType "dropdownList"}}
+        <dropdownList refId="{{toID $policy.Key "Elem" $policy.Class .Release}}" noSort="true" defaultItem="{{$default}}">{{if eq .Release "all"}}{{.DisplayName}}{{end}}</dropdownList>
+      {{- end}}
+     {{- end}}
+      </presentation>
+    {{- end}}
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>

@@ -1,0 +1,16 @@
+- key: /com/ubuntu/types/double-property-with-range
+  displayname: double-property-with-range summary
+  explaintext: double-property-with-range description
+  elementtype: text
+  metaenabled:
+    empty: "0.0"
+    meta: d
+  metadisabled:
+    meta: d
+  default: "42.0"
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  rangevalues:
+    min: "-123.000000"
+    max: "15000.000000"
+  release: "20.04"
+  type: dconf

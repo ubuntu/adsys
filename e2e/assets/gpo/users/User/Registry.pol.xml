@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PolFile num_entries="58" signature="PReg" version="1">
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;meta&quot;:&quot;s&quot;},&quot;22.04&quot;:{&quot;meta&quot;:&quot;s&quot;},&quot;23.04&quot;:{&quot;meta&quot;:&quot;s&quot;},&quot;23.10&quot;:{&quot;meta&quot;:&quot;s&quot;},&quot;all&quot;:{&quot;meta&quot;:&quot;s&quot;}}</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>**del.all</ValueName>
+		<Value> </Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>**del.23.10</ValueName>
+		<Value> </Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>**del.23.04</ValueName>
+		<Value> </Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>**del.22.04</ValueName>
+		<Value> </Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri</Key>
+		<ValueName>**del.20.04</ValueName>
+		<Value> </Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;22.04&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;23.04&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;23.10&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;},&quot;all&quot;:{&quot;empty&quot;:&quot;''&quot;,&quot;meta&quot;:&quot;s&quot;}}</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</Key>
+		<ValueName>all</ValueName>
+		<Value>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</Key>
+		<ValueName>23.10</ValueName>
+		<Value>'file:///usr/share/backgrounds/ubuntu-wallpaper-d.png'</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</Key>
+		<ValueName>23.04</ValueName>
+		<Value>'file:///usr/share/backgrounds/warty-final-ubuntu.png'</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>true</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\picture-uri-dark</Key>
+		<ValueName>22.04</ValueName>
+		<Value>'file:///usr/share/backgrounds/ubuntu-default-greyscale-wallpaper.png'</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;},&quot;22.04&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;},&quot;23.04&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;},&quot;23.10&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;},&quot;all&quot;:{&quot;empty&quot;:&quot;false&quot;,&quot;meta&quot;:&quot;b&quot;}}</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>all</ValueName>
+		<Value>true</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>23.10</ValueName>
+		<Value>true</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>23.04</ValueName>
+		<Value>true</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>22.04</ValueName>
+		<Value>true</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\desktop\background\show-desktop-icons</Key>
+		<ValueName>20.04</ValueName>
+		<Value>true</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;},&quot;22.04&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;},&quot;23.04&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;},&quot;23.10&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;},&quot;all&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>all</ValueName>
+		<Value>['firefox.desktop', 'thunderbird.desktop', 'org.gnome.Nautilus.desktop']</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>all</ValueName>
+		<Value>smb://warthogs.biz/user-mount-smb</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>all</ValueName>
+		<Value>user-logon.sh</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+</PolFile>

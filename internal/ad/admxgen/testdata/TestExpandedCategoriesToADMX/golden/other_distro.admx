@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="DebianCategory1DisplayName" displayName="$(string.DebianDisplayCategory1DisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="DebianMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" class="Machine" displayName="$(string.DebianDisplayMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" explainText="$(string.DebianExplainTextMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" presentation="$(presentation.DebianPresentationMachineSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple" valueName="metaValues">
+      <parentCategory ref="DebianCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"sid":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"sid":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <text id="DebianElemMachineAllSoftwarePoliciesUbuntuDconfOrgGnomeDesktopPolicySimple" valueName="all" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

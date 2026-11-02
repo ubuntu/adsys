@@ -1,0 +1,6 @@
+[sssd]
+domains = example.com
+default_domain_suffix = otherdomainsuffix.com
+
+[domain/example.com]
+ad_domain = example.com

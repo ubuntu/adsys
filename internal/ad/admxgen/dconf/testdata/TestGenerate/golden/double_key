@@ -1,0 +1,13 @@
+- key: /com/ubuntu/types/double-property
+  displayname: double-property summary
+  explaintext: double-property description
+  elementtype: text
+  metaenabled:
+    empty: "0.0"
+    meta: d
+  metadisabled:
+    meta: d
+  default: "42.0"
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: dconf

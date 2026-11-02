@@ -1,0 +1,1 @@
+./cmd/adwatchd/integration_tests ./internal/watchdtui

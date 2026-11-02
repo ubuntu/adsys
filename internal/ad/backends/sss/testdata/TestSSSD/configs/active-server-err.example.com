@@ -1,0 +1,5 @@
+[sssd]
+domains = activeservererr.example.com
+
+[domain/activeservererr.example.com]
+ad_domain = activeservererr.example.com

@@ -1,0 +1,8 @@
+<!-- Include start pro -->
+
+```{admonition} Ubuntu Pro
+:class: pro-block
+This feature of ADSys requires an [Ubuntu Pro
+subscription](https://ubuntu.com/pro/subscribe).
+```
+<!-- Include end pro -->

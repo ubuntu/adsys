@@ -1,0 +1,13 @@
+- key: /com/ubuntu/1/relocatable/property-with-override
+  displayname: property-with-override summary
+  explaintext: property-with-override description
+  elementtype: text
+  metaenabled:
+    empty: ''''''
+    meta: s
+  metadisabled:
+    meta: s
+  default: '''Overridden property-with-override Value'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: dconf

@@ -1,0 +1,14 @@
+distroid: "Ubuntu"
+supportedreleases:
+  - 20.04
+categories:
+  - displayname: "Parent Category Display Name"
+    parent: "ubuntu:Desktop"
+    defaultpolicyclass: "Machine"
+    policies:
+      - "/org/gnome/desktop/policy-first"
+    children:
+      - displayname: "Child Category Display Name"
+        defaultpolicyclass: "Machine"
+        policies:
+          - "/org/gnome/desktop/policy-second"

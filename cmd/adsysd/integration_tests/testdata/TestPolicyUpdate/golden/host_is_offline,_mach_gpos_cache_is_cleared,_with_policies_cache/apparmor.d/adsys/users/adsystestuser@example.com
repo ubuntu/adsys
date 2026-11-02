@@ -1,0 +1,6 @@
+^adsystestuser@example.com {
+/etc/environment r,
+@{HOMEDIRS}/.xauth* w,
+/usr/bin/{,b,d,rb}ash Px -> confined_user,
+/usr/bin/{c,k,tc}sh Px -> confined_user,
+}

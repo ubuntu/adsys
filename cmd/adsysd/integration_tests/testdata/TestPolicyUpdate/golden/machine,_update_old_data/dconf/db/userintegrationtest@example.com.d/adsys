@@ -1,0 +1,7 @@
+[org/gnome/desktop/background]
+picture-options='none'
+picture-uri='file:///usr/share/backgrounds/ubuntu.png'
+[org/gnome/shell]
+favorite-apps=['firefox.desktop', 'thunderbird.desktop', 'org.gnome.Nautilus.desktop']
+[org/gnome/shell/old]
+old-data='something'

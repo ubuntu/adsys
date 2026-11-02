@@ -1,0 +1,23 @@
+Machine, no gpo applied found
+Connected users:
+  None
+Next Refresh: Tue May 25 14:55
+
+Ubuntu Pro subscription active.
+
+Active Directory:
+  Current backend is SSSD
+  Configuration: testdata/sssd-configs/sssd.conf-example.com
+  Cache: /tmp/sss_cache
+  Domain: example.com
+  Server FQDN: localhost:1446
+
+Daemon:
+  Timeout after 30s
+  Listening on: /tmp/socket
+  Cache path: /tmp/cache
+  Run path: /tmp/run
+  Dconf path: /tmp/dconf
+  Sudoers path: /tmp/sudoers.d
+  PolicyKit path: /tmp/polkit-1
+  Apparmor path: /tmp/adsys

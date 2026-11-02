@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Ubuntu policy</displayName>
+  <description>This is the Ubuntu policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySimple">description
+
+- Type: dconf
+- Key: org/gnome/desktop/policy-simple
+- Default for textrelease: text default
+- Default for multitextrelease: multitext default
+- Default for longdecimalrelease: 2020
+- Default for dropdownlistrelease: Choice 1
+- Default for decimalrelease: 20
+- Default for booleanrelease: &#39;true&#39;
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu textrelease, multitextrelease, longdecimalrelease, dropdownlistrelease, decimalrelease, booleanrelease</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuDisplayMachineTextreleaseDconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuDisplayMachineMultitextreleaseDconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuDisplayMachineLongdecimalreleaseDconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuDisplayMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuItemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple0">Choice 1</string>
+      <string id="UbuntuItemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple1">Choice 2</string>
+      <string id="UbuntuItemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple2">Choice 3</string>
+      <string id="UbuntuItemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple3">Choice 4</string>
+      <string id="UbuntuDisplayMachineDecimalreleaseDconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuDisplayMachineBooleanreleaseDconfOrgGnomeDesktopPolicySimple">summary</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple">
+        <textBox refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple">
+          <label>summary</label>
+          <defaultValue></defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachineTextreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for textrelease:</checkBox>
+        <textBox refId="UbuntuElemMachineTextreleaseDconfOrgGnomeDesktopPolicySimple">
+          <label></label>
+          <defaultValue>text default</defaultValue>
+        </textBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachineMultitextreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for multitextrelease:</checkBox>
+        
+        <multiTextBox refId="UbuntuElemMachineMultitextreleaseDconfOrgGnomeDesktopPolicySimple" defaultHeight="5" />
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachineLongdecimalreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for longdecimalrelease:</checkBox>
+        <longDecimalTextBox refId="UbuntuElemMachineLongdecimalreleaseDconfOrgGnomeDesktopPolicySimple" defaultValue="2020">summary</longDecimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for dropdownlistrelease:</checkBox>
+        <dropdownList refId="UbuntuElemMachineDropdownlistreleaseDconfOrgGnomeDesktopPolicySimple" noSort="true" defaultItem="2"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachineDecimalreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for decimalrelease:</checkBox>
+        <decimalTextBox refId="UbuntuElemMachineDecimalreleaseDconfOrgGnomeDesktopPolicySimple" defaultValue="20">summary</decimalTextBox>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachineBooleanreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for booleanrelease:</checkBox>
+        <checkBox refId="UbuntuElemMachineBooleanreleaseDconfOrgGnomeDesktopPolicySimple" defaultChecked="true">summary</checkBox>
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>

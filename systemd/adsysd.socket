@@ -1,0 +1,9 @@
+[Unit]
+Description=Socket activation for ADSys daemon
+
+[Socket]
+ListenStream=/run/adsysd.sock
+FlushPending=yes
+
+[Install]
+WantedBy=sockets.target

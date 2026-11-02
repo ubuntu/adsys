@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyLongDecimal" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyLongDecimal)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyLongDecimal)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyLongDecimal)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-long-decimal" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"0","meta":"u"},"all":{"empty":"0","meta":"u"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"u"},"all":{"meta":"u"}}</string></disabledValue>
+      <elements>
+        <longDecimal id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyLongDecimal" valueName="all" />
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

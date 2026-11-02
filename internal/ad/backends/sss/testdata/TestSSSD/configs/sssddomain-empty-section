@@ -1,0 +1,4 @@
+[sssd]
+domains=empty-section.com
+
+[domain/empty-section.com]

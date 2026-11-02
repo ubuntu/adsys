@@ -1,0 +1,9 @@
+distroid: "Ubuntu"
+supportedreleases:
+  - 20.04
+categories:
+  - displayname: "Category1 Display Name"
+    parent: "ubuntu:Desktop"
+    defaultpolicyclass: "Machine"
+    policies:
+      - "/org/gnome/desktop/policy-no-defaults"

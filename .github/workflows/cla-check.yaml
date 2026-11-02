@@ -1,0 +1,17 @@
+name: Check if CLA is signed
+on:
+  pull_request_target:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cla-check:
+    name: Check if CLA is signed
+    runs-on: ${{ vars.RUNNER }}
+    steps:
+      - name: Check if CLA signed
+        uses: canonical/has-signed-canonical-cla@v2
+        with:
+          accept-existing-contributors: true

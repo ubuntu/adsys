@@ -1,0 +1,2 @@
+# adsys_mount is a helper binary and not meant to be used directly
+adsys: no-manual-page [sbin/adsys_mount]

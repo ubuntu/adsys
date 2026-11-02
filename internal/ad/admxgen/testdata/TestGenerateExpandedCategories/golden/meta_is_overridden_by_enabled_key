@@ -1,0 +1,37 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\meta-cases
+      explaintext: |-
+        description
+
+        - Type: dconf
+        - Key: /org/gnome/desktop/meta-cases
+        - Default: 'Default Value'
+
+        Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+        Supported on Ubuntu 20.04.
+      metaenabled: '{"20.04":{"meta":"s"},"all":{"meta":"s"}}'
+      metadisabled: '{"20.04":{"empty":"0","meta":"i","other":"foo"},"all":{"empty":"0","meta":"i","other":"foo"}}'
+      class: Machine
+      releaseselements:
+        all:
+            key: /org/gnome/desktop/meta-cases
+            displayname: summary
+            explaintext: description
+            elementtype: ""
+            meta:
+                empty: "0"
+                meta: i
+                other: foo
+            metaenabled:
+                meta: s
+            metadisabled:
+                empty: "0"
+                meta: i
+                other: foo
+            default: '''Default Value'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
+            release: "20.04"
+            type: dconf

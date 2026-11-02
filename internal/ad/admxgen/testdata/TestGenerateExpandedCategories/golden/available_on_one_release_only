@@ -1,0 +1,89 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-common
+      explaintext: |-
+        description common
+
+        - Type: dconf
+        - Key: /org/gnome/desktop/policy-common
+        - Default: 'Default Value common'
+
+        Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+        Supported on Ubuntu 20.04, 21.10.
+      metaenabled: '{"20.04":{"empty":"''''","meta":"s"},"21.10":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+      metadisabled: '{"20.04":{"meta":"s"},"21.10":{"meta":"s"},"all":{"meta":"s"}}'
+      class: Machine
+      releaseselements:
+        "20.04":
+            key: /org/gnome/desktop/policy-common
+            displayname: summary common
+            explaintext: description common
+            elementtype: text
+            metaenabled:
+                empty: ''''''
+                meta: s
+            metadisabled:
+                meta: s
+            default: '''Default Value common'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
+            release: "20.04"
+            type: dconf
+        "21.10":
+            key: /org/gnome/desktop/policy-common
+            displayname: summary common
+            explaintext: description common
+            elementtype: text
+            metaenabled:
+                empty: ''''''
+                meta: s
+            metadisabled:
+                meta: s
+            default: '''Default Value common'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
+            release: "21.10"
+            type: dconf
+        all:
+            key: /org/gnome/desktop/policy-common
+            displayname: summary common
+            explaintext: description common
+            elementtype: text
+            metaenabled:
+                empty: ''''''
+                meta: s
+            metadisabled:
+                meta: s
+            default: '''Default Value common'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
+            release: "21.10"
+            type: dconf
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-only-21.10
+      explaintext: |-
+        description policy-only-21.10
+
+        - Type: dconf
+        - Key: /org/gnome/desktop/policy-only-21.10
+        - Default: 'Default Value policy-only-21.10'
+
+        Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+        Supported on Ubuntu 21.10.
+      metaenabled: '{"21.10":{"empty":"''''","meta":"s"},"all":{"empty":"''''","meta":"s"}}'
+      metadisabled: '{"21.10":{"meta":"s"},"all":{"meta":"s"}}'
+      class: Machine
+      releaseselements:
+        all:
+            key: /org/gnome/desktop/policy-only-21.10
+            displayname: summary policy-only-21.10
+            explaintext: description policy-only-21.10
+            elementtype: text
+            metaenabled:
+                empty: ''''''
+                meta: s
+            metadisabled:
+                meta: s
+            default: '''Default Value policy-only-21.10'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
+            release: "21.10"
+            type: dconf

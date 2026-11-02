@@ -1,0 +1,7 @@
+# Configures clang-format for the project.
+# Options can be consulted on https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+Language: Cpp # Clang format will only be applied to C/C++ files.
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 120
+UseTab: Never

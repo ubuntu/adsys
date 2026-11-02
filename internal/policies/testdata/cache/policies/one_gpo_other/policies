@@ -1,0 +1,18 @@
+gpos:
+- id: '{GPOIdOther}'
+  name: GPONameOther
+  rules:
+    dconf:
+    - key: path/to/Otherkey1
+      value: ValueOfOtherKey1
+      meta: s
+    scripts:
+    - key: path/to/Otherkey2
+      value: ValueOfOtherKey2
+      meta: s
+    - key: path/to/Otherkey3
+      disabled: true
+    install:
+    - key: path/to/Otherkey4
+      value: ValueOfOtherKey4
+      meta: s

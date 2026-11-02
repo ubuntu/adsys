@@ -1,0 +1,124 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-simple
+    explaintext: |-
+      description
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-simple
+      - Default for textrelease: text default
+      - Default for multitextrelease: multitext default
+      - Default for longdecimalrelease: 2020
+      - Default for dropdownlistrelease: Choice 1
+      - Default for decimalrelease: 20
+      - Default for booleanrelease: 'true'
+
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu textrelease, multitextrelease, longdecimalrelease, dropdownlistrelease, decimalrelease, booleanrelease
+    metaenabled: '{"textrelease":{"meta": "s", "empty": "''''"},
+            "multitextrelease":{"meta": "as", "empty": "[]"},
+            "longdecimalrelease":{"meta": "u", "empty": "0"},
+            "dropdownlistrelease":{"meta": "s", "empty": "''''"},
+            "decimalrelease":{"meta": "i", "empty": "0"},
+            "booleanrelease":{"meta": "b", "empty": "false"},
+            "all":{"meta": "s", "empty": "''''"}}'
+    metadisabled: '{"textrelease":{"meta": "s"},
+            "multitextrelease":{"meta": "as"},
+            "longdecimalrelease":{"meta": "u"},
+            "dropdownlistrelease":{"meta": "s"},
+            "decimalrelease":{"meta": "i"},
+            "booleanrelease":{"meta": "b"},
+            "all":{"meta": "s"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: text
+        meta:
+          empty: ''''''
+          meta: "s"
+        default: "text default"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "textrelease"
+        type: dconf
+      textrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: text
+        meta:
+          empty: ''''''
+          meta: "s"
+        default: "text default"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "textrelease"
+        type: dconf
+      multitextrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: multiText
+        meta:
+          empty: ''''''
+          meta: "s"
+        default: "multitext default"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "multitextrelease"
+        type: dconf
+      booleanrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: boolean
+        meta:
+          empty: "false"
+          meta: "b"
+        default: 'true'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "booleanrelease"
+        type: dconf
+      decimalrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: decimal
+        meta:
+          empty: "0"
+          meta: "i"
+        default: "20"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "decimalrelease"
+        type: dconf
+      longdecimalrelease:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: longDecimal
+        meta:
+          empty: "u"
+          meta: "u"
+        default: "2020"
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "longdecimalrelease"
+        type: dconf
+      dropdownlistrelease":
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: dropdownList
+        meta:
+          empty: ''''''
+          meta: "s"
+        default: 'Choice 3'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        choices:
+          - Choice 1
+          - Choice 2
+          - Choice 3
+          - Choice 4
+        release: "dropdownlistrelease"
+        type: dconf

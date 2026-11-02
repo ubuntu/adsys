@@ -1,0 +1,9 @@
+-Exit1-r
+-N
+#TMPDIR#/machine/usr.bin.foo
+-Exit1-r
+-r
+-W
+-L
+/var/cache/adsys/apparmor
+#TMPDIR#/machine/usr.bin.foo

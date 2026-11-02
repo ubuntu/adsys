@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+  {{- range .Categories}}
+    <category name="{{toID .DisplayName}}" displayName="$(string.{{toID .DisplayName "Display"}})">
+      <parentCategory ref="{{.Parent}}" />
+    </category>
+  {{- end}}
+  </categories>
+
+  <policies>
+  {{- range .Policies}}
+    {{- $policy := .}}
+    <policy name="{{toID .Key .Class}}" class="{{.Class}}" displayName="$(string.{{toID .Key "Display" .Class "All"}})" explainText="$(string.{{toID .Key "ExplainText" .Class}})" presentation="$(presentation.{{toID .Key "Presentation" .Class}})" key="{{.Key}}" valueName="{{if .HasOptions}}metaValues{{else}}basic{{end}}">
+      <parentCategory ref="{{.ParentCategory}}" />
+      <supportedOn ref="Ubuntu" />
+      {{- if .MetaEnabled}}
+      <enabledValue><string>{{.MetaEnabled}}</string></enabledValue>
+      {{- end}}
+      {{- if .MetaDisabled}}
+      <disabledValue><string>{{.MetaDisabled}}</string></disabledValue>
+      {{- end}}
+      {{- if .HasOptions}}
+      <elements>
+      {{- range .GetOrderedPolicyElements}}
+      {{- if ne .Release "all"}}
+        <boolean id="{{toID $policy.Key "OverrideElem" $policy.Class .Release}}" valueName="{{ (print "Override" .Release) }}">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      {{- end}}
+      {{- if eq .ElementType "dropdownList"}}
+        <enum id="{{toID $policy.Key "Elem" $policy.Class .Release}}" valueName="{{ .Release }}">
+        {{- $elem := .}}
+        {{- range $i, $c := .Choices}}
+          <item displayName="$(string.{{toID $policy.Key "Item" $policy.Class $elem.Release}}{{ $i }})">
+            <value>
+              <string>{{ html $c }}</string>
+            </value>
+          </item>
+        {{- end}}
+        </enum>
+      {{- else if eq .ElementType "boolean"}}
+        <boolean id="{{toID $policy.Key "Elem" $policy.Class .Release}}" valueName="{{ .Release }}">
+          <trueValue><string>true</string></trueValue>
+          <falseValue><string>false</string></falseValue>
+        </boolean>
+      {{- else}}
+        <{{.ElementType}} id="{{toID $policy.Key "Elem" $policy.Class .Release}}" valueName="{{ .Release }}"
+          {{- if ne .RangeValues.Min ""}} minValue="{{.RangeValues.Min}}"{{end}}
+          {{- if ne .RangeValues.Max ""}} maxValue="{{.RangeValues.Max}}"{{end}} />
+      {{- end}}
+      {{- end}}
+      </elements>
+      {{- end}}
+    </policy>
+  {{- end}}
+  </policies>
+
+</policyDefinitions>

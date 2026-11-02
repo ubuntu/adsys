@@ -1,0 +1,96 @@
+name: Report an issue
+description: Create a bug report to fix an issue
+title: 'Issue: '
+labels: 'bug'
+body:
+  - type: markdown
+    attributes:
+      value: >
+        :warning: **Please do not report security vulnerabilities here**
+
+        Be careful with sensitive information and security vulnerabilities. In order to report bugs that could contain
+        sensitive information, use [Launchpad](https://bugs.launchpad.net/ubuntu/+source/adsys/+filebug) instead.
+        On Ubuntu machines, you can use `ubuntu-bug adsys` to collect relevant information.
+
+
+        Thanks for taking the time to report an issue and help improve adsys! Please fill out the form below as
+        best as you can so that we can help you.
+
+        Your additional work here is greatly appreciated and will help us respond as quickly as possible. For general
+        support or usage questions, use [Ubuntu Discourse](https://discourse.ubuntu.com/c/desktop/8).
+
+        By submitting an Issue to this repository, you agree to the terms within the
+        [Ubuntu Code of Conduct](https://ubuntu.com/community/code-of-conduct).
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      options:
+        - label: I have searched the existing issues and found none that matched mine
+          required: true
+  - type: textarea
+    attributes:
+      label: Describe the issue
+      description: >
+        Provide a clear and concise description of what the issue is, including what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce it
+      description: >
+        Detail the steps taken to reproduce this error, what was expected, and whether this issue can be reproduced
+        consistently or if it is intermittent.
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
+
+        Please include screenshots (you can drag any image here) where applicable. Redact any sensitive information.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Ubuntu users: System information"
+      description: >
+        Ubuntu users can run `ubuntu-bug adsys --save=/tmp/report.txt` and drag the file below.
+
+        It will contain useful information pertaining to the system and the packages installed.
+  - type: textarea
+    attributes:
+      label: "Non Ubuntu users: System information"
+      description: |
+        For users of distributions other than Ubuntu, provide details about the environment you experienced the issue in:
+      value: |
+        ### Environment
+        * adsys version: please run `adsysctl version`
+        * Distribution: (**NAME** in `/etc/os-release`)
+        * Distribution version: (**VERSION_ID** on `/etc/os-release`):
+
+        ### Log files
+        Please redact/remove sensitive information:
+        ```raw
+        adsys service logs can be acquired by running `adsysctl service cat -v`.
+        You can increase the amount of information displayed by increasing the verbosity level (-v) to -vv or -vvv.
+        ```
+
+        ### Application settings
+        Please redact/remove sensitive information:
+        ```raw
+        Paste the contents of your adsys.yaml file here, if you created one.
+        ```
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: >
+        Should there be any other contextual information that might be useful, please provide it here.
+        Please take a look at our [Troubleshooting guide](../#troubleshooting) to understand a bit more about what you
+        can do to get more information and logs about the project.
+      placeholder: Remember to redact any sensitive information from them.
+  - type: checkboxes
+    attributes:
+      label: Double check your logs
+      options:
+        - label: I have redacted any sensitive information from the logs
+          required: true
+

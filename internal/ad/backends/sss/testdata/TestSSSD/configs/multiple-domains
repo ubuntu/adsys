@@ -1,0 +1,8 @@
+[sssd]
+domains = example.com,other-domain.com
+
+[domain/example.com]
+ad_domain = example.com
+
+[domain/other-domain.com]
+ad_domain = other-domain.com

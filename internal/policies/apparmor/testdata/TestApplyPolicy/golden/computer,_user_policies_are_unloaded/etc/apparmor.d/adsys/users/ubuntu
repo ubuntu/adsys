@@ -1,0 +1,3 @@
+^ubuntu {
+/etc/same_content r,
+}

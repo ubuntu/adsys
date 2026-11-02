@@ -1,0 +1,29 @@
+- key: /org/gnome/desktop/policy-first
+  displayname: summary first
+  explaintext: description first
+  elementtype: text
+  metaenabled:
+    meta: "s"
+    empty: ''''''
+  metadisabled:
+    meta: "s"
+  class: ""
+  default: '''Default Value first'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: "dconf"
+
+- key: /org/gnome/desktop/policy-second
+  displayname: summary second
+  explaintext: description second
+  elementtype: text
+  metaenabled:
+    meta: "s"
+    empty: ''''''
+  metadisabled:
+    meta: "s"
+  class: ""
+  default: '''Default Value second'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: "dconf"

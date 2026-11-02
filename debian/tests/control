@@ -1,0 +1,9 @@
+# Run regular tests without root
+Test-Command: ./debian/tests/test no-sudo
+Restrictions: allow-stderr
+Depends: @builddeps@
+
+# Run only tests that require root
+Test-Command: ./debian/tests/test sudo
+Restrictions: allow-stderr, needs-root, skippable
+Depends: @builddeps@

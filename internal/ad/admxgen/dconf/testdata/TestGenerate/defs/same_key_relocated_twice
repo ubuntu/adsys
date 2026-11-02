@@ -1,0 +1,4 @@
+- objectpath: "/com/ubuntu/1/relocatable/property"
+  schema: "com.ubuntu.relocatable"
+- objectpath: "/com/ubuntu/2/relocatable/property"
+  schema: "com.ubuntu.relocatable"

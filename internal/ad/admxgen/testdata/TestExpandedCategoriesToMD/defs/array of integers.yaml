@@ -1,0 +1,29 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+  - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-array-decimal
+    explaintext: |-
+      description
+
+      - Type: dconf
+      - Key: org/gnome/desktop/policy-array-decimal
+      - Default: [1, 2]
+      Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+      Supported on Ubuntu 20.04
+    metaenabled: '{"20.04":{"empty":"[]","meta":"ai"},"all":{"empty":"[]","meta":"ai"}}'
+    metadisabled: '{"20.04":{"meta":"ai"},"all":{"meta":"ai"}}'
+    class: Machine
+    releaseselements:
+      all:
+        key: /org/gnome/desktop/policy-simple
+        displayname: summary
+        explaintext: description
+        elementtype: multiText
+        meta:
+          meta: "ai"
+          empty: "[]"
+        default: '[1, 2]'
+        note: default system value is used for "Not Configured" and enforced if "Disabled".
+        release: "20.04"
+        type: dconf

@@ -1,0 +1,13 @@
+- key: /com/ubuntu/1/relocatable/property
+  displayname: property summary
+  explaintext: property description
+  elementtype: text
+  metaenabled:
+    empty: ''''''
+    meta: s
+  metadisabled:
+    meta: s
+  default: '''property Default Value'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: dconf

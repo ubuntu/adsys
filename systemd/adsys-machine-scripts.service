@@ -1,0 +1,15 @@
+[Unit]
+Description=ADSys machine startup and shutdown scripts execution
+Before=shutdown.target
+Conflicts=shutdown.target
+ConditionPathExists=/run/adsys/machine/scripts/.ready
+
+[Service]
+Type=notify
+RemainAfterExit=yes
+ExecStart=/sbin/adsysd runscripts --allow-order-missing /run/adsys/machine/scripts/startup
+ExecStop=/sbin/adsysd runscripts --allow-order-missing /run/adsys/machine/scripts/shutdown
+
+# This unit is also started manually by adsysd in case adsys was ready afterwards
+[Install]
+WantedBy=default.target

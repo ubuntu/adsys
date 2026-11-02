@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option go_package = "github.com/ubuntu/adsys/internal/grpc/log";
+
+message Log {
+  // use logHeader instead of header as the result will be polymorphic and we want
+  // to give the more chances to not decode by error.
+  // this will contain an unique identifier string.
+  string logHeader = 1;
+  string level = 2;
+  string caller = 3;
+  string msg = 4;
+}

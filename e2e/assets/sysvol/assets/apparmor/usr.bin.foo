@@ -1,0 +1,2 @@
+#include <tunables/global>
+/usr/bin/foo=(complain) {}

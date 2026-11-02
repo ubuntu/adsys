@@ -1,0 +1,18 @@
+- key: /org/gnome/desktop/policy-choices
+  displayname: summary
+  explaintext: description
+  elementtype: dropdownList
+  metaenabled:
+    meta: "s"
+    empty: ''''''
+  metadisabled:
+    meta: "s"
+  class: ""
+  default: 'choice 2'
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  choices:
+    - choice 1
+    - choice 2
+    - choice 4
+  release: "21.10"
+  type: "dconf"

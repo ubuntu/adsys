@@ -1,0 +1,54 @@
+gpos:
+- id: '{C4F393CA-AD9A-4595-AEBC-3FA6EE484285}'
+  name: GPO for current machine
+  rules:
+      gdm:
+        - key: dconf/org/gnome/desktop/interface/clock-format
+          value: 24h
+          disabled: false
+          meta: s
+        - key: dconf/org/gnome/desktop/interface/clock-show-date
+          value: "false"
+          disabled: false
+          meta: b
+        - key: dconf/org/gnome/desktop/interface/clock-show-weekday
+          value: "true"
+          disabled: false
+          meta: b
+      privilege:
+        - key: allow-local-admins
+          value: ""
+          disabled: true
+        - key: client-admins
+          value: "bob@example.com\n%mygroup@example2.com"
+          disabled: false
+      scripts:
+        - key: startup
+          value: |
+            script-machine-startup
+            subfolder/other-script
+          disabled: false
+          strategy: append
+      apparmor:
+        - key: apparmor-machine
+          value: |
+            usr.bin.foo
+            usr.bin.bar
+            nested/usr.bin.baz
+          disabled: false
+          strategy: append
+      proxy:
+        - key: proxy/auto
+          value: http://example.com/proxy.pac
+        - key: proxy/http
+          value: ""
+          disabled: true
+        - key: proxy/no-proxy
+          value: localhost,127.0.0.1,::1
+      certificate:
+        - key: autoenroll
+          value: "1"
+
+- id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
+  name: Default Domain Policy
+  rules: {}

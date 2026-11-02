@@ -1,0 +1,31 @@
+Policies from machine configuration:
+- MainOffice Policy ({C4F393CA-AD9A-4595-AEBC-3FA6EE484285})
+    - dconf:
+        - org/gnome/shell/common-key: machine value
+    - gdm:
+        - dconf/org/gnome/desktop/interface/clock-format: 24h
+        - dconf/org/gnome/desktop/interface/clock-show-date: false
+        - dconf/org/gnome/desktop/interface/clock-show-weekday: true
+    - privilege:
+        - allow-local-admins: Disabled
+        - client-admins: bob@example.com,%mygroup@example2.com
+- Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})
+
+Policies from user configuration:
+- RnD Policy ({5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242})
+    - dconf:
+        - org/gnome/shell/disabled-value: Locked to system default
+        - org/gnome/shell/common-key: user value
+        - org/gnome/shell/common-key-user: user value on RnD Policy
+        - org/gnome/shell/favorite-apps: 'libreoffice-writer.desktop'\n'snap-store_ubuntu-software.desktop'\n'yelp.desktop
+    - scripts:
+        - logon: local-script-user-logon
+- IT Policy ({75545F76-DEC2-4ADA-B7B8-D5209FD48727})
+    - dconf:
+        - org/gnome/desktop/background/picture-options: stretched
+        - org/gnome/desktop/background/picture-uri: file:///usr/share/backgrounds/canonical.png
+        - org/gnome/shell/common-key-user: Locked to system default
+        - org/gnome/shell/favorite-apps: 'firefox.desktop'\n'thunderbird.desktop'\n'org.gnome.Nautilus.desktop'
+    - scripts:
+        - logon: script-user-logon\nsubdirectory/other-logon
+- Default Domain Policy ({31B2F340-016D-11D2-945F-00C04FB984F9})

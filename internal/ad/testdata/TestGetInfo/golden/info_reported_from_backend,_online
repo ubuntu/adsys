@@ -1,0 +1,3 @@
+backend static config
+Domain: example.com
+Server FQDN: myserver.example.com

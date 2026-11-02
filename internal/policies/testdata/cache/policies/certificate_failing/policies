@@ -1,0 +1,8 @@
+gpos:
+- id: '{GPOId}'
+  name: GPOName
+  rules:
+    certificate:
+    - key: autoenroll
+      value: "NotANumber"
+      disabled: false

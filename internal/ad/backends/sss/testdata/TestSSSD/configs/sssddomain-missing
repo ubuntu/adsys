@@ -1,0 +1,2 @@
+[sssd]
+domains=does-not-exists

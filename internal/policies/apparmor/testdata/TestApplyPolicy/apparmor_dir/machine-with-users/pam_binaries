@@ -1,0 +1,22 @@
+include <tunables/global>
+
+/usr/bin/pam_binary {
+  include <abstractions/authentication>
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/wutmp>
+  include "users"
+
+  ^DEFAULT {
+     #include <abstractions/authentication>
+     #include <abstractions/nameservice>
+     capability dac_override,
+     capability setgid,
+     capability setuid,
+     /etc/default/su r,
+     /etc/environment r,
+     @{HOMEDIRS}/.xauth* w,
+     /usr/bin/{,b,d,rb}ash Px -> default_user,
+     /usr/bin/{c,k,tc}sh Px -> default_user,
+   }
+}

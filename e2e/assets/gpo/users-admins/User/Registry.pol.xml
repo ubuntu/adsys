@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PolFile num_entries="40" signature="PReg" version="1">
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;},&quot;22.04&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;},&quot;23.04&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;},&quot;23.10&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;},&quot;all&quot;:{&quot;empty&quot;:&quot;[]&quot;,&quot;meta&quot;:&quot;as&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>all</ValueName>
+		<Value>'rhythmbox.desktop'</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\dconf\org\gnome\shell\favorite-apps</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>all</ValueName>
+		<Value>nfs://warthogs.biz/user-mount-nfs</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\mount\user-mounts</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>all</ValueName>
+		<Value>user-logoff-admin.sh</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logoff</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>metaValues</ValueName>
+		<Value>{&quot;20.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;22.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.04&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;23.10&quot;:{&quot;strategy&quot;:&quot;append&quot;},&quot;all&quot;:{&quot;strategy&quot;:&quot;append&quot;}}</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>all</ValueName>
+		<Value>user-logon-admin.sh</Value>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>Override23.10</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>23.10</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>Override23.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>23.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>Override22.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>22.04</ValueName>
+		<Value/>
+	</Entry>
+	<Entry type="1" type_name="REG_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>Override20.04</ValueName>
+		<Value>false</Value>
+	</Entry>
+	<Entry type="7" type_name="REG_MULTI_SZ">
+		<Key>Software\Policies\Ubuntu\scripts\logon</Key>
+		<ValueName>20.04</ValueName>
+		<Value/>
+	</Entry>
+</PolFile>

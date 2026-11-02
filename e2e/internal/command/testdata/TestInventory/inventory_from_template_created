@@ -1,0 +1,9 @@
+ip: 100.100.100.100
+vmid: /subscriptions/uuid/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/some_vm_id
+uuid: 1fb2b697-c271-4aa8-aeb6-2a5f5bde5edd
+vmname: adsys-e2e-lunar-1fb2b697-c271-4aa8-aeb6-2a5f5bde5edd
+codename: mantic
+state: base_vm_created
+sshkeypath: /home/user/.ssh/id_rsa
+hostname: ""
+basevmimage: ""

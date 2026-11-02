@@ -1,0 +1,129 @@
+name: E2E - Build image templates
+
+on:
+  workflow_dispatch:
+    inputs:
+      codenames:
+        description: 'Comma-separated list of codenames to build for (e.g. "mantic", "focal") - will build for all supported releases if not specified'
+        type: string
+        required: false
+      force:
+        description: 'Force building new templates even if they already exist'
+        type: boolean
+        required: false
+  schedule:
+    - cron: '42 0 * * 0' # 00:42 UTC every Sunday
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  supported-releases:
+    name: Build matrix for supported ADSys and Ubuntu releases
+    runs-on: ${{ vars.RUNNER }}
+    outputs:
+      matrix: ${{ steps.set-supported-releases.outputs.matrix }}
+      versions: ${{ steps.set-supported-releases.outputs.versions }}
+    steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install needed binaries
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info
+      - name: Build matrix
+        id: set-supported-releases
+        run: |
+          set -eu
+
+          codenames="$(distro-info --supported-esm)\n$(distro-info --supported)\n"
+          versions="$(distro-info --supported-esm --release)\n$(distro-info --supported --release)\n"
+
+          # Paste the codenames and versions together, sort them, and remove duplicates
+          codenames_with_versions="$(paste <(printf "$versions" | cut -d' ' -f1) <(printf "$codenames") | sort -u)"
+
+          releases=""
+          versions=""
+          while IFS=$'\t' read -r version codename; do
+              # Filter out unsupported LTS releases
+              if [[ "${codename}" =~ xenial|bionic|focal ]]; then
+                  continue
+              fi
+
+              if [ -n "${releases}" ]; then
+                  releases="${releases}, "
+              fi
+              releases="${releases}'${codename}'"
+
+              if [ -n "${versions}" ]; then
+                  versions="${versions}, "
+              fi
+              versions="${versions}\"${codename}\": \"${version}\""
+          done <<< "$codenames_with_versions"
+
+          echo versions="{${versions}}" >> $GITHUB_OUTPUT
+          echo matrix="${releases}" >> $GITHUB_OUTPUT
+
+  build-template:
+    name: Build VM template
+    runs-on: ${{ vars.RUNNER }}
+    concurrency:
+      group: template-build-${{ matrix.codename }}
+    needs:
+      - supported-releases
+    strategy:
+      matrix:
+        codename: ${{ fromJSON(format('[{0}]', inputs.codenames || needs.supported-releases.outputs.matrix)) }}
+      fail-fast: false
+    steps:
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/adsys-e2e.pem
+          chmod 600 ~/.ssh/adsys-e2e.pem
+      - name: Check if template needs to be created
+        id: check-vm-template
+        env:
+          versions: ${{ needs.supported-releases.outputs.versions }}
+        run: |
+          set -eu
+
+          force=""
+          if [ "${{ inputs.force }}" = "true" ]; then
+              force="--force"
+          fi
+
+          version="$(echo $versions | jq -r .${{ matrix.codename }})"
+          codename="${{ matrix.codename }}"
+          IMAGE_VERSION=$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${codename} --version ${version} ${force})
+          if [ ! -z "${IMAGE_VERSION}" ]; then
+              echo image-version=$IMAGE_VERSION >> $GITHUB_OUTPUT
+          fi
+
+      # These steps only run if the template needs to be created
+      - name: Set up VPN connection
+        uses: ./.github/actions/azure-sstpc-vpn
+        if: steps.check-vm-template.outputs.image-version != ''
+        with:
+          gateway: ${{ secrets.VPN_GATEWAY }}
+          ca: ${{ secrets.VPN_CA }}
+          cert: ${{ secrets.VPN_CERT }}
+          key: ${{ secrets.VPN_KEY }}
+      - name: Build base VM
+        if: steps.check-vm-template.outputs.image-version != ''
+        run: |
+          go run ./e2e/cmd/build_base_image/01_prepare_base_vm --vm-image ${{ steps.check-vm-template.outputs.image-version }} --codename ${{ matrix.codename }}
+      - name: Create template version
+        if: steps.check-vm-template.outputs.image-version != ''
+        run: |
+          go run ./e2e/cmd/build_base_image/02_create_vm_template
+      - name: Purge old template versions
+        run: |
+          go run ./e2e/cmd/build_base_image/99_destroy_previous_versions --codename ${{ matrix.codename }}

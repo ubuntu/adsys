@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+
+  <vendor>ADSys</vendor>
+  <vendor_url>http://ubuntu.com</vendor_url>
+
+  <action id="com.ubuntu.adsys.service.manage">
+    <description gettext-domain="adsys">Can manage ADSys service</description>
+    <message gettext-domain="adsys">Authorization is required to manage adsysd itself (stop, cat, ...)</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.ubuntu.adsys.policy.update-others">
+    <description gettext-domain="adsys">Can update machine and all logged in users</description>
+    <message gettext-domain="adsys">Authorization is required to perform an update of all the policies which is not ourself</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.ubuntu.adsys.policy.update-self">
+    <description gettext-domain="adsys">Can update current user policy</description>
+    <message gettext-domain="adsys">Authorization is required to perform an update a current user's policy</message>
+    <defaults>
+      <allow_any>yes</allow_any>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.ubuntu.adsys.policy.dump-others">
+    <description gettext-domain="adsys">Can inspect other users applied policies</description>
+    <message gettext-domain="adsys">Authorization is required to check applied policies for other users</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.ubuntu.adsys.policy.dump-self">
+    <description gettext-domain="adsys">Can inspect current user applied policies</description>
+    <message gettext-domain="adsys">Authorization is required to check currently applied policies</message>
+    <defaults>
+      <allow_any>yes</allow_any>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+</policyconfig>

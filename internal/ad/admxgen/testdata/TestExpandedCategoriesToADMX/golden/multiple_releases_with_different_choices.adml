@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <displayName>Ubuntu policy</displayName>
+  <description>This is the Ubuntu policy</description>
+  <resources>
+
+    <stringTable>
+      <string id="UbuntuDisplayCategory1DisplayName">Category1 Display Name</string>
+      <string id="UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicySimple">description
+
+- Type: dconf
+- Key: org/gnome/desktop/policy-simple
+- Default for 20.04: Choice 11
+- Default for 18.04: Choice 22
+
+Note: default system value is used for &#34;Not Configured&#34; and enforced if &#34;Disabled&#34;.
+
+Supported on Ubuntu 20.04, 18.04</string>
+      <string id="UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeDesktopPolicySimple0">Choice 11</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeDesktopPolicySimple1">Choice 12</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeDesktopPolicySimple2">Choice 13</string>
+      <string id="UbuntuItemMachineAllDconfOrgGnomeDesktopPolicySimple3">Choice 14</string>
+      <string id="UbuntuDisplayMachine2004DconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeDesktopPolicySimple0">Choice 11</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeDesktopPolicySimple1">Choice 12</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeDesktopPolicySimple2">Choice 13</string>
+      <string id="UbuntuItemMachine2004DconfOrgGnomeDesktopPolicySimple3">Choice 14</string>
+      <string id="UbuntuDisplayMachine1804DconfOrgGnomeDesktopPolicySimple">summary</string>
+      <string id="UbuntuItemMachine1804DconfOrgGnomeDesktopPolicySimple0">Choice 21</string>
+      <string id="UbuntuItemMachine1804DconfOrgGnomeDesktopPolicySimple1">Choice 22</string>
+      <string id="UbuntuItemMachine1804DconfOrgGnomeDesktopPolicySimple2">Choice 23</string>
+      <string id="UbuntuItemMachine1804DconfOrgGnomeDesktopPolicySimple3">Choice 24</string>
+    </stringTable>
+
+    <presentationTable>
+      <presentation id="UbuntuPresentationMachineDconfOrgGnomeDesktopPolicySimple">
+        <dropdownList refId="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicySimple" noSort="true" defaultItem="">summary</dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine2004DconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for 20.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine2004DconfOrgGnomeDesktopPolicySimple" noSort="true" defaultItem="0"></dropdownList>
+        <text/>
+        <checkBox refId="UbuntuOverrideElemMachine1804DconfOrgGnomeDesktopPolicySimple" defaultChecked="false">Override value for 18.04:</checkBox>
+        <dropdownList refId="UbuntuElemMachine1804DconfOrgGnomeDesktopPolicySimple" noSort="true" defaultItem="0"></dropdownList>
+      </presentation>
+    </presentationTable>
+
+  </resources>
+</policyDefinitionResources>

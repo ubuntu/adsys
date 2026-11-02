@@ -1,0 +1,13 @@
+- key: /com/ubuntu/types/decimal-property
+  displayname: decimal-property summary
+  explaintext: decimal-property description
+  elementtype: decimal
+  metaenabled:
+    empty: "0"
+    meta: i
+  metadisabled:
+    meta: i
+  default: "42"
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "20.04"
+  type: dconf

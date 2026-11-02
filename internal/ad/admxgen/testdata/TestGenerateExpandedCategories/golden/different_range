@@ -1,0 +1,69 @@
+- displayname: Category1 Display Name
+  parent: ubuntu:Desktop
+  policies:
+    - key: Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-common
+      explaintext: |-
+        description
+
+        - Type: dconf
+        - Key: /org/gnome/desktop/policy-common
+        - Default: 'Default Value'
+
+        Note: default system value is used for "Not Configured" and enforced if "Disabled".
+
+        Supported on Ubuntu 20.04, 21.10.
+      metaenabled: '{"20.04":{"empty":"0","meta":"i"},"21.10":{"empty":"0","meta":"i"},"all":{"empty":"0","meta":"i"}}'
+      metadisabled: '{"20.04":{"meta":"i"},"21.10":{"meta":"i"},"all":{"meta":"i"}}'
+      class: Machine
+      releaseselements:
+        "20.04":
+            key: /org/gnome/desktop/policy-common
+            displayname: summary
+            explaintext: description
+            elementtype: decimal
+            metaenabled:
+                empty: "0"
+                meta: i
+            metadisabled:
+                meta: i
+            default: '''Default Value'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
+            rangevalues:
+                min: "-123"
+                max: "456"
+            release: "20.04"
+            type: dconf
+        "21.10":
+            key: /org/gnome/desktop/policy-common
+            displayname: summary
+            explaintext: description
+            elementtype: decimal
+            metaenabled:
+                empty: "0"
+                meta: i
+            metadisabled:
+                meta: i
+            default: '''Default Value'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
+            rangevalues:
+                min: "234"
+                max: "456"
+            release: "21.10"
+            type: dconf
+        all:
+            key: /org/gnome/desktop/policy-common
+            displayname: summary
+            explaintext: description
+            elementtype: decimal
+            metaenabled:
+                empty: "0"
+                meta: i
+            metadisabled:
+                meta: i
+            default: '''Default Value'''
+            note: default system value is used for "Not Configured" and enforced if "Disabled".
+            rangevalues:
+                min: "234"
+                max: "456"
+            release: "21.10"
+            type: dconf

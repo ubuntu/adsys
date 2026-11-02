@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  (c) 2021 Canonical  -->
+<policyDefinitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.0" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+  <policyNamespaces>
+    <target prefix="ubuntudesktop" namespace="Canonical.Policies.UbuntuDesktop" />
+    <using prefix="ubuntu" namespace="Canonical.Policies.Ubuntu" />
+  </policyNamespaces>
+  <resources minRequiredRevision="1.0" />
+
+  <categories>
+    <category name="UbuntuCategory1DisplayName" displayName="$(string.UbuntuDisplayCategory1DisplayName)">
+      <parentCategory ref="ubuntu:Desktop" />
+    </category>
+  </categories>
+
+  <policies>
+    <policy name="UbuntuMachineDconfOrgGnomeDesktopPolicyChoices" class="Machine" displayName="$(string.UbuntuDisplayMachineAllDconfOrgGnomeDesktopPolicyChoices)" explainText="$(string.UbuntuExplainTextMachineDconfOrgGnomeDesktopPolicyChoices)" presentation="$(presentation.UbuntuPresentationMachineDconfOrgGnomeDesktopPolicyChoices)" key="Software\Policies\Ubuntu\dconf\org\gnome\desktop\policy-choices" valueName="metaValues">
+      <parentCategory ref="UbuntuCategory1DisplayName" />
+      <supportedOn ref="Ubuntu" />
+      <enabledValue><string>{"20.04":{"empty":"''","meta":"s"},"all":{"empty":"''","meta":"s"}}</string></enabledValue>
+      <disabledValue><string>{"20.04":{"meta":"s"},"all":{"meta":"s"}}</string></disabledValue>
+      <elements>
+        <enum id="UbuntuElemMachineAllDconfOrgGnomeDesktopPolicyChoices" valueName="all">
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices0)">
+            <value>
+              <string>Choice 1</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices1)">
+            <value>
+              <string>Choice 2</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices2)">
+            <value>
+              <string>Choice 3</string>
+            </value>
+          </item>
+          <item displayName="$(string.UbuntuItemMachineAllDconfOrgGnomeDesktopPolicyChoices3)">
+            <value>
+              <string>Choice 4</string>
+            </value>
+          </item>
+        </enum>
+      </elements>
+    </policy>
+  </policies>
+
+</policyDefinitions>

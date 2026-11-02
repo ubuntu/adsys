@@ -1,0 +1,12 @@
+- key: /com/ubuntu/simple/simple-text-property
+  displayname: simple-text-property summary
+  explaintext: simple-text-property description
+  elementtype: text
+  meta:
+    meta: "s"
+    empty: "''''"
+  class: ""
+  default: simple-text-property Default Value
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  release: "22.04"
+  type: dconf

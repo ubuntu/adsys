@@ -1,0 +1,11 @@
+Policies from machine configuration:
+Policies from user configuration:
+* GPOName ({GPOId})
+** dconf:
+*** path/to/Gpo1key1: ValueOfGpo1Key1
+*** path/to/Gpo1key2: ValueOfGpo1Key2
+** scripts:
+***+ path/to/Gpo1key3
+* GPOName2 ({GPOId2})
+** dconf:
+*** path/to/Gpo2key1: ValueOfKey1

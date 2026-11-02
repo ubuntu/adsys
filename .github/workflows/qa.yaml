@@ -1,0 +1,165 @@
+name: QA & sanity checks
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  apt_dependencies: >-
+    ca-certificates curl dconf-cli gcc gettext git libnss-wrapper libsmbclient-dev
+    libkrb5-dev libwbclient-dev pkg-config python3-coverage samba sudo
+    libglib2.0-dev gvfs libpam0g-dev
+
+jobs:
+  sanity:
+    name: Code sanity
+    # Put the runner here instead of GH project config as it’s not available to the forked repositories
+    # otherwise when submitting PRs: https://github.com/orgs/community/discussions/44322.
+    # workflow environements don’t work either.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
+      - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
+        run: git config --global --add safe.directory /__w/adsys/adsys
+      - uses: actions/checkout@v5
+      - name: Go code sanity check
+        uses: canonical/desktop-engineering/gh-actions/go/code-sanity@v2
+        with:
+          golangci-lint-configfile: ".golangci.yaml"
+          tools-directory: "tools"
+          generate-diff-paths-to-ignore: po/* docs/**/*.md README.md
+          go-build-script: |
+            go build ./...
+            go generate -x -tags=tools ./pam
+      - name: C code formatting
+        uses: jidicula/clang-format-action@v4.16.0
+        with:
+          include-regex: '^.*\.(c|h)$' # Makes sure to run only on C (source and header) files
+          exclude-regex: 'vendor' # Excludes the vendor directory
+        if: ${{ always() }}
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ${{ env.apt_dependencies }}
+
+          # Coverage dependencies
+          go install github.com/AlekSi/gocov-xml@latest
+          go install github.com/axw/gocov/gocov@latest
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+      - name: Set required environment variables
+        run: echo "SUDO_PACKAGES=$(cat debian/tests/.sudo-packages)" >> $GITHUB_ENV
+      - name: Authenticate to docker local registry and pull image with our token
+        run: |
+          set -eu
+
+          echo "${{ github.token }}" | docker login https://docker.pkg.github.com -u ${GITHUB_ACTOR} --password-stdin
+          docker pull docker.pkg.github.com/ubuntu/adsys/systemdaemons:0.1
+      - name: Run tests
+        run: |
+          set -eu
+
+          go test -coverpkg=./... -coverprofile=/tmp/coverage.out -covermode=set ./...
+
+          # Run integration tests that need sudo
+          # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
+          sudo -E $(which go) test -coverpkg=./... -coverprofile=/tmp/coverage.sudo.out -covermode=set $SUDO_PACKAGES
+
+          # Combine coverage files, and filter out test utilities and generated files
+          coverage_dir="$(pwd)/coverage"
+          cod_cov_dir="${coverage_dir}/codecov"
+          mkdir -p "${cod_cov_dir}"
+          combined_cov_file="${coverage_dir}/coverage.combined.out"
+          go_only_cov_file="${coverage_dir}/coverage.go-only.out"
+          echo "mode: set" > "${combined_cov_file}"
+          grep -hv -e "testutils" -e "pb.go:" -e "/e2e/" -e "mode: set" /tmp/coverage.out /tmp/coverage.sudo.out >> "${combined_cov_file}"
+
+          # Prepare XML coverage report
+          grep -hv -e "adsys-gpolist" -e "cert-autoenroll" "${combined_cov_file}" > "${go_only_cov_file}"
+          gocov convert "${go_only_cov_file}" | gocov-xml > "${coverage_dir}/coverage.xml"
+          reportgenerator -reports:"${coverage_dir}/*.xml" -targetdir:"${cod_cov_dir}" -reporttypes:Cobertura
+      - name: Upload XML coverage report as artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: coverage.zip
+          path: ./coverage/codecov/Cobertura.xml
+      - name: Run tests (with race detector)
+        run: |
+          go test -race ./...
+          # Use command substitution to preserve go binary path (sudo does not preserve path even with -E)
+          sudo -E $(which go) test -race ${{ env.sudo_packages }}
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/codecov/Cobertura.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  adwatchd-tests:
+    name: Windows tests for adwatchd
+    runs-on: windows-latest
+    env:
+      packages: ./internal/loghooks ./internal/watchdservice ./internal/watchdtui ./internal/watcher ./internal/config/watchd ./cmd/adwatchd ./cmd/adwatchd/integration_tests
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Build installer
+        run: |
+          tag=$(git describe --tags)
+          export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$tag
+
+          # Transforms git describe output:
+          # - from X.Y.Z-P-gSHA to X.Y.Z.P for untagged commits
+          # - from vX.Y.Z to X.Y.Z for tagged commits
+          INSTALLER_VERSION=$(echo $tag | tr -d v | tr '-' '.' | cut -d. -f-4)
+
+          go build ./cmd/adwatchd
+          iscc.exe //DAPP_VERSION=$INSTALLER_VERSION installer/setup.iss
+        shell: bash
+      - name: Run tests
+        run: go test ${{ env.packages }}
+      - name: Run tests (with race detector)
+        env:
+          ADSYS_SKIP_INTEGRATION_TESTS: 1
+        run: go test -race ${{ env.packages }}
+        # There are some cryptic "The pipe has been closed" errors on Windows
+        # that arise from running the tests with the race detector enabled. We
+        # believe this originates outside our code, thus we avoid running the
+        # integration suite with the race detector.
+        #
+        # As the Linux job already exercises the entire testsuite with race
+        # detection enabled and the code is mostly platform independent, this
+        # should be a safe action to take.
+      - name: Attach installer artifact to workflow run
+        uses: actions/upload-artifact@v5
+        with:
+          name: adwatchd_setup
+          path: installer/Output/adwatchd_setup.exe
+      - name: Draft release and publish installer artifact
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: installer/Output/adwatchd_setup.exe

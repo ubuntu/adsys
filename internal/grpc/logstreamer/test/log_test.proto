@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+option go_package = "github.com/ubuntu/adsys/internal/grpc/log/test";
+
+// this is the base object to decode into for client tests, including log messages
+// that are later turned as Log object.
+message EmptyLogTest {
+}

@@ -1,0 +1,63 @@
+Source: adsys
+Section: admin
+Priority: optional
+Maintainer: Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Build-Depends: debhelper-compat (= 13),
+               dh-apport,
+               dh-golang,
+               golang-go (>= 2:1.24~),
+               apparmor,
+               dbus,
+               libdbus-1-dev,
+               libglib2.0-dev,
+               libkrb5-dev,
+               libpam0g-dev,
+               libsmbclient-dev,
+               libwbclient-dev,
+               python3,
+               python3-samba,
+               samba,
+               samba-dsdb-modules,
+Standards-Version: 4.5.1
+XS-Go-Import-Path: github.com/ubuntu/adsys
+Homepage: https://github.com/ubuntu/adsys
+Description: AD SYStem integration
+ ADSys is an AD SYStem tool to integrate GPOs with a linux system.
+ It allows one to handle machine and users GPOs, mapping them to dconf keys,
+ apparmor rules, mounts, proxy settings, certificate autoenrollment and running
+ scripts at different points in time.
+
+Package: adsys
+Architecture: any
+Built-Using: ${misc:Built-Using},
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         python3,
+         python3-samba,
+         samba-dsdb-modules,
+         sssd | winbind,
+         sssd | krb5-user,
+         sssd-dbus | winbind,
+         apparmor,
+         cifs-utils,
+         nfs-common,
+         gvfs,
+Recommends: ${misc:Recommends},
+            ubuntu-advantage-desktop-daemon,
+Suggests: curlftpfs,
+          ubuntu-proxy-manager,
+          python3-cepces,
+Description: ${source:Synopsis}
+ ${source:Extended-Description}
+
+Package: adsys-windows
+Architecture: amd64 arm64
+Built-Using: ${misc:Built-Using},
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+Description: ${source:Synopsis}
+ ${source:Extended-Description}
+ .
+ This package contains all the assets and binaries to install
+ on the Active Directory Windows server.
+ The binaries are Windows executables.

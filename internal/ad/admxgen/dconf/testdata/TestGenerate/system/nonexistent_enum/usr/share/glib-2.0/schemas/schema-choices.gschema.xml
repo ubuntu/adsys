@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
+    <schema path="/com/ubuntu/choices/" id="com.ubuntu.choices">
+        <key name="enum-doesnotexist-property" enum="com.ubuntu.choices.enum-doesnotexist">
+            <default>'something'</default>
+            <summary>enum-doesnotexist-property summary</summary>
+            <description>enum-doesnotexist-property description</description>
+        </key>
+    </schema>
+</schemalist>

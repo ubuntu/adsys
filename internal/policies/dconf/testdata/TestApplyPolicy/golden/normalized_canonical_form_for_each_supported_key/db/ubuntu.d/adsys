@@ -1,0 +1,7 @@
+[com/ubuntu/category]
+key-s='onekey-s'
+key-i=42
+key-b=true
+key-as=['simple-as']
+key-ai=[42]
+key-returnedunmodified=[[1,2,3],[4,5,6]]

@@ -1,0 +1,61 @@
+gpos:
+- id: '{5EC4DF8F-FF4E-41DE-846B-52AA6FFAF242}'
+  name: RnD Policy
+  rules:
+      dconf:
+        - key: org/gnome/shell/disabled-value
+          disabled: true
+          meta: s
+        - key: org/gnome/shell/common-key
+          value: "user value"
+          disabled: false
+          meta: s
+        - key: org/gnome/shell/common-key-user
+          value: "user value on RnD Policy"
+          disabled: false
+          meta: s
+        - key: org/gnome/shell/favorite-apps
+          value: |
+              'libreoffice-writer.desktop'
+              'snap-store_ubuntu-software.desktop'
+              'yelp.desktop
+          disabled: false
+          meta: as
+      scripts:
+      - key: logon
+        value: |
+          local-script-user-logon
+        disabled: false
+        strategy: append
+- id: '{75545F76-DEC2-4ADA-B7B8-D5209FD48727}'
+  name: IT Policy
+  rules:
+      dconf:
+        - key: org/gnome/desktop/background/picture-options
+          value: stretched
+          disabled: false
+          meta: s
+        - key: org/gnome/desktop/background/picture-uri
+          value: file:///usr/share/backgrounds/canonical.png
+          disabled: false
+          meta: s
+        - key: org/gnome/shell/common-key-user
+          disabled: true
+          meta: s
+        - key: org/gnome/shell/favorite-apps
+          value: |4
+               'firefox.desktop'
+              'thunderbird.desktop'
+              'org.gnome.Nautilus.desktop'
+          disabled: false
+          meta: as
+      scripts:
+      - key: logon
+        value: |
+          script-user-logon
+          subdirectory/other-logon
+        disabled: false
+        strategy: append
+- id: '{31B2F340-016D-11D2-945F-00C04FB984F9}'
+  name: Default Domain Policy
+  rules: {}

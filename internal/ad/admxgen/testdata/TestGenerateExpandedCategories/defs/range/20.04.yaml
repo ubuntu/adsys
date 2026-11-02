@@ -1,0 +1,17 @@
+- key: /org/gnome/desktop/policy-range
+  displayname: summary
+  explaintext: description
+  elementtype: decimal
+  metaenabled:
+    meta: "i"
+    empty: "0"
+  metadisabled:
+    meta: "i"
+  class: ""
+  default: '''Default Value'''
+  note: default system value is used for "Not Configured" and enforced if "Disabled".
+  rangevalues:
+    min: "-123"
+    max: "456"
+  release: "20.04"
+  type: "dconf"

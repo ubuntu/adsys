@@ -1,0 +1,5 @@
+* GPOName ({GPOId})
+** dconf:
+*** path/to/key2: ValueOfKey2\nOn\nMultilines
+** scripts:
+***+ path/to/key3

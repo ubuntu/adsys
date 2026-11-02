@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+option go_package = "github.com/ubuntu/adsys";
+
+service service {
+  rpc Cat(Empty) returns (stream StringResponse);
+  rpc Version(Empty) returns (stream StringResponse);
+  rpc Status(Empty) returns (stream StringResponse);
+  rpc Stop(StopRequest) returns (stream Empty);
+  rpc UpdatePolicy(UpdatePolicyRequest) returns (stream Empty);
+  rpc DumpPolicies(DumpPoliciesRequest) returns (stream StringResponse);
+  rpc DumpPoliciesDefinitions(DumpPolicyDefinitionsRequest) returns (stream DumpPolicyDefinitionsResponse);
+  rpc GetDoc(GetDocRequest) returns (stream StringResponse);
+  rpc ListDoc(Empty) returns (stream ListDocReponse);
+  rpc ListUsers(ListUsersRequest) returns (stream StringResponse);
+  rpc GPOListScript(Empty) returns (stream StringResponse);
+  rpc CertAutoEnrollScript(Empty) returns (stream StringResponse);
+}
+
+message Empty {}
+
+message ListUsersRequest {
+  bool active = 1;
+}
+
+message StopRequest {
+  bool force = 1;
+}
+
+message StringResponse {
+  string msg = 1;
+}
+
+message UpdatePolicyRequest {
+  bool isComputer = 1;
+  bool all = 2;   // Update policies of the machine and all the users
+  string target = 3;
+  string krb5cc = 4;
+  bool purge = 5;
+}
+
+message DumpPoliciesRequest {
+  string target = 1;
+  bool isComputer = 2;
+  bool details = 3;   // Show rules in addition to GPO
+  bool all = 4;   // Show overridden rules
+}
+
+message DumpPolicyDefinitionsRequest {
+  string format = 1;
+  string distroID = 2; // Force another distro than the built-in one
+}
+
+message DumpPolicyDefinitionsResponse {
+  string admx = 1;
+  string adml = 2;
+}
+
+message GetDocRequest {
+  string chapter = 1;
+}
+
+message ListDocReponse {
+  repeated string chapters = 1;
+}

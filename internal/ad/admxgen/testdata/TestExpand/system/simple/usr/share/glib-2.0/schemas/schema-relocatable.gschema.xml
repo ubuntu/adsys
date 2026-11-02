@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gsettings-ubuntu-touch-schemas">
+    <schema id="com.ubuntu.relocatable">
+        <key type="s" name="property">
+            <default>'property Default Value'</default>
+            <summary>property summary</summary>
+            <description>property description</description>
+        </key>
+        <key type="s" name="property-with-override">
+            <default>'property-with-override Default Value'</default>
+            <summary>property-with-override summary</summary>
+            <description>property-with-override description</description>
+        </key>
+    </schema>
+</schemalist>
