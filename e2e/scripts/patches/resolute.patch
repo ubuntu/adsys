@@ -1,0 +1,19 @@
+diff --git a/debian/control b/debian/control
+--- a/debian/control
++++ b/debian/control
+@@ -7,5 +7,5 @@
+                dh-apport,
+                dh-golang,
+-               golang-go (>= 2:1.27~),
++               golang-1.27-go,
+                apparmor,
+                dbus,
+diff --git a/debian/rules b/debian/rules
+--- a/debian/rules
++++ b/debian/rules
+@@ -31,2 +31,5 @@ export GOTOOLCHAIN := local
+ 
++# Run with Go 1.27
++export PATH := /usr/lib/go-1.27/bin/:$(PATH)
++
+ %:
