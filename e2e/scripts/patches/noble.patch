@@ -1,6 +1,0 @@
-diff --git a/debian/rules b/debian/rules
---- a/debian/rules
-+++ b/debian/rules
-@@ -92,0 +93,2 @@
-+
-+override_dh_dwz:
