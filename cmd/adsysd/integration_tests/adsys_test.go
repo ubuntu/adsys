@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -61,15 +62,22 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Setup: can't find project root directory")
 	}
 
-	// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
-	// We only start samba on non helper process
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		defer runDaemons()()
-		cwd, err := os.Getwd()
-		if err != nil {
-			log.Fatalf("Setup: can't get current working directory: %v", err)
+		defer testutils.IsolateDconfSystemProfiles()()
+
+		flag.Parse()
+		switch flag.Lookup("test.run").Value.String() {
+		case "TestHelperProcessDconfIsolation", "^TestHelperProcessDconfIsolation$":
+			// This regression test only needs parent-owned dconf isolation.
+		default:
+			// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
+			defer runDaemons()()
+			cwd, err := os.Getwd()
+			if err != nil {
+				log.Fatalf("Setup: can't get current working directory: %v", err)
+			}
+			defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/AD/SYSVOL"))()
 		}
-		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/AD/SYSVOL"))()
 	}
 
 	m.Run()
@@ -735,6 +743,23 @@ func TestExecuteCommand(_ *testing.T) {
 }
 
 var testCmdName = os.Args[0]
+
+func TestHelperProcessDconfIsolation(t *testing.T) {
+	profileDir := os.Getenv("ADSYS_TESTS_DCONF_PROFILE_DATA_DIRS")
+	require.NotEmpty(t, profileDir, "Parent must set up dconf profile isolation")
+	require.DirExists(t, profileDir)
+
+	tmpDir := t.TempDir()
+	// #nosec G204 G702: re-execute this test binary with fixed arguments.
+	cmd := exec.Command(os.Args[0], "-test.run=TestExecuteCommand", "--", "adsysctl", "--help")
+	cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1", "TMPDIR="+tmpDir)
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "Helper failed: %s", out)
+
+	entries, err := os.ReadDir(tmpDir)
+	require.NoError(t, err)
+	require.Empty(t, entries, "Helper must inherit profile isolation without creating temporary directories")
+}
 
 func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop func(), err error) {
 	t.Helper()
