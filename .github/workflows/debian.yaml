@@ -1,0 +1,66 @@
+name: Debian packaging
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**'
+      - '!.github/**'
+      - '.github/workflows/debian.yaml'
+      - '!.clang-format'
+      - '!.gitignore'
+      - '!.golangci.yaml'
+      - '!*.md'
+    tags:
+      - "*"
+  pull_request:
+    paths:
+      - '**'
+      - '!.github/**'
+      - '.github/workflows/debian.yaml'
+      - '!.clang-format'
+      - '!.gitignore'
+      - '!.golangci.yaml'
+      - '!*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-deb:
+    name: Build Debian package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ubuntu-version: ['noble', 'resolute', 'devel']
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: adsys
+
+      - name: Adapt the packaging to the Ubuntu release
+        # Apply the same per-release patches as the E2E package builds.
+        working-directory: adsys
+        env:
+          RELEASE_PATCH: e2e/scripts/patches/${{ matrix.ubuntu-version }}.patch
+        run: |
+          set -euo pipefail
+
+          if [ -f "${RELEASE_PATCH}" ]; then
+            patch --ignore-whitespace --no-backup-if-mismatch -p1 < "${RELEASE_PATCH}"
+          fi
+
+      - name: Build Debian package
+        uses: canonical/desktop-engineering/gh-actions/common/build-debian@main
+        with:
+          source-dir: adsys
+          docker-image: ubuntu:${{ matrix.ubuntu-version }}
+          # Noble doesn't ship the Go version we require.
+          extra-apt-repositories: ${{ (matrix.ubuntu-version == 'noble') && 'ppa:ubuntu-enterprise-desktop/golang' || '' }}
