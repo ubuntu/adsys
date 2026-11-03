@@ -110,7 +110,9 @@ func TestDaemonsReadyTimesOut(t *testing.T) {
 	// Listening sockets alone are insufficient: the D-Bus handshake must finish.
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
-	require.ErrorIs(t, daemonsReady(ctx, dir), os.ErrDeadlineExceeded)
+	err := daemonsReady(ctx, dir)
+	// Context cancellation and the socket deadline race to end authentication.
+	require.True(t, errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, net.ErrClosed), "expected a timeout or context-closed connection, got %v", err)
 }
 
 func TestCommandsError(t *testing.T) {
