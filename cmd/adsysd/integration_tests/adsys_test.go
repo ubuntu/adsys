@@ -87,6 +87,32 @@ func TestStartAndStopDaemon(t *testing.T) {
 	quit()
 }
 
+func TestWaitForDaemonsReportsDockerError(t *testing.T) {
+	t.Parallel()
+
+	startupErr := errors.New("container failed to start")
+	err := waitForDaemons(map[string]string{"polkit_yes": t.TempDir()}, func() error {
+		return startupErr
+	})
+	require.ErrorIs(t, err, startupErr)
+}
+
+func TestDaemonsReadyTimesOut(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	for _, socket := range []string{"system_bus_socket", "session_bus_socket"} {
+		listener, err := net.Listen("unix", filepath.Join(dir, socket))
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = listener.Close() })
+	}
+
+	// Listening sockets alone are insufficient: the D-Bus handshake must finish.
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	require.ErrorIs(t, daemonsReady(ctx, dir), os.ErrDeadlineExceeded)
+}
+
 func TestCommandsError(t *testing.T) {
 	// No command is implemented, and so, they should all returns an error
 	errorServer := adsys.UnimplementedServiceServer{}
