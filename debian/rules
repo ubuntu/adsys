@@ -35,6 +35,9 @@ export PATH := $(shell ./debian/get-depends-go-bin-path.sh):$(shell printenv PAT
 %:
 	dh $@ --buildsystem=golang --with=golang,apport
 
+# Match newer dh-golang, which skips DWZ because Go compresses debug sections.
+override_dh_dwz:
+
 override_dh_auto_clean:
 	dh_auto_clean
 	# Create the vendor directory when building the source package
