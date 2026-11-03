@@ -1,6 +1,8 @@
 module github.com/ubuntu/adsys
 
-go 1.27
+go 1.26.0
+
+toolchain go1.26.7
 
 require (
 	charm.land/bubbles/v2 v2.2.1
@@ -17,7 +19,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jcmturner/gofork v1.7.6
 	github.com/kardianos/service v1.3.0
-	github.com/leonelquinteros/gotext v1.8.0
+	github.com/leonelquinteros/gotext v1.7.2
 	github.com/maruel/natural v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
