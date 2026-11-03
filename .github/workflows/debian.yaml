@@ -12,6 +12,8 @@ on:
       - '!.gitignore'
       - '!.golangci.yaml'
       - '!*.md'
+      - '!installer/**'
+      - '!e2e/**'
     tags:
       - "*"
   pull_request:
@@ -23,6 +25,8 @@ on:
       - '!.gitignore'
       - '!.golangci.yaml'
       - '!*.md'
+      - '!installer/**'
+      - '!e2e/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
