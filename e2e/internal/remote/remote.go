@@ -245,12 +245,6 @@ func (c Client) CheckLink(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, linkProbeTimeout)
 	defer cancel()
 
-	session, err := c.client.NewSession()
-	if err != nil {
-		return fmt.Errorf("failed to create session: %w", err)
-	}
-	defer session.Close()
-
 	log.Infof("Checking link to %q can carry a sustained transfer", c.host)
 
 	type outcome struct {
@@ -259,13 +253,24 @@ func (c Client) CheckLink(ctx context.Context) error {
 	}
 	done := make(chan outcome, 1)
 	go func() {
+		session, err := c.client.NewSession()
+		if err != nil {
+			done <- outcome{err: fmt.Errorf("failed to create session: %w", err)}
+			return
+		}
+		defer session.Close()
+
 		out, err := session.Output(fmt.Sprintf("head -c %d /dev/zero | tr '\\0' 'a'", linkProbeSize))
 		done <- outcome{out: out, err: err}
 	}()
 
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("link to %q stalled after transferring less than %d bytes: the connection carries small packets but not large ones, which points at an MTU too large for the tunnel it crosses", c.host, linkProbeSize)
+		// Closing the transport unblocks channel creation and command requests,
+		// neither of which can be cancelled by closing a session alone.
+		c.client.Close()
+		<-done
+		return fmt.Errorf("link to %q stalled after transferring less than %d bytes: the connection carries small packets but not large ones, which points at an MTU too large for the tunnel it crosses: %w", c.host, linkProbeSize, ctx.Err())
 	case res := <-done:
 		if res.err != nil {
 			return fmt.Errorf("link check against %q failed: %w", c.host, res.err)
