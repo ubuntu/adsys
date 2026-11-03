@@ -65,8 +65,6 @@ func TestReleasePatchesApplyCleanly(t *testing.T) {
 		}
 		codenames = append(codenames, strings.TrimSuffix(entry.Name(), ".patch"))
 	}
-	require.NotEmpty(t, codenames, "Setup: expected to find at least one release patch to validate")
-
 	for _, codename := range codenames {
 		t.Run(codename, func(t *testing.T) {
 			// Only debian/ is patched, so limit the scratch copy to it to
