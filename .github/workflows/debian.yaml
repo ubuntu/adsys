@@ -1,0 +1,54 @@
+name: Debian packaging
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**'
+      - '!.github/**'
+      - '.github/workflows/debian.yaml'
+      - '!.clang-format'
+      - '!.gitignore'
+      - '!.golangci.yaml'
+      - '!*.md'
+    tags:
+      - "*"
+  pull_request:
+    paths:
+      - '**'
+      - '!.github/**'
+      - '.github/workflows/debian.yaml'
+      - '!.clang-format'
+      - '!.gitignore'
+      - '!.golangci.yaml'
+      - '!*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-deb:
+    name: Build Debian package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ubuntu-version: ['noble', 'resolute', 'devel']
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: adsys
+
+      - name: Build Debian package
+        uses: canonical/desktop-engineering/gh-actions/common/build-debian@main
+        with:
+          source-dir: adsys
+          docker-image: ubuntu:${{ matrix.ubuntu-version }}
+          # Noble doesn't ship the Go version we require.
+          extra-apt-repositories: ${{ (matrix.ubuntu-version == 'noble') && 'ppa:ubuntu-enterprise-desktop/golang' || '' }}
