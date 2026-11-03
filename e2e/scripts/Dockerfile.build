@@ -18,9 +18,9 @@ ARG CODENAME=latest
 # noble ships golang-go 1.22, which does not satisfy the go.mod requirement,
 # and carries no golang-1.26-go of its own.
 # ppa:ubuntu-enterprise-desktop/golang publishes one for it, letting
-# debian/rules build against 1.26 without falling back to an older toolchain
-# (see e2e/scripts/patches). Releases newer than noble already ship a
-# golang-go that satisfies the requirement and need nothing here.
+# debian/rules build against 1.26 without falling back to an older toolchain.
+# Releases newer than noble already ship a golang-go that satisfies the
+# requirement and need nothing here.
 RUN if [ "$CODENAME" = "noble" ]; then \
         set -ex \
         && apt-get install -y software-properties-common \
