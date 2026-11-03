@@ -1,3 +1,7 @@
+# Check compiler selection for default and versioned Go build dependencies
+Test-Command: ./debian/tests/go-toolchain
+Depends: dctrl-tools
+
 # Run regular tests without root
 Test-Command: ./debian/tests/test no-sudo
 Restrictions: allow-stderr

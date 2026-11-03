@@ -40,16 +40,7 @@ mkdir -p /build
 cp -a /source-ro /build/source
 cd /build/source
 
-# Patch debian directory to satisfy build dependencies
-log "Patching debian/ directory"
 codename=$(grep VERSION_CODENAME /etc/os-release | cut -d= -f2)
-if [ -f /patches/${codename}.patch ]; then
-    if ! patch --ignore-whitespace --no-backup-if-mismatch -r /tmp/rejected -p1 < /patches/${codename}.patch; then
-        log "Rejected hunks:"
-        cat /tmp/rejected
-        exit 1
-    fi
-fi
 
 # Install build dependencies
 log "Installing build dependencies"
