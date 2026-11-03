@@ -32,5 +32,9 @@ case $1 in
         ;;
 esac
 
+export GOTOOLCHAIN=local
+PATH=$("$(dirname "$0")/../get-depends-go-bin-path.sh"):$PATH
+export PATH
+
 # shellcheck disable=SC2086 # Splitting is intentional
 go test -v -mod=vendor $PACKAGES_TO_TEST
