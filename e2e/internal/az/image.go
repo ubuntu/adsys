@@ -1,6 +1,7 @@
 package az
 
 import (
+	"bytes"
 	"cmp"
 	"context"
 	"encoding/json"
@@ -89,7 +90,7 @@ func (images Images) LatestDaily() (Image, error) {
 	// Prepare list of eligible images
 	dailyImages := []Image{}
 	for _, image := range images {
-		if image.Architecture == "x64" && image.isGen2Image() && image.isDailyImage() {
+		if image.Architecture == "x64" && image.isGen2Image() && !image.isProImage() && image.isDailyImage() {
 			dailyImages = append(dailyImages, image)
 		}
 	}
@@ -112,7 +113,7 @@ func (images Images) LatestStable() (Image, error) {
 	// Prepare list of eligible images
 	stableImages := []Image{}
 	for _, image := range images {
-		if image.Architecture == "x64" && image.isGen2Image() && !image.isDailyImage() {
+		if image.Architecture == "x64" && image.isGen2Image() && !image.isProImage() && !image.isDailyImage() {
 			stableImages = append(stableImages, image)
 		}
 	}
@@ -134,6 +135,18 @@ func (i Image) isDailyImage() bool {
 	return strings.Contains(i.Offer, "daily")
 }
 
+// isProImage reports whether the image is an Ubuntu Pro one.
+//
+// The SKU filter is passed to the CLI, which matches it as a substring, so
+// asking for "minimal" also returns "pro-minimal". Those images carry Ubuntu
+// Pro preconfigured, which is exactly the state the tests set up and assert on
+// themselves: one scenario checks that Pro-only policy managers are filtered
+// out on a machine that is not subscribed, and the other attaches a
+// subscription of its own.
+func (i Image) isProImage() bool {
+	return strings.HasPrefix(i.SKU, "pro-") || i.SKU == "pro"
+}
+
 func (i Image) isGen2Image() bool {
 	// gen2 images are explicitly defined in the old versioning scheme.
 	if strings.Contains(i.Offer, "0001-com-ubuntu") {
@@ -144,16 +157,23 @@ func (i Image) isGen2Image() bool {
 }
 
 // LatestImageVersion returns the latest image version for the given image definition.
-// If no version exists, "0.0.0" is returned.
+// If the image definition does not exist, or exists but has no version yet,
+// "0.0.0" is returned.
 func LatestImageVersion(ctx context.Context, imageDefinition string) (string, error) {
 	latestVersion := NullImageVersion
 
-	out, _, err := RunCommand(ctx, "sig", "image-version", "list",
+	out, stderr, err := RunCommand(ctx, "sig", "image-version", "list",
 		"--resource-group", "AD",
 		"--gallery-name", "AD",
 		"--gallery-image-definition", imageDefinition,
 	)
 	if err != nil {
+		// A release we never built a template for has no image definition at
+		// all, which is not an error condition for callers: it is
+		// indistinguishable from a definition without any version.
+		if bytes.Contains(stderr, []byte("ResourceNotFound")) {
+			return NullImageVersion, nil
+		}
 		return latestVersion, err
 	}
 
