@@ -20,10 +20,11 @@ sed -iE 's/^#\?KbdInteractiveAuthentication.*/KbdInteractiveAuthentication yes/'
 echo "Installing additional required packages..."
 # Work around an issue where the cifs kernel module is not available on some kernel versions
 # ref: https://www.mail-archive.com/kernel-packages@lists.launchpad.net/msg514627.html
-if [[ ! "$(lsmod)" =~ cifs ]]; then
+# Resolute includes cifs in the main kernel modules package.
+if ! modinfo cifs > /dev/null 2>&1; then
     DEBIAN_FRONTEND=noninteractive apt-get install -y linux-modules-extra-azure
-    echo "cifs" >> /etc/modules
 fi
+echo "cifs" >> /etc/modules
 
 echo "Updating DNS resolver to use AD DNS..."
 echo "DNS=10.1.0.4" >> /etc/systemd/resolved.conf
