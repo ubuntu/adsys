@@ -1,0 +1,43 @@
+#!/bin/sh
+
+set -eu
+
+debian_path=$(dirname "$0")/..
+test_dir=$(mktemp -d)
+trap 'rm -rf "$test_dir"' EXIT
+
+cp "$debian_path/get-depends-go-bin-path.sh" "$test_dir/"
+
+check_dependency() {
+    dependency=$1
+    expected=$2
+    printf 'Source: adsys\nBuild-Depends: %s\n' "$dependency" > "$test_dir/control"
+    actual=$("$test_dir/get-depends-go-bin-path.sh")
+    if [ "$actual" != "$expected" ]; then
+        echo "For $dependency: expected '$expected', got '$actual'" >&2
+        exit 1
+    fi
+}
+
+check_dependency 'golang-go (>= 2:1.26~) | golang-1.26-go' '/usr/lib/go-1.26/bin'
+check_dependency 'golang-1.26-go' '/usr/lib/go-1.26/bin'
+check_dependency 'golang-go (>= 2:1.26~)' ''
+check_dependency 'golang-go (>= 2:1.27~) | golang-1.27-go' '/usr/lib/go-1.27/bin'
+
+mkdir -p "$test_dir/debian/tests" "$test_dir/bin"
+cp "$debian_path/tests/test" "$test_dir/debian/tests/"
+cat > "$test_dir/debian/get-depends-go-bin-path.sh" <<'EOF'
+#!/bin/sh
+echo "$(dirname "$0")/../bin"
+EOF
+cat > "$test_dir/bin/go" <<'EOF'
+#!/bin/sh
+set -eu
+[ "$GOTOOLCHAIN" = local ]
+[ "$ADSYS_SKIP_INTEGRATION_TESTS" = 1 ]
+[ "$*" = 'test -v -mod=vendor ./...' ]
+touch "$(dirname "$0")/called"
+EOF
+chmod +x "$test_dir/debian/get-depends-go-bin-path.sh" "$test_dir/bin/go"
+"$test_dir/debian/tests/test" no-sudo
+[ -f "$test_dir/bin/called" ]

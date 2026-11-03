@@ -29,6 +29,9 @@ export ADSYS_SKIP_INTEGRATION_TESTS=1
 # as long as it matches the go.mod go stenza which is the language requirement.
 export GOTOOLCHAIN := local
 
+# Prefer the versioned compiler when installed; otherwise use the default Go.
+export PATH := $(shell ./debian/get-depends-go-bin-path.sh):$(shell printenv PATH)
+
 %:
 	dh $@ --buildsystem=golang --with=golang,apport
 
