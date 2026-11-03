@@ -1,13 +1,16 @@
 name: Debian packaging
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
+      - sru/resolute-gdm
     paths:
       - '**'
       - '!.github/**'
       - '.github/workflows/debian.yaml'
+      - '.github/actions/restore-sru-vendor/**'
       - '!.clang-format'
       - '!.gitignore'
       - '!.golangci.yaml'
@@ -19,6 +22,7 @@ on:
       - '**'
       - '!.github/**'
       - '.github/workflows/debian.yaml'
+      - '.github/actions/restore-sru-vendor/**'
       - '!.clang-format'
       - '!.gitignore'
       - '!.golangci.yaml'
@@ -37,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ubuntu-version: ['noble', 'resolute', 'devel']
+        ubuntu-version: ['resolute']
       fail-fast: false
 
     steps:
@@ -45,22 +49,15 @@ jobs:
         with:
           path: adsys
 
-      - name: Adapt the packaging to the Ubuntu release
-        # Apply the same per-release patches as the E2E package builds.
-        working-directory: adsys
-        env:
-          RELEASE_PATCH: e2e/scripts/patches/${{ matrix.ubuntu-version }}.patch
-        run: |
-          set -euo pipefail
-
-          if [ -f "${RELEASE_PATCH}" ]; then
-            patch --ignore-whitespace --no-backup-if-mismatch -p1 < "${RELEASE_PATCH}"
-          fi
+      - name: Restore archive vendored dependencies
+        uses: ./adsys/.github/actions/restore-sru-vendor
+        with:
+          source-dir: adsys
 
       - name: Build Debian package
         uses: canonical/desktop-engineering/gh-actions/common/build-debian@main
         with:
           source-dir: adsys
           docker-image: ubuntu:${{ matrix.ubuntu-version }}
-          # Noble doesn't ship the Go version we require.
-          extra-apt-repositories: ${{ (matrix.ubuntu-version == 'noble') && 'ppa:ubuntu-enterprise-desktop/golang' || '' }}
+          # Keep the existing Resolute installation layout in this targeted SRU.
+          lintian: --suppress-tags aliased-location

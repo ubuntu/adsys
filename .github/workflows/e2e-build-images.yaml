@@ -4,9 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       codenames:
-        description: 'Comma-separated list of codenames to build for (e.g. "mantic", "focal") - will build for all supported releases if not specified'
+        description: 'Comma-separated list of quoted codenames to build for'
         type: string
         required: false
+        default: "'resolute'"
       force:
         description: 'Force building new templates even if they already exist'
         type: boolean
