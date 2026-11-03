@@ -78,3 +78,35 @@ go run ./e2e/cmd/run_tests/99_deprovision
 ```
 
 For more information refer to the corresponding GitHub Actions workflows responsible for running the scenarios ([e2e-tests.yaml](https://github.com/ubuntu/adsys/blob/main/.github/workflows/e2e-tests.yaml) and [e2e-build-images.yaml](https://github.com/ubuntu/adsys/blob/main/.github/workflows/e2e-build-images.yaml)) and the help messages of the scenarios themselves (run with `-h`).
+
+### Resolute GDM upgrade regression
+
+The Resolute workflow downloads the checksum-pinned `0.16.4ubuntu1.1` package
+from Launchpad and passes it to `01_provision_client --baseline-deb`. The
+candidate stays in `/debs` but is not installed yet. Provisioning rejects an
+image with an existing `/etc/dconf/profile/gdm` so a profile repaired by a newer
+package cannot hide the old bug.
+
+After AD setup, `04_test_gdm_upgrade` applies real machine policies with the
+released package. It requires the legacy profile to omit the vendor greeter
+database and select `ubuntu` rather than `gnome-login`. An unrelated command or
+setup failure does not count as reproducing the regression.
+
+The scenario then installs the candidate without deleting the profile or policy
+cache, refreshes the policies and repeats the same defaults check. It also checks
+that the banner GPO is still applied and locked. Normal user-policy scenarios run
+after the upgrade.
+
+Before/after package versions, profiles, settings and failures are saved in the
+`gdm-upgrade-resolute` workflow artifact. For a local run, use the baseline download
+step from the workflow, then run:
+
+```sh
+go run ./e2e/cmd/run_tests/01_provision_client --baseline-deb output/baseline/adsys.deb
+go run ./e2e/cmd/run_tests/02_provision_ad
+go run ./e2e/cmd/run_tests/04_test_gdm_upgrade
+```
+
+This verifies the released profile regression and its in-place upgrade repair.
+It does not operate the graphical login screen. Visual greeter checks and
+graphical local/AD logins remain manual SRU verification steps.

@@ -75,6 +75,14 @@ jobs:
         uses: ./.github/actions/restore-sru-vendor
       - name: Build adsys deb
         run: go run ./e2e/cmd/run_tests/00_build_adsys_deb --codename ${{ matrix.codename }}
+      - name: Download the released GDM regression baseline
+        if: ${{ matrix.codename == 'resolute' }}
+        run: |
+          mkdir -p output/baseline
+          curl --fail --location --retry 3 \
+            'https://launchpad.net/ubuntu/+archive/primary/+files/adsys_0.16.4ubuntu1.1_amd64.deb' \
+            --output output/baseline/adsys.deb
+          echo '46ac6eef1b88d5e6cd4de59428f177229b2c1cfa080b4c89a09374d5b82e6604  output/baseline/adsys.deb' | sha256sum --check
       - name: Set up VPN connection
         uses: ./.github/actions/azure-sstpc-vpn
         with:
@@ -83,9 +91,24 @@ jobs:
           cert: ${{ secrets.VPN_CERT }}
           key: ${{ secrets.VPN_KEY }}
       - name: Provision client VM
-        run: go run ./e2e/cmd/run_tests/01_provision_client
+        env:
+          BASELINE_DEB: ${{ matrix.codename == 'resolute' && 'output/baseline/adsys.deb' || '' }}
+        run: |
+          args=()
+          if [ -n "$BASELINE_DEB" ]; then args+=(--baseline-deb "$BASELINE_DEB"); fi
+          go run ./e2e/cmd/run_tests/01_provision_client "${args[@]}"
       - name: Provision AD server
         run: go run ./e2e/cmd/run_tests/02_provision_ad
+      - name: 'Test: released GDM regression and in-place upgrade'
+        if: ${{ matrix.codename == 'resolute' }}
+        run: go run ./e2e/cmd/run_tests/04_test_gdm_upgrade
+      - name: Upload GDM upgrade evidence
+        if: ${{ always() && matrix.codename == 'resolute' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gdm-upgrade-${{ matrix.codename }}
+          path: logs/**/gdm-upgrade.json
+          if-no-files-found: warn
       - name: Recompile PAM module with coverage support
         run: go run ./e2e/cmd/run_tests/03_pam_coverage_support
         if: ${{ matrix.codename == 'noble' }}
