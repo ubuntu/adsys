@@ -14,6 +14,10 @@ updates:
         update-types: ["minor", "patch"]
     commit-message:
       prefix: "deps(go)"
+    ignore:
+      # Keep the latest LTS buildable with its archive's Go 1.26.
+      - dependency-name: "github.com/leonelquinteros/gotext"
+        versions: [">=1.8.0"]
 
   - package-ecosystem: "gomod"
     directory: "/tools"
