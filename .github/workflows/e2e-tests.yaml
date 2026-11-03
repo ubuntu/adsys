@@ -22,13 +22,42 @@ on:
     tags:
       - "*"
 
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: >-
+    ${{ github.workflow }}-${{ github.ref }}-${{
+      github.event_name == 'pull_request' &&
+      github.event.action == 'labeled' &&
+      github.event.label.name != 'e2e-tests' &&
+      github.run_id || 'active'
+    }}
   cancel-in-progress: true
 
 jobs:
   supported-releases:
     name: Build matrix for supported ADSys and Ubuntu releases
+    permissions:
+      contents: read
+      pull-requests: read
+    if: >-
+      ${{
+        github.event_name != 'pull_request' ||
+        (
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.user.login != 'dependabot[bot]' &&
+          contains(github.event.pull_request.labels.*.name, 'e2e-tests') &&
+          (
+            github.event.action != 'labeled' ||
+            github.event.label.name == 'e2e-tests'
+          )
+        )
+      }}
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-supported-releases.outputs.matrix }}
