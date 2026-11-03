@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/maruel/natural"
 	log "github.com/sirupsen/logrus"
@@ -125,27 +124,40 @@ func action(ctx context.Context, _ *command.Command) error {
 	}
 
 	customImageDefinition := az.ImageDefinitionName(codename)
-	latestCustomImageVersion, err := az.LatestImageVersion(ctx, customImageDefinition)
+	latestCustomImage, err := az.LatestImage(ctx, customImageDefinition)
 	if err != nil {
 		return fmt.Errorf("failed to get latest image version: %w", err)
 	}
+	latestCustomImageVersion := latestCustomImage.Version
 
 	// Marketplace version includes the Ubuntu version as well (e.g.
 	// 23.10.202310110).
 	// As we store the Ubuntu version in the codename, we only need the patch
 	// version to differentiate betweeen custom image builds.
 	latestMarketplaceBuild := az.ImageBuildNumber(latest.Version)
-	customVersionParts := strings.Split(latestCustomImageVersion, ".")
-	latestCustomBuild := customVersionParts[1] // minor version is the build number
+
+	// Compare against the Marketplace build the template was actually created
+	// from, which the version number no longer records on its own: it has to
+	// keep increasing for Azure to serve a new template, so it stays where it
+	// is when a change of SKU moves the build backwards.
+	latestCustomBuild := latestCustomImage.SourceBuild()
 
 	// The release is still in development and we already have a daily image built, nothing to do
 	// Version scheme is X.Y.Z where:
 	// - X: major version, 0 for development releases, 1 for stable releases
-	// - Y: minor version, replicates version of the Marketplace VM, e.g. 202310110
+	// - Y: minor version, the Marketplace build the series started from, e.g. 202310110
 	// - Z: patch version, incremented for consecutive builds of the same minor version, starts at 0
+	// Y only has to keep the versions ordered, so the Marketplace build a
+	// template was created from is read from its tags instead.
 
 	// Handle case where we have no custom image at all
 	if latestCustomImageVersion == az.NullImageVersion || force {
+		fmt.Println(latest.URN)
+		return nil
+	}
+
+	if sourceIdentityChanged(latestCustomImage, latest) {
+		log.Warningf("custom image for codename %q was built from %q instead of %q", codename, latestCustomImage.SourceURN(), latest.URN)
 		fmt.Println(latest.URN)
 		return nil
 	}
@@ -170,4 +182,9 @@ func action(ctx context.Context, _ *command.Command) error {
 	fmt.Println(latest.URN)
 
 	return nil
+}
+
+func sourceIdentityChanged(custom az.ImageVersion, latest az.Image) bool {
+	sourceURN := custom.SourceURN()
+	return sourceURN == "" || sourceURN != latest.URN
 }
