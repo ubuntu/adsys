@@ -113,7 +113,12 @@ func configSources(ctx context.Context, conf string) []any {
 	snippetsDir := filepath.Join(filepath.Dir(conf), "conf.d")
 	entries, err := os.ReadDir(snippetsDir)
 	if err != nil {
-		// Having no snippets directory is the common case.
+		// Having no snippets directory is the common case. SSSD logs any other
+		// failure to open it as recoverable and uses sssd.conf alone, so do the same.
+		if !errors.Is(err, os.ErrNotExist) {
+			// The error names the directory.
+			log.Warningf(ctx, "Ignoring the SSSD configuration snippets, as SSSD does when it cannot open their directory: %v", err)
+		}
 		return sources
 	}
 

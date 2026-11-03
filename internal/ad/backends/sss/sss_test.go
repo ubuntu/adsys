@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -146,6 +147,39 @@ func TestSSSD(t *testing.T) {
 			require.Equal(t, want, got, "Got expected loaded values in sssd config object")
 		})
 	}
+}
+
+func TestSSSDWarnsAboutConfDItCannotRead(t *testing.T) {
+	// Not parallel: captures the standard logger output.
+	bus := testutils.NewDbusConn(t)
+
+	// Like SSSD, which logs a snippets directory it cannot open and carries on
+	// with sssd.conf alone, use sssd.conf but say why the snippets were skipped.
+	dir := t.TempDir()
+	conf := filepath.Join(dir, "sssd.conf")
+	content, err := os.ReadFile(filepath.Join("testdata", "TestSSSD", "configs", "example.com-with-conf.d-override", "sssd.conf"))
+	require.NoError(t, err, "Setup: could not read sssd.conf fixture")
+	require.NoError(t, os.WriteFile(conf, content, 0600), "Setup: could not write sssd.conf")
+	snippetsDir := filepath.Join(dir, "conf.d")
+	require.NoError(t, os.WriteFile(snippetsDir, []byte("[domain/example.com]\nad_server = dc1.windows.lan\n"), 0600),
+		"Setup: could not write a conf.d file in place of the directory")
+
+	r, w, err := os.Pipe()
+	require.NoError(t, err, "Setup: pipe shouldn't fail")
+	orig := logrus.StandardLogger().Out
+	logrus.StandardLogger().SetOutput(w)
+	sssd, err := sss.New(context.Background(), sss.Config{Conf: conf}, bus)
+	logrus.StandardLogger().SetOutput(orig)
+	w.Close()
+	var out strings.Builder
+	_, copyErr := io.Copy(&out, r)
+	require.NoError(t, copyErr, "Setup: couldn't copy the log output")
+
+	require.NoError(t, err, "New should return no error")
+	serverFQDN, err := sssd.ServerFQDN(context.Background())
+	require.NoError(t, err, "ServerFQDN should return no error")
+	require.Equal(t, "dc0.windows.lan", serverFQDN, "ServerFQDN comes from sssd.conf alone")
+	require.Contains(t, out.String(), snippetsDir, "The warning names the snippets directory that was skipped")
 }
 
 type sssdbus struct {
