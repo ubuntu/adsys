@@ -88,7 +88,6 @@ func action(ctx context.Context, cmd *command.Command) error {
 		"-v", fmt.Sprintf("%s:/source-ro:ro", adsysRootDir),
 		"-v", fmt.Sprintf("%s/output:/output", adsysRootDir),
 		"-v", fmt.Sprintf("%s/build-deb.sh:/build-deb.sh:ro", scriptsDir),
-		"-v", fmt.Sprintf("%s/patches:/patches:ro", scriptsDir),
 		// This is to set correct permissions on the output directory
 		"-e", fmt.Sprintf("USER=%d", os.Getuid()),
 		"-e", fmt.Sprintf("GROUP=%d", os.Getgid()),

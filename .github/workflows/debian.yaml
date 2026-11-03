@@ -45,18 +45,6 @@ jobs:
         with:
           path: adsys
 
-      - name: Adapt the packaging to the Ubuntu release
-        # Apply the same per-release patches as the E2E package builds.
-        working-directory: adsys
-        env:
-          RELEASE_PATCH: e2e/scripts/patches/${{ matrix.ubuntu-version }}.patch
-        run: |
-          set -euo pipefail
-
-          if [ -f "${RELEASE_PATCH}" ]; then
-            patch --ignore-whitespace --no-backup-if-mismatch -p1 < "${RELEASE_PATCH}"
-          fi
-
       - name: Build Debian package
         uses: canonical/desktop-engineering/gh-actions/common/build-debian@main
         with:
