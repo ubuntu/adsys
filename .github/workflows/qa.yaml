@@ -33,11 +33,15 @@ jobs:
       - name: work around permission issue with git vulnerability (we are local here). TO REMOVE
         run: git config --global --add safe.directory /__w/adsys/adsys
       - uses: actions/checkout@v5
+      - name: Restore archive vendored dependencies
+        uses: ./.github/actions/restore-sru-vendor
       - name: Go code sanity check
         uses: canonical/desktop-engineering/gh-actions/go/code-sanity@v2
         with:
           golangci-lint-configfile: ".golangci.yaml"
           tools-directory: "tools"
+          # Ubuntu maintains security backports independently of upstream versions.
+          govulncheck: ${{ (github.head_ref || github.ref_name) != 'sru/resolute-gdm' }}
           generate-diff-paths-to-ignore: po/* docs/**/*.md README.md
           go-build-script: |
             go build ./...
@@ -54,6 +58,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+      - name: Restore archive vendored dependencies
+        uses: ./.github/actions/restore-sru-vendor
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
@@ -123,12 +129,18 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+      - name: Restore archive vendored dependencies
+        uses: ./.github/actions/restore-sru-vendor
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
       - name: Build installer
         run: |
-          tag=$(git describe --tags)
+          if ! tag=$(git describe --tags 2>/dev/null); then
+            # Imported archive branches have no upstream tags in their history.
+            version=$(sed -nE '1s/^adsys \(([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' debian/changelog)
+            tag="v${version}-$(git rev-list --count HEAD)-g$(git rev-parse --short HEAD)"
+          fi
           export GOFLAGS=-ldflags=-X=github.com/ubuntu/adsys/internal/consts.Version=$tag
 
           # Transforms git describe output:

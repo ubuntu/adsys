@@ -1,0 +1,49 @@
+# Binaries for programs, uncommited generated code and plugins
+cmd/adsysd/adsysd
+cmd/admxgen/admxgen
+cmd/adwatchd/adwatchd
+generated/
+__pycache__/
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+coverage/
+*.out
+
+# Dependency directories
+vendor/
+
+# Package artefacts
+obj-x86_64-linux-gnu/
+output/
+installer/Output
+
+# Various cruft to not consider by default
+*.log
+.vscode/
+
+# Packaging artefacts
+debian/*debhelper*
+debian/files
+debian/*.substvars
+debian/tmp
+debian/adsys
+debian/adsys-windows
+
+# Local testing
+/adsysd
+/adsysctl
+/adsys.yaml
+
+# E2E testing
+inventory.yaml
+e2e/assets/gpo/**/*.pol
+logs/
+
+# GitHub CI temporary files
+node_modules
+package-lock.json
+package.json
+samba-patched/
