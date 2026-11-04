@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
+    paths: &paths
       - '**'
       - '!.github/**'
       - '.github/workflows/debian.yaml'
@@ -17,16 +17,7 @@ on:
     tags:
       - "*"
   pull_request:
-    paths:
-      - '**'
-      - '!.github/**'
-      - '.github/workflows/debian.yaml'
-      - '!.clang-format'
-      - '!.gitignore'
-      - '!.golangci.yaml'
-      - '!*.md'
-      - '!installer/**'
-      - '!e2e/**'
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
