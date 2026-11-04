@@ -13,7 +13,6 @@ case $1 in
     no-sudo)
         echo "Running non-root tests..."
         export ADSYS_SKIP_INTEGRATION_TESTS=1
-        PACKAGES_TO_TEST=./...
         ;;
     sudo)
         arch=$(dpkg --print-architecture)
@@ -35,6 +34,12 @@ esac
 export GOTOOLCHAIN=local
 PATH=$("$(dirname "$0")/../get-depends-go-bin-path.sh"):$PATH
 export PATH
+
+if [ "$1" = no-sudo ]; then
+    PACKAGES_TO_TEST=$(go list -mod=vendor ./...)
+    PACKAGES_TO_TEST=$(printf '%s\n' "$PACKAGES_TO_TEST" |
+        grep -vE '^github.com/ubuntu/adsys/e2e(/|$)')
+fi
 
 # shellcheck disable=SC2086 # Splitting is intentional
 go test -v -mod=vendor $PACKAGES_TO_TEST

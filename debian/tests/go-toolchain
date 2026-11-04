@@ -26,6 +26,7 @@ check_dependency 'golang-go (>= 2:1.27~) | golang-1.27-go' '/usr/lib/go-1.27/bin
 
 mkdir -p "$test_dir/debian/tests" "$test_dir/bin"
 cp "$debian_path/tests/test" "$test_dir/debian/tests/"
+cp "$debian_path/tests/.sudo-packages" "$test_dir/debian/tests/"
 cat > "$test_dir/debian/get-depends-go-bin-path.sh" <<'EOF'
 #!/bin/sh
 echo "$(dirname "$0")/../bin"
@@ -34,10 +35,44 @@ cat > "$test_dir/bin/go" <<'EOF'
 #!/bin/sh
 set -eu
 [ "$GOTOOLCHAIN" = local ]
-[ "$ADSYS_SKIP_INTEGRATION_TESTS" = 1 ]
-[ "$*" = 'test -v -mod=vendor ./...' ]
-touch "$(dirname "$0")/called"
+case "$1" in
+    list)
+        [ "$ADSYS_SKIP_INTEGRATION_TESTS" = 1 ]
+        [ "$*" = 'list -mod=vendor ./...' ]
+        if [ "${FAIL_GO_LIST:-0}" = 1 ]; then
+            exit 1
+        fi
+        printf '%s\n' github.com/ubuntu/adsys \
+            github.com/ubuntu/adsys/e2e \
+            github.com/ubuntu/adsys/e2e/internal/command \
+            github.com/ubuntu/adsys/internal/policies \
+            github.com/ubuntu/adsys/e2extra
+        ;;
+    test)
+        if [ "${ADSYS_SKIP_INTEGRATION_TESTS:-0}" = 1 ]; then
+            [ "$*" = 'test -v -mod=vendor github.com/ubuntu/adsys github.com/ubuntu/adsys/internal/policies github.com/ubuntu/adsys/e2extra' ]
+        else
+            [ "$*" = 'test -v -mod=vendor ./cmd/adwatchd/integration_tests ./internal/watchdtui' ]
+        fi
+        touch "$(dirname "$0")/called"
+        ;;
+    *)
+        exit 1
+        ;;
+esac
 EOF
 chmod +x "$test_dir/debian/get-depends-go-bin-path.sh" "$test_dir/bin/go"
 "$test_dir/debian/tests/test" no-sudo
 [ -f "$test_dir/bin/called" ]
+rm "$test_dir/bin/called"
+if FAIL_GO_LIST=1 "$test_dir/debian/tests/test" no-sudo; then
+    echo "Package-list failures must fail the test" >&2
+    exit 1
+fi
+[ ! -f "$test_dir/bin/called" ]
+case $(dpkg --print-architecture) in
+    amd64|arm64)
+        "$test_dir/debian/tests/test" sudo
+        [ -f "$test_dir/bin/called" ]
+        ;;
+esac
