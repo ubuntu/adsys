@@ -47,3 +47,11 @@ jobs:
           docker-image: ubuntu:${{ matrix.ubuntu-version }}
           # Noble doesn't ship the Go version we require.
           extra-apt-repositories: ${{ (matrix.ubuntu-version == 'noble') && 'ppa:ubuntu-enterprise-desktop/golang' || '' }}
+
+      - name: Run autopkgtests
+        uses: canonical/desktop-engineering/gh-actions/common/run-autopkgtest@main
+        with:
+          lxd-image: ubuntu:${{ matrix.ubuntu-version }}
+          source-changes: ${{ env.SOURCE_OUTPUT_DIR }}/${{ env.PKG_SOURCE_CHANGES }}
+          debs-dir: ${{ env.BUILD_OUTPUT_DIR }}
+          autopkgtest-args: ${{ (matrix.ubuntu-version == 'noble') && '--add-apt-source=ppa:ubuntu-enterprise-desktop/golang' || '' }}
