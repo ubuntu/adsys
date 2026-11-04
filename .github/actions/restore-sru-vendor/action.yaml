@@ -1,0 +1,28 @@
+name: Restore Resolute source dependencies
+description: Preserve the vendored security fixes in the SRU's archive baseline
+
+inputs:
+  source-dir:
+    description: Directory containing the ADSys source
+    default: .
+
+runs:
+  using: composite
+  steps:
+    - name: Restore archive vendor tree
+      shell: bash
+      working-directory: ${{ inputs.source-dir }}
+      run: |
+        set -euo pipefail
+
+        # Git excludes vendor; regenerating it would lose the archive-only fixes.
+        archive="$(mktemp)"
+        trap 'rm -f -- "$archive"' EXIT
+        curl --fail --location --retry 3 \
+          'https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/adsys/0.16.4ubuntu1.1/adsys_0.16.4ubuntu1.1.tar.xz' \
+          --output "$archive"
+        printf '%s  %s\n' \
+          '2ab4b648b1b9fb880a99209ca7ffeb855b4196ff5f04129b2771de1098329689' \
+          "$archive" | sha256sum --check
+        tar --extract --xz --file="$archive" --strip-components=1 \
+          --wildcards '*/vendor/*'

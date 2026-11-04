@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -13,10 +14,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/godbus/dbus/v5"
 	"github.com/stretchr/testify/require"
 	"github.com/ubuntu/adsys"
 	"github.com/ubuntu/adsys/cmd/adsysd/client"
@@ -27,6 +30,11 @@ import (
 )
 
 const dockerSystemDaemonsImage = "ghcr.io/ubuntu/adsys/systemdaemons:0.1"
+
+// daemonsStartupTimeout is how long we wait for the mock containers to expose
+// their buses. It is deliberately generous: the containers are started in
+// parallel and a loaded CI runner can take a while to get them all up.
+const daemonsStartupTimeout = 90 * time.Second
 
 var (
 	rootProjectDir string
@@ -54,15 +62,22 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Setup: can't find project root directory")
 	}
 
-	// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
-	// We only start samba on non helper process
 	if os.Getenv("GO_WANT_HELPER_PROCESS") != "1" {
-		defer runDaemons()()
-		cwd, err := os.Getwd()
-		if err != nil {
-			log.Fatalf("Setup: can't get current working directory: %v", err)
+		defer testutils.IsolateDconfSystemProfiles()()
+
+		flag.Parse()
+		switch flag.Lookup("test.run").Value.String() {
+		case "TestHelperProcessDconfIsolation", "^TestHelperProcessDconfIsolation$":
+			// This regression test only needs parent-owned dconf isolation.
+		default:
+			// Start 2 containers running local polkitd with our policy (one for always yes, one for always no)
+			defer runDaemons()()
+			cwd, err := os.Getwd()
+			if err != nil {
+				log.Fatalf("Setup: can't get current working directory: %v", err)
+			}
+			defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/AD/SYSVOL"))()
 		}
-		defer testutils.SetupSmb(1446, filepath.Join(cwd, "testdata/AD/SYSVOL"))()
 	}
 
 	m.Run()
@@ -78,6 +93,34 @@ func TestStartAndStopDaemon(t *testing.T) {
 	conf := createConf(t)
 	quit := runDaemon(t, conf)
 	quit()
+}
+
+func TestWaitForDaemonsReportsDockerError(t *testing.T) {
+	t.Parallel()
+
+	startupErr := errors.New("container failed to start")
+	err := waitForDaemons(map[string]string{"polkit_yes": t.TempDir()}, func() error {
+		return startupErr
+	})
+	require.ErrorIs(t, err, startupErr)
+}
+
+func TestDaemonsReadyTimesOut(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	for _, socket := range []string{"system_bus_socket", "session_bus_socket"} {
+		listener, err := net.Listen("unix", filepath.Join(dir, socket))
+		require.NoError(t, err)
+		t.Cleanup(func() { _ = listener.Close() })
+	}
+
+	// Listening sockets alone are insufficient: the D-Bus handshake must finish.
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	err := daemonsReady(ctx, dir)
+	// Context cancellation and the socket deadline race to end authentication.
+	require.True(t, errors.Is(err, os.ErrDeadlineExceeded) || errors.Is(err, net.ErrClosed), "expected a timeout or context-closed connection, got %v", err)
 }
 
 func TestCommandsError(t *testing.T) {
@@ -403,18 +446,38 @@ func runDaemons() (teardown func()) {
 	}
 
 	var errsDocker error
-	var wg sync.WaitGroup
-	for answer, socketDir := range answers {
-		wg.Add(1)
+	var errsDockerMu sync.Mutex
+	// The container goroutines outlive this function, so reads and writes of
+	// errsDocker must be synchronized.
+	addDockerErr := func(err error) {
+		errsDockerMu.Lock()
+		defer errsDockerMu.Unlock()
+		errsDocker = errors.Join(errsDocker, err)
+	}
+	dockerErr := func() error {
+		errsDockerMu.Lock()
+		defer errsDockerMu.Unlock()
+		return errsDocker
+	}
 
-		go func() {
-			defer wg.Done()
+	var runWG sync.WaitGroup
+	runDone := make(map[string]chan struct{}, len(answers))
+	for answer := range answers {
+		runDone[answer] = make(chan struct{})
+	}
+	for answer, socketDir := range answers {
+		runWG.Add(1)
+
+		go func(answer, socketDir string, done chan struct{}) {
+			defer runWG.Done()
+			defer close(done)
 
 			// 24.04 introduced some polkit changes that make the daemon drop root privileges before executing. In order
 			// to be able to connect to the bus and run polkitd, we need more permissions in the socket directory.
 			//nolint:gosec
 			if err := os.MkdirAll(socketDir, 0755); err != nil {
-				log.Fatalf("Setup: can’t create %s socket directory: %v", answer, err)
+				addDockerErr(fmt.Errorf("Setup: can’t create %s socket directory: %w", answer, err))
+				return
 			}
 
 			// #nosec G204: we control the name in tests
@@ -428,50 +491,189 @@ func runDaemons() (teardown func()) {
 				dockerSystemDaemonsImage,
 				answer,
 			)
-			out, _ := cmd.CombinedOutput()
-			// Docker stop -t 0 will kill it anyway the container with exit code 143 or 137 in mantic (-t 0 does not work there)
-			if cmd.ProcessState.ExitCode() > 0 && cmd.ProcessState.ExitCode() != 137 && cmd.ProcessState.ExitCode() != 143 {
-				errsDocker = errors.Join(errsDocker, fmt.Errorf("Error running system daemons container named %q:\nExit code: %d\n%v", answer, cmd.ProcessState.ExitCode(), string(out)))
+			out, err := cmd.CombinedOutput()
+			if cmd.ProcessState == nil {
+				if err == nil {
+					err = errors.New("command returned without a process state")
+				}
+				addDockerErr(fmt.Errorf("Error running system daemons container named %q: %w\n%v", answer, err, string(out)))
+				return
 			}
-		}()
+			// Docker stop -t 0 will kill it anyway the container with exit code 143 or 137 in mantic (-t 0 does not work there)
+			if exitCode := cmd.ProcessState.ExitCode(); exitCode > 0 && exitCode != 137 && exitCode != 143 {
+				addDockerErr(fmt.Errorf("Error running system daemons container named %q:\nExit code: %d\n%v", answer, exitCode, string(out)))
+			}
+		}(answer, socketDir, runDone[answer])
 	}
 
 	for a, s := range answers {
 		dbusSockets[a] = fmt.Sprintf("unix:path=%s", s)
 	}
 
-	// give time for polkit containers to start
-	// TODO: wait for polkit containers to be ready
-	time.Sleep(5 * time.Second)
+	// Wait for the polkit containers to be ready instead of hoping a fixed delay
+	// is enough: a loaded machine may need much longer, and connecting to a bus
+	// that is not listening yet fails the tests using it.
+	stopContainers := func() error {
+		var stopWG sync.WaitGroup
+		stopErrors := make(chan error, len(answers))
+		for answer := range answers {
+			stopWG.Add(1)
+			go func(answer string) {
+				defer stopWG.Done()
 
-	// Check if we got startup docker error
-	if errsDocker != nil {
-		log.Fatalf("Setup: docker errors (some may still be ALIVE): %v", errsDocker)
+				deadline := time.Now().Add(daemonsStartupTimeout)
+				var lastErr error
+				var lastOut string
+				for {
+					select {
+					case <-runDone[answer]:
+						return
+					default:
+					}
+					if time.Now().After(deadline) {
+						stopErr := fmt.Errorf("Teardown: can't stop system daemons container %q within %s", answer, daemonsStartupTimeout)
+						if lastErr != nil {
+							stopErr = fmt.Errorf("%w (last error: %w: %s)", stopErr, lastErr, lastOut)
+						}
+						stopErrors <- stopErr
+						return
+					}
+
+					ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+					// #nosec G204: we control the args in tests
+					out, err := exec.CommandContext(ctx, "docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
+					cancel()
+					if err != nil {
+						lastErr = err
+						lastOut = string(out)
+					}
+					select {
+					case <-runDone[answer]:
+						return
+					case <-time.After(100 * time.Millisecond):
+					}
+				}
+			}(answer)
+		}
+
+		stopWG.Wait()
+		close(stopErrors)
+		var stopErr error
+		for err := range stopErrors {
+			stopErr = errors.Join(stopErr, err)
+		}
+		if stopErr != nil {
+			return stopErr
+		}
+
+		runWG.Wait()
+		return dockerErr()
+	}
+	cleanup := func() error {
+		stopErr := stopContainers()
+		if stopErr != nil {
+			stopErr = fmt.Errorf("can't stop system daemons containers: %w", stopErr)
+		}
+		if err := os.RemoveAll(dir); err != nil {
+			err = fmt.Errorf("failed to delete temporary directory: %w", err)
+			return errors.Join(stopErr, err)
+		}
+		return stopErr
+	}
+
+	if err := waitForDaemons(answers, dockerErr); err != nil {
+		if cleanupErr := cleanup(); cleanupErr != nil {
+			err = errors.Join(err, fmt.Errorf("cleanup after setup failure: %w", cleanupErr))
+		}
+		log.Fatalf("Setup: %v", err)
 	}
 
 	return func() {
-		defer func() {
-			err := os.RemoveAll(dir)
-			if err != nil {
-				log.Fatalf("Teardown: failed to delete temporary directory: %v", err)
-			}
-		}()
-
-		for answer := range answers {
-			go func() {
-				// #nosec G204: we control the args in tests
-				out, err := exec.Command("docker", "stop", "-t", "0", containerName+answer).CombinedOutput()
-				if err != nil {
-					errsDocker = errors.Join(errsDocker, fmt.Errorf("Teardown: can't stop system daemons container: %v", string(out)))
-				}
-			}()
-		}
-
-		wg.Wait()
-		if errsDocker != nil {
-			log.Fatalf("Teardown: docker errors: %v", errsDocker)
+		if err := cleanup(); err != nil {
+			log.Fatalf("Teardown: %v", err)
 		}
 	}
+}
+
+// waitForDaemons blocks until every mock container is ready to serve requests,
+// or until daemonsStartupTimeout elapses. It fails early if a container reported
+// a startup error in the meantime.
+func waitForDaemons(answers map[string]string, dockerErr func() error) error {
+	deadline := time.Now().Add(daemonsStartupTimeout)
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+
+	for answer, socketDir := range answers {
+		for {
+			err := daemonsReady(ctx, socketDir)
+			if err == nil {
+				break
+			}
+
+			if dockerErrs := dockerErr(); dockerErrs != nil {
+				return fmt.Errorf("docker errors while waiting for the %q daemons: %w", answer, dockerErrs)
+			}
+			if time.Now().After(deadline) {
+				return fmt.Errorf("%q daemons not ready after %s: %w", answer, daemonsStartupTimeout, err)
+			}
+
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
+
+	if dockerErrs := dockerErr(); dockerErrs != nil {
+		return fmt.Errorf("docker errors while waiting for daemon readiness: %w", dockerErrs)
+	}
+
+	return nil
+}
+
+// daemonsReady reports whether the mock daemons exposed in socketDir can serve
+// requests: both buses must accept connections and polkitd must have claimed its
+// name on the system bus, as it is started after them.
+func daemonsReady(ctx context.Context, socketDir string) error {
+	systemSocket := filepath.Join(socketDir, "system_bus_socket")
+	for _, socket := range []string{systemSocket, filepath.Join(socketDir, "session_bus_socket")} {
+		conn, err := (&net.Dialer{}).DialContext(ctx, "unix", socket)
+		if err != nil {
+			return err
+		}
+		_ = conn.Close()
+	}
+
+	netConn, err := (&net.Dialer{}).DialContext(ctx, "unix", systemSocket)
+	if err != nil {
+		return err
+	}
+	if deadline, ok := ctx.Deadline(); ok {
+		if err := netConn.SetDeadline(deadline); err != nil {
+			_ = netConn.Close()
+			return fmt.Errorf("set D-Bus readiness deadline: %w", err)
+		}
+	}
+
+	conn, err := dbus.NewConn(netConn, dbus.WithContext(ctx))
+	if err != nil {
+		_ = netConn.Close()
+		return fmt.Errorf("create D-Bus connection: %w", err)
+	}
+	defer func() { _ = conn.Close() }()
+	if err := conn.Auth(nil); err != nil {
+		return fmt.Errorf("authenticate D-Bus connection: %w", err)
+	}
+	if err := conn.Hello(); err != nil {
+		return fmt.Errorf("complete D-Bus handshake: %w", err)
+	}
+
+	var names []string
+	if err := conn.BusObject().CallWithContext(ctx, "org.freedesktop.DBus.ListNames", 0).Store(&names); err != nil {
+		return err
+	}
+	if !slices.Contains(names, "org.freedesktop.PolicyKit1") {
+		return errors.New("polkitd has not claimed its name on the system bus yet")
+	}
+
+	return nil
 }
 
 // dbusAnswer will flip to which polkit and systemd mock to communicate to:
@@ -541,6 +743,23 @@ func TestExecuteCommand(_ *testing.T) {
 }
 
 var testCmdName = os.Args[0]
+
+func TestHelperProcessDconfIsolation(t *testing.T) {
+	profileDir := os.Getenv("ADSYS_TESTS_DCONF_PROFILE_DATA_DIRS")
+	require.NotEmpty(t, profileDir, "Parent must set up dconf profile isolation")
+	require.DirExists(t, profileDir)
+
+	tmpDir := t.TempDir()
+	// #nosec G204 G702: re-execute this test binary with fixed arguments.
+	cmd := exec.Command(os.Args[0], "-test.run=TestExecuteCommand", "--", "adsysctl", "--help")
+	cmd.Env = append(os.Environ(), "GO_WANT_HELPER_PROCESS=1", "TMPDIR="+tmpDir)
+	out, err := cmd.CombinedOutput()
+	require.NoError(t, err, "Helper failed: %s", out)
+
+	entries, err := os.ReadDir(tmpDir)
+	require.NoError(t, err)
+	require.Empty(t, entries, "Helper must inherit profile isolation without creating temporary directories")
+}
 
 func startCmd(t *testing.T, wait bool, args ...string) (out func() string, stop func(), err error) {
 	t.Helper()

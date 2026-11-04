@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -21,7 +22,11 @@ import (
 )
 
 var keep bool
-var sshKey, adPassword string
+var sshKey, adPassword, baselineDeb string
+
+// Keep the image's local configuration, including AD DNS, when packages change
+// their conffiles. DEBIAN_FRONTEND alone does not suppress dpkg's prompts.
+const upgradePackagesCommand = "DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold upgrade"
 
 func main() {
 	os.Exit(run())
@@ -43,6 +48,8 @@ environment variable.
 
 Options:
  --ssh-key           SSH private key to use for authentication (default: ~/.ssh/id_rsa)
+ --baseline-deb      Install this released adsys package instead of the candidate,
+                     leaving the candidate in /debs for an upgrade test
  -k, --keep          Don't destroy VM if provisioning fails (default: false)
 
 This script will:
@@ -51,13 +58,14 @@ This script will:
  - install the previously built adsys package on the VM`, filepath.Base(os.Args[0]))
 
 	cmd.AddStringFlag(&sshKey, "ssh-key", "", "")
+	cmd.AddStringFlag(&baselineDeb, "baseline-deb", "", "")
 	cmd.AddBoolFlag(&keep, "k", false, "")
 	cmd.AddBoolFlag(&keep, "keep", false, "")
 
 	return cmd.Execute(context.Background())
 }
 
-func validate(_ context.Context, _ *command.Command) (err error) {
+func validate(ctx context.Context, _ *command.Command) (err error) {
 	sshKey, err = command.ValidateAndExpandPath(sshKey, command.DefaultSSHKeyPath)
 	if err != nil {
 		return err
@@ -68,10 +76,29 @@ func validate(_ context.Context, _ *command.Command) (err error) {
 		return fmt.Errorf("AD_PASSWORD environment variable must be set")
 	}
 
+	if baselineDeb != "" {
+		baselineDeb, err = command.ValidateAndExpandPath(baselineDeb, "")
+		if err != nil {
+			return err
+		}
+		// #nosec G204 - The package is explicitly supplied for this disposable test VM.
+		out, err := exec.CommandContext(ctx, "dpkg-deb", "-f", baselineDeb, "Package").CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("invalid baseline package: %w: %s", err, out)
+		}
+		if strings.TrimSpace(string(out)) != "adsys" {
+			return fmt.Errorf("baseline package is %q, expected adsys", strings.TrimSpace(string(out)))
+		}
+	}
+
 	return nil
 }
 
-func action(ctx context.Context, cmd *command.Command) error {
+// action provisions the client VM. The error is named so that the cleanup
+// deferred below observes what the function actually returns: failure paths
+// that bind their own err inside an if statement would otherwise leave the
+// error the cleanup inspects untouched.
+func action(ctx context.Context, cmd *command.Command) (err error) {
 	adsysRootDir, err := scripts.RootDir()
 	if err != nil {
 		return err
@@ -160,6 +187,15 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 	defer client.Close()
 
+	if err := client.CheckLink(ctx); err != nil {
+		return err
+	}
+
+	log.Infof("Disabling periodic apt activity...")
+	if err := client.QuiesceAPT(ctx); err != nil {
+		return err
+	}
+
 	out, err = client.Run(ctx, "hostname")
 	if err != nil {
 		return fmt.Errorf("failed to get hostname of VM: %w", err)
@@ -177,13 +213,24 @@ func action(ctx context.Context, cmd *command.Command) error {
 	}
 
 	log.Infof("Upgrading packages...")
-	_, err = client.Run(ctx, "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade")
+	_, err = client.Run(ctx, client.APTUpdateCmd()+" && "+upgradePackagesCommand)
 	if err != nil {
-		return fmt.Errorf("failed to update package list: %w", err)
+		return fmt.Errorf("failed to update or upgrade packages: %w", err)
 	}
 
 	log.Infof("Installing adsys package...")
-	_, err = client.Run(ctx, "DEBIAN_FRONTEND=noninteractive apt-get install -y /debs/*.deb")
+	installCommand := "DEBIAN_FRONTEND=noninteractive apt-get install -y /debs/*.deb"
+	if baselineDeb != "" {
+		if _, err = client.Run(ctx, "test ! -e /etc/dconf/profile/gdm && mkdir -p /baseline"); err != nil {
+			return fmt.Errorf("baseline test requires a fresh VM without /etc/dconf/profile/gdm: %w", err)
+		}
+		if err = client.Upload(baselineDeb, "/baseline/adsys.deb"); err != nil {
+			return fmt.Errorf("failed to upload baseline package: %w", err)
+		}
+		installCommand = "DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades " +
+			"-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold /baseline/adsys.deb"
+	}
+	_, err = client.Run(ctx, installCommand)
 	if err != nil {
 		return fmt.Errorf("failed to install adsys package: %w", err)
 	}
