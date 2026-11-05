@@ -6,7 +6,7 @@ toolchain go1.26.7
 
 require (
 	charm.land/bubbles/v2 v2.2.1
-	charm.land/bubbletea/v2 v2.1.0
+	charm.land/bubbletea/v2 v2.1.1
 	charm.land/lipgloss/v2 v2.0.6
 	github.com/charmbracelet/glamour v1.0.0
 	github.com/coreos/go-systemd/v22 v22.7.0
@@ -23,9 +23,9 @@ require (
 	github.com/maruel/natural v1.3.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mvo5/libsmbclient-go v0.0.0-20220607104205-b69795f58cd0
-	github.com/oiweiwei/go-msrpc v1.6.4
+	github.com/oiweiwei/go-msrpc v1.6.6
 	github.com/oiweiwei/gokrb5.fork/v9 v9.0.8
-	github.com/pkg/sftp v1.13.11
+	github.com/pkg/sftp v1.13.12
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
@@ -38,7 +38,7 @@ require (
 	golang.org/x/sync v0.24.0
 	golang.org/x/sys v0.49.0
 	golang.org/x/text v0.43.0
-	google.golang.org/grpc v1.84.0
+	google.golang.org/grpc v1.85.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.2
 	google.golang.org/protobuf v1.36.12
 	gopkg.in/ini.v1 v1.67.3
@@ -104,5 +104,5 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/term v0.47.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260706201446-f0a921348800 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260817212433-ac3dfec99bb1 // indirect
 )
