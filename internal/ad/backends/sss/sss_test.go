@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -41,6 +42,24 @@ func TestSSSD(t *testing.T) {
 		"Mixed static and discovered servers preserve order": {
 			sssdConf:        "example.com-with-static-and-discovered-servers",
 			wantServerFQDNs: []string{"dc1.windows.lan", "dynamic_active_server.example.com", "dc3.windows.lan"},
+		},
+
+		// conf.d snippets
+		"Snippets in conf.d override values from sssd.conf": {
+			sssdConf:        "example.com-with-conf.d-override",
+			wantServerFQDNs: []string{"dc1.windows.lan", "dc2.windows.lan"},
+		},
+		"Snippets in conf.d are applied in alphabetical order": {
+			sssdConf:        "example.com-with-conf.d-order",
+			wantServerFQDNs: []string{"dc2.windows.lan"},
+		},
+		"Snippets in conf.d can define the domain section": {
+			sssdConf:        "example.com-with-conf.d-adding-section",
+			wantServerFQDNs: []string{"dc1.windows.lan"},
+		},
+		"Files in conf.d not ending with .conf or starting with a dot are ignored": {
+			sssdConf:        "example.com-with-conf.d-ignored-files",
+			wantServerFQDNs: []string{"dc0.windows.lan"},
 		},
 
 		// Active server cases
@@ -91,6 +110,10 @@ func TestSSSD(t *testing.T) {
 			config := sss.Config{}
 			if tc.sssdConf != "" {
 				config.Conf = filepath.Join(testutils.TestFamilyPath(t), "configs", tc.sssdConf)
+				// A directory holds sssd.conf next to its conf.d snippets.
+				if fi, err := os.Stat(config.Conf); err == nil && fi.IsDir() {
+					config.Conf = filepath.Join(config.Conf, "sssd.conf")
+				}
 			} else {
 				// We are using the default, depending on the machine, this can fails if it doesn't exist
 				if _, err := os.Stat(consts.DefaultSSSConf); errors.Is(err, os.ErrNotExist) {
@@ -124,6 +147,39 @@ func TestSSSD(t *testing.T) {
 			require.Equal(t, want, got, "Got expected loaded values in sssd config object")
 		})
 	}
+}
+
+func TestSSSDWarnsAboutConfDItCannotRead(t *testing.T) {
+	// Not parallel: captures the standard logger output.
+	bus := testutils.NewDbusConn(t)
+
+	// Like SSSD, which logs a snippets directory it cannot open and carries on
+	// with sssd.conf alone, use sssd.conf but say why the snippets were skipped.
+	dir := t.TempDir()
+	conf := filepath.Join(dir, "sssd.conf")
+	content, err := os.ReadFile(filepath.Join("testdata", "TestSSSD", "configs", "example.com-with-conf.d-override", "sssd.conf"))
+	require.NoError(t, err, "Setup: could not read sssd.conf fixture")
+	require.NoError(t, os.WriteFile(conf, content, 0600), "Setup: could not write sssd.conf")
+	snippetsDir := filepath.Join(dir, "conf.d")
+	require.NoError(t, os.WriteFile(snippetsDir, []byte("[domain/example.com]\nad_server = dc1.windows.lan\n"), 0600),
+		"Setup: could not write a conf.d file in place of the directory")
+
+	r, w, err := os.Pipe()
+	require.NoError(t, err, "Setup: pipe shouldn't fail")
+	orig := logrus.StandardLogger().Out
+	logrus.StandardLogger().SetOutput(w)
+	sssd, err := sss.New(context.Background(), sss.Config{Conf: conf}, bus)
+	logrus.StandardLogger().SetOutput(orig)
+	w.Close()
+	var out strings.Builder
+	_, copyErr := io.Copy(&out, r)
+	require.NoError(t, copyErr, "Setup: couldn't copy the log output")
+
+	require.NoError(t, err, "New should return no error")
+	serverFQDN, err := sssd.ServerFQDN(context.Background())
+	require.NoError(t, err, "ServerFQDN should return no error")
+	require.Equal(t, "dc0.windows.lan", serverFQDN, "ServerFQDN comes from sssd.conf alone")
+	require.Contains(t, out.String(), snippetsDir, "The warning names the snippets directory that was skipped")
 }
 
 type sssdbus struct {
