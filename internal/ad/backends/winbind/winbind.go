@@ -156,6 +156,13 @@ func (w Winbind) DefaultDomainSuffix() string {
 	return w.defaultDomainSuffix
 }
 
+// UseLDAPS reports whether winbind requests LDAPS for GPO listing.
+// Winbind configuration is not inspected, so callers must configure the
+// transport explicitly when LDAPS is required.
+func (w Winbind) UseLDAPS() bool {
+	return false
+}
+
 // ServerFQDN returns current server FQDN.
 // It returns first any static configuration. If nothing is found, it will fetch
 // the active server from winbind.

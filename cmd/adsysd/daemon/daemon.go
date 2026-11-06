@@ -10,6 +10,7 @@ import (
 	"github.com/leonelquinteros/gotext"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ubuntu/adsys/internal/ad"
 	"github.com/ubuntu/adsys/internal/ad/backends/sss"
 	"github.com/ubuntu/adsys/internal/ad/backends/winbind"
 	"github.com/ubuntu/adsys/internal/adsysservice"
@@ -56,6 +57,9 @@ type daemonConfig struct {
 	SSSdConfig            sss.Config     `mapstructure:"sssd"`
 	WinbindConfig         winbind.Config `mapstructure:"winbind"`
 	GpoListTimeout        int            `mapstructure:"gpo_list_timeout"`
+	LDAPTransport         string         `mapstructure:"ldap_transport"`
+	LDAPTLSCACert         string         `mapstructure:"ldap_tls_cacert"`
+	LDAPTLSCRLFile        string         `mapstructure:"ldap_tls_crlfile"`
 
 	ServiceTimeout int `mapstructure:"service_timeout"`
 }
@@ -73,6 +77,13 @@ func New() *App {
 			err := config.Init("adsys", a.rootCmd, a.viper, func(refreshed bool) error {
 				var newConfig daemonConfig
 				if err := config.LoadConfig(&newConfig, a.viper); err != nil {
+					return err
+				}
+				if _, err := ad.NormalizeLDAPConfig(ad.LDAPConfig{
+					Transport:  ad.LDAPTransport(newConfig.LDAPTransport),
+					TLSCACert:  newConfig.LDAPTLSCACert,
+					TLSCRLFile: newConfig.LDAPTLSCRLFile,
+				}); err != nil {
 					return err
 				}
 
@@ -129,6 +140,11 @@ func New() *App {
 				adsysservice.WithSSSConfig(a.config.SSSdConfig),
 				adsysservice.WithWinbindConfig(a.config.WinbindConfig),
 				adsysservice.WithGpoListTimeout(time.Second*time.Duration(a.config.GpoListTimeout)),
+				adsysservice.WithLDAPConfig(ad.LDAPConfig{
+					Transport:  ad.LDAPTransport(a.config.LDAPTransport),
+					TLSCACert:  a.config.LDAPTLSCACert,
+					TLSCRLFile: a.config.LDAPTLSCRLFile,
+				}),
 			)
 			if err != nil {
 				close(a.ready)

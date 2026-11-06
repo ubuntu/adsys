@@ -26,13 +26,27 @@ func TestAdsysGPOList(t *testing.T) {
 	t.Setenv("ADSYS_TESTS_MOCK_SMBDOMAIN", "gpoonly.com")
 
 	tests := map[string]struct {
-		url             string
-		accountName     string
-		objectClass     string
-		krb5ccNameState string
+		url                  string
+		accountName          string
+		objectClass          string
+		krb5ccNameState      string
+		transport            string
+		createTLSCA          bool
+		tlsCRLFile           bool
+		createTLSCRL         bool
+		relativeTLSCA        bool
+		relativeTLSCRL       bool
+		nonPEMTLSCA          bool
+		nonPEMTLSCRL         bool
+		expectedTransport    string
+		startTLSUnsupported  bool
+		failLDAPParameter    string
+		simulatedSamDBStatus string
+		simulatedGCStatus    string
 
-		wantErr        bool
-		wantReturnCode int
+		wantErr         bool
+		wantReturnCode  int
+		wantErrContains string
 	}{
 		"Return one gpo": {
 			accountName: "UserAtRoot@GPOONLY.COM",
@@ -169,6 +183,36 @@ func TestAdsysGPOList(t *testing.T) {
 			accountName: "hostnameWithLongName",
 			objectClass: "computer",
 		},
+		"LDAPS connects to the DC and Global Catalog over TLS": {
+			accountName:       "UserSessionReferralFallback@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			expectedTransport: "ldaps",
+		},
+		"LDAPS failure does not fall back to LDAP": {
+			url:               "NT_STATUS_CONNECTION_REFUSED",
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			expectedTransport: "ldaps",
+			wantReturnCode:    2,
+			wantErr:           true,
+			wantErrContains:   "NT_STATUS_CONNECTION_REFUSED",
+		},
+		"Strict TLS mode configures the CRL": {
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			tlsCRLFile:        true,
+			createTLSCRL:      true,
+			expectedTransport: "ldaps",
+		},
+		"StartTLS configures Samba TLS wrapping": {
+			accountName:       "UserSessionReferralFallback@GPOONLY.COM",
+			transport:         "starttls",
+			createTLSCA:       true,
+			expectedTransport: "starttls",
+		},
 
 		// Error cases
 		"Error on no network": {
@@ -194,6 +238,139 @@ func TestAdsysGPOList(t *testing.T) {
 			accountName:    "UserAtRoot@GPOONLY.COM",
 			wantReturnCode: 2,
 			wantErr:        true,
+		},
+		"Unknown session-open status is a connection failure": {
+			url:            "NT_STATUS_INVALID_PARAMETER",
+			accountName:    "UserAtRoot@GPOONLY.COM",
+			wantReturnCode: 2,
+			wantErr:        true,
+		},
+		"Unsupported transport is a configuration error": {
+			accountName:     "UserAtRoot@GPOONLY.COM",
+			transport:       "unknown",
+			wantReturnCode:  4,
+			wantErr:         true,
+			wantErrContains: "Unsupported LDAP transport",
+		},
+		"Missing CA bundle is a configuration error": {
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			expectedTransport: "ldaps",
+			wantReturnCode:    4,
+			wantErr:           true,
+			wantErrContains:   "TLS CA bundle",
+		},
+		"Missing CRL file is a configuration error": {
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			tlsCRLFile:        true,
+			expectedTransport: "ldaps",
+			wantReturnCode:    4,
+			wantErr:           true,
+			wantErrContains:   "TLS CRL file",
+		},
+		"Relative CA bundle path is a configuration error": {
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			relativeTLSCA:     true,
+			expectedTransport: "ldaps",
+			wantReturnCode:    4,
+			wantErr:           true,
+			wantErrContains:   "must be absolute",
+		},
+		"Relative CRL path is a configuration error": {
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			tlsCRLFile:        true,
+			relativeTLSCRL:    true,
+			expectedTransport: "ldaps",
+			wantReturnCode:    4,
+			wantErr:           true,
+			wantErrContains:   "must be absolute",
+		},
+		"Non-PEM CA bundle is a configuration error": {
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			nonPEMTLSCA:       true,
+			expectedTransport: "ldaps",
+			wantReturnCode:    4,
+			wantErr:           true,
+			wantErrContains:   "must be PEM encoded",
+		},
+		"Non-PEM CRL is a configuration error": {
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			tlsCRLFile:        true,
+			createTLSCRL:      true,
+			nonPEMTLSCRL:      true,
+			expectedTransport: "ldaps",
+			wantReturnCode:    4,
+			wantErr:           true,
+			wantErrContains:   "must be PEM encoded",
+		},
+		"StartTLS on unsupported Samba is a configuration error": {
+			accountName:         "UserAtRoot@GPOONLY.COM",
+			transport:           "starttls",
+			createTLSCA:         true,
+			expectedTransport:   "starttls",
+			startTLSUnsupported: true,
+			wantReturnCode:      4,
+			wantErr:             true,
+			wantErrContains:     "requires Samba 4.21 or later",
+		},
+		"Invalid TLS parameter setup is a configuration error": {
+			accountName:       "UserAtRoot@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			expectedTransport: "ldaps",
+			failLDAPParameter: "tls cafile",
+			wantReturnCode:    4,
+			wantErr:           true,
+			wantErrContains:   "could not configure Samba LDAP TLS option",
+		},
+		"TLS parameter mix failure is a configuration error": {
+			accountName:          "UserAtRoot@GPOONLY.COM",
+			transport:            "ldaps",
+			createTLSCA:          true,
+			expectedTransport:    "ldaps",
+			simulatedSamDBStatus: "NT_STATUS_INVALID_PARAMETER_MIX",
+			wantReturnCode:       4,
+			wantErr:              true,
+			wantErrContains:      "NT_STATUS_INVALID_PARAMETER_MIX",
+		},
+		"TLS trust file access status is a configuration error": {
+			accountName:          "UserAtRoot@GPOONLY.COM",
+			transport:            "ldaps",
+			createTLSCA:          true,
+			expectedTransport:    "ldaps",
+			simulatedSamDBStatus: "NT_STATUS_CANT_ACCESS_DOMAIN_INFO",
+			wantReturnCode:       4,
+			wantErr:              true,
+			wantErrContains:      "NT_STATUS_CANT_ACCESS_DOMAIN_INFO",
+		},
+		"TLS verification failure is a connection error": {
+			accountName:          "UserAtRoot@GPOONLY.COM",
+			transport:            "ldaps",
+			createTLSCA:          true,
+			expectedTransport:    "ldaps",
+			simulatedSamDBStatus: "TLS certificate verification failed",
+			wantReturnCode:       2,
+			wantErr:              true,
+			wantErrContains:      "TLS certificate verification failed",
+		},
+		"TLS configuration failure on optional Global Catalog is fatal": {
+			accountName:       "UserSessionReferralFallback@GPOONLY.COM",
+			transport:         "ldaps",
+			createTLSCA:       true,
+			expectedTransport: "ldaps",
+			simulatedGCStatus: "NT_STATUS_INVALID_PARAMETER_MIX",
+			wantReturnCode:    4,
+			wantErr:           true,
+			wantErrContains:   "NT_STATUS_INVALID_PARAMETER_MIX",
 		},
 
 		"Error on non existent account": {
@@ -232,19 +409,19 @@ func TestAdsysGPOList(t *testing.T) {
 		"Error on KRB5CCNAME unset": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "unset",
-			wantReturnCode:  1,
+			wantReturnCode:  2,
 			wantErr:         true,
 		},
 		"Error on invalid ticket": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "invalid",
-			wantReturnCode:  1,
+			wantReturnCode:  2,
 			wantErr:         true,
 		},
 		"Error on dangling ticket symlink": {
 			accountName:     "UserAtRoot@GPOONLY.COM",
 			krb5ccNameState: "dangling",
-			wantReturnCode:  1,
+			wantReturnCode:  2,
 			wantErr:         true,
 		},
 	}
@@ -256,10 +433,22 @@ func TestAdsysGPOList(t *testing.T) {
 			if tc.url == "" {
 				tc.url = "adcontroller.example.com"
 			}
+			expectedTransport := tc.expectedTransport
+			if expectedTransport == "" {
+				expectedTransport = "ldap"
+			}
+			t.Setenv("ADSYS_TESTS_EXPECT_LDAP_TRANSPORT", expectedTransport)
+			t.Setenv("ADSYS_TESTS_STARTTLS_SUPPORTED", map[bool]string{true: "0", false: "1"}[tc.startTLSUnsupported])
+			t.Setenv("ADSYS_TESTS_FAIL_LDAP_PARAMETER", tc.failLDAPParameter)
+			t.Setenv("ADSYS_TESTS_SAMDB_STATUS", tc.simulatedSamDBStatus)
+			t.Setenv("ADSYS_TESTS_GC_STATUS", tc.simulatedGCStatus)
 
 			// Ticket creation for mock
-			if tc.krb5ccNameState != "unset" {
-				krb5dir := t.TempDir()
+			if tc.krb5ccNameState == "unset" {
+				t.Setenv("KRB5CCNAME", "")
+			} else {
+				krb5dir, tempErr := filepath.Abs(t.TempDir())
+				require.NoError(t, tempErr, "Setup: could not resolve the temporary Kerberos directory")
 				krb5file := filepath.Join(krb5dir, "krb5file")
 				krb5symlink := filepath.Join(krb5dir, "krb5symlink")
 				content := "Some data for the mock"
@@ -282,11 +471,53 @@ func TestAdsysGPOList(t *testing.T) {
 				t.Setenv("KRB5CCNAME", krb5ccname)
 			}
 
+			var tlsCAPath, tlsCRLPath string
+			if tc.transport != "" {
+				tlsDir := t.TempDir()
+				tlsCAPath = filepath.Join(tlsDir, "ca.pem")
+				if tc.relativeTLSCA {
+					tlsCAPath = "ad-ca.pem"
+				}
+				if tc.createTLSCA && !tc.relativeTLSCA {
+					ca := []byte("-----BEGIN CERTIFICATE-----\nmock CA\n-----END CERTIFICATE-----\n")
+					if tc.nonPEMTLSCA {
+						ca = []byte("not a PEM CA bundle")
+					}
+					err = os.WriteFile(tlsCAPath, ca, 0600)
+					require.NoError(t, err, "Setup: could not create mock TLS CA file")
+				}
+				if tc.tlsCRLFile {
+					tlsCRLPath = filepath.Join(tlsDir, "crl.pem")
+					if tc.relativeTLSCRL {
+						tlsCRLPath = "ad-crl.pem"
+					}
+					if tc.createTLSCRL && !tc.relativeTLSCRL {
+						crl := []byte("-----BEGIN X509 CRL-----\nmock CRL\n-----END X509 CRL-----\n")
+						if tc.nonPEMTLSCRL {
+							crl = []byte("DER CRL")
+						}
+						err = os.WriteFile(tlsCRLPath, crl, 0600)
+						require.NoError(t, err, "Setup: could not create mock TLS CRL file")
+					}
+				}
+			}
+
+			cmdArgs := []string{"--objectclass", tc.objectClass, tc.url, tc.accountName}
+			if tc.transport != "" {
+				cmdArgs = append(cmdArgs, "--transport", tc.transport, "--tls-cafile", tlsCAPath)
+				if tc.tlsCRLFile {
+					cmdArgs = append(cmdArgs, "--tls-crlfile", tlsCRLPath)
+				}
+			}
 			// #nosec G204: we control the command line name and only change it for tests
-			cmd := exec.Command(adsysGPOListcmd, "--objectclass", tc.objectClass, tc.url, tc.accountName)
+			cmd := exec.Command(adsysGPOListcmd, cmdArgs...)
 			got, err := cmd.CombinedOutput()
 			if tc.wantErr {
 				require.Error(t, err, "adsys-gpostlist should have failed but didn’t")
+				assert.Equal(t, tc.wantReturnCode, cmd.ProcessState.ExitCode(), "adsys-gpolist returns expected exit code")
+				if tc.wantErrContains != "" {
+					assert.Contains(t, string(got), tc.wantErrContains, "adsys-gpolist reports the expected diagnostic")
+				}
 				return
 			}
 			require.NoErrorf(t, err, "adsys-gpostlist should exit successfully: %v", string(got))

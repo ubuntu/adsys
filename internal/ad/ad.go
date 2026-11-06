@@ -61,7 +61,63 @@ const (
 	gpoListConnectionFailed int = 2
 	// gpoListGPOFailed is returned when the GPO list couldn't be computed for the account.
 	gpoListGPOFailed int = 3
+	// gpoListConfigurationError is returned for invalid local GPO-list configuration.
+	gpoListConfigurationError int = 4
 )
+
+// LDAPTransport specifies the LDAP transport used when listing GPOs.
+type LDAPTransport string
+
+const (
+	// LDAPTransportAuto is an opt-in that follows ad_use_ldaps for SSSD and uses LDAP for winbind.
+	LDAPTransportAuto LDAPTransport = "auto"
+	// LDAPTransportLDAP uses LDAP without explicit TLS configuration.
+	LDAPTransportLDAP LDAPTransport = "ldap"
+	// LDAPTransportLDAPS uses LDAP over TLS.
+	LDAPTransportLDAPS LDAPTransport = "ldaps"
+	// LDAPTransportStartTLS upgrades an LDAP connection with StartTLS.
+	LDAPTransportStartTLS LDAPTransport = "starttls"
+
+	// DefaultLDAPTLSCACert is the system CA bundle used for LDAP TLS verification.
+	DefaultLDAPTLSCACert = "/etc/ssl/certs/ca-certificates.crt"
+)
+
+// LDAPConfig contains the transport and TLS settings used by the GPO-list script.
+type LDAPConfig struct {
+	Transport  LDAPTransport
+	TLSCACert  string
+	TLSCRLFile string
+}
+
+// NormalizeLDAPConfig validates the transport and trust paths and fills in defaults.
+func NormalizeLDAPConfig(config LDAPConfig) (LDAPConfig, error) {
+	config.Transport = LDAPTransport(strings.ToLower(strings.TrimSpace(string(config.Transport))))
+	switch config.Transport {
+	case "":
+		config.Transport = LDAPTransportLDAP
+	case LDAPTransportAuto, LDAPTransportLDAP, LDAPTransportLDAPS, LDAPTransportStartTLS:
+	default:
+		return LDAPConfig{}, errors.New(gotext.Get("unsupported LDAP transport %q (supported values are auto, ldap, ldaps, and starttls)", config.Transport))
+	}
+
+	config.TLSCACert = strings.TrimSpace(config.TLSCACert)
+	config.TLSCRLFile = strings.TrimSpace(config.TLSCRLFile)
+	if config.TLSCACert == "" {
+		config.TLSCACert = DefaultLDAPTLSCACert
+	}
+	if !filepath.IsAbs(config.TLSCACert) {
+		return LDAPConfig{}, errors.New(gotext.Get("ldap_tls_cacert must be an absolute path: %q", config.TLSCACert))
+	}
+	if config.TLSCRLFile != "" && !filepath.IsAbs(config.TLSCRLFile) {
+		return LDAPConfig{}, errors.New(gotext.Get("ldap_tls_crlfile must be an absolute path: %q", config.TLSCRLFile))
+	}
+
+	return config, nil
+}
+
+type ldapsBackend interface {
+	UseLDAPS() bool
+}
 
 type gpo downloadable
 
@@ -96,6 +152,7 @@ type AD struct {
 	withoutKerberos bool
 	gpoListCmd      []string
 	gpoListTimeout  time.Duration
+	ldapConfig      LDAPConfig
 }
 
 type options struct {
@@ -106,6 +163,7 @@ type options struct {
 	withoutKerberos bool
 	gpoListCmd      []string
 	gpoListTimeout  time.Duration
+	ldapConfig      LDAPConfig
 }
 
 // Option reprents an optional function to change AD behavior.
@@ -135,6 +193,18 @@ func WithGpoListTimeout(timeout time.Duration) Option {
 	}
 }
 
+// WithLDAPConfig specifies the LDAP transport and TLS settings for GPO listing.
+func WithLDAPConfig(config LDAPConfig) Option {
+	return func(o *options) error {
+		normalized, err := NormalizeLDAPConfig(config)
+		if err != nil {
+			return err
+		}
+		o.ldapConfig = normalized
+		return nil
+	}
+}
+
 // AdsysGpoListCode is the embedded script which request
 // Samba to get our GPO list for the given object.
 //
@@ -157,11 +227,22 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 		gpoListCmd:     []string{"python3", "-c", AdsysGpoListCode},
 		versionID:      versionID,
 		gpoListTimeout: 30 * time.Second, // this is used in tests and set to consts.DefaultGpoListTimeout in production
+		ldapConfig:     LDAPConfig{Transport: LDAPTransportLDAP},
 	}
 	// applied options
 	for _, o := range opts {
 		if err := o(&args); err != nil {
 			return nil, err
+		}
+	}
+	ldapConfig, err := NormalizeLDAPConfig(args.ldapConfig)
+	if err != nil {
+		return nil, err
+	}
+	if ldapConfig.Transport == LDAPTransportAuto {
+		ldapConfig.Transport = LDAPTransportLDAP
+		if backend, ok := configBackend.(ldapsBackend); ok && backend.UseLDAPS() {
+			ldapConfig.Transport = LDAPTransportLDAPS
 		}
 	}
 
@@ -206,6 +287,7 @@ func New(ctx context.Context, configBackend backends.Backend, hostname string, o
 		downloadables:  make(map[string]*downloadable),
 		gpoListCmd:     args.gpoListCmd,
 		gpoListTimeout: args.gpoListTimeout,
+		ldapConfig:     ldapConfig,
 
 		withoutKerberos: args.withoutKerberos,
 	}, nil
@@ -290,6 +372,12 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 	for i, adServerFQDN := range adServerFQDNs {
 		args := append([]string{}, ad.gpoListCmd...) // Copy gpoListCmd to prevent data race
 		scriptArgs := []string{"--objectclass", string(objectClass), adServerFQDN, objectName}
+		if ad.ldapConfig.Transport != LDAPTransportLDAP {
+			scriptArgs = append(scriptArgs, "--transport", string(ad.ldapConfig.Transport), "--tls-cafile", ad.ldapConfig.TLSCACert)
+			if ad.ldapConfig.TLSCRLFile != "" {
+				scriptArgs = append(scriptArgs, "--tls-crlfile", ad.ldapConfig.TLSCRLFile)
+			}
+		}
 		if logrus.GetLevel() >= logrus.DebugLevel {
 			scriptArgs = append(scriptArgs, "--debug")
 		}
@@ -334,6 +422,8 @@ func (ad *AD) GetPolicies(ctx context.Context, objectName string, objectClass Ob
 			}
 		case gpoListGPOFailed:
 			reason = gotext.Get("could not compute the GPO list for %q", objectName)
+		case gpoListConfigurationError:
+			reason = gotext.Get("invalid LDAP transport configuration")
 		default:
 			reason = gotext.Get("unexpected error while retrieving the GPO list")
 		}

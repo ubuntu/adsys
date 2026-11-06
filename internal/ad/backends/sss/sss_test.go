@@ -29,11 +29,18 @@ func TestSSSD(t *testing.T) {
 		sssdConf        string
 		sssdCacheDir    string
 		wantServerFQDNs []string
+		wantUseLDAPS    bool
 
 		wantErr bool
 	}{
-		"Regular config":               {sssdConf: "example.com"},
-		"Multiple domains, pick first": {sssdConf: "multiple-domains"},
+		"Regular config":                  {sssdConf: "example.com"},
+		"Multiple domains, pick first":    {sssdConf: "multiple-domains"},
+		"LDAPS enabled":                   {sssdConf: "ad-use-ldaps-true", wantUseLDAPS: true},
+		"LDAPS disabled":                  {sssdConf: "ad-use-ldaps-false"},
+		"LDAPS absent":                    {sssdConf: "ad-use-ldaps-absent"},
+		"LDAPS is case insensitive":       {sssdConf: "ad-use-ldaps-uppercase", wantUseLDAPS: true},
+		"LDAPS false is case insensitive": {sssdConf: "ad-use-ldaps-mixed-case"},
+		"LDAPS follows the first domain":  {sssdConf: "ad-use-ldaps-multiple-domains", wantUseLDAPS: true},
 		"Multiple servers, pick first": {
 			sssdConf:        "example.com-with-multiple-servers",
 			wantServerFQDNs: []string{"dc1.windows.lan", "dc2.windows.lan"},
@@ -82,6 +89,7 @@ func TestSSSD(t *testing.T) {
 		"Error on no sssd section":             {sssdConf: "no-sssd-section", wantErr: true},
 		"Error on sssd domain section missing": {sssdConf: "sssddomain-missing", wantErr: true},
 		"Error on sssd domain empty section":   {sssdConf: "sssddomain-empty-section", wantErr: true},
+		"Error on invalid ad_use_ldaps":        {sssdConf: "ad-use-ldaps-invalid", wantErr: true},
 	}
 
 	for name, tc := range tests {
@@ -118,6 +126,7 @@ func TestSSSD(t *testing.T) {
 				require.NoError(t, err, "ServerFQDNs should return no error")
 				require.Equal(t, tc.wantServerFQDNs, serverFQDNs, "ServerFQDNs returns configured servers in order")
 			}
+			require.Equal(t, tc.wantUseLDAPS, sssd.UseLDAPS(), "UseLDAPS reports the configured SSSD value")
 
 			got := testutils.FormatBackendCalls(t, sssd)
 			want := testutils.LoadWithUpdateFromGolden(t, got)
