@@ -159,6 +159,7 @@ func TestSSSDWarnsAboutConfDItCannotRead(t *testing.T) {
 	conf := filepath.Join(dir, "sssd.conf")
 	content, err := os.ReadFile(filepath.Join("testdata", "TestSSSD", "configs", "example.com-with-conf.d-override", "sssd.conf"))
 	require.NoError(t, err, "Setup: could not read sssd.conf fixture")
+	// #nosec G703 -- This is a test, writing a fixture into its own t.TempDir()
 	require.NoError(t, os.WriteFile(conf, content, 0600), "Setup: could not write sssd.conf")
 	snippetsDir := filepath.Join(dir, "conf.d")
 	require.NoError(t, os.WriteFile(snippetsDir, []byte("[domain/example.com]\nad_server = dc1.windows.lan\n"), 0600),
