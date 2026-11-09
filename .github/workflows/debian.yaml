@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
+    paths: &paths
       - '**'
       - '!.github/**'
       - '.github/workflows/debian.yaml'
@@ -12,17 +12,12 @@ on:
       - '!.gitignore'
       - '!.golangci.yaml'
       - '!*.md'
+      - '!installer/**'
+      - '!e2e/**'
     tags:
       - "*"
   pull_request:
-    paths:
-      - '**'
-      - '!.github/**'
-      - '.github/workflows/debian.yaml'
-      - '!.clang-format'
-      - '!.gitignore'
-      - '!.golangci.yaml'
-      - '!*.md'
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -52,3 +47,11 @@ jobs:
           docker-image: ubuntu:${{ matrix.ubuntu-version }}
           # Noble doesn't ship the Go version we require.
           extra-apt-repositories: ${{ (matrix.ubuntu-version == 'noble') && 'ppa:ubuntu-enterprise-desktop/golang' || '' }}
+
+      - name: Run autopkgtests
+        uses: canonical/desktop-engineering/gh-actions/common/run-autopkgtest@main
+        with:
+          lxd-image: ubuntu:${{ matrix.ubuntu-version }}
+          source-changes: ${{ env.SOURCE_OUTPUT_DIR }}/${{ env.PKG_SOURCE_CHANGES }}
+          debs-dir: ${{ env.BUILD_OUTPUT_DIR }}
+          autopkgtest-args: ${{ (matrix.ubuntu-version == 'noble') && '--add-apt-source=ppa:ubuntu-enterprise-desktop/golang' || '' }}
