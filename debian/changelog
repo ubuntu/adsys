@@ -1,3 +1,10 @@
+adsys (0.16.4ubuntu1.3) resolute; urgency=medium
+
+  * Fix s390x build failures by filtering big-endian dconf databases from
+    test golden comparisons.
+
+ -- Adrian Dombeck <adrian.dombeck@canonical.com>  Tue, 10 Nov 2026 15:14:36 +0100
+
 adsys (0.16.4ubuntu1.2) resolute; urgency=medium
 
   * Preserve GDM greeter defaults when applying policies (LP: #2143268):
