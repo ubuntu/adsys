@@ -101,6 +101,11 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		}
 	}()
 
+	// Enable daemon debug logging so enrollment failures are captured in the journal.
+	if err := setDaemonVerbose(ctx, rootClient, 2); err != nil {
+		return fmt.Errorf("failed to enable daemon debug logging: %w", err)
+	}
+
 	// Attach client to Ubuntu Pro
 	if _, err := rootClient.Run(ctx, fmt.Sprintf("pro attach %s --no-auto-enable", proToken)); err != nil {
 		return fmt.Errorf("failed to attach client to Ubuntu Pro: %w", err)
@@ -174,9 +179,7 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 	// Assert policies only available in newer adsys releases
 	if !slices.Contains([]string{"focal", "jammy"}, cmd.Inventory.Codename) {
 		/// Certificates
-		// Enrollment takes a few seconds, so no better way to do this than an arbitrary sleep :)
-		time.Sleep(5 * time.Second)
-		if err := rootClient.RequireContains(ctx, "getcert list -i warthogs-CA.Machine", "status: MONITORING"); err != nil {
+		if err := requireEventuallyContains(ctx, rootClient, "getcert list -i warthogs-CA.Machine", "status: MONITORING"); err != nil {
 			return err
 		}
 
@@ -274,5 +277,41 @@ ftp_proxy="http://127.0.0.1:8080"`); err != nil {
 	}
 	////// End policies for $HOST-ADM@WARTHOGS.BIZ
 
+	return nil
+}
+
+// requireEventuallyContains polls cmd until its output contains expected or the
+// timeout elapses, returning the last error on timeout. Certificate enrollment
+// and backend switches complete asynchronously, so assertions on their results
+// must tolerate a delay.
+func requireEventuallyContains(ctx context.Context, client remote.Client, cmd, expected string) error {
+	deadline := time.Now().Add(2 * time.Minute)
+	var err error
+	for {
+		if err = client.RequireContains(ctx, cmd, expected); err == nil {
+			return nil
+		}
+		if time.Now().After(deadline) {
+			return err
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(5 * time.Second):
+		}
+	}
+}
+
+// setDaemonVerbose pins the daemon verbosity in /etc/adsys.yaml and restarts
+// adsysd so the new level takes effect immediately. The file is created first:
+// an upgraded or base image may not ship one, and sed would fail on the
+// missing file.
+func setDaemonVerbose(ctx context.Context, client remote.Client, level int) error {
+	_, err := client.Run(ctx, fmt.Sprintf(
+		"touch /etc/adsys.yaml && sed -i -e 's/^verbose:.*/verbose: %d/' /etc/adsys.yaml && (grep -q '^verbose:' /etc/adsys.yaml || echo 'verbose: %d' >> /etc/adsys.yaml) && systemctl restart adsysd.service",
+		level, level))
+	if err != nil {
+		return fmt.Errorf("failed to set daemon verbose level to %d: %w", level, err)
+	}
 	return nil
 }

@@ -5,6 +5,7 @@ package remote
 import (
 	"bufio"
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"os"
@@ -21,6 +22,25 @@ import (
 // commandTimeout is the maximum time a command can run before being cancelled.
 const commandTimeout = 90 * time.Minute
 
+// keepAliveInterval is how often we poke the server to keep the connection
+// from being considered idle. Commands such as a distribution upgrade can go
+// for minutes without writing anything, and the connection crosses a VPN and
+// the stateful equipment along with it, which drops silent flows well before
+// the command itself has had a chance to finish.
+const keepAliveInterval = 30 * time.Second
+
+const (
+	// linkProbeSize is how much output CheckLink asks the host to produce. It
+	// only needs to be large enough to require a long run of full-size TCP
+	// segments, which is what a link that only carries small packets fails to
+	// deliver.
+	linkProbeSize = 64 * 1024
+
+	// linkProbeTimeout bounds the probe. A healthy link answers in well under
+	// a second; one that drops full-size packets never answers at all.
+	linkProbeTimeout = 30 * time.Second
+)
+
 const (
 	// DomainUserPassword is the password to login as domain users.
 	DomainUserPassword = "supersecretpassword"
@@ -29,11 +49,98 @@ const (
 	PAMModuleDirectory = "/usr/lib/x86_64-linux-gnu/security"
 )
 
+// quiesceAPTScript stops the periodic apt work on a freshly booted host.
+//
+// The apt-daily timers run apt-get and unattended-upgrade in the background,
+// and both are Persistent=true, so a machine that was off when they were due
+// starts the runs it considers missed as soon as it boots. That is exactly
+// when we start using apt ourselves, and whichever of the two gets there
+// second fails outright:
+//
+//	E: Could not get lock /var/lib/dpkg/lock-frontend. It is held by process 4044 (unattended-upgr)
+//	E: Could not get lock /var/lib/apt/lists/lock. It is held by process 6129 (apt-get)
+//
+// unattended-upgrades.service is masked along with them for completeness, but
+// it is only the shutdown helper and has never been what runs an upgrade.
+//
+// Masking does not reclaim the locks from a run already under way, as these
+// units let their children outlive the stop, so apt is also told to wait for
+// the dpkg lock rather than fail on it. That covers everything except the
+// lists lock, which APTUpdate has to retry for.
+const quiesceAPTScript = `set -eu
+%[1]ssystemctl mask --now \
+    apt-daily.timer apt-daily-upgrade.timer \
+    apt-daily.service apt-daily-upgrade.service \
+    unattended-upgrades.service
+%[1]stee /etc/apt/apt.conf.d/99adsys-e2e >/dev/null <<EOF
+APT::Periodic::Enable "0";
+DPkg::Lock::Timeout "600";
+EOF`
+
+// aptUpdateScript runs apt-get update, retrying while the lists lock is held.
+//
+// DPkg::Lock::Timeout, set by quiesceAPTScript, only makes apt wait for the
+// dpkg locks. The lists lock that apt-get update needs is taken without a
+// timeout and fails immediately, so waiting out a periodic run that was
+// already under way has to happen here.
+const aptUpdateScript = `for attempt in $(seq 1 %[2]d); do
+    %[1]sapt-get -y update && break
+    if [ "${attempt}" = %[2]d ]; then
+        echo "apt-get update still failing after ${attempt} attempts" >&2
+        exit 1
+    fi
+    echo "apt-get update failed, retrying in %[3]ds (attempt ${attempt})"
+    sleep %[3]d
+done`
+
+const (
+	// aptUpdateAttempts is how many times APTUpdate tries before giving up.
+	aptUpdateAttempts = 10
+
+	// aptUpdateInterval is how long APTUpdate waits between attempts. A
+	// periodic run holds the lists lock for as long as it takes to fetch the
+	// indices, so the total wait has to be generous.
+	aptUpdateInterval = 15
+)
+
+// sudoPrefix returns what a command must be prefixed with to run as root, which
+// is nothing at all when we are already connected as root.
+func (c Client) sudoPrefix() string {
+	if c.config.User == "root" {
+		return ""
+	}
+	return "sudo "
+}
+
+// QuiesceAPT disables the periodic apt activity on the remote host so that it
+// cannot take the apt and dpkg locks from underneath the commands we run.
+//
+// It is safe to call on a host where the units are absent, as masking a unit
+// that does not exist succeeds.
+func (c Client) QuiesceAPT(ctx context.Context) error {
+	if _, err := c.Run(ctx, fmt.Sprintf(quiesceAPTScript, c.sudoPrefix())); err != nil {
+		return fmt.Errorf("failed to disable periodic apt activity: %w", err)
+	}
+	return nil
+}
+
+// APTUpdateCmd returns a command refreshing the package indices, retrying for
+// as long as something else holds the lists lock.
+//
+// It is returned rather than run so that callers can chain it with the apt
+// invocation it is refreshing the indices for.
+func (c Client) APTUpdateCmd() string {
+	return fmt.Sprintf(aptUpdateScript, c.sudoPrefix(), aptUpdateAttempts, aptUpdateInterval)
+}
+
 // Client represents a remote SSH client.
 type Client struct {
 	client *ssh.Client
 	config *ssh.ClientConfig
 	host   string
+
+	done      chan struct{}
+	closeOnce *sync.Once
 }
 
 // NewClient creates a new SSH client.
@@ -80,16 +187,100 @@ func NewClient(host string, username string, secret string) (Client, error) {
 		return Client{}, fmt.Errorf("failed to connect to %q: %w", host, err)
 	}
 
-	return Client{
-		client: client,
-		config: config,
-		host:   host,
-	}, nil
+	c := Client{
+		client:    client,
+		config:    config,
+		host:      host,
+		done:      make(chan struct{}),
+		closeOnce: &sync.Once{},
+	}
+	go c.keepAlive(client)
+
+	return c, nil
+}
+
+// keepAlive periodically sends a request over the given connection so that it
+// keeps carrying traffic even while a command produces no output.
+//
+// The connection is passed explicitly rather than read from the client, as a
+// reboot replaces it and each goroutine must keep polling the one it was
+// started for.
+func (c Client) keepAlive(client *ssh.Client) {
+	ticker := time.NewTicker(keepAliveInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-c.done:
+			return
+		case <-ticker.C:
+			if _, _, err := client.SendRequest("keepalive@openssh.com", true, nil); err != nil {
+				// The connection is gone; whatever was running on it reports
+				// the failure with far more context than we could here.
+				return
+			}
+		}
+	}
 }
 
 // Close closes the SSH connection.
 func (c *Client) Close() error {
+	c.closeOnce.Do(func() { close(c.done) })
+
 	return c.client.Close()
+}
+
+// CheckLink verifies that the connection can carry a sustained transfer, not
+// just the short exchanges that establishing it consists of.
+//
+// A link whose packets are capped below what the interface advertises still
+// completes a handshake, answers pings and returns short commands, so it looks
+// healthy right up until something produces real output and the connection
+// stalls with no indication of why. Provoke that here instead, where it can be
+// reported against the connection rather than against whichever command
+// happened to be running.
+//
+// The output is deliberately read without logging it.
+func (c Client) CheckLink(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, linkProbeTimeout)
+	defer cancel()
+
+	log.Infof("Checking link to %q can carry a sustained transfer", c.host)
+
+	type outcome struct {
+		out []byte
+		err error
+	}
+	done := make(chan outcome, 1)
+	go func() {
+		session, err := c.client.NewSession()
+		if err != nil {
+			done <- outcome{err: fmt.Errorf("failed to create session: %w", err)}
+			return
+		}
+		defer session.Close()
+
+		out, err := session.Output(fmt.Sprintf("head -c %d /dev/zero | tr '\\0' 'a'", linkProbeSize))
+		done <- outcome{out: out, err: err}
+	}()
+
+	select {
+	case <-ctx.Done():
+		// Closing the transport unblocks channel creation and command requests,
+		// neither of which can be cancelled by closing a session alone.
+		c.client.Close()
+		<-done
+		return fmt.Errorf("link to %q stalled after transferring less than %d bytes: the connection carries small packets but not large ones, which points at an MTU too large for the tunnel it crosses: %w", c.host, linkProbeSize, ctx.Err())
+	case res := <-done:
+		if res.err != nil {
+			return fmt.Errorf("link check against %q failed: %w", c.host, res.err)
+		}
+		if len(res.out) != linkProbeSize {
+			return fmt.Errorf("link to %q delivered %d bytes out of %d", c.host, len(res.out), linkProbeSize)
+		}
+	}
+
+	return nil
 }
 
 // Run runs the given command on the remote host and returns the combined output
@@ -135,7 +326,11 @@ func (c Client) Run(ctx context.Context, cmd string) ([]byte, error) {
 	go func() {
 		for stdoutScanner.Scan() {
 			line := stdoutScanner.Text()
-			log.Debug("\t", line)
+			// Report at info level: these commands run for minutes at a time
+			// against a remote machine, and when one stops making progress or
+			// the connection drops mid-way, this output is the only record of
+			// how far it got.
+			log.Info("\t", line)
 			mu.Lock()
 			combinedOutput = append(combinedOutput, line)
 			mu.Unlock()
@@ -267,9 +462,24 @@ func (c Client) Download(remotePath string, localPath string) error {
 // reestablishes the SSH connection.
 // It first waits for the host to go offline, then returns an error if the host
 // does not come back online within 3 minutes.
+//
+// The reboot is requested with -i so that inhibitor locks cannot deny it.
+// Services that run during provisioning, snapd among them, hold a block
+// inhibitor while they are busy, and logind refuses a plain reboot for as long
+// as one is held:
+//
+//	Call to Reboot failed: Operation denied due to active block inhibitor
+//
+// The host is a disposable VM that the scenario has just asked to restart, so
+// there is nothing worth deferring the reboot for, and honouring the lock only
+// left the machine running until the wait below gave up.
 func (c *Client) Reboot() error {
 	log.Infof("Rebooting host %q", c.client.RemoteAddr().String())
-	_, _ = c.Run(context.Background(), "reboot")
+
+	// The connection drops as the host goes down, so a failure here is
+	// expected and not conclusive on its own. Keep the error to report it if
+	// the host turns out to still be up, which is the case it explains.
+	_, rebootErr := c.Run(context.Background(), "systemctl reboot -i")
 
 	waitDone := make(chan error, 1)
 	go func() {
@@ -283,7 +493,10 @@ func (c *Client) Reboot() error {
 	select {
 	case <-waitDone:
 	case <-time.After(30 * time.Second):
-		return fmt.Errorf("host did not go offline in time")
+		if rebootErr != nil {
+			return fmt.Errorf("host did not go offline in time, reboot was refused: %w", rebootErr)
+		}
+		return errors.New("host did not go offline in time")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
@@ -300,12 +513,58 @@ func (c *Client) Reboot() error {
 				log.Infof("Host has rebooted successfully")
 				c.client.Close()
 				c.client = newClient
+				go c.keepAlive(newClient)
 
 				return nil
 			}
 			time.Sleep(5 * time.Second)
 		}
 	}
+}
+
+// apportReportScript collects the apport report through the apport Python API
+// rather than through ubuntu-bug.
+//
+// The Ubuntu general apport hook asks whether the contents of each modified
+// conffile belong in the report, and adsys rewrites its own sudoers conffile
+// as soon as the privilege manager applies a policy, so the question comes up
+// on every machine the suite has exercised. ubuntu-bug reads the answer
+// straight from the terminal, which a command started over SSH does not have,
+// and the report died on the resulting ioctl error before writing anything:
+//
+//	termios.error: (25, 'Inappropriate ioctl for device')
+//
+// Driving the hooks with apport's NoninteractiveHookUI declines those
+// questions without ever looking at a terminal, which also keeps the report
+// free of the hooks' interactive extras that a log artifact has no use for.
+//
+//go:embed apport_package_report.py
+var apportReportScript string
+
+const (
+	// apportReportScriptPath is where apportReportScript is staged on the
+	// remote host.
+	apportReportScriptPath = "/root/apport_package_report.py"
+
+	// apportReportPath is where the collected report is written on the remote
+	// host.
+	apportReportPath = "/root/bug"
+
+	// apportReportTimeout bounds the collection, in seconds. The hooks shell
+	// out to commands of their own, and this report is only ever collected
+	// from a machine that is already misbehaving.
+	apportReportTimeout = 300
+)
+
+// apportReportCmd returns the command producing the apport report for adsys on
+// the remote host.
+func apportReportCmd() string {
+	return fmt.Sprintf(`set -eu
+cat > %[1]s <<'ADSYS_APPORT_REPORT_EOF'
+%[2]s
+ADSYS_APPORT_REPORT_EOF
+timeout %[3]d python3 %[1]s adsys %[4]s`,
+		apportReportScriptPath, apportReportScript, apportReportTimeout, apportReportPath)
 }
 
 // CollectLogs collects logs from the remote host and writes them to disk under
@@ -333,34 +592,36 @@ func (c *Client) CollectLogs(ctx context.Context, hostname string) (err error) {
 		}
 	}
 
-	// Run ubuntu-bug to collect logs
-	_, err = c.Run(ctx, "APPORT_DISABLE_DISTRO_CHECK=1 ubuntu-bug --save=/root/bug adsys")
-	if err != nil {
-		return fmt.Errorf("failed to collect logs: %w", err)
-	}
-	// Save journalctl logs
-	_, err = c.Run(ctx, "journalctl --no-pager --output=short-precise --no-hostname > /root/journal")
-	if err != nil {
-		return fmt.Errorf("failed to read logs: %w", err)
-	}
-
-	// Archive and download /var/log
-	if _, err := c.Run(ctx, "tar --exclude=/var/log/journal -czf /root/varlog.tar.gz /var/log"); err != nil {
-		return fmt.Errorf("failed to archive logs: %w", err)
+	artifacts := []struct {
+		name       string
+		command    string
+		remotePath string
+		localName  string
+	}{
+		{"apport report", apportReportCmd(), apportReportPath, "apport.log"},
+		{"journal", "journalctl --no-pager --output=short-precise --no-hostname > /root/journal", "/root/journal", "journal.log"},
+		{"/var/log archive", "tar --exclude=/var/log/journal -czf /root/varlog.tar.gz /var/log", "/root/varlog.tar.gz", "varlog.tar.gz"},
 	}
 
-	// Download remote logs
-	if err := c.Download("/root/varlog.tar.gz", filepath.Join(logDir, "varlog.tar.gz")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-	if err := c.Download("/root/bug", filepath.Join(logDir, "apport.log")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
-	}
-	if err := c.Download("/root/journal", filepath.Join(logDir, "journal.log")); err != nil {
-		return fmt.Errorf("failed to download logs: %w", err)
+	// These artifacts are only gathered because something already went wrong,
+	// so collect each one independently and report the failures together at
+	// the end. Giving up on the first one used to leave the run with no
+	// artifacts at all, hiding the journal and /var/log behind an unrelated
+	// failure of the apport report.
+	var errs []error
+	for _, artifact := range artifacts {
+		if _, err := c.Run(ctx, artifact.command); err != nil {
+			errs = append(errs, fmt.Errorf("failed to collect %s: %w", artifact.name, err))
+		}
+
+		// Download whatever the command managed to produce: a truncated
+		// artifact still carries more than a missing one.
+		if err := c.Download(artifact.remotePath, filepath.Join(logDir, artifact.localName)); err != nil {
+			errs = append(errs, fmt.Errorf("failed to download %s: %w", artifact.name, err))
+		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 // CollectLogsOnFailure collects logs from the remote host and writes them to disk if passed a non-nil error.

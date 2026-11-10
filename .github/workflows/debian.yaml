@@ -1,0 +1,63 @@
+name: Debian packaging
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - sru/resolute-gdm
+    paths:
+      - '**'
+      - '!.github/**'
+      - '.github/workflows/debian.yaml'
+      - '.github/actions/restore-sru-vendor/**'
+      - '!.clang-format'
+      - '!.gitignore'
+      - '!.golangci.yaml'
+      - '!*.md'
+    tags:
+      - "*"
+  pull_request:
+    paths:
+      - '**'
+      - '!.github/**'
+      - '.github/workflows/debian.yaml'
+      - '.github/actions/restore-sru-vendor/**'
+      - '!.clang-format'
+      - '!.gitignore'
+      - '!.golangci.yaml'
+      - '!*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-deb:
+    name: Build Debian package
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ubuntu-version: ['resolute']
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: adsys
+
+      - name: Restore archive vendored dependencies
+        uses: ./adsys/.github/actions/restore-sru-vendor
+        with:
+          source-dir: adsys
+
+      - name: Build Debian package
+        uses: canonical/desktop-engineering/gh-actions/common/build-debian@main
+        with:
+          source-dir: adsys
+          docker-image: ubuntu:${{ matrix.ubuntu-version }}
+          # Keep the existing Resolute installation layout in this targeted SRU.
+          lintian: --suppress-tags aliased-location

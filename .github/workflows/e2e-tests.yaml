@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       codenames:
-        description: 'Comma-separated list of codenames to run tests on (e.g. "mantic", "focal") - will test all supported releases if not specified'
+        description: 'Comma-separated list of quoted codenames to run tests on; defaults to Resolute for this SRU'
         type: string
         required: false
       repository:
@@ -12,7 +12,7 @@ on:
         type: string
         required: false
       branch:
-        description: 'Run tests with adsys from a branch (defaults to main if not specified)'
+        description: 'Run tests with adsys from a branch (defaults to the workflow ref if not specified)'
         type: string
         required: false
 
@@ -22,63 +22,49 @@ on:
     tags:
       - "*"
 
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: >-
+    ${{ github.workflow }}-${{ github.ref }}-${{
+      github.event_name == 'pull_request' &&
+      github.event.action == 'labeled' &&
+      github.event.label.name != 'e2e-tests' &&
+      github.run_id || 'active'
+    }}
   cancel-in-progress: true
 
 jobs:
   supported-releases:
     name: Build matrix for supported ADSys and Ubuntu releases
-    runs-on: ${{ vars.RUNNER }}
+    permissions:
+      contents: read
+      pull-requests: read
+    if: >-
+      ${{
+        github.event_name != 'pull_request' ||
+        (
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.event.pull_request.user.login != 'dependabot[bot]' &&
+          contains(github.event.pull_request.labels.*.name, 'e2e-tests') &&
+          (
+            github.event.action != 'labeled' ||
+            github.event.label.name == 'e2e-tests'
+          )
+        )
+      }}
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-supported-releases.outputs.matrix }}
     steps:
-      - uses: canonical/desktop-engineering/gh-actions/common/dpkg-install-speedup@main
-      - name: Install needed binaries
-        run: |
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y distro-info jq
-      - uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - uses: actions/checkout@v5
-        with:
-          repository: ${{ inputs.repository || github.repository }}
-          ref: ${{ inputs.branch || github.ref }}
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
       - name: Build matrix
         id: set-supported-releases
-        run: |
-          set -eu
-
-          codenames="$(distro-info --supported-esm)\n$(distro-info --supported)\n"
-          versions="$(distro-info --supported-esm --release)\n$(distro-info --supported --release)\n"
-
-          # Paste the codenames and versions together, sort them, and remove duplicates
-          codenames_with_versions="$(paste <(printf "$versions" | cut -d' ' -f1) <(printf "$codenames") | sort -u)"
-
-          releases=""
-          while IFS=$'\t' read -r version codename; do
-              # Filter out unsupported LTS releases
-              if [[ "${codename}" =~ trusty|xenial|bionic ]]; then
-                  continue
-              fi
-
-              # Filter out releases with no corresponding Azure images
-              latestImageVersion="$(go run ./e2e/cmd/build_base_image/00_check_vm_image --codename ${codename} --version ${version} --force)"
-              if [ -z "${latestImageVersion}" ]; then
-                  continue
-              fi
-
-              if [ -n "${releases}" ]; then
-                  releases="${releases}, "
-              fi
-              releases="${releases}'${codename}'"
-          done <<< "$codenames_with_versions"
-
-          echo matrix="${releases}" >> $GITHUB_OUTPUT
+        run: echo "matrix='resolute'" >> "$GITHUB_OUTPUT"
 
   tests:
     name: Tests
@@ -98,7 +84,7 @@ jobs:
         run: |
           sudo apt-get update
           # Required for the XML to POL conversion
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-samba
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3-samba ca-certificates curl xz-utils
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -114,8 +100,18 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.AZURE_SSH_KEY }}" > ~/.ssh/adsys-e2e.pem
           chmod 600 ~/.ssh/adsys-e2e.pem
+      - name: Restore archive vendored dependencies
+        uses: ./.github/actions/restore-sru-vendor
       - name: Build adsys deb
         run: go run ./e2e/cmd/run_tests/00_build_adsys_deb --codename ${{ matrix.codename }}
+      - name: Download the released GDM regression baseline
+        if: ${{ matrix.codename == 'resolute' }}
+        run: |
+          mkdir -p output/baseline
+          curl --fail --location --retry 3 \
+            'https://launchpad.net/ubuntu/+archive/primary/+files/adsys_0.16.4ubuntu1.1_amd64.deb' \
+            --output output/baseline/adsys.deb
+          echo '46ac6eef1b88d5e6cd4de59428f177229b2c1cfa080b4c89a09374d5b82e6604  output/baseline/adsys.deb' | sha256sum --check
       - name: Set up VPN connection
         uses: ./.github/actions/azure-sstpc-vpn
         with:
@@ -124,9 +120,24 @@ jobs:
           cert: ${{ secrets.VPN_CERT }}
           key: ${{ secrets.VPN_KEY }}
       - name: Provision client VM
-        run: go run ./e2e/cmd/run_tests/01_provision_client
+        env:
+          BASELINE_DEB: ${{ matrix.codename == 'resolute' && 'output/baseline/adsys.deb' || '' }}
+        run: |
+          args=()
+          if [ -n "$BASELINE_DEB" ]; then args+=(--baseline-deb "$BASELINE_DEB"); fi
+          go run ./e2e/cmd/run_tests/01_provision_client "${args[@]}"
       - name: Provision AD server
         run: go run ./e2e/cmd/run_tests/02_provision_ad
+      - name: 'Test: released GDM regression and in-place upgrade'
+        if: ${{ matrix.codename == 'resolute' }}
+        run: go run ./e2e/cmd/run_tests/04_test_gdm_upgrade
+      - name: Upload GDM upgrade evidence
+        if: ${{ always() && matrix.codename == 'resolute' }}
+        uses: actions/upload-artifact@v5
+        with:
+          name: gdm-upgrade-${{ matrix.codename }}
+          path: logs/**/gdm-upgrade.json
+          if-no-files-found: warn
       - name: Recompile PAM module with coverage support
         run: go run ./e2e/cmd/run_tests/03_pam_coverage_support
         if: ${{ matrix.codename == 'noble' }}
@@ -151,6 +162,17 @@ jobs:
         with:
           name: e2e-logs-${{ matrix.codename }}
           path: logs/
+      - name: Collect VPN diagnostics on failure
+        if: ${{ failure() }}
+        run: |
+          echo "=== ppp0 ==="
+          ip -4 addr show ppp0 || echo "ppp0 is gone"
+          echo "=== routing rules ==="
+          ip rule show || true
+          echo "=== VPN routing table ==="
+          ip route show table 42 || true
+          echo "=== pppd and sstpc log ==="
+          sudo journalctl -b 0 -t pppd -t sstpc --no-pager -n 100 || true
       - name: Deprovision resources
         if: ${{ always() }}
         run: |

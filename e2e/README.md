@@ -48,6 +48,14 @@ The most painful part of a local setup is configuring the VPN connection require
 
 To set up the VPN connection locally refer to the steps in the action linked above, replacing any secret inputs with our own credentials from the Enterprise Desktop LastPass vault.
 
+Two details in the peer configuration are easy to get wrong when setting this up by hand:
+- `name` must be the common name of the *client* certificate (`canonical`), not the one of the CA certificate. The gateway matches this identity against the certificate presented to it and, on mismatch, drops the connection with a TLS `access denied` alert after PPP has already come up.
+- `plugin` points into a directory named after the exact `pppd` version, so it must match the `pppd` actually installed on your machine (`/usr/lib/pppd/$(pppd --version 2>&1 | awk '{print $NF}')/sstp-pppd-plugin.so`).
+
+The tunnel also needs an MTU below the interface default of 1500, to leave room for the SSTP, TLS and PPP headers wrapping each packet (`mtu 1400` and `mru 1400` in the peer file, which the action enforces with `ip link set ppp0 mtu 1400` once connected). Without it the symptoms are misleading rather than obvious: small packets pass, so the host pings and TCP connections open, while anything larger is silently dropped. SSH then hangs during key exchange, and commands that produce more than about a kilobyte of output stall until the connection is eventually torn down.
+
+Note that `ppp0` appearing and being flagged `UP` does not mean the tunnel works: `pppd` creates the interface before authenticating. Check that it has an IPv4 address (`ip -4 addr show ppp0`) instead.
+
 ### Running the E2E scenarios
 
 The scenarios are located in the [e2e/cmd](https://github.com/ubuntu/adsys/tree/main/e2e/cmd) directory, each in its own subdirectory. It's recommended to run the scenarios from the root of the repository using `go run`. The executables are designed to be run in a specific order, as they depend on the state of the AD domain and the client VM. This state is enforced through a shared `inventory.yaml` file which is updated by each scenario.
@@ -70,3 +78,35 @@ go run ./e2e/cmd/run_tests/99_deprovision
 ```
 
 For more information refer to the corresponding GitHub Actions workflows responsible for running the scenarios ([e2e-tests.yaml](https://github.com/ubuntu/adsys/blob/main/.github/workflows/e2e-tests.yaml) and [e2e-build-images.yaml](https://github.com/ubuntu/adsys/blob/main/.github/workflows/e2e-build-images.yaml)) and the help messages of the scenarios themselves (run with `-h`).
+
+### Resolute GDM upgrade regression
+
+The Resolute workflow downloads the checksum-pinned `0.16.4ubuntu1.1` package
+from Launchpad and passes it to `01_provision_client --baseline-deb`. The
+candidate stays in `/debs` but is not installed yet. Provisioning rejects an
+image with an existing `/etc/dconf/profile/gdm` so a profile repaired by a newer
+package cannot hide the old bug.
+
+After AD setup, `04_test_gdm_upgrade` applies real machine policies with the
+released package. It requires the legacy profile to omit the vendor greeter
+database and select `ubuntu` rather than `gnome-login`. An unrelated command or
+setup failure does not count as reproducing the regression.
+
+The scenario then installs the candidate without deleting the profile or policy
+cache, refreshes the policies and repeats the same defaults check. It also checks
+that the banner GPO is still applied and locked. Normal user-policy scenarios run
+after the upgrade.
+
+Before/after package versions, profiles, settings and failures are saved in the
+`gdm-upgrade-resolute` workflow artifact. For a local run, use the baseline download
+step from the workflow, then run:
+
+```sh
+go run ./e2e/cmd/run_tests/01_provision_client --baseline-deb output/baseline/adsys.deb
+go run ./e2e/cmd/run_tests/02_provision_ad
+go run ./e2e/cmd/run_tests/04_test_gdm_upgrade
+```
+
+This verifies the released profile regression and its in-place upgrade repair.
+It does not operate the graphical login screen. Visual greeter checks and
+graphical local/AD logins remain manual SRU verification steps.
