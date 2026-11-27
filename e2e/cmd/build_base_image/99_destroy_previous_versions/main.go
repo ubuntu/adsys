@@ -8,8 +8,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"slices"
 
+	"github.com/maruel/natural"
 	log "github.com/sirupsen/logrus"
 	"github.com/ubuntu/adsys/e2e/internal/az"
 	"github.com/ubuntu/adsys/e2e/internal/command"
@@ -26,7 +27,7 @@ func run() int {
 	cmd := command.New(action, command.WithValidateFunc(validate))
 	cmd.Usage = fmt.Sprintf(`go run ./%s [options]
 
-Generalize an Azure VM to use as a template for E2E tests.
+Delete old Azure VM template versions for an Ubuntu release.
 
 Options:
  --codename          codename for which to delete image versions
@@ -34,7 +35,7 @@ Options:
 
 This script will:
  - query all image versions for the specified codename
- - delete all but the latest N versions, as specified by --versions-to-keep
+ - keep the highest N versions and the highest version eligible for deployment
 
 The machine must be authenticated to Azure via the Azure CLI.`, filepath.Base(os.Args[0]))
 
@@ -47,39 +48,41 @@ The machine must be authenticated to Azure via the Azure CLI.`, filepath.Base(os
 func action(ctx context.Context, _ *command.Command) error {
 	log.Infof("Getting image versions for %q", codename)
 
-	out, _, err := az.RunCommand(ctx, "sig", "image-version", "list",
-		"--resource-group", "AD",
-		"--gallery-name", "AD",
-		"--gallery-image-definition", az.ImageDefinitionName(codename),
-		"--output", "tsv",
-		"--query", "[].name",
-	)
+	imageDefinition := az.ImageDefinitionName(codename)
+	versions, err := az.ListImageVersions(ctx, imageDefinition)
 	if err != nil {
 		return err
 	}
 
-	versions := strings.Split(string(out), "\n")
 	if len(versions) <= versionsToKeep {
 		log.Infof("No versions to delete for %q", codename)
 		return nil
 	}
 
-	versionsToDelete := versions[:len(versions)-versionsToKeep-1]
-	log.Infof("Deleting %d versions for %q: %v", len(versionsToDelete), codename, versionsToDelete)
+	slices.SortFunc(versions, func(a, b az.ImageVersion) int {
+		return natural.Compare(b.Version, a.Version)
+	})
+	latestDeployable := slices.IndexFunc(versions, func(v az.ImageVersion) bool {
+		return !v.PublishingProfile.ExcludeFromLatest
+	})
+	log.Infof("Deleting older image versions for %q", codename)
 
-	for _, version := range versionsToDelete {
+	for i := versionsToKeep; i < len(versions); i++ {
+		if i == latestDeployable {
+			continue
+		}
+		version := versions[i].Version
+		log.Infof("Deleting image version %q", version)
 		_, _, err := az.RunCommand(ctx, "sig", "image-version", "delete",
 			"--resource-group", "AD",
 			"--gallery-name", "AD",
-			"--gallery-image-definition", az.ImageDefinitionName(codename),
+			"--gallery-image-definition", imageDefinition,
 			"--gallery-image-version", version,
 		)
 		if err != nil {
 			return err
 		}
 	}
-
-	log.Infof("Successfully deleted %d image versions", len(versionsToDelete))
 
 	return nil
 }

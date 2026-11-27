@@ -22,6 +22,8 @@ Before powering off the VM, we stage a [first run](https://github.com/ubuntu/ads
 
 The process described above is automated and runs weekly on the [E2E - Build image templates](https://github.com/ubuntu/adsys/actions/workflows/e2e-build-images.yaml) workflow.
 
+Automatic builds skip Ubuntu Pro images and keep an existing stable template if only a daily image is available. Within the same Marketplace offer and SKU, only a newer source replaces the current template. A template without a recorded source is rebuilt once when a suitable Marketplace image is available. Cleanup keeps the highest version eligible for deployment even if newer versions are excluded.
+
 ### Running the tests
 
 The actual testing workflow consists of the following steps:
@@ -35,6 +37,8 @@ The actual testing workflow consists of the following steps:
   + create AD users unique to the client being tested
 - run various test scenarios involving ADSys
 - deprovision client VM and clean up AD resources
+
+The non-Pro, Pro, and PAM scenarios save available failure diagnostics under `logs/<hostname>/failure-*/`. Each collection starts with the journal, uses a fresh directory, and stops after ten minutes so a stalled transfer cannot block the upload step.
 
 Because triggering this on every push would be wasteful, the [E2E - Run tests](https://github.com/ubuntu/adsys/actions/workflows/e2e-tests.yaml) workflow runs on pushes to `main` and tags, on a workflow dispatch basis, and for pull requests carrying the `e2e-tests` label. PR runs use the PR's merge ref, so they include the proposed changes; fork PRs are skipped because the workflow requires repository secrets for Azure and AD access.
 

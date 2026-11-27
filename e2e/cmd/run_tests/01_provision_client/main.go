@@ -25,7 +25,7 @@ var sshKey, adPassword string
 
 // Keep the image's local configuration, including AD DNS, when packages change
 // their conffiles. DEBIAN_FRONTEND alone does not suppress dpkg's prompts.
-const upgradePackagesCommand = "apt-get -y update && DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold upgrade"
+const upgradePackagesCommand = "DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold upgrade"
 
 func main() {
 	os.Exit(run())
@@ -172,6 +172,11 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 		return err
 	}
 
+	log.Infof("Disabling periodic apt activity...")
+	if err := client.QuiesceAPT(ctx); err != nil {
+		return err
+	}
+
 	out, err = client.Run(ctx, "hostname")
 	if err != nil {
 		return fmt.Errorf("failed to get hostname of VM: %w", err)
@@ -189,7 +194,7 @@ func action(ctx context.Context, cmd *command.Command) (err error) {
 	}
 
 	log.Infof("Upgrading packages...")
-	_, err = client.Run(ctx, upgradePackagesCommand)
+	_, err = client.Run(ctx, client.APTUpdateCmd()+" && "+upgradePackagesCommand)
 	if err != nil {
 		return fmt.Errorf("failed to update or upgrade packages: %w", err)
 	}
